@@ -104,30 +104,34 @@ function BlogPostPage() {
 
         <AnimatedSection delay={0.2} className="mt-10">
           <div className="prose prose-lg max-w-none prose-headings:font-display prose-headings:text-foreground prose-p:text-muted-foreground prose-strong:text-foreground prose-a:text-primary hover:prose-a:text-primary/80">
-            {post.content.split("\n\n").map((paragraph: string, index: number) => {
-              if (paragraph.startsWith("## ")) {
+            {post.content
+              .trim()
+              .split("\n\n")
+              .map((paragraph: string, index: number) => {
+                const p = paragraph.trim();
+                if (p.startsWith("## ")) {
+                  return (
+                    <h2 key={index} className="font-display text-2xl font-bold text-foreground mt-10 mb-4">
+                      {p.replace("## ", "")}
+                    </h2>
+                  );
+                }
+                if (p.startsWith("---")) {
+                  return <hr key={index} className="my-8 border-border" />;
+                }
+                if (p.startsWith("**") && p.endsWith("**")) {
+                  return (
+                    <p key={index} className="font-semibold text-foreground">
+                      {p.replace(/\*\*/g, "")}
+                    </p>
+                  );
+                }
                 return (
-                  <h2 key={index} className="font-display text-2xl font-bold text-foreground mt-10 mb-4">
-                    {paragraph.replace("## ", "")}
-                  </h2>
-                );
-              }
-              if (paragraph.startsWith("---")) {
-                return <hr key={index} className="my-8 border-border" />;
-              }
-              if (paragraph.startsWith("**") && paragraph.endsWith("**")) {
-                return (
-                  <p key={index} className="font-semibold text-foreground">
-                    {paragraph.replace(/\*\*/g, "")}
+                  <p key={index} className="leading-relaxed">
+                    {p}
                   </p>
                 );
-              }
-              return (
-                <p key={index} className="leading-relaxed">
-                  {paragraph}
-                </p>
-              );
-            })}
+              })}
           </div>
         </AnimatedSection>
 
