@@ -2,10 +2,10 @@ import { Mail, MapPin, Phone } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 const navLinks = [
-  { href: "#accueil", label: "Accueil" },
-  { href: "#services", label: "Services" },
-  { href: "#a-propos", label: "À propos" },
-  { href: "#contact", label: "Contact" },
+  { href: "/#accueil", label: "Accueil" },
+  { href: "/#services", label: "Services" },
+  { href: "/#a-propos", label: "À propos" },
+  { href: "/#contact", label: "Contact" },
 ];
 
 export function Footer() {
