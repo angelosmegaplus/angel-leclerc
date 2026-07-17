@@ -1,192 +1,818 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { useState, type FormEvent } from "react";
+import {
+  ArrowRight,
+  Check,
+  Compass,
+  FileText,
+  Layers,
+  Mail,
+  MapPin,
+  Sparkles,
+  Ear,
+  Lightbulb,
+  Users,
+  Repeat,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { AnimatedSection } from "@/components/AnimatedSection";
-import { ServiceCard } from "@/components/ServiceCard";
-import { BlogCard } from "@/components/BlogCard";
-import { services } from "@/data/services";
-import { blogPosts } from "@/data/blog";
 import heroImage from "@/assets/hero-illustration.jpg";
-import { ArrowRight, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Conseil & Création — Accompagnement sur mesure" },
+      {
+        title:
+          "Angel Leclerc Communication | Gestion de projet, conseil et rédaction",
+      },
       {
         name: "description",
         content:
-          "Auto-entrepreneure freelance en conseil, design et web. Accompagnement sur mesure pour faire grandir vos projets.",
+          "Gestion de projets de communication, conseil stratégique, rédaction éditoriale et journalistique pour professionnels, associations et porteurs de projets.",
       },
       {
         property: "og:title",
-        content: "Conseil & Création — Accompagnement sur mesure",
+        content:
+          "Angel Leclerc Communication | Gestion de projet, conseil et rédaction",
       },
       {
         property: "og:description",
         content:
-          "Auto-entrepreneure freelance en conseil, design et web. Accompagnement sur mesure pour faire grandir vos projets.",
+          "Piloter votre communication, structurer vos idées, faire avancer vos projets.",
       },
       { property: "og:url", content: "/" },
     ],
     links: [{ rel: "canonical", href: "/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "ProfessionalService",
+          name: "Angel Leclerc Communication",
+          description:
+            "Gestion de projets de communication, conseil stratégique et rédaction éditoriale.",
+          email: "contact@angel-leclerc.fr",
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: "25 Grande Rue",
+            postalCode: "03110",
+            addressLocality: "Broût-Vernet",
+            addressCountry: "FR",
+          },
+          areaServed: "France",
+          founder: { "@type": "Person", name: "Angel Leclerc" },
+        }),
+      },
+    ],
   }),
-  component: Index,
+  component: HomePage,
 });
 
-function Index() {
-  const latestPosts = blogPosts.slice(0, 3);
+const pillars = [
+  {
+    icon: Compass,
+    title: "Gestion de projet",
+    text: "Organisation des étapes, coordination des actions, recherche de partenaires et suivi du projet.",
+  },
+  {
+    icon: Layers,
+    title: "Conseil en communication",
+    text: "Analyse des besoins, stratégie, positionnement, choix des publics, messages et supports.",
+  },
+  {
+    icon: FileText,
+    title: "Rédaction éditoriale",
+    text: "Articles, interviews, dossiers, textes de présentation et contenus journalistiques ou numériques.",
+  },
+];
 
+const mainServices = [
+  {
+    title: "Conseil express",
+    price: "À partir de 40 €",
+    intro:
+      "Pour une question précise, une première analyse ou un avis extérieur rapide.",
+    items: [
+      "Échange téléphonique ou en visioconférence",
+      "Analyse rapide de la situation",
+      "Conseils prioritaires et pistes d'amélioration",
+      "Court résumé écrit",
+    ],
+  },
+  {
+    title: "Stratégie de communication",
+    price: "À partir de 150 €",
+    intro:
+      "Pour construire une direction claire et organiser la communication d'un projet.",
+    items: [
+      "Analyse du projet et définition des objectifs",
+      "Identification des publics et positionnement",
+      "Stratégie de marque et stratégie éditoriale",
+      "Messages, supports et plan de communication",
+      "Calendrier indicatif et recommandations",
+    ],
+  },
+  {
+    title: "Rédaction éditoriale et journalistique",
+    price: "À partir de 50 €",
+    intro: "Pour rédiger un contenu clair, structuré et adapté au public.",
+    items: [
+      "Articles, portraits, interviews, dossiers",
+      "Textes de présentation et communiqués",
+      "Publications et contenus numériques",
+      "Rédaction journalistique et travaux de synthèse",
+    ],
+    note: "Le tarif dépend de la longueur, du niveau de recherche, du nombre d'entretiens, du travail de réécriture et du délai demandé.",
+  },
+  {
+    title: "Gestion complète d'un projet",
+    price: "À partir de 300 €",
+    highlight: true,
+    intro:
+      "Pour accompagner un projet de manière globale, de la réflexion jusqu'au suivi.",
+    items: [
+      "Analyse du besoin et définition de la stratégie",
+      "Organisation des étapes et coordination",
+      "Recherche de partenaires et de prestataires",
+      "Suivi du calendrier et centralisation des échanges",
+      "Rédaction de certains contenus et supervision",
+      "Ajustements réguliers avec le client",
+    ],
+    note: "Formule proposée en pack global. Le contenu exact est défini avec le client selon le projet, le budget et le niveau d'accompagnement souhaité.",
+  },
+];
+
+const extraServices = [
+  { label: "Rédaction d'un texte court ou publication", price: "à partir de 30 €" },
+  { label: "Création d'un visuel simple", price: "à partir de 35 €" },
+  { label: "Montage d'une vidéo courte", price: "à partir de 50 €" },
+  { label: "Affiche ou flyer", price: "à partir de 60 €" },
+  { label: "Présentation ou document professionnel", price: "à partir de 70 €" },
+  { label: "Identité visuelle simple", price: "à partir de 150 €" },
+  { label: "Recherche de partenaires", price: "sur devis" },
+  { label: "Recherche et coordination de prestataires", price: "sur devis" },
+  { label: "Production audio, vidéo ou numérique", price: "sur devis" },
+];
+
+const values = [
+  {
+    icon: Ear,
+    title: "Écoute",
+    text: "Comprendre le projet avant de proposer une solution.",
+  },
+  {
+    icon: Lightbulb,
+    title: "Clarté",
+    text: "Transformer les idées en messages simples et compréhensibles.",
+  },
+  {
+    icon: Users,
+    title: "Coordination",
+    text: "Faire avancer les différentes personnes autour d'un objectif commun.",
+  },
+  {
+    icon: Repeat,
+    title: "Adaptation",
+    text: "Faire évoluer la mission selon les besoins, les moyens et les retours du client.",
+  },
+];
+
+const steps = [
+  {
+    n: "01",
+    title: "Premier échange",
+    text: "Le client présente son besoin, ses objectifs, ses contraintes, son public et son budget.",
+  },
+  {
+    n: "02",
+    title: "Proposition",
+    text: "Une offre, un pack ou un devis adapté est préparé.",
+  },
+  {
+    n: "03",
+    title: "Réalisation et coordination",
+    text: "La mission est organisée et les actions mises en œuvre. Le client reçoit régulièrement des informations sur l'avancement.",
+  },
+  {
+    n: "04",
+    title: "Suivi et adaptation",
+    text: "Les actions peuvent être ajustées selon les retours, les besoins et l'évolution du projet.",
+  },
+];
+
+function HomePage() {
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="container-tight grid items-center gap-12 py-20 lg:grid-cols-2 lg:py-28">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-xl"
-          >
-            <span className="inline-flex items-center gap-2 rounded-full bg-sand px-4 py-1.5 text-xs font-medium text-ink">
-              <Sparkles size={14} className="text-terracotta" />
-              Auto-entrepreneure disponible pour vos projets
-            </span>
-            <h1 className="mt-6 font-display text-4xl font-bold leading-tight text-foreground md:text-5xl lg:text-6xl">
-              Vos projets méritent un accompagnement{" "}
-              <span className="text-primary">humain et efficace</span>.
-            </h1>
-            <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-              Conseil stratégique, design d'identité et création de sites web pour les entrepreneurs
-              qui veulent avancer avec clarté et sérénité.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Button
-                asChild
-                size="lg"
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                <Link to="/services">
-                  Découvrir les services
-                  <ArrowRight size={18} className="ml-2" />
-                </Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                size="lg"
-                className="border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
-              >
-                <Link to="/contact">Me contacter</Link>
-              </Button>
-            </div>
-          </motion.div>
+    <div>
+      <Hero />
+      <Intro />
+      <Services />
+      <About />
+      <Contact />
+    </div>
+  );
+}
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="relative"
-          >
-            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-sand">
-              <img
-                src={heroImage}
-                alt="Illustration abstraite terracotta et sauge pour un accompagnement professionnel"
-                width={1200}
-                height={800}
-                className="h-full w-full object-cover"
-                fetchPriority="high"
-              />
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Services preview */}
-      <section className="section-padding bg-muted/30">
-        <div className="container-tight">
-          <AnimatedSection className="text-center max-w-2xl mx-auto">
-            <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
-              Des services pensés pour avancer sereinement
-            </h2>
-            <p className="mt-4 text-muted-foreground">
-              Que vous ayez besoin d'un coup de pouce stratégique, d'une identité visuelle ou d'un
-              site web, chaque prestation s'adapte à vos objectifs.
-            </p>
-          </AnimatedSection>
-
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {services.map((service, index) => (
-              <AnimatedSection key={service.id} delay={index * 0.1}>
-                <ServiceCard service={service} />
-              </AnimatedSection>
-            ))}
-          </div>
-
-          <AnimatedSection delay={0.4} className="mt-10 text-center">
-            <Button
-              asChild
-              variant="outline"
-              className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-            >
-              <Link to="/services">Voir tous les services et tarifs</Link>
-            </Button>
-          </AnimatedSection>
-        </div>
-      </section>
-
-      {/* CTA band */}
-      <section className="section-padding bg-primary text-primary-foreground">
-        <div className="container-tight text-center">
-          <AnimatedSection>
-            <h2 className="font-display text-3xl font-bold md:text-4xl">
-              Prêt à donner vie à votre projet ?
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-primary-foreground/80">
-              Discutons de votre besoin et voyons ensemble comment avancer. Le premier échange est
-              sans engagement.
-            </p>
+function Hero() {
+  return (
+    <section id="accueil" className="relative overflow-hidden bg-background">
+      <div className="container-tight grid items-center gap-12 py-16 lg:grid-cols-[1.05fr_1fr] lg:py-24">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <span className="inline-flex items-center gap-2 rounded-full bg-muted px-4 py-1.5 text-xs font-medium text-foreground">
+            <Sparkles size={14} className="text-primary" />
+            Gestion de projet · Conseil · Rédaction
+          </span>
+          <h1 className="mt-6 font-display text-4xl font-bold leading-[1.05] tracking-tight text-foreground md:text-5xl lg:text-6xl">
+            Piloter votre communication, structurer vos idées,{" "}
+            <span className="text-primary">faire avancer vos projets.</span>
+          </h1>
+          <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
+            J'accompagne les professionnels, associations, particuliers et porteurs de
+            projets dans l'organisation de leur communication, la définition de leur
+            stratégie et la rédaction de leurs contenus.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
             <Button
               asChild
               size="lg"
-              className="mt-8 bg-background text-foreground hover:bg-background/90"
+              className="bg-primary text-primary-foreground hover:bg-accent"
             >
-              <Link to="/contact">Prendre rendez-vous</Link>
+              <a href="#services">
+                Découvrir mes services
+                <ArrowRight size={18} className="ml-2" />
+              </a>
             </Button>
-          </AnimatedSection>
-        </div>
-      </section>
-
-      {/* Latest blog posts */}
-      <section className="section-padding bg-background">
-        <div className="container-tight">
-          <AnimatedSection className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
-            <div>
-              <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
-                Derniers articles du blog
-              </h2>
-              <p className="mt-2 text-muted-foreground">
-                Conseils, retours d'expérience et astices pour les entrepreneurs.
-              </p>
-            </div>
             <Button
               asChild
-              variant="ghost"
-              className="text-primary hover:bg-primary/10 hover:text-primary"
+              variant="outline"
+              size="lg"
+              className="border-foreground/20 bg-transparent text-foreground hover:bg-muted"
             >
-              <Link to="/blog">Tous les articles</Link>
+              <a href="#contact">Me contacter</a>
             </Button>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+          className="relative"
+        >
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-muted shadow-sm">
+            <img
+              src={heroImage}
+              alt="Bureau chaleureux avec carnet, notes et documents de préparation d'un projet de communication"
+              width={1400}
+              height={1050}
+              className="h-full w-full object-cover"
+              fetchPriority="high"
+            />
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+function Intro() {
+  return (
+    <section className="section-padding bg-card">
+      <div className="container-tight">
+        <AnimatedSection className="mx-auto max-w-3xl text-center">
+          <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
+            Une direction claire pour faire avancer votre projet.
+          </h2>
+          <p className="mt-5 text-muted-foreground leading-relaxed">
+            Une communication efficace ne repose pas seulement sur de beaux supports.
+            Elle demande une organisation, des messages cohérents, des partenaires
+            adaptés et une vision globale. Mon rôle est de comprendre votre projet,
+            de structurer les étapes et de coordonner les solutions nécessaires à sa
+            réalisation.
+          </p>
+        </AnimatedSection>
+
+        <div className="mt-14 grid gap-6 md:grid-cols-3">
+          {pillars.map((pillar, i) => {
+            const Icon = pillar.icon;
+            return (
+              <AnimatedSection key={pillar.title} delay={i * 0.1}>
+                <div className="h-full rounded-2xl border border-border bg-background p-8">
+                  <div className="inline-flex rounded-xl bg-muted p-3">
+                    <Icon size={22} className="text-primary" />
+                  </div>
+                  <h3 className="mt-5 font-display text-xl font-semibold text-foreground">
+                    {pillar.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                    {pillar.text}
+                  </p>
+                </div>
+              </AnimatedSection>
+            );
+          })}
+        </div>
+
+        <AnimatedSection delay={0.3}>
+          <p className="mt-10 text-center text-sm italic text-muted-foreground">
+            La création graphique, audio ou vidéo peut être proposée ponctuellement
+            selon les besoins.
+          </p>
+        </AnimatedSection>
+      </div>
+    </section>
+  );
+}
+
+function Services() {
+  return (
+    <section id="services" className="section-padding bg-background">
+      <div className="container-tight">
+        <AnimatedSection className="mx-auto max-w-2xl text-center">
+          <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
+            Des services simples et adaptables
+          </h2>
+          <p className="mt-4 text-muted-foreground">
+            Les tarifs affichés sont des estimations. Le prix final dépend de la
+            durée, de la complexité, du temps nécessaire et des besoins précis du
+            projet. Chaque mission peut être adaptée et négociée avec le client.
+          </p>
+        </AnimatedSection>
+
+        <div className="mt-12 grid gap-6 md:grid-cols-2">
+          {mainServices.map((s, i) => (
+            <AnimatedSection key={s.title} delay={i * 0.08}>
+              <article
+                className={`flex h-full flex-col rounded-2xl border p-8 transition-shadow hover:shadow-md ${
+                  s.highlight
+                    ? "border-primary bg-card"
+                    : "border-border bg-card"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <h3 className="font-display text-xl font-semibold text-foreground">
+                    {s.title}
+                  </h3>
+                  {s.highlight && (
+                    <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                      Pack global
+                    </span>
+                  )}
+                </div>
+                <p className="mt-2 font-display text-lg font-semibold text-primary">
+                  {s.price}
+                </p>
+                <p className="mt-4 text-sm text-muted-foreground">{s.intro}</p>
+                <ul className="mt-5 space-y-2">
+                  {s.items.map((item) => (
+                    <li
+                      key={item}
+                      className="flex items-start gap-2 text-sm text-foreground"
+                    >
+                      <Check
+                        size={16}
+                        className="mt-0.5 shrink-0 text-primary"
+                      />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                {s.note && (
+                  <p className="mt-5 text-xs italic text-muted-foreground">
+                    {s.note}
+                  </p>
+                )}
+              </article>
+            </AnimatedSection>
+          ))}
+        </div>
+
+        <AnimatedSection delay={0.2} className="mt-14">
+          <div className="rounded-2xl border border-border bg-muted/40 p-8 md:p-10">
+            <h3 className="font-display text-2xl font-bold text-foreground">
+              Services complémentaires
+            </h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Ils peuvent être réalisés seuls ou intégrés dans une mission globale.
+              Ils ne constituent pas le cœur principal de l'activité.
+            </p>
+            <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {extraServices.map((e) => (
+                <li
+                  key={e.label}
+                  className="flex flex-col gap-1 rounded-xl bg-card p-4 border border-border"
+                >
+                  <span className="text-sm font-medium text-foreground">
+                    {e.label}
+                  </span>
+                  <span className="text-xs text-primary">{e.price}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-6 text-xs italic text-muted-foreground">
+              Les frais de publicité, d'impression, de déplacement, de logiciels
+              spécifiques ou de prestataires extérieurs ne sont pas automatiquement
+              inclus. Ils sont présentés et validés avec le client avant toute dépense.
+            </p>
+          </div>
+        </AnimatedSection>
+
+        <AnimatedSection delay={0.3} className="mt-10 text-center">
+          <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
+            Mon activité repose d'abord sur la gestion de projet, le conseil en
+            communication et la rédaction. Je peux également réaliser ponctuellement
+            certains supports ou coordonner leur création avec des professionnels
+            spécialisés.
+          </p>
+        </AnimatedSection>
+      </div>
+    </section>
+  );
+}
+
+function About() {
+  return (
+    <section id="a-propos" className="section-padding bg-card">
+      <div className="container-tight">
+        <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr]">
+          <AnimatedSection>
+            <span className="text-xs font-semibold uppercase tracking-widest text-primary">
+              À propos
+            </span>
+            <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
+              À propos d'Angel Leclerc
+            </h2>
+            <div className="mt-6 space-y-4 text-muted-foreground leading-relaxed">
+              <p>
+                Je développe Angel Leclerc Communication avec une idée simple :
+                aider les projets à trouver une direction claire, une organisation
+                efficace et les bonnes personnes pour avancer.
+              </p>
+              <p>
+                Mon activité principale est centrée sur la gestion de projets de
+                communication. J'accompagne les clients dans la préparation,
+                l'organisation et le suivi de leurs actions, tout en veillant à la
+                cohérence générale du projet.
+              </p>
+              <p>
+                J'interviens également dans le conseil en communication — plans de
+                communication, stratégie de marque et stratégie de contenu — et la
+                rédaction éditoriale et journalistique. Je peux enfin réaliser
+                ponctuellement certains supports visuels, audio ou vidéo, ou
+                coordonner les bons prestataires quand la mission demande une
+                compétence plus spécialisée.
+              </p>
+            </div>
           </AnimatedSection>
 
-          <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {latestPosts.map((post, index) => (
-              <AnimatedSection key={post.slug} delay={index * 0.1}>
-                <BlogCard post={post} />
+          <AnimatedSection delay={0.1}>
+            <div className="rounded-2xl border border-border bg-background p-8">
+              <h3 className="font-display text-xl font-semibold text-foreground">
+                Parcours
+              </h3>
+              <div className="mt-4 space-y-4 text-sm leading-relaxed text-muted-foreground">
+                <p>
+                  Mon parcours mêle accueil, tourisme, communication, engagement
+                  associatif, scoutisme et création de projets. Ces expériences
+                  m'ont appris à écouter, expliquer, organiser, travailler avec
+                  différents publics et coordonner des actions collectives.
+                </p>
+                <p>
+                  Mon expérience dans le tourisme et l'accueil m'a également permis
+                  de développer une bonne compréhension des besoins du public, de la
+                  valorisation d'un territoire et de la transmission d'informations.
+                </p>
+                <p>
+                  Je poursuis le développement de mes compétences en communication,
+                  rédaction et journalisme afin de professionnaliser continuellement
+                  mes méthodes.
+                </p>
+              </div>
+            </div>
+          </AnimatedSection>
+        </div>
+
+        <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {values.map((v, i) => {
+            const Icon = v.icon;
+            return (
+              <AnimatedSection key={v.title} delay={i * 0.08}>
+                <div className="h-full rounded-2xl border border-border bg-background p-6">
+                  <Icon size={22} className="text-primary" />
+                  <h3 className="mt-4 font-display text-base font-semibold text-foreground">
+                    {v.title}
+                  </h3>
+                  <p className="mt-2 text-sm text-muted-foreground">{v.text}</p>
+                </div>
+              </AnimatedSection>
+            );
+          })}
+        </div>
+
+        <div className="mt-16">
+          <AnimatedSection>
+            <h3 className="font-display text-2xl font-bold text-foreground">
+              Comment se déroule une mission ?
+            </h3>
+          </AnimatedSection>
+          <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {steps.map((step, i) => (
+              <AnimatedSection key={step.n} delay={i * 0.08}>
+                <div className="h-full rounded-2xl border border-border bg-background p-6">
+                  <span className="font-display text-3xl font-bold text-primary">
+                    {step.n}
+                  </span>
+                  <h4 className="mt-4 font-display text-lg font-semibold text-foreground">
+                    {step.title}
+                  </h4>
+                  <p className="mt-2 text-sm text-muted-foreground">{step.text}</p>
+                </div>
               </AnimatedSection>
             ))}
           </div>
+          <AnimatedSection delay={0.3}>
+            <p className="mt-6 text-sm italic text-muted-foreground max-w-3xl">
+              Le projet est construit avec le client. Les orientations, contenus et
+              adaptations importantes sont présentés progressivement afin de
+              conserver un fonctionnement clair et souple.
+            </p>
+          </AnimatedSection>
         </div>
-      </section>
-    </div>
+
+        <div className="mt-16 grid gap-6 md:grid-cols-2">
+          <AnimatedSection>
+            <div className="h-full rounded-2xl border border-border bg-background p-8">
+              <h3 className="font-display text-xl font-semibold text-foreground">
+                Un fonctionnement clair
+              </h3>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
+                <p>
+                  Le paiement peut être réparti en deux versements : un premier
+                  versement avant le début de la mission, puis un second à la fin.
+                </p>
+                <p>
+                  Le premier versement permet de couvrir le lancement du projet, le
+                  temps de travail engagé, les logiciels, les outils et les
+                  éventuels frais nécessaires.
+                </p>
+                <p>
+                  Les montants et modalités sont convenus avec le client puis
+                  confirmés sur le devis ou la facture. Les paiements sont traités
+                  via Revolut Business.
+                </p>
+              </div>
+            </div>
+          </AnimatedSection>
+          <AnimatedSection delay={0.1}>
+            <div className="h-full rounded-2xl border border-border bg-background p-8">
+              <h3 className="font-display text-xl font-semibold text-foreground">
+                Satisfait ou remboursé
+              </h3>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
+                <p>
+                  En cas d'insatisfaction, contactez-moi afin que des corrections
+                  ou une solution adaptée puissent être recherchées.
+                </p>
+                <p>
+                  Si la prestation ne correspond manifestement pas à ce qui avait
+                  été convenu et qu'aucune correction satisfaisante n'est possible,
+                  un remboursement total ou partiel peut être effectué selon la
+                  situation.
+                </p>
+                <p className="text-xs italic">
+                  Les prestations de conseil et de communication sont soumises à
+                  une obligation de moyens et non de résultat lorsque les
+                  résultats dépendent de facteurs extérieurs.
+                </p>
+              </div>
+            </div>
+          </AnimatedSection>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Contact() {
+  return (
+    <section id="contact" className="section-padding bg-background">
+      <div className="container-tight">
+        <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr]">
+          <AnimatedSection>
+            <span className="text-xs font-semibold uppercase tracking-widest text-primary">
+              Contact et réalisations
+            </span>
+            <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
+              Parlons de votre projet
+            </h2>
+            <p className="mt-4 text-muted-foreground leading-relaxed">
+              Vous pouvez me présenter votre projet même s'il n'est pas encore
+              totalement défini. Un premier échange permettra de clarifier vos
+              besoins, vos priorités et les solutions possibles.
+            </p>
+
+            <div className="mt-8 space-y-4">
+              <a
+                href="mailto:contact@angel-leclerc.fr"
+                className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary"
+              >
+                <Mail size={20} className="text-primary shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground">
+                    Email
+                  </p>
+                  <p className="truncate font-medium text-foreground">
+                    contact@angel-leclerc.fr
+                  </p>
+                </div>
+              </a>
+              <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
+                <MapPin size={20} className="text-primary shrink-0" />
+                <div>
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground">
+                    Adresse
+                  </p>
+                  <p className="font-medium text-foreground">
+                    25 Grande Rue, 03110 Broût-Vernet, France
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 rounded-xl border border-border bg-card p-6">
+              <h3 className="font-display text-lg font-semibold text-foreground">
+                Découvrir mes réalisations
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                Mes réalisations comprennent des projets de gestion et conseil en
+                communication, des plans de communication, des travaux
+                rédactionnels, des articles, des identités visuelles, des affiches,
+                des présentations et différents supports numériques. Une sélection
+                de travaux peut être envoyée directement sur demande.
+              </p>
+              <Button
+                asChild
+                className="mt-5 bg-primary text-primary-foreground hover:bg-accent"
+              >
+                <a href="mailto:contact@angel-leclerc.fr?subject=Demande%20de%20portfolio%20-%20Angel%20Leclerc%20Communication">
+                  Demander mon portfolio
+                  <ArrowRight size={16} className="ml-2" />
+                </a>
+              </Button>
+            </div>
+          </AnimatedSection>
+
+          <AnimatedSection delay={0.1}>
+            <ContactForm />
+          </AnimatedSection>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const needTypes = [
+  "Gestion complète d'un projet",
+  "Conseil express",
+  "Stratégie de communication",
+  "Rédaction éditoriale ou journalistique",
+  "Recherche de partenaires",
+  "Coordination de prestataires",
+  "Création ponctuelle d'un support",
+  "Autre demande",
+];
+
+function ContactForm() {
+  const [sent, setSent] = useState(false);
+  const [need, setNeed] = useState("");
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // Honeypot check
+    const form = e.currentTarget;
+    const hp = (form.elements.namedItem("website") as HTMLInputElement)?.value;
+    if (hp) return;
+    setSent(true);
+  };
+
+  if (sent) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center rounded-2xl border border-border bg-card p-10 text-center">
+        <div className="rounded-full bg-primary/10 p-4">
+          <Check size={28} className="text-primary" />
+        </div>
+        <h3 className="mt-6 font-display text-2xl font-bold text-foreground">
+          Message bien reçu
+        </h3>
+        <p className="mt-3 max-w-sm text-sm text-muted-foreground">
+          Merci pour votre message. Je reviens vers vous rapidement pour discuter
+          de votre projet.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="rounded-2xl border border-border bg-card p-6 md:p-8"
+    >
+      {/* honeypot */}
+      <input
+        type="text"
+        name="website"
+        tabIndex={-1}
+        autoComplete="off"
+        className="hidden"
+        aria-hidden="true"
+      />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="firstname">Prénom *</Label>
+          <Input id="firstname" name="firstname" required maxLength={80} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="lastname">Nom *</Label>
+          <Input id="lastname" name="lastname" required maxLength={80} />
+        </div>
+      </div>
+      <div className="mt-4 space-y-2">
+        <Label htmlFor="org">Entreprise, association ou organisation</Label>
+        <Input id="org" name="org" maxLength={120} />
+      </div>
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="email">E-mail *</Label>
+          <Input id="email" name="email" type="email" required maxLength={160} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="phone">Téléphone</Label>
+          <Input id="phone" name="phone" type="tel" maxLength={30} />
+        </div>
+      </div>
+      <div className="mt-4 space-y-2">
+        <Label>Type de besoin *</Label>
+        <Select value={need} onValueChange={setNeed} required>
+          <SelectTrigger>
+            <SelectValue placeholder="Sélectionner un type" />
+          </SelectTrigger>
+          <SelectContent>
+            {needTypes.map((t) => (
+              <SelectItem key={t} value={t}>
+                {t}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="budget">Budget estimé (facultatif)</Label>
+          <Input id="budget" name="budget" placeholder="ex. 300 €" maxLength={40} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="date">Date souhaitée</Label>
+          <Input id="date" name="date" type="date" />
+        </div>
+      </div>
+      <div className="mt-4 space-y-2">
+        <Label htmlFor="message">Description du projet *</Label>
+        <Textarea
+          id="message"
+          name="message"
+          required
+          rows={5}
+          maxLength={2000}
+          placeholder="Présentez votre projet, vos objectifs et vos contraintes."
+        />
+      </div>
+      <p className="mt-3 text-xs text-muted-foreground">
+        Vous pouvez également joindre un document en réponse à mon premier
+        message.
+      </p>
+      <Button
+        type="submit"
+        size="lg"
+        className="mt-6 w-full bg-primary text-primary-foreground hover:bg-accent"
+      >
+        Envoyer le message
+        <ArrowRight size={18} className="ml-2" />
+      </Button>
+    </form>
   );
 }

@@ -1,66 +1,92 @@
-import { Link } from "@tanstack/react-router";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin } from "lucide-react";
 
-const footerLinks = [
-  { to: "/services", label: "Services" },
-  { to: "/blog", label: "Blog" },
-  { to: "/about", label: "À propos" },
-  { to: "/contact", label: "Contact" },
+const navLinks = [
+  { href: "#accueil", label: "Accueil" },
+  { href: "#services", label: "Services" },
+  { href: "#a-propos", label: "À propos" },
+  { href: "#contact", label: "Contact" },
 ];
 
 export function Footer() {
   return (
-    <footer className="w-full border-t border-border bg-background">
+    <footer className="w-full border-t border-border bg-card">
       <div className="container-tight py-16">
-        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
-          <div className="lg:col-span-2">
-            <Link to="/" className="font-display text-xl font-bold tracking-tight text-foreground">
-              Conseil & Création
-            </Link>
-            <p className="mt-4 max-w-sm text-sm text-muted-foreground">
-              Accompagnement sur mesure pour entreprises et entrepreneurs. Stratégie, design et développement au service de vos projets.
+        <div className="grid gap-10 md:grid-cols-3">
+          <div>
+            <p className="font-display text-lg font-bold tracking-tight text-foreground">
+              Angel Leclerc <span className="text-primary">Communication</span>
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Gestion de projet · Conseil · Rédaction
+            </p>
+            <p className="mt-6 text-sm italic text-muted-foreground">
+              Donner du souffle à vos idées.
             </p>
           </div>
 
           <div>
-            <h3 className="font-display font-semibold text-foreground">Navigation</h3>
+            <h3 className="font-display text-sm font-semibold uppercase tracking-wide text-foreground">
+              Navigation
+            </h3>
             <ul className="mt-4 space-y-2">
-              {footerLinks.map((link) => (
-                <li key={link.to}>
-                  <Link
-                    to={link.to}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              {navLinks.map((link) => (
+                <li key={link.href}>
+                  <a
+                    href={link.href}
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {link.label}
-                  </Link>
+                  </a>
                 </li>
               ))}
             </ul>
           </div>
 
           <div>
-            <h3 className="font-display font-semibold text-foreground">Contact</h3>
-            <ul className="mt-4 space-y-3">
-              <li className="flex items-start gap-3 text-sm text-muted-foreground">
-                <Mail size={16} className="mt-0.5 text-primary" />
-                <span>contact@exemple.fr</span>
+            <h3 className="font-display text-sm font-semibold uppercase tracking-wide text-foreground">
+              Coordonnées
+            </h3>
+            <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
+              <li className="flex items-start gap-3">
+                <Mail size={16} className="mt-0.5 shrink-0 text-primary" />
+                <a
+                  href="mailto:contact@angel-leclerc.fr"
+                  className="hover:text-foreground transition-colors break-all"
+                >
+                  contact@angel-leclerc.fr
+                </a>
               </li>
-              <li className="flex items-start gap-3 text-sm text-muted-foreground">
-                <Phone size={16} className="mt-0.5 text-primary" />
-                <span>06 12 34 56 78</span>
-              </li>
-              <li className="flex items-start gap-3 text-sm text-muted-foreground">
-                <MapPin size={16} className="mt-0.5 text-primary" />
-                <span>Paris, France</span>
+              <li className="flex items-start gap-3">
+                <MapPin size={16} className="mt-0.5 shrink-0 text-primary" />
+                <span>
+                  25 Grande Rue<br />
+                  03110 Broût-Vernet, France
+                </span>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-12 border-t border-border pt-8 text-center md:text-left">
-          <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Conseil & Création. Tous droits réservés.
+        <div className="mt-12 border-t border-border pt-8 text-xs leading-relaxed text-muted-foreground">
+          <p className="font-medium text-foreground">
+            Angel Leclerc — Entrepreneur individuel
           </p>
+          <p className="mt-2">
+            SIREN : 106 487 192 · SIRET : 106 487 192 00010 · Code APE : 7021Z — Conseil en relations
+            publiques et communication
+          </p>
+          <p className="mt-1">
+            TVA non applicable, article 293 B du Code général des impôts.
+          </p>
+          <p className="mt-1">
+            Paiements traités via Revolut Business.
+          </p>
+          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p>
+              © {new Date().getFullYear()} Angel Leclerc Communication. Tous droits réservés.
+            </p>
+            <p className="text-muted-foreground/80">Mentions légales · Politique de confidentialité</p>
+          </div>
         </div>
       </div>
     </footer>
