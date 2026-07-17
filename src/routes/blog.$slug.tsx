@@ -104,7 +104,7 @@ function BlogPostPage() {
 
         <AnimatedSection delay={0.2} className="mt-10">
           <div className="prose prose-lg max-w-none prose-headings:font-display prose-headings:text-foreground prose-p:text-muted-foreground prose-strong:text-foreground prose-a:text-primary hover:prose-a:text-primary/80">
-            {post.content.split("\n\n").map((paragraph, index) => {
+            {post.content.split("\n\n").map((paragraph: string, index: number) => {
               if (paragraph.startsWith("## ")) {
                 return (
                   <h2 key={index} className="font-display text-2xl font-bold text-foreground mt-10 mb-4">
