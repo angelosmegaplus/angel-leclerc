@@ -373,9 +373,14 @@ function Services() {
                 }`}
               >
                 <div className="flex items-start justify-between gap-4">
-                  <h3 className="font-display text-xl font-semibold text-foreground">
-                    {s.title}
-                  </h3>
+                  <div className="flex items-start gap-3">
+                    <div className="inline-flex shrink-0 rounded-xl bg-muted p-2.5">
+                      <s.icon size={20} className="text-primary" />
+                    </div>
+                    <h3 className="font-display text-xl font-semibold text-foreground">
+                      {s.title}
+                    </h3>
+                  </div>
                   {s.highlight && (
                     <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
                       Pack global
@@ -420,17 +425,25 @@ function Services() {
               Ils ne constituent pas le cœur principal de l'activité.
             </p>
             <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {extraServices.map((e) => (
-                <li
-                  key={e.label}
-                  className="flex flex-col gap-1 rounded-xl bg-card p-4 border border-border"
-                >
-                  <span className="text-sm font-medium text-foreground">
-                    {e.label}
-                  </span>
-                  <span className="text-xs text-primary">{e.price}</span>
-                </li>
-              ))}
+              {extraServices.map((e) => {
+                const Icon = e.icon;
+                return (
+                  <li
+                    key={e.label}
+                    className="flex items-start gap-3 rounded-xl bg-card p-4 border border-border"
+                  >
+                    <div className="inline-flex shrink-0 rounded-lg bg-muted p-2">
+                      <Icon size={16} className="text-primary" />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-sm font-medium text-foreground">
+                        {e.label}
+                      </span>
+                      <span className="text-xs text-primary">{e.price}</span>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
             <p className="mt-6 text-xs italic text-muted-foreground">
               Les frais de publicité, d'impression, de déplacement, de logiciels
