@@ -15,6 +15,18 @@ import {
   Users,
   Repeat,
   CreditCard,
+  MessageCircle,
+  Briefcase,
+  PenLine,
+  Image as ImageIcon,
+  Video,
+  FileImage,
+  Presentation,
+  Palette,
+  Handshake,
+  Network,
+  Radio,
+  Wand2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedSection } from "@/components/AnimatedSection";
@@ -92,6 +104,7 @@ const pillars = [
 
 const mainServices = [
   {
+    icon: MessageCircle,
     title: "Conseil express",
     price: "À partir de 40 €",
     intro:
@@ -104,6 +117,7 @@ const mainServices = [
     ],
   },
   {
+    icon: Compass,
     title: "Stratégie de communication",
     price: "À partir de 150 €",
     intro:
@@ -117,6 +131,7 @@ const mainServices = [
     ],
   },
   {
+    icon: FileText,
     title: "Rédaction éditoriale et journalistique",
     price: "À partir de 50 €",
     intro: "Pour rédiger un contenu clair, structuré et adapté au public.",
@@ -129,6 +144,7 @@ const mainServices = [
     note: "Le tarif dépend de la longueur, du niveau de recherche, du nombre d'entretiens, du travail de réécriture et du délai demandé.",
   },
   {
+    icon: Briefcase,
     title: "Gestion complète d'un projet",
     price: "À partir de 300 €",
     highlight: true,
@@ -147,15 +163,15 @@ const mainServices = [
 ];
 
 const extraServices = [
-  { label: "Rédaction d'un texte court ou publication", price: "à partir de 30 €" },
-  { label: "Création d'un visuel simple", price: "à partir de 35 €" },
-  { label: "Montage d'une vidéo courte", price: "à partir de 50 €" },
-  { label: "Affiche ou flyer", price: "à partir de 60 €" },
-  { label: "Présentation ou document professionnel", price: "à partir de 70 €" },
-  { label: "Identité visuelle simple", price: "à partir de 150 €" },
-  { label: "Recherche de partenaires", price: "sur devis" },
-  { label: "Recherche et coordination de prestataires", price: "sur devis" },
-  { label: "Production audio, vidéo ou numérique", price: "sur devis" },
+  { icon: PenLine, label: "Rédaction d'un texte court ou publication", price: "à partir de 30 €" },
+  { icon: ImageIcon, label: "Création d'un visuel simple", price: "à partir de 35 €" },
+  { icon: Video, label: "Montage d'une vidéo courte", price: "à partir de 50 €" },
+  { icon: FileImage, label: "Affiche ou flyer", price: "à partir de 60 €" },
+  { icon: Presentation, label: "Présentation ou document professionnel", price: "à partir de 70 €" },
+  { icon: Palette, label: "Identité visuelle simple", price: "à partir de 150 €" },
+  { icon: Handshake, label: "Recherche de partenaires", price: "sur devis" },
+  { icon: Network, label: "Recherche et coordination de prestataires", price: "sur devis" },
+  { icon: Radio, label: "Production audio, vidéo ou numérique", price: "sur devis" },
 ];
 
 const values = [
