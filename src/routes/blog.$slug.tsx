@@ -128,7 +128,7 @@ function BlogPostPage() {
                 }
                 return (
                   <p key={index} className="leading-relaxed">
-                    {p}
+                    {renderInlineBold(p)}
                   </p>
                 );
               })}
