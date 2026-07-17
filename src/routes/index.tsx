@@ -618,70 +618,45 @@ function Contact() {
           </p>
         </AnimatedSection>
 
-        <div className="mt-10 grid gap-4 md:grid-cols-2">
-          <AnimatedSection>
-            <a
-              href="mailto:contact@angel-leclerc.fr"
-              className="flex h-full items-center gap-3 rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary"
+        <AnimatedSection delay={0.05} className="mt-10">
+          <div className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row">
+            <Button
+              asChild
+              size="lg"
+              className="flex-1 bg-primary text-primary-foreground hover:bg-accent"
             >
-              <Mail size={20} className="text-primary shrink-0" />
-              <div className="min-w-0">
-                <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                  Email
-                </p>
-                <p className="truncate font-medium text-foreground">
-                  contact@angel-leclerc.fr
-                </p>
-              </div>
-            </a>
-          </AnimatedSection>
-          <AnimatedSection delay={0.05}>
-            <a
-              href="tel:+33601766978"
-              className="flex h-full items-center gap-3 rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary"
+              <a href="tel:+33601766978">
+                <Phone size={18} className="mr-2" />
+                Appeler — 06 01 76 69 78
+              </a>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="flex-1 border-foreground/20 bg-transparent text-foreground hover:bg-muted"
             >
-              <Phone size={20} className="text-primary shrink-0" />
-              <div className="min-w-0">
-                <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                  Téléphone
-                </p>
-                <p className="font-medium text-foreground">06 01 76 69 78</p>
-              </div>
-            </a>
-          </AnimatedSection>
-          <AnimatedSection delay={0.1}>
-            <div className="flex h-full items-start gap-3 rounded-xl border border-border bg-card p-5">
-              <MapPin size={20} className="mt-0.5 text-primary shrink-0" />
-              <div>
-                <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                  Siège de l'entreprise
-                </p>
-                <p className="font-medium text-foreground">
-                  25 Grande Rue<br />
-                  03110 Broût-Vernet, France
-                </p>
-              </div>
+              <a href="mailto:contact@angel-leclerc.fr">
+                <Mail size={18} className="mr-2" />
+                Envoyer un e-mail
+              </a>
+            </Button>
+          </div>
+        </AnimatedSection>
+
+        <AnimatedSection delay={0.1} className="mt-10">
+          <div className="mx-auto max-w-xl rounded-xl border border-border bg-card p-5 text-center">
+            <div className="flex items-center justify-center gap-2 text-primary">
+              <MapPin size={18} />
+              <p className="text-xs font-semibold uppercase tracking-widest">
+                Siège de l'entreprise
+              </p>
             </div>
-          </AnimatedSection>
-          <AnimatedSection delay={0.15}>
-            <div className="flex h-full items-start gap-3 rounded-xl border border-border bg-card p-5">
-              <MapPin size={20} className="mt-0.5 text-primary shrink-0" />
-              <div>
-                <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                  Adresse courrier
-                </p>
-                <p className="font-medium text-foreground">
-                  CIAS<br />
-                  4b rue Stéphane Hessel<br />
-                  24200 Sarlat-la-Canéda, France
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Pour l'envoi de courriers en dehors du siège de l'entreprise.
-                </p>
-              </div>
-            </div>
-          </AnimatedSection>
-        </div>
+            <p className="mt-2 font-medium text-foreground">
+              25 Grande Rue, 03110 Broût-Vernet, France
+            </p>
+          </div>
+        </AnimatedSection>
 
         <AnimatedSection delay={0.2} className="mt-10">
           <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
@@ -708,67 +683,21 @@ function Contact() {
         </AnimatedSection>
 
         <AnimatedSection delay={0.25} className="mt-16">
-          <div className="rounded-2xl border border-border bg-card p-6 md:p-10">
+          <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
             <div className="flex items-center gap-3">
               <div className="inline-flex rounded-xl bg-muted p-3">
-                <CreditCard size={22} className="text-primary" />
+                <CreditCard size={20} className="text-primary" />
               </div>
-              <h3 className="font-display text-2xl font-bold text-foreground">
+              <h3 className="font-display text-xl font-bold text-foreground md:text-2xl">
                 Modalités de paiement
               </h3>
             </div>
-            <div className="mt-6 space-y-4 text-sm leading-relaxed text-muted-foreground">
-              <p>
-                Le règlement des prestations s'effectue au moyen de factures émises
-                depuis le compte professionnel Revolut d'Angel Leclerc Communication.
-              </p>
-              <p>
-                Pour chaque versement, le client reçoit une facture accompagnée d'un
-                lien vers une page de paiement sécurisée hébergée par Revolut
-                Business. Selon les options proposées, le règlement peut être
-                effectué par carte bancaire de débit ou de crédit, Apple Pay,
-                Google Pay, Revolut Pay ou virement bancaire. Plusieurs devises
-                peuvent être prises en charge.
-              </p>
-              <div>
-                <p className="font-medium text-foreground">
-                  Le paiement est organisé en deux étapes :
-                </p>
-                <ul className="mt-3 space-y-2">
-                  <li className="flex items-start gap-2">
-                    <Check size={16} className="mt-0.5 shrink-0 text-primary" />
-                    <span>
-                      un premier versement obligatoire avant le début de la mission ;
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check size={16} className="mt-0.5 shrink-0 text-primary" />
-                    <span>
-                      un second versement à la fin de la prestation, lorsque le
-                      client est satisfait du travail réalisé.
-                    </span>
-                  </li>
-                </ul>
-              </div>
-              <p>
-                Le premier versement confirme la commande et permet de couvrir le
-                lancement du projet, le temps de travail engagé, l'utilisation des
-                logiciels, les outils nécessaires ainsi que les éventuels frais
-                liés à la mission. Le travail commence après réception de ce
-                premier règlement.
-              </p>
-              <p>
-                À la fin de la prestation, une seconde facture Revolut est envoyée
-                au client pour le règlement final. En cas d'insatisfaction, le
-                client est invité à me contacter avant ce second paiement afin que
-                des corrections ou une solution adaptée puissent être recherchées.
-              </p>
-              <p>
-                Les montants, les échéances et les éventuelles conditions
-                particulières sont convenus avec le client avant le lancement du
-                projet.
-              </p>
-            </div>
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+              Facturation via Revolut Business, avec un lien de paiement sécurisé.
+              Règlement en deux fois : un premier versement avant le lancement, un
+              second à la fin de la prestation.
+            </p>
+            <PaymentLogos />
           </div>
         </AnimatedSection>
       </div>
