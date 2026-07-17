@@ -13,30 +13,37 @@ export const Route = createFileRoute("/blog/$slug")({
     }
     return post;
   },
-  head: ({ loaderData }) => ({
-    meta: [
-      { title: `${loaderData.title} — Conseil & Création` },
-      { name: "description", content: loaderData.excerpt },
-      { property: "og:title", content: loaderData.title },
-      { property: "og:description", content: loaderData.excerpt },
-      { property: "og:type", content: "article" },
-      { property: "og:url", content: `/blog/${loaderData.slug}` },
-    ],
-    links: [{ rel: "canonical", href: `/blog/${loaderData.slug}` }],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Article",
-          headline: loaderData.title,
-          description: loaderData.excerpt,
-          datePublished: loaderData.date,
-          author: { "@type": "Organization", name: "Conseil & Création" },
-        }),
-      },
-    ],
-  }),
+  head: ({ loaderData }) => {
+    if (!loaderData) {
+      return {
+        meta: [{ title: "Article introuvable — Conseil & Création" }, { name: "robots", content: "noindex" }],
+      };
+    }
+    return {
+      meta: [
+        { title: `${loaderData.title} — Conseil & Création` },
+        { name: "description", content: loaderData.excerpt },
+        { property: "og:title", content: loaderData.title },
+        { property: "og:description", content: loaderData.excerpt },
+        { property: "og:type", content: "article" },
+        { property: "og:url", content: `/blog/${loaderData.slug}` },
+      ],
+      links: [{ rel: "canonical", href: `/blog/${loaderData.slug}` }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: loaderData.title,
+            description: loaderData.excerpt,
+            datePublished: loaderData.date,
+            author: { "@type": "Organization", name: "Conseil & Création" },
+          }),
+        },
+      ],
+    };
+  },
   notFoundComponent: PostNotFound,
   component: BlogPostPage,
 });
