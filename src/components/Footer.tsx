@@ -1,10 +1,11 @@
 import { Mail, MapPin, Phone } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 const navLinks = [
-  { href: "#accueil", label: "Accueil" },
-  { href: "#services", label: "Services" },
-  { href: "#a-propos", label: "À propos" },
-  { href: "#contact", label: "Contact" },
+  { href: "/#accueil", label: "Accueil" },
+  { href: "/#services", label: "Services" },
+  { href: "/#a-propos", label: "À propos" },
+  { href: "/#contact", label: "Contact" },
 ];
 
 export function Footer() {
@@ -102,7 +103,21 @@ export function Footer() {
             <p>
               © {new Date().getFullYear()} Angel Leclerc Communication. Tous droits réservés.
             </p>
-            <p className="text-muted-foreground/80">Mentions légales · Politique de confidentialité</p>
+            <p className="flex flex-wrap gap-x-2 gap-y-1">
+              <Link
+                to="/mentions-legales"
+                className="text-muted-foreground/90 underline-offset-4 transition-colors hover:text-foreground hover:underline"
+              >
+                Mentions légales
+              </Link>
+              <span aria-hidden className="text-muted-foreground/60">·</span>
+              <Link
+                to="/politique-confidentialite"
+                className="text-muted-foreground/90 underline-offset-4 transition-colors hover:text-foreground hover:underline"
+              >
+                Politique de confidentialité
+              </Link>
+            </p>
           </div>
         </div>
       </div>
