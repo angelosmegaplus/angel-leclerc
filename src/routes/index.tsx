@@ -40,7 +40,7 @@ export const Route = createFileRoute("/")({
       {
         property: "og:description",
         content:
-          "Piloter votre communication, structurer vos idées, faire avancer vos projets.",
+          "Gestion de projets de communication, conseil stratégique, rédaction éditoriale et journalistique pour professionnels, associations et porteurs de projets.",
       },
       { property: "og:url", content: "/" },
     ],
