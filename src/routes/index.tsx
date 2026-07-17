@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { useState, type FormEvent } from "react";
 import {
   ArrowRight,
   Check,
@@ -9,23 +8,15 @@ import {
   Layers,
   Mail,
   MapPin,
+  Phone,
   Sparkles,
   Ear,
   Lightbulb,
   Users,
   Repeat,
+  CreditCard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import heroImage from "@/assets/hero-illustration.jpg";
 
