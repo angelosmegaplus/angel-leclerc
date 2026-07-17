@@ -57,18 +57,10 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 md:flex-row">
+        <div className="mt-12 border-t border-border pt-8 text-center md:text-left">
           <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} Conseil & Création. Tous droits réservés.
           </p>
-          <div className="flex gap-6">
-            <Link to="/mentions-legales" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-              Mentions légales
-            </Link>
-            <Link to="/politique-confidentialite" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-              Politique de confidentialité
-            </Link>
-          </div>
         </div>
       </div>
     </footer>
