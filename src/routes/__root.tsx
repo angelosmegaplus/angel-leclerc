@@ -79,10 +79,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Conseil & Création" },
-      { name: "description", content: "Accompagnement sur mesure pour entrepreneurs : conseil, design et web." },
-      { name: "author", content: "Conseil & Création" },
-      { property: "og:site_name", content: "Conseil & Création" },
+      { title: "Angel Leclerc Communication | Gestion de projet, conseil et rédaction" },
+      {
+        name: "description",
+        content:
+          "Gestion de projets de communication, conseil stratégique, rédaction éditoriale et journalistique pour professionnels, associations et porteurs de projets.",
+      },
+      { name: "author", content: "Angel Leclerc Communication" },
+      { property: "og:site_name", content: "Angel Leclerc Communication" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -103,7 +107,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap",
       },
     ],
   }),

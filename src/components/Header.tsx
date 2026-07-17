@@ -1,13 +1,12 @@
-import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navLinks = [
-  { to: "/", label: "Accueil" },
-  { to: "/services", label: "Services" },
-  { to: "/blog", label: "Blog" },
-  { to: "/about", label: "À propos" },
+  { href: "#accueil", label: "Accueil" },
+  { href: "#services", label: "Services" },
+  { href: "#a-propos", label: "À propos" },
+  { href: "#contact", label: "Contact" },
 ];
 
 export function Header() {
@@ -16,29 +15,27 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
       <div className="container-tight flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="font-display text-xl font-bold tracking-tight text-foreground">
-            Conseil & Création
+        <a href="#accueil" className="flex items-center gap-2">
+          <span className="font-display text-lg sm:text-xl font-bold tracking-tight text-foreground">
+            Angel Leclerc <span className="text-primary">Communication</span>
           </span>
-        </Link>
+        </a>
 
         <nav className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              activeProps={{ className: "text-foreground font-medium" }}
-              inactiveProps={{ className: "text-muted-foreground hover:text-foreground" }}
-              className="text-sm transition-colors"
+            <a
+              key={link.href}
+              href={link.href}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               {link.label}
-            </Link>
+            </a>
           ))}
           <Button
             asChild
             className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
-            <Link to="/contact">Me contacter</Link>
+            <a href="#contact">Parler de votre projet</a>
           </Button>
         </nav>
 
@@ -55,21 +52,21 @@ export function Header() {
         <div className="md:hidden border-t border-border bg-background">
           <nav className="container-tight flex flex-col gap-4 py-6">
             {navLinks.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
+              <a
+                key={link.href}
+                href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="text-base text-muted-foreground hover:text-foreground transition-colors"
+                className="text-base py-2 text-foreground hover:text-primary transition-colors"
               >
                 {link.label}
-              </Link>
+              </a>
             ))}
             <Button
               asChild
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={() => setMobileOpen(false)}
             >
-              <Link to="/contact">Me contacter</Link>
+              <a href="#contact">Parler de votre projet</a>
             </Button>
           </nav>
         </div>
