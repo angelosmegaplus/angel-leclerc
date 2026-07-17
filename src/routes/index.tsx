@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { useState, type FormEvent } from "react";
 import {
   ArrowRight,
   Check,
@@ -9,23 +8,15 @@ import {
   Layers,
   Mail,
   MapPin,
+  Phone,
   Sparkles,
   Ear,
   Lightbulb,
   Users,
   Repeat,
+  CreditCard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import heroImage from "@/assets/hero-illustration.jpg";
 
@@ -64,6 +55,7 @@ export const Route = createFileRoute("/")({
           description:
             "Gestion de projets de communication, conseil stratégique et rédaction éditoriale.",
           email: "contact@angel-leclerc.fr",
+          telephone: "+33 6 01 76 69 78",
           address: {
             "@type": "PostalAddress",
             streetAddress: "25 Grande Rue",
@@ -612,207 +604,174 @@ function Contact() {
   return (
     <section id="contact" className="section-padding bg-background">
       <div className="container-tight">
-        <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr]">
-          <AnimatedSection>
-            <span className="text-xs font-semibold uppercase tracking-widest text-primary">
-              Contact et réalisations
-            </span>
-            <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
-              Parlons de votre projet
-            </h2>
-            <p className="mt-4 text-muted-foreground leading-relaxed">
-              Vous pouvez me présenter votre projet même s'il n'est pas encore
-              totalement défini. Un premier échange permettra de clarifier vos
-              besoins, vos priorités et les solutions possibles.
-            </p>
+        <AnimatedSection className="mx-auto max-w-3xl text-center">
+          <span className="text-xs font-semibold uppercase tracking-widest text-primary">
+            Contact et réalisations
+          </span>
+          <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
+            Parlons de votre projet
+          </h2>
+          <p className="mt-4 text-muted-foreground leading-relaxed">
+            Vous pouvez me présenter votre projet même s'il n'est pas encore
+            totalement défini. Un premier échange par mail ou par téléphone permettra
+            de clarifier vos besoins, vos priorités et les solutions possibles.
+          </p>
+        </AnimatedSection>
 
-            <div className="mt-8 space-y-4">
-              <a
-                href="mailto:contact@angel-leclerc.fr"
-                className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary"
-              >
-                <Mail size={20} className="text-primary shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                    Email
-                  </p>
-                  <p className="truncate font-medium text-foreground">
-                    contact@angel-leclerc.fr
-                  </p>
-                </div>
-              </a>
-              <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
-                <MapPin size={20} className="text-primary shrink-0" />
-                <div>
-                  <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                    Adresse
-                  </p>
-                  <p className="font-medium text-foreground">
-                    25 Grande Rue, 03110 Broût-Vernet, France
-                  </p>
-                </div>
+        <div className="mt-10 grid gap-4 md:grid-cols-2">
+          <AnimatedSection>
+            <a
+              href="mailto:contact@angel-leclerc.fr"
+              className="flex h-full items-center gap-3 rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary"
+            >
+              <Mail size={20} className="text-primary shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-widest text-muted-foreground">
+                  Email
+                </p>
+                <p className="truncate font-medium text-foreground">
+                  contact@angel-leclerc.fr
+                </p>
+              </div>
+            </a>
+          </AnimatedSection>
+          <AnimatedSection delay={0.05}>
+            <a
+              href="tel:+33601766978"
+              className="flex h-full items-center gap-3 rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary"
+            >
+              <Phone size={20} className="text-primary shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-widest text-muted-foreground">
+                  Téléphone
+                </p>
+                <p className="font-medium text-foreground">06 01 76 69 78</p>
+              </div>
+            </a>
+          </AnimatedSection>
+          <AnimatedSection delay={0.1}>
+            <div className="flex h-full items-start gap-3 rounded-xl border border-border bg-card p-5">
+              <MapPin size={20} className="mt-0.5 text-primary shrink-0" />
+              <div>
+                <p className="text-xs uppercase tracking-widest text-muted-foreground">
+                  Siège de l'entreprise
+                </p>
+                <p className="font-medium text-foreground">
+                  25 Grande Rue<br />
+                  03110 Broût-Vernet, France
+                </p>
               </div>
             </div>
-
-            <div className="mt-8 rounded-xl border border-border bg-card p-6">
-              <h3 className="font-display text-lg font-semibold text-foreground">
-                Découvrir mes réalisations
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                Mes réalisations comprennent des projets de gestion et conseil en
-                communication, des plans de communication, des travaux
-                rédactionnels, des articles, des identités visuelles, des affiches,
-                des présentations et différents supports numériques. Une sélection
-                de travaux peut être envoyée directement sur demande.
-              </p>
-              <Button
-                asChild
-                className="mt-5 bg-primary text-primary-foreground hover:bg-accent"
-              >
-                <a href="mailto:contact@angel-leclerc.fr?subject=Demande%20de%20portfolio%20-%20Angel%20Leclerc%20Communication">
-                  Demander mon portfolio
-                  <ArrowRight size={16} className="ml-2" />
-                </a>
-              </Button>
+          </AnimatedSection>
+          <AnimatedSection delay={0.15}>
+            <div className="flex h-full items-start gap-3 rounded-xl border border-border bg-card p-5">
+              <MapPin size={20} className="mt-0.5 text-primary shrink-0" />
+              <div>
+                <p className="text-xs uppercase tracking-widest text-muted-foreground">
+                  Adresse courrier
+                </p>
+                <p className="font-medium text-foreground">
+                  CIAS<br />
+                  4b rue Stéphane Hessel<br />
+                  24200 Sarlat-la-Canéda, France
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Pour l'envoi de courriers en dehors du siège de l'entreprise.
+                </p>
+              </div>
             </div>
           </AnimatedSection>
-
-          <AnimatedSection delay={0.1}>
-            <ContactForm />
-          </AnimatedSection>
         </div>
+
+        <AnimatedSection delay={0.2} className="mt-10">
+          <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
+            <h3 className="font-display text-lg font-semibold text-foreground">
+              Découvrir mes réalisations
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              Mes réalisations comprennent des projets de gestion et conseil en
+              communication, des plans de communication, des travaux
+              rédactionnels, des articles, des identités visuelles, des affiches,
+              des présentations et différents supports numériques. Une sélection
+              de travaux peut être envoyée directement sur demande.
+            </p>
+            <Button
+              asChild
+              className="mt-5 bg-primary text-primary-foreground hover:bg-accent"
+            >
+              <a href="mailto:contact@angel-leclerc.fr?subject=Demande%20de%20portfolio%20-%20Angel%20Leclerc%20Communication">
+                Demander mon portfolio
+                <ArrowRight size={16} className="ml-2" />
+              </a>
+            </Button>
+          </div>
+        </AnimatedSection>
+
+        <AnimatedSection delay={0.25} className="mt-16">
+          <div className="rounded-2xl border border-border bg-card p-6 md:p-10">
+            <div className="flex items-center gap-3">
+              <div className="inline-flex rounded-xl bg-muted p-3">
+                <CreditCard size={22} className="text-primary" />
+              </div>
+              <h3 className="font-display text-2xl font-bold text-foreground">
+                Modalités de paiement
+              </h3>
+            </div>
+            <div className="mt-6 space-y-4 text-sm leading-relaxed text-muted-foreground">
+              <p>
+                Le règlement des prestations s'effectue au moyen de factures émises
+                depuis le compte professionnel Revolut d'Angel Leclerc Communication.
+              </p>
+              <p>
+                Pour chaque versement, le client reçoit une facture accompagnée d'un
+                lien vers une page de paiement sécurisée hébergée par Revolut
+                Business. Selon les options proposées, le règlement peut être
+                effectué par carte bancaire de débit ou de crédit, Apple Pay,
+                Google Pay, Revolut Pay ou virement bancaire. Plusieurs devises
+                peuvent être prises en charge.
+              </p>
+              <div>
+                <p className="font-medium text-foreground">
+                  Le paiement est organisé en deux étapes :
+                </p>
+                <ul className="mt-3 space-y-2">
+                  <li className="flex items-start gap-2">
+                    <Check size={16} className="mt-0.5 shrink-0 text-primary" />
+                    <span>
+                      un premier versement obligatoire avant le début de la mission ;
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check size={16} className="mt-0.5 shrink-0 text-primary" />
+                    <span>
+                      un second versement à la fin de la prestation, lorsque le
+                      client est satisfait du travail réalisé.
+                    </span>
+                  </li>
+                </ul>
+              </div>
+              <p>
+                Le premier versement confirme la commande et permet de couvrir le
+                lancement du projet, le temps de travail engagé, l'utilisation des
+                logiciels, les outils nécessaires ainsi que les éventuels frais
+                liés à la mission. Le travail commence après réception de ce
+                premier règlement.
+              </p>
+              <p>
+                À la fin de la prestation, une seconde facture Revolut est envoyée
+                au client pour le règlement final. En cas d'insatisfaction, le
+                client est invité à me contacter avant ce second paiement afin que
+                des corrections ou une solution adaptée puissent être recherchées.
+              </p>
+              <p>
+                Les montants, les échéances et les éventuelles conditions
+                particulières sont convenus avec le client avant le lancement du
+                projet.
+              </p>
+            </div>
+          </div>
+        </AnimatedSection>
       </div>
     </section>
-  );
-}
-
-const needTypes = [
-  "Gestion complète d'un projet",
-  "Conseil express",
-  "Stratégie de communication",
-  "Rédaction éditoriale ou journalistique",
-  "Recherche de partenaires",
-  "Coordination de prestataires",
-  "Création ponctuelle d'un support",
-  "Autre demande",
-];
-
-function ContactForm() {
-  const [sent, setSent] = useState(false);
-  const [need, setNeed] = useState("");
-
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    // Honeypot check
-    const form = e.currentTarget;
-    const hp = (form.elements.namedItem("website") as HTMLInputElement)?.value;
-    if (hp) return;
-    setSent(true);
-  };
-
-  if (sent) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center rounded-2xl border border-border bg-card p-10 text-center">
-        <div className="rounded-full bg-primary/10 p-4">
-          <Check size={28} className="text-primary" />
-        </div>
-        <h3 className="mt-6 font-display text-2xl font-bold text-foreground">
-          Message bien reçu
-        </h3>
-        <p className="mt-3 max-w-sm text-sm text-muted-foreground">
-          Merci pour votre message. Je reviens vers vous rapidement pour discuter
-          de votre projet.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <form
-      onSubmit={handleSubmit}
-      className="rounded-2xl border border-border bg-card p-6 md:p-8"
-    >
-      {/* honeypot */}
-      <input
-        type="text"
-        name="website"
-        tabIndex={-1}
-        autoComplete="off"
-        className="hidden"
-        aria-hidden="true"
-      />
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="firstname">Prénom *</Label>
-          <Input id="firstname" name="firstname" required maxLength={80} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="lastname">Nom *</Label>
-          <Input id="lastname" name="lastname" required maxLength={80} />
-        </div>
-      </div>
-      <div className="mt-4 space-y-2">
-        <Label htmlFor="org">Entreprise, association ou organisation</Label>
-        <Input id="org" name="org" maxLength={120} />
-      </div>
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="email">E-mail *</Label>
-          <Input id="email" name="email" type="email" required maxLength={160} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="phone">Téléphone</Label>
-          <Input id="phone" name="phone" type="tel" maxLength={30} />
-        </div>
-      </div>
-      <div className="mt-4 space-y-2">
-        <Label>Type de besoin *</Label>
-        <Select value={need} onValueChange={setNeed} required>
-          <SelectTrigger>
-            <SelectValue placeholder="Sélectionner un type" />
-          </SelectTrigger>
-          <SelectContent>
-            {needTypes.map((t) => (
-              <SelectItem key={t} value={t}>
-                {t}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="budget">Budget estimé (facultatif)</Label>
-          <Input id="budget" name="budget" placeholder="ex. 300 €" maxLength={40} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="date">Date souhaitée</Label>
-          <Input id="date" name="date" type="date" />
-        </div>
-      </div>
-      <div className="mt-4 space-y-2">
-        <Label htmlFor="message">Description du projet *</Label>
-        <Textarea
-          id="message"
-          name="message"
-          required
-          rows={5}
-          maxLength={2000}
-          placeholder="Présentez votre projet, vos objectifs et vos contraintes."
-        />
-      </div>
-      <p className="mt-3 text-xs text-muted-foreground">
-        Vous pouvez également joindre un document en réponse à mon premier
-        message.
-      </p>
-      <Button
-        type="submit"
-        size="lg"
-        className="mt-6 w-full bg-primary text-primary-foreground hover:bg-accent"
-      >
-        Envoyer le message
-        <ArrowRight size={18} className="ml-2" />
-      </Button>
-    </form>
   );
 }

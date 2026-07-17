@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import logo from "@/assets/logo.png";
 
 const navLinks = [
   { href: "#accueil", label: "Accueil" },
@@ -15,8 +16,15 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
       <div className="container-tight flex h-16 items-center justify-between">
-        <a href="#accueil" className="flex items-center gap-2">
-          <span className="font-display text-lg sm:text-xl font-bold tracking-tight text-foreground">
+        <a href="#accueil" className="flex items-center gap-3">
+          <img
+            src={logo}
+            alt="Logo Angel Leclerc Communication"
+            className="h-9 w-9 rounded-md object-cover"
+            width={36}
+            height={36}
+          />
+          <span className="font-display text-base sm:text-lg font-bold tracking-tight text-foreground">
             Angel Leclerc <span className="text-primary">Communication</span>
           </span>
         </a>

@@ -1,4 +1,4 @@
-import { Mail, MapPin } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
 
 const navLinks = [
   { href: "#accueil", label: "Accueil" },
@@ -57,10 +57,27 @@ export function Footer() {
                 </a>
               </li>
               <li className="flex items-start gap-3">
+                <Phone size={16} className="mt-0.5 shrink-0 text-primary" />
+                <a
+                  href="tel:+33601766978"
+                  className="hover:text-foreground transition-colors"
+                >
+                  06 01 76 69 78
+                </a>
+              </li>
+              <li className="flex items-start gap-3">
                 <MapPin size={16} className="mt-0.5 shrink-0 text-primary" />
                 <span>
                   25 Grande Rue<br />
                   03110 Broût-Vernet, France
+                </span>
+              </li>
+              <li className="flex items-start gap-3">
+                <MapPin size={16} className="mt-0.5 shrink-0 text-primary" />
+                <span>
+                  <span className="block text-xs uppercase tracking-widest text-muted-foreground/80">Adresse courrier</span>
+                  CIAS, 4b rue Stéphane Hessel<br />
+                  24200 Sarlat-la-Canéda, France
                 </span>
               </li>
             </ul>
