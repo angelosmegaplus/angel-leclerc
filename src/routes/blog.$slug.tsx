@@ -48,6 +48,20 @@ export const Route = createFileRoute("/blog/$slug")({
   component: BlogPostPage,
 });
 
+function renderInlineBold(text: string) {
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return (
+        <strong key={i} className="text-foreground">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    return part;
+  });
+}
+
 function PostNotFound() {
   return (
     <div className="container-tight py-20 text-center">
