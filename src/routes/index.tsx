@@ -55,6 +55,7 @@ export const Route = createFileRoute("/")({
           description:
             "Gestion de projets de communication, conseil stratégique et rédaction éditoriale.",
           email: "contact@angel-leclerc.fr",
+          telephone: "+33 6 01 76 69 78",
           address: {
             "@type": "PostalAddress",
             streetAddress: "25 Grande Rue",
