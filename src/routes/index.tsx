@@ -601,6 +601,46 @@ function About() {
 }
 
 function Contact() {
+  return ContactSection();
+}
+
+const paymentMethods = [
+  { name: "Visa", src: "https://cdn.simpleicons.org/visa/1A1F71" },
+  { name: "Mastercard", src: "https://cdn.simpleicons.org/mastercard/EB001B" },
+  { name: "Apple Pay", src: "https://cdn.simpleicons.org/applepay/000000" },
+  { name: "Google Pay", src: "https://cdn.simpleicons.org/googlepay/4285F4" },
+  { name: "Revolut Pay", src: "https://cdn.simpleicons.org/revolut/191C1F" },
+];
+
+function PaymentLogos() {
+  return (
+    <div className="mt-5 flex flex-wrap items-center gap-3">
+      {paymentMethods.map((m) => (
+        <div
+          key={m.name}
+          title={m.name}
+          className="flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3"
+        >
+          <img
+            src={m.src}
+            alt={`${m.name} logo`}
+            width={22}
+            height={22}
+            loading="lazy"
+            className="h-5 w-auto object-contain"
+          />
+          <span className="text-xs font-medium text-foreground">{m.name}</span>
+        </div>
+      ))}
+      <div className="flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3">
+        <CreditCard size={16} className="text-primary" />
+        <span className="text-xs font-medium text-foreground">Virement</span>
+      </div>
+    </div>
+  );
+}
+
+function ContactSection() {
   return (
     <section id="contact" className="section-padding bg-background">
       <div className="container-tight">
