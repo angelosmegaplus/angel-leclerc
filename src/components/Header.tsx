@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.png";
 
 const navLinks = [
-  { href: "#accueil", label: "Accueil" },
-  { href: "#services", label: "Services" },
-  { href: "#a-propos", label: "À propos" },
-  { href: "#contact", label: "Contact" },
+  { href: "/#accueil", label: "Accueil" },
+  { href: "/#services", label: "Services" },
+  { href: "/#a-propos", label: "À propos" },
+  { href: "/#contact", label: "Contact" },
 ];
 
 export function Header() {
@@ -16,7 +16,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
       <div className="container-tight flex h-16 items-center justify-between">
-        <a href="#accueil" className="flex items-center gap-3">
+        <a href="/#accueil" className="flex items-center gap-3">
           <img
             src={logo}
             alt="Logo Angel Leclerc Communication"
@@ -43,7 +43,7 @@ export function Header() {
             asChild
             className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
-            <a href="#contact">Parler de votre projet</a>
+            <a href="/#contact">Parler de votre projet</a>
           </Button>
         </nav>
 
@@ -74,7 +74,7 @@ export function Header() {
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={() => setMobileOpen(false)}
             >
-              <a href="#contact">Parler de votre projet</a>
+              <a href="/#contact">Parler de votre projet</a>
             </Button>
           </nav>
         </div>
