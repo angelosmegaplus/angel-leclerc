@@ -528,6 +528,36 @@ function About() {
           </AnimatedSection>
         </div>
 
+        <AnimatedSection delay={0.15} className="mt-10">
+          <div className="rounded-2xl border border-border bg-background p-8">
+            <div className="flex items-center gap-3">
+              <div className="inline-flex rounded-xl bg-muted p-3">
+                <Wand2 size={20} className="text-primary" />
+              </div>
+              <h3 className="font-display text-xl font-semibold text-foreground">
+                Mes outils de travail
+              </h3>
+            </div>
+            <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
+              <p>
+                Je travaille au quotidien sur <span className="font-medium text-foreground">Canva Pro</span>
+                {" "}pour la création de visuels, d'affiches, de présentations et de supports numériques.
+              </p>
+              <p>
+                J'aime aussi énormément explorer l'<span className="font-medium text-foreground">intelligence artificielle</span>
+                {" "}et tester régulièrement de nombreuses applications mobiles issues du{" "}
+                <span className="font-medium text-foreground">Play Store</span> ou logiciels{" "}
+                <span className="font-medium text-foreground">Windows</span>, afin de garder une
+                veille active sur les outils qui peuvent enrichir mes missions.
+              </p>
+              <p>
+                Cette curiosité me permet de choisir, pour chaque projet, la combinaison d'outils
+                la plus adaptée au besoin, au budget et au délai.
+              </p>
+            </div>
+          </div>
+        </AnimatedSection>
+
         <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {values.map((v, i) => {
             const Icon = v.icon;
