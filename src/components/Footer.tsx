@@ -3,7 +3,6 @@ import { Mail, MapPin, Phone } from "lucide-react";
 
 const footerLinks = [
   { to: "/services", label: "Services" },
-  { to: "/tarifs", label: "Tarifs" },
   { to: "/blog", label: "Blog" },
   { to: "/about", label: "À propos" },
   { to: "/contact", label: "Contact" },
