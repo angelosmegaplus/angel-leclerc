@@ -364,9 +364,11 @@ function Services() {
             Des services simples et adaptables
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Les tarifs affichés sont des estimations. Le prix final dépend de la
-            durée, de la complexité, du temps nécessaire et des besoins précis du
-            projet. Chaque mission peut être adaptée et négociée avec le client.
+            Tous les tarifs et services ci-dessous sont présentés à titre
+            d'exemple. En réalité, chaque mission est totalement adaptable selon
+            vos besoins, votre budget et les solutions que je peux apporter. Même
+            un service ponctuel ou partiel fait l'objet d'une facture
+            générée via Revolut Pro.
           </p>
         </AnimatedSection>
 
