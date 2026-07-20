@@ -765,6 +765,43 @@ function ContactSection() {
           </div>
         </AnimatedSection>
 
+        <AnimatedSection delay={0.15} className="mt-10">
+          <div className="mx-auto max-w-xl text-center">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Suivez mes actualités
+            </p>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+              <a
+                href="https://www.linkedin.com/company/angel-leclerc-communication/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+              >
+                <Linkedin size={18} className="text-primary" />
+                LinkedIn
+              </a>
+              <a
+                href="https://www.instagram.com/angelof_com?igsh=MWpqMjc3Mm03MHJpYg=="
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+              >
+                <Instagram size={18} className="text-primary" />
+                Instagram
+              </a>
+              <a
+                href="https://www.facebook.com/share/1LFGicX7qF/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+              >
+                <Facebook size={18} className="text-primary" />
+                Facebook
+              </a>
+            </div>
+          </div>
+        </AnimatedSection>
+
         <AnimatedSection delay={0.2} className="mt-10">
           <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
             <h3 className="font-display text-lg font-semibold text-foreground">
