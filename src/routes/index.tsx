@@ -80,7 +80,11 @@ export const Route = createFileRoute("/")({
           },
           areaServed: "France",
           founder: { "@type": "Person", name: "Angel Leclerc" },
-          sameAs: ["https://www.linkedin.com/in/angel-leclerc"],
+          sameAs: [
+            "https://www.linkedin.com/company/angel-leclerc-communication/",
+            "https://www.instagram.com/angelof_com",
+            "https://www.facebook.com/share/1LFGicX7qF/",
+          ],
         }),
       },
     ],
