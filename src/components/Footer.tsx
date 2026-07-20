@@ -1,4 +1,4 @@
-import { Mail, MapPin, Phone, Linkedin } from "lucide-react";
+import { Mail, MapPin, Phone, Linkedin, Instagram, Facebook } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 const navLinks = [
