@@ -1,4 +1,4 @@
-import { Mail, MapPin, Phone, Linkedin } from "lucide-react";
+import { Mail, MapPin, Phone, Linkedin, Instagram, Facebook } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 const navLinks = [
@@ -67,17 +67,6 @@ export function Footer() {
                 </a>
               </li>
               <li className="flex items-start gap-3">
-                <Linkedin size={16} className="mt-0.5 shrink-0 text-primary" />
-                <a
-                  href="https://www.linkedin.com/in/angel-leclerc"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-foreground transition-colors"
-                >
-                  linkedin.com/in/angel-leclerc
-                </a>
-              </li>
-              <li className="flex items-start gap-3">
                 <MapPin size={16} className="mt-0.5 shrink-0 text-primary" />
                 <span>
                   25 Grande Rue<br />
@@ -93,6 +82,39 @@ export function Footer() {
                 </span>
               </li>
             </ul>
+
+            <h3 className="mt-8 font-display text-sm font-semibold uppercase tracking-wide text-foreground">
+              Réseaux sociaux
+            </h3>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <a
+                href="https://www.linkedin.com/company/angel-leclerc-communication/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+              >
+                <Linkedin size={16} className="text-primary" />
+                LinkedIn
+              </a>
+              <a
+                href="https://www.instagram.com/angelof_com?igsh=MWpqMjc3Mm03MHJpYg=="
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+              >
+                <Instagram size={16} className="text-primary" />
+                Instagram
+              </a>
+              <a
+                href="https://www.facebook.com/share/1LFGicX7qF/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+              >
+                <Facebook size={16} className="text-primary" />
+                Facebook
+              </a>
+            </div>
           </div>
         </div>
 
