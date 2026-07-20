@@ -34,6 +34,41 @@ import {
 import { Button } from "@/components/ui/button";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import heroImage from "@/assets/hero-illustration.jpg";
+import revolutInvoiceImage from "@/assets/revolut-invoice-example.jpg";
+
+const brandLogo = (domain: string) =>
+  `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+
+function BrandTag({
+  name,
+  domain,
+  href,
+}: {
+  name: string;
+  domain: string;
+  href?: string;
+}) {
+  const content = (
+    <span className="inline-flex items-center gap-1.5 align-middle rounded-md border border-border bg-background px-1.5 py-0.5 text-foreground">
+      <img
+        src={brandLogo(domain)}
+        alt={`${name} logo`}
+        width={16}
+        height={16}
+        loading="lazy"
+        className="h-4 w-4 rounded-sm object-contain"
+      />
+      <span className="text-[0.95em] font-medium">{name}</span>
+    </span>
+  );
+  return href ? (
+    <a href={href} target="_blank" rel="noopener noreferrer" className="hover:underline">
+      {content}
+    </a>
+  ) : (
+    content
+  );
+}
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -364,11 +399,7 @@ function Services() {
             Des services simples et adaptables
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Tous les tarifs et services ci-dessous sont présentés à titre
-            d'exemple. En réalité, chaque mission est totalement adaptable selon
-            vos besoins, votre budget et les solutions que je peux apporter. Même
-            un service ponctuel ou partiel fait l'objet d'une facture
-            générée via Revolut Pro.
+            Quelques repères pour situer les prestations et leur périmètre.
           </p>
         </AnimatedSection>
 
@@ -425,6 +456,12 @@ function Services() {
           ))}
         </div>
 
+        <p className="mt-4 text-center text-[11px] italic text-muted-foreground/80">
+          Tarifs indicatifs. Chaque mission est adaptable selon le besoin et le budget. Facturation via{" "}
+          <BrandTag name="Revolut Business" domain="revolut.com" href="https://www.revolut.com/business/" />
+          , même pour une prestation ponctuelle.
+        </p>
+
         <AnimatedSection delay={0.2} className="mt-14">
           <div className="rounded-2xl border border-border bg-muted/40 p-8 md:p-10">
             <h3 className="font-display text-2xl font-bold text-foreground">
@@ -459,6 +496,9 @@ function Services() {
               Les frais de publicité, d'impression, de déplacement, de logiciels
               spécifiques ou de prestataires extérieurs ne sont pas automatiquement
               inclus. Ils sont présentés et validés avec le client avant toute dépense.
+            </p>
+            <p className="mt-2 text-[11px] italic text-muted-foreground/80">
+              Tarifs indicatifs et adaptables selon le projet.
             </p>
           </div>
         </AnimatedSection>
@@ -550,14 +590,15 @@ function About() {
             </div>
             <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
               <p>
-                Je travaille au quotidien sur <span className="font-medium text-foreground">Canva Pro</span>
+                Je travaille au quotidien sur{" "}
+                <BrandTag name="Canva Pro" domain="canva.com" href="https://www.canva.com/" />
                 {" "}pour la création de visuels, d'affiches, de présentations et de supports numériques.
               </p>
               <p>
                 J'aime aussi énormément explorer l'<span className="font-medium text-foreground">intelligence artificielle</span>
                 {" "}et tester régulièrement de nombreuses applications mobiles issues du{" "}
-                <span className="font-medium text-foreground">Play Store</span> ou logiciels{" "}
-                <span className="font-medium text-foreground">Windows</span>, afin de garder une
+                <BrandTag name="Play Store" domain="play.google.com" href="https://play.google.com/" /> ou logiciels{" "}
+                <BrandTag name="Windows" domain="microsoft.com" href="https://www.microsoft.com/windows" />, afin de garder une
                 veille active sur les outils qui peuvent enrichir mes missions.
               </p>
               <p>
@@ -633,8 +674,8 @@ function About() {
                 </p>
                 <p>
                   Les montants et modalités sont convenus avec le client puis
-                  confirmés sur le devis ou la facture. Les paiements sont traités
-                  via Revolut Business.
+                  confirmés sur le devis ou la facture. Les paiements sont traités via{" "}
+                  <BrandTag name="Revolut Business" domain="revolut.com" href="https://www.revolut.com/business/" />.
                 </p>
               </div>
             </div>
@@ -753,20 +794,6 @@ function ContactSection() {
           </div>
         </AnimatedSection>
 
-        <AnimatedSection delay={0.1} className="mt-10">
-          <div className="mx-auto max-w-xl rounded-xl border border-border bg-card p-5 text-center">
-            <div className="flex items-center justify-center gap-2 text-primary">
-              <MapPin size={18} />
-              <p className="text-xs font-semibold uppercase tracking-widest">
-                Siège de l'entreprise
-              </p>
-            </div>
-            <p className="mt-2 font-medium text-foreground">
-              25 Grande Rue, 03110 Broût-Vernet, France
-            </p>
-          </div>
-        </AnimatedSection>
-
         <AnimatedSection delay={0.15} className="mt-10">
           <div className="mx-auto max-w-xl text-center">
             <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
@@ -839,11 +866,28 @@ function ContactSection() {
               </h3>
             </div>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Facturation via Revolut Business, avec un lien de paiement sécurisé.
-              Règlement en deux fois : un premier versement avant le lancement, un
-              second à la fin de la prestation.
+              Facturation via{" "}
+              <BrandTag name="Revolut Business" domain="revolut.com" href="https://www.revolut.com/business/" />
+              , avec un lien de paiement sécurisé. Règlement en deux fois : un
+              premier versement avant le lancement, un second à la fin de la
+              prestation.
             </p>
             <PaymentLogos />
+            <figure className="mt-6">
+              <div className="overflow-hidden rounded-xl border border-border bg-background">
+                <img
+                  src={revolutInvoiceImage}
+                  alt="Exemple de facture émise via Revolut Business"
+                  width={1200}
+                  height={912}
+                  loading="lazy"
+                  className="h-auto w-full object-cover"
+                />
+              </div>
+              <figcaption className="mt-2 text-[11px] italic text-muted-foreground/80">
+                Exemple illustratif d'une facture générée via Revolut Business.
+              </figcaption>
+            </figure>
           </div>
         </AnimatedSection>
       </div>
