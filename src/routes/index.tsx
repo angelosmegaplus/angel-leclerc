@@ -14,15 +14,9 @@ import {
   Users,
   Repeat,
   CreditCard,
-  MessageCircle,
-  Briefcase,
   PenLine,
-  Image as ImageIcon,
-  Video,
   FileImage,
-  Presentation,
   Palette,
-  Handshake,
   Network,
   Radio,
   Wand2,
@@ -32,6 +26,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedSection } from "@/components/AnimatedSection";
+import { ProjectForm } from "@/components/ProjectForm";
 import heroImage from "@/assets/hero-illustration.jpg";
 import revolutInvoiceImage from "@/assets/revolut-invoice-example.jpg";
 
@@ -146,74 +141,64 @@ const pillars = [
 
 const mainServices = [
   {
-    icon: MessageCircle,
-    title: "Conseil express",
-    price: "À partir de 40 €",
+    icon: Compass,
+    title: "Gestion de projet",
     intro:
-      "Pour une question précise, une première analyse ou un avis extérieur rapide.",
+      "Organisation et suivi d'un projet de communication, de sa conception jusqu'à sa mise en œuvre.",
     items: [
-      "Échange téléphonique ou en visioconférence",
-      "Analyse rapide de la situation",
-      "Conseils prioritaires et pistes d'amélioration",
-      "Court résumé écrit",
+      "Cadrage du projet, planning et jalons",
+      "Coordination des étapes et des intervenants",
+      "Recherche et pilotage des prestataires",
+      "Suivi régulier et point d'avancement avec le client",
     ],
   },
   {
-    icon: Compass,
-    title: "Stratégie de communication",
-    price: "À partir de 150 €",
+    icon: Layers,
+    title: "Conseil en communication",
     intro:
-      "Pour construire une direction claire et organiser la communication d'un projet.",
+      "Analyse des besoins, définition des objectifs et création d'une stratégie adaptée au projet.",
     items: [
-      "Analyse du projet et définition des objectifs",
-      "Identification des publics et positionnement",
-      "Stratégie de marque et stratégie éditoriale",
-      "Messages, supports et plan de communication",
-      "Calendrier indicatif et recommandations",
+      "Analyse du contexte, des publics et des objectifs",
+      "Positionnement, messages clés et ligne éditoriale",
+      "Choix des supports et des canaux",
+      "Plan d'action et recommandations concrètes",
     ],
   },
   {
     icon: FileText,
-    title: "Rédaction éditoriale et journalistique",
-    price: "À partir de 50 €",
-    intro: "Pour rédiger un contenu clair, structuré et adapté au public.",
+    title: "Rédaction et contenus éditoriaux",
+    intro:
+      "Rédaction de textes professionnels, institutionnels, journalistiques ou destinés au web et aux réseaux sociaux.",
     items: [
       "Articles, portraits, interviews, dossiers",
-      "Textes de présentation et communiqués",
-      "Publications et contenus numériques",
-      "Rédaction journalistique et travaux de synthèse",
+      "Enquêtes et travaux de recherche",
+      "Textes institutionnels, présentations, communiqués",
+      "Contenus web et publications sur les réseaux sociaux",
+      "Adaptation du ton selon le public visé",
     ],
-    note: "Le tarif dépend de la longueur, du niveau de recherche, du nombre d'entretiens, du travail de réécriture et du délai demandé.",
-  },
-  {
-    icon: Briefcase,
-    title: "Gestion complète d'un projet",
-    price: "À partir de 300 €",
-    highlight: true,
-    intro:
-      "Pour accompagner un projet de manière globale, de la réflexion jusqu'au suivi.",
-    items: [
-      "Analyse du besoin et définition de la stratégie",
-      "Organisation des étapes et coordination",
-      "Recherche de partenaires et de prestataires",
-      "Suivi du calendrier et centralisation des échanges",
-      "Rédaction de certains contenus et supervision",
-      "Ajustements réguliers avec le client",
-    ],
-    note: "Formule proposée en pack global. Le contenu exact est défini avec le client selon le projet, le budget et le niveau d'accompagnement souhaité.",
   },
 ];
 
 const extraServices = [
-  { icon: PenLine, label: "Rédaction d'un texte court ou publication", price: "à partir de 30 €" },
-  { icon: ImageIcon, label: "Création d'un visuel simple", price: "à partir de 35 €" },
-  { icon: Video, label: "Montage d'une vidéo courte", price: "à partir de 50 €" },
-  { icon: FileImage, label: "Affiche ou flyer", price: "à partir de 60 €" },
-  { icon: Presentation, label: "Présentation ou document professionnel", price: "à partir de 70 €" },
+  {
+    icon: PenLine,
+    label: "Rédaction de textes",
+    price: "à partir de 30 €",
+    hint: "Recherches, enquêtes, réflexions politiques et contenus éditoriaux.",
+    substack: true,
+  },
+  { icon: FileImage, label: "Affiche ou flyer", price: "à partir de 50 €" },
   { icon: Palette, label: "Identité visuelle simple", price: "à partir de 150 €" },
-  { icon: Handshake, label: "Recherche de partenaires", price: "sur devis" },
-  { icon: Network, label: "Recherche et coordination de prestataires", price: "sur devis" },
-  { icon: Radio, label: "Production audio, vidéo ou numérique", price: "sur devis" },
+  {
+    icon: Network,
+    label: "Recherche et coordination de prestataires",
+    price: "sur devis",
+  },
+  {
+    icon: Radio,
+    label: "Production audio, vidéo ou numérique sur le terrain",
+    price: "sur devis",
+  },
 ];
 
 const values = [
@@ -243,22 +228,22 @@ const steps = [
   {
     n: "01",
     title: "Premier échange",
-    text: "Le client présente son besoin, ses objectifs, ses contraintes, son public et son budget.",
+    text: "Compréhension du projet, des objectifs, du public concerné et des contraintes.",
   },
   {
     n: "02",
     title: "Proposition",
-    text: "Une offre, un pack ou un devis adapté est préparé.",
+    text: "Définition de la mission, des actions à réaliser, du calendrier prévisionnel et du devis.",
   },
   {
     n: "03",
     title: "Réalisation et coordination",
-    text: "La mission est organisée et les actions mises en œuvre. Le client reçoit régulièrement des informations sur l'avancement.",
+    text: "Réalisation directe des prestations prévues ou coordination des prestataires nécessaires.",
   },
   {
     n: "04",
-    title: "Suivi et adaptation",
-    text: "Les actions peuvent être ajustées selon les retours, les besoins et l'évolution du projet.",
+    title: "Livraison et suivi",
+    text: "Validation du travail, livraison des éléments et accompagnement dans leur mise en œuvre.",
   },
 ];
 
@@ -394,81 +379,91 @@ function Services() {
     <section id="services" className="section-padding bg-background">
       <div className="container-tight">
         <AnimatedSection className="mx-auto max-w-2xl text-center">
-          <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
-            Des services simples et adaptables
+          <span className="text-xs font-semibold uppercase tracking-widest text-primary">
+            Services principaux
+          </span>
+          <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
+            Mes trois activités principales
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Quelques repères pour situer les prestations et leur périmètre.
+            Elles constituent le cœur de mon travail et peuvent être proposées
+            ensemble ou séparément selon le projet.
           </p>
         </AnimatedSection>
 
-        <div className="mt-12 grid gap-6 md:grid-cols-2">
+        <div className="mt-12 grid gap-6 md:grid-cols-3">
           {mainServices.map((s, i) => (
             <AnimatedSection key={s.title} delay={i * 0.08}>
-              <article
-                className={`flex h-full flex-col rounded-2xl border p-8 transition-shadow hover:shadow-md ${
-                  s.highlight
-                    ? "border-primary bg-card"
-                    : "border-border bg-card"
-                }`}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3">
-                    <div className="inline-flex shrink-0 rounded-xl bg-muted p-2.5">
-                      <s.icon size={20} className="text-primary" />
-                    </div>
-                    <h3 className="font-display text-xl font-semibold text-foreground">
-                      {s.title}
-                    </h3>
-                  </div>
-                  {s.highlight && (
-                    <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                      Pack global
-                    </span>
-                  )}
+              <article className="flex h-full flex-col rounded-2xl border border-border bg-card p-8">
+                <div className="inline-flex shrink-0 rounded-xl bg-muted p-3">
+                  <s.icon size={22} className="text-primary" />
                 </div>
-                <p className="mt-2 font-display text-lg font-semibold text-primary">
-                  {s.price}
+                <h3 className="mt-5 font-display text-xl font-bold text-foreground md:text-2xl">
+                  {s.title}
+                </h3>
+                <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+                  {s.intro}
                 </p>
-                <p className="mt-4 text-sm text-muted-foreground">{s.intro}</p>
                 <ul className="mt-5 space-y-2">
                   {s.items.map((item) => (
                     <li
                       key={item}
                       className="flex items-start gap-2 text-sm text-foreground"
                     >
-                      <Check
-                        size={16}
-                        className="mt-0.5 shrink-0 text-primary"
-                      />
+                      <Check size={16} className="mt-0.5 shrink-0 text-primary" />
                       <span>{item}</span>
                     </li>
                   ))}
                 </ul>
-                {s.note && (
-                  <p className="mt-5 text-xs italic text-muted-foreground">
-                    {s.note}
-                  </p>
-                )}
               </article>
             </AnimatedSection>
           ))}
         </div>
 
-        <p className="mt-4 text-center text-[11px] italic text-muted-foreground/80">
-          Tarifs indicatifs. Chaque mission est adaptable selon le besoin et le budget. Facturation via{" "}
-          <BrandTag name="Revolut Business" domain="revolut.com" href="https://www.revolut.com/business/" />
-          , même pour une prestation ponctuelle.
-        </p>
+        {/* Comment se déroule une mission ? */}
+        <div className="mt-20">
+          <AnimatedSection className="mx-auto max-w-2xl text-center">
+            <span className="text-xs font-semibold uppercase tracking-widest text-primary">
+              Méthode
+            </span>
+            <h3 className="mt-3 font-display text-2xl font-bold text-foreground md:text-3xl">
+              Comment se déroule une mission ?
+            </h3>
+            <p className="mt-3 text-sm text-muted-foreground">
+              Quatre étapes simples, de la première prise de contact jusqu'au suivi
+              après la livraison.
+            </p>
+          </AnimatedSection>
 
-        <AnimatedSection delay={0.2} className="mt-14">
-          <div className="rounded-2xl border border-border bg-muted/40 p-8 md:p-10">
-            <h3 className="font-display text-2xl font-bold text-foreground">
+          <ol className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {steps.map((step, i) => (
+              <AnimatedSection key={step.n} delay={i * 0.08}>
+                <li className="relative h-full list-none rounded-2xl border border-border bg-card p-6">
+                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+                    {step.n}
+                  </span>
+                  <h4 className="mt-4 font-display text-lg font-semibold text-foreground">
+                    {step.title}
+                  </h4>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {step.text}
+                  </p>
+                </li>
+              </AnimatedSection>
+            ))}
+          </ol>
+        </div>
+
+        {/* Services complémentaires (visuellement secondaires) */}
+        <AnimatedSection delay={0.2} className="mt-20">
+          <div className="rounded-2xl border border-border bg-muted/40 p-6 md:p-8">
+            <h3 className="font-display text-xl font-semibold text-foreground md:text-2xl">
               Services complémentaires
             </h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Ils peuvent être réalisés seuls ou intégrés dans une mission globale.
-              Ils ne constituent pas le cœur principal de l'activité.
+            <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
+              Ces prestations peuvent être réalisées seules ou intégrées dans une
+              mission globale. Elles ne constituent pas le cœur principal de
+              l'activité.
             </p>
             <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {extraServices.map((e) => {
@@ -476,7 +471,7 @@ function Services() {
                 return (
                   <li
                     key={e.label}
-                    className="flex items-start gap-3 rounded-xl bg-card p-4 border border-border"
+                    className="flex items-start gap-3 rounded-xl border border-border bg-card p-4"
                   >
                     <div className="inline-flex shrink-0 rounded-lg bg-muted p-2">
                       <Icon size={16} className="text-primary" />
@@ -486,29 +481,43 @@ function Services() {
                         {e.label}
                       </span>
                       <span className="text-xs text-primary">{e.price}</span>
+                      {e.hint && (
+                        <span className="mt-1 text-xs text-muted-foreground">
+                          {e.hint}
+                        </span>
+                      )}
+                      {e.substack && (
+                        <a
+                          href="https://blog.angel-leclerc.fr"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground hover:border-primary"
+                        >
+                          <img
+                            src="https://cdn.simpleicons.org/substack/FF6719"
+                            alt="Logo Substack"
+                            width={14}
+                            height={14}
+                            className="h-3.5 w-3.5"
+                            loading="lazy"
+                          />
+                          <span>
+                            Découvrez aussi mes articles et réflexions sur
+                            Substack
+                          </span>
+                        </a>
+                      )}
                     </div>
                   </li>
                 );
               })}
             </ul>
-            <p className="mt-6 text-xs italic text-muted-foreground">
-              Les frais de publicité, d'impression, de déplacement, de logiciels
-              spécifiques ou de prestataires extérieurs ne sont pas automatiquement
-              inclus. Ils sont présentés et validés avec le client avant toute dépense.
-            </p>
-            <p className="mt-2 text-[11px] italic text-muted-foreground/80">
-              Tarifs indicatifs et adaptables selon le projet.
+            <p className="mt-6 text-[11px] italic text-muted-foreground/80">
+              Toutes les prestations sont réalisées sur devis. Les montants
+              affichés sont uniquement des tarifs indicatifs permettant de donner
+              un ordre de prix.
             </p>
           </div>
-        </AnimatedSection>
-
-        <AnimatedSection delay={0.3} className="mt-10 text-center">
-          <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-            Mon activité repose d'abord sur la gestion de projet, le conseil en
-            communication et la rédaction. Je peux également réaliser ponctuellement
-            certains supports ou coordonner leur création avec des professionnels
-            spécialisés.
-          </p>
         </AnimatedSection>
       </div>
     </section>
@@ -625,36 +634,6 @@ function About() {
           })}
         </div>
 
-        <div className="mt-16">
-          <AnimatedSection>
-            <h3 className="font-display text-2xl font-bold text-foreground">
-              Comment se déroule une mission ?
-            </h3>
-          </AnimatedSection>
-          <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {steps.map((step, i) => (
-              <AnimatedSection key={step.n} delay={i * 0.08}>
-                <div className="h-full rounded-2xl border border-border bg-background p-6">
-                  <span className="font-display text-3xl font-bold text-primary">
-                    {step.n}
-                  </span>
-                  <h4 className="mt-4 font-display text-lg font-semibold text-foreground">
-                    {step.title}
-                  </h4>
-                  <p className="mt-2 text-sm text-muted-foreground">{step.text}</p>
-                </div>
-              </AnimatedSection>
-            ))}
-          </div>
-          <AnimatedSection delay={0.3}>
-            <p className="mt-6 text-sm italic text-muted-foreground max-w-3xl">
-              Le projet est construit avec le client. Les orientations, contenus et
-              adaptations importantes sont présentés progressivement afin de
-              conserver un fonctionnement clair et souple.
-            </p>
-          </AnimatedSection>
-        </div>
-
         <div className="mt-16 grid gap-6 md:grid-cols-2">
           <AnimatedSection>
             <div className="h-full rounded-2xl border border-border bg-background p-8">
@@ -758,21 +737,28 @@ function ContactSection() {
             Contact et réalisations
           </span>
           <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
-            Parlons de votre projet
+            Présentez-moi votre projet
           </h2>
           <p className="mt-4 text-muted-foreground leading-relaxed">
-            Vous pouvez me présenter votre projet même s'il n'est pas encore
-            totalement défini. Un premier échange par mail ou par téléphone permettra
-            de clarifier vos besoins, vos priorités et les solutions possibles.
+            Décrivez votre besoin même s'il n'est pas encore totalement défini.
+            Je reviendrai vers vous rapidement pour clarifier vos priorités et
+            proposer une manière d'avancer.
           </p>
         </AnimatedSection>
 
         <AnimatedSection delay={0.05} className="mt-10">
+          <div className="mx-auto max-w-2xl">
+            <ProjectForm />
+          </div>
+        </AnimatedSection>
+
+        <AnimatedSection delay={0.1} className="mt-10">
           <div className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row">
             <Button
               asChild
               size="lg"
-              className="flex-1 bg-primary text-primary-foreground hover:bg-accent"
+              variant="outline"
+              className="flex-1 border-foreground/20 bg-transparent text-foreground hover:bg-muted"
             >
               <a href="tel:+33601766978">
                 <Phone size={18} className="mr-2" />
