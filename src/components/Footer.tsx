@@ -1,4 +1,4 @@
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, Phone, Linkedin } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 const navLinks = [
@@ -64,6 +64,17 @@ export function Footer() {
                   className="hover:text-foreground transition-colors"
                 >
                   06 01 76 69 78
+                </a>
+              </li>
+              <li className="flex items-start gap-3">
+                <Linkedin size={16} className="mt-0.5 shrink-0 text-primary" />
+                <a
+                  href="https://www.linkedin.com/in/angel-leclerc"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-foreground transition-colors"
+                >
+                  linkedin.com/in/angel-leclerc
                 </a>
               </li>
               <li className="flex items-start gap-3">

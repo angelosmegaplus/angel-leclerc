@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Linkedin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.png";
 
@@ -39,6 +39,15 @@ export function Header() {
               {link.label}
             </a>
           ))}
+          <a
+            href="https://www.linkedin.com/in/angel-leclerc"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="LinkedIn Angel Leclerc"
+          >
+            <Linkedin size={20} />
+          </a>
           <Button
             asChild
             className="bg-primary text-primary-foreground hover:bg-primary/90"
@@ -69,6 +78,16 @@ export function Header() {
                 {link.label}
               </a>
             ))}
+            <a
+              href="https://www.linkedin.com/in/angel-leclerc"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-2 py-2 text-foreground hover:text-primary transition-colors"
+            >
+              <Linkedin size={18} />
+              LinkedIn
+            </a>
             <Button
               asChild
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
