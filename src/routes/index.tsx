@@ -737,21 +737,28 @@ function ContactSection() {
             Contact et réalisations
           </span>
           <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
-            Parlons de votre projet
+            Présentez-moi votre projet
           </h2>
           <p className="mt-4 text-muted-foreground leading-relaxed">
-            Vous pouvez me présenter votre projet même s'il n'est pas encore
-            totalement défini. Un premier échange par mail ou par téléphone permettra
-            de clarifier vos besoins, vos priorités et les solutions possibles.
+            Décrivez votre besoin même s'il n'est pas encore totalement défini.
+            Je reviendrai vers vous rapidement pour clarifier vos priorités et
+            proposer une manière d'avancer.
           </p>
         </AnimatedSection>
 
         <AnimatedSection delay={0.05} className="mt-10">
+          <div className="mx-auto max-w-2xl">
+            <ProjectForm />
+          </div>
+        </AnimatedSection>
+
+        <AnimatedSection delay={0.1} className="mt-10">
           <div className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row">
             <Button
               asChild
               size="lg"
-              className="flex-1 bg-primary text-primary-foreground hover:bg-accent"
+              variant="outline"
+              className="flex-1 border-foreground/20 bg-transparent text-foreground hover:bg-muted"
             >
               <a href="tel:+33601766978">
                 <Phone size={18} className="mr-2" />
