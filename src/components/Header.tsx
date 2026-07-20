@@ -39,15 +39,35 @@ export function Header() {
               {link.label}
             </a>
           ))}
-          <a
-            href="https://www.linkedin.com/in/angel-leclerc"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-            aria-label="LinkedIn Angel Leclerc"
-          >
-            <Linkedin size={20} />
-          </a>
+          <div className="flex items-center gap-4">
+            <a
+              href="https://www.linkedin.com/company/angel-leclerc-communication/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="LinkedIn Angel Leclerc Communication"
+            >
+              <Linkedin size={20} />
+            </a>
+            <a
+              href="https://www.instagram.com/angelof_com?igsh=MWpqMjc3Mm03MHJpYg=="
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Instagram Angel Leclerc Communication"
+            >
+              <Instagram size={20} />
+            </a>
+            <a
+              href="https://www.facebook.com/share/1LFGicX7qF/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Facebook Angel Leclerc Communication"
+            >
+              <Facebook size={20} />
+            </a>
+          </div>
           <Button
             asChild
             className="bg-primary text-primary-foreground hover:bg-primary/90"
@@ -78,16 +98,38 @@ export function Header() {
                 {link.label}
               </a>
             ))}
-            <a
-              href="https://www.linkedin.com/in/angel-leclerc"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-2 py-2 text-foreground hover:text-primary transition-colors"
-            >
-              <Linkedin size={18} />
-              LinkedIn
-            </a>
+            <div className="grid grid-cols-3 gap-3 py-2">
+              <a
+                href="https://www.linkedin.com/company/angel-leclerc-communication/"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center justify-center gap-2 rounded-lg border border-border py-2 text-foreground hover:text-primary transition-colors"
+                aria-label="LinkedIn Angel Leclerc Communication"
+              >
+                <Linkedin size={18} />
+              </a>
+              <a
+                href="https://www.instagram.com/angelof_com?igsh=MWpqMjc3Mm03MHJpYg=="
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center justify-center gap-2 rounded-lg border border-border py-2 text-foreground hover:text-primary transition-colors"
+                aria-label="Instagram Angel Leclerc Communication"
+              >
+                <Instagram size={18} />
+              </a>
+              <a
+                href="https://www.facebook.com/share/1LFGicX7qF/"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center justify-center gap-2 rounded-lg border border-border py-2 text-foreground hover:text-primary transition-colors"
+                aria-label="Facebook Angel Leclerc Communication"
+              >
+                <Facebook size={18} />
+              </a>
+            </div>
             <Button
               asChild
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
