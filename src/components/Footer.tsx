@@ -125,7 +125,11 @@ export function Footer() {
           <p className="mt-1">
             Paiements traités via Revolut Business.
           </p>
+          <p className="mt-3 text-[11px] text-muted-foreground/70">
+            Siège social : 25 Grande Rue, 03110 Broût-Vernet, France
+          </p>
           <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+
             <p>
               © {new Date().getFullYear()} Angel Leclerc Communication. Tous droits réservés.
             </p>
