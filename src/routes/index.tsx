@@ -14,15 +14,9 @@ import {
   Users,
   Repeat,
   CreditCard,
-  MessageCircle,
-  Briefcase,
   PenLine,
-  Image as ImageIcon,
-  Video,
   FileImage,
-  Presentation,
   Palette,
-  Handshake,
   Network,
   Radio,
   Wand2,
@@ -32,6 +26,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedSection } from "@/components/AnimatedSection";
+import { ProjectForm } from "@/components/ProjectForm";
 import heroImage from "@/assets/hero-illustration.jpg";
 import revolutInvoiceImage from "@/assets/revolut-invoice-example.jpg";
 
