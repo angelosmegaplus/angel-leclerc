@@ -141,74 +141,64 @@ const pillars = [
 
 const mainServices = [
   {
-    icon: MessageCircle,
-    title: "Conseil express",
-    price: "À partir de 40 €",
+    icon: Compass,
+    title: "Gestion de projet",
     intro:
-      "Pour une question précise, une première analyse ou un avis extérieur rapide.",
+      "Organisation et suivi d'un projet de communication, de sa conception jusqu'à sa mise en œuvre.",
     items: [
-      "Échange téléphonique ou en visioconférence",
-      "Analyse rapide de la situation",
-      "Conseils prioritaires et pistes d'amélioration",
-      "Court résumé écrit",
+      "Cadrage du projet, planning et jalons",
+      "Coordination des étapes et des intervenants",
+      "Recherche et pilotage des prestataires",
+      "Suivi régulier et point d'avancement avec le client",
     ],
   },
   {
-    icon: Compass,
-    title: "Stratégie de communication",
-    price: "À partir de 150 €",
+    icon: Layers,
+    title: "Conseil en communication",
     intro:
-      "Pour construire une direction claire et organiser la communication d'un projet.",
+      "Analyse des besoins, définition des objectifs et création d'une stratégie adaptée au projet.",
     items: [
-      "Analyse du projet et définition des objectifs",
-      "Identification des publics et positionnement",
-      "Stratégie de marque et stratégie éditoriale",
-      "Messages, supports et plan de communication",
-      "Calendrier indicatif et recommandations",
+      "Analyse du contexte, des publics et des objectifs",
+      "Positionnement, messages clés et ligne éditoriale",
+      "Choix des supports et des canaux",
+      "Plan d'action et recommandations concrètes",
     ],
   },
   {
     icon: FileText,
-    title: "Rédaction éditoriale et journalistique",
-    price: "À partir de 50 €",
-    intro: "Pour rédiger un contenu clair, structuré et adapté au public.",
+    title: "Rédaction et contenus éditoriaux",
+    intro:
+      "Rédaction de textes professionnels, institutionnels, journalistiques ou destinés au web et aux réseaux sociaux.",
     items: [
       "Articles, portraits, interviews, dossiers",
-      "Textes de présentation et communiqués",
-      "Publications et contenus numériques",
-      "Rédaction journalistique et travaux de synthèse",
+      "Enquêtes et travaux de recherche",
+      "Textes institutionnels, présentations, communiqués",
+      "Contenus web et publications sur les réseaux sociaux",
+      "Adaptation du ton selon le public visé",
     ],
-    note: "Le tarif dépend de la longueur, du niveau de recherche, du nombre d'entretiens, du travail de réécriture et du délai demandé.",
-  },
-  {
-    icon: Briefcase,
-    title: "Gestion complète d'un projet",
-    price: "À partir de 300 €",
-    highlight: true,
-    intro:
-      "Pour accompagner un projet de manière globale, de la réflexion jusqu'au suivi.",
-    items: [
-      "Analyse du besoin et définition de la stratégie",
-      "Organisation des étapes et coordination",
-      "Recherche de partenaires et de prestataires",
-      "Suivi du calendrier et centralisation des échanges",
-      "Rédaction de certains contenus et supervision",
-      "Ajustements réguliers avec le client",
-    ],
-    note: "Formule proposée en pack global. Le contenu exact est défini avec le client selon le projet, le budget et le niveau d'accompagnement souhaité.",
   },
 ];
 
 const extraServices = [
-  { icon: PenLine, label: "Rédaction d'un texte court ou publication", price: "à partir de 30 €" },
-  { icon: ImageIcon, label: "Création d'un visuel simple", price: "à partir de 35 €" },
-  { icon: Video, label: "Montage d'une vidéo courte", price: "à partir de 50 €" },
-  { icon: FileImage, label: "Affiche ou flyer", price: "à partir de 60 €" },
-  { icon: Presentation, label: "Présentation ou document professionnel", price: "à partir de 70 €" },
+  {
+    icon: PenLine,
+    label: "Rédaction de textes",
+    price: "à partir de 30 €",
+    hint: "Recherches, enquêtes, réflexions politiques et contenus éditoriaux.",
+    substack: true,
+  },
+  { icon: FileImage, label: "Affiche ou flyer", price: "à partir de 50 €" },
   { icon: Palette, label: "Identité visuelle simple", price: "à partir de 150 €" },
-  { icon: Handshake, label: "Recherche de partenaires", price: "sur devis" },
-  { icon: Network, label: "Recherche et coordination de prestataires", price: "sur devis" },
-  { icon: Radio, label: "Production audio, vidéo ou numérique", price: "sur devis" },
+  {
+    icon: Network,
+    label: "Recherche et coordination de prestataires",
+    price: "sur devis",
+  },
+  {
+    icon: Radio,
+    label: "Production audio, vidéo ou numérique sur le terrain",
+    price: "sur devis",
+  },
 ];
 
 const values = [
@@ -238,22 +228,22 @@ const steps = [
   {
     n: "01",
     title: "Premier échange",
-    text: "Le client présente son besoin, ses objectifs, ses contraintes, son public et son budget.",
+    text: "Compréhension du projet, des objectifs, du public concerné et des contraintes.",
   },
   {
     n: "02",
     title: "Proposition",
-    text: "Une offre, un pack ou un devis adapté est préparé.",
+    text: "Définition de la mission, des actions à réaliser, du calendrier prévisionnel et du devis.",
   },
   {
     n: "03",
     title: "Réalisation et coordination",
-    text: "La mission est organisée et les actions mises en œuvre. Le client reçoit régulièrement des informations sur l'avancement.",
+    text: "Réalisation directe des prestations prévues ou coordination des prestataires nécessaires.",
   },
   {
     n: "04",
-    title: "Suivi et adaptation",
-    text: "Les actions peuvent être ajustées selon les retours, les besoins et l'évolution du projet.",
+    title: "Livraison et suivi",
+    text: "Validation du travail, livraison des éléments et accompagnement dans leur mise en œuvre.",
   },
 ];
 
