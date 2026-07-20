@@ -67,6 +67,17 @@ export function Footer() {
                 </a>
               </li>
               <li className="flex items-start gap-3">
+                <Linkedin size={16} className="mt-0.5 shrink-0 text-primary" />
+                <a
+                  href="https://www.linkedin.com/in/angel-leclerc"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-foreground transition-colors"
+                >
+                  linkedin.com/in/angel-leclerc
+                </a>
+              </li>
+              <li className="flex items-start gap-3">
                 <MapPin size={16} className="mt-0.5 shrink-0 text-primary" />
                 <span>
                   25 Grande Rue<br />
