@@ -69,19 +69,12 @@ export function Footer() {
               <li className="flex items-start gap-3">
                 <MapPin size={16} className="mt-0.5 shrink-0 text-primary" />
                 <span>
-                  25 Grande Rue<br />
-                  03110 Broût-Vernet, France
-                </span>
-              </li>
-              <li className="flex items-start gap-3">
-                <MapPin size={16} className="mt-0.5 shrink-0 text-primary" />
-                <span>
-                  <span className="block text-xs uppercase tracking-widest text-muted-foreground/80">Adresse courrier</span>
                   CIAS, 4b rue Stéphane Hessel<br />
                   24200 Sarlat-la-Canéda, France
                 </span>
               </li>
             </ul>
+
 
             <h3 className="mt-8 font-display text-sm font-semibold uppercase tracking-wide text-foreground">
               Réseaux sociaux
@@ -132,7 +125,11 @@ export function Footer() {
           <p className="mt-1">
             Paiements traités via Revolut Business.
           </p>
+          <p className="mt-3 text-[11px] text-muted-foreground/70">
+            Siège social : 25 Grande Rue, 03110 Broût-Vernet, France
+          </p>
           <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+
             <p>
               © {new Date().getFullYear()} Angel Leclerc Communication. Tous droits réservés.
             </p>
