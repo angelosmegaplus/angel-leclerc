@@ -29,8 +29,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedSection } from "@/components/AnimatedSection";
-import { ProjectForm } from "@/components/ProjectForm";
 import { MyJourney } from "@/components/MyJourney";
+import { getBlogPosts, type BlogPost } from "@/lib/blog.functions";
 import heroImage from "@/assets/hero-illustration.jpg";
 import revolutInvoiceImage from "@/assets/revolut-invoice-example.jpg";
 
@@ -69,6 +69,10 @@ function BrandTag({
 }
 
 export const Route = createFileRoute("/")({
+  loader: async () => {
+    const posts = await getBlogPosts();
+    return { posts };
+  },
   head: () => ({
     meta: [
       {
