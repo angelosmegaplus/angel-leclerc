@@ -16,7 +16,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
-import alcLogo from "@/assets/logo.png";
 
 // ---------- Logo helper ----------
 
@@ -68,95 +67,6 @@ type Card = {
   description: string;
   skills?: string[];
 };
-
-const experiences: Card[] = [
-  {
-    title: "Agent de propreté urbaine",
-    org: "Mairie de Sarlat-la-Canéda",
-    period: "Juillet 2026 – aujourd'hui",
-    meta: "Emploi saisonnier – Sarlat-la-Canéda",
-    logo: { kind: "img", src: favicon("sarlat.fr"), alt: "Logo Ville de Sarlat-la-Canéda" },
-    description:
-      "Emploi saisonnier consacré à l'entretien et à la propreté des espaces publics. Cette expérience demande ponctualité, autonomie, endurance, organisation, respect des consignes, travail en équipe et sens du service public.",
-    skills: [
-      "Entretien de l'espace public",
-      "Travail en équipe",
-      "Autonomie",
-      "Organisation",
-      "Respect des consignes",
-    ],
-  },
-  {
-    title: "Entrepreneur individuel en communication",
-    org: "Angel Leclerc Communication",
-    period: "Depuis juin 2026",
-    meta: "Activité indépendante",
-    logo: { kind: "img", src: alcLogo, alt: "Logo Angel Leclerc Communication" },
-    description:
-      "Accompagnement de projets dans les domaines de la communication, de la rédaction et de la gestion de projet. Les missions peuvent comprendre l'analyse des besoins, la définition d'une stratégie, la rédaction de contenus, la création de supports, la création ou l'amélioration de sites internet, l'organisation des différentes étapes d'un projet et la coordination avec des partenaires ou des prestataires.",
-    skills: [
-      "Gestion de projet",
-      "Conseil en communication",
-      "Rédaction",
-      "Création de supports",
-      "Communication numérique",
-      "Coordination",
-    ],
-  },
-  {
-    title: "Projets personnels et associatifs",
-    org: "Parcours indépendant",
-    period: "Juin 2025 – juin 2026",
-    logo: { kind: "icon", icon: Lightbulb },
-    description:
-      "Développement de plusieurs projets personnels et associatifs dans les domaines de la communication, du scoutisme, de la création graphique, du numérique et de la transmission d'informations. Cette période a renforcé mes compétences en autonomie, en organisation, en rédaction, en conception de projets et en création de supports.",
-    skills: [
-      "Gestion de projet",
-      "Création graphique",
-      "Rédaction",
-      "Organisation",
-      "Communication numérique",
-      "Travail autonome",
-    ],
-  },
-  {
-    title: "Apprenti Bac professionnel Métiers de l'accueil",
-    org: "Office de tourisme du Val de Sioule",
-    period: "Septembre 2023 – juin 2025",
-    meta: "Contrat en alternance – Saint-Pourçain-sur-Sioule",
-    logo: {
-      kind: "img",
-      src: favicon("valdesioule-tourisme.com"),
-      alt: "Logo Office de tourisme du Val de Sioule",
-    },
-    description:
-      "Apprentissage réalisé pendant un an et dix mois au sein de l'Office de tourisme du Val de Sioule. Missions d'accueil physique, téléphonique et numérique, conseil aux visiteurs, information touristique, vente de produits locaux, gestion de l'espace d'accueil, création d'affiches, de livrets et de supports d'information, saisie de données et participation aux projets de l'équipe.",
-    skills: [
-      "Accueil multicanal",
-      "Information touristique",
-      "Vente",
-      "Création de supports",
-      "Gestion de données",
-      "Relation avec le public",
-      "Travail en équipe",
-    ],
-  },
-  {
-    title: "Stagiaire en radio",
-    org: "RCF Radio",
-    period: "Mars 2022",
-    meta: "Stage – Moulins",
-    logo: { kind: "img", src: favicon("rcf.fr"), alt: "Logo RCF Radio" },
-    description:
-      "Découverte du fonctionnement d'une station de radio, de la préparation des contenus, de l'organisation d'une rédaction et de la réalisation de programmes radiophoniques.",
-    skills: [
-      "Média radio",
-      "Communication orale",
-      "Préparation de contenus",
-      "Découverte du fonctionnement d'une rédaction",
-    ],
-  },
-];
 
 const formation: Card[] = [
   {
@@ -642,10 +552,6 @@ export function MyJourney() {
             </div>
           </div>
         </AnimatedSection>
-
-        <Subsection title="Expériences professionnelles">
-          <Carousel cards={experiences} label="Expériences professionnelles" />
-        </Subsection>
 
         <Subsection title="Formation">
           <div className="mx-auto max-w-2xl">
