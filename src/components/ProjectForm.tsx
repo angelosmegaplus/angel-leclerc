@@ -162,11 +162,10 @@ export function ProjectForm() {
           <CheckCircle2 size={28} className="text-primary" />
         </div>
         <h3 className="mt-4 font-display text-2xl font-bold text-foreground">
-          Votre demande a bien été transmise
+          Demande envoyée
         </h3>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          Je reviendrai vers vous dès que possible pour échanger sur votre projet. Un e-mail de
-          confirmation vient également d'être envoyé à l'adresse indiquée.
+          Je reviendrai vers vous rapidement. Un e-mail de confirmation vient de vous être envoyé.
         </p>
         <Button
           type="button"
@@ -174,7 +173,7 @@ export function ProjectForm() {
           className="mt-6"
           onClick={() => setSuccess(false)}
         >
-          Envoyer une autre demande
+          Nouvelle demande
         </Button>
       </div>
     );
