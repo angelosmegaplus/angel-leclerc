@@ -29,8 +29,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedSection } from "@/components/AnimatedSection";
-import { ProjectForm } from "@/components/ProjectForm";
 import { MyJourney } from "@/components/MyJourney";
+import { getBlogPosts, type BlogPost } from "@/lib/blog.functions";
 import heroImage from "@/assets/hero-illustration.jpg";
 import revolutInvoiceImage from "@/assets/revolut-invoice-example.jpg";
 
@@ -69,6 +69,10 @@ function BrandTag({
 }
 
 export const Route = createFileRoute("/")({
+  loader: async () => {
+    const posts = await getBlogPosts();
+    return { posts };
+  },
   head: () => ({
     meta: [
       {
@@ -293,6 +297,7 @@ function HomePage() {
       <Services />
       <About />
       <MyJourney />
+      <BlogPreview />
       <Contact />
     </div>
   );
@@ -713,6 +718,105 @@ function Contact() {
   return ContactSection();
 }
 
+function BlogPreview() {
+  const { posts } = Route.useLoaderData();
+  return (
+    <section id="blog" className="section-padding bg-background">
+      <div className="container-tight">
+        <AnimatedSection className="mx-auto max-w-2xl text-center">
+          <span className="text-xs font-semibold uppercase tracking-widest text-primary">
+            Blog
+          </span>
+          <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
+            Derniers articles
+          </h2>
+          <p className="mt-4 text-muted-foreground">
+            Réflexions, idées et sujets d'actualité publiés sur mon blog.
+          </p>
+        </AnimatedSection>
+
+        {posts.length === 0 ? (
+          <AnimatedSection delay={0.1} className="mt-10 text-center">
+            <p className="text-sm text-muted-foreground">
+              Les articles apparaîtront ici bientôt.
+            </p>
+            <Button
+              asChild
+              className="mt-6 bg-primary text-primary-foreground hover:bg-accent"
+            >
+              <a href="https://blog.angel-leclerc.fr" target="_blank" rel="noopener noreferrer">
+                Visiter le blog
+                <ArrowRight size={16} className="ml-2" />
+              </a>
+            </Button>
+          </AnimatedSection>
+        ) : (
+          <>
+            <div className="mt-12 grid gap-6 md:grid-cols-3">
+              {posts.map((post: BlogPost, i: number) => (
+                <AnimatedSection key={post.link} delay={i * 0.08}>
+                  <a
+                    href={post.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card transition-shadow hover:shadow-md"
+                  >
+                    {post.image && (
+                      <div className="aspect-[16/9] overflow-hidden bg-muted">
+                        <img
+                          src={post.image}
+                          alt=""
+                          loading="lazy"
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      </div>
+                    )}
+                    <div className="flex flex-1 flex-col p-6">
+                      {post.pubDate && (
+                        <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                          {new Date(post.pubDate).toLocaleDateString("fr-FR", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </p>
+                      )}
+                      <h3 className="mt-2 font-display text-lg font-semibold text-foreground group-hover:text-primary">
+                        {post.title}
+                      </h3>
+                      {post.description && (
+                        <p className="mt-3 text-sm leading-relaxed text-muted-foreground line-clamp-3">
+                          {post.description}
+                        </p>
+                      )}
+                      <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-primary">
+                        Lire l'article
+                        <ArrowRight size={12} />
+                      </span>
+                    </div>
+                  </a>
+                </AnimatedSection>
+              ))}
+            </div>
+            <AnimatedSection delay={0.3} className="mt-10 text-center">
+              <Button
+                asChild
+                variant="outline"
+                className="border-foreground/20 bg-transparent text-foreground hover:bg-muted"
+              >
+                <a href="https://blog.angel-leclerc.fr" target="_blank" rel="noopener noreferrer">
+                  Voir tous les articles
+                  <ArrowRight size={16} className="ml-2" />
+                </a>
+              </Button>
+            </AnimatedSection>
+          </>
+        )}
+      </div>
+    </section>
+  );
+}
+
 const paymentMethods = [
   { name: "Visa", src: "https://cdn.simpleicons.org/visa/1A1F71" },
   { name: "Mastercard", src: "https://cdn.simpleicons.org/mastercard/EB001B" },
@@ -764,12 +868,6 @@ function ContactSection() {
             Décrivez votre besoin, même flou. Je reviens vers vous rapidement pour
             clarifier et proposer une suite.
           </p>
-        </AnimatedSection>
-
-        <AnimatedSection delay={0.1} className="mt-10">
-          <div className="mx-auto max-w-2xl">
-            <ProjectForm />
-          </div>
         </AnimatedSection>
 
         <AnimatedSection delay={0.1} className="mt-10">
