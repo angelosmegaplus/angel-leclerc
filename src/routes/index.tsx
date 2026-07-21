@@ -23,6 +23,9 @@ import {
   Linkedin,
   Instagram,
   Facebook,
+  Globe,
+  Smartphone,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedSection } from "@/components/AnimatedSection";
