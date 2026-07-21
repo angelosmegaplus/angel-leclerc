@@ -330,14 +330,12 @@ function Intro() {
       <div className="container-tight">
         <AnimatedSection className="mx-auto max-w-3xl text-center">
           <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
-            Une direction claire pour faire avancer votre projet.
+            Une direction claire pour vos projets.
           </h2>
           <p className="mt-5 text-muted-foreground leading-relaxed">
-            Une communication efficace ne repose pas seulement sur de beaux supports.
-            Elle demande une organisation, des messages cohérents, des partenaires
-            adaptés et une vision globale. Mon rôle est de comprendre votre projet,
-            de structurer les étapes et de coordonner les solutions nécessaires à sa
-            réalisation.
+            Une communication efficace demande organisation, messages clairs et bons
+            partenaires. Je structure les étapes et coordonne les solutions pour faire
+            avancer votre projet.
           </p>
         </AnimatedSection>
 
