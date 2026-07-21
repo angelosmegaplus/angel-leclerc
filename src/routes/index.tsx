@@ -125,17 +125,17 @@ const pillars = [
   {
     icon: Compass,
     title: "Gestion de projet",
-    text: "Organisation des étapes, coordination des actions, recherche de partenaires et suivi du projet.",
+    text: "Organisation, coordination et suivi des actions pour faire avancer le projet.",
   },
   {
     icon: Layers,
     title: "Conseil en communication",
-    text: "Analyse des besoins, stratégie, positionnement, choix des publics, messages et supports.",
+    text: "Stratégie, positionnement, messages clés et choix des supports adaptés.",
   },
   {
     icon: FileText,
     title: "Rédaction éditoriale",
-    text: "Articles, interviews, dossiers, textes de présentation et contenus journalistiques ou numériques.",
+    text: "Articles, interviews, dossiers et contenus professionnels ou numériques.",
   },
 ];
 
@@ -144,37 +144,37 @@ const mainServices = [
     icon: Compass,
     title: "Gestion de projet",
     intro:
-      "Organisation et suivi d'un projet de communication, de sa conception jusqu'à sa mise en œuvre.",
+      "Organisation et suivi de votre projet de la conception à la mise en œuvre.",
     items: [
-      "Cadrage du projet, planning et jalons",
-      "Coordination des étapes et des intervenants",
+      "Cadrage, planning et jalons",
+      "Coordination des étapes et intervenants",
       "Recherche et pilotage des prestataires",
-      "Suivi régulier et point d'avancement avec le client",
+      "Suivi et points d'avancement",
     ],
   },
   {
     icon: Layers,
     title: "Conseil en communication",
     intro:
-      "Analyse des besoins, définition des objectifs et création d'une stratégie adaptée au projet.",
+      "Analyse des besoins et définition d'une stratégie adaptée au projet.",
     items: [
       "Analyse du contexte, des publics et des objectifs",
-      "Positionnement, messages clés et ligne éditoriale",
-      "Choix des supports et des canaux",
-      "Plan d'action et recommandations concrètes",
+      "Positionnement et messages clés",
+      "Choix des supports et canaux",
+      "Plan d'action et recommandations",
     ],
   },
   {
     icon: FileText,
     title: "Rédaction et contenus éditoriaux",
     intro:
-      "Rédaction de textes professionnels, institutionnels, journalistiques ou destinés au web et aux réseaux sociaux.",
+      "Rédaction de textes professionnels, journalistiques ou numériques.",
     items: [
-      "Articles, portraits, interviews, dossiers",
-      "Enquêtes et travaux de recherche",
-      "Textes institutionnels, présentations, communiqués",
-      "Contenus web et publications sur les réseaux sociaux",
-      "Adaptation du ton selon le public visé",
+      "Articles, portraits, interviews",
+      "Enquêtes et recherches",
+      "Textes institutionnels et communiqués",
+      "Contenus web et réseaux sociaux",
+      "Ton adapté au public visé",
     ],
   },
 ];
@@ -184,7 +184,7 @@ const extraServices = [
     icon: PenLine,
     label: "Rédaction de textes",
     price: "à partir de 30 €",
-    hint: "Recherches, enquêtes, réflexions politiques et contenus éditoriaux.",
+    hint: "Articles, enquêtes et réflexions éditoriales.",
     substack: true,
   },
   { icon: FileImage, label: "Affiche ou flyer", price: "à partir de 50 €" },
@@ -196,7 +196,7 @@ const extraServices = [
   },
   {
     icon: Radio,
-    label: "Production audio, vidéo ou numérique sur le terrain",
+    label: "Production audio, vidéo ou numérique",
     price: "sur devis",
   },
 ];
@@ -210,17 +210,17 @@ const values = [
   {
     icon: Lightbulb,
     title: "Clarté",
-    text: "Transformer les idées en messages simples et compréhensibles.",
+    text: "Transformer les idées en messages clairs.",
   },
   {
     icon: Users,
     title: "Coordination",
-    text: "Faire avancer les différentes personnes autour d'un objectif commun.",
+    text: "Faire avancer plusieurs acteurs vers un objectif commun.",
   },
   {
     icon: Repeat,
     title: "Adaptation",
-    text: "Faire évoluer la mission selon les besoins, les moyens et les retours du client.",
+    text: "Ajuster la mission selon les besoins et les retours.",
   },
 ];
 
@@ -228,22 +228,22 @@ const steps = [
   {
     n: "01",
     title: "Premier échange",
-    text: "Compréhension du projet, des objectifs, du public concerné et des contraintes.",
+    text: "Compréhension du projet, des objectifs et des contraintes.",
   },
   {
     n: "02",
     title: "Proposition",
-    text: "Définition de la mission, des actions à réaliser, du calendrier prévisionnel et du devis.",
+    text: "Mission, actions, calendrier et devis.",
   },
   {
     n: "03",
-    title: "Réalisation et coordination",
-    text: "Réalisation directe des prestations prévues ou coordination des prestataires nécessaires.",
+    title: "Réalisation",
+    text: "Travail direct ou coordination des prestataires.",
   },
   {
     n: "04",
-    title: "Livraison et suivi",
-    text: "Validation du travail, livraison des éléments et accompagnement dans leur mise en œuvre.",
+    title: "Livraison",
+    text: "Validation, livraison et suivi.",
   },
 ];
 
@@ -273,13 +273,12 @@ function Hero() {
             Gestion de projet · Conseil · Rédaction
           </span>
           <h1 className="mt-6 font-display text-4xl font-bold leading-[1.05] tracking-tight text-foreground md:text-5xl lg:text-6xl">
-            Piloter votre communication, structurer vos idées,{" "}
-            <span className="text-primary">faire avancer vos projets.</span>
+            Gestion de projet, conseil et rédaction{" "}
+            <span className="text-primary">pour vos idées.</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
-            J'accompagne les professionnels, associations, particuliers et porteurs de
-            projets dans l'organisation de leur communication, la définition de leur
-            stratégie et la rédaction de leurs contenus.
+            J'accompagne professionnels, associations et porteurs de projets dans
+            l'organisation, la stratégie et la rédaction de leurs contenus.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button
@@ -331,14 +330,12 @@ function Intro() {
       <div className="container-tight">
         <AnimatedSection className="mx-auto max-w-3xl text-center">
           <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
-            Une direction claire pour faire avancer votre projet.
+            Une direction claire pour vos projets.
           </h2>
           <p className="mt-5 text-muted-foreground leading-relaxed">
-            Une communication efficace ne repose pas seulement sur de beaux supports.
-            Elle demande une organisation, des messages cohérents, des partenaires
-            adaptés et une vision globale. Mon rôle est de comprendre votre projet,
-            de structurer les étapes et de coordonner les solutions nécessaires à sa
-            réalisation.
+            Une communication efficace demande organisation, messages clairs et bons
+            partenaires. Je structure les étapes et coordonne les solutions pour faire
+            avancer votre projet.
           </p>
         </AnimatedSection>
 
@@ -365,8 +362,7 @@ function Intro() {
 
         <AnimatedSection delay={0.3}>
           <p className="mt-10 text-center text-sm italic text-muted-foreground">
-            La création graphique, audio ou vidéo peut être proposée ponctuellement
-            selon les besoins.
+            La création graphique, audio ou vidéo est proposée ponctuellement selon les besoins.
           </p>
         </AnimatedSection>
       </div>
@@ -383,11 +379,10 @@ function Services() {
             Services principaux
           </span>
           <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
-            Mes trois activités principales
+            Mes trois activités
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Elles constituent le cœur de mon travail et peuvent être proposées
-            ensemble ou séparément selon le projet.
+            Gestion de projet, conseil et rédaction, proposées ensemble ou séparément.
           </p>
         </AnimatedSection>
 
@@ -430,8 +425,7 @@ function Services() {
               Comment se déroule une mission ?
             </h3>
             <p className="mt-3 text-sm text-muted-foreground">
-              Quatre étapes simples, de la première prise de contact jusqu'au suivi
-              après la livraison.
+              Quatre étapes, de la première prise de contact au suivi final.
             </p>
           </AnimatedSection>
 
@@ -461,9 +455,7 @@ function Services() {
               Services complémentaires
             </h3>
             <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
-              Ces prestations peuvent être réalisées seules ou intégrées dans une
-              mission globale. Elles ne constituent pas le cœur principal de
-              l'activité.
+              Réalisables seuls ou intégrés à une mission globale.
             </p>
             <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {extraServices.map((e) => {
@@ -534,27 +526,20 @@ function About() {
               À propos
             </span>
             <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
-              À propos d'Angel Leclerc
+              À propos
             </h2>
             <div className="mt-6 space-y-4 text-muted-foreground leading-relaxed">
               <p>
-                Je développe Angel Leclerc Communication avec une idée simple :
-                aider les projets à trouver une direction claire, une organisation
-                efficace et les bonnes personnes pour avancer.
+                J'accompagne les projets pour leur donner une direction claire, une
+                organisation efficace et les bons interlocuteurs.
               </p>
               <p>
-                Mon activité principale est centrée sur la gestion de projets de
-                communication. J'accompagne les clients dans la préparation,
-                l'organisation et le suivi de leurs actions, tout en veillant à la
-                cohérence générale du projet.
+                Mon cœur de métier est la gestion de projets de communication :
+                préparation, organisation et suivi.
               </p>
               <p>
-                J'interviens également dans le conseil en communication — plans de
-                communication, stratégie de marque et stratégie de contenu — et la
-                rédaction éditoriale et journalistique. Je peux enfin réaliser
-                ponctuellement certains supports visuels, audio ou vidéo, ou
-                coordonner les bons prestataires quand la mission demande une
-                compétence plus spécialisée.
+                J'interviens aussi en conseil et en rédaction, et réalise ponctuellement
+                des supports visuels, audio ou vidéo.
               </p>
             </div>
           </AnimatedSection>
@@ -566,20 +551,15 @@ function About() {
               </h3>
               <div className="mt-4 space-y-4 text-sm leading-relaxed text-muted-foreground">
                 <p>
-                  Mon parcours mêle accueil, tourisme, communication, engagement
-                  associatif, scoutisme et création de projets. Ces expériences
-                  m'ont appris à écouter, expliquer, organiser, travailler avec
-                  différents publics et coordonner des actions collectives.
+                  Mon parcours mêle accueil, tourisme, communication, associatif et
+                  scoutisme. J'ai appris à écouter, expliquer, organiser et coordonner.
                 </p>
                 <p>
-                  Mon expérience dans le tourisme et l'accueil m'a également permis
-                  de développer une bonne compréhension des besoins du public, de la
-                  valorisation d'un territoire et de la transmission d'informations.
+                  Cette expérience m'a donné une bonne compréhension des publics, des
+                  territoires et de la transmission d'informations.
                 </p>
                 <p>
-                  Je poursuis le développement de mes compétences en communication,
-                  rédaction et journalisme afin de professionnaliser continuellement
-                  mes méthodes.
+                  Je continue de me former en communication, rédaction et journalisme.
                 </p>
               </div>
             </div>
@@ -593,25 +573,20 @@ function About() {
                 <Wand2 size={20} className="text-primary" />
               </div>
               <h3 className="font-display text-xl font-semibold text-foreground">
-                Mes outils de travail
+                Mes outils
               </h3>
             </div>
             <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
               <p>
-                Je travaille au quotidien sur{" "}
+                Je travaille sur{" "}
                 <BrandTag name="Canva Pro" domain="canva.com" href="https://www.canva.com/" />
-                {" "}pour la création de visuels, d'affiches, de présentations et de supports numériques.
+                {" "}pour les visuels, affiches, présentations et supports numériques.
               </p>
               <p>
-                J'aime aussi énormément explorer l'<span className="font-medium text-foreground">intelligence artificielle</span>
-                {" "}et tester régulièrement de nombreuses applications mobiles issues du{" "}
-                <BrandTag name="Play Store" domain="play.google.com" href="https://play.google.com/" /> ou logiciels{" "}
-                <BrandTag name="Windows" domain="microsoft.com" href="https://www.microsoft.com/windows" />, afin de garder une
-                veille active sur les outils qui peuvent enrichir mes missions.
-              </p>
-              <p>
-                Cette curiosité me permet de choisir, pour chaque projet, la combinaison d'outils
-                la plus adaptée au besoin, au budget et au délai.
+                J'explore aussi l'<span className="font-medium text-foreground">intelligence artificielle</span>
+                {" "}et les applications du{" "}
+                <BrandTag name="Play Store" domain="play.google.com" href="https://play.google.com/" />{" "}
+                et <BrandTag name="Windows" domain="microsoft.com" href="https://www.microsoft.com/windows" />, pour garder une veille active.
               </p>
             </div>
           </div>
@@ -638,21 +613,14 @@ function About() {
           <AnimatedSection>
             <div className="h-full rounded-2xl border border-border bg-background p-8">
               <h3 className="font-display text-xl font-semibold text-foreground">
-                Un fonctionnement clair
+                Fonctionnement clair
               </h3>
               <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
                 <p>
-                  Le paiement peut être réparti en deux versements : un premier
-                  versement avant le début de la mission, puis un second à la fin.
+                  Paiement en deux fois : un acompte avant la mission, le solde à la fin.
                 </p>
                 <p>
-                  Le premier versement permet de couvrir le lancement du projet, le
-                  temps de travail engagé, les logiciels, les outils et les
-                  éventuels frais nécessaires.
-                </p>
-                <p>
-                  Les montants et modalités sont convenus avec le client puis
-                  confirmés sur le devis ou la facture. Les paiements sont traités via{" "}
+                  Montants et modalités confirmés sur le devis. Paiements via{" "}
                   <BrandTag name="Revolut Business" domain="revolut.com" href="https://www.revolut.com/business/" />.
                 </p>
               </div>
@@ -665,19 +633,14 @@ function About() {
               </h3>
               <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
                 <p>
-                  En cas d'insatisfaction, contactez-moi afin que des corrections
-                  ou une solution adaptée puissent être recherchées.
+                  En cas d'insatisfaction, je recherche des corrections ou une solution adaptée.
                 </p>
                 <p>
-                  Si la prestation ne correspond manifestement pas à ce qui avait
-                  été convenu et qu'aucune correction satisfaisante n'est possible,
-                  un remboursement total ou partiel peut être effectué selon la
-                  situation.
+                  Si la prestation ne correspond pas à ce qui était convenu, un remboursement
+                  total ou partiel peut être effectué.
                 </p>
                 <p className="text-xs italic">
-                  Les prestations de conseil et de communication sont soumises à
-                  une obligation de moyens et non de résultat lorsque les
-                  résultats dépendent de facteurs extérieurs.
+                  Les prestations de conseil et de communication sont soumises à une obligation de moyens.
                 </p>
               </div>
             </div>
@@ -734,15 +697,14 @@ function ContactSection() {
       <div className="container-tight">
         <AnimatedSection className="mx-auto max-w-3xl text-center">
           <span className="text-xs font-semibold uppercase tracking-widest text-primary">
-            Contact et réalisations
+            Contact
           </span>
           <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
-            Présentez-moi votre projet
+            Me contacter
           </h2>
           <p className="mt-4 text-muted-foreground leading-relaxed">
-            Décrivez votre besoin même s'il n'est pas encore totalement défini.
-            Je reviendrai vers vous rapidement pour clarifier vos priorités et
-            proposer une manière d'avancer.
+            Décrivez votre besoin, même flou. Je reviens vers vous rapidement pour
+            clarifier et proposer une suite.
           </p>
         </AnimatedSection>
 
@@ -819,14 +781,11 @@ function ContactSection() {
         <AnimatedSection delay={0.2} className="mt-10">
           <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
             <h3 className="font-display text-lg font-semibold text-foreground">
-              Découvrir mes réalisations
+              Réalisations
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              Mes réalisations comprennent des projets de gestion et conseil en
-              communication, des plans de communication, des travaux
-              rédactionnels, des articles, des identités visuelles, des affiches,
-              des présentations et différents supports numériques. Une sélection
-              de travaux peut être envoyée directement sur demande.
+              Gestion de projet, conseil, rédaction, identités visuelles, affiches et
+              supports numériques. Une sélection est disponible sur demande.
             </p>
             <Button
               asChild
@@ -847,15 +806,13 @@ function ContactSection() {
                 <CreditCard size={20} className="text-primary" />
               </div>
               <h3 className="font-display text-xl font-bold text-foreground md:text-2xl">
-                Modalités de paiement
+                Paiement
               </h3>
             </div>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
               Facturation via{" "}
               <BrandTag name="Revolut Business" domain="revolut.com" href="https://www.revolut.com/business/" />
-              , avec un lien de paiement sécurisé. Règlement en deux fois : un
-              premier versement avant le lancement, un second à la fin de la
-              prestation.
+              , lien de paiement sécurisé. Acompte avant la mission, solde à la fin.
             </p>
             <PaymentLogos />
             <figure className="mt-6">
@@ -870,7 +827,7 @@ function ContactSection() {
                 />
               </div>
               <figcaption className="mt-2 text-[11px] italic text-muted-foreground/80">
-                Exemple illustratif d'une facture générée via Revolut Business.
+                Exemple de facture Revolut Business.
               </figcaption>
             </figure>
           </div>
