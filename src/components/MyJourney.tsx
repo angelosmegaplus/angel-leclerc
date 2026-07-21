@@ -332,52 +332,136 @@ const toolCategories: { title: string; note?: string; tools: Tool[] }[] = [
   {
     title: "Création graphique",
     tools: [
-      { name: "Canva", source: { kind: "img", src: favicon("canva.com"), alt: "Logo Canva" } },
-      { name: "Figma", source: { kind: "img", src: favicon("figma.com"), alt: "Logo Figma" } },
+      {
+        name: "Canva",
+        source: { kind: "img", src: favicon("canva.com"), alt: "Logo Canva" },
+        hint: "Outil de création graphique en ligne pour affiches, publications, présentations et supports visuels.",
+      },
+      {
+        name: "Figma",
+        source: { kind: "img", src: favicon("figma.com"), alt: "Logo Figma" },
+        hint: "Éditeur collaboratif pour concevoir des maquettes de sites, d'applications et d'interfaces.",
+      },
     ],
   },
   {
     title: "Sites internet et publication",
     tools: [
-      { name: "Lovable", source: { kind: "img", src: favicon("lovable.dev"), alt: "Logo Lovable" } },
-      { name: "Squarespace", source: { kind: "img", src: favicon("squarespace.com"), alt: "Logo Squarespace" } },
+      {
+        name: "Lovable",
+        source: { kind: "img", src: favicon("lovable.dev"), alt: "Logo Lovable" },
+        hint: "Plateforme de création de sites internet et d'applications assistée par intelligence artificielle.",
+      },
+      {
+        name: "Squarespace",
+        source: { kind: "img", src: favicon("squarespace.com"), alt: "Logo Squarespace" },
+        hint: "Hébergeur et créateur de sites vitrines, également utilisé pour enregistrer des noms de domaine.",
+      },
     ],
   },
   {
     title: "Bureautique et collaboration",
     tools: [
-      { name: "Microsoft Office", source: { kind: "img", src: favicon("office.com"), alt: "Logo Microsoft Office" } },
-      { name: "Microsoft Word", source: { kind: "img", src: favicon("microsoft.com"), alt: "Logo Microsoft Word" } },
-      { name: "Microsoft Excel", source: { kind: "img", src: favicon("microsoft.com"), alt: "Logo Microsoft Excel" } },
-      { name: "Microsoft PowerPoint", source: { kind: "img", src: favicon("microsoft.com"), alt: "Logo Microsoft PowerPoint" } },
-      { name: "Outlook", source: { kind: "img", src: favicon("outlook.com"), alt: "Logo Outlook" } },
-      { name: "Google Workspace", source: { kind: "img", src: favicon("workspace.google.com"), alt: "Logo Google Workspace" } },
-      { name: "Google Docs", source: { kind: "img", src: favicon("docs.google.com"), alt: "Logo Google Docs" } },
-      { name: "Google Sheets", source: { kind: "img", src: favicon("sheets.google.com"), alt: "Logo Google Sheets" } },
-      { name: "Google Drive", source: { kind: "img", src: favicon("drive.google.com"), alt: "Logo Google Drive" } },
-      { name: "Gmail", source: { kind: "img", src: favicon("mail.google.com"), alt: "Logo Gmail" } },
+      {
+        name: "Microsoft Office",
+        source: { kind: "img", src: favicon("office.com"), alt: "Logo Microsoft Office" },
+        hint: "Suite bureautique regroupant Word, Excel, PowerPoint, Outlook et d'autres logiciels professionnels.",
+      },
+      {
+        name: "Microsoft Word",
+        source: { kind: "img", src: favicon("microsoft.com"), alt: "Logo Microsoft Word" },
+        hint: "Traitement de texte pour rédiger et mettre en forme des documents.",
+      },
+      {
+        name: "Microsoft Excel",
+        source: { kind: "img", src: favicon("microsoft.com"), alt: "Logo Microsoft Excel" },
+        hint: "Tableur pour organiser des données, réaliser des calculs et créer des tableaux.",
+      },
+      {
+        name: "Microsoft PowerPoint",
+        source: { kind: "img", src: favicon("microsoft.com"), alt: "Logo Microsoft PowerPoint" },
+        hint: "Logiciel de création de présentations et de diaporamas.",
+      },
+      {
+        name: "Outlook",
+        source: { kind: "img", src: favicon("outlook.com"), alt: "Logo Outlook" },
+        hint: "Messagerie professionnelle avec calendrier et gestion de contacts.",
+      },
+      {
+        name: "Google Workspace",
+        source: { kind: "img", src: favicon("workspace.google.com"), alt: "Logo Google Workspace" },
+        hint: "Suite collaborative de Google : messagerie, agenda, stockage et outils bureautiques en ligne.",
+      },
+      {
+        name: "Google Docs",
+        source: { kind: "img", src: favicon("docs.google.com"), alt: "Logo Google Docs" },
+        hint: "Traitement de texte en ligne permettant la rédaction collaborative en temps réel.",
+      },
+      {
+        name: "Google Sheets",
+        source: { kind: "img", src: favicon("sheets.google.com"), alt: "Logo Google Sheets" },
+        hint: "Tableur en ligne pour créer et partager des feuilles de calcul.",
+      },
+      {
+        name: "Google Drive",
+        source: { kind: "img", src: favicon("drive.google.com"), alt: "Logo Google Drive" },
+        hint: "Service de stockage et de partage de fichiers en ligne.",
+      },
+      {
+        name: "Gmail",
+        source: { kind: "img", src: favicon("mail.google.com"), alt: "Logo Gmail" },
+        hint: "Messagerie électronique de Google.",
+      },
     ],
   },
   {
     title: "Communication et réseaux sociaux",
     tools: [
-      { name: "Meta Business Suite", source: { kind: "img", src: favicon("business.facebook.com"), alt: "Logo Meta Business Suite" } },
-      { name: "Facebook", source: { kind: "img", src: favicon("facebook.com"), alt: "Logo Facebook" } },
-      { name: "Instagram", source: { kind: "img", src: favicon("instagram.com"), alt: "Logo Instagram" } },
-      { name: "LinkedIn", source: { kind: "img", src: favicon("linkedin.com"), alt: "Logo LinkedIn" } },
+      {
+        name: "Meta Business Suite",
+        source: { kind: "img", src: favicon("business.facebook.com"), alt: "Logo Meta Business Suite" },
+        hint: "Outil de gestion des pages Facebook et Instagram : publications, messages et statistiques.",
+      },
+      {
+        name: "Facebook",
+        source: { kind: "img", src: favicon("facebook.com"), alt: "Logo Facebook" },
+        hint: "Réseau social généraliste utilisé pour la communication de pages et de communautés.",
+      },
+      {
+        name: "Instagram",
+        source: { kind: "img", src: favicon("instagram.com"), alt: "Logo Instagram" },
+        hint: "Réseau social visuel centré sur les photos, vidéos et stories.",
+      },
+      {
+        name: "LinkedIn",
+        source: { kind: "img", src: favicon("linkedin.com"), alt: "Logo LinkedIn" },
+        hint: "Réseau social professionnel pour la présence et la communication d'entreprise.",
+      },
     ],
   },
   {
     title: "Audio",
     tools: [
-      { name: "MixPad", source: { kind: "img", src: favicon("nch.com.au"), alt: "Logo MixPad" } },
+      {
+        name: "MixPad",
+        source: { kind: "img", src: favicon("nch.com.au"), alt: "Logo MixPad" },
+        hint: "Logiciel de mixage et de montage audio multipiste pour émissions, podcasts et jingles.",
+      },
     ],
   },
   {
     title: "Gestion touristique et données",
     tools: [
-      { name: "Avizi", source: { kind: "img", src: favicon("avizi.fr"), alt: "Logo Avizi" } },
-      { name: "Koesio", source: { kind: "img", src: favicon("koesio.com"), alt: "Logo Koesio" } },
+      {
+        name: "Avizi",
+        source: { kind: "img", src: favicon("avizi.fr"), alt: "Logo Avizi" },
+        hint: "Logiciel de caisse et de gestion des ventes utilisé par les offices de tourisme.",
+      },
+      {
+        name: "Koesio",
+        source: { kind: "img", src: favicon("koesio.com"), alt: "Logo Koesio" },
+        hint: "Solution numérique pour la gestion administrative et bureautique des structures.",
+      },
     ],
   },
   {
@@ -385,34 +469,49 @@ const toolCategories: { title: string; note?: string; tools: Tool[] }[] = [
     note:
       "Utilisation pour la recherche, l'organisation des informations, la rédaction, la mise en forme de contenus et l'amélioration de supports.",
     tools: [
-      { name: "ChatGPT", source: { kind: "img", src: favicon("chatgpt.com"), alt: "Logo ChatGPT" } },
-      { name: "Intelligence artificielle générative", source: { kind: "icon", icon: Lightbulb } },
+      {
+        name: "ChatGPT",
+        source: { kind: "img", src: favicon("chatgpt.com"), alt: "Logo ChatGPT" },
+        hint: "Assistant conversationnel d'OpenAI utilisé pour la recherche d'informations et l'aide à la rédaction.",
+      },
+      {
+        name: "Intelligence artificielle générative",
+        source: { kind: "icon", icon: Lightbulb },
+        hint: "Ensemble d'outils capables de générer du texte, des images ou des idées à partir d'instructions.",
+      },
     ],
   },
 ];
 
 function ToolChip({ tool }: { tool: Tool }) {
   return (
-    <li className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5">
-      <span className="inline-flex h-6 w-6 items-center justify-center overflow-hidden rounded-md">
+    <li className="flex items-start gap-3 rounded-xl border border-border bg-background p-3">
+      <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-card">
         {tool.source.kind === "img" ? (
           <img
             src={tool.source.src}
             alt={tool.source.alt}
-            width={20}
-            height={20}
+            width={24}
+            height={24}
             loading="lazy"
-            className="h-5 w-5 object-contain"
+            className="h-6 w-6 object-contain"
           />
         ) : tool.source.kind === "icon" ? (
-          <tool.source.icon size={16} className="text-primary" />
+          <tool.source.icon size={18} className="text-primary" />
         ) : (
-          <span className="text-[9px] font-semibold text-foreground">
+          <span className="text-[10px] font-semibold text-foreground">
             {tool.source.label}
           </span>
         )}
       </span>
-      <span className="text-xs font-medium text-foreground">{tool.name}</span>
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-foreground">{tool.name}</p>
+        {tool.hint && (
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+            {tool.hint}
+          </p>
+        )}
+      </div>
     </li>
   );
 }
