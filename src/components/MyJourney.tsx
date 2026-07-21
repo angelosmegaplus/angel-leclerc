@@ -332,52 +332,136 @@ const toolCategories: { title: string; note?: string; tools: Tool[] }[] = [
   {
     title: "Création graphique",
     tools: [
-      { name: "Canva", source: { kind: "img", src: favicon("canva.com"), alt: "Logo Canva" } },
-      { name: "Figma", source: { kind: "img", src: favicon("figma.com"), alt: "Logo Figma" } },
+      {
+        name: "Canva",
+        source: { kind: "img", src: favicon("canva.com"), alt: "Logo Canva" },
+        hint: "Outil de création graphique en ligne pour affiches, publications, présentations et supports visuels.",
+      },
+      {
+        name: "Figma",
+        source: { kind: "img", src: favicon("figma.com"), alt: "Logo Figma" },
+        hint: "Éditeur collaboratif pour concevoir des maquettes de sites, d'applications et d'interfaces.",
+      },
     ],
   },
   {
     title: "Sites internet et publication",
     tools: [
-      { name: "Lovable", source: { kind: "img", src: favicon("lovable.dev"), alt: "Logo Lovable" } },
-      { name: "Squarespace", source: { kind: "img", src: favicon("squarespace.com"), alt: "Logo Squarespace" } },
+      {
+        name: "Lovable",
+        source: { kind: "img", src: favicon("lovable.dev"), alt: "Logo Lovable" },
+        hint: "Plateforme de création de sites internet et d'applications assistée par intelligence artificielle.",
+      },
+      {
+        name: "Squarespace",
+        source: { kind: "img", src: favicon("squarespace.com"), alt: "Logo Squarespace" },
+        hint: "Hébergeur et créateur de sites vitrines, également utilisé pour enregistrer des noms de domaine.",
+      },
     ],
   },
   {
     title: "Bureautique et collaboration",
     tools: [
-      { name: "Microsoft Office", source: { kind: "img", src: favicon("office.com"), alt: "Logo Microsoft Office" } },
-      { name: "Microsoft Word", source: { kind: "img", src: favicon("microsoft.com"), alt: "Logo Microsoft Word" } },
-      { name: "Microsoft Excel", source: { kind: "img", src: favicon("microsoft.com"), alt: "Logo Microsoft Excel" } },
-      { name: "Microsoft PowerPoint", source: { kind: "img", src: favicon("microsoft.com"), alt: "Logo Microsoft PowerPoint" } },
-      { name: "Outlook", source: { kind: "img", src: favicon("outlook.com"), alt: "Logo Outlook" } },
-      { name: "Google Workspace", source: { kind: "img", src: favicon("workspace.google.com"), alt: "Logo Google Workspace" } },
-      { name: "Google Docs", source: { kind: "img", src: favicon("docs.google.com"), alt: "Logo Google Docs" } },
-      { name: "Google Sheets", source: { kind: "img", src: favicon("sheets.google.com"), alt: "Logo Google Sheets" } },
-      { name: "Google Drive", source: { kind: "img", src: favicon("drive.google.com"), alt: "Logo Google Drive" } },
-      { name: "Gmail", source: { kind: "img", src: favicon("mail.google.com"), alt: "Logo Gmail" } },
+      {
+        name: "Microsoft Office",
+        source: { kind: "img", src: favicon("office.com"), alt: "Logo Microsoft Office" },
+        hint: "Suite bureautique regroupant Word, Excel, PowerPoint, Outlook et d'autres logiciels professionnels.",
+      },
+      {
+        name: "Microsoft Word",
+        source: { kind: "img", src: favicon("microsoft.com"), alt: "Logo Microsoft Word" },
+        hint: "Traitement de texte pour rédiger et mettre en forme des documents.",
+      },
+      {
+        name: "Microsoft Excel",
+        source: { kind: "img", src: favicon("microsoft.com"), alt: "Logo Microsoft Excel" },
+        hint: "Tableur pour organiser des données, réaliser des calculs et créer des tableaux.",
+      },
+      {
+        name: "Microsoft PowerPoint",
+        source: { kind: "img", src: favicon("microsoft.com"), alt: "Logo Microsoft PowerPoint" },
+        hint: "Logiciel de création de présentations et de diaporamas.",
+      },
+      {
+        name: "Outlook",
+        source: { kind: "img", src: favicon("outlook.com"), alt: "Logo Outlook" },
+        hint: "Messagerie professionnelle avec calendrier et gestion de contacts.",
+      },
+      {
+        name: "Google Workspace",
+        source: { kind: "img", src: favicon("workspace.google.com"), alt: "Logo Google Workspace" },
+        hint: "Suite collaborative de Google : messagerie, agenda, stockage et outils bureautiques en ligne.",
+      },
+      {
+        name: "Google Docs",
+        source: { kind: "img", src: favicon("docs.google.com"), alt: "Logo Google Docs" },
+        hint: "Traitement de texte en ligne permettant la rédaction collaborative en temps réel.",
+      },
+      {
+        name: "Google Sheets",
+        source: { kind: "img", src: favicon("sheets.google.com"), alt: "Logo Google Sheets" },
+        hint: "Tableur en ligne pour créer et partager des feuilles de calcul.",
+      },
+      {
+        name: "Google Drive",
+        source: { kind: "img", src: favicon("drive.google.com"), alt: "Logo Google Drive" },
+        hint: "Service de stockage et de partage de fichiers en ligne.",
+      },
+      {
+        name: "Gmail",
+        source: { kind: "img", src: favicon("mail.google.com"), alt: "Logo Gmail" },
+        hint: "Messagerie électronique de Google.",
+      },
     ],
   },
   {
     title: "Communication et réseaux sociaux",
     tools: [
-      { name: "Meta Business Suite", source: { kind: "img", src: favicon("business.facebook.com"), alt: "Logo Meta Business Suite" } },
-      { name: "Facebook", source: { kind: "img", src: favicon("facebook.com"), alt: "Logo Facebook" } },
-      { name: "Instagram", source: { kind: "img", src: favicon("instagram.com"), alt: "Logo Instagram" } },
-      { name: "LinkedIn", source: { kind: "img", src: favicon("linkedin.com"), alt: "Logo LinkedIn" } },
+      {
+        name: "Meta Business Suite",
+        source: { kind: "img", src: favicon("business.facebook.com"), alt: "Logo Meta Business Suite" },
+        hint: "Outil de gestion des pages Facebook et Instagram : publications, messages et statistiques.",
+      },
+      {
+        name: "Facebook",
+        source: { kind: "img", src: favicon("facebook.com"), alt: "Logo Facebook" },
+        hint: "Réseau social généraliste utilisé pour la communication de pages et de communautés.",
+      },
+      {
+        name: "Instagram",
+        source: { kind: "img", src: favicon("instagram.com"), alt: "Logo Instagram" },
+        hint: "Réseau social visuel centré sur les photos, vidéos et stories.",
+      },
+      {
+        name: "LinkedIn",
+        source: { kind: "img", src: favicon("linkedin.com"), alt: "Logo LinkedIn" },
+        hint: "Réseau social professionnel pour la présence et la communication d'entreprise.",
+      },
     ],
   },
   {
     title: "Audio",
     tools: [
-      { name: "MixPad", source: { kind: "img", src: favicon("nch.com.au"), alt: "Logo MixPad" } },
+      {
+        name: "MixPad",
+        source: { kind: "img", src: favicon("nch.com.au"), alt: "Logo MixPad" },
+        hint: "Logiciel de mixage et de montage audio multipiste pour émissions, podcasts et jingles.",
+      },
     ],
   },
   {
     title: "Gestion touristique et données",
     tools: [
-      { name: "Avizi", source: { kind: "img", src: favicon("avizi.fr"), alt: "Logo Avizi" } },
-      { name: "Koesio", source: { kind: "img", src: favicon("koesio.com"), alt: "Logo Koesio" } },
+      {
+        name: "Avizi",
+        source: { kind: "img", src: favicon("avizi.fr"), alt: "Logo Avizi" },
+        hint: "Logiciel de caisse et de gestion des ventes utilisé par les offices de tourisme.",
+      },
+      {
+        name: "Koesio",
+        source: { kind: "img", src: favicon("koesio.com"), alt: "Logo Koesio" },
+        hint: "Solution numérique pour la gestion administrative et bureautique des structures.",
+      },
     ],
   },
   {
@@ -385,34 +469,49 @@ const toolCategories: { title: string; note?: string; tools: Tool[] }[] = [
     note:
       "Utilisation pour la recherche, l'organisation des informations, la rédaction, la mise en forme de contenus et l'amélioration de supports.",
     tools: [
-      { name: "ChatGPT", source: { kind: "img", src: favicon("chatgpt.com"), alt: "Logo ChatGPT" } },
-      { name: "Intelligence artificielle générative", source: { kind: "icon", icon: Lightbulb } },
+      {
+        name: "ChatGPT",
+        source: { kind: "img", src: favicon("chatgpt.com"), alt: "Logo ChatGPT" },
+        hint: "Assistant conversationnel d'OpenAI utilisé pour la recherche d'informations et l'aide à la rédaction.",
+      },
+      {
+        name: "Intelligence artificielle générative",
+        source: { kind: "icon", icon: Lightbulb },
+        hint: "Ensemble d'outils capables de générer du texte, des images ou des idées à partir d'instructions.",
+      },
     ],
   },
 ];
 
 function ToolChip({ tool }: { tool: Tool }) {
   return (
-    <li className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5">
-      <span className="inline-flex h-6 w-6 items-center justify-center overflow-hidden rounded-md">
+    <li className="flex items-start gap-3 rounded-xl border border-border bg-background p-3">
+      <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-card">
         {tool.source.kind === "img" ? (
           <img
             src={tool.source.src}
             alt={tool.source.alt}
-            width={20}
-            height={20}
+            width={24}
+            height={24}
             loading="lazy"
-            className="h-5 w-5 object-contain"
+            className="h-6 w-6 object-contain"
           />
         ) : tool.source.kind === "icon" ? (
-          <tool.source.icon size={16} className="text-primary" />
+          <tool.source.icon size={18} className="text-primary" />
         ) : (
-          <span className="text-[9px] font-semibold text-foreground">
+          <span className="text-[10px] font-semibold text-foreground">
             {tool.source.label}
           </span>
         )}
       </span>
-      <span className="text-xs font-medium text-foreground">{tool.name}</span>
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-foreground">{tool.name}</p>
+        {tool.hint && (
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+            {tool.hint}
+          </p>
+        )}
+      </div>
     </li>
   );
 }
@@ -479,11 +578,12 @@ export function MyJourney() {
                   Je recherche un BTS Communication en alternance
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Le BTS Communication est un diplôme d'État en deux ans (Bac+2) qui
-                  forme à la conception, au suivi et à l'évaluation d'actions de
-                  communication. Le programme mêle stratégie, création de contenus,
-                  communication digitale, relations presse, événementiel et gestion de
-                  projet.
+                  Le BTS Communication est un diplôme d'État de niveau 5 (Bac+2)
+                  reconnu par le Ministère de l'Enseignement supérieur. Il se
+                  prépare en deux ans, après un baccalauréat, et forme à la
+                  conception, à la mise en œuvre, au suivi et à l'évaluation
+                  d'actions de communication commerciale, institutionnelle,
+                  numérique et événementielle.
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                   Je suis ouvert à des missions variées, à condition que la
@@ -496,6 +596,97 @@ export function MyJourney() {
               </div>
             </div>
 
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              <div className="rounded-xl border border-border bg-card p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
+                  Rythme en alternance
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  Environ deux jours en centre de formation et trois jours en
+                  entreprise chaque semaine, sur une durée de deux ans. Le
+                  rythme peut varier légèrement selon l'école et l'entreprise
+                  d'accueil.
+                </p>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
+                  Statut et contrat
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  Contrat d'apprentissage. Formation prise en charge par
+                  l'entreprise via l'OPCO. Rémunération de l'apprenti selon la
+                  grille légale, définie par l'âge et l'année de contrat.
+                </p>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
+                  Matières professionnelles
+                </p>
+                <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
+                  <li>• Cultures de la communication</li>
+                  <li>• Relations commerciales</li>
+                  <li>• Projet et pratiques de la communication</li>
+                  <li>• Veille opérationnelle et outils numériques</li>
+                  <li>• Ateliers de production</li>
+                </ul>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
+                  Matières générales
+                </p>
+                <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
+                  <li>• Culture générale et expression</li>
+                  <li>• Langue vivante étrangère (anglais)</li>
+                  <li>• Économie, droit et management</li>
+                </ul>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-4 md:col-span-2">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
+                  Compétences visées
+                </p>
+                <ul className="mt-2 grid gap-1.5 text-sm text-muted-foreground sm:grid-cols-2">
+                  <li>• Concevoir et piloter une stratégie de communication</li>
+                  <li>• Réaliser des supports print et numériques</li>
+                  <li>• Gérer les réseaux sociaux et le contenu web</li>
+                  <li>• Assurer les relations presse et médias</li>
+                  <li>• Organiser des événements et opérations</li>
+                  <li>• Gérer un budget et coordonner des prestataires</li>
+                  <li>• Suivre les indicateurs et évaluer les actions</li>
+                  <li>• Assurer une veille métier et concurrentielle</li>
+                </ul>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-4 md:col-span-2">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
+                  Épreuves d'examen
+                </p>
+                <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
+                  <li>• Culture générale et expression (écrit)</li>
+                  <li>• Langue vivante étrangère (oral et écrit)</li>
+                  <li>• Cultures de la communication (écrit)</li>
+                  <li>• Économie, droit et management (écrit)</li>
+                  <li>• Projet et pratiques de la communication (oral, dossier)</li>
+                  <li>• Relations commerciales (oral)</li>
+                  <li>• Activités professionnelles (dossier et soutenance)</li>
+                </ul>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-4 md:col-span-2">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
+                  Débouchés
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  Assistant chef de projet en agence, chargé de communication en
+                  entreprise, association ou collectivité, community manager,
+                  attaché de presse junior, assistant événementiel ou marketing.
+                  Poursuite d'études possible en licence professionnelle,
+                  bachelor ou école de communication et de journalisme —
+                  perspective que je souhaite suivre.
+                </p>
+              </div>
+            </div>
+
+            <p className="mt-6 text-xs font-semibold uppercase tracking-widest text-primary">
+              Écoles visées
+            </p>
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               <a
                 href="https://www.ibsac.fr/esc-communication/"
@@ -579,7 +770,7 @@ export function MyJourney() {
                   <h4 className="font-display text-sm font-semibold uppercase tracking-widest text-primary">
                     {cat.title}
                   </h4>
-                  <ul className="mt-3 flex flex-wrap gap-2">
+                  <ul className="mt-3 grid gap-3 sm:grid-cols-2">
                     {cat.tools.map((t) => (
                       <ToolChip key={t.name} tool={t} />
                     ))}
