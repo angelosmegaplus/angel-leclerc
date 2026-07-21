@@ -210,17 +210,17 @@ const values = [
   {
     icon: Lightbulb,
     title: "Clarté",
-    text: "Transformer les idées en messages simples et compréhensibles.",
+    text: "Transformer les idées en messages clairs.",
   },
   {
     icon: Users,
     title: "Coordination",
-    text: "Faire avancer les différentes personnes autour d'un objectif commun.",
+    text: "Faire avancer plusieurs acteurs vers un objectif commun.",
   },
   {
     icon: Repeat,
     title: "Adaptation",
-    text: "Faire évoluer la mission selon les besoins, les moyens et les retours du client.",
+    text: "Ajuster la mission selon les besoins et les retours.",
   },
 ];
 
