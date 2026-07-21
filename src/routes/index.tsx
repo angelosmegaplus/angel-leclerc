@@ -144,37 +144,37 @@ const mainServices = [
     icon: Compass,
     title: "Gestion de projet",
     intro:
-      "Organisation et suivi d'un projet de communication, de sa conception jusqu'à sa mise en œuvre.",
+      "Organisation et suivi de votre projet de la conception à la mise en œuvre.",
     items: [
-      "Cadrage du projet, planning et jalons",
-      "Coordination des étapes et des intervenants",
+      "Cadrage, planning et jalons",
+      "Coordination des étapes et intervenants",
       "Recherche et pilotage des prestataires",
-      "Suivi régulier et point d'avancement avec le client",
+      "Suivi et points d'avancement",
     ],
   },
   {
     icon: Layers,
     title: "Conseil en communication",
     intro:
-      "Analyse des besoins, définition des objectifs et création d'une stratégie adaptée au projet.",
+      "Analyse des besoins et définition d'une stratégie adaptée au projet.",
     items: [
       "Analyse du contexte, des publics et des objectifs",
-      "Positionnement, messages clés et ligne éditoriale",
-      "Choix des supports et des canaux",
-      "Plan d'action et recommandations concrètes",
+      "Positionnement et messages clés",
+      "Choix des supports et canaux",
+      "Plan d'action et recommandations",
     ],
   },
   {
     icon: FileText,
     title: "Rédaction et contenus éditoriaux",
     intro:
-      "Rédaction de textes professionnels, institutionnels, journalistiques ou destinés au web et aux réseaux sociaux.",
+      "Rédaction de textes professionnels, journalistiques ou numériques.",
     items: [
-      "Articles, portraits, interviews, dossiers",
-      "Enquêtes et travaux de recherche",
-      "Textes institutionnels, présentations, communiqués",
-      "Contenus web et publications sur les réseaux sociaux",
-      "Adaptation du ton selon le public visé",
+      "Articles, portraits, interviews",
+      "Enquêtes et recherches",
+      "Textes institutionnels et communiqués",
+      "Contenus web et réseaux sociaux",
+      "Ton adapté au public visé",
     ],
   },
 ];
