@@ -273,13 +273,12 @@ function Hero() {
             Gestion de projet · Conseil · Rédaction
           </span>
           <h1 className="mt-6 font-display text-4xl font-bold leading-[1.05] tracking-tight text-foreground md:text-5xl lg:text-6xl">
-            Piloter votre communication, structurer vos idées,{" "}
-            <span className="text-primary">faire avancer vos projets.</span>
+            Gestion de projet, conseil et rédaction{" "}
+            <span className="text-primary">pour vos idées.</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
-            J'accompagne les professionnels, associations, particuliers et porteurs de
-            projets dans l'organisation de leur communication, la définition de leur
-            stratégie et la rédaction de leurs contenus.
+            J'accompagne professionnels, associations et porteurs de projets dans
+            l'organisation, la stratégie et la rédaction de leurs contenus.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button
