@@ -362,8 +362,7 @@ function Intro() {
 
         <AnimatedSection delay={0.3}>
           <p className="mt-10 text-center text-sm italic text-muted-foreground">
-            La création graphique, audio ou vidéo peut être proposée ponctuellement
-            selon les besoins.
+            La création graphique, audio ou vidéo est proposée ponctuellement selon les besoins.
           </p>
         </AnimatedSection>
       </div>
