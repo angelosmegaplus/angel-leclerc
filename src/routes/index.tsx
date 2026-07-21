@@ -781,14 +781,11 @@ function ContactSection() {
         <AnimatedSection delay={0.2} className="mt-10">
           <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
             <h3 className="font-display text-lg font-semibold text-foreground">
-              Découvrir mes réalisations
+              Réalisations
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              Mes réalisations comprennent des projets de gestion et conseil en
-              communication, des plans de communication, des travaux
-              rédactionnels, des articles, des identités visuelles, des affiches,
-              des présentations et différents supports numériques. Une sélection
-              de travaux peut être envoyée directement sur demande.
+              Gestion de projet, conseil, rédaction, identités visuelles, affiches et
+              supports numériques. Une sélection est disponible sur demande.
             </p>
             <Button
               asChild
@@ -809,15 +806,13 @@ function ContactSection() {
                 <CreditCard size={20} className="text-primary" />
               </div>
               <h3 className="font-display text-xl font-bold text-foreground md:text-2xl">
-                Modalités de paiement
+                Paiement
               </h3>
             </div>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
               Facturation via{" "}
               <BrandTag name="Revolut Business" domain="revolut.com" href="https://www.revolut.com/business/" />
-              , avec un lien de paiement sécurisé. Règlement en deux fois : un
-              premier versement avant le lancement, un second à la fin de la
-              prestation.
+              , lien de paiement sécurisé. Acompte avant la mission, solde à la fin.
             </p>
             <PaymentLogos />
             <figure className="mt-6">
@@ -832,7 +827,7 @@ function ContactSection() {
                 />
               </div>
               <figcaption className="mt-2 text-[11px] italic text-muted-foreground/80">
-                Exemple illustratif d'une facture générée via Revolut Business.
+                Exemple de facture Revolut Business.
               </figcaption>
             </figure>
           </div>
