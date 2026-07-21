@@ -613,21 +613,14 @@ function About() {
           <AnimatedSection>
             <div className="h-full rounded-2xl border border-border bg-background p-8">
               <h3 className="font-display text-xl font-semibold text-foreground">
-                Un fonctionnement clair
+                Fonctionnement clair
               </h3>
               <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
                 <p>
-                  Le paiement peut être réparti en deux versements : un premier
-                  versement avant le début de la mission, puis un second à la fin.
+                  Paiement en deux fois : un acompte avant la mission, le solde à la fin.
                 </p>
                 <p>
-                  Le premier versement permet de couvrir le lancement du projet, le
-                  temps de travail engagé, les logiciels, les outils et les
-                  éventuels frais nécessaires.
-                </p>
-                <p>
-                  Les montants et modalités sont convenus avec le client puis
-                  confirmés sur le devis ou la facture. Les paiements sont traités via{" "}
+                  Montants et modalités confirmés sur le devis. Paiements via{" "}
                   <BrandTag name="Revolut Business" domain="revolut.com" href="https://www.revolut.com/business/" />.
                 </p>
               </div>
@@ -640,19 +633,14 @@ function About() {
               </h3>
               <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
                 <p>
-                  En cas d'insatisfaction, contactez-moi afin que des corrections
-                  ou une solution adaptée puissent être recherchées.
+                  En cas d'insatisfaction, je recherche des corrections ou une solution adaptée.
                 </p>
                 <p>
-                  Si la prestation ne correspond manifestement pas à ce qui avait
-                  été convenu et qu'aucune correction satisfaisante n'est possible,
-                  un remboursement total ou partiel peut être effectué selon la
-                  situation.
+                  Si la prestation ne correspond pas à ce qui était convenu, un remboursement
+                  total ou partiel peut être effectué.
                 </p>
                 <p className="text-xs italic">
-                  Les prestations de conseil et de communication sont soumises à
-                  une obligation de moyens et non de résultat lorsque les
-                  résultats dépendent de facteurs extérieurs.
+                  Les prestations de conseil et de communication sont soumises à une obligation de moyens.
                 </p>
               </div>
             </div>
