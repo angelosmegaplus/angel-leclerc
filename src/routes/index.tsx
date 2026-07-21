@@ -228,22 +228,22 @@ const steps = [
   {
     n: "01",
     title: "Premier échange",
-    text: "Compréhension du projet, des objectifs, du public concerné et des contraintes.",
+    text: "Compréhension du projet, des objectifs et des contraintes.",
   },
   {
     n: "02",
     title: "Proposition",
-    text: "Définition de la mission, des actions à réaliser, du calendrier prévisionnel et du devis.",
+    text: "Mission, actions, calendrier et devis.",
   },
   {
     n: "03",
-    title: "Réalisation et coordination",
-    text: "Réalisation directe des prestations prévues ou coordination des prestataires nécessaires.",
+    title: "Réalisation",
+    text: "Travail direct ou coordination des prestataires.",
   },
   {
     n: "04",
-    title: "Livraison et suivi",
-    text: "Validation du travail, livraison des éléments et accompagnement dans leur mise en œuvre.",
+    title: "Livraison",
+    text: "Validation, livraison et suivi.",
   },
 ];
 
