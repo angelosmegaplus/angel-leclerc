@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { SubstackBanner } from "../components/SubstackBanner";
+import { ApprenticeshipBanner } from "../components/ApprenticeshipBanner";
 
 function NotFoundComponent() {
   return (
