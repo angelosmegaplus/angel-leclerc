@@ -12,6 +12,7 @@ import {
   RotateCcw,
   MousePointerClick,
   GraduationCap,
+  ExternalLink,
   type LucideIcon,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
@@ -558,24 +559,86 @@ export function MyJourney() {
         </AnimatedSection>
 
         <AnimatedSection delay={0.1} className="mt-8">
-          <div className="mx-auto max-w-2xl rounded-2xl bg-primary p-6 text-primary-foreground md:p-8">
+          <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-background p-6 md:p-8">
             <div className="flex items-start gap-4">
-              <div className="inline-flex shrink-0 rounded-xl bg-primary-foreground/15 p-3">
-                <GraduationCap size={24} className="text-primary-foreground" />
+              <div className="inline-flex shrink-0 rounded-xl bg-primary/10 p-3">
+                <GraduationCap size={24} className="text-primary" />
               </div>
               <div>
-                <h3 className="font-display text-lg font-semibold text-primary-foreground md:text-xl">
-                  Je recherche une entreprise pour mon BTS Communication
+                <h3 className="font-display text-lg font-semibold text-foreground md:text-xl">
+                  Je recherche un BTS Communication en alternance
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-primary-foreground/90">
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  Le BTS Communication est un diplôme d'État en deux ans (Bac+2) qui
+                  forme à la conception, au suivi et à l'évaluation d'actions de
+                  communication. Le programme mêle stratégie, création de contenus,
+                  communication digitale, relations presse, événementiel et gestion de
+                  projet.
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                   Je suis ouvert à des missions variées, à condition que la
                   communication reste majoritaire. Par exemple : 60 % de communication
                   et 40 % de vente, d'accueil ou d'autres activités complémentaires.
                 </p>
-                <p className="mt-3 text-sm font-medium text-primary-foreground">
-                  Si vous avez une opportunité d'alternance, contactez-moi.
+                <p className="mt-3 text-sm font-medium text-foreground">
+                  Contactez-moi si vous avez une opportunité d'apprentissage.
                 </p>
               </div>
+            </div>
+
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <a
+                href="https://www.ibsac.fr/esc-communication/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/50"
+              >
+                <img
+                  src={favicon("ibsac.fr")}
+                  alt="Logo IBSAC"
+                  width={32}
+                  height={32}
+                  loading="lazy"
+                  className="h-8 w-8 object-contain"
+                />
+                <div>
+                  <p className="font-display text-sm font-semibold text-foreground group-hover:text-primary">
+                    IBSAC
+                  </p>
+                  <p className="text-xs text-muted-foreground">Brive-la-Gaillarde</p>
+                </div>
+                <ExternalLink
+                  size={14}
+                  className="ml-auto text-muted-foreground"
+                  aria-hidden="true"
+                />
+              </a>
+              <a
+                href="https://www.talis.community/formations/bts-communication/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/50"
+              >
+                <img
+                  src={favicon("talis.community")}
+                  alt="Logo Talis"
+                  width={32}
+                  height={32}
+                  loading="lazy"
+                  className="h-8 w-8 object-contain"
+                />
+                <div>
+                  <p className="font-display text-sm font-semibold text-foreground group-hover:text-primary">
+                    Talis
+                  </p>
+                  <p className="text-xs text-muted-foreground">Périgueux</p>
+                </div>
+                <ExternalLink
+                  size={14}
+                  className="ml-auto text-muted-foreground"
+                  aria-hidden="true"
+                />
+              </a>
             </div>
           </div>
         </AnimatedSection>
