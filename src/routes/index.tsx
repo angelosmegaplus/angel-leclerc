@@ -26,6 +26,7 @@ import {
   Globe,
   Smartphone,
   Building2,
+  GraduationCap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedSection } from "@/components/AnimatedSection";
