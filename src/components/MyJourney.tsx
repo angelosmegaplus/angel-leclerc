@@ -13,6 +13,10 @@ import {
   MousePointerClick,
   GraduationCap,
   ExternalLink,
+  Linkedin,
+  Newspaper,
+  Briefcase,
+  Target,
   type LucideIcon,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
