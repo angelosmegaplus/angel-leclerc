@@ -635,6 +635,15 @@ function About() {
                 <BrandTag name="Play Store" domain="play.google.com" href="https://play.google.com/" />{" "}
                 et <BrandTag name="Windows" domain="microsoft.com" href="https://www.microsoft.com/windows" />, pour garder une veille active.
               </p>
+              <p>
+                Ma bureautique et mes e-mails passent par{" "}
+                <BrandTag name="Google Workspace" domain="workspace.google.com" href="https://workspace.google.com/" />
+                , et le domaine{" "}
+                <span className="font-medium text-foreground">angel-leclerc.fr</span>{" "}
+                est enregistré chez{" "}
+                <BrandTag name="Squarespace" domain="squarespace.com" href="https://www.squarespace.com/" />
+                .
+              </p>
             </div>
           </div>
         </AnimatedSection>
