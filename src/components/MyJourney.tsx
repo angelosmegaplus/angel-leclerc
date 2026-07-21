@@ -1,0 +1,657 @@
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Lightbulb,
+  HeartPulse,
+  Tent,
+  BookOpen,
+  Flag,
+  Check,
+  RotateCcw,
+  MousePointerClick,
+  type LucideIcon,
+} from "lucide-react";
+import { AnimatedSection } from "@/components/AnimatedSection";
+import alcLogo from "@/assets/logo.png";
+
+// ---------- Logo helper ----------
+
+type LogoSource =
+  | { kind: "img"; src: string; alt: string }
+  | { kind: "icon"; icon: LucideIcon }
+  | { kind: "text"; label: string };
+
+function LogoBox({ source, size = 56 }: { source: LogoSource; size?: number }) {
+  return (
+    <div
+      className="inline-flex shrink-0 items-center justify-center rounded-xl border border-border bg-background"
+      style={{ width: size, height: size }}
+      aria-hidden={source.kind === "text" ? undefined : true}
+    >
+      {source.kind === "img" && (
+        <img
+          src={source.src}
+          alt={source.alt}
+          width={size - 16}
+          height={size - 16}
+          loading="lazy"
+          className="max-h-[70%] max-w-[70%] object-contain"
+        />
+      )}
+      {source.kind === "icon" && (
+        <source.icon size={Math.round(size * 0.5)} className="text-primary" />
+      )}
+      {source.kind === "text" && (
+        <span className="px-1 text-center text-[10px] font-semibold leading-tight text-foreground">
+          {source.label}
+        </span>
+      )}
+    </div>
+  );
+}
+
+const favicon = (domain: string) =>
+  `https://www.google.com/s2/favicons?sz=128&domain=${domain}`;
+
+// ---------- Data ----------
+
+type Card = {
+  title: string;
+  org: string;
+  period: string;
+  meta?: string;
+  logo: LogoSource;
+  description: string;
+  skills?: string[];
+};
+
+const experiences: Card[] = [
+  {
+    title: "Agent de propreté urbaine",
+    org: "Mairie de Sarlat-la-Canéda",
+    period: "Juillet 2026 – aujourd'hui",
+    meta: "Emploi saisonnier – Sarlat-la-Canéda",
+    logo: { kind: "img", src: favicon("sarlat.fr"), alt: "Logo Ville de Sarlat-la-Canéda" },
+    description:
+      "Emploi saisonnier consacré à l'entretien et à la propreté des espaces publics. Cette expérience demande ponctualité, autonomie, endurance, organisation, respect des consignes, travail en équipe et sens du service public.",
+    skills: [
+      "Entretien de l'espace public",
+      "Travail en équipe",
+      "Autonomie",
+      "Organisation",
+      "Respect des consignes",
+    ],
+  },
+  {
+    title: "Entrepreneur individuel en communication",
+    org: "Angel Leclerc Communication",
+    period: "Depuis juin 2026",
+    meta: "Activité indépendante",
+    logo: { kind: "img", src: alcLogo, alt: "Logo Angel Leclerc Communication" },
+    description:
+      "Accompagnement de projets dans les domaines de la communication, de la rédaction et de la gestion de projet. Les missions peuvent comprendre l'analyse des besoins, la définition d'une stratégie, la rédaction de contenus, la création de supports, la création ou l'amélioration de sites internet, l'organisation des différentes étapes d'un projet et la coordination avec des partenaires ou des prestataires.",
+    skills: [
+      "Gestion de projet",
+      "Conseil en communication",
+      "Rédaction",
+      "Création de supports",
+      "Communication numérique",
+      "Coordination",
+    ],
+  },
+  {
+    title: "Projets personnels et associatifs",
+    org: "Parcours indépendant",
+    period: "Juin 2025 – juin 2026",
+    logo: { kind: "icon", icon: Lightbulb },
+    description:
+      "Développement de plusieurs projets personnels et associatifs dans les domaines de la communication, du scoutisme, de la création graphique, du numérique et de la transmission d'informations. Cette période a renforcé mes compétences en autonomie, en organisation, en rédaction, en conception de projets et en création de supports.",
+    skills: [
+      "Gestion de projet",
+      "Création graphique",
+      "Rédaction",
+      "Organisation",
+      "Communication numérique",
+      "Travail autonome",
+    ],
+  },
+  {
+    title: "Apprenti Bac professionnel Métiers de l'accueil",
+    org: "Office de tourisme du Val de Sioule",
+    period: "Septembre 2023 – juin 2025",
+    meta: "Contrat en alternance – Saint-Pourçain-sur-Sioule",
+    logo: {
+      kind: "img",
+      src: favicon("valdesioule-tourisme.com"),
+      alt: "Logo Office de tourisme du Val de Sioule",
+    },
+    description:
+      "Apprentissage réalisé pendant un an et dix mois au sein de l'Office de tourisme du Val de Sioule. Missions d'accueil physique, téléphonique et numérique, conseil aux visiteurs, information touristique, vente de produits locaux, gestion de l'espace d'accueil, création d'affiches, de livrets et de supports d'information, saisie de données et participation aux projets de l'équipe.",
+    skills: [
+      "Accueil multicanal",
+      "Information touristique",
+      "Vente",
+      "Création de supports",
+      "Gestion de données",
+      "Relation avec le public",
+      "Travail en équipe",
+    ],
+  },
+  {
+    title: "Stagiaire en radio",
+    org: "RCF Radio",
+    period: "Mars 2022",
+    meta: "Stage – Moulins",
+    logo: { kind: "img", src: favicon("rcf.fr"), alt: "Logo RCF Radio" },
+    description:
+      "Découverte du fonctionnement d'une station de radio, de la préparation des contenus, de l'organisation d'une rédaction et de la réalisation de programmes radiophoniques.",
+    skills: [
+      "Média radio",
+      "Communication orale",
+      "Préparation de contenus",
+      "Découverte du fonctionnement d'une rédaction",
+    ],
+  },
+];
+
+const formation: Card[] = [
+  {
+    title: "Baccalauréat professionnel Métiers de l'accueil",
+    org: "MFR-CFA du Périgord noir",
+    period: "Septembre 2023 – juillet 2025",
+    meta: "Mention Bien",
+    logo: {
+      kind: "img",
+      src: favicon("mfr-perigordnoir.fr"),
+      alt: "Logo MFR-CFA du Périgord noir",
+    },
+    description:
+      "Formation centrée sur l'accueil multicanal, l'information, le conseil, l'orientation du public, la vente, la gestion des demandes, les tâches administratives et la communication. Cette formation réalisée en alternance m'a permis de développer une forte aisance orale, de l'autonomie, de la polyvalence et une bonne capacité d'adaptation. Le parcours a également été enrichi par un voyage d'étude Erasmus de deux semaines en Irlande, apportant une ouverture internationale et une pratique concrète de l'anglais.",
+    skills: [
+      "Accueil multicanal",
+      "Information du public",
+      "Communication orale",
+      "Vente",
+      "Gestion administrative",
+      "Création de supports",
+      "Travail en équipe",
+      "Anglais",
+    ],
+  },
+];
+
+const certifications: Card[] = [
+  {
+    title: "Les principes fondamentaux du marketing digital",
+    org: "Google",
+    period: "Obtenue en avril 2026",
+    logo: { kind: "img", src: favicon("google.com"), alt: "Logo Google" },
+    description:
+      "Formation consacrée aux bases du marketing numérique, de la visibilité en ligne, de la communication digitale et de la présence d'une organisation sur Internet.",
+  },
+  {
+    title: "BAFA",
+    org: "Ligue de l'enseignement de l'Allier",
+    period: "",
+    logo: {
+      kind: "img",
+      src: favicon("laligue03.fr"),
+      alt: "Logo Ligue de l'enseignement de l'Allier",
+    },
+    description:
+      "Formation à l'animation, à l'encadrement de groupes, à la préparation d'activités et à la sécurité des mineurs.",
+    skills: [
+      "Animation",
+      "Encadrement",
+      "Préparation d'activités",
+      "Gestion de groupe",
+      "Sécurité",
+    ],
+  },
+  {
+    title: "PSC1",
+    org: "Prévention et secours civiques de niveau 1",
+    period: "",
+    logo: { kind: "icon", icon: HeartPulse },
+    description:
+      "Formation aux gestes de premiers secours et aux comportements à adopter face à une situation d'urgence.",
+  },
+];
+
+const engagements: Card[] = [
+  {
+    title: "Président d'association",
+    org: "La Fraternité du Scoutisme",
+    period: "Décembre 2024 – janvier 2026",
+    logo: { kind: "icon", icon: Flag },
+    description:
+      "Relance d'une association nationale interscoute et intergénérationnelle laissée à l'abandon depuis plusieurs années. Réalisation d'un important travail de communication, de création de contenus, d'animation d'une communauté, d'organisation de rencontres et de conférences, de recherches historiques et pédagogiques, de développement d'un forum et de valorisation de l'histoire du scoutisme.",
+    skills: [
+      "Gestion associative",
+      "Communication",
+      "Création de contenus",
+      "Organisation d'événements",
+      "Recherche",
+      "Animation de communauté",
+      "Gestion de projet",
+    ],
+  },
+  {
+    title: "Chef scout",
+    org: "Expérience au sein de différents mouvements scouts",
+    period: "Septembre 2022 – août 2025",
+    logo: { kind: "icon", icon: Tent },
+    description:
+      "Engagement bénévole au sein de différents mouvements scouts, principalement auprès d'enfants âgés de 7 à 12 ans. Participation à l'encadrement des jeunes, à la préparation des activités, à l'organisation des sorties et des camps, à la vie des unités et à l'accompagnement éducatif. Cette expérience m'a permis de développer des compétences en animation, pédagogie, organisation, gestion de groupe, travail en équipe et prise de responsabilités.",
+  },
+  {
+    title: "Bénévole",
+    org: "Réseau Baden-Powell",
+    period: "Depuis juillet 2024",
+    logo: { kind: "icon", icon: BookOpen },
+    description:
+      "Participation aux activités du Réseau Baden-Powell, notamment autour des archives nationales, de la conservation de documents et de la transmission de l'histoire du scoutisme.",
+    skills: [
+      "Archives",
+      "Recherche documentaire",
+      "Histoire du scoutisme",
+      "Classement de documents",
+      "Transmission",
+      "Travail associatif",
+    ],
+  },
+];
+
+// ---------- Flashcard ----------
+
+function Flashcard({ card }: { card: Card }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <article
+      className="mx-auto w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-background shadow-sm transition-shadow hover:shadow-md"
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex w-full items-start gap-4 p-5 text-left md:p-6"
+      >
+        <LogoBox source={card.logo} size={64} />
+        <div className="min-w-0 flex-1">
+          <h4 className="font-display text-lg font-semibold text-foreground md:text-xl">
+            {card.title}
+          </h4>
+          <p className="mt-1 text-sm font-medium text-foreground/90">{card.org}</p>
+          {card.period && (
+            <p className="mt-0.5 text-xs text-muted-foreground">{card.period}</p>
+          )}
+          {card.meta && (
+            <p className="mt-0.5 text-xs italic text-muted-foreground">{card.meta}</p>
+          )}
+          <p className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-primary">
+            {open ? (
+              <>
+                <RotateCcw size={12} /> Refermer la carte
+              </>
+            ) : (
+              <>
+                <MousePointerClick size={12} /> Appuyer pour voir le détail
+              </>
+            )}
+          </p>
+        </div>
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="details"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="overflow-hidden border-t border-border bg-card"
+          >
+            <div className="space-y-4 p-5 md:p-6">
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                {card.description}
+              </p>
+              {card.skills && card.skills.length > 0 && (
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
+                    Compétences
+                  </p>
+                  <ul className="mt-2 flex flex-wrap gap-2">
+                    {card.skills.map((s) => (
+                      <li
+                        key={s}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1 text-xs text-foreground"
+                      >
+                        <Check size={12} className="text-primary" />
+                        {s}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </article>
+  );
+}
+
+// ---------- Carousel ----------
+
+function Carousel({ cards, label }: { cards: Card[]; label: string }) {
+  const [index, setIndex] = useState(0);
+  const count = cards.length;
+  const go = (n: number) => setIndex(((n % count) + count) % count);
+  return (
+    <div className="relative">
+      <div className="mx-auto max-w-2xl">
+        <div className="relative">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -30 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              drag={count > 1 ? "x" : false}
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.2}
+              onDragEnd={(_, info) => {
+                if (info.offset.x < -60) go(index + 1);
+                else if (info.offset.x > 60) go(index - 1);
+              }}
+            >
+              <Flashcard card={cards[index]} />
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {count > 1 && (
+          <div className="mt-5 flex items-center justify-center gap-4">
+            <button
+              type="button"
+              onClick={() => go(index - 1)}
+              aria-label={`${label} — précédent`}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-foreground transition-colors hover:border-primary hover:text-primary"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <div className="flex items-center gap-1.5">
+              {cards.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => go(i)}
+                  aria-label={`${label} — carte ${i + 1}`}
+                  aria-current={i === index}
+                  className={`h-2 rounded-full transition-all ${
+                    i === index ? "w-6 bg-primary" : "w-2 bg-border"
+                  }`}
+                />
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => go(index + 1)}
+              aria-label={`${label} — suivant`}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-foreground transition-colors hover:border-primary hover:text-primary"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------- Tools ----------
+
+type Tool = { name: string; source: LogoSource; hint?: string };
+
+const toolCategories: { title: string; note?: string; tools: Tool[] }[] = [
+  {
+    title: "Création graphique",
+    tools: [
+      { name: "Canva", source: { kind: "img", src: favicon("canva.com"), alt: "Logo Canva" } },
+      { name: "Figma", source: { kind: "img", src: favicon("figma.com"), alt: "Logo Figma" } },
+    ],
+  },
+  {
+    title: "Sites internet et publication",
+    tools: [
+      { name: "Lovable", source: { kind: "img", src: favicon("lovable.dev"), alt: "Logo Lovable" } },
+      { name: "Squarespace", source: { kind: "img", src: favicon("squarespace.com"), alt: "Logo Squarespace" } },
+    ],
+  },
+  {
+    title: "Bureautique et collaboration",
+    tools: [
+      { name: "Microsoft Office", source: { kind: "img", src: favicon("office.com"), alt: "Logo Microsoft Office" } },
+      { name: "Microsoft Word", source: { kind: "img", src: favicon("microsoft.com"), alt: "Logo Microsoft Word" } },
+      { name: "Microsoft Excel", source: { kind: "img", src: favicon("microsoft.com"), alt: "Logo Microsoft Excel" } },
+      { name: "Microsoft PowerPoint", source: { kind: "img", src: favicon("microsoft.com"), alt: "Logo Microsoft PowerPoint" } },
+      { name: "Outlook", source: { kind: "img", src: favicon("outlook.com"), alt: "Logo Outlook" } },
+      { name: "Google Workspace", source: { kind: "img", src: favicon("workspace.google.com"), alt: "Logo Google Workspace" } },
+      { name: "Google Docs", source: { kind: "img", src: favicon("docs.google.com"), alt: "Logo Google Docs" } },
+      { name: "Google Sheets", source: { kind: "img", src: favicon("sheets.google.com"), alt: "Logo Google Sheets" } },
+      { name: "Google Drive", source: { kind: "img", src: favicon("drive.google.com"), alt: "Logo Google Drive" } },
+      { name: "Gmail", source: { kind: "img", src: favicon("mail.google.com"), alt: "Logo Gmail" } },
+    ],
+  },
+  {
+    title: "Communication et réseaux sociaux",
+    tools: [
+      { name: "Meta Business Suite", source: { kind: "img", src: favicon("business.facebook.com"), alt: "Logo Meta Business Suite" } },
+      { name: "Facebook", source: { kind: "img", src: favicon("facebook.com"), alt: "Logo Facebook" } },
+      { name: "Instagram", source: { kind: "img", src: favicon("instagram.com"), alt: "Logo Instagram" } },
+      { name: "LinkedIn", source: { kind: "img", src: favicon("linkedin.com"), alt: "Logo LinkedIn" } },
+    ],
+  },
+  {
+    title: "Audio",
+    tools: [
+      { name: "MixPad", source: { kind: "img", src: favicon("nch.com.au"), alt: "Logo MixPad" } },
+    ],
+  },
+  {
+    title: "Gestion touristique et données",
+    tools: [
+      { name: "Avizi", source: { kind: "img", src: favicon("avizi.fr"), alt: "Logo Avizi" } },
+      { name: "Koesio", source: { kind: "img", src: favicon("koesio.com"), alt: "Logo Koesio" } },
+    ],
+  },
+  {
+    title: "Intelligence artificielle",
+    note:
+      "Utilisation pour la recherche, l'organisation des informations, la rédaction, la mise en forme de contenus et l'amélioration de supports.",
+    tools: [
+      { name: "ChatGPT", source: { kind: "img", src: favicon("chatgpt.com"), alt: "Logo ChatGPT" } },
+      { name: "Intelligence artificielle générative", source: { kind: "icon", icon: Lightbulb } },
+    ],
+  },
+];
+
+function ToolChip({ tool }: { tool: Tool }) {
+  return (
+    <li className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5">
+      <span className="inline-flex h-6 w-6 items-center justify-center overflow-hidden rounded-md">
+        {tool.source.kind === "img" ? (
+          <img
+            src={tool.source.src}
+            alt={tool.source.alt}
+            width={20}
+            height={20}
+            loading="lazy"
+            className="h-5 w-5 object-contain"
+          />
+        ) : tool.source.kind === "icon" ? (
+          <tool.source.icon size={16} className="text-primary" />
+        ) : (
+          <span className="text-[9px] font-semibold text-foreground">
+            {tool.source.label}
+          </span>
+        )}
+      </span>
+      <span className="text-xs font-medium text-foreground">{tool.name}</span>
+    </li>
+  );
+}
+
+// ---------- Subsection wrapper ----------
+
+function Subsection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="mt-16">
+      <div className="mx-auto max-w-2xl">
+        <div className="flex items-center gap-3">
+          <span className="h-px flex-1 bg-border" />
+          <h3 className="font-display text-xl font-semibold text-foreground md:text-2xl">
+            {title}
+          </h3>
+          <span className="h-px flex-1 bg-border" />
+        </div>
+      </div>
+      <div className="mt-8">{children}</div>
+    </div>
+  );
+}
+
+// ---------- Main section ----------
+
+export function MyJourney() {
+  return (
+    <section
+      id="parcours"
+      className="section-padding border-y border-border bg-card"
+    >
+      <div className="container-tight">
+        <AnimatedSection className="mx-auto max-w-3xl text-center">
+          <span className="text-xs font-semibold uppercase tracking-widest text-primary">
+            Section personnelle
+          </span>
+          <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
+            Mon parcours
+          </h2>
+          <p className="mt-5 text-muted-foreground leading-relaxed">
+            Passionné par la communication, l'information et les projets qui ont du
+            sens, j'ai construit un parcours mêlant accueil du public, tourisme,
+            création de contenus, gestion de projet et engagement associatif. Après
+            un baccalauréat professionnel obtenu avec mention Bien, je souhaite
+            poursuivre mon parcours en BTS Communication en alternance, avec
+            l'objectif de m'orienter ensuite vers le journalisme.
+          </p>
+        </AnimatedSection>
+
+        <Subsection title="Expériences professionnelles">
+          <Carousel cards={experiences} label="Expériences professionnelles" />
+        </Subsection>
+
+        <Subsection title="Formation">
+          <div className="mx-auto max-w-2xl">
+            <Flashcard card={formation[0]} />
+          </div>
+        </Subsection>
+
+        <Subsection title="Certifications">
+          <Carousel cards={certifications} label="Certifications" />
+        </Subsection>
+
+        <Subsection title="Engagements associatifs">
+          <Carousel cards={engagements} label="Engagements associatifs" />
+        </Subsection>
+
+        <Subsection title="Outils utilisés">
+          <div className="mx-auto max-w-4xl">
+            <p className="text-center text-sm text-muted-foreground">
+              Outils utilisés dans le cadre de mes formations, de mes expériences
+              professionnelles et de mes projets.
+            </p>
+            <div className="mt-8 space-y-8">
+              {toolCategories.map((cat) => (
+                <div key={cat.title}>
+                  <h4 className="font-display text-sm font-semibold uppercase tracking-widest text-primary">
+                    {cat.title}
+                  </h4>
+                  <ul className="mt-3 flex flex-wrap gap-2">
+                    {cat.tools.map((t) => (
+                      <ToolChip key={t.name} tool={t} />
+                    ))}
+                  </ul>
+                  {cat.note && (
+                    <p className="mt-2 text-xs italic text-muted-foreground">
+                      {cat.note}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </Subsection>
+      </div>
+    </section>
+  );
+}
+
+// ---------- Portfolio placeholder ----------
+
+export function PortfolioPlaceholder() {
+  return (
+    <section id="portfolio" className="section-padding bg-background">
+      <div className="container-tight">
+        <AnimatedSection className="mx-auto max-w-3xl text-center">
+          <span className="text-xs font-semibold uppercase tracking-widest text-primary">
+            Portfolio
+          </span>
+          <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
+            Mes réalisations
+          </h2>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Cette section sera enrichie progressivement au fil des projets.
+          </p>
+        </AnimatedSection>
+
+        <div className="mt-10 grid gap-6 md:grid-cols-2">
+          <div className="rounded-2xl border border-dashed border-border bg-card p-6 md:p-8">
+            <h3 className="font-display text-lg font-semibold text-foreground">
+              Portfolio visuel
+            </h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Affiches, identités visuelles, logos, publications réseaux sociaux,
+              documents d'information, sites internet, maquettes numériques et
+              campagnes de communication.
+            </p>
+            <p className="mt-4 text-xs italic text-muted-foreground/80">
+              Bientôt disponible.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-dashed border-border bg-card p-6 md:p-8">
+            <h3 className="font-display text-lg font-semibold text-foreground">
+              Portfolio audio
+            </h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Émissions de radio, interviews, chroniques, jingles, bandes-annonces,
+              montages audio et identités sonores.
+            </p>
+            <p className="mt-4 text-xs italic text-muted-foreground/80">
+              Bientôt disponible.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

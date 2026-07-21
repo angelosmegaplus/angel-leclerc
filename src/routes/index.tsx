@@ -30,6 +30,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { ProjectForm } from "@/components/ProjectForm";
+import { MyJourney } from "@/components/MyJourney";
 import heroImage from "@/assets/hero-illustration.jpg";
 import revolutInvoiceImage from "@/assets/revolut-invoice-example.jpg";
 
@@ -291,6 +292,7 @@ function HomePage() {
       <Intro />
       <Services />
       <About />
+      <MyJourney />
       <Contact />
     </div>
   );
