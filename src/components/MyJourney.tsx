@@ -678,7 +678,7 @@ export function MyJourney() {
                   <h4 className="font-display text-sm font-semibold uppercase tracking-widest text-primary">
                     {cat.title}
                   </h4>
-                  <ul className="mt-3 flex flex-wrap gap-2">
+                  <ul className="mt-3 grid gap-3 sm:grid-cols-2">
                     {cat.tools.map((t) => (
                       <ToolChip key={t.name} tool={t} />
                     ))}
