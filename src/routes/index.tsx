@@ -620,8 +620,18 @@ function About() {
                 {" "}pour les visuels, affiches, présentations et supports numériques.
               </p>
               <p>
-                J'explore aussi l'<span className="font-medium text-foreground">intelligence artificielle</span>
-                {" "}et les applications du{" "}
+                J'utilise aussi l'IA ({" "}
+                <BrandTag name="ChatGPT" domain="chatgpt.com" href="https://chatgpt.com/" />
+                ,{" "}
+                <BrandTag name="Gemini" domain="gemini.google.com" href="https://gemini.google.com/" />
+                ,{" "}
+                <BrandTag name="Claude" domain="claude.ai" href="https://claude.ai/" />
+                ) pour rechercher des sources et certains contenus. Ce n'est jamais un outil de création directe : le travail final est toujours rédigé ou adapté à ma main.
+              </p>
+              <p>
+                Pour le montage audio, j'utilise{" "}
+                <BrandTag name="Mixpad" domain="nch.com.au" href="https://www.nch.com.au/mixpad/" />
+                . J'explore aussi les applications du{" "}
                 <BrandTag name="Play Store" domain="play.google.com" href="https://play.google.com/" />{" "}
                 et <BrandTag name="Windows" domain="microsoft.com" href="https://www.microsoft.com/windows" />, pour garder une veille active.
               </p>
