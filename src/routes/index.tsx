@@ -26,6 +26,7 @@ import {
   Globe,
   Smartphone,
   Building2,
+  GraduationCap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedSection } from "@/components/AnimatedSection";
@@ -766,7 +767,31 @@ function ContactSection() {
           </p>
         </AnimatedSection>
 
-        <AnimatedSection delay={0.05} className="mt-10">
+        <AnimatedSection delay={0.05} className="mt-8">
+          <div className="mx-auto max-w-2xl rounded-2xl bg-primary p-6 text-primary-foreground md:p-8">
+            <div className="flex items-start gap-4">
+              <div className="inline-flex shrink-0 rounded-xl bg-primary-foreground/15 p-3">
+                <GraduationCap size={24} className="text-primary-foreground" />
+              </div>
+              <div>
+                <h3 className="font-display text-lg font-semibold text-primary-foreground md:text-xl">
+                  Opportunités d'alternance BTS Communication
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-primary-foreground/90">
+                  Je recherche activement une entreprise pour mon BTS Communication en
+                  alternance. La communication doit rester majoritaire, mais je peux
+                  aussi assumer d'autres activités complémentaires (vente, accueil,
+                  administration, etc.). Exemple : 60 % communication, 40 % vente.
+                </p>
+                <p className="mt-3 text-sm font-medium text-primary-foreground">
+                  Envoyez-moi un message ou appelez-moi pour échanger.
+                </p>
+              </div>
+            </div>
+          </div>
+        </AnimatedSection>
+
+        <AnimatedSection delay={0.1} className="mt-10">
           <div className="mx-auto max-w-2xl">
             <ProjectForm />
           </div>

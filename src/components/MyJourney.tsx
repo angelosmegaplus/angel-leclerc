@@ -11,6 +11,7 @@ import {
   Check,
   RotateCcw,
   MousePointerClick,
+  GraduationCap,
   type LucideIcon,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
@@ -554,6 +555,29 @@ export function MyJourney() {
             poursuivre mon parcours en BTS Communication en alternance, avec
             l'objectif de m'orienter ensuite vers le journalisme.
           </p>
+        </AnimatedSection>
+
+        <AnimatedSection delay={0.1} className="mt-8">
+          <div className="mx-auto max-w-2xl rounded-2xl bg-primary p-6 text-primary-foreground md:p-8">
+            <div className="flex items-start gap-4">
+              <div className="inline-flex shrink-0 rounded-xl bg-primary-foreground/15 p-3">
+                <GraduationCap size={24} className="text-primary-foreground" />
+              </div>
+              <div>
+                <h3 className="font-display text-lg font-semibold text-primary-foreground md:text-xl">
+                  Je recherche une entreprise pour mon BTS Communication
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-primary-foreground/90">
+                  Je suis ouvert à des missions variées, à condition que la
+                  communication reste majoritaire. Par exemple : 60 % de communication
+                  et 40 % de vente, d'accueil ou d'autres activités complémentaires.
+                </p>
+                <p className="mt-3 text-sm font-medium text-primary-foreground">
+                  Si vous avez une opportunité d'alternance, contactez-moi.
+                </p>
+              </div>
+            </div>
+          </div>
         </AnimatedSection>
 
         <Subsection title="Expériences professionnelles">
