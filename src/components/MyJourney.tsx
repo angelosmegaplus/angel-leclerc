@@ -117,13 +117,15 @@ const certifications: Card[] = [
       alt: "Logo Ligue de l'enseignement de l'Allier",
     },
     description:
-      "Formation à l'animation, à l'encadrement de groupes, à la préparation d'activités et à la sécurité des mineurs.",
+      "Le BAFA (Brevet d'Aptitude aux Fonctions d'Animateur) est un diplôme d'État qui atteste de la capacité à encadrer des enfants et des adolescents dans des activités de loisirs, de vacances et de jeunesse. Il se déroule en trois étapes : une session de formation générale, un stage pratique en structure d'accueil, puis une session d'approfondissement. La Ligue de l'Enseignement est une fédération d'éducation populaire reconnue d'utilité publique, qui forme des animateurs engagés dans une démarche d'éducation active, de citoyenneté et de laïcité. Grâce à cette certification, je peux conduire des activités, animer des groupes de mineurs et garantir leur sécurité dans un cadre éducatif.",
     skills: [
-      "Animation",
-      "Encadrement",
+      "Animation pédagogique",
+      "Encadrement de mineurs",
       "Préparation d'activités",
       "Gestion de groupe",
-      "Sécurité",
+      "Sécurité des jeunes",
+      "Projet éducatif",
+      "Laïcité & citoyenneté",
     ],
   },
   {
