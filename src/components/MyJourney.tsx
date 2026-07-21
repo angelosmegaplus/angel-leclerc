@@ -569,6 +569,23 @@ export function MyJourney() {
             poursuivre mon parcours en BTS Communication en alternance, avec
             l'objectif de m'orienter ensuite vers le journalisme.
           </p>
+          <div className="mt-6 rounded-2xl border border-border bg-background p-5 text-left md:p-6">
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              Pour découvrir l'intégralité de mon parcours professionnel
+              (expériences, missions, recommandations), je vous invite à
+              consulter mon profil LinkedIn.
+            </p>
+            <a
+              href="https://www.linkedin.com/in/angel-leclerc"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              <Linkedin size={16} aria-hidden="true" />
+              Visiter mon profil LinkedIn
+              <ExternalLink size={14} aria-hidden="true" />
+            </a>
+          </div>
         </AnimatedSection>
 
         <AnimatedSection delay={0.1} className="mt-8">
