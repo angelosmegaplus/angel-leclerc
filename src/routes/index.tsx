@@ -425,8 +425,7 @@ function Services() {
               Comment se déroule une mission ?
             </h3>
             <p className="mt-3 text-sm text-muted-foreground">
-              Quatre étapes simples, de la première prise de contact jusqu'au suivi
-              après la livraison.
+              Quatre étapes, de la première prise de contact au suivi final.
             </p>
           </AnimatedSection>
 
