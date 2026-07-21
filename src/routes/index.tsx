@@ -297,6 +297,7 @@ function HomePage() {
       <Services />
       <About />
       <MyJourney />
+      <BlogPreview />
       <Contact />
     </div>
   );
@@ -768,12 +769,6 @@ function ContactSection() {
             Décrivez votre besoin, même flou. Je reviens vers vous rapidement pour
             clarifier et proposer une suite.
           </p>
-        </AnimatedSection>
-
-        <AnimatedSection delay={0.1} className="mt-10">
-          <div className="mx-auto max-w-2xl">
-            <ProjectForm />
-          </div>
         </AnimatedSection>
 
         <AnimatedSection delay={0.1} className="mt-10">
