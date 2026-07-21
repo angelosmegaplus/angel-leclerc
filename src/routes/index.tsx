@@ -455,9 +455,7 @@ function Services() {
               Services complémentaires
             </h3>
             <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
-              Ces prestations peuvent être réalisées seules ou intégrées dans une
-              mission globale. Elles ne constituent pas le cœur principal de
-              l'activité.
+              Réalisables seuls ou intégrés à une mission globale.
             </p>
             <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {extraServices.map((e) => {
