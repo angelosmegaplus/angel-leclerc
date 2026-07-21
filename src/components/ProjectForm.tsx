@@ -396,11 +396,11 @@ export function ProjectForm() {
         >
           {isSubmitting ? (
             <>
-              <Loader2 size={18} className="mr-2 animate-spin" /> Envoi en cours…
+              <Loader2 size={18} className="mr-2 animate-spin" /> Envoi…
             </>
           ) : (
             <>
-              <Send size={18} className="mr-2" /> Présenter mon projet
+              <Send size={18} className="mr-2" /> Envoyer
             </>
           )}
         </Button>
