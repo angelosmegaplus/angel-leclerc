@@ -379,11 +379,10 @@ function Services() {
             Services principaux
           </span>
           <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
-            Mes trois activités principales
+            Mes trois activités
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Elles constituent le cœur de mon travail et peuvent être proposées
-            ensemble ou séparément selon le projet.
+            Gestion de projet, conseil et rédaction, proposées ensemble ou séparément.
           </p>
         </AnimatedSection>
 
