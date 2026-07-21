@@ -526,27 +526,20 @@ function About() {
               À propos
             </span>
             <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
-              À propos d'Angel Leclerc
+              À propos
             </h2>
             <div className="mt-6 space-y-4 text-muted-foreground leading-relaxed">
               <p>
-                Je développe Angel Leclerc Communication avec une idée simple :
-                aider les projets à trouver une direction claire, une organisation
-                efficace et les bonnes personnes pour avancer.
+                J'accompagne les projets pour leur donner une direction claire, une
+                organisation efficace et les bons interlocuteurs.
               </p>
               <p>
-                Mon activité principale est centrée sur la gestion de projets de
-                communication. J'accompagne les clients dans la préparation,
-                l'organisation et le suivi de leurs actions, tout en veillant à la
-                cohérence générale du projet.
+                Mon cœur de métier est la gestion de projets de communication :
+                préparation, organisation et suivi.
               </p>
               <p>
-                J'interviens également dans le conseil en communication — plans de
-                communication, stratégie de marque et stratégie de contenu — et la
-                rédaction éditoriale et journalistique. Je peux enfin réaliser
-                ponctuellement certains supports visuels, audio ou vidéo, ou
-                coordonner les bons prestataires quand la mission demande une
-                compétence plus spécialisée.
+                J'interviens aussi en conseil et en rédaction, et réalise ponctuellement
+                des supports visuels, audio ou vidéo.
               </p>
             </div>
           </AnimatedSection>
