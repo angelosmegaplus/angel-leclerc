@@ -551,20 +551,15 @@ function About() {
               </h3>
               <div className="mt-4 space-y-4 text-sm leading-relaxed text-muted-foreground">
                 <p>
-                  Mon parcours mêle accueil, tourisme, communication, engagement
-                  associatif, scoutisme et création de projets. Ces expériences
-                  m'ont appris à écouter, expliquer, organiser, travailler avec
-                  différents publics et coordonner des actions collectives.
+                  Mon parcours mêle accueil, tourisme, communication, associatif et
+                  scoutisme. J'ai appris à écouter, expliquer, organiser et coordonner.
                 </p>
                 <p>
-                  Mon expérience dans le tourisme et l'accueil m'a également permis
-                  de développer une bonne compréhension des besoins du public, de la
-                  valorisation d'un territoire et de la transmission d'informations.
+                  Cette expérience m'a donné une bonne compréhension des publics, des
+                  territoires et de la transmission d'informations.
                 </p>
                 <p>
-                  Je poursuis le développement de mes compétences en communication,
-                  rédaction et journalisme afin de professionnaliser continuellement
-                  mes méthodes.
+                  Je continue de me former en communication, rédaction et journalisme.
                 </p>
               </div>
             </div>
