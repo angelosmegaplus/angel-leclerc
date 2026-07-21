@@ -188,7 +188,7 @@ export function ProjectForm() {
     >
       <div className="grid gap-5 md:grid-cols-2">
         <Field
-          label="Nom et prénom"
+          label="Nom"
           required
           error={errors.fullName}
           input={
@@ -202,7 +202,7 @@ export function ProjectForm() {
           }
         />
         <Field
-          label="Adresse e-mail"
+          label="E-mail"
           required
           error={errors.email}
           input={
@@ -217,7 +217,7 @@ export function ProjectForm() {
         />
         <Field
           label="Téléphone"
-          hint="Facultatif"
+          hint="facultatif"
           input={
             <input
               type="tel"
@@ -229,8 +229,8 @@ export function ProjectForm() {
           }
         />
         <Field
-          label="Entreprise, association ou structure"
-          hint="Facultatif"
+          label="Structure"
+          hint="facultatif"
           input={
             <input
               type="text"
@@ -242,7 +242,7 @@ export function ProjectForm() {
           }
         />
         <Field
-          label="Type de projet"
+          label="Projet"
           required
           error={errors.projectType}
           className="md:col-span-2"
@@ -252,7 +252,7 @@ export function ProjectForm() {
               onChange={(e) => setField("projectType", e.target.value)}
               className={inputClass(errors.projectType)}
             >
-              <option value="">— Sélectionner —</option>
+              <option value="">— Choisir —</option>
               {PROJECT_TYPES.map((t) => (
                 <option key={t} value={t}>
                   {t}
@@ -262,12 +262,12 @@ export function ProjectForm() {
           }
         />
         <Field
-          label="Budget approximatif"
-          hint="Facultatif"
+          label="Budget"
+          hint="facultatif"
           input={
             <input
               type="text"
-              placeholder="Ex : autour de 300 €"
+              placeholder="Ex. 300 €"
               value={state.budget}
               onChange={(e) => setField("budget", e.target.value)}
               className={inputClass()}
@@ -275,12 +275,12 @@ export function ProjectForm() {
           }
         />
         <Field
-          label="Date ou délai souhaité"
-          hint="Facultatif"
+          label="Délai"
+          hint="facultatif"
           input={
             <input
               type="text"
-              placeholder="Ex : d'ici fin mars"
+              placeholder="Ex. fin mars"
               value={state.deadline}
               onChange={(e) => setField("deadline", e.target.value)}
               className={inputClass()}
@@ -288,17 +288,17 @@ export function ProjectForm() {
           }
         />
         <Field
-          label="Description du besoin"
+          label="Description"
           required
           error={errors.description}
           className="md:col-span-2"
           input={
             <textarea
-              rows={6}
+              rows={5}
               value={state.description}
               onChange={(e) => setField("description", e.target.value)}
               className={inputClass(errors.description)}
-              placeholder="Décrivez votre projet, vos objectifs, le contexte, les publics visés…"
+              placeholder="Objectifs, contexte, publics visés…"
             />
           }
         />
