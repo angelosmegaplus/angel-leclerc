@@ -573,25 +573,20 @@ function About() {
                 <Wand2 size={20} className="text-primary" />
               </div>
               <h3 className="font-display text-xl font-semibold text-foreground">
-                Mes outils de travail
+                Mes outils
               </h3>
             </div>
             <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
               <p>
-                Je travaille au quotidien sur{" "}
+                Je travaille sur{" "}
                 <BrandTag name="Canva Pro" domain="canva.com" href="https://www.canva.com/" />
-                {" "}pour la création de visuels, d'affiches, de présentations et de supports numériques.
+                {" "}pour les visuels, affiches, présentations et supports numériques.
               </p>
               <p>
-                J'aime aussi énormément explorer l'<span className="font-medium text-foreground">intelligence artificielle</span>
-                {" "}et tester régulièrement de nombreuses applications mobiles issues du{" "}
-                <BrandTag name="Play Store" domain="play.google.com" href="https://play.google.com/" /> ou logiciels{" "}
-                <BrandTag name="Windows" domain="microsoft.com" href="https://www.microsoft.com/windows" />, afin de garder une
-                veille active sur les outils qui peuvent enrichir mes missions.
-              </p>
-              <p>
-                Cette curiosité me permet de choisir, pour chaque projet, la combinaison d'outils
-                la plus adaptée au besoin, au budget et au délai.
+                J'explore aussi l'<span className="font-medium text-foreground">intelligence artificielle</span>
+                {" "}et les applications du{" "}
+                <BrandTag name="Play Store" domain="play.google.com" href="https://play.google.com/" />{" "}
+                et <BrandTag name="Windows" domain="microsoft.com" href="https://www.microsoft.com/windows" />, pour garder une veille active.
               </p>
             </div>
           </div>
