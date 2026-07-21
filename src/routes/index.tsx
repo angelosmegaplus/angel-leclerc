@@ -697,15 +697,14 @@ function ContactSection() {
       <div className="container-tight">
         <AnimatedSection className="mx-auto max-w-3xl text-center">
           <span className="text-xs font-semibold uppercase tracking-widest text-primary">
-            Contact et réalisations
+            Contact
           </span>
           <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
-            Présentez-moi votre projet
+            Me contacter
           </h2>
           <p className="mt-4 text-muted-foreground leading-relaxed">
-            Décrivez votre besoin même s'il n'est pas encore totalement défini.
-            Je reviendrai vers vous rapidement pour clarifier vos priorités et
-            proposer une manière d'avancer.
+            Décrivez votre besoin, même flou. Je reviens vers vous rapidement pour
+            clarifier et proposer une suite.
           </p>
         </AnimatedSection>
 
