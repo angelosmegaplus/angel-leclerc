@@ -578,11 +578,12 @@ export function MyJourney() {
                   Je recherche un BTS Communication en alternance
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Le BTS Communication est un diplôme d'État en deux ans (Bac+2) qui
-                  forme à la conception, au suivi et à l'évaluation d'actions de
-                  communication. Le programme mêle stratégie, création de contenus,
-                  communication digitale, relations presse, événementiel et gestion de
-                  projet.
+                  Le BTS Communication est un diplôme d'État de niveau 5 (Bac+2)
+                  reconnu par le Ministère de l'Enseignement supérieur. Il se
+                  prépare en deux ans, après un baccalauréat, et forme à la
+                  conception, à la mise en œuvre, au suivi et à l'évaluation
+                  d'actions de communication commerciale, institutionnelle,
+                  numérique et événementielle.
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                   Je suis ouvert à des missions variées, à condition que la
@@ -595,6 +596,97 @@ export function MyJourney() {
               </div>
             </div>
 
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              <div className="rounded-xl border border-border bg-card p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
+                  Rythme en alternance
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  Environ deux jours en centre de formation et trois jours en
+                  entreprise chaque semaine, sur une durée de deux ans. Le
+                  rythme peut varier légèrement selon l'école et l'entreprise
+                  d'accueil.
+                </p>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
+                  Statut et contrat
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  Contrat d'apprentissage. Formation prise en charge par
+                  l'entreprise via l'OPCO. Rémunération de l'apprenti selon la
+                  grille légale, définie par l'âge et l'année de contrat.
+                </p>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
+                  Matières professionnelles
+                </p>
+                <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
+                  <li>• Cultures de la communication</li>
+                  <li>• Relations commerciales</li>
+                  <li>• Projet et pratiques de la communication</li>
+                  <li>• Veille opérationnelle et outils numériques</li>
+                  <li>• Ateliers de production</li>
+                </ul>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
+                  Matières générales
+                </p>
+                <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
+                  <li>• Culture générale et expression</li>
+                  <li>• Langue vivante étrangère (anglais)</li>
+                  <li>• Économie, droit et management</li>
+                </ul>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-4 md:col-span-2">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
+                  Compétences visées
+                </p>
+                <ul className="mt-2 grid gap-1.5 text-sm text-muted-foreground sm:grid-cols-2">
+                  <li>• Concevoir et piloter une stratégie de communication</li>
+                  <li>• Réaliser des supports print et numériques</li>
+                  <li>• Gérer les réseaux sociaux et le contenu web</li>
+                  <li>• Assurer les relations presse et médias</li>
+                  <li>• Organiser des événements et opérations</li>
+                  <li>• Gérer un budget et coordonner des prestataires</li>
+                  <li>• Suivre les indicateurs et évaluer les actions</li>
+                  <li>• Assurer une veille métier et concurrentielle</li>
+                </ul>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-4 md:col-span-2">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
+                  Épreuves d'examen
+                </p>
+                <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
+                  <li>• Culture générale et expression (écrit)</li>
+                  <li>• Langue vivante étrangère (oral et écrit)</li>
+                  <li>• Cultures de la communication (écrit)</li>
+                  <li>• Économie, droit et management (écrit)</li>
+                  <li>• Projet et pratiques de la communication (oral, dossier)</li>
+                  <li>• Relations commerciales (oral)</li>
+                  <li>• Activités professionnelles (dossier et soutenance)</li>
+                </ul>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-4 md:col-span-2">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
+                  Débouchés
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  Assistant chef de projet en agence, chargé de communication en
+                  entreprise, association ou collectivité, community manager,
+                  attaché de presse junior, assistant événementiel ou marketing.
+                  Poursuite d'études possible en licence professionnelle,
+                  bachelor ou école de communication et de journalisme —
+                  perspective que je souhaite suivre.
+                </p>
+              </div>
+            </div>
+
+            <p className="mt-6 text-xs font-semibold uppercase tracking-widest text-primary">
+              Écoles visées
+            </p>
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               <a
                 href="https://www.ibsac.fr/esc-communication/"
