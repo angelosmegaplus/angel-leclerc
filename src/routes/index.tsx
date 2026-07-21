@@ -390,11 +390,11 @@ function Services() {
           {mainServices.map((s, i) => (
             <AnimatedSection key={s.title} delay={i * 0.08}>
               <article className="flex h-full flex-col rounded-2xl border border-border bg-card p-8">
-                <div className="inline-flex shrink-0 rounded-xl bg-muted p-3">
-                  <s.icon size={22} className="text-primary" />
-                </div>
-                <h3 className="mt-5 font-display text-xl font-bold text-foreground md:text-2xl">
+                <h3 className="font-display text-xl font-bold text-foreground md:text-2xl flex items-center gap-3">
                   {s.title}
+                  <span className="inline-flex shrink-0 rounded-lg bg-muted p-2">
+                    <s.icon size={20} className="text-primary" />
+                  </span>
                 </h3>
                 <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
                   {s.intro}
