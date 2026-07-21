@@ -125,17 +125,17 @@ const pillars = [
   {
     icon: Compass,
     title: "Gestion de projet",
-    text: "Organisation des étapes, coordination des actions, recherche de partenaires et suivi du projet.",
+    text: "Organisation, coordination et suivi des actions pour faire avancer le projet.",
   },
   {
     icon: Layers,
     title: "Conseil en communication",
-    text: "Analyse des besoins, stratégie, positionnement, choix des publics, messages et supports.",
+    text: "Stratégie, positionnement, messages clés et choix des supports adaptés.",
   },
   {
     icon: FileText,
     title: "Rédaction éditoriale",
-    text: "Articles, interviews, dossiers, textes de présentation et contenus journalistiques ou numériques.",
+    text: "Articles, interviews, dossiers et contenus professionnels ou numériques.",
   },
 ];
 
