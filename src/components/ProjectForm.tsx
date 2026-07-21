@@ -93,13 +93,13 @@ export function ProjectForm() {
 
   const validate = (): boolean => {
     const e: Partial<Record<keyof FormState, string>> = {};
-    if (!state.fullName.trim()) e.fullName = "Merci d'indiquer votre nom.";
+    if (!state.fullName.trim()) e.fullName = "Votre nom est requis.";
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(state.email.trim()))
-      e.email = "Adresse e-mail invalide.";
-    if (!state.projectType) e.projectType = "Veuillez choisir un type de projet.";
+      e.email = "E-mail invalide.";
+    if (!state.projectType) e.projectType = "Sélectionnez un type de projet.";
     if (state.description.trim().length < 10)
-      e.description = "Merci de détailler un peu plus votre besoin (10 caractères minimum).";
-    if (!state.consent) e.consent = "Merci de valider ce point avant l'envoi.";
+      e.description = "Détaillez un peu plus votre besoin (10 caractères min).";
+    if (!state.consent) e.consent = "Cochez cette case pour envoyer.";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
