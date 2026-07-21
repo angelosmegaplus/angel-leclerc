@@ -13,6 +13,10 @@ import {
   MousePointerClick,
   GraduationCap,
   ExternalLink,
+  Linkedin,
+  Newspaper,
+  Briefcase,
+  Target,
   type LucideIcon,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
@@ -565,6 +569,23 @@ export function MyJourney() {
             poursuivre mon parcours en BTS Communication en alternance, avec
             l'objectif de m'orienter ensuite vers le journalisme.
           </p>
+          <div className="mt-6 rounded-2xl border border-border bg-background p-5 text-left md:p-6">
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              Pour découvrir l'intégralité de mon parcours professionnel
+              (expériences, missions, recommandations), je vous invite à
+              consulter mon profil LinkedIn.
+            </p>
+            <a
+              href="https://www.linkedin.com/in/angel-leclerc"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              <Linkedin size={16} aria-hidden="true" />
+              Visiter mon profil LinkedIn
+              <ExternalLink size={14} aria-hidden="true" />
+            </a>
+          </div>
         </AnimatedSection>
 
         <AnimatedSection delay={0.1} className="mt-8">
@@ -681,6 +702,125 @@ export function MyJourney() {
                   bachelor ou école de communication et de journalisme —
                   perspective que je souhaite suivre.
                 </p>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-4 md:col-span-2">
+                <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-primary">
+                  <Briefcase size={12} aria-hidden="true" />
+                  Métiers accessibles après le BTS Communication
+                </p>
+                <ul className="mt-2 grid gap-1.5 text-sm text-muted-foreground sm:grid-cols-2">
+                  <li>• Chargé(e) de communication</li>
+                  <li>• Assistant(e) chef de projet en agence</li>
+                  <li>• Community manager / social media manager</li>
+                  <li>• Chargé(e) de communication digitale</li>
+                  <li>• Attaché(e) de presse junior</li>
+                  <li>• Assistant(e) événementiel</li>
+                  <li>• Assistant(e) marketing</li>
+                  <li>• Chargé(e) des relations publiques</li>
+                  <li>• Média planneur junior</li>
+                  <li>• Concepteur-rédacteur junior</li>
+                  <li>• Chargé(e) de clientèle en agence de communication</li>
+                  <li>• Chargé(e) de communication interne</li>
+                </ul>
+              </div>
+              <div className="rounded-xl border-2 border-primary/40 bg-primary/5 p-4 md:col-span-2">
+                <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-primary">
+                  <Target size={12} aria-hidden="true" />
+                  Mon objectif après le BTS
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-foreground">
+                  Poursuivre en <strong>BUT Information-Communication,
+                  parcours Journalisme</strong> (Bachelor Universitaire de
+                  Technologie, diplôme national de niveau 6, Bac+3), ou dans
+                  un parcours similaire orienté vers les métiers de
+                  l'information et des médias.
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  Ce diplôme forme aux techniques du journalisme (écrit, radio,
+                  télévision, web), à la déontologie de l'information, à la
+                  recherche et à la vérification des sources, ainsi qu'à la
+                  production de contenus pour tous types de médias.
+                </p>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-4 md:col-span-2">
+                <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-primary">
+                  <Newspaper size={12} aria-hidden="true" />
+                  Pour en savoir plus sur le BTS Communication
+                </p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Sources officielles et médias spécialisés qui présentent le diplôme :
+                </p>
+                <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {[
+                    {
+                      name: "Onisep",
+                      desc: "Office national d'information sur les enseignements et les professions.",
+                      href: "https://www.onisep.fr/ressources/univers-formation/formations/post-bac/bts-communication",
+                      domain: "onisep.fr",
+                    },
+                    {
+                      name: "L'Étudiant",
+                      desc: "Média de référence sur l'orientation et les études supérieures.",
+                      href: "https://www.letudiant.fr/etudes/bts/bts-communication.html",
+                      domain: "letudiant.fr",
+                    },
+                    {
+                      name: "Studyrama",
+                      desc: "Portail d'information sur les formations et les métiers.",
+                      href: "https://www.studyrama.com/formations/diplomes/bts/bts-communication-16.html",
+                      domain: "studyrama.com",
+                    },
+                    {
+                      name: "Diplomeo",
+                      desc: "Guide des formations post-bac en France.",
+                      href: "https://diplomeo.com/etablissements-formations-bts_communication",
+                      domain: "diplomeo.com",
+                    },
+                    {
+                      name: "France Travail",
+                      desc: "Fiches métiers officielles de l'ex Pôle emploi.",
+                      href: "https://www.francetravail.fr/candidat/decouvrir-les-metiers-en-video/les-metiers/communication.html",
+                      domain: "francetravail.fr",
+                    },
+                    {
+                      name: "Éduscol",
+                      desc: "Portail du Ministère de l'Éducation nationale : référentiel officiel du diplôme.",
+                      href: "https://eduscol.education.fr/sti/formations/bts-communication",
+                      domain: "education.fr",
+                    },
+                  ].map((s) => (
+                    <li key={s.name}>
+                      <a
+                        href={s.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex items-start gap-3 rounded-lg border border-border bg-background p-3 transition-colors hover:border-primary/50"
+                      >
+                        <img
+                          src={favicon(s.domain)}
+                          alt={`Logo ${s.name}`}
+                          width={24}
+                          height={24}
+                          loading="lazy"
+                          className="h-6 w-6 shrink-0 object-contain"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-foreground group-hover:text-primary">
+                            {s.name}
+                          </p>
+                          <p className="text-xs leading-relaxed text-muted-foreground">
+                            {s.desc}
+                          </p>
+                        </div>
+                        <ExternalLink
+                          size={12}
+                          className="mt-1 shrink-0 text-muted-foreground"
+                          aria-hidden="true"
+                        />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
 
