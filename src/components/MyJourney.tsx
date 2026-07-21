@@ -162,7 +162,17 @@ const engagements: Card[] = [
     period: "Septembre 2022 – août 2025",
     logo: { kind: "icon", icon: Tent },
     description:
-      "Engagement bénévole au sein de différents mouvements scouts, principalement auprès d'enfants âgés de 7 à 12 ans. Participation à l'encadrement des jeunes, à la préparation des activités, à l'organisation des sorties et des camps, à la vie des unités et à l'accompagnement éducatif. Cette expérience m'a permis de développer des compétences en animation, pédagogie, organisation, gestion de groupe, travail en équipe et prise de responsabilités.",
+      "Le scoutisme est un mouvement d'éducation active fondé sur l'apprentissage par le jeu, la nature et la vie en collectivité. En tant que chef scout, j'ai encadré des enfants et des adolescents (principalement de 7 à 12 ans) dans des activités variées : camps, sorties, cérémonies, ateliers créatifs et projets d'unité. Cet engagement développe des qualités essentielles : fiabilité, responsabilité, autonomie, solidarité, créativité et capacité à gérer des situations imprévues. J'ai appris à concevoir des activités pédagogiques, à animer un groupe de mineurs en toute sécurité, à travailler en équipe de chefs et à transmettre des valeurs de respect et d'engagement.",
+    skills: [
+      "Encadrement de mineurs",
+      "Fiabilité & engagement",
+      "Créativité pédagogique",
+      "Organisation de camps",
+      "Gestion de groupe",
+      "Travail d'équipe",
+      "Prise de responsabilités",
+      "Adaptation sur le terrain",
+    ],
   },
   {
     title: "Bénévole",
