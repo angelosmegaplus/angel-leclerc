@@ -356,7 +356,7 @@ export function ProjectForm() {
               className="mt-0.5 h-4 w-4 rounded border-border text-primary"
             />
             <span className="text-muted-foreground">
-              J'accepte que les informations transmises soient utilisées uniquement pour répondre à ma demande.
+              J'accepte que mes informations soient utilisées pour répondre à ma demande.
             </span>
           </label>
           {errors.consent && (
