@@ -305,7 +305,7 @@ export function ProjectForm() {
 
         <div className="md:col-span-2">
           <label className="text-sm font-medium text-foreground">
-            Ajouter un fichier <span className="font-normal text-muted-foreground">(facultatif)</span>
+            Fichier <span className="font-normal text-muted-foreground">(facultatif)</span>
           </label>
           {file ? (
             <div className="mt-2 flex items-center justify-between gap-3 rounded-lg border border-border bg-background px-4 py-2.5">
@@ -322,7 +322,7 @@ export function ProjectForm() {
                 className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
                 aria-label="Retirer le fichier"
               >
-                <X size={14} /> Retirer
+                <X size={14} /> Supprimer
               </button>
             </div>
           ) : (
@@ -331,7 +331,7 @@ export function ProjectForm() {
               className="mt-2 flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-background px-4 py-3 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
             >
               <Paperclip size={16} className="text-primary" />
-              Choisir un fichier
+              Ajouter un fichier
               <input
                 id="project-file"
                 type="file"
@@ -342,7 +342,7 @@ export function ProjectForm() {
             </label>
           )}
           <p className="mt-1 text-xs text-muted-foreground">
-            Un fichier facultatif, 10 Mo maximum. Formats acceptés : PDF, DOC, DOCX, PPT, PPTX, PNG, JPG, WEBP.
+            10 Mo max. PDF, DOC, DOCX, PPT, PPTX, PNG, JPG, WEBP.
           </p>
           {fileError && <p className="mt-1 text-xs text-destructive">{fileError}</p>}
         </div>
