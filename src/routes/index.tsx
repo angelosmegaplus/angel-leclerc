@@ -202,6 +202,40 @@ const extraServices = [
     label: "Production audio, vidéo ou numérique",
     price: "sur devis",
   },
+  {
+    icon: Globe,
+    label: "Création de sites internet",
+    price: "sur devis",
+    hint: (
+      <>
+        Sites vitrines ou simples via{" "}
+        <BrandTag name="Lovable" domain="lovable.dev" href="https://lovable.dev/" />{" "}
+        ou <BrandTag name="Webnode" domain="webnode.com" href="https://www.webnode.com/" />.
+      </>
+    ),
+  },
+  {
+    icon: Smartphone,
+    label: "Réseaux sociaux",
+    price: "sur devis",
+    hint: (
+      <>
+        Création, gestion ou accompagnement de comptes et pages.{" "}
+        <BrandTag name="Instagram" domain="instagram.com" href="https://www.instagram.com/" />
+        ,{" "}
+        <BrandTag name="Facebook" domain="facebook.com" href="https://www.facebook.com/" />
+        ,{" "}
+        <BrandTag name="TikTok" domain="tiktok.com" href="https://www.tiktok.com/" />
+        …
+      </>
+    ),
+  },
+  {
+    icon: Building2,
+    label: "Accompagnement création d'association",
+    price: "sur devis",
+    hint: "Association loi 1901 : démarches, conseil et organisation.",
+  },
 ];
 
 const values = [
