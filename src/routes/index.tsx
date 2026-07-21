@@ -184,7 +184,7 @@ const extraServices = [
     icon: PenLine,
     label: "Rédaction de textes",
     price: "à partir de 30 €",
-    hint: "Recherches, enquêtes, réflexions politiques et contenus éditoriaux.",
+    hint: "Articles, enquêtes et réflexions éditoriales.",
     substack: true,
   },
   { icon: FileImage, label: "Affiche ou flyer", price: "à partir de 50 €" },
@@ -196,7 +196,7 @@ const extraServices = [
   },
   {
     icon: Radio,
-    label: "Production audio, vidéo ou numérique sur le terrain",
+    label: "Production audio, vidéo ou numérique",
     price: "sur devis",
   },
 ];
