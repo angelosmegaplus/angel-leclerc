@@ -8,6 +8,9 @@ const PROJECT_TYPES = [
   "Gestion de projet",
   "Conseil en communication",
   "Rédaction ou contenu éditorial",
+  "Création de site internet",
+  "Réseaux sociaux",
+  "Création d'association",
   "Affiche ou flyer",
   "Identité visuelle",
   "Recherche de prestataires",
@@ -93,13 +96,13 @@ export function ProjectForm() {
 
   const validate = (): boolean => {
     const e: Partial<Record<keyof FormState, string>> = {};
-    if (!state.fullName.trim()) e.fullName = "Merci d'indiquer votre nom.";
+    if (!state.fullName.trim()) e.fullName = "Votre nom est requis.";
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(state.email.trim()))
-      e.email = "Adresse e-mail invalide.";
-    if (!state.projectType) e.projectType = "Veuillez choisir un type de projet.";
+      e.email = "E-mail invalide.";
+    if (!state.projectType) e.projectType = "Sélectionnez un type de projet.";
     if (state.description.trim().length < 10)
-      e.description = "Merci de détailler un peu plus votre besoin (10 caractères minimum).";
-    if (!state.consent) e.consent = "Merci de valider ce point avant l'envoi.";
+      e.description = "Détaillez un peu plus votre besoin (10 caractères min).";
+    if (!state.consent) e.consent = "Cochez cette case pour envoyer.";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -162,11 +165,10 @@ export function ProjectForm() {
           <CheckCircle2 size={28} className="text-primary" />
         </div>
         <h3 className="mt-4 font-display text-2xl font-bold text-foreground">
-          Votre demande a bien été transmise
+          Demande envoyée
         </h3>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          Je reviendrai vers vous dès que possible pour échanger sur votre projet. Un e-mail de
-          confirmation vient également d'être envoyé à l'adresse indiquée.
+          Je reviendrai vers vous rapidement. Un e-mail de confirmation vient de vous être envoyé.
         </p>
         <Button
           type="button"
@@ -174,7 +176,7 @@ export function ProjectForm() {
           className="mt-6"
           onClick={() => setSuccess(false)}
         >
-          Envoyer une autre demande
+          Nouvelle demande
         </Button>
       </div>
     );
@@ -188,7 +190,7 @@ export function ProjectForm() {
     >
       <div className="grid gap-5 md:grid-cols-2">
         <Field
-          label="Nom et prénom"
+          label="Nom"
           required
           error={errors.fullName}
           input={
@@ -202,7 +204,7 @@ export function ProjectForm() {
           }
         />
         <Field
-          label="Adresse e-mail"
+          label="E-mail"
           required
           error={errors.email}
           input={
@@ -217,7 +219,7 @@ export function ProjectForm() {
         />
         <Field
           label="Téléphone"
-          hint="Facultatif"
+          hint="facultatif"
           input={
             <input
               type="tel"
@@ -229,8 +231,8 @@ export function ProjectForm() {
           }
         />
         <Field
-          label="Entreprise, association ou structure"
-          hint="Facultatif"
+          label="Structure"
+          hint="facultatif"
           input={
             <input
               type="text"
@@ -242,7 +244,7 @@ export function ProjectForm() {
           }
         />
         <Field
-          label="Type de projet"
+          label="Projet"
           required
           error={errors.projectType}
           className="md:col-span-2"
@@ -252,7 +254,7 @@ export function ProjectForm() {
               onChange={(e) => setField("projectType", e.target.value)}
               className={inputClass(errors.projectType)}
             >
-              <option value="">— Sélectionner —</option>
+              <option value="">— Choisir —</option>
               {PROJECT_TYPES.map((t) => (
                 <option key={t} value={t}>
                   {t}
@@ -262,12 +264,12 @@ export function ProjectForm() {
           }
         />
         <Field
-          label="Budget approximatif"
-          hint="Facultatif"
+          label="Budget"
+          hint="facultatif"
           input={
             <input
               type="text"
-              placeholder="Ex : autour de 300 €"
+              placeholder="Ex. 300 €"
               value={state.budget}
               onChange={(e) => setField("budget", e.target.value)}
               className={inputClass()}
@@ -275,12 +277,12 @@ export function ProjectForm() {
           }
         />
         <Field
-          label="Date ou délai souhaité"
-          hint="Facultatif"
+          label="Délai"
+          hint="facultatif"
           input={
             <input
               type="text"
-              placeholder="Ex : d'ici fin mars"
+              placeholder="Ex. fin mars"
               value={state.deadline}
               onChange={(e) => setField("deadline", e.target.value)}
               className={inputClass()}
@@ -288,24 +290,24 @@ export function ProjectForm() {
           }
         />
         <Field
-          label="Description du besoin"
+          label="Description"
           required
           error={errors.description}
           className="md:col-span-2"
           input={
             <textarea
-              rows={6}
+              rows={5}
               value={state.description}
               onChange={(e) => setField("description", e.target.value)}
               className={inputClass(errors.description)}
-              placeholder="Décrivez votre projet, vos objectifs, le contexte, les publics visés…"
+              placeholder="Objectifs, contexte, publics visés…"
             />
           }
         />
 
         <div className="md:col-span-2">
           <label className="text-sm font-medium text-foreground">
-            Ajouter un fichier <span className="font-normal text-muted-foreground">(facultatif)</span>
+            Fichier <span className="font-normal text-muted-foreground">(facultatif)</span>
           </label>
           {file ? (
             <div className="mt-2 flex items-center justify-between gap-3 rounded-lg border border-border bg-background px-4 py-2.5">
@@ -322,7 +324,7 @@ export function ProjectForm() {
                 className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
                 aria-label="Retirer le fichier"
               >
-                <X size={14} /> Retirer
+                <X size={14} /> Supprimer
               </button>
             </div>
           ) : (
@@ -331,7 +333,7 @@ export function ProjectForm() {
               className="mt-2 flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-background px-4 py-3 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
             >
               <Paperclip size={16} className="text-primary" />
-              Choisir un fichier
+              Ajouter un fichier
               <input
                 id="project-file"
                 type="file"
@@ -342,7 +344,7 @@ export function ProjectForm() {
             </label>
           )}
           <p className="mt-1 text-xs text-muted-foreground">
-            Un fichier facultatif, 10 Mo maximum. Formats acceptés : PDF, DOC, DOCX, PPT, PPTX, PNG, JPG, WEBP.
+            10 Mo max. PDF, DOC, DOCX, PPT, PPTX, PNG, JPG, WEBP.
           </p>
           {fileError && <p className="mt-1 text-xs text-destructive">{fileError}</p>}
         </div>
@@ -356,7 +358,7 @@ export function ProjectForm() {
               className="mt-0.5 h-4 w-4 rounded border-border text-primary"
             />
             <span className="text-muted-foreground">
-              J'accepte que les informations transmises soient utilisées uniquement pour répondre à ma demande.
+              J'accepte que mes informations soient utilisées pour répondre à ma demande.
             </span>
           </label>
           {errors.consent && (
@@ -397,11 +399,11 @@ export function ProjectForm() {
         >
           {isSubmitting ? (
             <>
-              <Loader2 size={18} className="mr-2 animate-spin" /> Envoi en cours…
+              <Loader2 size={18} className="mr-2 animate-spin" /> Envoi…
             </>
           ) : (
             <>
-              <Send size={18} className="mr-2" /> Présenter mon projet
+              <Send size={18} className="mr-2" /> Envoyer
             </>
           )}
         </Button>

@@ -23,6 +23,9 @@ import {
   Linkedin,
   Instagram,
   Facebook,
+  Globe,
+  Smartphone,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedSection } from "@/components/AnimatedSection";
@@ -198,6 +201,40 @@ const extraServices = [
     icon: Radio,
     label: "Production audio, vidéo ou numérique",
     price: "sur devis",
+  },
+  {
+    icon: Globe,
+    label: "Création de sites internet",
+    price: "sur devis",
+    hint: (
+      <>
+        Sites vitrines ou simples via{" "}
+        <BrandTag name="Lovable" domain="lovable.dev" href="https://lovable.dev/" />{" "}
+        ou <BrandTag name="Webnode" domain="webnode.com" href="https://www.webnode.com/" />.
+      </>
+    ),
+  },
+  {
+    icon: Smartphone,
+    label: "Réseaux sociaux",
+    price: "sur devis",
+    hint: (
+      <>
+        Création, gestion ou accompagnement de comptes et pages.{" "}
+        <BrandTag name="Instagram" domain="instagram.com" href="https://www.instagram.com/" />
+        ,{" "}
+        <BrandTag name="Facebook" domain="facebook.com" href="https://www.facebook.com/" />
+        ,{" "}
+        <BrandTag name="TikTok" domain="tiktok.com" href="https://www.tiktok.com/" />
+        …
+      </>
+    ),
+  },
+  {
+    icon: Building2,
+    label: "Accompagnement création d'association",
+    price: "sur devis",
+    hint: "Association loi 1901 : démarches, conseil et organisation.",
   },
 ];
 
@@ -390,10 +427,10 @@ function Services() {
           {mainServices.map((s, i) => (
             <AnimatedSection key={s.title} delay={i * 0.08}>
               <article className="flex h-full flex-col rounded-2xl border border-border bg-card p-8">
-                <h3 className="font-display text-xl font-bold text-foreground md:text-2xl flex items-center gap-3">
+                <h3 className="font-display text-xl font-bold text-foreground md:text-2xl flex items-start gap-2">
                   {s.title}
-                  <span className="inline-flex shrink-0 rounded-lg bg-muted p-2">
-                    <s.icon size={20} className="text-primary" />
+                  <span className="mt-0.5 inline-flex shrink-0 rounded-lg bg-muted p-1.5">
+                    <s.icon size={18} className="text-primary" />
                   </span>
                 </h3>
                 <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
