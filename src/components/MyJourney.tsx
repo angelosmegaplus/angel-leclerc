@@ -11,6 +11,7 @@ import {
   Check,
   RotateCcw,
   MousePointerClick,
+  GraduationCap,
   type LucideIcon,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
