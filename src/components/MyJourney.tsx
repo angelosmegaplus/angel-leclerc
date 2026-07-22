@@ -260,6 +260,48 @@ const engagements: Card[] = [
   },
 ];
 
+// Two flashcards for the "post-bac" ambition: the BTS Communication I am
+// looking for, and the BUT Information-Communication (Journalisme) I plan
+// to pursue afterwards.
+const postBac: Card[] = [
+  {
+    title: "BTS Communication en alternance",
+    org: "Diplôme d'État — Bac+2 (niveau 5)",
+    period: "Objectif rentrée · IBSAC Brive-la-Gaillarde ou Talis Périgueux",
+    meta: "Recherche active d'une entreprise d'accueil",
+    logo: { kind: "icon", icon: GraduationCap },
+    description:
+      "Diplôme d'État reconnu par le Ministère de l'Enseignement supérieur, préparé en deux ans après le baccalauréat. Il forme à la conception, à la mise en œuvre, au suivi et à l'évaluation d'actions de communication commerciale, institutionnelle, numérique et événementielle. Rythme en alternance : environ 2 jours en centre de formation et 3 jours en entreprise chaque semaine, en contrat d'apprentissage (formation prise en charge par l'OPCO, rémunération selon la grille légale). Je suis ouvert à des missions variées à condition que la communication reste majoritaire — par exemple 60 % de communication et 40 % de vente, d'accueil ou d'autres activités complémentaires. Matières professionnelles : cultures de la communication, relations commerciales, projet et pratiques de la communication, veille opérationnelle et outils numériques, ateliers de production. Matières générales : culture générale et expression, anglais, économie-droit-management. Métiers accessibles : chargé(e) de communication, assistant(e) chef de projet, community manager, chargé(e) de communication digitale, attaché(e) de presse junior, assistant(e) événementiel, marketing, relations publiques, concepteur-rédacteur junior. Écoles visées : IBSAC (Brive-la-Gaillarde) et Talis (Périgueux). Sources pour en savoir plus : Onisep, L'Étudiant, Studyrama, France Travail, Éduscol.",
+    skills: [
+      "Stratégie de communication",
+      "Supports print et web",
+      "Réseaux sociaux",
+      "Relations presse",
+      "Événementiel",
+      "Gestion de budget",
+      "Coordination prestataires",
+      "Veille et évaluation",
+    ],
+  },
+  {
+    title: "BUT Information-Communication — Journalisme",
+    org: "Bachelor Universitaire de Technologie — Bac+3 (niveau 6)",
+    period: "Objectif après le BTS · ou parcours équivalent",
+    meta: "Diplôme national à finalité professionnelle",
+    logo: { kind: "icon", icon: Target },
+    description:
+      "Poursuite d'études visée après le BTS : le BUT Information-Communication, parcours Journalisme (ou un cursus similaire orienté vers l'information et les médias). Ce diplôme forme aux techniques du journalisme sur tous les supports — écrit, radio, télévision et web — à la déontologie de l'information, à la recherche et à la vérification des sources, ainsi qu'à la production de contenus pour tous types de médias. L'objectif : consolider un profil à la fois communicant et journaliste, capable de porter un projet éditorial de bout en bout.",
+    skills: [
+      "Enquête et reportage",
+      "Écriture journalistique",
+      "Radio et podcast",
+      "Vidéo et web",
+      "Vérification des sources",
+      "Déontologie",
+    ],
+  },
+];
+
 // ---------- Flashcard ----------
 
 function Flashcard({ card }: { card: Card }) {
