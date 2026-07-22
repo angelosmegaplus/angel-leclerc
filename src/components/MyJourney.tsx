@@ -6,8 +6,6 @@ import {
   Lightbulb,
   HeartPulse,
   Tent,
-  BookOpen,
-  Flag,
   Check,
   RotateCcw,
   MousePointerClick,
@@ -17,6 +15,7 @@ import {
   Newspaper,
   Briefcase,
   Target,
+  Globe,
   type LucideIcon,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
@@ -70,6 +69,7 @@ type Card = {
   logo: LogoSource;
   description: string;
   skills?: string[];
+  website?: { label: string; href: string };
 };
 
 const formation: Card[] = [
@@ -80,9 +80,10 @@ const formation: Card[] = [
     meta: "Mention Bien",
     logo: {
       kind: "img",
-      src: favicon("mfr-perigordnoir.fr"),
+      src: favicon("mfrperigordnoir.com"),
       alt: "Logo MFR-CFA du Périgord noir",
     },
+    website: { label: "mfrperigordnoir.com", href: "https://www.mfrperigordnoir.com/" },
     description:
       "Formation centrée sur l'accueil multicanal, l'information, le conseil, l'orientation du public, la vente, la gestion des demandes, les tâches administratives et la communication. Cette formation réalisée en alternance m'a permis de développer une forte aisance orale, de l'autonomie, de la polyvalence et une bonne capacité d'adaptation. Le parcours a également été enrichi par un voyage d'étude Erasmus de deux semaines en Irlande, apportant une ouverture internationale et une pratique concrète de l'anglais.",
     skills: [
@@ -109,6 +110,7 @@ const experiences: Card[] = [
       src: favicon("valdesioule.com"),
       alt: "Logo Office de Tourisme Val de Sioule",
     },
+    website: { label: "valdesioule.com", href: "https://www.valdesioule.com/" },
     description:
       "Deux années d'alternance dans un office de tourisme intercommunal. Accueil des visiteurs, vente de produits touristiques, gestion des demandes par téléphone et e-mail. Création de livrets pour les hébergeurs, de livrets statistiques et d'affiches promotionnelles. Réalisation de montages vidéos et de publications pour les réseaux sociaux avec Canva. Analyse et mise à jour de l'agenda des animations sur le site web. Découverte concrète de la communication touristique et spécialisation autour de l'intelligence artificielle et de ses usages.",
     skills: [
@@ -123,21 +125,25 @@ const experiences: Card[] = [
     ],
   },
   {
-    title: "Projet d'identité sonore — émission jeunesse",
-    org: "Ligue de l'enseignement 03 — Radio Bocage",
+    title: "Service civique — développement d'une émission jeunesse",
+    org: "Radio Bocage · Ligue de l'enseignement de l'Allier",
     period: "2026",
+    meta: "Mission de service civique",
     logo: {
       kind: "img",
-      src: favicon("laligue03.fr"),
-      alt: "Logo Ligue de l'enseignement de l'Allier",
+      src: favicon("service-civique.gouv.fr"),
+      alt: "Logo Service Civique",
     },
+    website: { label: "service-civique.gouv.fr", href: "https://www.service-civique.gouv.fr/" },
     description:
-      "Travail de conception et de refonte de l'identité sonore d'une émission destinée aux jeunes, au sein d'une radio associative locale portée par la Ligue de l'enseignement de l'Allier. Recherche d'angle éditorial, réflexion sur le ton, préparation de jingles et d'habillages. Le projet n'a finalement pas abouti à une diffusion, mais m'a permis d'explorer concrètement l'écriture radio et la mise en forme sonore.",
+      "Mission de service civique consacrée au développement d'un projet d'émission de radio destinée aux jeunes, à Radio Bocage, radio associative locale portée par la Ligue de l'enseignement de l'Allier. Travail sur les plans d'émission, le choix des sujets et des angles éditoriaux, l'écriture des rubriques, le format et le fonctionnement général de l'émission, ainsi que sur l'identité sonore (jingles, habillage, ton). Le projet n'a finalement pas abouti à une diffusion, mais m'a permis d'explorer concrètement la conception d'un programme radio de A à Z.",
     skills: [
-      "Identité sonore",
+      "Conception d'émission",
+      "Plans d'émission",
       "Écriture radio",
+      "Identité sonore",
       "Habillage & jingles",
-      "Conception éditoriale",
+      "Ligne éditoriale",
       "Recherche de sujets",
     ],
   },
@@ -163,6 +169,7 @@ const certifications: Card[] = [
     org: "Google",
     period: "Obtenue en avril 2026",
     logo: { kind: "img", src: favicon("google.com"), alt: "Logo Google" },
+    website: { label: "learndigital.withgoogle.com", href: "https://learndigital.withgoogle.com/ateliernumerique" },
     description:
       "Formation consacrée aux bases du marketing numérique, de la visibilité en ligne, de la communication digitale et de la présence d'une organisation sur Internet.",
   },
@@ -172,9 +179,10 @@ const certifications: Card[] = [
     period: "",
     logo: {
       kind: "img",
-      src: favicon("laligue03.fr"),
+      src: favicon("laligue.org"),
       alt: "Logo Ligue de l'enseignement de l'Allier",
     },
+    website: { label: "laligue.org", href: "https://laligue.org/" },
     description:
       "Le BAFA (Brevet d'Aptitude aux Fonctions d'Animateur) est un diplôme d'État qui atteste de la capacité à encadrer des enfants et des adolescents dans des activités de loisirs, de vacances et de jeunesse. Il se déroule en trois étapes : une session de formation générale, un stage pratique en structure d'accueil, puis une session d'approfondissement. La Ligue de l'Enseignement est une fédération d'éducation populaire reconnue d'utilité publique, qui forme des animateurs engagés dans une démarche d'éducation active, de citoyenneté et de laïcité. J'ai suivi une formation orientée animation en centre de vacances et de loisirs (CVL), avec une spécialité scoutisme pour les tranches d'âge 7-12 ans puis 12-17 ans. Grâce à cette certification, je peux conduire des activités, animer des groupes de mineurs et garantir leur sécurité dans un cadre éducatif.",
     skills: [
@@ -207,6 +215,7 @@ const engagements: Card[] = [
       src: favicon("fraternite.net"),
       alt: "Logo La Fraternité du Scoutisme",
     },
+    website: { label: "fraternite.net", href: "https://fraternite.net/" },
     description:
       "Relance d'une association nationale interscoute et intergénérationnelle laissée à l'abandon depuis plusieurs années. Réalisation d'un important travail de communication, de création de contenus, d'animation d'une communauté, d'organisation de rencontres et de conférences, de recherches historiques et pédagogiques, de développement d'un forum et de valorisation de l'histoire du scoutisme.",
     skills: [
@@ -246,6 +255,7 @@ const engagements: Card[] = [
       src: favicon("reseau-bp.fr"),
       alt: "Logo Réseau Baden-Powell",
     },
+    website: { label: "reseau-bp.fr", href: "https://reseau-bp.fr/" },
     description:
       "Participation aux activités du Réseau Baden-Powell, notamment autour des archives nationales, de la conservation de documents et de la transmission de l'histoire du scoutisme.",
     skills: [
@@ -312,6 +322,18 @@ function Flashcard({ card }: { card: Card }) {
               <p className="text-sm leading-relaxed text-muted-foreground">
                 {card.description}
               </p>
+              {card.website && (
+                <a
+                  href={card.website.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+                >
+                  <Globe size={12} aria-hidden="true" />
+                  {card.website.label}
+                  <ExternalLink size={10} aria-hidden="true" />
+                </a>
+              )}
               {card.skills && card.skills.length > 0 && (
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
