@@ -123,32 +123,31 @@ const experiences: Card[] = [
     ],
   },
   {
-    title: "Animateur radio",
+    title: "Projet d'identité sonore — émission jeunesse",
     org: "Ligue de l'enseignement 03 — Radio Bocage",
-    period: "2026 — 2 mois",
+    period: "2026",
     logo: {
       kind: "img",
       src: favicon("laligue03.fr"),
       alt: "Logo Ligue de l'enseignement de l'Allier",
     },
     description:
-      "Mission au sein d'une radio associative locale portée par la Ligue de l'enseignement de l'Allier. Recherche de sujets, rédaction et conduite d'interviews, préparation et animation d'émissions en direct. Une expérience qui a renforcé mon aisance à l'oral, mon sens de l'écoute et mon rapport à l'information.",
+      "Travail de conception et de refonte de l'identité sonore d'une émission destinée aux jeunes, au sein d'une radio associative locale portée par la Ligue de l'enseignement de l'Allier. Recherche d'angle éditorial, réflexion sur le ton, préparation de jingles et d'habillages. Le projet n'a finalement pas abouti à une diffusion, mais m'a permis d'explorer concrètement l'écriture radio et la mise en forme sonore.",
     skills: [
-      "Rédaction d'interviews",
-      "Préparation d'émissions",
-      "Animation en direct",
-      "Prise de son",
-      "Écoute active",
+      "Identité sonore",
+      "Écriture radio",
+      "Habillage & jingles",
+      "Conception éditoriale",
       "Recherche de sujets",
     ],
   },
   {
-    title: "Missions d'intérim",
-    org: "Différents employeurs",
-    period: "2026",
+    title: "Petits travaux ponctuels",
+    org: "Différents particuliers et employeurs",
+    period: "En parallèle de mes études",
     logo: { kind: "icon", icon: Briefcase },
     description:
-      "Missions ponctuelles réalisées en parallèle de mes projets : électricité, ménage, peinture, bûcheronnage. Une expérience de polyvalence, de rigueur et d'adaptation à des environnements de travail variés.",
+      "Petits travaux réalisés ponctuellement, ici et là, en parallèle de mes projets : électricité, ménage, peinture, bûcheronnage. Ce ne sont pas des missions d'intérim à proprement parler, mais des coups de main et des chantiers courts qui m'ont appris la polyvalence, la rigueur et l'adaptation à des environnements variés.",
     skills: [
       "Polyvalence",
       "Rigueur",
@@ -203,7 +202,11 @@ const engagements: Card[] = [
     title: "Président d'association",
     org: "La Fraternité du Scoutisme",
     period: "Décembre 2024 – janvier 2026",
-    logo: { kind: "icon", icon: Flag },
+    logo: {
+      kind: "img",
+      src: favicon("fraternite.net"),
+      alt: "Logo La Fraternité du Scoutisme",
+    },
     description:
       "Relance d'une association nationale interscoute et intergénérationnelle laissée à l'abandon depuis plusieurs années. Réalisation d'un important travail de communication, de création de contenus, d'animation d'une communauté, d'organisation de rencontres et de conférences, de recherches historiques et pédagogiques, de développement d'un forum et de valorisation de l'histoire du scoutisme.",
     skills: [
@@ -238,7 +241,11 @@ const engagements: Card[] = [
     title: "Bénévole",
     org: "Réseau Baden-Powell",
     period: "Depuis juillet 2024",
-    logo: { kind: "icon", icon: BookOpen },
+    logo: {
+      kind: "img",
+      src: favicon("reseau-bp.fr"),
+      alt: "Logo Réseau Baden-Powell",
+    },
     description:
       "Participation aux activités du Réseau Baden-Powell, notamment autour des archives nationales, de la conservation de documents et de la transmission de l'histoire du scoutisme.",
     skills: [
