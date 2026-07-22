@@ -31,10 +31,9 @@ function sources(domain: string): string[] {
   const override = HIGH_RES_OVERRIDES[domain];
   if (override) list.push(override);
   // High-res favicon services with graceful degradation.
-  // Logo.dev serves the cleanest official marks when available.
-  list.push(`https://img.logo.dev/${domain}?size=256&format=png&retina=true`);
   list.push(`https://icons.duckduckgo.com/ip3/${domain}.ico`);
   list.push(`https://www.google.com/s2/favicons?sz=256&domain=${domain}`);
+  list.push(`https://www.google.com/s2/favicons?sz=128&domain=${domain}`);
   return list;
 }
 
