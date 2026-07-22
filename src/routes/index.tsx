@@ -324,6 +324,11 @@ function Hero() {
             J'accompagne professionnels, associations et porteurs de projets dans
             l'organisation, la stratégie et la rédaction de leurs contenus.
           </p>
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
+            Ce site est à la fois professionnel — présentation de mes services —
+            et personnel : il me sert aussi de CV en ligne, avec mon parcours,
+            mes formations et mes engagements.
+          </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button
               asChild
@@ -342,6 +347,21 @@ function Hero() {
               className="border-foreground/20 bg-transparent text-foreground hover:bg-muted"
             >
               <a href="#contact">Me contacter</a>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="border-foreground/20 bg-transparent text-foreground hover:bg-muted"
+            >
+              <a
+                href="/cv-angel-leclerc.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <FileText size={18} className="mr-2" />
+                Voir mon CV
+              </a>
             </Button>
           </div>
         </motion.div>

@@ -19,15 +19,20 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
+import { Logo } from "@/components/Logo";
 
 // ---------- Logo helper ----------
 
 type LogoSource =
   | { kind: "img"; src: string; alt: string }
+  | { kind: "domain"; domain: string; alt: string }
   | { kind: "icon"; icon: LucideIcon }
   | { kind: "text"; label: string };
 
 function LogoBox({ source, size = 56 }: { source: LogoSource; size?: number }) {
+  if (source.kind === "domain") {
+    return <Logo domain={source.domain} alt={source.alt} size={size} />;
+  }
   return (
     <div
       className="inline-flex shrink-0 items-center justify-center rounded-xl border border-border bg-background"
@@ -56,8 +61,13 @@ function LogoBox({ source, size = 56 }: { source: LogoSource; size?: number }) {
   );
 }
 
-const favicon = (domain: string) =>
-  `https://www.google.com/s2/favicons?sz=128&domain=${domain}`;
+// Domain-based logo helper. Rendered through the <Logo /> component which
+// picks the highest-resolution source available and falls back gracefully.
+const dom = (domain: string, alt: string): LogoSource => ({
+  kind: "domain",
+  domain,
+  alt,
+});
 
 // ---------- Data ----------
 
@@ -78,11 +88,7 @@ const formation: Card[] = [
     org: "MFR-CFA du Périgord noir",
     period: "Septembre 2023 – juillet 2025",
     meta: "Mention Bien",
-    logo: {
-      kind: "img",
-      src: favicon("mfrperigordnoir.com"),
-      alt: "Logo MFR-CFA du Périgord noir",
-    },
+    logo: dom("mfrperigordnoir.com", "Logo MFR-CFA du Périgord noir"),
     website: { label: "mfrperigordnoir.com", href: "https://www.mfrperigordnoir.com/" },
     description:
       "Formation centrée sur l'accueil multicanal, l'information, le conseil, l'orientation du public, la vente, la gestion des demandes, les tâches administratives et la communication. Cette formation réalisée en alternance m'a permis de développer une forte aisance orale, de l'autonomie, de la polyvalence et une bonne capacité d'adaptation. Le parcours a également été enrichi par un voyage d'étude Erasmus de deux semaines en Irlande, apportant une ouverture internationale et une pratique concrète de l'anglais.",
@@ -105,11 +111,7 @@ const experiences: Card[] = [
     title: "Apprenti — Bac Pro Accueil et Vente",
     org: "Office de Tourisme Val de Sioule",
     period: "Septembre 2023 – juillet 2025",
-    logo: {
-      kind: "img",
-      src: favicon("valdesioule.com"),
-      alt: "Logo Office de Tourisme Val de Sioule",
-    },
+    logo: dom("valdesioule.com", "Logo Office de Tourisme Val de Sioule"),
     website: { label: "valdesioule.com", href: "https://www.valdesioule.com/" },
     description:
       "Deux années d'alternance dans un office de tourisme intercommunal. Accueil des visiteurs, vente de produits touristiques, gestion des demandes par téléphone et e-mail. Création de livrets pour les hébergeurs, de livrets statistiques et d'affiches promotionnelles. Réalisation de montages vidéos et de publications pour les réseaux sociaux avec Canva. Analyse et mise à jour de l'agenda des animations sur le site web. Découverte concrète de la communication touristique et spécialisation autour de l'intelligence artificielle et de ses usages.",
@@ -129,11 +131,7 @@ const experiences: Card[] = [
     org: "Radio Bocage · Ligue de l'enseignement de l'Allier",
     period: "2026",
     meta: "Mission de service civique",
-    logo: {
-      kind: "img",
-      src: favicon("service-civique.gouv.fr"),
-      alt: "Logo Service Civique",
-    },
+    logo: dom("service-civique.gouv.fr", "Logo Service Civique"),
     website: { label: "service-civique.gouv.fr", href: "https://www.service-civique.gouv.fr/" },
     description:
       "Mission de service civique consacrée au développement d'un projet d'émission de radio destinée aux jeunes, à Radio Bocage, radio associative locale portée par la Ligue de l'enseignement de l'Allier. Travail sur les plans d'émission, le choix des sujets et des angles éditoriaux, l'écriture des rubriques, le format et le fonctionnement général de l'émission, ainsi que sur l'identité sonore (jingles, habillage, ton). Le projet n'a finalement pas abouti à une diffusion, mais m'a permis d'explorer concrètement la conception d'un programme radio de A à Z.",
@@ -168,7 +166,7 @@ const certifications: Card[] = [
     title: "Les principes fondamentaux du marketing digital",
     org: "Google",
     period: "Obtenue en avril 2026",
-    logo: { kind: "img", src: favicon("google.com"), alt: "Logo Google" },
+    logo: dom("google.com", "Logo Google"),
     website: { label: "learndigital.withgoogle.com", href: "https://learndigital.withgoogle.com/ateliernumerique" },
     description:
       "Formation consacrée aux bases du marketing numérique, de la visibilité en ligne, de la communication digitale et de la présence d'une organisation sur Internet.",
@@ -177,11 +175,7 @@ const certifications: Card[] = [
     title: "BAFA",
     org: "Ligue de l'enseignement de l'Allier",
     period: "",
-    logo: {
-      kind: "img",
-      src: favicon("laligue.org"),
-      alt: "Logo Ligue de l'enseignement de l'Allier",
-    },
+    logo: dom("laligue.org", "Logo Ligue de l'enseignement de l'Allier"),
     website: { label: "laligue.org", href: "https://laligue.org/" },
     description:
       "Le BAFA (Brevet d'Aptitude aux Fonctions d'Animateur) est un diplôme d'État qui atteste de la capacité à encadrer des enfants et des adolescents dans des activités de loisirs, de vacances et de jeunesse. Il se déroule en trois étapes : une session de formation générale, un stage pratique en structure d'accueil, puis une session d'approfondissement. La Ligue de l'Enseignement est une fédération d'éducation populaire reconnue d'utilité publique, qui forme des animateurs engagés dans une démarche d'éducation active, de citoyenneté et de laïcité. J'ai suivi une formation orientée animation en centre de vacances et de loisirs (CVL), avec une spécialité scoutisme pour les tranches d'âge 7-12 ans puis 12-17 ans. Grâce à cette certification, je peux conduire des activités, animer des groupes de mineurs et garantir leur sécurité dans un cadre éducatif.",
@@ -210,11 +204,7 @@ const engagements: Card[] = [
     title: "Président d'association",
     org: "La Fraternité du Scoutisme",
     period: "Décembre 2024 – janvier 2026",
-    logo: {
-      kind: "img",
-      src: favicon("fraternite.net"),
-      alt: "Logo La Fraternité du Scoutisme",
-    },
+    logo: dom("fraternite.net", "Logo La Fraternité du Scoutisme"),
     website: { label: "fraternite.net", href: "https://fraternite.net/" },
     description:
       "Relance d'une association nationale interscoute et intergénérationnelle laissée à l'abandon depuis plusieurs années. Réalisation d'un important travail de communication, de création de contenus, d'animation d'une communauté, d'organisation de rencontres et de conférences, de recherches historiques et pédagogiques, de développement d'un forum et de valorisation de l'histoire du scoutisme.",
@@ -250,11 +240,7 @@ const engagements: Card[] = [
     title: "Bénévole",
     org: "Réseau Baden-Powell",
     period: "Depuis juillet 2024",
-    logo: {
-      kind: "img",
-      src: favicon("reseau-bp.fr"),
-      alt: "Logo Réseau Baden-Powell",
-    },
+    logo: dom("reseau-bp.fr", "Logo Réseau Baden-Powell"),
     website: { label: "reseau-bp.fr", href: "https://reseau-bp.fr/" },
     description:
       "Participation aux activités du Réseau Baden-Powell, notamment autour des archives nationales, de la conservation de documents et de la transmission de l'histoire du scoutisme.",
@@ -265,6 +251,48 @@ const engagements: Card[] = [
       "Classement de documents",
       "Transmission",
       "Travail associatif",
+    ],
+  },
+];
+
+// Two flashcards for the "post-bac" ambition: the BTS Communication I am
+// looking for, and the BUT Information-Communication (Journalisme) I plan
+// to pursue afterwards.
+const postBac: Card[] = [
+  {
+    title: "BTS Communication en alternance",
+    org: "Diplôme d'État — Bac+2 (niveau 5)",
+    period: "Objectif rentrée · IBSAC Brive-la-Gaillarde ou Talis Périgueux",
+    meta: "Recherche active d'une entreprise d'accueil",
+    logo: { kind: "icon", icon: GraduationCap },
+    description:
+      "Diplôme d'État reconnu par le Ministère de l'Enseignement supérieur, préparé en deux ans après le baccalauréat. Il forme à la conception, à la mise en œuvre, au suivi et à l'évaluation d'actions de communication commerciale, institutionnelle, numérique et événementielle. Rythme en alternance : environ 2 jours en centre de formation et 3 jours en entreprise chaque semaine, en contrat d'apprentissage (formation prise en charge par l'OPCO, rémunération selon la grille légale). Je suis ouvert à des missions variées à condition que la communication reste majoritaire — par exemple 60 % de communication et 40 % de vente, d'accueil ou d'autres activités complémentaires. Matières professionnelles : cultures de la communication, relations commerciales, projet et pratiques de la communication, veille opérationnelle et outils numériques, ateliers de production. Matières générales : culture générale et expression, anglais, économie-droit-management. Métiers accessibles : chargé(e) de communication, assistant(e) chef de projet, community manager, chargé(e) de communication digitale, attaché(e) de presse junior, assistant(e) événementiel, marketing, relations publiques, concepteur-rédacteur junior. Écoles visées : IBSAC (Brive-la-Gaillarde) et Talis (Périgueux). Sources pour en savoir plus : Onisep, L'Étudiant, Studyrama, France Travail, Éduscol.",
+    skills: [
+      "Stratégie de communication",
+      "Supports print et web",
+      "Réseaux sociaux",
+      "Relations presse",
+      "Événementiel",
+      "Gestion de budget",
+      "Coordination prestataires",
+      "Veille et évaluation",
+    ],
+  },
+  {
+    title: "BUT Information-Communication — Journalisme",
+    org: "Bachelor Universitaire de Technologie — Bac+3 (niveau 6)",
+    period: "Objectif après le BTS · ou parcours équivalent",
+    meta: "Diplôme national à finalité professionnelle",
+    logo: { kind: "icon", icon: Target },
+    description:
+      "Poursuite d'études visée après le BTS : le BUT Information-Communication, parcours Journalisme (ou un cursus similaire orienté vers l'information et les médias). Ce diplôme forme aux techniques du journalisme sur tous les supports — écrit, radio, télévision et web — à la déontologie de l'information, à la recherche et à la vérification des sources, ainsi qu'à la production de contenus pour tous types de médias. L'objectif : consolider un profil à la fois communicant et journaliste, capable de porter un projet éditorial de bout en bout.",
+    skills: [
+      "Enquête et reportage",
+      "Écriture journalistique",
+      "Radio et podcast",
+      "Vidéo et web",
+      "Vérification des sources",
+      "Déontologie",
     ],
   },
 ];
@@ -439,12 +467,12 @@ const toolCategories: { title: string; note?: string; tools: Tool[] }[] = [
     tools: [
       {
         name: "Canva",
-        source: { kind: "img", src: favicon("canva.com"), alt: "Logo Canva" },
+        source: dom("canva.com", "Logo Canva"),
         hint: "Outil de création graphique en ligne pour affiches, publications, présentations et supports visuels.",
       },
       {
         name: "Figma",
-        source: { kind: "img", src: favicon("figma.com"), alt: "Logo Figma" },
+        source: dom("figma.com", "Logo Figma"),
         hint: "Éditeur collaboratif pour concevoir des maquettes de sites, d'applications et d'interfaces.",
       },
     ],
@@ -454,12 +482,12 @@ const toolCategories: { title: string; note?: string; tools: Tool[] }[] = [
     tools: [
       {
         name: "Lovable",
-        source: { kind: "img", src: favicon("lovable.dev"), alt: "Logo Lovable" },
+        source: dom("lovable.dev", "Logo Lovable"),
         hint: "Plateforme de création de sites internet et d'applications assistée par intelligence artificielle.",
       },
       {
         name: "Squarespace",
-        source: { kind: "img", src: favicon("squarespace.com"), alt: "Logo Squarespace" },
+        source: dom("squarespace.com", "Logo Squarespace"),
         hint: "Hébergeur et créateur de sites vitrines, également utilisé pour enregistrer des noms de domaine.",
       },
     ],
@@ -469,12 +497,12 @@ const toolCategories: { title: string; note?: string; tools: Tool[] }[] = [
     tools: [
       {
         name: "Microsoft Office",
-        source: { kind: "img", src: favicon("office.com"), alt: "Logo Microsoft Office" },
+        source: dom("office.com", "Logo Microsoft Office"),
         hint: "Suite bureautique complète : Word (traitement de texte), Excel (tableur), PowerPoint (présentations), Outlook (messagerie et agenda) et les autres logiciels professionnels associés.",
       },
       {
         name: "Google Workspace",
-        source: { kind: "img", src: favicon("workspace.google.com"), alt: "Logo Google Workspace" },
+        source: dom("workspace.google.com", "Logo Google Workspace"),
         hint: "Suite collaborative de Google regroupant Gmail (messagerie), Google Docs (traitement de texte), Sheets (tableur), Slides (présentations), Drive (stockage) et Agenda, avec édition partagée en temps réel.",
       },
     ],
@@ -484,22 +512,22 @@ const toolCategories: { title: string; note?: string; tools: Tool[] }[] = [
     tools: [
       {
         name: "Meta Business Suite",
-        source: { kind: "img", src: favicon("business.facebook.com"), alt: "Logo Meta Business Suite" },
+        source: dom("business.facebook.com", "Logo Meta Business Suite"),
         hint: "Outil de gestion des pages Facebook et Instagram : publications, messages et statistiques.",
       },
       {
         name: "Facebook",
-        source: { kind: "img", src: favicon("facebook.com"), alt: "Logo Facebook" },
+        source: dom("facebook.com", "Logo Facebook"),
         hint: "Réseau social généraliste utilisé pour la communication de pages et de communautés.",
       },
       {
         name: "Instagram",
-        source: { kind: "img", src: favicon("instagram.com"), alt: "Logo Instagram" },
+        source: dom("instagram.com", "Logo Instagram"),
         hint: "Réseau social visuel centré sur les photos, vidéos et stories.",
       },
       {
         name: "LinkedIn",
-        source: { kind: "img", src: favicon("linkedin.com"), alt: "Logo LinkedIn" },
+        source: dom("linkedin.com", "Logo LinkedIn"),
         hint: "Réseau social professionnel pour la présence et la communication d'entreprise.",
       },
     ],
@@ -509,7 +537,7 @@ const toolCategories: { title: string; note?: string; tools: Tool[] }[] = [
     tools: [
       {
         name: "MixPad",
-        source: { kind: "img", src: favicon("nch.com.au"), alt: "Logo MixPad" },
+        source: dom("nch.com.au", "Logo MixPad"),
         hint: "Logiciel de mixage et de montage audio multipiste pour émissions, podcasts et jingles.",
       },
     ],
@@ -519,12 +547,12 @@ const toolCategories: { title: string; note?: string; tools: Tool[] }[] = [
     tools: [
       {
         name: "Avizi",
-        source: { kind: "img", src: favicon("avizi.fr"), alt: "Logo Avizi" },
+        source: dom("avizi.fr", "Logo Avizi"),
         hint: "Logiciel de caisse et de gestion des ventes utilisé par les offices de tourisme.",
       },
       {
         name: "Koesio",
-        source: { kind: "img", src: favicon("koesio.com"), alt: "Logo Koesio" },
+        source: dom("koesio.com", "Logo Koesio"),
         hint: "Solution numérique pour la gestion administrative et bureautique des structures.",
       },
     ],
@@ -536,7 +564,7 @@ const toolCategories: { title: string; note?: string; tools: Tool[] }[] = [
     tools: [
       {
         name: "ChatGPT",
-        source: { kind: "img", src: favicon("chatgpt.com"), alt: "Logo ChatGPT" },
+        source: dom("chatgpt.com", "Logo ChatGPT"),
         hint: "Assistant conversationnel d'OpenAI utilisé pour la recherche d'informations et l'aide à la rédaction.",
       },
       {
@@ -551,24 +579,7 @@ const toolCategories: { title: string; note?: string; tools: Tool[] }[] = [
 function ToolChip({ tool }: { tool: Tool }) {
   return (
     <li className="flex items-start gap-3 rounded-xl border border-border bg-background p-3">
-      <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-card">
-        {tool.source.kind === "img" ? (
-          <img
-            src={tool.source.src}
-            alt={tool.source.alt}
-            width={24}
-            height={24}
-            loading="lazy"
-            className="h-6 w-6 object-contain"
-          />
-        ) : tool.source.kind === "icon" ? (
-          <tool.source.icon size={18} className="text-primary" />
-        ) : (
-          <span className="text-[10px] font-semibold text-foreground">
-            {tool.source.label}
-          </span>
-        )}
-      </span>
+      <LogoBox source={tool.source} size={40} />
       <div className="min-w-0">
         <p className="text-sm font-medium text-foreground">{tool.name}</p>
         {tool.hint && (
@@ -657,20 +668,16 @@ export function MyJourney() {
               </div>
               <div>
                 <h3 className="font-display text-lg font-semibold text-foreground md:text-xl">
-                  Je recherche un BTS Communication en alternance
+                  Mon objectif d'études
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Le BTS Communication est un diplôme d'État de niveau 5 (Bac+2)
-                  reconnu par le Ministère de l'Enseignement supérieur. Il se
-                  prépare en deux ans, après un baccalauréat, et forme à la
-                  conception, à la mise en œuvre, au suivi et à l'évaluation
-                  d'actions de communication commerciale, institutionnelle,
-                  numérique et événementielle.
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Je suis ouvert à des missions variées, à condition que la
-                  communication reste majoritaire. Par exemple : 60 % de communication
-                  et 40 % de vente, d'accueil ou d'autres activités complémentaires.
+                  Je recherche une entreprise pour préparer un{" "}
+                  <strong className="text-foreground">BTS Communication en alternance</strong>,
+                  puis je souhaite poursuivre en{" "}
+                  <strong className="text-foreground">BUT Information-Communication,
+                  parcours Journalisme</strong> (ou parcours similaire). Cliquez
+                  sur chaque carte pour découvrir le détail du diplôme,
+                  du rythme, des matières et des débouchés.
                 </p>
                 <p className="mt-3 text-sm font-medium text-foreground">
                   Contactez-moi si vous avez une opportunité d'apprentissage.
@@ -678,219 +685,22 @@ export function MyJourney() {
               </div>
             </div>
 
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
-              <div className="rounded-xl border border-border bg-card p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
-                  Rythme en alternance
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Environ deux jours en centre de formation et trois jours en
-                  entreprise chaque semaine, sur une durée de deux ans. Le
-                  rythme peut varier légèrement selon l'école et l'entreprise
-                  d'accueil.
-                </p>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
-                  Statut et contrat
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Contrat d'apprentissage. Formation prise en charge par
-                  l'entreprise via l'OPCO. Rémunération de l'apprenti selon la
-                  grille légale, définie par l'âge et l'année de contrat.
-                </p>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
-                  Matières professionnelles
-                </p>
-                <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
-                  <li>• Cultures de la communication</li>
-                  <li>• Relations commerciales</li>
-                  <li>• Projet et pratiques de la communication</li>
-                  <li>• Veille opérationnelle et outils numériques</li>
-                  <li>• Ateliers de production</li>
-                </ul>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
-                  Matières générales
-                </p>
-                <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
-                  <li>• Culture générale et expression</li>
-                  <li>• Langue vivante étrangère (anglais)</li>
-                  <li>• Économie, droit et management</li>
-                </ul>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4 md:col-span-2">
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
-                  Compétences visées
-                </p>
-                <ul className="mt-2 grid gap-1.5 text-sm text-muted-foreground sm:grid-cols-2">
-                  <li>• Concevoir et piloter une stratégie de communication</li>
-                  <li>• Réaliser des supports print et numériques</li>
-                  <li>• Gérer les réseaux sociaux et le contenu web</li>
-                  <li>• Assurer les relations presse et médias</li>
-                  <li>• Organiser des événements et opérations</li>
-                  <li>• Gérer un budget et coordonner des prestataires</li>
-                  <li>• Suivre les indicateurs et évaluer les actions</li>
-                  <li>• Assurer une veille métier et concurrentielle</li>
-                </ul>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4 md:col-span-2">
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
-                  Épreuves d'examen
-                </p>
-                <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
-                  <li>• Culture générale et expression (écrit)</li>
-                  <li>• Langue vivante étrangère (oral et écrit)</li>
-                  <li>• Cultures de la communication (écrit)</li>
-                  <li>• Économie, droit et management (écrit)</li>
-                  <li>• Projet et pratiques de la communication (oral, dossier)</li>
-                  <li>• Relations commerciales (oral)</li>
-                  <li>• Activités professionnelles (dossier et soutenance)</li>
-                </ul>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4 md:col-span-2">
-                <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-primary">
-                  <Briefcase size={12} aria-hidden="true" />
-                  Métiers accessibles après le BTS Communication
-                </p>
-                <ul className="mt-2 grid gap-1.5 text-sm text-muted-foreground sm:grid-cols-2">
-                  <li>• Chargé(e) de communication</li>
-                  <li>• Assistant(e) chef de projet en agence</li>
-                  <li>• Community manager / social media manager</li>
-                  <li>• Chargé(e) de communication digitale</li>
-                  <li>• Attaché(e) de presse junior</li>
-                  <li>• Assistant(e) événementiel</li>
-                  <li>• Assistant(e) marketing</li>
-                  <li>• Chargé(e) des relations publiques</li>
-                  <li>• Média planneur junior</li>
-                  <li>• Concepteur-rédacteur junior</li>
-                  <li>• Chargé(e) de clientèle en agence de communication</li>
-                  <li>• Chargé(e) de communication interne</li>
-                </ul>
-              </div>
-              <div className="rounded-xl border-2 border-primary/40 bg-primary/5 p-4 md:col-span-2">
-                <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-primary">
-                  <Target size={12} aria-hidden="true" />
-                  Mon objectif après le BTS
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-foreground">
-                  Poursuivre en <strong>BUT Information-Communication,
-                  parcours Journalisme</strong> (Bachelor Universitaire de
-                  Technologie, diplôme national de niveau 6, Bac+3), ou dans
-                  un parcours similaire orienté vers les métiers de
-                  l'information et des médias.
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Ce diplôme forme aux techniques du journalisme (écrit, radio,
-                  télévision, web), à la déontologie de l'information, à la
-                  recherche et à la vérification des sources, ainsi qu'à la
-                  production de contenus pour tous types de médias.
-                </p>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4 md:col-span-2">
-                <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-primary">
-                  <Newspaper size={12} aria-hidden="true" />
-                  Pour en savoir plus sur le BTS Communication
-                </p>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Sources officielles et médias spécialisés qui présentent le diplôme :
-                </p>
-                <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-                  {[
-                    {
-                      name: "Onisep",
-                      desc: "Office national d'information sur les enseignements et les professions.",
-                      href: "https://www.onisep.fr/ressources/univers-formation/formations/post-bac/bts-communication",
-                      domain: "onisep.fr",
-                    },
-                    {
-                      name: "L'Étudiant",
-                      desc: "Média de référence sur l'orientation et les études supérieures.",
-                      href: "https://www.letudiant.fr/etudes/bts/bts-communication.html",
-                      domain: "letudiant.fr",
-                    },
-                    {
-                      name: "Studyrama",
-                      desc: "Portail d'information sur les formations et les métiers.",
-                      href: "https://www.studyrama.com/formations/diplomes/bts/bts-communication-16.html",
-                      domain: "studyrama.com",
-                    },
-                    {
-                      name: "Diplomeo",
-                      desc: "Guide des formations post-bac en France.",
-                      href: "https://diplomeo.com/etablissements-formations-bts_communication",
-                      domain: "diplomeo.com",
-                    },
-                    {
-                      name: "France Travail",
-                      desc: "Fiches métiers officielles de l'ex Pôle emploi.",
-                      href: "https://www.francetravail.fr/candidat/decouvrir-les-metiers-en-video/les-metiers/communication.html",
-                      domain: "francetravail.fr",
-                    },
-                    {
-                      name: "Éduscol",
-                      desc: "Portail du Ministère de l'Éducation nationale : référentiel officiel du diplôme.",
-                      href: "https://eduscol.education.fr/sti/formations/bts-communication",
-                      domain: "education.fr",
-                    },
-                  ].map((s) => (
-                    <li key={s.name}>
-                      <a
-                        href={s.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group flex items-start gap-3 rounded-lg border border-border bg-background p-3 transition-colors hover:border-primary/50"
-                      >
-                        <img
-                          src={favicon(s.domain)}
-                          alt={`Logo ${s.name}`}
-                          width={24}
-                          height={24}
-                          loading="lazy"
-                          className="h-6 w-6 shrink-0 object-contain"
-                        />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-foreground group-hover:text-primary">
-                            {s.name}
-                          </p>
-                          <p className="text-xs leading-relaxed text-muted-foreground">
-                            {s.desc}
-                          </p>
-                        </div>
-                        <ExternalLink
-                          size={12}
-                          className="mt-1 shrink-0 text-muted-foreground"
-                          aria-hidden="true"
-                        />
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            <div className="mt-8">
+              <Carousel cards={postBac} label="Projet d'études" />
             </div>
 
-            <p className="mt-6 text-xs font-semibold uppercase tracking-widest text-primary">
+            <p className="mt-8 text-xs font-semibold uppercase tracking-widest text-primary">
               Écoles visées
             </p>
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <a
                 href="https://www.ibsac.fr/esc-communication/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/50"
+                className="group flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:border-primary/50"
               >
-                <img
-                  src={favicon("ibsac.fr")}
-                  alt="Logo IBSAC"
-                  width={32}
-                  height={32}
-                  loading="lazy"
-                  className="h-8 w-8 object-contain"
-                />
-                <div>
+                <Logo domain="ibsac.fr" alt="Logo IBSAC" size={36} />
+                <div className="min-w-0">
                   <p className="font-display text-sm font-semibold text-foreground group-hover:text-primary">
                     IBSAC
                   </p>
@@ -906,17 +716,10 @@ export function MyJourney() {
                 href="https://www.talis.community/formations/bts-communication/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/50"
+                className="group flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:border-primary/50"
               >
-                <img
-                  src={favicon("talis.community")}
-                  alt="Logo Talis"
-                  width={32}
-                  height={32}
-                  loading="lazy"
-                  className="h-8 w-8 object-contain"
-                />
-                <div>
+                <Logo domain="talis.community" alt="Logo Talis" size={36} />
+                <div className="min-w-0">
                   <p className="font-display text-sm font-semibold text-foreground group-hover:text-primary">
                     Talis
                   </p>
@@ -929,6 +732,34 @@ export function MyJourney() {
                 />
               </a>
             </div>
+
+            <p className="mt-8 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-primary">
+              <Newspaper size={12} aria-hidden="true" />
+              Sources officielles sur le BTS Communication
+            </p>
+            <ul className="mt-3 flex flex-wrap gap-2">
+              {[
+                { name: "Onisep", href: "https://www.onisep.fr/ressources/univers-formation/formations/post-bac/bts-communication", domain: "onisep.fr" },
+                { name: "L'Étudiant", href: "https://www.letudiant.fr/etudes/bts/bts-communication.html", domain: "letudiant.fr" },
+                { name: "Studyrama", href: "https://www.studyrama.com/formations/diplomes/bts/bts-communication-16.html", domain: "studyrama.com" },
+                { name: "Diplomeo", href: "https://diplomeo.com/etablissements-formations-bts_communication", domain: "diplomeo.com" },
+                { name: "France Travail", href: "https://www.francetravail.fr/candidat/decouvrir-les-metiers-en-video/les-metiers/communication.html", domain: "francetravail.fr" },
+                { name: "Éduscol", href: "https://eduscol.education.fr/sti/formations/bts-communication", domain: "education.fr" },
+              ].map((s) => (
+                <li key={s.name}>
+                  <a
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+                  >
+                    <Logo domain={s.domain} alt={`Logo ${s.name}`} size={16} bare />
+                    {s.name}
+                    <ExternalLink size={10} aria-hidden="true" />
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
         </AnimatedSection>
 
