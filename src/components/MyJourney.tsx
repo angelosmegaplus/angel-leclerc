@@ -673,20 +673,16 @@ export function MyJourney() {
               </div>
               <div>
                 <h3 className="font-display text-lg font-semibold text-foreground md:text-xl">
-                  Je recherche un BTS Communication en alternance
+                  Mon objectif d'études
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Le BTS Communication est un diplôme d'État de niveau 5 (Bac+2)
-                  reconnu par le Ministère de l'Enseignement supérieur. Il se
-                  prépare en deux ans, après un baccalauréat, et forme à la
-                  conception, à la mise en œuvre, au suivi et à l'évaluation
-                  d'actions de communication commerciale, institutionnelle,
-                  numérique et événementielle.
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Je suis ouvert à des missions variées, à condition que la
-                  communication reste majoritaire. Par exemple : 60 % de communication
-                  et 40 % de vente, d'accueil ou d'autres activités complémentaires.
+                  Je recherche une entreprise pour préparer un{" "}
+                  <strong className="text-foreground">BTS Communication en alternance</strong>,
+                  puis je souhaite poursuivre en{" "}
+                  <strong className="text-foreground">BUT Information-Communication,
+                  parcours Journalisme</strong> (ou parcours similaire). Cliquez
+                  sur chaque carte pour découvrir le détail du diplôme,
+                  du rythme, des matières et des débouchés.
                 </p>
                 <p className="mt-3 text-sm font-medium text-foreground">
                   Contactez-moi si vous avez une opportunité d'apprentissage.
@@ -694,219 +690,22 @@ export function MyJourney() {
               </div>
             </div>
 
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
-              <div className="rounded-xl border border-border bg-card p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
-                  Rythme en alternance
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Environ deux jours en centre de formation et trois jours en
-                  entreprise chaque semaine, sur une durée de deux ans. Le
-                  rythme peut varier légèrement selon l'école et l'entreprise
-                  d'accueil.
-                </p>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
-                  Statut et contrat
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Contrat d'apprentissage. Formation prise en charge par
-                  l'entreprise via l'OPCO. Rémunération de l'apprenti selon la
-                  grille légale, définie par l'âge et l'année de contrat.
-                </p>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
-                  Matières professionnelles
-                </p>
-                <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
-                  <li>• Cultures de la communication</li>
-                  <li>• Relations commerciales</li>
-                  <li>• Projet et pratiques de la communication</li>
-                  <li>• Veille opérationnelle et outils numériques</li>
-                  <li>• Ateliers de production</li>
-                </ul>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
-                  Matières générales
-                </p>
-                <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
-                  <li>• Culture générale et expression</li>
-                  <li>• Langue vivante étrangère (anglais)</li>
-                  <li>• Économie, droit et management</li>
-                </ul>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4 md:col-span-2">
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
-                  Compétences visées
-                </p>
-                <ul className="mt-2 grid gap-1.5 text-sm text-muted-foreground sm:grid-cols-2">
-                  <li>• Concevoir et piloter une stratégie de communication</li>
-                  <li>• Réaliser des supports print et numériques</li>
-                  <li>• Gérer les réseaux sociaux et le contenu web</li>
-                  <li>• Assurer les relations presse et médias</li>
-                  <li>• Organiser des événements et opérations</li>
-                  <li>• Gérer un budget et coordonner des prestataires</li>
-                  <li>• Suivre les indicateurs et évaluer les actions</li>
-                  <li>• Assurer une veille métier et concurrentielle</li>
-                </ul>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4 md:col-span-2">
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
-                  Épreuves d'examen
-                </p>
-                <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
-                  <li>• Culture générale et expression (écrit)</li>
-                  <li>• Langue vivante étrangère (oral et écrit)</li>
-                  <li>• Cultures de la communication (écrit)</li>
-                  <li>• Économie, droit et management (écrit)</li>
-                  <li>• Projet et pratiques de la communication (oral, dossier)</li>
-                  <li>• Relations commerciales (oral)</li>
-                  <li>• Activités professionnelles (dossier et soutenance)</li>
-                </ul>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4 md:col-span-2">
-                <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-primary">
-                  <Briefcase size={12} aria-hidden="true" />
-                  Métiers accessibles après le BTS Communication
-                </p>
-                <ul className="mt-2 grid gap-1.5 text-sm text-muted-foreground sm:grid-cols-2">
-                  <li>• Chargé(e) de communication</li>
-                  <li>• Assistant(e) chef de projet en agence</li>
-                  <li>• Community manager / social media manager</li>
-                  <li>• Chargé(e) de communication digitale</li>
-                  <li>• Attaché(e) de presse junior</li>
-                  <li>• Assistant(e) événementiel</li>
-                  <li>• Assistant(e) marketing</li>
-                  <li>• Chargé(e) des relations publiques</li>
-                  <li>• Média planneur junior</li>
-                  <li>• Concepteur-rédacteur junior</li>
-                  <li>• Chargé(e) de clientèle en agence de communication</li>
-                  <li>• Chargé(e) de communication interne</li>
-                </ul>
-              </div>
-              <div className="rounded-xl border-2 border-primary/40 bg-primary/5 p-4 md:col-span-2">
-                <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-primary">
-                  <Target size={12} aria-hidden="true" />
-                  Mon objectif après le BTS
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-foreground">
-                  Poursuivre en <strong>BUT Information-Communication,
-                  parcours Journalisme</strong> (Bachelor Universitaire de
-                  Technologie, diplôme national de niveau 6, Bac+3), ou dans
-                  un parcours similaire orienté vers les métiers de
-                  l'information et des médias.
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Ce diplôme forme aux techniques du journalisme (écrit, radio,
-                  télévision, web), à la déontologie de l'information, à la
-                  recherche et à la vérification des sources, ainsi qu'à la
-                  production de contenus pour tous types de médias.
-                </p>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4 md:col-span-2">
-                <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-primary">
-                  <Newspaper size={12} aria-hidden="true" />
-                  Pour en savoir plus sur le BTS Communication
-                </p>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Sources officielles et médias spécialisés qui présentent le diplôme :
-                </p>
-                <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-                  {[
-                    {
-                      name: "Onisep",
-                      desc: "Office national d'information sur les enseignements et les professions.",
-                      href: "https://www.onisep.fr/ressources/univers-formation/formations/post-bac/bts-communication",
-                      domain: "onisep.fr",
-                    },
-                    {
-                      name: "L'Étudiant",
-                      desc: "Média de référence sur l'orientation et les études supérieures.",
-                      href: "https://www.letudiant.fr/etudes/bts/bts-communication.html",
-                      domain: "letudiant.fr",
-                    },
-                    {
-                      name: "Studyrama",
-                      desc: "Portail d'information sur les formations et les métiers.",
-                      href: "https://www.studyrama.com/formations/diplomes/bts/bts-communication-16.html",
-                      domain: "studyrama.com",
-                    },
-                    {
-                      name: "Diplomeo",
-                      desc: "Guide des formations post-bac en France.",
-                      href: "https://diplomeo.com/etablissements-formations-bts_communication",
-                      domain: "diplomeo.com",
-                    },
-                    {
-                      name: "France Travail",
-                      desc: "Fiches métiers officielles de l'ex Pôle emploi.",
-                      href: "https://www.francetravail.fr/candidat/decouvrir-les-metiers-en-video/les-metiers/communication.html",
-                      domain: "francetravail.fr",
-                    },
-                    {
-                      name: "Éduscol",
-                      desc: "Portail du Ministère de l'Éducation nationale : référentiel officiel du diplôme.",
-                      href: "https://eduscol.education.fr/sti/formations/bts-communication",
-                      domain: "education.fr",
-                    },
-                  ].map((s) => (
-                    <li key={s.name}>
-                      <a
-                        href={s.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group flex items-start gap-3 rounded-lg border border-border bg-background p-3 transition-colors hover:border-primary/50"
-                      >
-                        <img
-                          src={favicon(s.domain)}
-                          alt={`Logo ${s.name}`}
-                          width={24}
-                          height={24}
-                          loading="lazy"
-                          className="h-6 w-6 shrink-0 object-contain"
-                        />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-foreground group-hover:text-primary">
-                            {s.name}
-                          </p>
-                          <p className="text-xs leading-relaxed text-muted-foreground">
-                            {s.desc}
-                          </p>
-                        </div>
-                        <ExternalLink
-                          size={12}
-                          className="mt-1 shrink-0 text-muted-foreground"
-                          aria-hidden="true"
-                        />
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            <div className="mt-8">
+              <Carousel cards={postBac} label="Projet d'études" />
             </div>
 
-            <p className="mt-6 text-xs font-semibold uppercase tracking-widest text-primary">
+            <p className="mt-8 text-xs font-semibold uppercase tracking-widest text-primary">
               Écoles visées
             </p>
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <a
                 href="https://www.ibsac.fr/esc-communication/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/50"
+                className="group flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:border-primary/50"
               >
-                <img
-                  src={favicon("ibsac.fr")}
-                  alt="Logo IBSAC"
-                  width={32}
-                  height={32}
-                  loading="lazy"
-                  className="h-8 w-8 object-contain"
-                />
-                <div>
+                <Logo domain="ibsac.fr" alt="Logo IBSAC" size={36} />
+                <div className="min-w-0">
                   <p className="font-display text-sm font-semibold text-foreground group-hover:text-primary">
                     IBSAC
                   </p>
@@ -922,17 +721,10 @@ export function MyJourney() {
                 href="https://www.talis.community/formations/bts-communication/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/50"
+                className="group flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:border-primary/50"
               >
-                <img
-                  src={favicon("talis.community")}
-                  alt="Logo Talis"
-                  width={32}
-                  height={32}
-                  loading="lazy"
-                  className="h-8 w-8 object-contain"
-                />
-                <div>
+                <Logo domain="talis.community" alt="Logo Talis" size={36} />
+                <div className="min-w-0">
                   <p className="font-display text-sm font-semibold text-foreground group-hover:text-primary">
                     Talis
                   </p>
@@ -945,6 +737,34 @@ export function MyJourney() {
                 />
               </a>
             </div>
+
+            <p className="mt-8 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-primary">
+              <Newspaper size={12} aria-hidden="true" />
+              Sources officielles sur le BTS Communication
+            </p>
+            <ul className="mt-3 flex flex-wrap gap-2">
+              {[
+                { name: "Onisep", href: "https://www.onisep.fr/ressources/univers-formation/formations/post-bac/bts-communication", domain: "onisep.fr" },
+                { name: "L'Étudiant", href: "https://www.letudiant.fr/etudes/bts/bts-communication.html", domain: "letudiant.fr" },
+                { name: "Studyrama", href: "https://www.studyrama.com/formations/diplomes/bts/bts-communication-16.html", domain: "studyrama.com" },
+                { name: "Diplomeo", href: "https://diplomeo.com/etablissements-formations-bts_communication", domain: "diplomeo.com" },
+                { name: "France Travail", href: "https://www.francetravail.fr/candidat/decouvrir-les-metiers-en-video/les-metiers/communication.html", domain: "francetravail.fr" },
+                { name: "Éduscol", href: "https://eduscol.education.fr/sti/formations/bts-communication", domain: "education.fr" },
+              ].map((s) => (
+                <li key={s.name}>
+                  <a
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+                  >
+                    <Logo domain={s.domain} alt={`Logo ${s.name}`} size={16} bare />
+                    {s.name}
+                    <ExternalLink size={10} aria-hidden="true" />
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
         </AnimatedSection>
 
