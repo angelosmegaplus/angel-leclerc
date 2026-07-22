@@ -448,52 +448,12 @@ const toolCategories: { title: string; note?: string; tools: Tool[] }[] = [
       {
         name: "Microsoft Office",
         source: { kind: "img", src: favicon("office.com"), alt: "Logo Microsoft Office" },
-        hint: "Suite bureautique regroupant Word, Excel, PowerPoint, Outlook et d'autres logiciels professionnels.",
-      },
-      {
-        name: "Microsoft Word",
-        source: { kind: "img", src: favicon("microsoft.com"), alt: "Logo Microsoft Word" },
-        hint: "Traitement de texte pour rédiger et mettre en forme des documents.",
-      },
-      {
-        name: "Microsoft Excel",
-        source: { kind: "img", src: favicon("microsoft.com"), alt: "Logo Microsoft Excel" },
-        hint: "Tableur pour organiser des données, réaliser des calculs et créer des tableaux.",
-      },
-      {
-        name: "Microsoft PowerPoint",
-        source: { kind: "img", src: favicon("microsoft.com"), alt: "Logo Microsoft PowerPoint" },
-        hint: "Logiciel de création de présentations et de diaporamas.",
-      },
-      {
-        name: "Outlook",
-        source: { kind: "img", src: favicon("outlook.com"), alt: "Logo Outlook" },
-        hint: "Messagerie professionnelle avec calendrier et gestion de contacts.",
+        hint: "Suite bureautique complète : Word (traitement de texte), Excel (tableur), PowerPoint (présentations), Outlook (messagerie et agenda) et les autres logiciels professionnels associés.",
       },
       {
         name: "Google Workspace",
         source: { kind: "img", src: favicon("workspace.google.com"), alt: "Logo Google Workspace" },
-        hint: "Suite collaborative de Google : messagerie, agenda, stockage et outils bureautiques en ligne.",
-      },
-      {
-        name: "Google Docs",
-        source: { kind: "img", src: favicon("docs.google.com"), alt: "Logo Google Docs" },
-        hint: "Traitement de texte en ligne permettant la rédaction collaborative en temps réel.",
-      },
-      {
-        name: "Google Sheets",
-        source: { kind: "img", src: favicon("sheets.google.com"), alt: "Logo Google Sheets" },
-        hint: "Tableur en ligne pour créer et partager des feuilles de calcul.",
-      },
-      {
-        name: "Google Drive",
-        source: { kind: "img", src: favicon("drive.google.com"), alt: "Logo Google Drive" },
-        hint: "Service de stockage et de partage de fichiers en ligne.",
-      },
-      {
-        name: "Gmail",
-        source: { kind: "img", src: favicon("mail.google.com"), alt: "Logo Gmail" },
-        hint: "Messagerie électronique de Google.",
+        hint: "Suite collaborative de Google regroupant Gmail (messagerie), Google Docs (traitement de texte), Sheets (tableur), Slides (présentations), Drive (stockage) et Agenda, avec édition partagée en temps réel.",
       },
     ],
   },
