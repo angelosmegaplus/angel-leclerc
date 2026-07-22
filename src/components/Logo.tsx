@@ -22,11 +22,17 @@ const HIGH_RES_OVERRIDES: Record<string, string> = {
   "webnode.com": "https://cdn.simpleicons.org/webflow",
 };
 
+// Minimum acceptable rendered resolution. Anything below is considered a
+// blurry favicon and we advance to the next source in the fallback chain.
+const MIN_ACCEPTABLE_PX = 48;
+
 function sources(domain: string): string[] {
   const list: string[] = [];
   const override = HIGH_RES_OVERRIDES[domain];
   if (override) list.push(override);
-  // High-res favicon services with graceful degradation
+  // High-res favicon services with graceful degradation.
+  // Logo.dev serves the cleanest official marks when available.
+  list.push(`https://img.logo.dev/${domain}?size=256&format=png&retina=true`);
   list.push(`https://icons.duckduckgo.com/ip3/${domain}.ico`);
   list.push(`https://www.google.com/s2/favicons?sz=256&domain=${domain}`);
   return list;
@@ -81,6 +87,15 @@ export function Logo({
             height: inner,
             objectFit: "contain",
             imageRendering: "auto",
+          }}
+          onLoad={(e) => {
+            // Auto-QA: if the loaded image is a tiny favicon, skip to next
+            // source. Applies only to non-SVG raster fallbacks.
+            const img = e.currentTarget;
+            const isSvg = /\.svg($|\?)/i.test(src) || src.includes("simpleicons.org");
+            if (!isSvg && img.naturalWidth > 0 && img.naturalWidth < MIN_ACCEPTABLE_PX) {
+              if (idx < chain.length - 1) setIdx(idx + 1);
+            }
           }}
           onError={() => {
             if (idx < chain.length - 1) setIdx(idx + 1);
