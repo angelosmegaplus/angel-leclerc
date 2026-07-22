@@ -94,6 +94,66 @@ const formation: Card[] = [
       "Création de supports",
       "Travail en équipe",
       "Anglais",
+      "SST (sauveteur secouriste du travail)",
+    ],
+  },
+];
+
+const experiences: Card[] = [
+  {
+    title: "Apprenti — Bac Pro Accueil et Vente",
+    org: "Office de Tourisme Val de Sioule",
+    period: "Septembre 2023 – juillet 2025",
+    logo: {
+      kind: "img",
+      src: favicon("valdesioule.com"),
+      alt: "Logo Office de Tourisme Val de Sioule",
+    },
+    description:
+      "Deux années d'alternance dans un office de tourisme intercommunal. Accueil des visiteurs, vente de produits touristiques, gestion des demandes par téléphone et e-mail. Création de livrets pour les hébergeurs, de livrets statistiques et d'affiches promotionnelles. Réalisation de montages vidéos et de publications pour les réseaux sociaux avec Canva. Analyse et mise à jour de l'agenda des animations sur le site web. Découverte concrète de la communication touristique et spécialisation autour de l'intelligence artificielle et de ses usages.",
+    skills: [
+      "Accueil physique & téléphonique",
+      "Vente conseil",
+      "Création de supports print",
+      "Community management",
+      "Montage vidéo",
+      "Gestion de bases de données",
+      "Moka, Koesio, Avizi, Apidae, Brevo",
+      "Conseil œnotouristique",
+    ],
+  },
+  {
+    title: "Animateur radio",
+    org: "Ligue de l'enseignement 03 — Radio Bocage",
+    period: "2026 — 2 mois",
+    logo: {
+      kind: "img",
+      src: favicon("laligue03.fr"),
+      alt: "Logo Ligue de l'enseignement de l'Allier",
+    },
+    description:
+      "Mission au sein d'une radio associative locale portée par la Ligue de l'enseignement de l'Allier. Recherche de sujets, rédaction et conduite d'interviews, préparation et animation d'émissions en direct. Une expérience qui a renforcé mon aisance à l'oral, mon sens de l'écoute et mon rapport à l'information.",
+    skills: [
+      "Rédaction d'interviews",
+      "Préparation d'émissions",
+      "Animation en direct",
+      "Prise de son",
+      "Écoute active",
+      "Recherche de sujets",
+    ],
+  },
+  {
+    title: "Missions d'intérim",
+    org: "Différents employeurs",
+    period: "2026",
+    logo: { kind: "icon", icon: Briefcase },
+    description:
+      "Missions ponctuelles réalisées en parallèle de mes projets : électricité, ménage, peinture, bûcheronnage. Une expérience de polyvalence, de rigueur et d'adaptation à des environnements de travail variés.",
+    skills: [
+      "Polyvalence",
+      "Rigueur",
+      "Adaptation",
+      "Travail manuel",
     ],
   },
 ];
@@ -882,6 +942,14 @@ export function MyJourney() {
             </div>
           </div>
         </AnimatedSection>
+
+        <Subsection title="Expériences professionnelles">
+          <Carousel cards={experiences} label="Expériences professionnelles" />
+          <p className="mx-auto mt-6 max-w-2xl text-center text-xs italic text-muted-foreground">
+            Pour l'historique complet, les recommandations et les missions détaillées,
+            rendez-vous sur mon profil LinkedIn.
+          </p>
+        </Subsection>
 
         <Subsection title="Formation">
           <div className="mx-auto max-w-2xl">
