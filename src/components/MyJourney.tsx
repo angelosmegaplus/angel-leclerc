@@ -61,8 +61,13 @@ function LogoBox({ source, size = 56 }: { source: LogoSource; size?: number }) {
   );
 }
 
-const favicon = (domain: string) =>
-  `https://www.google.com/s2/favicons?sz=128&domain=${domain}`;
+// Domain-based logo helper. Rendered through the <Logo /> component which
+// picks the highest-resolution source available and falls back gracefully.
+const dom = (domain: string, alt: string): LogoSource => ({
+  kind: "domain",
+  domain,
+  alt,
+});
 
 // ---------- Data ----------
 
@@ -83,11 +88,7 @@ const formation: Card[] = [
     org: "MFR-CFA du Périgord noir",
     period: "Septembre 2023 – juillet 2025",
     meta: "Mention Bien",
-    logo: {
-      kind: "img",
-      src: favicon("mfrperigordnoir.com"),
-      alt: "Logo MFR-CFA du Périgord noir",
-    },
+    logo: dom("mfrperigordnoir.com", "Logo MFR-CFA du Périgord noir"),
     website: { label: "mfrperigordnoir.com", href: "https://www.mfrperigordnoir.com/" },
     description:
       "Formation centrée sur l'accueil multicanal, l'information, le conseil, l'orientation du public, la vente, la gestion des demandes, les tâches administratives et la communication. Cette formation réalisée en alternance m'a permis de développer une forte aisance orale, de l'autonomie, de la polyvalence et une bonne capacité d'adaptation. Le parcours a également été enrichi par un voyage d'étude Erasmus de deux semaines en Irlande, apportant une ouverture internationale et une pratique concrète de l'anglais.",
@@ -110,11 +111,7 @@ const experiences: Card[] = [
     title: "Apprenti — Bac Pro Accueil et Vente",
     org: "Office de Tourisme Val de Sioule",
     period: "Septembre 2023 – juillet 2025",
-    logo: {
-      kind: "img",
-      src: favicon("valdesioule.com"),
-      alt: "Logo Office de Tourisme Val de Sioule",
-    },
+    logo: dom("valdesioule.com", "Logo Office de Tourisme Val de Sioule"),
     website: { label: "valdesioule.com", href: "https://www.valdesioule.com/" },
     description:
       "Deux années d'alternance dans un office de tourisme intercommunal. Accueil des visiteurs, vente de produits touristiques, gestion des demandes par téléphone et e-mail. Création de livrets pour les hébergeurs, de livrets statistiques et d'affiches promotionnelles. Réalisation de montages vidéos et de publications pour les réseaux sociaux avec Canva. Analyse et mise à jour de l'agenda des animations sur le site web. Découverte concrète de la communication touristique et spécialisation autour de l'intelligence artificielle et de ses usages.",
@@ -134,11 +131,7 @@ const experiences: Card[] = [
     org: "Radio Bocage · Ligue de l'enseignement de l'Allier",
     period: "2026",
     meta: "Mission de service civique",
-    logo: {
-      kind: "img",
-      src: favicon("service-civique.gouv.fr"),
-      alt: "Logo Service Civique",
-    },
+    logo: dom("service-civique.gouv.fr", "Logo Service Civique"),
     website: { label: "service-civique.gouv.fr", href: "https://www.service-civique.gouv.fr/" },
     description:
       "Mission de service civique consacrée au développement d'un projet d'émission de radio destinée aux jeunes, à Radio Bocage, radio associative locale portée par la Ligue de l'enseignement de l'Allier. Travail sur les plans d'émission, le choix des sujets et des angles éditoriaux, l'écriture des rubriques, le format et le fonctionnement général de l'émission, ainsi que sur l'identité sonore (jingles, habillage, ton). Le projet n'a finalement pas abouti à une diffusion, mais m'a permis d'explorer concrètement la conception d'un programme radio de A à Z.",
@@ -173,7 +166,7 @@ const certifications: Card[] = [
     title: "Les principes fondamentaux du marketing digital",
     org: "Google",
     period: "Obtenue en avril 2026",
-    logo: { kind: "img", src: favicon("google.com"), alt: "Logo Google" },
+    logo: dom("google.com", "Logo Google"),
     website: { label: "learndigital.withgoogle.com", href: "https://learndigital.withgoogle.com/ateliernumerique" },
     description:
       "Formation consacrée aux bases du marketing numérique, de la visibilité en ligne, de la communication digitale et de la présence d'une organisation sur Internet.",
@@ -182,11 +175,7 @@ const certifications: Card[] = [
     title: "BAFA",
     org: "Ligue de l'enseignement de l'Allier",
     period: "",
-    logo: {
-      kind: "img",
-      src: favicon("laligue.org"),
-      alt: "Logo Ligue de l'enseignement de l'Allier",
-    },
+    logo: dom("laligue.org", "Logo Ligue de l'enseignement de l'Allier"),
     website: { label: "laligue.org", href: "https://laligue.org/" },
     description:
       "Le BAFA (Brevet d'Aptitude aux Fonctions d'Animateur) est un diplôme d'État qui atteste de la capacité à encadrer des enfants et des adolescents dans des activités de loisirs, de vacances et de jeunesse. Il se déroule en trois étapes : une session de formation générale, un stage pratique en structure d'accueil, puis une session d'approfondissement. La Ligue de l'Enseignement est une fédération d'éducation populaire reconnue d'utilité publique, qui forme des animateurs engagés dans une démarche d'éducation active, de citoyenneté et de laïcité. J'ai suivi une formation orientée animation en centre de vacances et de loisirs (CVL), avec une spécialité scoutisme pour les tranches d'âge 7-12 ans puis 12-17 ans. Grâce à cette certification, je peux conduire des activités, animer des groupes de mineurs et garantir leur sécurité dans un cadre éducatif.",
@@ -215,11 +204,7 @@ const engagements: Card[] = [
     title: "Président d'association",
     org: "La Fraternité du Scoutisme",
     period: "Décembre 2024 – janvier 2026",
-    logo: {
-      kind: "img",
-      src: favicon("fraternite.net"),
-      alt: "Logo La Fraternité du Scoutisme",
-    },
+    logo: dom("fraternite.net", "Logo La Fraternité du Scoutisme"),
     website: { label: "fraternite.net", href: "https://fraternite.net/" },
     description:
       "Relance d'une association nationale interscoute et intergénérationnelle laissée à l'abandon depuis plusieurs années. Réalisation d'un important travail de communication, de création de contenus, d'animation d'une communauté, d'organisation de rencontres et de conférences, de recherches historiques et pédagogiques, de développement d'un forum et de valorisation de l'histoire du scoutisme.",
@@ -255,11 +240,7 @@ const engagements: Card[] = [
     title: "Bénévole",
     org: "Réseau Baden-Powell",
     period: "Depuis juillet 2024",
-    logo: {
-      kind: "img",
-      src: favicon("reseau-bp.fr"),
-      alt: "Logo Réseau Baden-Powell",
-    },
+    logo: dom("reseau-bp.fr", "Logo Réseau Baden-Powell"),
     website: { label: "reseau-bp.fr", href: "https://reseau-bp.fr/" },
     description:
       "Participation aux activités du Réseau Baden-Powell, notamment autour des archives nationales, de la conservation de documents et de la transmission de l'histoire du scoutisme.",
