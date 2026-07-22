@@ -322,6 +322,18 @@ function Flashcard({ card }: { card: Card }) {
               <p className="text-sm leading-relaxed text-muted-foreground">
                 {card.description}
               </p>
+              {card.website && (
+                <a
+                  href={card.website.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+                >
+                  <Globe size={12} aria-hidden="true" />
+                  {card.website.label}
+                  <ExternalLink size={10} aria-hidden="true" />
+                </a>
+              )}
               {card.skills && card.skills.length > 0 && (
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
