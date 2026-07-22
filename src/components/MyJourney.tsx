@@ -263,7 +263,6 @@ const engagements: Card[] = [
 // ---------- Flashcard ----------
 
 function Flashcard({ card }: { card: Card }) {
-  // (placeholder edit anchor)
   const [open, setOpen] = useState(false);
   return (
     <article
