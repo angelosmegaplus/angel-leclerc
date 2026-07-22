@@ -943,6 +943,14 @@ export function MyJourney() {
           </div>
         </AnimatedSection>
 
+        <Subsection title="Expériences professionnelles">
+          <Carousel cards={experiences} label="Expériences professionnelles" />
+          <p className="mx-auto mt-6 max-w-2xl text-center text-xs italic text-muted-foreground">
+            Pour l'historique complet, les recommandations et les missions détaillées,
+            rendez-vous sur mon profil LinkedIn.
+          </p>
+        </Subsection>
+
         <Subsection title="Formation">
           <div className="mx-auto max-w-2xl">
             <Flashcard card={formation[0]} />
