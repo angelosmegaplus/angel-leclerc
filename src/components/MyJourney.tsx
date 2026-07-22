@@ -19,15 +19,20 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
+import { Logo } from "@/components/Logo";
 
 // ---------- Logo helper ----------
 
 type LogoSource =
   | { kind: "img"; src: string; alt: string }
+  | { kind: "domain"; domain: string; alt: string }
   | { kind: "icon"; icon: LucideIcon }
   | { kind: "text"; label: string };
 
 function LogoBox({ source, size = 56 }: { source: LogoSource; size?: number }) {
+  if (source.kind === "domain") {
+    return <Logo domain={source.domain} alt={source.alt} size={size} />;
+  }
   return (
     <div
       className="inline-flex shrink-0 items-center justify-center rounded-xl border border-border bg-background"
