@@ -354,11 +354,7 @@ function Hero() {
               size="lg"
               className="border-foreground/20 bg-transparent text-foreground hover:bg-muted"
             >
-              <a
-                href="/cv-angel-leclerc.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <a href="#parcours">
                 <FileText size={18} className="mr-2" />
                 Voir mon CV
               </a>
