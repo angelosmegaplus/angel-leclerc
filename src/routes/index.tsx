@@ -566,10 +566,7 @@ function About() {
       <div className="container-tight">
         <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr]">
           <AnimatedSection>
-            <span className="text-xs font-semibold uppercase tracking-widest text-primary">
-              À propos
-            </span>
-            <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
+            <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
               À propos
             </h2>
             <div className="mt-6 space-y-4 text-muted-foreground leading-relaxed">
@@ -591,19 +588,22 @@ function About() {
           <AnimatedSection delay={0.1}>
             <div className="rounded-2xl border border-border bg-background p-8">
               <h3 className="font-display text-xl font-semibold text-foreground">
-                Parcours
+                En quelques mots
               </h3>
               <div className="mt-4 space-y-4 text-sm leading-relaxed text-muted-foreground">
                 <p>
-                  Mon parcours mêle accueil, tourisme, communication, associatif et
-                  scoutisme. J'ai appris à écouter, expliquer, organiser et coordonner.
+                  20 ans, passionné par la communication, l'information et les projets
+                  qui ont du sens. J'ai appris à écouter, expliquer, organiser et
+                  coordonner à travers l'accueil, le tourisme, l'associatif et le scoutisme.
                 </p>
                 <p>
-                  Cette expérience m'a donné une bonne compréhension des publics, des
-                  territoires et de la transmission d'informations.
+                  <span className="font-medium text-foreground">Langues :</span>{" "}
+                  français (langue maternelle), anglais (bases), latin (maîtrise),
+                  grec (notions).
                 </p>
                 <p>
-                  Je continue de me former en communication, rédaction et journalisme.
+                  <span className="font-medium text-foreground">Passions :</span>{" "}
+                  scoutisme, orgue, maquettisme, montage vidéo et identité sonore.
                 </p>
               </div>
             </div>

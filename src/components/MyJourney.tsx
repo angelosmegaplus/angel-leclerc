@@ -117,7 +117,7 @@ const certifications: Card[] = [
       alt: "Logo Ligue de l'enseignement de l'Allier",
     },
     description:
-      "Le BAFA (Brevet d'Aptitude aux Fonctions d'Animateur) est un diplôme d'État qui atteste de la capacité à encadrer des enfants et des adolescents dans des activités de loisirs, de vacances et de jeunesse. Il se déroule en trois étapes : une session de formation générale, un stage pratique en structure d'accueil, puis une session d'approfondissement. La Ligue de l'Enseignement est une fédération d'éducation populaire reconnue d'utilité publique, qui forme des animateurs engagés dans une démarche d'éducation active, de citoyenneté et de laïcité. Grâce à cette certification, je peux conduire des activités, animer des groupes de mineurs et garantir leur sécurité dans un cadre éducatif.",
+      "Le BAFA (Brevet d'Aptitude aux Fonctions d'Animateur) est un diplôme d'État qui atteste de la capacité à encadrer des enfants et des adolescents dans des activités de loisirs, de vacances et de jeunesse. Il se déroule en trois étapes : une session de formation générale, un stage pratique en structure d'accueil, puis une session d'approfondissement. La Ligue de l'Enseignement est une fédération d'éducation populaire reconnue d'utilité publique, qui forme des animateurs engagés dans une démarche d'éducation active, de citoyenneté et de laïcité. J'ai suivi une formation orientée animation en centre de vacances et de loisirs (CVL), avec une spécialité scoutisme pour les tranches d'âge 7-12 ans puis 12-17 ans. Grâce à cette certification, je peux conduire des activités, animer des groupes de mineurs et garantir leur sécurité dans un cadre éducatif.",
     skills: [
       "Animation pédagogique",
       "Encadrement de mineurs",
@@ -701,19 +701,6 @@ export function MyJourney() {
                   <li>• Relations commerciales (oral)</li>
                   <li>• Activités professionnelles (dossier et soutenance)</li>
                 </ul>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4 md:col-span-2">
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
-                  Débouchés
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Assistant chef de projet en agence, chargé de communication en
-                  entreprise, association ou collectivité, community manager,
-                  attaché de presse junior, assistant événementiel ou marketing.
-                  Poursuite d'études possible en licence professionnelle,
-                  bachelor ou école de communication et de journalisme —
-                  perspective que je souhaite suivre.
-                </p>
               </div>
               <div className="rounded-xl border border-border bg-card p-4 md:col-span-2">
                 <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-primary">
