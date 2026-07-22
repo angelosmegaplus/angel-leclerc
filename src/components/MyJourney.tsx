@@ -169,6 +169,7 @@ const certifications: Card[] = [
     org: "Google",
     period: "Obtenue en avril 2026",
     logo: { kind: "img", src: favicon("google.com"), alt: "Logo Google" },
+    website: { label: "learndigital.withgoogle.com", href: "https://learndigital.withgoogle.com/ateliernumerique" },
     description:
       "Formation consacrée aux bases du marketing numérique, de la visibilité en ligne, de la communication digitale et de la présence d'une organisation sur Internet.",
   },
