@@ -69,6 +69,11 @@ const dom = (domain: string, alt: string): LogoSource => ({
   alt,
 });
 
+// Legacy favicon URL helper — kept for the few inline <img> usages (tool chips,
+// school cards, sources list). New logos should prefer the `dom()` helper.
+const favicon = (domain: string) =>
+  `https://www.google.com/s2/favicons?sz=256&domain=${domain}`;
+
 // ---------- Data ----------
 
 type Card = {
