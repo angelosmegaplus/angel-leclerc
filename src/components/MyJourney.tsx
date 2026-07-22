@@ -430,12 +430,12 @@ const toolCategories: { title: string; note?: string; tools: Tool[] }[] = [
     tools: [
       {
         name: "Canva",
-        source: { kind: "img", src: favicon("canva.com"), alt: "Logo Canva" },
+        source: dom("canva.com", "Logo Canva"),
         hint: "Outil de création graphique en ligne pour affiches, publications, présentations et supports visuels.",
       },
       {
         name: "Figma",
-        source: { kind: "img", src: favicon("figma.com"), alt: "Logo Figma" },
+        source: dom("figma.com", "Logo Figma"),
         hint: "Éditeur collaboratif pour concevoir des maquettes de sites, d'applications et d'interfaces.",
       },
     ],
@@ -445,12 +445,12 @@ const toolCategories: { title: string; note?: string; tools: Tool[] }[] = [
     tools: [
       {
         name: "Lovable",
-        source: { kind: "img", src: favicon("lovable.dev"), alt: "Logo Lovable" },
+        source: dom("lovable.dev", "Logo Lovable"),
         hint: "Plateforme de création de sites internet et d'applications assistée par intelligence artificielle.",
       },
       {
         name: "Squarespace",
-        source: { kind: "img", src: favicon("squarespace.com"), alt: "Logo Squarespace" },
+        source: dom("squarespace.com", "Logo Squarespace"),
         hint: "Hébergeur et créateur de sites vitrines, également utilisé pour enregistrer des noms de domaine.",
       },
     ],
@@ -460,12 +460,12 @@ const toolCategories: { title: string; note?: string; tools: Tool[] }[] = [
     tools: [
       {
         name: "Microsoft Office",
-        source: { kind: "img", src: favicon("office.com"), alt: "Logo Microsoft Office" },
+        source: dom("office.com", "Logo Microsoft Office"),
         hint: "Suite bureautique complète : Word (traitement de texte), Excel (tableur), PowerPoint (présentations), Outlook (messagerie et agenda) et les autres logiciels professionnels associés.",
       },
       {
         name: "Google Workspace",
-        source: { kind: "img", src: favicon("workspace.google.com"), alt: "Logo Google Workspace" },
+        source: dom("workspace.google.com", "Logo Google Workspace"),
         hint: "Suite collaborative de Google regroupant Gmail (messagerie), Google Docs (traitement de texte), Sheets (tableur), Slides (présentations), Drive (stockage) et Agenda, avec édition partagée en temps réel.",
       },
     ],
@@ -475,22 +475,22 @@ const toolCategories: { title: string; note?: string; tools: Tool[] }[] = [
     tools: [
       {
         name: "Meta Business Suite",
-        source: { kind: "img", src: favicon("business.facebook.com"), alt: "Logo Meta Business Suite" },
+        source: dom("business.facebook.com", "Logo Meta Business Suite"),
         hint: "Outil de gestion des pages Facebook et Instagram : publications, messages et statistiques.",
       },
       {
         name: "Facebook",
-        source: { kind: "img", src: favicon("facebook.com"), alt: "Logo Facebook" },
+        source: dom("facebook.com", "Logo Facebook"),
         hint: "Réseau social généraliste utilisé pour la communication de pages et de communautés.",
       },
       {
         name: "Instagram",
-        source: { kind: "img", src: favicon("instagram.com"), alt: "Logo Instagram" },
+        source: dom("instagram.com", "Logo Instagram"),
         hint: "Réseau social visuel centré sur les photos, vidéos et stories.",
       },
       {
         name: "LinkedIn",
-        source: { kind: "img", src: favicon("linkedin.com"), alt: "Logo LinkedIn" },
+        source: dom("linkedin.com", "Logo LinkedIn"),
         hint: "Réseau social professionnel pour la présence et la communication d'entreprise.",
       },
     ],
@@ -500,7 +500,7 @@ const toolCategories: { title: string; note?: string; tools: Tool[] }[] = [
     tools: [
       {
         name: "MixPad",
-        source: { kind: "img", src: favicon("nch.com.au"), alt: "Logo MixPad" },
+        source: dom("nch.com.au", "Logo MixPad"),
         hint: "Logiciel de mixage et de montage audio multipiste pour émissions, podcasts et jingles.",
       },
     ],
@@ -510,12 +510,12 @@ const toolCategories: { title: string; note?: string; tools: Tool[] }[] = [
     tools: [
       {
         name: "Avizi",
-        source: { kind: "img", src: favicon("avizi.fr"), alt: "Logo Avizi" },
+        source: dom("avizi.fr", "Logo Avizi"),
         hint: "Logiciel de caisse et de gestion des ventes utilisé par les offices de tourisme.",
       },
       {
         name: "Koesio",
-        source: { kind: "img", src: favicon("koesio.com"), alt: "Logo Koesio" },
+        source: dom("koesio.com", "Logo Koesio"),
         hint: "Solution numérique pour la gestion administrative et bureautique des structures.",
       },
     ],
@@ -527,7 +527,7 @@ const toolCategories: { title: string; note?: string; tools: Tool[] }[] = [
     tools: [
       {
         name: "ChatGPT",
-        source: { kind: "img", src: favicon("chatgpt.com"), alt: "Logo ChatGPT" },
+        source: dom("chatgpt.com", "Logo ChatGPT"),
         hint: "Assistant conversationnel d'OpenAI utilisé pour la recherche d'informations et l'aide à la rédaction.",
       },
       {
