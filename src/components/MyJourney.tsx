@@ -457,6 +457,18 @@ function Carousel({ cards, label }: { cards: Card[]; label: string }) {
   );
 }
 
+// ---------- CardGrid (uniform flashcard grid) ----------
+
+function CardGrid({ cards }: { cards: Card[] }) {
+  return (
+    <div className="mx-auto grid max-w-5xl gap-4 md:grid-cols-2">
+      {cards.map((c, i) => (
+        <Flashcard key={i} card={c} />
+      ))}
+    </div>
+  );
+}
+
 // ---------- Tools ----------
 
 type Tool = { name: string; source: LogoSource; hint?: string };
@@ -764,7 +776,7 @@ export function MyJourney() {
         </AnimatedSection>
 
         <Subsection title="Expériences professionnelles">
-          <Carousel cards={experiences} label="Expériences professionnelles" />
+          <CardGrid cards={experiences} />
           <p className="mx-auto mt-6 max-w-2xl text-center text-xs italic text-muted-foreground">
             Pour l'historique complet, les recommandations et les missions détaillées,
             rendez-vous sur mon profil LinkedIn.
@@ -772,17 +784,15 @@ export function MyJourney() {
         </Subsection>
 
         <Subsection title="Formation">
-          <div className="mx-auto max-w-2xl">
-            <Flashcard card={formation[0]} />
-          </div>
+          <CardGrid cards={formation} />
         </Subsection>
 
         <Subsection title="Certifications">
-          <Carousel cards={certifications} label="Certifications" />
+          <CardGrid cards={certifications} />
         </Subsection>
 
         <Subsection title="Engagements associatifs">
-          <Carousel cards={engagements} label="Engagements associatifs" />
+          <CardGrid cards={engagements} />
         </Subsection>
 
         <Subsection title="Outils utilisés">
