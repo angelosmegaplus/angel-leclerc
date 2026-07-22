@@ -542,24 +542,7 @@ const toolCategories: { title: string; note?: string; tools: Tool[] }[] = [
 function ToolChip({ tool }: { tool: Tool }) {
   return (
     <li className="flex items-start gap-3 rounded-xl border border-border bg-background p-3">
-      <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-card">
-        {tool.source.kind === "img" ? (
-          <img
-            src={tool.source.src}
-            alt={tool.source.alt}
-            width={24}
-            height={24}
-            loading="lazy"
-            className="h-6 w-6 object-contain"
-          />
-        ) : tool.source.kind === "icon" ? (
-          <tool.source.icon size={18} className="text-primary" />
-        ) : (
-          <span className="text-[10px] font-semibold text-foreground">
-            {tool.source.label}
-          </span>
-        )}
-      </span>
+      <LogoBox source={tool.source} size={40} />
       <div className="min-w-0">
         <p className="text-sm font-medium text-foreground">{tool.name}</p>
         {tool.hint && (
