@@ -290,7 +290,6 @@ function HomePage() {
       <Intro />
       <Services />
       <About />
-      <BlogPreview />
       <Contact />
     </div>
   );
