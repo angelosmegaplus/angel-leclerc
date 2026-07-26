@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Menu, X, Linkedin, Instagram, Facebook } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import logo from "@/assets/logo.png";
+import logo from "@/assets/logo.svg";
 
 const navLinks = [
   { href: "/", label: "Accueil" },

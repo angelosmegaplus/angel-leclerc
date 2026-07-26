@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { MyJourney } from "@/components/MyJourney";
+import LatestSubstackArticles from "@/components/LatestSubstackArticles";
 
 export const Route = createFileRoute("/parcours")({
   head: () => ({
@@ -27,6 +28,7 @@ function ParcoursPage() {
   return (
     <div>
       <MyJourney />
+      <LatestSubstackArticles />
     </div>
   );
 }
