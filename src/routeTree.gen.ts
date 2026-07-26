@@ -14,6 +14,7 @@ import { Route as PolitiqueConfidentialiteRouteImport } from './routes/politique
 import { Route as ParcoursRouteImport } from './routes/parcours'
 import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
 import { Route as EntrepriseRouteImport } from './routes/entreprise'
+import { Route as IndexRouteImport } from './routes/index'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -41,8 +42,14 @@ const EntrepriseRoute = EntrepriseRouteImport.update({
   path: '/entreprise',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '/entreprise': typeof EntrepriseRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/parcours': typeof ParcoursRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/entreprise': typeof EntrepriseRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/parcours': typeof ParcoursRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/entreprise': typeof EntrepriseRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/parcours': typeof ParcoursRoute
@@ -67,6 +76,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/entreprise'
     | '/mentions-legales'
     | '/parcours'
@@ -74,6 +84,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/entreprise'
     | '/mentions-legales'
     | '/parcours'
@@ -81,6 +92,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
   id:
     | '__root__'
+    | '/'
     | '/entreprise'
     | '/mentions-legales'
     | '/parcours'
@@ -89,6 +101,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   EntrepriseRoute: typeof EntrepriseRoute
   MentionsLegalesRoute: typeof MentionsLegalesRoute
   ParcoursRoute: typeof ParcoursRoute
@@ -133,10 +146,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EntrepriseRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   EntrepriseRoute: EntrepriseRoute,
   MentionsLegalesRoute: MentionsLegalesRoute,
   ParcoursRoute: ParcoursRoute,
