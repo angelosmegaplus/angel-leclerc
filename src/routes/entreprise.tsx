@@ -94,9 +94,9 @@ export const Route = createFileRoute("/entreprise")({
         content:
           "Gestion de projets de communication, conseil stratégique, rédaction éditoriale et journalistique pour professionnels, associations et porteurs de projets.",
       },
-      { property: "og:url", content: "/" },
+      { property: "og:url", content: "/entreprise" },
     ],
-    links: [{ rel: "canonical", href: "/" }],
+    links: [{ rel: "canonical", href: "/entreprise" }],
     scripts: [
       {
         type: "application/ld+json",
