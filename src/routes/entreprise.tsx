@@ -68,7 +68,7 @@ function BrandTag({
   );
 }
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/entreprise")({
   loader: async () => {
     const posts = await getBlogPosts();
     return { posts };
