@@ -726,7 +726,6 @@ function Contact() {
   return ContactSection();
 }
 
-function BlogPreview() {
 const paymentMethods = [
   { name: "Visa", src: "https://cdn.simpleicons.org/visa/1A1F71" },
   { name: "Mastercard", src: "https://cdn.simpleicons.org/mastercard/EB001B" },
