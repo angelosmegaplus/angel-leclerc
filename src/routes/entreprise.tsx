@@ -29,7 +29,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedSection } from "@/components/AnimatedSection";
-import { MyJourney } from "@/components/MyJourney";
 import { getBlogPosts, type BlogPost } from "@/lib/blog.functions";
 import heroImage from "@/assets/hero-illustration.jpg";
 import revolutInvoiceImage from "@/assets/revolut-invoice-example.jpg";
@@ -296,7 +295,6 @@ function HomePage() {
       <Intro />
       <Services />
       <About />
-      <MyJourney />
       <BlogPreview />
       <Contact />
     </div>
@@ -354,7 +352,7 @@ function Hero() {
               size="lg"
               className="border-foreground/20 bg-transparent text-foreground hover:bg-muted"
             >
-              <a href="#parcours">
+              <a href="/parcours">
                 <FileText size={18} className="mr-2" />
                 Voir mon CV
               </a>
