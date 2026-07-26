@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PolitiqueConfidentialiteRouteImport } from './routes/politique-confidentialite'
+import { Route as ParcoursRouteImport } from './routes/parcours'
 import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
 import { Route as EntrepriseRouteImport } from './routes/entreprise'
 
@@ -25,6 +26,11 @@ const PolitiqueConfidentialiteRoute =
     path: '/politique-confidentialite',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ParcoursRoute = ParcoursRouteImport.update({
+  id: '/parcours',
+  path: '/parcours',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MentionsLegalesRoute = MentionsLegalesRouteImport.update({
   id: '/mentions-legales',
   path: '/mentions-legales',
@@ -39,12 +45,14 @@ const EntrepriseRoute = EntrepriseRouteImport.update({
 export interface FileRoutesByFullPath {
   '/entreprise': typeof EntrepriseRoute
   '/mentions-legales': typeof MentionsLegalesRoute
+  '/parcours': typeof ParcoursRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
 }
 export interface FileRoutesByTo {
   '/entreprise': typeof EntrepriseRoute
   '/mentions-legales': typeof MentionsLegalesRoute
+  '/parcours': typeof ParcoursRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
 }
@@ -52,6 +60,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/entreprise': typeof EntrepriseRoute
   '/mentions-legales': typeof MentionsLegalesRoute
+  '/parcours': typeof ParcoursRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
 }
@@ -60,18 +69,21 @@ export interface FileRouteTypes {
   fullPaths:
     | '/entreprise'
     | '/mentions-legales'
+    | '/parcours'
     | '/politique-confidentialite'
     | '/sitemap.xml'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/entreprise'
     | '/mentions-legales'
+    | '/parcours'
     | '/politique-confidentialite'
     | '/sitemap.xml'
   id:
     | '__root__'
     | '/entreprise'
     | '/mentions-legales'
+    | '/parcours'
     | '/politique-confidentialite'
     | '/sitemap.xml'
   fileRoutesById: FileRoutesById
@@ -79,6 +91,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   EntrepriseRoute: typeof EntrepriseRoute
   MentionsLegalesRoute: typeof MentionsLegalesRoute
+  ParcoursRoute: typeof ParcoursRoute
   PolitiqueConfidentialiteRoute: typeof PolitiqueConfidentialiteRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
@@ -97,6 +110,13 @@ declare module '@tanstack/react-router' {
       path: '/politique-confidentialite'
       fullPath: '/politique-confidentialite'
       preLoaderRoute: typeof PolitiqueConfidentialiteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parcours': {
+      id: '/parcours'
+      path: '/parcours'
+      fullPath: '/parcours'
+      preLoaderRoute: typeof ParcoursRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mentions-legales': {
@@ -119,6 +139,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   EntrepriseRoute: EntrepriseRoute,
   MentionsLegalesRoute: MentionsLegalesRoute,
+  ParcoursRoute: ParcoursRoute,
   PolitiqueConfidentialiteRoute: PolitiqueConfidentialiteRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
