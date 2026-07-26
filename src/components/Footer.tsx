@@ -2,10 +2,11 @@ import { Mail, MapPin, Phone, Linkedin, Instagram, Facebook } from "lucide-react
 import { Link } from "@tanstack/react-router";
 
 const navLinks = [
-  { href: "/#accueil", label: "Accueil" },
-  { href: "/#services", label: "Services" },
-  { href: "/#a-propos", label: "À propos" },
-  { href: "/#contact", label: "Contact" },
+  { href: "/", label: "Accueil" },
+  { href: "/entreprise", label: "Entreprise" },
+  { href: "/entreprise#services", label: "Services" },
+  { href: "/parcours", label: "Parcours" },
+  { href: "/entreprise#contact", label: "Contact" },
 ];
 
 export function Footer() {
