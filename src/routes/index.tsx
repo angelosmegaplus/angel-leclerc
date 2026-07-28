@@ -39,8 +39,9 @@ const choices = [
     icon: User,
     eyebrow: "Partie personnelle",
     title: "Mon parcours",
-    text: "Mon CV en ligne : expériences, formations, certifications, engagements associatifs, outils et recherche d'alternance BTS Communication.",
+    text: "Découvrez mon parcours, mes compétences, mes réalisations et ma recherche d'alternance en BTS Communication à Sarlat et dans ses environs.",
     cta: "Voir mon parcours",
+    badge: "Recherche d'alternance — septembre 2026",
   },
 ];
 
@@ -184,6 +185,11 @@ function LandingPage() {
                   <h2 className="relative mt-6 font-display text-2xl font-bold leading-tight text-foreground md:text-3xl">
                     {choice.title}
                   </h2>
+                  {"badge" in choice && choice.badge && (
+                    <span className="relative mt-3 inline-flex w-fit items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-semibold text-primary">
+                      {choice.badge}
+                    </span>
+                  )}
                   <p className="relative mt-4 flex-1 text-sm leading-relaxed text-muted-foreground md:text-base">
                     {choice.text}
                   </p>

@@ -157,23 +157,14 @@ export default function LatestSubstackArticles() {
         )}
 
         {!loading && hasError && (
-          <div className="mx-auto mt-12 max-w-xl rounded-2xl border border-border bg-card p-8 text-center">
-            <Newspaper size={28} className="mx-auto text-primary" />
-            <h3 className="mt-4 font-display text-lg font-semibold text-foreground">
-              Retrouve mes publications sur Substack
-            </h3>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              Le flux automatique de cette page Substack n'est pas encore
-              disponible. Tous mes articles restent accessibles directement sur
-              mon profil.
-            </p>
+          <div className="mt-12 text-center">
             <a
               href={SUBSTACK_PROFILE_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
             >
-              Ouvrir mon Substack
+              Voir tous mes articles sur Substack
               <ArrowRight size={14} />
             </a>
           </div>

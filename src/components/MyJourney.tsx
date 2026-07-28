@@ -1,869 +1,815 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
-  ChevronLeft,
-  ChevronRight,
-  Lightbulb,
-  HeartPulse,
-  Tent,
-  Check,
-  RotateCcw,
-  MousePointerClick,
-  GraduationCap,
-  ExternalLink,
-  Linkedin,
-  Newspaper,
+  MapPin,
+  Bike,
+  Calendar,
+  Download,
+  Mail,
+  ArrowRight,
+  Sparkles,
   Briefcase,
-  Target,
-  Globe,
+  GraduationCap,
+  Award,
+  HeartHandshake,
+  Wrench,
+  PenLine,
+  Palette,
+  Users,
+  ClipboardList,
+  ExternalLink,
+  Radio,
+  Building2,
+  Landmark,
+  Hammer,
+  BookOpen,
+  Tent,
+  Archive,
   type LucideIcon,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { Logo } from "@/components/Logo";
+import logo from "@/assets/logo.svg";
 
-// ---------- Logo helper ----------
-
-type LogoSource =
-  | { kind: "img"; src: string; alt: string }
-  | { kind: "domain"; domain: string; alt: string }
-  | { kind: "icon"; icon: LucideIcon }
-  | { kind: "text"; label: string };
-
-function LogoBox({ source, size = 56 }: { source: LogoSource; size?: number }) {
-  if (source.kind === "domain") {
-    return <Logo domain={source.domain} alt={source.alt} size={size} />;
-  }
+function SectionHeader({
+  eyebrow,
+  title,
+  intro,
+  id,
+}: {
+  eyebrow?: string;
+  title: string;
+  intro?: string;
+  id?: string;
+}) {
   return (
-    <div
-      className="inline-flex shrink-0 items-center justify-center rounded-xl border border-border bg-background"
-      style={{ width: size, height: size }}
-      aria-hidden={source.kind === "text" ? undefined : true}
-    >
-      {source.kind === "img" && (
-        <img
-          src={source.src}
-          alt={source.alt}
-          width={size - 16}
-          height={size - 16}
-          loading="lazy"
-          className="max-h-[70%] max-w-[70%] object-contain"
-        />
-      )}
-      {source.kind === "icon" && (
-        <source.icon size={Math.round(size * 0.5)} className="text-primary" />
-      )}
-      {source.kind === "text" && (
-        <span className="px-1 text-center text-[10px] font-semibold leading-tight text-foreground">
-          {source.label}
+    <div id={id} className="mx-auto max-w-2xl text-center scroll-mt-24">
+      {eyebrow && (
+        <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-primary">
+          <Sparkles size={12} />
+          {eyebrow}
         </span>
+      )}
+      <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
+        {title}
+      </h2>
+      {intro && (
+        <p className="mt-4 text-muted-foreground leading-relaxed">{intro}</p>
       )}
     </div>
   );
 }
 
-// Domain-based logo helper. Rendered through the <Logo /> component which
-// picks the highest-resolution source available and falls back gracefully.
-const dom = (domain: string, alt: string): LogoSource => ({
-  kind: "domain",
-  domain,
-  alt,
-});
+function Card({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={
+        "rounded-2xl border border-border bg-card p-6 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-shadow hover:shadow-md " +
+        className
+      }
+    >
+      {children}
+    </div>
+  );
+}
 
-// ---------- Data ----------
+function IntroSection() {
+  return (
+    <section className="relative overflow-hidden bg-background">
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-32 -left-24 h-[420px] w-[420px] rounded-full bg-primary/10 blur-3xl" />
+        <div className="absolute -bottom-32 -right-24 h-[420px] w-[420px] rounded-full bg-secondary/20 blur-3xl" />
+      </div>
 
-type Card = {
+      <div className="container-tight relative py-16 md:py-24">
+        <div className="grid items-center gap-10 md:grid-cols-[1.4fr_1fr]">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+              <Calendar size={12} /> Disponible à partir de septembre 2026
+            </span>
+            <h1 className="mt-4 font-display text-5xl font-bold leading-tight tracking-tight text-foreground md:text-6xl">
+              Angel <span className="italic text-primary">Leclerc</span>
+            </h1>
+            <p className="mt-3 font-display text-lg text-foreground/80 md:text-xl">
+              Étudiant en communication — recherche d'alternance à Sarlat
+            </p>
+            <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground">
+              Je recherche une entreprise pour préparer un BTS Communication en
+              alternance à partir de septembre 2026. Création de contenus,
+              rédaction, communication numérique, accueil du public et gestion
+              de projets&nbsp;: je souhaite mettre mes compétences au service
+              d'une structure située à Sarlat-la-Canéda ou dans ses environs
+              accessibles en scooter.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <a
+                href="/cv-angel-leclerc.pdf"
+                download
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+              >
+                <Download size={16} /> Télécharger mon CV
+              </a>
+              <a
+                href="#contact-alternance"
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
+              >
+                <Mail size={16} /> Me contacter
+              </a>
+              <a
+                href="#realisations"
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
+              >
+                Voir mes réalisations
+                <ArrowRight size={14} />
+              </a>
+            </div>
+          </div>
+
+          <div className="mx-auto flex w-full max-w-sm items-center justify-center md:mx-0">
+            <div className="relative">
+              <div
+                aria-hidden
+                className="absolute inset-0 -m-6 rounded-full bg-primary/15 blur-2xl"
+              />
+              <div className="relative flex h-56 w-56 items-center justify-center rounded-full border border-border bg-card shadow-lg md:h-64 md:w-64">
+                <img
+                  src={logo}
+                  alt="Logo Angel Leclerc Communication"
+                  className="h-40 w-40 object-contain md:h-44 md:w-44"
+                  width={176}
+                  height={176}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function AlternanceSection() {
+  const rows: { icon: LucideIcon; label: string; value: string }[] = [
+    { icon: GraduationCap, label: "Formation", value: "BTS Communication" },
+    { icon: Calendar, label: "Début", value: "Septembre 2026" },
+    { icon: MapPin, label: "Zone principale", value: "Sarlat-la-Canéda et communes proches" },
+    { icon: Bike, label: "Mobilité", value: "Scooter — trajets quotidiens autour de Sarlat" },
+    { icon: Building2, label: "Secteurs privilégiés", value: "Tourisme, culture, médias, collectivités, associations, commerce et services" },
+    { icon: ClipboardList, label: "Missions recherchées", value: "Réseaux sociaux, rédaction, création graphique, communication digitale, événementiel, accueil et gestion de projet" },
+  ];
+
+  return (
+    <AnimatedSection>
+      <section id="alternance" className="section-padding bg-muted/40 scroll-mt-24">
+        <div className="container-tight">
+          <SectionHeader
+            eyebrow="Recherche d'alternance"
+            title="Ma recherche d'alternance"
+            intro="Je recherche une entreprise pour préparer un BTS Communication en alternance à partir de septembre 2026. Ma recherche se concentre principalement sur Sarlat-la-Canéda et les communes proches accessibles quotidiennement en scooter."
+          />
+
+          <div className="mt-10 grid gap-4 md:grid-cols-2">
+            {rows.map((r) => (
+              <Card key={r.label} className="flex items-start gap-4">
+                <div className="inline-flex shrink-0 rounded-xl bg-primary/10 p-3 text-primary">
+                  <r.icon size={20} />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    {r.label}
+                  </p>
+                  <p className="mt-1 text-sm font-medium leading-relaxed text-foreground">
+                    {r.value}
+                  </p>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          <p className="mt-8 text-center text-sm italic text-muted-foreground">
+            Je privilégie une entreprise située à Sarlat ou dans un secteur
+            raisonnablement accessible en scooter.
+          </p>
+        </div>
+      </section>
+    </AnimatedSection>
+  );
+}
+
+type Project = {
   title: string;
-  org: string;
-  period: string;
-  meta?: string;
-  logo: LogoSource;
   description: string;
-  skills?: string[];
-  website?: { label: string; href: string };
+  tools: string;
+  href?: string;
+  cta: string;
+  icon: LucideIcon;
 };
 
-const formation: Card[] = [
+const projects: Project[] = [
   {
-    title: "Baccalauréat professionnel Métiers de l'accueil",
-    org: "MFR-CFA du Périgord noir",
-    period: "Septembre 2023 – juillet 2025",
-    meta: "Mention Bien",
-    logo: dom("mfrperigordnoir.com", "Logo MFR-CFA du Périgord noir"),
-    website: { label: "mfrperigordnoir.com", href: "https://www.mfrperigordnoir.com/" },
+    title: "Tombola Patrimoine",
     description:
-      "Formation centrée sur l'accueil multicanal, l'information, le conseil, l'orientation du public, la vente, la gestion des demandes, les tâches administratives et la communication. Cette formation réalisée en alternance m'a permis de développer une forte aisance orale, de l'autonomie, de la polyvalence et une bonne capacité d'adaptation. Le parcours a également été enrichi par un voyage d'étude Erasmus de deux semaines en Irlande, apportant une ouverture internationale et une pratique concrète de l'anglais.",
-    skills: [
-      "Accueil multicanal",
-      "Information du public",
-      "Communication orale",
-      "Vente",
-      "Gestion administrative",
-      "Création de supports",
+      "Participation à la communication d'une tombola destinée à financer la restauration de la chapelle de la Visitation à Besançon : création et amélioration du site internet, rédaction de contenus, publications sur les réseaux sociaux, recherche de relais médiatiques et coordination de la communication.",
+    tools: "Lovable · Canva · Meta Business Suite · rédaction web",
+    cta: "Voir le projet",
+    icon: PenLine,
+  },
+  {
+    title: "Angel Leclerc Communication",
+    description:
+      "Création de mon identité professionnelle, de mon site internet et de mon offre de services autour de la gestion de projet, du conseil en communication et de la rédaction éditoriale.",
+    tools: "Lovable · Canva · Figma · Squarespace",
+    href: "https://www.angel-leclerc.fr",
+    cta: "Découvrir le site",
+    icon: Briefcase,
+  },
+  {
+    title: "Projet d'émission jeunesse — Radio Bocage",
+    description:
+      "Participation au développement d'un projet d'émission jeunesse dans le cadre d'un service civique : réflexion sur le concept, recherche de sujets, préparation éditoriale et découverte de la production radiophonique.",
+    tools: "Rédaction · recherche · montage audio · MixPad",
+    cta: "Voir le détail",
+    icon: Radio,
+  },
+  {
+    title: "Créations graphiques et projets associatifs",
+    description:
+      "Réalisation d'affiches, de publications, de logos, de documents de présentation et de supports numériques dans le cadre de projets personnels, professionnels et associatifs.",
+    tools: "Canva · Figma · Adobe · IA générative",
+    cta: "Voir les créations",
+    icon: Palette,
+  },
+];
+
+function RealisationsSection() {
+  return (
+    <AnimatedSection>
+      <section id="realisations" className="section-padding bg-background scroll-mt-24">
+        <div className="container-tight">
+          <SectionHeader
+            eyebrow="Portfolio"
+            title="Mes réalisations"
+            intro="Quelques projets qui montrent concrètement ma manière de travailler."
+          />
+
+          <div className="mt-12 grid gap-6 md:grid-cols-2">
+            {projects.map((p) => (
+              <Card key={p.title} className="flex h-full flex-col">
+                <div className="flex items-center gap-4">
+                  <div className="inline-flex rounded-xl bg-primary/10 p-3 text-primary">
+                    <p.icon size={22} />
+                  </div>
+                  <h3 className="font-display text-lg font-semibold text-foreground">
+                    {p.title}
+                  </h3>
+                </div>
+                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                  {p.description}
+                </p>
+                <p className="mt-4 text-xs font-medium text-foreground/70">
+                  {p.tools}
+                </p>
+                <div className="mt-6">
+                  {p.href ? (
+                    <a
+                      href={p.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:opacity-80"
+                    >
+                      {p.cta} <ExternalLink size={14} />
+                    </a>
+                  ) : (
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+                      {p.cta} <ArrowRight size={14} />
+                    </span>
+                  )}
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+    </AnimatedSection>
+  );
+}
+
+const skills: { icon: LucideIcon; title: string; items: string[] }[] = [
+  {
+    icon: PenLine,
+    title: "Communication et rédaction",
+    items: [
+      "Rédaction web et éditoriale",
+      "Création de contenus",
+      "Recherche et synthèse d'informations",
+      "Préparation de publications",
+      "Communication institutionnelle et associative",
+      "Adaptation du message au public",
+    ],
+  },
+  {
+    icon: Palette,
+    title: "Création numérique",
+    items: [
+      "Création d'affiches",
+      "Publications pour les réseaux sociaux",
+      "Identités visuelles simples",
+      "Présentations",
+      "Maquettes de sites internet",
+      "Amélioration de supports existants",
+    ],
+  },
+  {
+    icon: ClipboardList,
+    title: "Gestion de projet",
+    items: [
+      "Organisation des étapes d'un projet",
+      "Coordination avec différents interlocuteurs",
+      "Suivi des actions",
+      "Recherche de prestataires ou de partenaires",
+      "Respect des délais",
+      "Autonomie",
+    ],
+  },
+  {
+    icon: Users,
+    title: "Relationnel",
+    items: [
+      "Accueil du public",
+      "Conseil et information",
       "Travail en équipe",
-      "Anglais",
-      "SST (sauveteur secouriste du travail)",
+      "Animation de groupes",
+      "Prise de responsabilités",
+      "Adaptation à différents publics",
     ],
   },
 ];
 
-const experiences: Card[] = [
+function SkillsSection() {
+  return (
+    <AnimatedSection>
+      <section id="competences" className="section-padding bg-muted/40 scroll-mt-24">
+        <div className="container-tight">
+          <SectionHeader eyebrow="Savoir-faire" title="Mes compétences" />
+
+          <div className="mt-12 grid gap-6 md:grid-cols-2">
+            {skills.map((s) => (
+              <Card key={s.title}>
+                <div className="flex items-center gap-3">
+                  <div className="inline-flex rounded-xl bg-primary/10 p-3 text-primary">
+                    <s.icon size={20} />
+                  </div>
+                  <h3 className="font-display text-lg font-semibold text-foreground">
+                    {s.title}
+                  </h3>
+                </div>
+                <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
+                  {s.items.map((it) => (
+                    <li key={it} className="flex items-start gap-2">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                      {it}
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+    </AnimatedSection>
+  );
+}
+
+type Experience = {
+  role: string;
+  org: string;
+  period: string;
+  missions: string[];
+  domain?: string;
+  fallbackIcon: LucideIcon;
+};
+
+const experiences: Experience[] = [
   {
-    title: "Apprenti — Bac Pro Accueil et Vente",
+    role: "Apprenti — Bac Pro Accueil et Vente",
     org: "Office de Tourisme Val de Sioule",
-    period: "Septembre 2023 – juillet 2025",
-    logo: dom("valdesioule.com", "Logo Office de Tourisme Val de Sioule"),
-    website: { label: "valdesioule.com", href: "https://www.valdesioule.com/" },
-    description:
-      "Deux années d'alternance dans un office de tourisme intercommunal. Accueil des visiteurs, vente de produits touristiques, gestion des demandes par téléphone et e-mail. Création de livrets pour les hébergeurs, de livrets statistiques et d'affiches promotionnelles. Réalisation de montages vidéos et de publications pour les réseaux sociaux avec Canva. Analyse et mise à jour de l'agenda des animations sur le site web. Découverte concrète de la communication touristique et spécialisation autour de l'intelligence artificielle et de ses usages.",
-    skills: [
-      "Accueil physique & téléphonique",
-      "Vente conseil",
-      "Création de supports print",
-      "Community management",
-      "Montage vidéo",
-      "Gestion de bases de données",
-      "Moka, Koesio, Avizi, Apidae, Brevo",
-      "Conseil œnotouristique",
+    period: "2023 – 2025",
+    domain: "valdesioule.com",
+    fallbackIcon: Building2,
+    missions: [
+      "Accueil des visiteurs, vente de produits touristiques, gestion des demandes par téléphone et e-mail",
+      "Création de livrets pour les hébergeurs, de livrets statistiques et d'affiches promotionnelles",
+      "Montages vidéos et publications réseaux sociaux avec Canva",
+      "Utilisation d'outils professionnels : Moka, Koesio, Avizi, Apidae, Brevo, Microsoft",
     ],
   },
   {
-    title: "Service civique — développement d'une émission jeunesse",
-    org: "Radio Bocage · Ligue de l'enseignement de l'Allier",
+    role: "Service civique — développement d'une émission jeunesse",
+    org: "Ligue de l'enseignement 03 · Radio Bocage",
+    period: "2026 — 2 mois",
+    domain: "laligue.org",
+    fallbackIcon: Radio,
+    missions: [
+      "Réflexion sur le concept de l'émission",
+      "Recherche et préparation de contenus",
+      "Participation au développement du projet",
+      "Découverte de la production radiophonique",
+    ],
+  },
+  {
+    role: "Missions ponctuelles auprès de particuliers et d'employeurs",
+    org: "Intérim et petits travaux",
     period: "2026",
-    meta: "Mission de service civique",
-    logo: dom("service-civique.gouv.fr", "Logo Service Civique"),
-    website: { label: "service-civique.gouv.fr", href: "https://www.service-civique.gouv.fr/" },
-    description:
-      "Mission de service civique consacrée au développement d'un projet d'émission de radio destinée aux jeunes, à Radio Bocage, radio associative locale portée par la Ligue de l'enseignement de l'Allier. Travail sur les plans d'émission, le choix des sujets et des angles éditoriaux, l'écriture des rubriques, le format et le fonctionnement général de l'émission, ainsi que sur l'identité sonore (jingles, habillage, ton). Le projet n'a finalement pas abouti à une diffusion, mais m'a permis d'explorer concrètement la conception d'un programme radio de A à Z.",
-    skills: [
-      "Conception d'émission",
-      "Plans d'émission",
-      "Écriture radio",
-      "Identité sonore",
-      "Habillage & jingles",
-      "Ligne éditoriale",
-      "Recherche de sujets",
-    ],
-  },
-  {
-    title: "Petits travaux ponctuels",
-    org: "Différents particuliers et employeurs",
-    period: "En parallèle de mes études",
-    logo: { kind: "icon", icon: Briefcase },
-    description:
-      "Petits travaux réalisés ponctuellement, ici et là, en parallèle de mes projets : électricité, ménage, peinture, bûcheronnage. Ce ne sont pas des missions d'intérim à proprement parler, mais des coups de main et des chantiers courts qui m'ont appris la polyvalence, la rigueur et l'adaptation à des environnements variés.",
-    skills: [
-      "Polyvalence",
-      "Rigueur",
-      "Adaptation",
-      "Travail manuel",
+    fallbackIcon: Hammer,
+    missions: [
+      "Électricité, ménage, peinture, bûcheronnage et autres missions pratiques",
+      "Développement de l'autonomie, de la ponctualité et de la polyvalence",
+      "Adaptation rapide à différents environnements de travail",
     ],
   },
 ];
 
-const certifications: Card[] = [
-  {
-    title: "Les principes fondamentaux du marketing digital",
-    org: "Google",
-    period: "Obtenue en avril 2026",
-    logo: dom("google.com", "Logo Google"),
-    website: { label: "learndigital.withgoogle.com", href: "https://learndigital.withgoogle.com/ateliernumerique" },
-    description:
-      "Formation consacrée aux bases du marketing numérique, de la visibilité en ligne, de la communication digitale et de la présence d'une organisation sur Internet.",
-  },
-  {
-    title: "BAFA",
-    org: "Ligue de l'enseignement de l'Allier",
-    period: "",
-    logo: dom("laligue.org", "Logo Ligue de l'enseignement de l'Allier"),
-    website: { label: "laligue.org", href: "https://laligue.org/" },
-    description:
-      "Le BAFA (Brevet d'Aptitude aux Fonctions d'Animateur) est un diplôme d'État qui atteste de la capacité à encadrer des enfants et des adolescents dans des activités de loisirs, de vacances et de jeunesse. Il se déroule en trois étapes : une session de formation générale, un stage pratique en structure d'accueil, puis une session d'approfondissement. La Ligue de l'Enseignement est une fédération d'éducation populaire reconnue d'utilité publique, qui forme des animateurs engagés dans une démarche d'éducation active, de citoyenneté et de laïcité. J'ai suivi une formation orientée animation en centre de vacances et de loisirs (CVL), avec une spécialité scoutisme pour les tranches d'âge 7-12 ans puis 12-17 ans. Grâce à cette certification, je peux conduire des activités, animer des groupes de mineurs et garantir leur sécurité dans un cadre éducatif.",
-    skills: [
-      "Animation pédagogique",
-      "Encadrement de mineurs",
-      "Préparation d'activités",
-      "Gestion de groupe",
-      "Sécurité des jeunes",
-      "Projet éducatif",
-      "Laïcité & citoyenneté",
-    ],
-  },
-  {
-    title: "PSC1",
-    org: "Prévention et secours civiques de niveau 1",
-    period: "",
-    logo: { kind: "icon", icon: HeartPulse },
-    description:
-      "Formation aux gestes de premiers secours et aux comportements à adopter face à une situation d'urgence.",
-  },
+function ExperienceLogo({ exp }: { exp: Experience }) {
+  if (exp.domain) return <Logo domain={exp.domain} alt={exp.org} size={52} />;
+  return (
+    <div className="inline-flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-xl border border-border bg-background text-primary">
+      <exp.fallbackIcon size={22} />
+    </div>
+  );
+}
+
+function ExperiencesSection() {
+  return (
+    <AnimatedSection>
+      <section id="experiences" className="section-padding bg-background scroll-mt-24">
+        <div className="container-tight">
+          <SectionHeader eyebrow="Parcours" title="Expériences professionnelles" />
+
+          <div className="mt-12 space-y-4">
+            {experiences.map((exp) => (
+              <Card key={exp.role}>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                  <ExperienceLogo exp={exp} />
+                  <div className="flex-1">
+                    <div className="flex flex-col justify-between gap-1 sm:flex-row sm:items-baseline">
+                      <h3 className="font-display text-lg font-semibold text-foreground">
+                        {exp.role}
+                      </h3>
+                      <span className="text-xs font-medium uppercase tracking-widest text-primary">
+                        {exp.period}
+                      </span>
+                    </div>
+                    <p className="text-sm font-medium text-foreground/80">
+                      {exp.org}
+                    </p>
+                    <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
+                      {exp.missions.map((m) => (
+                        <li key={m} className="flex items-start gap-2">
+                          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                          {m}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+    </AnimatedSection>
+  );
+}
+
+function FormationSection() {
+  return (
+    <AnimatedSection>
+      <section id="formation" className="section-padding bg-muted/40 scroll-mt-24">
+        <div className="container-tight">
+          <SectionHeader eyebrow="Études" title="Formation" />
+
+          <div className="mt-12 space-y-4">
+            <Card>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                <Logo domain="mfr.asso.fr" alt="MFR du Périgord Noir" size={52} />
+                <div className="flex-1">
+                  <div className="flex flex-col justify-between gap-1 sm:flex-row sm:items-baseline">
+                    <h3 className="font-display text-lg font-semibold text-foreground">
+                      Baccalauréat professionnel Métiers de l'accueil
+                    </h3>
+                    <span className="text-xs font-medium uppercase tracking-widest text-primary">
+                      Sept. 2023 – Juil. 2025
+                    </span>
+                  </div>
+                  <p className="text-sm font-medium text-foreground/80">
+                    MFR-CFA du Périgord noir
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                      Mention Bien
+                    </span>
+                    <span className="rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground">
+                      SST — Sauveteur secouriste du travail
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          <div className="mt-12">
+            <h3 className="text-center font-display text-2xl font-semibold text-foreground">
+              Projet de formation
+            </h3>
+            <p className="mx-auto mt-4 max-w-2xl text-center text-muted-foreground leading-relaxed">
+              Mon objectif est de préparer un BTS Communication en alternance
+              afin de développer une expérience professionnelle solide dans la
+              communication. À plus long terme, je souhaite poursuivre dans les
+              domaines de l'information, de la communication ou du journalisme.
+            </p>
+
+            <p className="mx-auto mt-6 max-w-2xl text-center text-sm italic text-muted-foreground">
+              Les écoles ci-dessous sont envisagées pour la formation. Ma
+              recherche d'entreprise se concentre principalement autour de
+              Sarlat.
+            </p>
+
+            <div className="mt-8 grid gap-4 md:grid-cols-2">
+              {[
+                { name: "IBSAC", city: "Brive-la-Gaillarde", domain: "ibsac.fr", href: "https://www.ibsac.fr" },
+                { name: "Talis", city: "Périgueux", domain: "talis-business-school.com", href: "https://www.talis-business-school.com" },
+              ].map((s) => (
+                <a
+                  key={s.name}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition-shadow hover:shadow-md"
+                >
+                  <Logo domain={s.domain} alt={s.name} size={48} />
+                  <div className="flex-1">
+                    <p className="font-display text-base font-semibold text-foreground group-hover:text-primary">
+                      {s.name}
+                    </p>
+                    <p className="text-sm text-muted-foreground">{s.city}</p>
+                  </div>
+                  <ExternalLink size={16} className="text-muted-foreground" />
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    </AnimatedSection>
+  );
+}
+
+const certifications: {
+  name: string;
+  org: string;
+  domain?: string;
+  icon?: LucideIcon;
+}[] = [
+  { name: "Les principes fondamentaux du marketing numérique", org: "Google", domain: "google.com" },
+  { name: "BAFA", org: "Ligue de l'enseignement", domain: "laligue.org" },
+  { name: "PSC1", org: "Prévention et secours civiques", icon: Award },
+  { name: "SST", org: "Sauveteur secouriste du travail", icon: Award },
 ];
 
-const engagements: Card[] = [
+function CertificationsSection() {
+  return (
+    <AnimatedSection>
+      <section id="certifications" className="section-padding bg-background scroll-mt-24">
+        <div className="container-tight">
+          <SectionHeader eyebrow="Attestations" title="Certifications" />
+
+          <div className="mt-12 grid gap-4 md:grid-cols-2">
+            {certifications.map((c) => (
+              <Card key={c.name} className="flex items-center gap-4">
+                {c.domain ? (
+                  <Logo domain={c.domain} alt={c.org} size={48} />
+                ) : (
+                  <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border bg-background text-primary">
+                    {c.icon && <c.icon size={22} />}
+                  </div>
+                )}
+                <div>
+                  <p className="font-display text-base font-semibold text-foreground">
+                    {c.name}
+                  </p>
+                  <p className="text-sm text-muted-foreground">{c.org}</p>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+    </AnimatedSection>
+  );
+}
+
+const engagements: {
+  title: string;
+  org: string;
+  period?: string;
+  description: string;
+  icon: LucideIcon;
+}[] = [
   {
     title: "Président d'association",
     org: "La Fraternité du Scoutisme",
-    period: "Décembre 2024 – janvier 2026",
-    logo: dom("fraternite.net", "Logo La Fraternité du Scoutisme"),
-    website: { label: "fraternite.net", href: "https://fraternite.net/" },
     description:
-      "Relance d'une association nationale interscoute et intergénérationnelle laissée à l'abandon depuis plusieurs années. Réalisation d'un important travail de communication, de création de contenus, d'animation d'une communauté, d'organisation de rencontres et de conférences, de recherches historiques et pédagogiques, de développement d'un forum et de valorisation de l'histoire du scoutisme.",
-    skills: [
-      "Gestion associative",
-      "Communication",
-      "Création de contenus",
-      "Organisation d'événements",
-      "Recherche",
-      "Animation de communauté",
-      "Gestion de projet",
-    ],
+      "Coordination associative, organisation de projets, communication, animation de bénévoles et gestion des responsabilités.",
+    icon: HeartHandshake,
   },
   {
     title: "Chef scout",
-    org: "Expérience au sein de différents mouvements scouts",
-    period: "Septembre 2022 – août 2025",
-    logo: { kind: "icon", icon: Tent },
+    org: "Scouts et Guides de France · Scouts d'Europe",
+    period: "3 ans",
     description:
-      "Le scoutisme est un mouvement d'éducation active fondé sur l'apprentissage par le jeu, la nature et la vie en collectivité. En tant que chef scout, j'ai encadré des enfants et des adolescents (principalement de 7 à 12 ans) dans des activités variées : camps, sorties, cérémonies, ateliers créatifs et projets d'unité. Cet engagement développe des qualités essentielles : fiabilité, responsabilité, autonomie, solidarité, créativité et capacité à gérer des situations imprévues. J'ai appris à concevoir des activités pédagogiques, à animer un groupe de mineurs en toute sécurité, à travailler en équipe de chefs et à transmettre des valeurs de respect et d'engagement.",
-    skills: [
-      "Encadrement de mineurs",
-      "Fiabilité & engagement",
-      "Créativité pédagogique",
-      "Organisation de camps",
-      "Gestion de groupe",
-      "Travail d'équipe",
-      "Prise de responsabilités",
-      "Adaptation sur le terrain",
-    ],
+      "Encadrement de jeunes, préparation d'activités, travail en équipe, organisation et prise de responsabilités.",
+    icon: Tent,
   },
   {
     title: "Bénévole",
-    org: "Réseau Baden-Powell",
-    period: "Depuis juillet 2024",
-    logo: dom("reseau-bp.fr", "Logo Réseau Baden-Powell"),
-    website: { label: "reseau-bp.fr", href: "https://reseau-bp.fr/" },
+    org: "Réseau Baden-Powell — Archives Nationales du Scoutisme",
     description:
-      "Participation aux activités du Réseau Baden-Powell, notamment autour des archives nationales, de la conservation de documents et de la transmission de l'histoire du scoutisme.",
-    skills: [
-      "Archives",
-      "Recherche documentaire",
-      "Histoire du scoutisme",
-      "Classement de documents",
-      "Transmission",
-      "Travail associatif",
-    ],
+      "Contribution aux archives nationales du scoutisme : classement, recherche documentaire et valorisation du patrimoine.",
+    icon: Archive,
+  },
+  {
+    title: "Bénévole",
+    org: "Amis de Renard Noir",
+    description:
+      "Pédagogie, formations et transmission auprès des jeunes bénévoles.",
+    icon: BookOpen,
   },
 ];
 
-// Two flashcards for the "post-bac" ambition: the BTS Communication I am
-// looking for, and the BUT Information-Communication (Journalisme) I plan
-// to pursue afterwards.
-const postBac: Card[] = [
-  {
-    title: "BTS Communication en alternance",
-    org: "Diplôme d'État — Bac+2 (niveau 5)",
-    period: "Objectif rentrée · IBSAC Brive-la-Gaillarde ou Talis Périgueux",
-    meta: "Recherche active d'une entreprise d'accueil",
-    logo: { kind: "icon", icon: GraduationCap },
-    description:
-      "Diplôme d'État reconnu par le Ministère de l'Enseignement supérieur, préparé en deux ans après le baccalauréat. Il forme à la conception, à la mise en œuvre, au suivi et à l'évaluation d'actions de communication commerciale, institutionnelle, numérique et événementielle. Rythme en alternance : environ 2 jours en centre de formation et 3 jours en entreprise chaque semaine, en contrat d'apprentissage (formation prise en charge par l'OPCO, rémunération selon la grille légale). Je suis ouvert à des missions variées à condition que la communication reste majoritaire — par exemple 60 % de communication et 40 % de vente, d'accueil ou d'autres activités complémentaires. Matières professionnelles : cultures de la communication, relations commerciales, projet et pratiques de la communication, veille opérationnelle et outils numériques, ateliers de production. Matières générales : culture générale et expression, anglais, économie-droit-management. Métiers accessibles : chargé(e) de communication, assistant(e) chef de projet, community manager, chargé(e) de communication digitale, attaché(e) de presse junior, assistant(e) événementiel, marketing, relations publiques, concepteur-rédacteur junior. Écoles visées : IBSAC (Brive-la-Gaillarde) et Talis (Périgueux). Sources pour en savoir plus : Onisep, L'Étudiant, Studyrama, France Travail, Éduscol.",
-    skills: [
-      "Stratégie de communication",
-      "Supports print et web",
-      "Réseaux sociaux",
-      "Relations presse",
-      "Événementiel",
-      "Gestion de budget",
-      "Coordination prestataires",
-      "Veille et évaluation",
-    ],
-  },
-  {
-    title: "BUT Information-Communication — Journalisme",
-    org: "Bachelor Universitaire de Technologie — Bac+3 (niveau 6)",
-    period: "Objectif après le BTS · ou parcours équivalent",
-    meta: "Diplôme national à finalité professionnelle",
-    logo: { kind: "icon", icon: Target },
-    description:
-      "Poursuite d'études visée après le BTS : le BUT Information-Communication, parcours Journalisme (ou un cursus similaire orienté vers l'information et les médias). Ce diplôme forme aux techniques du journalisme sur tous les supports — écrit, radio, télévision et web — à la déontologie de l'information, à la recherche et à la vérification des sources, ainsi qu'à la production de contenus pour tous types de médias. L'objectif : consolider un profil à la fois communicant et journaliste, capable de porter un projet éditorial de bout en bout.",
-    skills: [
-      "Enquête et reportage",
-      "Écriture journalistique",
-      "Radio et podcast",
-      "Vidéo et web",
-      "Vérification des sources",
-      "Déontologie",
-    ],
-  },
-];
-
-// ---------- Flashcard ----------
-
-function Flashcard({ card }: { card: Card }) {
-  const [open, setOpen] = useState(false);
+function EngagementsSection() {
   return (
-    <article
-      className="mx-auto w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-background shadow-sm transition-shadow hover:shadow-md"
-    >
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="flex w-full items-start gap-4 p-5 text-left md:p-6"
-      >
-        <LogoBox source={card.logo} size={64} />
-        <div className="min-w-0 flex-1">
-          <h4 className="font-display text-lg font-semibold text-foreground md:text-xl">
-            {card.title}
-          </h4>
-          <p className="mt-1 text-sm font-medium text-foreground/90">{card.org}</p>
-          {card.period && (
-            <p className="mt-0.5 text-xs text-muted-foreground">{card.period}</p>
-          )}
-          {card.meta && (
-            <p className="mt-0.5 text-xs italic text-muted-foreground">{card.meta}</p>
-          )}
-          <p className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-primary">
-            {open ? (
-              <>
-                <RotateCcw size={12} /> Refermer la carte
-              </>
-            ) : (
-              <>
-                <MousePointerClick size={12} /> Appuyer pour voir le détail
-              </>
-            )}
-          </p>
-        </div>
-      </button>
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            key="details"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden border-t border-border bg-card"
-          >
-            <div className="space-y-4 p-5 md:p-6">
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                {card.description}
-              </p>
-              {card.website && (
-                <a
-                  href={card.website.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
-                >
-                  <Globe size={12} aria-hidden="true" />
-                  {card.website.label}
-                  <ExternalLink size={10} aria-hidden="true" />
-                </a>
-              )}
-              {card.skills && card.skills.length > 0 && (
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
-                    Compétences
-                  </p>
-                  <ul className="mt-2 flex flex-wrap gap-2">
-                    {card.skills.map((s) => (
-                      <li
-                        key={s}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1 text-xs text-foreground"
-                      >
-                        <Check size={12} className="text-primary" />
-                        {s}
-                      </li>
-                    ))}
-                  </ul>
+    <AnimatedSection>
+      <section id="engagements" className="section-padding bg-muted/40 scroll-mt-24">
+        <div className="container-tight">
+          <SectionHeader eyebrow="Vie associative" title="Engagements associatifs" />
+
+          <div className="mt-12 grid gap-6 md:grid-cols-2">
+            {engagements.map((e) => (
+              <Card key={e.org} className="flex h-full flex-col">
+                <div className="flex items-start gap-4">
+                  <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <e.icon size={22} />
+                  </div>
+                  <div>
+                    <h3 className="font-display text-base font-semibold text-foreground">
+                      {e.title}
+                    </h3>
+                    <p className="text-sm font-medium text-foreground/80">
+                      {e.org}
+                    </p>
+                    {e.period && (
+                      <p className="text-xs uppercase tracking-widest text-primary">
+                        {e.period}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </article>
-  );
-}
-
-// ---------- Carousel ----------
-
-function Carousel({ cards, label }: { cards: Card[]; label: string }) {
-  const [index, setIndex] = useState(0);
-  const count = cards.length;
-  const go = (n: number) => setIndex(((n % count) + count) % count);
-  return (
-    <div className="relative">
-      <div className="mx-auto max-w-2xl">
-        <div className="relative">
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -30 }}
-              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-              drag={count > 1 ? "x" : false}
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.2}
-              onDragEnd={(_, info) => {
-                if (info.offset.x < -60) go(index + 1);
-                else if (info.offset.x > 60) go(index - 1);
-              }}
-            >
-              <Flashcard card={cards[index]} />
-            </motion.div>
-          </AnimatePresence>
-        </div>
-
-        {count > 1 && (
-          <div className="mt-5 flex items-center justify-center gap-4">
-            <button
-              type="button"
-              onClick={() => go(index - 1)}
-              aria-label={`${label} — précédent`}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-foreground transition-colors hover:border-primary hover:text-primary"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <div className="flex items-center gap-1.5">
-              {cards.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => go(i)}
-                  aria-label={`${label} — carte ${i + 1}`}
-                  aria-current={i === index}
-                  className={`h-2 rounded-full transition-all ${
-                    i === index ? "w-6 bg-primary" : "w-2 bg-border"
-                  }`}
-                />
-              ))}
-            </div>
-            <button
-              type="button"
-              onClick={() => go(index + 1)}
-              aria-label={`${label} — suivant`}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-foreground transition-colors hover:border-primary hover:text-primary"
-            >
-              <ChevronRight size={18} />
-            </button>
+                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                  {e.description}
+                </p>
+              </Card>
+            ))}
           </div>
-        )}
-      </div>
-    </div>
+        </div>
+      </section>
+    </AnimatedSection>
   );
 }
 
-// ---------- CardGrid (uniform flashcard grid) ----------
+type Tool = { name: string; domain?: string; use: string; icon?: LucideIcon };
 
-function CardGrid({ cards }: { cards: Card[] }) {
-  return (
-    <div className="mx-auto grid max-w-5xl gap-4 md:grid-cols-2">
-      {cards.map((c, i) => (
-        <Flashcard key={i} card={c} />
-      ))}
-    </div>
-  );
-}
-
-// ---------- Tools ----------
-
-type Tool = { name: string; source: LogoSource; hint?: string };
-
-const toolCategories: { title: string; note?: string; tools: Tool[] }[] = [
+const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
   {
     title: "Création graphique",
+    icon: Palette,
     tools: [
-      {
-        name: "Canva",
-        source: dom("canva.com", "Logo Canva"),
-        hint: "Outil de création graphique en ligne pour affiches, publications, présentations et supports visuels.",
-      },
-      {
-        name: "Figma",
-        source: dom("figma.com", "Logo Figma"),
-        hint: "Éditeur collaboratif pour concevoir des maquettes de sites, d'applications et d'interfaces.",
-      },
+      { name: "Canva", domain: "canva.com", use: "Affiches, publications, présentations et supports visuels." },
+      { name: "Figma", domain: "figma.com", use: "Maquettes de sites et organisation d'interfaces." },
+      { name: "Adobe", domain: "adobe.com", use: "Retouches ponctuelles et exports pour supports print." },
     ],
   },
   {
     title: "Sites internet et publication",
+    icon: PenLine,
     tools: [
-      {
-        name: "Lovable",
-        source: dom("lovable.dev", "Logo Lovable"),
-        hint: "Plateforme de création de sites internet et d'applications assistée par intelligence artificielle.",
-      },
-      {
-        name: "Squarespace",
-        source: dom("squarespace.com", "Logo Squarespace"),
-        hint: "Hébergeur et créateur de sites vitrines, également utilisé pour enregistrer des noms de domaine.",
-      },
+      { name: "Lovable", domain: "lovable.dev", use: "Création et amélioration de sites internet." },
+      { name: "Squarespace", domain: "squarespace.com", use: "Gestion de domaine et hébergement du site." },
     ],
   },
   {
     title: "Bureautique et collaboration",
+    icon: ClipboardList,
     tools: [
-      {
-        name: "Microsoft Office",
-        source: dom("office.com", "Logo Microsoft Office"),
-        hint: "Suite bureautique complète : Word (traitement de texte), Excel (tableur), PowerPoint (présentations), Outlook (messagerie et agenda) et les autres logiciels professionnels associés.",
-      },
-      {
-        name: "Google Workspace",
-        source: dom("workspace.google.com", "Logo Google Workspace"),
-        hint: "Suite collaborative de Google regroupant Gmail (messagerie), Google Docs (traitement de texte), Sheets (tableur), Slides (présentations), Drive (stockage) et Agenda, avec édition partagée en temps réel.",
-      },
+      { name: "Microsoft Office", domain: "microsoft.com", use: "Word, Excel, PowerPoint pour documents et présentations." },
+      { name: "Google Workspace", domain: "workspace.google.com", use: "Docs, Sheets, Drive et Gmail pour le travail en équipe." },
     ],
   },
   {
     title: "Communication et réseaux sociaux",
+    icon: Users,
     tools: [
-      {
-        name: "Meta Business Suite",
-        source: dom("business.facebook.com", "Logo Meta Business Suite"),
-        hint: "Outil de gestion des pages Facebook et Instagram : publications, messages et statistiques.",
-      },
-      {
-        name: "Facebook",
-        source: dom("facebook.com", "Logo Facebook"),
-        hint: "Réseau social généraliste utilisé pour la communication de pages et de communautés.",
-      },
-      {
-        name: "Instagram",
-        source: dom("instagram.com", "Logo Instagram"),
-        hint: "Réseau social visuel centré sur les photos, vidéos et stories.",
-      },
-      {
-        name: "LinkedIn",
-        source: dom("linkedin.com", "Logo LinkedIn"),
-        hint: "Réseau social professionnel pour la présence et la communication d'entreprise.",
-      },
+      { name: "Meta Business Suite", domain: "business.facebook.com", use: "Publication, planification et gestion de pages." },
+      { name: "Facebook", domain: "facebook.com", use: "Publications et animation de pages." },
+      { name: "Instagram", domain: "instagram.com", use: "Publications, stories et visuels courts." },
+      { name: "LinkedIn", domain: "linkedin.com", use: "Publications professionnelles et mise en réseau." },
     ],
   },
   {
     title: "Audio",
-    tools: [
-      {
-        name: "MixPad",
-        source: dom("nch.com.au", "Logo MixPad"),
-        hint: "Logiciel de mixage et de montage audio multipiste pour émissions, podcasts et jingles.",
-      },
-    ],
+    icon: Radio,
+    tools: [{ name: "MixPad", domain: "nch.com.au", use: "Montage audio pour projets radio." }],
   },
   {
-    title: "Gestion touristique et données",
+    title: "Tourisme et gestion",
+    icon: Landmark,
     tools: [
-      {
-        name: "Avizi",
-        source: dom("avizi.fr", "Logo Avizi"),
-        hint: "Logiciel de caisse et de gestion des ventes utilisé par les offices de tourisme.",
-      },
-      {
-        name: "Koesio",
-        source: dom("koesio.com", "Logo Koesio"),
-        hint: "Solution numérique pour la gestion administrative et bureautique des structures.",
-      },
+      { name: "Avizi", icon: Building2, use: "Gestion de vente et de billetterie en office de tourisme." },
+      { name: "Koesio", icon: Building2, use: "Outils de gestion utilisés en office de tourisme." },
     ],
   },
   {
     title: "Intelligence artificielle",
-    note:
-      "Utilisation pour la recherche, l'organisation des informations, la rédaction, la mise en forme de contenus et l'amélioration de supports.",
+    icon: Sparkles,
     tools: [
-      {
-        name: "ChatGPT",
-        source: dom("chatgpt.com", "Logo ChatGPT"),
-        hint: "Assistant conversationnel d'OpenAI utilisé pour la recherche d'informations et l'aide à la rédaction.",
-      },
-      {
-        name: "Intelligence artificielle générative",
-        source: { kind: "icon", icon: Lightbulb },
-        hint: "Ensemble d'outils capables de générer du texte, des images ou des idées à partir d'instructions.",
-      },
+      { name: "ChatGPT", domain: "chatgpt.com", use: "Recherche, organisation, rédaction et amélioration de contenus." },
     ],
   },
 ];
 
-function ToolChip({ tool }: { tool: Tool }) {
+function ToolsSection() {
   return (
-    <li className="flex items-start gap-3 rounded-xl border border-border bg-background p-3">
-      <LogoBox source={tool.source} size={40} />
-      <div className="min-w-0">
-        <p className="text-sm font-medium text-foreground">{tool.name}</p>
-        {tool.hint && (
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            {tool.hint}
-          </p>
-        )}
-      </div>
-    </li>
-  );
-}
+    <AnimatedSection>
+      <section id="outils" className="section-padding bg-background scroll-mt-24">
+        <div className="container-tight">
+          <SectionHeader eyebrow="Boîte à outils" title="Outils utilisés" />
 
-// ---------- Subsection wrapper ----------
-
-function Subsection({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="mt-16">
-      <div className="mx-auto max-w-2xl">
-        <div className="flex items-center gap-3">
-          <span className="h-px flex-1 bg-border" />
-          <h3 className="font-display text-xl font-semibold text-foreground md:text-2xl">
-            {title}
-          </h3>
-          <span className="h-px flex-1 bg-border" />
+          <div className="mt-12 space-y-8">
+            {toolCategories.map((cat) => (
+              <div key={cat.title}>
+                <div className="flex items-center gap-3">
+                  <div className="inline-flex rounded-xl bg-primary/10 p-2.5 text-primary">
+                    <cat.icon size={18} />
+                  </div>
+                  <h3 className="font-display text-lg font-semibold text-foreground">
+                    {cat.title}
+                  </h3>
+                </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {cat.tools.map((t) => (
+                    <div key={t.name} className="flex items-start gap-3 rounded-xl border border-border bg-card p-4">
+                      {t.domain ? (
+                        <Logo domain={t.domain} alt={t.name} size={40} />
+                      ) : (
+                        <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-background text-primary">
+                          {t.icon ? <t.icon size={18} /> : <Wrench size={18} />}
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          {t.name}
+                        </p>
+                        <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                          {t.use}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="mt-8">{children}</div>
-    </div>
+      </section>
+    </AnimatedSection>
   );
 }
-
-// ---------- Main section ----------
 
 export function MyJourney() {
   return (
-    <section
-      id="parcours"
-      className="section-padding border-y border-border bg-card"
-    >
-      <div className="container-tight">
-        <AnimatedSection className="mx-auto max-w-3xl text-center">
-          <span className="text-xs font-semibold uppercase tracking-widest text-primary">
-            Section personnelle
-          </span>
-          <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
-            Mon parcours
-          </h2>
-          <p className="mt-5 text-muted-foreground leading-relaxed">
-            Passionné par la communication, l'information et les projets qui ont du
-            sens, j'ai construit un parcours mêlant accueil du public, tourisme,
-            création de contenus, gestion de projet et engagement associatif. Après
-            un baccalauréat professionnel obtenu avec mention Bien, je souhaite
-            poursuivre mon parcours en BTS Communication en alternance, avec
-            l'objectif de m'orienter ensuite vers le journalisme.
-          </p>
-          <div className="mt-6 flex justify-center">
-            <a
-              href="https://www.linkedin.com/in/angel-leclerc"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
-            >
-              <Linkedin size={16} aria-hidden="true" />
-              Me suivre sur LinkedIn
-              <ExternalLink size={14} aria-hidden="true" />
-            </a>
-          </div>
-        </AnimatedSection>
-
-        <AnimatedSection delay={0.1} className="mt-8">
-          <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-background p-6 md:p-8">
-            <div className="flex items-start gap-4">
-              <div className="inline-flex shrink-0 rounded-xl bg-primary/10 p-3">
-                <GraduationCap size={24} className="text-primary" />
-              </div>
-              <div>
-                <h3 className="font-display text-lg font-semibold text-foreground md:text-xl">
-                  Mon objectif d'études
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Je recherche une entreprise pour préparer un{" "}
-                  <strong className="text-foreground">BTS Communication en alternance</strong>,
-                  puis je souhaite poursuivre en{" "}
-                  <strong className="text-foreground">BUT Information-Communication,
-                  parcours Journalisme</strong> (ou parcours similaire). Cliquez
-                  sur chaque carte pour découvrir le détail du diplôme,
-                  du rythme, des matières et des débouchés.
-                </p>
-                <p className="mt-3 text-sm font-medium text-foreground">
-                  Contactez-moi si vous avez une opportunité d'apprentissage.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-8">
-              <Carousel cards={postBac} label="Projet d'études" />
-            </div>
-
-            <p className="mt-8 text-xs font-semibold uppercase tracking-widest text-primary">
-              Écoles visées
-            </p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <a
-                href="https://www.ibsac.fr/esc-communication/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:border-primary/50"
-              >
-                <Logo domain="ibsac.fr" alt="Logo IBSAC" size={36} />
-                <div className="min-w-0">
-                  <p className="font-display text-sm font-semibold text-foreground group-hover:text-primary">
-                    IBSAC
-                  </p>
-                  <p className="text-xs text-muted-foreground">Brive-la-Gaillarde</p>
-                </div>
-                <ExternalLink
-                  size={14}
-                  className="ml-auto text-muted-foreground"
-                  aria-hidden="true"
-                />
-              </a>
-              <a
-                href="https://www.talis.community/formations/bts-communication/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:border-primary/50"
-              >
-                <Logo domain="talis.community" alt="Logo Talis" size={36} />
-                <div className="min-w-0">
-                  <p className="font-display text-sm font-semibold text-foreground group-hover:text-primary">
-                    Talis
-                  </p>
-                  <p className="text-xs text-muted-foreground">Périgueux</p>
-                </div>
-                <ExternalLink
-                  size={14}
-                  className="ml-auto text-muted-foreground"
-                  aria-hidden="true"
-                />
-              </a>
-            </div>
-
-            <p className="mt-8 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-primary">
-              <Newspaper size={12} aria-hidden="true" />
-              Sources officielles sur le BTS Communication
-            </p>
-            <ul className="mt-3 flex flex-wrap gap-2">
-              {[
-                { name: "Onisep", href: "https://www.onisep.fr/ressources/univers-formation/formations/post-bac/bts-communication", domain: "onisep.fr" },
-                { name: "L'Étudiant", href: "https://www.letudiant.fr/etudes/bts/bts-communication.html", domain: "letudiant.fr" },
-                { name: "Studyrama", href: "https://www.studyrama.com/formations/diplomes/bts/bts-communication-16.html", domain: "studyrama.com" },
-                { name: "Diplomeo", href: "https://diplomeo.com/etablissements-formations-bts_communication", domain: "diplomeo.com" },
-                { name: "France Travail", href: "https://www.francetravail.fr/candidat/decouvrir-les-metiers-en-video/les-metiers/communication.html", domain: "francetravail.fr" },
-                { name: "Éduscol", href: "https://eduscol.education.fr/sti/formations/bts-communication", domain: "education.fr" },
-              ].map((s) => (
-                <li key={s.name}>
-                  <a
-                    href={s.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
-                  >
-                    <Logo domain={s.domain} alt={`Logo ${s.name}`} size={16} bare />
-                    {s.name}
-                    <ExternalLink size={10} aria-hidden="true" />
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </AnimatedSection>
-
-        <Subsection title="Expériences professionnelles">
-          <CardGrid cards={experiences} />
-        </Subsection>
-
-        <Subsection title="Formation">
-          <CardGrid cards={formation} />
-        </Subsection>
-
-        <Subsection title="Certifications">
-          <CardGrid cards={certifications} />
-        </Subsection>
-
-        <Subsection title="Engagements associatifs">
-          <CardGrid cards={engagements} />
-        </Subsection>
-
-        <Subsection title="Outils utilisés">
-          <div className="mx-auto max-w-4xl">
-            <p className="text-center text-sm text-muted-foreground">
-              Outils utilisés dans le cadre de mes formations, de mes expériences
-              professionnelles et de mes projets.
-            </p>
-            <div className="mt-8 space-y-8">
-              {toolCategories.map((cat) => (
-                <div key={cat.title}>
-                  <h4 className="font-display text-sm font-semibold uppercase tracking-widest text-primary">
-                    {cat.title}
-                  </h4>
-                  <ul className="mt-3 grid gap-3 sm:grid-cols-2">
-                    {cat.tools.map((t) => (
-                      <ToolChip key={t.name} tool={t} />
-                    ))}
-                  </ul>
-                  {cat.note && (
-                    <p className="mt-2 text-xs italic text-muted-foreground">
-                      {cat.note}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </Subsection>
-      </div>
-    </section>
-  );
-}
-
-// ---------- Portfolio placeholder ----------
-
-export function PortfolioPlaceholder() {
-  return (
-    <section id="portfolio" className="section-padding bg-background">
-      <div className="container-tight">
-        <AnimatedSection className="mx-auto max-w-3xl text-center">
-          <span className="text-xs font-semibold uppercase tracking-widest text-primary">
-            Portfolio
-          </span>
-          <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
-            Mes réalisations
-          </h2>
-          <p className="mt-4 text-sm text-muted-foreground">
-            Cette section sera enrichie progressivement au fil des projets.
-          </p>
-        </AnimatedSection>
-
-        <div className="mt-10 grid gap-6 md:grid-cols-2">
-          <div className="rounded-2xl border border-dashed border-border bg-card p-6 md:p-8">
-            <h3 className="font-display text-lg font-semibold text-foreground">
-              Portfolio visuel
-            </h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Affiches, identités visuelles, logos, publications réseaux sociaux,
-              documents d'information, sites internet, maquettes numériques et
-              campagnes de communication.
-            </p>
-            <p className="mt-4 text-xs italic text-muted-foreground/80">
-              Bientôt disponible.
-            </p>
-          </div>
-          <div className="rounded-2xl border border-dashed border-border bg-card p-6 md:p-8">
-            <h3 className="font-display text-lg font-semibold text-foreground">
-              Portfolio audio
-            </h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Émissions de radio, interviews, chroniques, jingles, bandes-annonces,
-              montages audio et identités sonores.
-            </p>
-            <p className="mt-4 text-xs italic text-muted-foreground/80">
-              Bientôt disponible.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
+    <>
+      <IntroSection />
+      <AlternanceSection />
+      <RealisationsSection />
+      <SkillsSection />
+      <ExperiencesSection />
+      <FormationSection />
+      <CertificationsSection />
+      <EngagementsSection />
+      <ToolsSection />
+    </>
   );
 }
