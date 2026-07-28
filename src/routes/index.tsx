@@ -185,6 +185,11 @@ function LandingPage() {
                   <h2 className="relative mt-6 font-display text-2xl font-bold leading-tight text-foreground md:text-3xl">
                     {choice.title}
                   </h2>
+                  {"badge" in choice && choice.badge && (
+                    <span className="relative mt-3 inline-flex w-fit items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-semibold text-primary">
+                      {choice.badge}
+                    </span>
+                  )}
                   <p className="relative mt-4 flex-1 text-sm leading-relaxed text-muted-foreground md:text-base">
                     {choice.text}
                   </p>
