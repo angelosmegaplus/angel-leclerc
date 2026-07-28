@@ -39,8 +39,9 @@ const choices = [
     icon: User,
     eyebrow: "Partie personnelle",
     title: "Mon parcours",
-    text: "Mon CV en ligne : expériences, formations, certifications, engagements associatifs, outils et recherche d'alternance BTS Communication.",
+    text: "Découvrez mon parcours, mes compétences, mes réalisations et ma recherche d'alternance en BTS Communication à Sarlat et dans ses environs.",
     cta: "Voir mon parcours",
+    badge: "Recherche d'alternance — septembre 2026",
   },
 ];
 
