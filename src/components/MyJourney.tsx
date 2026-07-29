@@ -601,9 +601,13 @@ function FormationSection() {
     <AnimatedSection>
       <section id="formation" className="section-padding bg-muted/40 scroll-mt-24">
         <div className="container-tight">
-          <SectionHeader eyebrow="Études" title="Formation" />
+          <SectionHeader
+            eyebrow="Études"
+            title="Formation"
+            intro="Mon parcours actuel et mon projet de poursuite d'études en alternance."
+          />
 
-          <div className="mt-12 space-y-4">
+          <div className="mt-12">
             <Card>
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                 <Logo domain="mfr.asso.fr" alt="MFR du Périgord Noir" size={52} />
@@ -630,132 +634,6 @@ function FormationSection() {
                 </div>
               </div>
             </Card>
-          </div>
-
-          <div className="mt-12">
-            <h3 className="text-center font-display text-2xl font-semibold text-foreground">
-              Projet de formation
-            </h3>
-            <p className="mx-auto mt-4 max-w-2xl text-center text-muted-foreground leading-relaxed">
-              Mon objectif est de préparer un BTS Communication en alternance
-              afin de développer une expérience professionnelle solide dans la
-              communication. À plus long terme, je souhaite poursuivre dans les
-              domaines de l'information, de la communication ou du journalisme.
-            </p>
-
-            <p className="mx-auto mt-6 max-w-2xl text-center text-sm italic text-muted-foreground">
-              Les écoles ci-dessous sont envisagées pour la formation. Ma
-              recherche d'entreprise se concentre principalement autour de
-              Sarlat.
-            </p>
-
-            <div className="mt-8 grid gap-4 md:grid-cols-2">
-              {[
-                { name: "IBSAC", city: "Brive-la-Gaillarde", domain: "ibsac.fr", href: "https://www.ibsac.fr" },
-                { name: "Talis", city: "Périgueux", domain: "talis-business-school.com", href: "https://www.talis-business-school.com" },
-              ].map((s) => (
-                <a
-                  key={s.name}
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition-shadow hover:shadow-md"
-                >
-                  <Logo domain={s.domain} alt={s.name} size={48} />
-                  <div className="flex-1">
-                    <p className="font-display text-base font-semibold text-foreground group-hover:text-primary">
-                      {s.name}
-                    </p>
-                    <p className="text-sm text-muted-foreground">{s.city}</p>
-                  </div>
-                  <ExternalLink size={16} className="text-muted-foreground" />
-                </a>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-12 rounded-2xl border border-border bg-card p-6 md:p-8">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-                  À propos du BTS
-                </p>
-                <h4 className="mt-2 font-display text-xl font-semibold text-foreground">
-                  Le BTS Communication en bref
-                </h4>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <a
-                  href="/bts/programme-bts-com-talis.pdf"
-                  download
-                  className="inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/5 px-3.5 py-2 text-xs font-semibold text-primary transition-colors hover:bg-primary/10"
-                >
-                  <Download size={14} /> Programme (PDF)
-                </a>
-                <a
-                  href="/bts/calendrier-bts-com-talis.pdf"
-                  download
-                  className="inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/5 px-3.5 py-2 text-xs font-semibold text-primary transition-colors hover:bg-primary/10"
-                >
-                  <Download size={14} /> Calendrier (PDF)
-                </a>
-              </div>
-            </div>
-
-            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Diplôme d'État Bac+2 (niveau 5, RNCP 37198) préparé en 24 mois,
-              dont environ <strong className="text-foreground">65 % du temps en entreprise</strong>.
-              La formation couvre la stratégie de communication, la conception
-              et la production de contenus, l'accompagnement des solutions
-              media et digitales, ainsi que la culture économique, juridique
-              et managériale et une langue vivante.
-            </p>
-
-            <div className="mt-5 grid gap-3 sm:grid-cols-3">
-              {[
-                { k: "Durée", v: "24 mois" },
-                { k: "Volume", v: "1 351 h de formation" },
-                { k: "Rythme", v: "≈ 35 % école · 65 % entreprise" },
-              ].map((s) => (
-                <div key={s.k} className="rounded-xl border border-border bg-background p-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                    {s.k}
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-foreground">{s.v}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 grid gap-6 md:grid-cols-2">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                  Blocs de compétences
-                </p>
-                <ul className="mt-2 space-y-1.5 text-sm text-foreground/90">
-                  <li>• Élaboration et pilotage de la stratégie de communication</li>
-                  <li>• Conception et mise en œuvre des solutions de communication</li>
-                  <li>• Solutions media et digitales innovantes</li>
-                  <li>• Culture de la communication, langue vivante, CEJM</li>
-                </ul>
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                  Planning prévisionnel
-                </p>
-                <ul className="mt-2 space-y-1.5 text-sm text-foreground/90">
-                  <li>• Rentrée septembre 2026 · promotion 2028</li>
-                  <li>• Année 1 (2026-2027) : 676 h — pics d'école oct., nov., mai</li>
-                  <li>• Année 2 (2027-2028) : 675 h — examens printemps 2028</li>
-                  <li>• Reste du temps : en entreprise, avec suivi tuteur</li>
-                </ul>
-              </div>
-            </div>
-
-            <p className="mt-5 text-xs italic text-muted-foreground">
-              Source : documents officiels Talis (campus Périgueux). Le
-              calendrier détaillé jour par jour est disponible dans le PDF
-              « Calendrier ».
-            </p>
           </div>
         </div>
       </section>
