@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { ArrowRight, Briefcase, User, Sparkles } from "lucide-react";
+import { ArrowRight, Briefcase, User, Sparkles, FileText } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.svg";
 
 export const Route = createFileRoute("/")({
@@ -136,6 +137,24 @@ function LandingPage() {
             Ce site a deux entrées&nbsp;: mon activité professionnelle et mon
             parcours personnel. Choisissez celle qui vous intéresse.
           </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.9 }}
+            className="mt-8"
+          >
+            <Button
+              asChild
+              size="lg"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <Link to="/parcours">
+                <FileText size={18} />
+                Voir mon CV
+              </Link>
+            </Button>
+          </motion.div>
         </div>
 
         {/* Choice cards */}
