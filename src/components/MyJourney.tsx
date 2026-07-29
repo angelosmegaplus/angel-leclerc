@@ -190,6 +190,117 @@ function AlternanceSection() {
             ))}
           </div>
 
+          <div className="mt-10 rounded-2xl border border-border bg-card p-6 md:p-8">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+                  Projet de formation
+                </p>
+                <h4 className="mt-2 font-display text-xl font-semibold text-foreground">
+                  Mon BTS Communication en alternance
+                </h4>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <a
+                  href="/bts/programme-bts-com-talis.pdf"
+                  download
+                  className="inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/5 px-3.5 py-2 text-xs font-semibold text-primary transition-colors hover:bg-primary/10"
+                >
+                  <Download size={14} /> Programme (PDF)
+                </a>
+                <a
+                  href="/bts/calendrier-bts-com-talis.pdf"
+                  download
+                  className="inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/5 px-3.5 py-2 text-xs font-semibold text-primary transition-colors hover:bg-primary/10"
+                >
+                  <Download size={14} /> Calendrier (PDF)
+                </a>
+              </div>
+            </div>
+
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+              Mon objectif est de préparer un BTS Communication en alternance afin
+              de développer une expérience professionnelle solide dans la
+              communication. À plus long terme, je souhaite poursuivre dans les
+              domaines de l'information, de la communication ou du journalisme. Le
+              BTS Communication est un diplôme d'État Bac+2 (niveau 5, RNCP 37198)
+              préparé en 24 mois, dont environ{" "}
+              <strong className="text-foreground">65 % du temps en entreprise</strong>.
+            </p>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              {[
+                { k: "Durée", v: "24 mois" },
+                { k: "Volume", v: "1 351 h de formation" },
+                { k: "Rythme", v: "≈ 35 % école · 65 % entreprise" },
+              ].map((s) => (
+                <div key={s.k} className="rounded-xl border border-border bg-background p-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    {s.k}
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-foreground">{s.v}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 grid gap-6 md:grid-cols-2">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  Blocs de compétences
+                </p>
+                <ul className="mt-2 space-y-1.5 text-sm text-foreground/90">
+                  <li>• Élaboration et pilotage de la stratégie de communication</li>
+                  <li>• Conception et mise en œuvre des solutions de communication</li>
+                  <li>• Solutions media et digitales innovantes</li>
+                  <li>• Culture de la communication, langue vivante, CEJM</li>
+                </ul>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  Planning prévisionnel
+                </p>
+                <ul className="mt-2 space-y-1.5 text-sm text-foreground/90">
+                  <li>• Rentrée septembre 2026 · promotion 2028</li>
+                  <li>• Année 1 (2026-2027) : 676 h — pics d'école oct., nov., mai</li>
+                  <li>• Année 2 (2027-2028) : 675 h — examens printemps 2028</li>
+                  <li>• Reste du temps : en entreprise, avec suivi tuteur</li>
+                </ul>
+              </div>
+            </div>
+
+            <p className="mt-6 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Écoles envisagées
+            </p>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              {[
+                { name: "IBSAC", city: "Brive-la-Gaillarde", domain: "ibsac.fr", href: "https://www.ibsac.fr" },
+                { name: "Talis", city: "Périgueux", domain: "talis-business-school.com", href: "https://www.talis-business-school.com" },
+              ].map((s) => (
+                <a
+                  key={s.name}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex items-center gap-4 rounded-xl border border-border bg-background p-4 transition-shadow hover:shadow-sm"
+                >
+                  <Logo domain={s.domain} alt={s.name} size={40} />
+                  <div className="flex-1">
+                    <p className="font-display text-sm font-semibold text-foreground group-hover:text-primary">
+                      {s.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{s.city}</p>
+                  </div>
+                  <ExternalLink size={14} className="text-muted-foreground" />
+                </a>
+              ))}
+            </div>
+
+            <p className="mt-5 text-xs italic text-muted-foreground">
+              Source : documents officiels Talis (campus Périgueux). Le calendrier
+              détaillé jour par jour est disponible dans le PDF « Calendrier ».
+            </p>
+          </div>
+
           <p className="mt-8 text-center text-sm italic text-muted-foreground">
             Je privilégie une entreprise située à Sarlat ou dans un secteur
             raisonnablement accessible en scooter.
