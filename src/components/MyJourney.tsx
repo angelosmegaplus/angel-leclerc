@@ -1042,8 +1042,6 @@ export function MyJourney() {
       <RealisationsSection />
       <EngagementsSection />
       <ToolsSection />
-      <SkillsSection />
-      <PassionsSection />
     </>
   );
 }
