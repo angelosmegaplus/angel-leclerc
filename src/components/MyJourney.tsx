@@ -219,23 +219,6 @@ function CvPdfSection() {
   );
 }
 
-const passions: { icon: LucideIcon; title: string; text: string }[] = [
-  {
-    icon: Music,
-    title: "Identités sonores",
-    text: "Conception de jingles, habillages et ambiances : trouver le son juste qui donne une personnalité à un projet, même à titre personnel.",
-  },
-  {
-    icon: Mic,
-    title: "Montage audio & podcasts",
-    text: "Vraie passion du montage audio avec MixPad : enregistrement, découpe, mixage et création d'épisodes de podcast de bout en bout.",
-  },
-  {
-    icon: Video,
-    title: "Vidéo et contenus",
-    text: "Écriture, tournage et montage de formats courts : j'adore expérimenter, raconter et donner du souffle à une idée par l'image.",
-  },
-];
 
 
 function AlternanceSection() {
