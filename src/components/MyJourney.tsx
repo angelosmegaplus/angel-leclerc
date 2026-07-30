@@ -982,18 +982,36 @@ function ToolsSection() {
   );
 }
 
+function CvSection() {
+  return (
+    <section id="cv" className="scroll-mt-24">
+      <AnimatedSection>
+        <div className="section-padding bg-muted/40">
+          <div className="container-tight">
+            <SectionHeader
+              eyebrow="CV numérique"
+              title="Mon parcours et mes compétences"
+              intro="Un aperçu détaillé de mon expérience professionnelle, de mes compétences, de ma formation et de mes certifications."
+            />
+          </div>
+        </div>
+      </AnimatedSection>
+      <ExperiencesSection />
+      <SkillsSection />
+      <FormationSection />
+      <CertificationsSection />
+    </section>
+  );
+}
+
 export function MyJourney() {
   return (
     <>
       <IntroSection />
-      <CvSection />
       <AlternanceSection />
-      <PassionsSection />
+      <CvSection />
+      <CvPdfSection />
       <RealisationsSection />
-      <SkillsSection />
-      <ExperiencesSection />
-      <FormationSection />
-      <CertificationsSection />
       <EngagementsSection />
       <ToolsSection />
     </>
