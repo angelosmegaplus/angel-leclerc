@@ -31,6 +31,8 @@ function ParcoursPage() {
     <div className="pb-24 md:pb-0">
       <MyJourney />
       <LatestSubstackArticles />
+      <SkillsSection />
+      <PassionsSection />
 
       <AnimatedSection>
         <section id="contact-alternance" className="section-padding bg-muted/40 scroll-mt-24">
@@ -109,9 +111,6 @@ function ParcoursPage() {
           </div>
         </section>
       </AnimatedSection>
-
-      <SkillsSection />
-      <PassionsSection />
 
       {/* Mobile fixed CTA */}
       <a
