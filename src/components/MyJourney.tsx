@@ -110,9 +110,15 @@ function IntroSection() {
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <a
+                href="#cv"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+              >
+                <FileText size={16} /> Voir mon CV
+              </a>
+              <a
                 href="/cv-angel-leclerc.pdf"
                 download
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
               >
                 <Download size={16} /> Télécharger mon CV
               </a>
