@@ -937,6 +937,80 @@ function ToolsSection() {
   );
 }
 
+const passions: { icon: LucideIcon; title: string; text: string }[] = [
+  {
+    icon: Music,
+    title: "Montage audio & identités sonores",
+    text: "Vraie passion du montage audio avec MixPad : jingles, habillages, podcasts, ambiances. J'adore trouver le son juste qui donne une personnalité à un projet.",
+  },
+  {
+    icon: Video,
+    title: "Vidéo et création de contenus",
+    text: "Écriture, tournage et montage de formats courts. J'aime expérimenter, raconter et donner du souffle à une idée par l'image et le son.",
+  },
+  {
+    icon: PenTool,
+    title: "Création graphique et logos",
+    text: "J'aime concevoir des logos, des identités visuelles et des supports graphiques. J'ai créé énormément de contenus sur Canva pour des projets personnels, professionnels et associatifs.",
+  },
+  {
+    icon: Lightbulb,
+    title: "Innovation et création de marques",
+    text: "J'ai toujours plein d'idées. J'aime innover, imaginer des concepts de marque, réfléchir à des projets et les faire naître concrètement.",
+  },
+  {
+    icon: BookOpen,
+    title: "Lecture et réflexion",
+    text: "J'aime beaucoup lire et réfléchir sur des sujets variés : actualité, société, culture, communication. Ma curiosité me pousse à toujours en apprendre davantage.",
+  },
+  {
+    icon: Music,
+    title: "Orgue",
+    text: "La musique, et en particulier l'orgue, fait partie de mes passions. J'aime pratiquer un instrument qui demande à la fois technique, écoute et sensibilité.",
+  },
+  {
+    icon: TreePine,
+    title: "Nature et balades",
+    text: "J'aime me balader dans la nature, découvrir de nouveaux paysages et prendre l'air. C'est une source d'inspiration et de ressourcement.",
+  },
+  {
+    icon: Heart,
+    title: "Contact humain",
+    text: "Je suis très extérieur et j'aime beaucoup le contact humain. Aller discuter avec quelqu'un dans la rue n'est absolument pas mon problème !",
+  },
+];
+
+function PassionsSection() {
+  return (
+    <AnimatedSection>
+      <section id="passions" className="section-padding bg-background scroll-mt-24">
+        <div className="container-tight">
+          <SectionHeader
+            eyebrow="Ce qui m'anime"
+            title="Mes passions"
+            intro="Au-delà de la communication, de nombreuses choses nourrissent ma créativité et mon envie de créer."
+          />
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {passions.map((p) => (
+              <Card key={p.title} className="flex h-full flex-col">
+                <div className="inline-flex rounded-xl bg-primary/10 p-3 text-primary">
+                  <p.icon size={20} />
+                </div>
+                <h4 className="mt-4 font-display text-lg font-semibold text-foreground">
+                  {p.title}
+                </h4>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
+                  {p.text}
+                </p>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+    </AnimatedSection>
+  );
+}
+
 function CvSection() {
   return (
     <section id="cv" className="scroll-mt-24">
@@ -946,13 +1020,12 @@ function CvSection() {
             <SectionHeader
               eyebrow="CV numérique"
               title="Mon parcours et mes compétences"
-              intro="Un aperçu détaillé de mon expérience professionnelle, de mes compétences, de ma formation et de mes certifications."
+              intro="Un aperçu détaillé de mon expérience professionnelle, de ma formation et de mes certifications."
             />
           </div>
         </div>
       </AnimatedSection>
       <ExperiencesSection />
-      <SkillsSection />
       <FormationSection />
       <CertificationsSection />
     </section>
@@ -969,6 +1042,8 @@ export function MyJourney() {
       <RealisationsSection />
       <EngagementsSection />
       <ToolsSection />
+      <SkillsSection />
+      <PassionsSection />
     </>
   );
 }
