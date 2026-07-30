@@ -26,6 +26,11 @@ import {
   Video,
   Music,
   FileText,
+  TreePine,
+  Brain,
+  Lightbulb,
+  PenTool,
+  Heart,
   type LucideIcon,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
