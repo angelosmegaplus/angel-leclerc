@@ -983,6 +983,11 @@ const passions: { icon: LucideIcon; title: string; text: string }[] = [
     title: "Contact humain",
     text: "Je suis très extérieur et j'aime beaucoup le contact humain. Aller discuter avec quelqu'un dans la rue n'est absolument pas mon problème !",
   },
+  {
+    icon: Smartphone,
+    title: "Curiosité numérique",
+    text: "J'aime énormément tester des applications, faire des recherches de code, explorer de nouveaux outils et expérimenter tout ce qui touche au numérique.",
+  },
 ];
 
 export function PassionsSection() {
