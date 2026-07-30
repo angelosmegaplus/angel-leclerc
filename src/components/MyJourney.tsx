@@ -526,7 +526,7 @@ const skills: { icon: LucideIcon; title: string; items: string[] }[] = [
   },
 ];
 
-function SkillsSection() {
+export function SkillsSection() {
   return (
     <AnimatedSection>
       <section id="competences" className="section-padding bg-muted/40 scroll-mt-24">
