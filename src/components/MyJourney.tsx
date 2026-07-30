@@ -3,7 +3,6 @@ import {
   Bike,
   Calendar,
   Download,
-  Mail,
   ArrowRight,
   Sparkles,
   Briefcase,
@@ -23,11 +22,15 @@ import {
   BookOpen,
   Tent,
   Archive,
+  Mic,
+  Video,
+  Music,
+  FileText,
   type LucideIcon,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { Logo } from "@/components/Logo";
-import logo from "@/assets/logo.svg";
+import photo from "@/assets/angel-leclerc.png.asset.json";
 
 function SectionHeader({
   eyebrow,
@@ -114,10 +117,10 @@ function IntroSection() {
                 <Download size={16} /> Télécharger mon CV
               </a>
               <a
-                href="#contact-alternance"
+                href="#alternance"
                 className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
               >
-                <Mail size={16} /> Me contacter
+                <GraduationCap size={16} /> Voir le BTS Communication
               </a>
               <a
                 href="#realisations"
@@ -135,20 +138,116 @@ function IntroSection() {
                 aria-hidden
                 className="absolute inset-0 -m-6 rounded-full bg-primary/15 blur-2xl"
               />
-              <div className="relative flex h-56 w-56 items-center justify-center rounded-full border border-border bg-card shadow-lg md:h-64 md:w-64">
-                <img
-                  src={logo}
-                  alt="Logo Angel Leclerc Communication"
-                  className="h-40 w-40 object-contain md:h-44 md:w-44"
-                  width={176}
-                  height={176}
-                />
-              </div>
+              <img
+                src={photo.url}
+                alt="Portrait d'Angel Leclerc"
+                className="relative h-56 w-56 rounded-full border border-border object-cover shadow-lg md:h-64 md:w-64"
+                width={256}
+                height={256}
+              />
             </div>
           </div>
         </div>
       </div>
     </section>
+  );
+}
+
+function CvSection() {
+  return (
+    <AnimatedSection>
+      <section id="cv" className="section-padding bg-muted/40 scroll-mt-24">
+        <div className="container-tight">
+          <SectionHeader
+            eyebrow="CV"
+            title="Mon CV"
+            intro="Consultez directement mon CV ci-dessous, ou téléchargez-le au format PDF."
+          />
+          <div className="mt-8 flex flex-wrap gap-3">
+            <a
+              href="/cv-angel-leclerc.pdf"
+              download
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              <Download size={16} /> Télécharger le CV (PDF)
+            </a>
+            <a
+              href="/cv-angel-leclerc.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
+            >
+              <FileText size={16} /> Ouvrir en plein écran
+            </a>
+          </div>
+          <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-card">
+            <object
+              data="/cv-angel-leclerc.pdf"
+              type="application/pdf"
+              className="h-[70vh] max-h-[900px] w-full"
+              aria-label="CV d'Angel Leclerc"
+            >
+              <p className="p-6 text-sm text-muted-foreground">
+                Votre navigateur ne permet pas d'afficher le PDF.{" "}
+                <a href="/cv-angel-leclerc.pdf" download className="text-primary underline">
+                  Téléchargez le CV
+                </a>
+                .
+              </p>
+            </object>
+          </div>
+        </div>
+      </section>
+    </AnimatedSection>
+  );
+}
+
+const passions: { icon: LucideIcon; title: string; text: string }[] = [
+  {
+    icon: Music,
+    title: "Identités sonores",
+    text: "Conception de jingles, habillages et ambiances : trouver le son juste qui donne une personnalité à un projet.",
+  },
+  {
+    icon: Mic,
+    title: "Montage audio & podcasts",
+    text: "Enregistrement, montage et mixage avec MixPad, puis création d'épisodes de podcast de bout en bout.",
+  },
+  {
+    icon: Video,
+    title: "Vidéo et contenus",
+    text: "Écriture, tournage et montage de formats courts, pour le plaisir d'expérimenter et de raconter.",
+  },
+];
+
+function PassionsSection() {
+  return (
+    <AnimatedSection>
+      <section id="passions" className="section-padding bg-background scroll-mt-24">
+        <div className="container-tight">
+          <SectionHeader
+            eyebrow="Passions"
+            title="Le son et la création de contenus"
+            intro="Une vraie passion personnelle : je crée des identités sonores, je monte de l'audio avec MixPad et je produis des podcasts et des vidéos. Ces créations restent personnelles et non publiées — c'est le plaisir de créer qui prime."
+          />
+          <div className="mt-10 grid gap-4 md:grid-cols-3">
+            {passions.map((p) => (
+              <Card key={p.title}>
+                <div className="inline-flex rounded-xl bg-primary/10 p-3 text-primary">
+                  <p.icon size={20} />
+                </div>
+                <h3 className="mt-4 font-display text-lg font-semibold text-foreground">
+                  {p.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  {p.text}
+                </p>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+    </AnimatedSection>
   );
 }
 
@@ -875,6 +974,7 @@ export function MyJourney() {
   return (
     <>
       <IntroSection />
+      <CvSection />
       <AlternanceSection />
       <RealisationsSection />
       <SkillsSection />
@@ -882,6 +982,7 @@ export function MyJourney() {
       <FormationSection />
       <CertificationsSection />
       <EngagementsSection />
+      <PassionsSection />
       <ToolsSection />
     </>
   );

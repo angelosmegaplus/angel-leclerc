@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Mail, Phone, Linkedin, Download } from "lucide-react";
 import { MyJourney } from "@/components/MyJourney";
 import LatestSubstackArticles from "@/components/LatestSubstackArticles";
-import { AlternanceForm } from "@/components/AlternanceForm";
 import { AnimatedSection } from "@/components/AnimatedSection";
 
 export const Route = createFileRoute("/parcours")({
@@ -52,8 +51,8 @@ function ParcoursPage() {
               </p>
             </div>
 
-            <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_1.4fr]">
-              <div className="space-y-4">
+            <div className="mx-auto mt-10 max-w-2xl">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <a
                   href="mailto:contact@angel-leclerc.fr"
                   className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary"
@@ -106,8 +105,6 @@ function ParcoursPage() {
                   </div>
                 </a>
               </div>
-
-              <AlternanceForm />
             </div>
           </div>
         </section>
