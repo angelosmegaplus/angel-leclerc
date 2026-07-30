@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Mail, Phone, Linkedin, Download } from "lucide-react";
-import { MyJourney } from "@/components/MyJourney";
+import { MyJourney, SkillsSection, PassionsSection } from "@/components/MyJourney";
 import LatestSubstackArticles from "@/components/LatestSubstackArticles";
 import { AnimatedSection } from "@/components/AnimatedSection";
 
@@ -109,6 +109,9 @@ function ParcoursPage() {
           </div>
         </section>
       </AnimatedSection>
+
+      <SkillsSection />
+      <PassionsSection />
 
       {/* Mobile fixed CTA */}
       <a

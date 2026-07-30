@@ -26,6 +26,11 @@ import {
   Video,
   Music,
   FileText,
+  TreePine,
+  Brain,
+  Lightbulb,
+  PenTool,
+  Heart,
   type LucideIcon,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
@@ -214,23 +219,6 @@ function CvPdfSection() {
   );
 }
 
-const passions: { icon: LucideIcon; title: string; text: string }[] = [
-  {
-    icon: Music,
-    title: "Identités sonores",
-    text: "Conception de jingles, habillages et ambiances : trouver le son juste qui donne une personnalité à un projet, même à titre personnel.",
-  },
-  {
-    icon: Mic,
-    title: "Montage audio & podcasts",
-    text: "Vraie passion du montage audio avec MixPad : enregistrement, découpe, mixage et création d'épisodes de podcast de bout en bout.",
-  },
-  {
-    icon: Video,
-    title: "Vidéo et contenus",
-    text: "Écriture, tournage et montage de formats courts : j'adore expérimenter, raconter et donner du souffle à une idée par l'image.",
-  },
-];
 
 
 function AlternanceSection() {
@@ -300,11 +288,13 @@ function AlternanceSection() {
             </div>
 
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Mon objectif est de préparer un BTS Communication en alternance afin
-              de développer une expérience professionnelle solide dans la
-              communication. À plus long terme, je souhaite poursuivre dans les
-              domaines de l'information, de la communication ou du journalisme. Le
-              BTS Communication est un diplôme d'État Bac+2 (niveau 5, RNCP 37198)
+              Je prépare un BTS Communication en alternance avec l'école{" "}
+              <strong className="text-foreground">Talis de Périgueux</strong>{" "}
+              à partir de septembre 2026. Mon objectif est de développer une
+              expérience professionnelle solide dans la communication. À plus
+              long terme, je souhaite poursuivre dans les domaines de
+              l'information, de la communication ou du journalisme. Le BTS
+              Communication est un diplôme d'État Bac+2 (niveau 5, RNCP 37198)
               préparé en 24 mois, dont environ{" "}
               <strong className="text-foreground">65 % du temps en entreprise</strong>.
             </p>
@@ -350,35 +340,30 @@ function AlternanceSection() {
             </div>
 
             <p className="mt-6 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Écoles envisagées
+              École de formation
             </p>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
-              {[
-                { name: "IBSAC", city: "Brive-la-Gaillarde", domain: "ibsac.fr", href: "https://www.ibsac.fr" },
-                { name: "Talis", city: "Périgueux", domain: "talis-business-school.com", href: "https://www.talis-business-school.com" },
-              ].map((s) => (
-                <a
-                  key={s.name}
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex items-center gap-4 rounded-xl border border-border bg-background p-4 transition-shadow hover:shadow-sm"
-                >
-                  <Logo domain={s.domain} alt={s.name} size={40} />
-                  <div className="flex-1">
-                    <p className="font-display text-sm font-semibold text-foreground group-hover:text-primary">
-                      {s.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{s.city}</p>
-                  </div>
-                  <ExternalLink size={14} className="text-muted-foreground" />
-                </a>
-              ))}
+              <a
+                href="https://www.talis-business-school.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-4 rounded-xl border border-border bg-background p-4 transition-shadow hover:shadow-sm"
+              >
+                <Logo domain="talis-business-school.com" alt="Talis" size={40} />
+                <div className="flex-1">
+                  <p className="font-display text-sm font-semibold text-foreground group-hover:text-primary">
+                    Talis
+                  </p>
+                  <p className="text-xs text-muted-foreground">Périgueux</p>
+                </div>
+                <ExternalLink size={14} className="text-muted-foreground" />
+              </a>
             </div>
 
             <p className="mt-5 text-xs italic text-muted-foreground">
-              Source : documents officiels Talis (campus Périgueux). Le calendrier
-              détaillé jour par jour est disponible dans le PDF « Calendrier ».
+              Source : documents officiels de l'école Talis — campus Périgueux.
+              Le calendrier détaillé jour par jour est disponible dans le PDF
+              « Calendrier ».
             </p>
           </div>
 
@@ -541,7 +526,7 @@ const skills: { icon: LucideIcon; title: string; items: string[] }[] = [
   },
 ];
 
-function SkillsSection() {
+export function SkillsSection() {
   return (
     <AnimatedSection>
       <section id="competences" className="section-padding bg-muted/40 scroll-mt-24">
@@ -569,30 +554,6 @@ function SkillsSection() {
                 </ul>
               </Card>
             ))}
-          </div>
-
-          <div className="mt-16">
-            <h3 className="text-center font-display text-2xl font-semibold text-foreground">
-              Ce que j'aime faire
-            </h3>
-            <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-muted-foreground">
-              Le montage audio et la création de contenus sont de vraies passions : j'aime expérimenter, créer des identités sonores et donner du souffle à des idées par l'image et le son.
-            </p>
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
-              {passions.map((p) => (
-                <Card key={p.title}>
-                  <div className="inline-flex rounded-xl bg-primary/10 p-3 text-primary">
-                    <p.icon size={20} />
-                  </div>
-                  <h4 className="mt-4 font-display text-lg font-semibold text-foreground">
-                    {p.title}
-                  </h4>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    {p.text}
-                  </p>
-                </Card>
-              ))}
-            </div>
           </div>
         </div>
       </section>
@@ -976,6 +937,80 @@ function ToolsSection() {
   );
 }
 
+const passions: { icon: LucideIcon; title: string; text: string }[] = [
+  {
+    icon: Music,
+    title: "Montage audio & identités sonores",
+    text: "Vraie passion du montage audio avec MixPad : jingles, habillages, podcasts, ambiances. J'adore trouver le son juste qui donne une personnalité à un projet.",
+  },
+  {
+    icon: Video,
+    title: "Vidéo et création de contenus",
+    text: "Écriture, tournage et montage de formats courts. J'aime expérimenter, raconter et donner du souffle à une idée par l'image et le son.",
+  },
+  {
+    icon: PenTool,
+    title: "Création graphique et logos",
+    text: "J'aime concevoir des logos, des identités visuelles et des supports graphiques. J'ai créé énormément de contenus sur Canva pour des projets personnels, professionnels et associatifs.",
+  },
+  {
+    icon: Lightbulb,
+    title: "Innovation et création de marques",
+    text: "J'ai toujours plein d'idées. J'aime innover, imaginer des concepts de marque, réfléchir à des projets et les faire naître concrètement.",
+  },
+  {
+    icon: BookOpen,
+    title: "Lecture et réflexion",
+    text: "J'aime beaucoup lire et réfléchir sur des sujets variés : actualité, société, culture, communication. Ma curiosité me pousse à toujours en apprendre davantage.",
+  },
+  {
+    icon: Music,
+    title: "Orgue",
+    text: "La musique, et en particulier l'orgue, fait partie de mes passions. J'aime pratiquer un instrument qui demande à la fois technique, écoute et sensibilité.",
+  },
+  {
+    icon: TreePine,
+    title: "Nature et balades",
+    text: "J'aime me balader dans la nature, découvrir de nouveaux paysages et prendre l'air. C'est une source d'inspiration et de ressourcement.",
+  },
+  {
+    icon: Heart,
+    title: "Contact humain",
+    text: "Je suis très extérieur et j'aime beaucoup le contact humain. Aller discuter avec quelqu'un dans la rue n'est absolument pas mon problème !",
+  },
+];
+
+export function PassionsSection() {
+  return (
+    <AnimatedSection>
+      <section id="passions" className="section-padding bg-background scroll-mt-24">
+        <div className="container-tight">
+          <SectionHeader
+            eyebrow="Ce qui m'anime"
+            title="Mes passions"
+            intro="Au-delà de la communication, de nombreuses choses nourrissent ma créativité et mon envie de créer."
+          />
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {passions.map((p) => (
+              <Card key={p.title} className="flex h-full flex-col">
+                <div className="inline-flex rounded-xl bg-primary/10 p-3 text-primary">
+                  <p.icon size={20} />
+                </div>
+                <h4 className="mt-4 font-display text-lg font-semibold text-foreground">
+                  {p.title}
+                </h4>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
+                  {p.text}
+                </p>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+    </AnimatedSection>
+  );
+}
+
 function CvSection() {
   return (
     <section id="cv" className="scroll-mt-24">
@@ -985,13 +1020,12 @@ function CvSection() {
             <SectionHeader
               eyebrow="CV numérique"
               title="Mon parcours et mes compétences"
-              intro="Un aperçu détaillé de mon expérience professionnelle, de mes compétences, de ma formation et de mes certifications."
+              intro="Un aperçu détaillé de mon expérience professionnelle, de ma formation et de mes certifications."
             />
           </div>
         </div>
       </AnimatedSection>
       <ExperiencesSection />
-      <SkillsSection />
       <FormationSection />
       <CertificationsSection />
     </section>
