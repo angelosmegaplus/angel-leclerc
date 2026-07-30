@@ -3,7 +3,6 @@ import {
   Bike,
   Calendar,
   Download,
-  Mail,
   ArrowRight,
   Sparkles,
   Briefcase,
