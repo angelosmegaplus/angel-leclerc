@@ -288,11 +288,13 @@ function AlternanceSection() {
             </div>
 
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Mon objectif est de préparer un BTS Communication en alternance afin
-              de développer une expérience professionnelle solide dans la
-              communication. À plus long terme, je souhaite poursuivre dans les
-              domaines de l'information, de la communication ou du journalisme. Le
-              BTS Communication est un diplôme d'État Bac+2 (niveau 5, RNCP 37198)
+              Je prépare un BTS Communication en alternance avec l'école{" "}
+              <strong className="text-foreground">Talis de Périgueux</strong>{" "}
+              à partir de septembre 2026. Mon objectif est de développer une
+              expérience professionnelle solide dans la communication. À plus
+              long terme, je souhaite poursuivre dans les domaines de
+              l'information, de la communication ou du journalisme. Le BTS
+              Communication est un diplôme d'État Bac+2 (niveau 5, RNCP 37198)
               préparé en 24 mois, dont environ{" "}
               <strong className="text-foreground">65 % du temps en entreprise</strong>.
             </p>
