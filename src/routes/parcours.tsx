@@ -110,6 +110,9 @@ function ParcoursPage() {
         </section>
       </AnimatedSection>
 
+      <SkillsSection />
+      <PassionsSection />
+
       {/* Mobile fixed CTA */}
       <a
         href="#contact-alternance"
