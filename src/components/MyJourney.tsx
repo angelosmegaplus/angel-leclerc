@@ -847,6 +847,7 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
     icon: PenLine,
     tools: [
       { name: "Lovable", domain: "lovable.dev", use: "Création et amélioration de sites internet." },
+      { name: "Sigma", domain: "sigma.com", use: "Création et gestion de sites internet." },
       { name: "Squarespace", domain: "squarespace.com", use: "Gestion de domaine et hébergement du site." },
     ],
   },
