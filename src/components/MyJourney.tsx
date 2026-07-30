@@ -600,6 +600,30 @@ function SkillsSection() {
               </Card>
             ))}
           </div>
+
+          <div className="mt-16">
+            <h3 className="text-center font-display text-2xl font-semibold text-foreground">
+              Ce que j'aime faire
+            </h3>
+            <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-muted-foreground">
+              Le montage audio et la création de contenus sont de vraies passions : j'aime expérimenter, créer des identités sonores et donner du souffle à des idées par l'image et le son.
+            </p>
+            <div className="mt-8 grid gap-4 md:grid-cols-3">
+              {passions.map((p) => (
+                <Card key={p.title}>
+                  <div className="inline-flex rounded-xl bg-primary/10 p-3 text-primary">
+                    <p.icon size={20} />
+                  </div>
+                  <h4 className="mt-4 font-display text-lg font-semibold text-foreground">
+                    {p.title}
+                  </h4>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {p.text}
+                  </p>
+                </Card>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
     </AnimatedSection>
