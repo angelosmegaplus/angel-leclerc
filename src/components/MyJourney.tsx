@@ -980,7 +980,7 @@ const passions: { icon: LucideIcon; title: string; text: string }[] = [
   },
 ];
 
-function PassionsSection() {
+export function PassionsSection() {
   return (
     <AnimatedSection>
       <section id="passions" className="section-padding bg-background scroll-mt-24">
