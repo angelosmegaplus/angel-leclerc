@@ -165,14 +165,14 @@ function IntroSection() {
   );
 }
 
-function CvSection() {
+function CvPdfSection() {
   return (
     <AnimatedSection>
-      <section id="cv" className="section-padding bg-muted/40 scroll-mt-24">
+      <section id="cv-pdf" className="section-padding bg-muted/40 scroll-mt-24">
         <div className="container-tight">
           <SectionHeader
             eyebrow="CV"
-            title="Mon CV"
+            title="Mon CV en PDF"
             intro="Consultez directement mon CV ci-dessous, ou téléchargez-le au format PDF."
           />
           <div className="mt-8 flex flex-wrap gap-3">
@@ -232,36 +232,6 @@ const passions: { icon: LucideIcon; title: string; text: string }[] = [
   },
 ];
 
-function PassionsSection() {
-  return (
-    <AnimatedSection>
-      <section id="passions" className="section-padding bg-background scroll-mt-24">
-        <div className="container-tight">
-          <SectionHeader
-            eyebrow="Passions"
-            title="Passionné de montage audio et de création de contenus"
-            intro="Le son et la vidéo sont bien plus qu'un loisir : c'est une véritable passion. Je conçois des identités sonores, je monte de l'audio avec MixPad et je produis des podcasts et des vidéos. Ces créations restent personnelles et non publiées — c'est le plaisir de créer, d'expérimenter et de raconter qui prime."
-          />
-          <div className="mt-10 grid gap-4 md:grid-cols-3">
-            {passions.map((p) => (
-              <Card key={p.title}>
-                <div className="inline-flex rounded-xl bg-primary/10 p-3 text-primary">
-                  <p.icon size={20} />
-                </div>
-                <h3 className="mt-4 font-display text-lg font-semibold text-foreground">
-                  {p.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {p.text}
-                </p>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-    </AnimatedSection>
-  );
-}
 
 function AlternanceSection() {
   const rows: { icon: LucideIcon; label: string; value: string }[] = [
@@ -599,6 +569,30 @@ function SkillsSection() {
                 </ul>
               </Card>
             ))}
+          </div>
+
+          <div className="mt-16">
+            <h3 className="text-center font-display text-2xl font-semibold text-foreground">
+              Ce que j'aime faire
+            </h3>
+            <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-muted-foreground">
+              Le montage audio et la création de contenus sont de vraies passions : j'aime expérimenter, créer des identités sonores et donner du souffle à des idées par l'image et le son.
+            </p>
+            <div className="mt-8 grid gap-4 md:grid-cols-3">
+              {passions.map((p) => (
+                <Card key={p.title}>
+                  <div className="inline-flex rounded-xl bg-primary/10 p-3 text-primary">
+                    <p.icon size={20} />
+                  </div>
+                  <h4 className="mt-4 font-display text-lg font-semibold text-foreground">
+                    {p.title}
+                  </h4>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {p.text}
+                  </p>
+                </Card>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -982,18 +976,36 @@ function ToolsSection() {
   );
 }
 
+function CvSection() {
+  return (
+    <section id="cv" className="scroll-mt-24">
+      <AnimatedSection>
+        <div className="section-padding bg-muted/40">
+          <div className="container-tight">
+            <SectionHeader
+              eyebrow="CV numérique"
+              title="Mon parcours et mes compétences"
+              intro="Un aperçu détaillé de mon expérience professionnelle, de mes compétences, de ma formation et de mes certifications."
+            />
+          </div>
+        </div>
+      </AnimatedSection>
+      <ExperiencesSection />
+      <SkillsSection />
+      <FormationSection />
+      <CertificationsSection />
+    </section>
+  );
+}
+
 export function MyJourney() {
   return (
     <>
       <IntroSection />
-      <CvSection />
       <AlternanceSection />
-      <PassionsSection />
+      <CvSection />
+      <CvPdfSection />
       <RealisationsSection />
-      <SkillsSection />
-      <ExperiencesSection />
-      <FormationSection />
-      <CertificationsSection />
       <EngagementsSection />
       <ToolsSection />
     </>
