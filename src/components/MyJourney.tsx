@@ -31,6 +31,7 @@ import {
   Lightbulb,
   PenTool,
   Heart,
+  Smartphone,
   type LucideIcon,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
