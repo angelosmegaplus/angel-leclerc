@@ -165,14 +165,14 @@ function IntroSection() {
   );
 }
 
-function CvSection() {
+function CvPdfSection() {
   return (
     <AnimatedSection>
-      <section id="cv" className="section-padding bg-muted/40 scroll-mt-24">
+      <section id="cv-pdf" className="section-padding bg-muted/40 scroll-mt-24">
         <div className="container-tight">
           <SectionHeader
             eyebrow="CV"
-            title="Mon CV"
+            title="Mon CV en PDF"
             intro="Consultez directement mon CV ci-dessous, ou téléchargez-le au format PDF."
           />
           <div className="mt-8 flex flex-wrap gap-3">
