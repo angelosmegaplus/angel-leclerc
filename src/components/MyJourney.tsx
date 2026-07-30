@@ -212,17 +212,17 @@ const passions: { icon: LucideIcon; title: string; text: string }[] = [
   {
     icon: Music,
     title: "Identités sonores",
-    text: "Conception de jingles, habillages et ambiances : trouver le son juste qui donne une personnalité à un projet.",
+    text: "Conception de jingles, habillages et ambiances : trouver le son juste qui donne une personnalité à un projet, même à titre personnel.",
   },
   {
     icon: Mic,
     title: "Montage audio & podcasts",
-    text: "Enregistrement, montage et mixage avec MixPad, puis création d'épisodes de podcast de bout en bout.",
+    text: "Vraie passion du montage audio avec MixPad : enregistrement, découpe, mixage et création d'épisodes de podcast de bout en bout.",
   },
   {
     icon: Video,
     title: "Vidéo et contenus",
-    text: "Écriture, tournage et montage de formats courts, pour le plaisir d'expérimenter et de raconter.",
+    text: "Écriture, tournage et montage de formats courts : j'adore expérimenter, raconter et donner du souffle à une idée par l'image.",
   },
 ];
 
@@ -233,8 +233,8 @@ function PassionsSection() {
         <div className="container-tight">
           <SectionHeader
             eyebrow="Passions"
-            title="Le son et la création de contenus"
-            intro="Une vraie passion personnelle : je crée des identités sonores, je monte de l'audio avec MixPad et je produis des podcasts et des vidéos. Ces créations restent personnelles et non publiées — c'est le plaisir de créer qui prime."
+            title="Passionné de montage audio et de création de contenus"
+            intro="Le son et la vidéo sont bien plus qu'un loisir : c'est une véritable passion. Je conçois des identités sonores, je monte de l'audio avec MixPad et je produis des podcasts et des vidéos. Ces créations restent personnelles et non publiées — c'est le plaisir de créer, d'expérimenter et de raconter qui prime."
           />
           <div className="mt-10 grid gap-4 md:grid-cols-3">
             {passions.map((p) => (
@@ -982,13 +982,13 @@ export function MyJourney() {
       <IntroSection />
       <CvSection />
       <AlternanceSection />
+      <PassionsSection />
       <RealisationsSection />
       <SkillsSection />
       <ExperiencesSection />
       <FormationSection />
       <CertificationsSection />
       <EngagementsSection />
-      <PassionsSection />
       <ToolsSection />
     </>
   );
