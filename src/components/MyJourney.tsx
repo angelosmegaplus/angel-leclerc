@@ -870,9 +870,12 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
     ],
   },
   {
-    title: "Audio",
-    icon: Radio,
-    tools: [{ name: "MixPad", domain: "nch.com.au", use: "Montage audio pour projets radio." }],
+    title: "Audio et vidéo",
+    icon: Video,
+    tools: [
+      { name: "MixPad", domain: "nch.com.au", use: "Montage audio pour projets radio." },
+      { name: "CapCut", domain: "capcut.com", use: "Montage vidéo pour contenus courts et réseaux sociaux." },
+    ],
   },
   {
     title: "Tourisme et gestion",
