@@ -340,35 +340,30 @@ function AlternanceSection() {
             </div>
 
             <p className="mt-6 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Écoles envisagées
+              École de formation
             </p>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
-              {[
-                { name: "IBSAC", city: "Brive-la-Gaillarde", domain: "ibsac.fr", href: "https://www.ibsac.fr" },
-                { name: "Talis", city: "Périgueux", domain: "talis-business-school.com", href: "https://www.talis-business-school.com" },
-              ].map((s) => (
-                <a
-                  key={s.name}
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex items-center gap-4 rounded-xl border border-border bg-background p-4 transition-shadow hover:shadow-sm"
-                >
-                  <Logo domain={s.domain} alt={s.name} size={40} />
-                  <div className="flex-1">
-                    <p className="font-display text-sm font-semibold text-foreground group-hover:text-primary">
-                      {s.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{s.city}</p>
-                  </div>
-                  <ExternalLink size={14} className="text-muted-foreground" />
-                </a>
-              ))}
+              <a
+                href="https://www.talis-business-school.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-4 rounded-xl border border-border bg-background p-4 transition-shadow hover:shadow-sm"
+              >
+                <Logo domain="talis-business-school.com" alt="Talis" size={40} />
+                <div className="flex-1">
+                  <p className="font-display text-sm font-semibold text-foreground group-hover:text-primary">
+                    Talis
+                  </p>
+                  <p className="text-xs text-muted-foreground">Périgueux</p>
+                </div>
+                <ExternalLink size={14} className="text-muted-foreground" />
+              </a>
             </div>
 
             <p className="mt-5 text-xs italic text-muted-foreground">
-              Source : documents officiels Talis (campus Périgueux). Le calendrier
-              détaillé jour par jour est disponible dans le PDF « Calendrier ».
+              Source : documents officiels de l'école Talis — campus Périgueux.
+              Le calendrier détaillé jour par jour est disponible dans le PDF
+              « Calendrier ».
             </p>
           </div>
 
