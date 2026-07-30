@@ -9,6 +9,7 @@ const HIGH_RES_OVERRIDES: Record<string, string> = {
   "openai.com": "https://cdn.simpleicons.org/openai/10a37f",
   "canva.com": "https://cdn.simpleicons.org/canva/00c4cc",
   "figma.com": "https://cdn.simpleicons.org/figma",
+  "adobe.com": "https://cdn.simpleicons.org/adobe/ff0000",
   "office.com": "https://cdn.simpleicons.org/microsoft",
   "microsoft.com": "https://cdn.simpleicons.org/microsoft",
   "workspace.google.com": "https://cdn.simpleicons.org/google",
@@ -20,6 +21,9 @@ const HIGH_RES_OVERRIDES: Record<string, string> = {
   "lovable.dev": "https://cdn.simpleicons.org/lovable",
   "squarespace.com": "https://cdn.simpleicons.org/squarespace",
   "webnode.com": "https://cdn.simpleicons.org/webflow",
+  "capcut.com": "https://cdn.simpleicons.org/capcut",
+  "sigma.com": "https://cdn.simpleicons.org/sigma",
+  "nch.com.au": "https://cdn.simpleicons.org/nchsoftware",
 };
 
 // Minimum acceptable rendered resolution. Anything below is considered a
