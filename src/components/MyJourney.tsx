@@ -37,6 +37,7 @@ import {
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { Logo } from "@/components/Logo";
 import photo from "@/assets/angel-leclerc.png.asset.json";
+import talisLogo from "@/assets/talis-logo.png";
 
 function SectionHeader({
   eyebrow,
