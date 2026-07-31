@@ -346,6 +346,17 @@ function Hero() {
               size="lg"
               className="border-foreground/20 bg-transparent text-foreground hover:bg-muted"
             >
+              <a href="/parcours#realisations">
+                <FileText size={18} className="mr-2" />
+                Voir mes réalisations
+              </a>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="border-foreground/20 bg-transparent text-foreground hover:bg-muted"
+            >
               <a href="/parcours">
                 <FileText size={18} className="mr-2" />
                 Voir mon CV
