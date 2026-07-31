@@ -35,9 +35,9 @@ function ParcoursPage() {
   return (
     <div className="pb-24 md:pb-0">
       <MyJourney />
+      <RealisationsSection />
       <SkillsSection />
       <PassionsSection />
-      <RealisationsSection />
       <LatestSubstackArticles />
 
       <AnimatedSection>
