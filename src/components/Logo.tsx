@@ -26,6 +26,10 @@ const HIGH_RES_OVERRIDES: Record<string, string> = {
   "squarespace.com": "https://api.iconify.design/logos/squarespace.svg",
   "wordpress.com": "https://api.iconify.design/logos/wordpress-icon.svg",
   "capcut.com": "https://icons.duckduckgo.com/ip3/capcut.com.ico",
+  "substack.com": "https://api.iconify.design/simple-icons/substack.svg?color=%23FF6719",
+  "koesio.com": "https://icons.duckduckgo.com/ip3/koesio.com.ico",
+  "avizi.fr": "https://icons.duckduckgo.com/ip3/avizi.fr.ico",
+  "sarlat.fr": "https://icons.duckduckgo.com/ip3/sarlat.fr.ico",
   "lovable.dev": "https://icons.duckduckgo.com/ip3/lovable.dev.ico",
   "nch.com.au": "https://icons.duckduckgo.com/ip3/nch.com.au.ico",
 };

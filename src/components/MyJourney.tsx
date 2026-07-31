@@ -581,6 +581,19 @@ type Experience = {
 
 const experiences: Experience[] = [
   {
+    role: "Agent de propreté urbaine (emploi saisonnier)",
+    org: "Mairie de Sarlat-la-Canéda",
+    period: "Depuis juillet 2026",
+    domain: "sarlat.fr",
+    fallbackIcon: Building2,
+    missions: [
+      "Entretien et propreté des rues et espaces publics du centre historique",
+      "Travail en équipe, en autonomie et en horaires matinaux",
+      "Contact quotidien avec les habitants et les visiteurs",
+      "Rigueur, ponctualité et sens du service public",
+    ],
+  },
+  {
     role: "Apprenti — Bac Pro Accueil et Vente",
     org: "Office de Tourisme Val de Sioule",
     period: "2023 – 2025",
@@ -846,7 +859,6 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
     icon: Palette,
     tools: [
       { name: "Canva", domain: "canva.com", use: "Affiches, publications, présentations et supports visuels." },
-      { name: "Figma", domain: "figma.com", use: "Maquettes de sites et organisation d'interfaces." },
       { name: "Adobe", domain: "adobe.com", use: "Retouches ponctuelles et exports pour supports print." },
     ],
   },
@@ -855,6 +867,7 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
     icon: PenLine,
     tools: [
       { name: "Lovable", domain: "lovable.dev", use: "Création et amélioration de sites internet." },
+      { name: "Figma", domain: "figma.com", use: "Maquettes de sites et organisation d'interfaces." },
       { name: "Squarespace", domain: "squarespace.com", use: "Gestion de domaine et hébergement du site." },
     ],
   },
@@ -873,6 +886,7 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
       { name: "Meta Business Suite", domain: "business.facebook.com", use: "Gestion centralisée de Facebook, Instagram et Threads : publication, planification et statistiques." },
       { name: "TikTok", domain: "tiktok.com", use: "Formats courts, tendances et contenus vidéo verticaux." },
       { name: "LinkedIn", domain: "linkedin.com", use: "Publications professionnelles et mise en réseau." },
+      { name: "Substack", domain: "substack.com", use: "Publication de mes articles et newsletters." },
     ],
   },
   {
@@ -887,8 +901,8 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
     title: "Tourisme et gestion",
     icon: Landmark,
     tools: [
-      { name: "Avizi", icon: Building2, use: "Gestion de vente et de billetterie en office de tourisme." },
-      { name: "Koesio", icon: Building2, use: "Outils de gestion utilisés en office de tourisme." },
+      { name: "Avizi", domain: "avizi.fr", use: "Gestion de vente et de billetterie en office de tourisme." },
+      { name: "Koesio", domain: "koesio.com", use: "Outils de gestion utilisés en office de tourisme." },
     ],
   },
   {
