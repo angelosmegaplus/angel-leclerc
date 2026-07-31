@@ -172,7 +172,7 @@ function IntroSection() {
   );
 }
 
-function CvPdfSection() {
+export function CvPdfSection() {
   return (
     <AnimatedSection>
       <section id="cv-pdf" className="section-padding bg-muted/40 scroll-mt-24">
@@ -431,7 +431,7 @@ const projects: Project[] = [
   },
 ];
 
-function RealisationsSection() {
+export function RealisationsSection() {
   return (
     <AnimatedSection>
       <section id="realisations" className="section-padding bg-background scroll-mt-24">
@@ -887,6 +887,7 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
       { name: "TikTok", domain: "tiktok.com", use: "Formats courts, tendances et contenus vidéo verticaux." },
       { name: "LinkedIn", domain: "linkedin.com", use: "Publications professionnelles et mise en réseau." },
       { name: "Substack", domain: "substack.com", use: "Publication de mes articles et newsletters." },
+      { name: "Brevo", domain: "brevo.com", use: "Campagnes e-mailing, newsletters et gestion de contacts." },
     ],
   },
   {
@@ -903,6 +904,7 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
     tools: [
       { name: "Avizi", domain: "avizi.fr", use: "Gestion de vente et de billetterie en office de tourisme." },
       { name: "Koesio", domain: "koesio.com", use: "Outils de gestion utilisés en office de tourisme." },
+      { name: "HelloAsso", domain: "helloasso.com", use: "Billetterie, adhésions et paiements en ligne pour les associations." },
     ],
   },
   {
@@ -1061,8 +1063,6 @@ export function MyJourney() {
       <IntroSection />
       <AlternanceSection />
       <CvSection />
-      <CvPdfSection />
-      <RealisationsSection />
       <EngagementsSection />
       <ToolsSection />
     </>
