@@ -26,11 +26,21 @@ const HIGH_RES_OVERRIDES: Record<string, string> = {
   "squarespace.com": "https://api.iconify.design/logos/squarespace.svg",
   "wordpress.com": "https://api.iconify.design/logos/wordpress-icon.svg",
   "capcut.com": "https://icons.duckduckgo.com/ip3/capcut.com.ico",
+  "brevo.com": "https://api.iconify.design/simple-icons/brevo.svg?color=%230B996E",
+  "helloasso.com": "https://www.helloasso.com/apple-touch-icon.png",
+  "avizi.fr": "https://www.google.com/s2/favicons?sz=256&domain=avizi.fr",
+  "claude.ai": "https://api.iconify.design/logos/claude-icon.svg",
+  "gemini.google.com": "https://api.iconify.design/logos/google-gemini.svg",
+  "revolut.com": "https://www.google.com/s2/favicons?sz=256&domain=revolut.com",
+  "sarlat.fr": "https://www.google.com/s2/favicons?sz=256&domain=sarlat.fr",
+  "valdesioule.com": "https://www.google.com/s2/favicons?sz=256&domain=valdesioule.com",
+  "laligue.org": "https://www.google.com/s2/favicons?sz=256&domain=laligue.org",
+  "mfr.asso.fr": "https://www.google.com/s2/favicons?sz=256&domain=mfr.asso.fr",
+  "webnode.com": "https://www.google.com/s2/favicons?sz=256&domain=webnode.com",
+  "play.google.com": "https://api.iconify.design/logos/google-play-icon.svg",
   "substack.com": "https://api.iconify.design/simple-icons/substack.svg?color=%23FF6719",
   "koesio.com": "https://icons.duckduckgo.com/ip3/koesio.com.ico",
-  "avizi.fr": "https://icons.duckduckgo.com/ip3/avizi.fr.ico",
-  "sarlat.fr": "https://icons.duckduckgo.com/ip3/sarlat.fr.ico",
-  "lovable.dev": "https://icons.duckduckgo.com/ip3/lovable.dev.ico",
+  "lovable.dev": "https://svgl.app/library/lovable.svg",
   "nch.com.au": "https://icons.duckduckgo.com/ip3/nch.com.au.ico",
 };
 
@@ -42,9 +52,9 @@ function sources(domain: string): string[] {
   const list: string[] = [];
   const override = HIGH_RES_OVERRIDES[domain];
   if (override) list.push(override);
-  // High-res favicon services with graceful degradation.
-  list.push(`https://icons.duckduckgo.com/ip3/${domain}.ico`);
+  // High-res favicon services with graceful degradation (largest first).
   list.push(`https://www.google.com/s2/favicons?sz=256&domain=${domain}`);
+  list.push(`https://icons.duckduckgo.com/ip3/${domain}.ico`);
   list.push(`https://www.google.com/s2/favicons?sz=128&domain=${domain}`);
   return list;
 }

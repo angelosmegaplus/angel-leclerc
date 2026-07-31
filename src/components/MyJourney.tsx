@@ -172,57 +172,6 @@ function IntroSection() {
   );
 }
 
-export function CvPdfSection() {
-  return (
-    <AnimatedSection>
-      <section id="cv-pdf" className="section-padding bg-muted/40 scroll-mt-24">
-        <div className="container-tight">
-          <SectionHeader
-            eyebrow="CV"
-            title="Mon CV en PDF"
-            intro="Consultez directement mon CV ci-dessous, ou téléchargez-le au format PDF."
-          />
-          <div className="mt-8 flex flex-wrap gap-3">
-            <a
-              href="/cv-angel-leclerc.pdf"
-              download
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-            >
-              <Download size={16} /> Télécharger le CV (PDF)
-            </a>
-            <a
-              href="/cv-angel-leclerc.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
-            >
-              <FileText size={16} /> Ouvrir en plein écran
-            </a>
-          </div>
-          <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-card">
-            <object
-              data="/cv-angel-leclerc.pdf"
-              type="application/pdf"
-              className="h-[70vh] max-h-[900px] w-full"
-              aria-label="CV d'Angel Leclerc"
-            >
-              <p className="p-6 text-sm text-muted-foreground">
-                Votre navigateur ne permet pas d'afficher le PDF.{" "}
-                <a href="/cv-angel-leclerc.pdf" download className="text-primary underline">
-                  Téléchargez le CV
-                </a>
-                .
-              </p>
-            </object>
-          </div>
-        </div>
-      </section>
-    </AnimatedSection>
-  );
-}
-
-
-
 function AlternanceSection() {
   const rows: { icon: LucideIcon; label: string; value: string }[] = [
     { icon: GraduationCap, label: "Formation", value: "BTS Communication" },
@@ -391,7 +340,6 @@ type Project = {
   description: string;
   tools: string;
   href?: string;
-  cta: string;
   icon: LucideIcon;
 };
 
@@ -401,7 +349,6 @@ const projects: Project[] = [
     description:
       "Participation à la communication d'une tombola destinée à financer la restauration de la chapelle de la Visitation à Besançon : création et amélioration du site internet, rédaction de contenus, publications sur les réseaux sociaux, recherche de relais médiatiques et coordination de la communication.",
     tools: "Lovable · Canva · Meta Business Suite · rédaction web",
-    cta: "Voir le projet",
     icon: PenLine,
   },
   {
@@ -410,7 +357,6 @@ const projects: Project[] = [
       "Création de mon identité professionnelle, de mon site internet et de mon offre de services autour de la gestion de projet, du conseil en communication et de la rédaction éditoriale.",
     tools: "Lovable · Canva · Figma · Squarespace",
     href: "https://www.angel-leclerc.fr",
-    cta: "Découvrir le site",
     icon: Briefcase,
   },
   {
@@ -418,7 +364,6 @@ const projects: Project[] = [
     description:
       "Participation au développement d'un projet d'émission jeunesse dans le cadre d'un service civique : réflexion sur le concept, recherche de sujets, préparation éditoriale et découverte de la production radiophonique.",
     tools: "Rédaction · recherche · montage audio · MixPad",
-    cta: "Voir le détail",
     icon: Radio,
   },
   {
@@ -426,7 +371,6 @@ const projects: Project[] = [
     description:
       "Réalisation d'affiches, de publications, de logos, de documents de présentation et de supports numériques dans le cadre de projets personnels, professionnels et associatifs.",
     tools: "Canva · Figma · Adobe · IA générative",
-    cta: "Voir les créations",
     icon: Palette,
   },
 ];
@@ -459,22 +403,16 @@ export function RealisationsSection() {
                 <p className="mt-4 text-xs font-medium text-foreground/70">
                   {p.tools}
                 </p>
-                <div className="mt-6">
-                  {p.href ? (
-                    <a
-                      href={p.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:opacity-80"
-                    >
-                      {p.cta} <ExternalLink size={14} />
-                    </a>
-                  ) : (
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-                      {p.cta} <ArrowRight size={14} />
-                    </span>
-                  )}
-                </div>
+                {p.href ? (
+                  <a
+                    href={p.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:opacity-80"
+                  >
+                    Découvrir le site <ExternalLink size={14} />
+                  </a>
+                ) : null}
               </Card>
             ))}
           </div>
