@@ -69,6 +69,10 @@ export default function MobilityMap() {
       }
 
       setReady(true);
+      map.fitBounds(
+        L.latLngBounds(PLACES.map((p) => p.coords)).pad(0.15),
+        { padding: [10, 10] },
+      );
     })();
 
     return () => {
