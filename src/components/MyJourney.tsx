@@ -24,7 +24,7 @@ import {
   BookOpen,
   Tent,
   Archive,
-  Mic,
+  Archive,
   Video,
   Music,
   FileText,
