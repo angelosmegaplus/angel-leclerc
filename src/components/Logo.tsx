@@ -3,27 +3,31 @@ import { useState } from "react";
 // Domains that have a known-good high-resolution logo source, overriding the
 // automatic fallback chain. Used to make sure important brand marks are always
 // sharp on the site rather than blurry favicons.
+// All sources below are full-color, current brand marks (Iconify "logos"
+// collection, SVGL, or the brand's own high-res icon) — never monochrome.
 const HIGH_RES_OVERRIDES: Record<string, string> = {
-  "google.com": "https://api.iconify.design/simple-icons/google.svg",
-  "chatgpt.com": "https://api.iconify.design/simple-icons/openai.svg",
-  "openai.com": "https://api.iconify.design/simple-icons/openai.svg",
-  "canva.com": "https://api.iconify.design/simple-icons/canva.svg",
-  "figma.com": "https://api.iconify.design/simple-icons/figma.svg",
-  "adobe.com": "https://api.iconify.design/simple-icons/adobe.svg",
-  "office.com": "https://api.iconify.design/simple-icons/microsoft.svg",
-  "microsoft.com": "https://api.iconify.design/simple-icons/microsoft.svg",
-  "workspace.google.com": "https://api.iconify.design/simple-icons/google.svg",
-  "facebook.com": "https://api.iconify.design/simple-icons/facebook.svg",
-  "business.facebook.com": "https://api.iconify.design/simple-icons/meta.svg",
-  "meta.com": "https://api.iconify.design/simple-icons/meta.svg",
-  "instagram.com": "https://api.iconify.design/simple-icons/instagram.svg",
-  "threads.com": "https://api.iconify.design/simple-icons/threads.svg",
-  "threads.net": "https://api.iconify.design/simple-icons/threads.svg",
-  "linkedin.com": "https://api.iconify.design/simple-icons/linkedin.svg",
-  "tiktok.com": "https://api.iconify.design/simple-icons/tiktok.svg",
-  "squarespace.com": "https://api.iconify.design/simple-icons/squarespace.svg",
-  "capcut.com": "https://www.google.com/s2/favicons?sz=256&domain=capcut.com",
-  "nch.com.au": "https://www.google.com/s2/favicons?sz=256&domain=nch.com.au",
+  "google.com": "https://api.iconify.design/logos/google-icon.svg",
+  "chatgpt.com": "https://api.iconify.design/logos/openai-icon.svg",
+  "openai.com": "https://api.iconify.design/logos/openai-icon.svg",
+  "canva.com": "https://svgl.app/library/canva.svg",
+  "figma.com": "https://api.iconify.design/logos/figma.svg",
+  "adobe.com": "https://api.iconify.design/logos/adobe.svg",
+  "office.com": "https://api.iconify.design/logos/microsoft-icon.svg",
+  "microsoft.com": "https://api.iconify.design/logos/microsoft-icon.svg",
+  "workspace.google.com": "https://api.iconify.design/logos/google-icon.svg",
+  "facebook.com": "https://api.iconify.design/logos/facebook.svg",
+  "business.facebook.com": "https://api.iconify.design/logos/meta-icon.svg",
+  "meta.com": "https://api.iconify.design/logos/meta-icon.svg",
+  "instagram.com": "https://api.iconify.design/logos/instagram-icon.svg",
+  "threads.com": "https://api.iconify.design/logos/threads-icon.svg",
+  "threads.net": "https://api.iconify.design/logos/threads-icon.svg",
+  "linkedin.com": "https://api.iconify.design/logos/linkedin-icon.svg",
+  "tiktok.com": "https://api.iconify.design/logos/tiktok-icon.svg",
+  "squarespace.com": "https://api.iconify.design/logos/squarespace.svg",
+  "wordpress.com": "https://api.iconify.design/logos/wordpress-icon.svg",
+  "capcut.com": "https://icons.duckduckgo.com/ip3/capcut.com.ico",
+  "lovable.dev": "https://icons.duckduckgo.com/ip3/lovable.dev.ico",
+  "nch.com.au": "https://icons.duckduckgo.com/ip3/nch.com.au.ico",
 };
 
 // Minimum acceptable rendered resolution. Anything below is considered a
