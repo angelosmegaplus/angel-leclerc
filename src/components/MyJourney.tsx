@@ -705,13 +705,38 @@ function FormationSection() {
 const certifications: {
   name: string;
   org: string;
+  detail: string;
   domain?: string;
   icon?: LucideIcon;
 }[] = [
-  { name: "Les principes fondamentaux du marketing numérique", org: "Google", domain: "google.com" },
-  { name: "BAFA", org: "Ligue de l'enseignement", domain: "laligue.org" },
-  { name: "PSC1", org: "Prévention et secours civiques", icon: Award },
-  { name: "SST", org: "Sauveteur secouriste du travail", icon: Award },
+  {
+    name: "Les principes fondamentaux du marketing numérique",
+    org: "Google",
+    domain: "google.com",
+    detail:
+      "Certification en ligne couvrant le référencement, la publicité, les réseaux sociaux, l'e-mailing et l'analyse d'audience.",
+  },
+  {
+    name: "BAFA",
+    org: "Ligue de l'enseignement",
+    domain: "laligue.org",
+    detail:
+      "Brevet d'aptitude aux fonctions d'animateur : encadrement de groupes d'enfants et de jeunes en accueils collectifs de mineurs.",
+  },
+  {
+    name: "PSC1",
+    org: "Prévention et secours civiques",
+    icon: Award,
+    detail:
+      "Formation aux gestes de premiers secours : alerte, protection, malaises, hémorragies et réanimation.",
+  },
+  {
+    name: "SST",
+    org: "Sauveteur secouriste du travail",
+    icon: Award,
+    detail:
+      "Prévention des risques professionnels et intervention en cas d'accident sur le lieu de travail.",
+  },
 ];
 
 function CertificationsSection() {
@@ -723,7 +748,7 @@ function CertificationsSection() {
 
           <div className="mt-12 grid gap-4 md:grid-cols-2">
             {certifications.map((c) => (
-              <Card key={c.name} className="flex items-center gap-4">
+              <Card key={c.name} className="flex items-start gap-4">
                 {c.domain ? (
                   <Logo domain={c.domain} alt={c.org} size={48} />
                 ) : (
@@ -736,6 +761,9 @@ function CertificationsSection() {
                     {c.name}
                   </p>
                   <p className="text-sm text-muted-foreground">{c.org}</p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                    {c.detail}
+                  </p>
                 </div>
               </Card>
             ))}
