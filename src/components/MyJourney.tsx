@@ -1001,9 +1001,7 @@ export function PassionsSection() {
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {passions.map((p) => (
               <Card key={p.title} className="flex h-full flex-col">
-                <div className="inline-flex rounded-xl bg-primary/10 p-3 text-primary">
-                  <p.icon size={20} />
-                </div>
+                <p.icon size={24} className="text-primary" />
                 <h4 className="mt-4 font-display text-lg font-semibold text-foreground">
                   {p.title}
                 </h4>
