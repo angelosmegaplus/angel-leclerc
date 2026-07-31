@@ -37,6 +37,7 @@ import {
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { Logo } from "@/components/Logo";
 import photo from "@/assets/angel-leclerc.png.asset.json";
+import talisLogo from "@/assets/talis-logo.png";
 
 function SectionHeader({
   eyebrow,
@@ -350,7 +351,14 @@ function AlternanceSection() {
                 rel="noopener noreferrer"
                 className="group flex items-center gap-4 rounded-xl border border-border bg-background p-4 transition-shadow hover:shadow-sm"
               >
-                <Logo domain="talis-business-school.com" alt="Talis" size={40} />
+                <img
+                  src={talisLogo}
+                  alt="Logo Talis Business School"
+                  width={40}
+                  height={40}
+                  className="h-10 w-auto shrink-0 object-contain"
+                  loading="lazy"
+                />
                 <div className="flex-1">
                   <p className="font-display text-sm font-semibold text-foreground group-hover:text-primary">
                     Talis
@@ -943,13 +951,8 @@ function ToolsSection() {
 const passions: { icon: LucideIcon; title: string; text: string }[] = [
   {
     icon: Music,
-    title: "Montage audio & identités sonores",
-    text: "Vraie passion du montage audio avec MixPad : jingles, habillages, podcasts, ambiances. J'adore trouver le son juste qui donne une personnalité à un projet.",
-  },
-  {
-    icon: Video,
-    title: "Motion design et logos animés",
-    text: "J'aime créer des logos animés, des génériques et des effets visuels qui donnent du souffle à une identité. Pas de contenu vidéo classique, plutôt du mouvement graphique et des habillages.",
+    title: "Montage audio et identités sonores et vidéo",
+    text: "Montage audio avec MixPad (jingles, habillages, podcasts) et création d'identités sonores et vidéo : logos animés, génériques, effets. Trouver le son et le mouvement justes qui donnent une personnalité à un projet.",
   },
   {
     icon: PenTool,
