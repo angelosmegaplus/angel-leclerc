@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { ClientOnly } from "@tanstack/react-router";
+const MobilityMap = lazy(() => import("@/components/MobilityMap"));
 import {
   MapPin,
   Bike,
