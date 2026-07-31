@@ -41,7 +41,7 @@ export default function MobilityMap() {
       }).addTo(map);
 
       L.circle(SARLAT, {
-        radius: 15000,
+        radius: 10000,
         color: "#CE654B",
         weight: 1.5,
         opacity: 0.6,
