@@ -665,7 +665,7 @@ function FormationSection() {
                     </span>
                   </div>
                   <p className="text-sm font-medium text-foreground/80">
-                    MFR-CFA du Périgord noir
+                    MFR du Périgord noir — Salignac
                   </p>
                   <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                     Diplôme de niveau 4 préparé en alternance dans une Maison
@@ -702,6 +702,19 @@ function FormationSection() {
                     <span className="rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground">
                       SST — Sauveteur secouriste du travail
                     </span>
+                  </div>
+                  <p className="mt-6 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    En vidéo
+                  </p>
+                  <div className="mt-3 grid gap-4 md:grid-cols-2">
+                    <YouTubeEmbed
+                      id="knKUojBLR2I"
+                      title="Bac Pro Métiers de l'accueil — présentation"
+                    />
+                    <YouTubeEmbed
+                      id="03vn5fWIIOQ"
+                      title="MFR du Périgord noir — Salignac"
+                    />
                   </div>
                 </div>
               </div>
