@@ -581,6 +581,19 @@ type Experience = {
 
 const experiences: Experience[] = [
   {
+    role: "Agent de propreté urbaine (emploi saisonnier)",
+    org: "Mairie de Sarlat-la-Canéda",
+    period: "Depuis juillet 2026",
+    domain: "sarlat.fr",
+    fallbackIcon: Building2,
+    missions: [
+      "Entretien et propreté des rues et espaces publics du centre historique",
+      "Travail en équipe, en autonomie et en horaires matinaux",
+      "Contact quotidien avec les habitants et les visiteurs",
+      "Rigueur, ponctualité et sens du service public",
+    ],
+  },
+  {
     role: "Apprenti — Bac Pro Accueil et Vente",
     org: "Office de Tourisme Val de Sioule",
     period: "2023 – 2025",
