@@ -967,6 +967,7 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
       { name: "ChatGPT", domain: "chatgpt.com", use: "Recherche, organisation, rédaction et amélioration de contenus." },
       { name: "Gemini", domain: "gemini.google.com", use: "Modèle rapide pour la recherche, la synthèse d'informations et les réponses concrètes." },
       { name: "Claude", domain: "claude.ai", use: "Excellent pour la rédaction de texte, la reformulation et l'analyse de documents." },
+      { name: "NotebookLM", domain: "notebooklm.google.com", use: "Organisation de sources, synthèse de documents et audio overview à partir de notes." },
     ],
   },
 ];

@@ -14,6 +14,7 @@ const LOCAL_LOGOS: Record<string, string> = {
   "sites.google.com": "/logos/sites.google.com.svg",
   "play.google.com": "/logos/play.google.com.svg",
   "gemini.google.com": "/logos/gemini.google.com.svg",
+  "notebooklm.google.com": "/logos/notebooklm.google.com.svg",
   "chatgpt.com": "/logos/chatgpt.com.svg",
   "openai.com": "/logos/chatgpt.com.svg",
   "claude.ai": "/logos/claude.ai.svg",
