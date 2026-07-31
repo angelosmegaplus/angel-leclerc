@@ -943,13 +943,8 @@ function ToolsSection() {
 const passions: { icon: LucideIcon; title: string; text: string }[] = [
   {
     icon: Music,
-    title: "Montage audio & identités sonores",
-    text: "Vraie passion du montage audio avec MixPad : jingles, habillages, podcasts, ambiances. J'adore trouver le son juste qui donne une personnalité à un projet.",
-  },
-  {
-    icon: Video,
-    title: "Motion design et logos animés",
-    text: "J'aime créer des logos animés, des génériques et des effets visuels qui donnent du souffle à une identité. Pas de contenu vidéo classique, plutôt du mouvement graphique et des habillages.",
+    title: "Montage audio et identités sonores et vidéo",
+    text: "Montage audio avec MixPad (jingles, habillages, podcasts) et création d'identités sonores et vidéo : logos animés, génériques, effets. Trouver le son et le mouvement justes qui donnent une personnalité à un projet.",
   },
   {
     icon: PenTool,
