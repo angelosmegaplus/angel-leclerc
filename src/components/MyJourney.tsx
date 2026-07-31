@@ -894,6 +894,9 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
       { name: "Lovable", domain: "lovable.dev", use: "Création et amélioration de sites internet." },
       { name: "Figma", domain: "figma.com", use: "Maquettes de sites et organisation d'interfaces." },
       { name: "Squarespace", domain: "squarespace.com", use: "Gestion de domaine et hébergement du site." },
+      { name: "Webnode", domain: "webnode.com", use: "Création rapide de sites vitrines et blogs." },
+      { name: "Wix", domain: "wix.com", use: "Sites vitrines, boutiques et portfolios avec éditeur visuel." },
+      { name: "Google Sites", domain: "sites.google.com", use: "Sites simples et pages collaboratives intégrées à Google Workspace." },
     ],
   },
   {
