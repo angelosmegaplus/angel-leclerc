@@ -31,6 +31,7 @@ import {
   Lightbulb,
   PenTool,
   Heart,
+  Smartphone,
   type LucideIcon,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
@@ -846,6 +847,7 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
     icon: PenLine,
     tools: [
       { name: "Lovable", domain: "lovable.dev", use: "Création et amélioration de sites internet." },
+      { name: "Sigma", domain: "sigma.com", use: "Création et gestion de sites internet." },
       { name: "Squarespace", domain: "squarespace.com", use: "Gestion de domaine et hébergement du site." },
     ],
   },
@@ -868,9 +870,12 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
     ],
   },
   {
-    title: "Audio",
-    icon: Radio,
-    tools: [{ name: "MixPad", domain: "nch.com.au", use: "Montage audio pour projets radio." }],
+    title: "Audio et vidéo",
+    icon: Video,
+    tools: [
+      { name: "MixPad", domain: "nch.com.au", use: "Montage audio pour projets radio." },
+      { name: "CapCut", domain: "capcut.com", use: "Montage vidéo pour contenus courts et réseaux sociaux." },
+    ],
   },
   {
     title: "Tourisme et gestion",
@@ -977,6 +982,11 @@ const passions: { icon: LucideIcon; title: string; text: string }[] = [
     icon: Heart,
     title: "Contact humain",
     text: "Je suis très extérieur et j'aime beaucoup le contact humain. Aller discuter avec quelqu'un dans la rue n'est absolument pas mon problème !",
+  },
+  {
+    icon: Smartphone,
+    title: "Curiosité numérique",
+    text: "J'aime énormément tester des applications, faire des recherches de code, explorer de nouveaux outils et expérimenter tout ce qui touche au numérique.",
   },
 ];
 
