@@ -24,7 +24,7 @@ import {
   BookOpen,
   Tent,
   Archive,
-  Mic,
+
   Video,
   Music,
   FileText,
@@ -141,12 +141,6 @@ function IntroSection() {
                 className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
               >
                 <Wrench size={16} /> Voir les outils utilisés
-              </a>
-              <a
-                href="#passions"
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
-              >
-                <Mic size={16} /> Mes passions
               </a>
             </div>
           </div>
