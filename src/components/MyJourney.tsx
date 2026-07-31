@@ -1031,7 +1031,7 @@ export function PassionsSection() {
             title="Mes passions"
             intro="Au-delà de la communication, de nombreuses choses nourrissent ma créativité et mon envie de créer."
           />
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {passions.map((p) => (
               <Card key={p.title} className="flex h-full flex-col">
                 <p.icon size={24} className="text-primary" />
