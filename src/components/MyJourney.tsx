@@ -914,6 +914,7 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
       { name: "Meta Business Suite", domain: "business.facebook.com", use: "Gestion centralisée de Facebook, Instagram et Threads : publication, planification et statistiques." },
       { name: "TikTok", domain: "tiktok.com", use: "Formats courts, tendances et contenus vidéo verticaux." },
       { name: "LinkedIn", domain: "linkedin.com", use: "Publications professionnelles et mise en réseau." },
+      { name: "YouTube", domain: "youtube.com", use: "Création de chaînes, shorts et playlists vidéo." },
       { name: "Substack", domain: "substack.com", use: "Publication de mes articles et newsletters." },
       { name: "Brevo", domain: "brevo.com", use: "Campagnes e-mailing, newsletters et gestion de contacts." },
     ],
