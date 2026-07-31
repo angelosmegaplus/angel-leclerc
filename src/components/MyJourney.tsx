@@ -998,43 +998,28 @@ function ToolsSection() {
 const passions: { icon: LucideIcon; title: string; text: string }[] = [
   {
     icon: Music,
-    title: "Montage audio et identités sonores et vidéo",
-    text: "Montage audio avec MixPad (jingles, habillages, podcasts) et création d'identités sonores et vidéo : logos animés, génériques, effets. Trouver le son et le mouvement justes qui donnent une personnalité à un projet.",
-  },
-  {
-    icon: PenTool,
-    title: "Création graphique et logos",
-    text: "J'aime concevoir des logos, des identités visuelles et des supports graphiques. J'ai créé énormément de contenus sur Canva pour des projets personnels, professionnels et associatifs.",
+    title: "Son, image et création",
+    text: "Montage audio avec MixPad (jingles, habillages, podcasts), montage vidéo avec CapCut, identités sonores et logos animés. J'aime aussi concevoir des logos et des supports graphiques sur Canva.",
   },
   {
     icon: Lightbulb,
-    title: "Innovation et création de marques",
-    text: "J'ai toujours plein d'idées. J'aime innover, imaginer des concepts de marque, réfléchir à des projets et les faire naître concrètement.",
+    title: "Innovation, marques et curiosité numérique",
+    text: "J'aime imaginer des concepts de marque, innover et faire naître des projets. Je teste régulièrement de nouvelles applications, outils et solutions digitales.",
   },
   {
     icon: BookOpen,
-    title: "Lecture et réflexion",
-    text: "J'aime beaucoup lire et réfléchir sur des sujets variés : actualité, société, culture, communication. Ma curiosité me pousse à toujours en apprendre davantage.",
-  },
-  {
-    icon: Music,
-    title: "Orgue",
-    text: "La musique, et en particulier l'orgue, fait partie de mes passions. J'aime pratiquer un instrument qui demande à la fois technique, écoute et sensibilité.",
+    title: "Lecture, orgue et réflexion",
+    text: "La lecture nourrit ma curiosité sur l'actualité, la société et la culture. La pratique de l'orgue m'apprend technique, écoute et sensibilité.",
   },
   {
     icon: TreePine,
-    title: "Nature et balades",
-    text: "J'aime me balader dans la nature, découvrir de nouveaux paysages et prendre l'air. C'est une source d'inspiration et de ressourcement.",
+    title: "Nature, contact humain et balades",
+    text: "Je suis très extérieur : j'aime me balader dans la nature, découvrir de nouveaux paysages et aller au contact des gens. La nature et les échanges me ressourcent.",
   },
   {
     icon: Heart,
-    title: "Contact humain",
-    text: "Je suis très extérieur et j'aime beaucoup le contact humain. Aller discuter avec quelqu'un dans la rue n'est absolument pas mon problème !",
-  },
-  {
-    icon: Smartphone,
-    title: "Curiosité numérique",
-    text: "J'aime énormément tester des applications, faire des recherches de code, explorer de nouveaux outils et expérimenter tout ce qui touche au numérique.",
+    title: "Culture et engagement",
+    text: "Scoutisme, radio associative, service civique : je m'investis dans des projets collectifs et des causes qui me tiennent à cœur.",
   },
 ];
 
