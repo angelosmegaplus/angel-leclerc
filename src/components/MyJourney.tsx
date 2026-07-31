@@ -294,7 +294,7 @@ function AlternanceSection() {
             </p>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <a
-                href="https://www.talis-business-school.com"
+                href="https://www.talis.community/campus/perigueux/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group flex items-center gap-4 rounded-xl border border-border bg-background p-4 transition-shadow hover:shadow-sm"
@@ -311,7 +311,7 @@ function AlternanceSection() {
                   <p className="font-display text-sm font-semibold text-foreground group-hover:text-primary">
                     Talis
                   </p>
-                  <p className="text-xs text-muted-foreground">Périgueux</p>
+                  <p className="text-xs text-muted-foreground">Campus Périgueux</p>
                 </div>
                 <ExternalLink size={14} className="text-muted-foreground" />
               </a>
