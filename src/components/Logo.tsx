@@ -15,14 +15,14 @@ const HIGH_RES_OVERRIDES: Record<string, string> = {
   "workspace.google.com": "https://api.iconify.design/simple-icons/google.svg",
   "facebook.com": "https://api.iconify.design/simple-icons/facebook.svg",
   "business.facebook.com": "https://api.iconify.design/simple-icons/meta.svg",
+  "meta.com": "https://api.iconify.design/simple-icons/meta.svg",
   "instagram.com": "https://api.iconify.design/simple-icons/instagram.svg",
+  "threads.com": "https://api.iconify.design/simple-icons/threads.svg",
+  "threads.net": "https://api.iconify.design/simple-icons/threads.svg",
   "linkedin.com": "https://api.iconify.design/simple-icons/linkedin.svg",
   "tiktok.com": "https://api.iconify.design/simple-icons/tiktok.svg",
-  "lovable.dev": "https://api.iconify.design/simple-icons/lovable.svg",
   "squarespace.com": "https://api.iconify.design/simple-icons/squarespace.svg",
-  "webnode.com": "https://api.iconify.design/simple-icons/webflow.svg",
   "capcut.com": "https://www.google.com/s2/favicons?sz=256&domain=capcut.com",
-  "sigma.com": "https://www.google.com/s2/favicons?sz=256&domain=sigma.com",
   "nch.com.au": "https://www.google.com/s2/favicons?sz=256&domain=nch.com.au",
 };
 

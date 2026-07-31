@@ -847,7 +847,6 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
     icon: PenLine,
     tools: [
       { name: "Lovable", domain: "lovable.dev", use: "Création et amélioration de sites internet." },
-      { name: "Sigma", domain: "sigma.com", use: "Création et gestion de sites internet." },
       { name: "Squarespace", domain: "squarespace.com", use: "Gestion de domaine et hébergement du site." },
     ],
   },
@@ -863,9 +862,8 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
     title: "Communication et réseaux sociaux",
     icon: Users,
     tools: [
-      { name: "Meta Business Suite", domain: "business.facebook.com", use: "Publication, planification et gestion de pages." },
-      { name: "Facebook", domain: "facebook.com", use: "Publications et animation de pages." },
-      { name: "Instagram", domain: "instagram.com", use: "Publications, stories et visuels courts." },
+      { name: "Meta Business Suite", domain: "business.facebook.com", use: "Gestion centralisée de Facebook, Instagram et Threads : publication, planification et statistiques." },
+      { name: "TikTok", domain: "tiktok.com", use: "Formats courts, tendances et contenus vidéo verticaux." },
       { name: "LinkedIn", domain: "linkedin.com", use: "Publications professionnelles et mise en réseau." },
     ],
   },
@@ -1003,9 +1001,7 @@ export function PassionsSection() {
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {passions.map((p) => (
               <Card key={p.title} className="flex h-full flex-col">
-                <div className="inline-flex rounded-xl bg-primary/10 p-3 text-primary">
-                  <p.icon size={20} />
-                </div>
+                <p.icon size={24} className="text-primary" />
                 <h4 className="mt-4 font-display text-lg font-semibold text-foreground">
                   {p.title}
                 </h4>
