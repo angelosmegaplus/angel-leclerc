@@ -934,6 +934,8 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
       { name: "Avizi", domain: "avizi.fr", use: "Gestion de vente et de billetterie en office de tourisme." },
       { name: "Koesio", domain: "koesio.com", use: "Outils de gestion utilisés en office de tourisme." },
       { name: "HelloAsso", domain: "helloasso.com", use: "Billetterie, adhésions et paiements en ligne pour les associations." },
+      { name: "Moka", domain: "mokatourisme.fr", use: "Logiciel de gestion intégré et ERP dédié au tourisme." },
+      { name: "Apidae", domain: "apidae-tourisme.com", use: "Système d'information touristique pour la collecte, la diffusion et l'enrichissement des données." },
     ],
   },
   {
