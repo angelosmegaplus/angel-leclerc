@@ -43,7 +43,7 @@ const LOCAL_LOGOS: Record<string, string> = {
   "sarlat.fr": "/logos/sarlat.fr.png",
   "valdesioule.com": "/logos/valdesioule.com.png",
   "laligue.org": "/logos/laligue.org.png",
-  "mfr.asso.fr": "/logos/mfr.asso.fr.png",
+  "mfr.asso.fr": "/logos/mfr.asso.fr.svg",
   "nch.com.au": "/logos/nch.com.au.png",
 };
 

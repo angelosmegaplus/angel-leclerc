@@ -636,7 +636,14 @@ function FormationSection() {
           <div className="mt-12">
             <Card>
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                <Logo domain="mfr.asso.fr" alt="MFR du Périgord Noir" size={52} />
+                <span className="inline-flex h-[64px] w-[120px] shrink-0 items-center justify-center rounded-xl border border-border bg-background p-2">
+                  <img
+                    src="/logos/mfr.asso.fr.svg"
+                    alt="Logo des Maisons familiales rurales (MFR)"
+                    className="h-full w-full object-contain"
+                    loading="lazy"
+                  />
+                </span>
                 <div className="flex-1">
                   <div className="flex flex-col justify-between gap-1 sm:flex-row sm:items-baseline">
                     <h3 className="font-display text-lg font-semibold text-foreground">
@@ -649,6 +656,34 @@ function FormationSection() {
                   <p className="text-sm font-medium text-foreground/80">
                     MFR-CFA du Périgord noir
                   </p>
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                    Diplôme de niveau 4 préparé en alternance dans une Maison
+                    familiale rurale (MFR), un établissement de formation par
+                    alternance qui associe périodes en entreprise et semaines de
+                    cours en petits groupes. Le Bac Pro Métiers de l'accueil
+                    forme à l'accueil physique et téléphonique, à la relation
+                    client, à la vente de services et de produits, à la gestion
+                    de l'information et au travail administratif au sein d'une
+                    structure recevant du public.
+                  </p>
+                  <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
+                    <li className="flex items-start gap-2">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                      Accueil, orientation et conseil des visiteurs et des clients
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                      Vente, gestion des demandes et suivi administratif
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                      Communication écrite et orale, outils numériques et bureautiques
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                      Deux ans en alternance à l'Office de Tourisme Val de Sioule
+                    </li>
+                  </ul>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                       Mention Bien
@@ -670,13 +705,38 @@ function FormationSection() {
 const certifications: {
   name: string;
   org: string;
+  detail: string;
   domain?: string;
   icon?: LucideIcon;
 }[] = [
-  { name: "Les principes fondamentaux du marketing numérique", org: "Google", domain: "google.com" },
-  { name: "BAFA", org: "Ligue de l'enseignement", domain: "laligue.org" },
-  { name: "PSC1", org: "Prévention et secours civiques", icon: Award },
-  { name: "SST", org: "Sauveteur secouriste du travail", icon: Award },
+  {
+    name: "Les principes fondamentaux du marketing numérique",
+    org: "Google",
+    domain: "google.com",
+    detail:
+      "Certification en ligne couvrant le référencement, la publicité, les réseaux sociaux, l'e-mailing et l'analyse d'audience.",
+  },
+  {
+    name: "BAFA",
+    org: "Ligue de l'enseignement",
+    domain: "laligue.org",
+    detail:
+      "Brevet d'aptitude aux fonctions d'animateur : encadrement de groupes d'enfants et de jeunes en accueils collectifs de mineurs.",
+  },
+  {
+    name: "PSC1",
+    org: "Prévention et secours civiques",
+    icon: Award,
+    detail:
+      "Formation aux gestes de premiers secours : alerte, protection, malaises, hémorragies et réanimation.",
+  },
+  {
+    name: "SST",
+    org: "Sauveteur secouriste du travail",
+    icon: Award,
+    detail:
+      "Prévention des risques professionnels et intervention en cas d'accident sur le lieu de travail.",
+  },
 ];
 
 function CertificationsSection() {
@@ -688,7 +748,7 @@ function CertificationsSection() {
 
           <div className="mt-12 grid gap-4 md:grid-cols-2">
             {certifications.map((c) => (
-              <Card key={c.name} className="flex items-center gap-4">
+              <Card key={c.name} className="flex items-start gap-4">
                 {c.domain ? (
                   <Logo domain={c.domain} alt={c.org} size={48} />
                 ) : (
@@ -701,6 +761,9 @@ function CertificationsSection() {
                     {c.name}
                   </p>
                   <p className="text-sm text-muted-foreground">{c.org}</p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                    {c.detail}
+                  </p>
                 </div>
               </Card>
             ))}
