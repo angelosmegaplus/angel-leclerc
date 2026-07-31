@@ -4,7 +4,6 @@ import {
   MyJourney,
   SkillsSection,
   PassionsSection,
-  CvPdfSection,
   RealisationsSection,
 } from "@/components/MyJourney";
 import LatestSubstackArticles from "@/components/LatestSubstackArticles";
@@ -38,7 +37,6 @@ function ParcoursPage() {
       <MyJourney />
       <SkillsSection />
       <PassionsSection />
-      <CvPdfSection />
       <RealisationsSection />
       <LatestSubstackArticles />
 
