@@ -262,12 +262,12 @@ function AlternanceSection() {
             </div>
 
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Je prépare un BTS Communication en alternance avec l'école{" "}
+              Mon projet d'études&nbsp;: intégrer un BTS Communication en
+              alternance, puis poursuivre vers une formation spécialisée en
+              information-communication ou en journalisme. Je prépare ce BTS
+              avec l'école{" "}
               <strong className="text-foreground">Talis de Périgueux</strong>{" "}
-              à partir de septembre 2026. Mon objectif est de développer une
-              expérience professionnelle solide dans la communication. À plus
-              long terme, je souhaite poursuivre dans les domaines de
-              l'information, de la communication ou du journalisme. Le BTS
+              à partir de septembre 2026. Le BTS
               Communication est un diplôme d'État Bac+2 (niveau 5, RNCP 37198)
               préparé en 24 mois, dont environ{" "}
               <strong className="text-foreground">65 % du temps en entreprise</strong>.
@@ -370,40 +370,73 @@ function AlternanceSection() {
 
 type Project = {
   title: string;
-  description: string;
+  context: string;
+  missions: string[];
   tools: string;
+  results: string;
   href?: string;
+  linkLabel?: string;
   icon: LucideIcon;
 };
 
 const projects: Project[] = [
   {
     title: "Tombola Patrimoine",
-    description:
-      "Participation à la communication d'une tombola destinée à financer la restauration de la chapelle de la Visitation à Besançon : création et amélioration du site internet, rédaction de contenus, publications sur les réseaux sociaux, recherche de relais médiatiques et coordination de la communication.",
+    context:
+      "Campagne de communication au service d'une tombola destinée à financer la restauration de la chapelle de la Visitation à Besançon.",
+    missions: [
+      "Création et amélioration du site internet de la campagne",
+      "Définition de la stratégie de communication et du calendrier éditorial",
+      "Rédaction et publication des contenus sur les réseaux sociaux",
+      "Relations presse et recherche de relais médiatiques",
+    ],
     tools: "Lovable · Canva · Meta Business Suite · rédaction web",
+    results:
+      "Une campagne visible en ligne et relayée par les médias locaux, avec un site clair pour informer et inciter à participer.",
     icon: PenLine,
   },
   {
     title: "Angel Leclerc Communication",
-    description:
-      "Création de mon identité professionnelle, de mon site internet et de mon offre de services autour de la gestion de projet, du conseil en communication et de la rédaction éditoriale.",
+    context:
+      "Création de mon activité de communication en tant qu'entrepreneur individuel.",
+    missions: [
+      "Construction de l'identité visuelle et de la ligne éditoriale",
+      "Conception et mise en ligne du site internet",
+      "Structuration de l'offre de services et des tarifs indicatifs",
+    ],
     tools: "Lovable · Canva · Figma · Squarespace",
+    results:
+      "Un site professionnel en ligne, une offre lisible et un premier canal de contact pour les clients.",
     href: "https://www.angel-leclerc.fr",
+    linkLabel: "Voir le projet",
     icon: Briefcase,
   },
   {
     title: "Projet d'émission jeunesse — Radio Bocage",
-    description:
-      "Participation au développement d'un projet d'émission jeunesse dans le cadre d'un service civique : réflexion sur le concept, recherche de sujets, préparation éditoriale et découverte de la production radiophonique.",
+    context:
+      "Service civique auprès de la Ligue de l'enseignement 03, au sein d'une radio associative.",
+    missions: [
+      "Réflexion sur le concept et le format de l'émission",
+      "Recherche de sujets et préparation éditoriale",
+      "Découverte de la production et du montage radiophonique",
+    ],
     tools: "Rédaction · recherche · montage audio · MixPad",
+    results:
+      "Un concept d'émission jeunesse construit et une première expérience concrète de la production radio.",
     icon: Radio,
   },
   {
     title: "Créations graphiques et projets associatifs",
-    description:
-      "Réalisation d'affiches, de publications, de logos, de documents de présentation et de supports numériques dans le cadre de projets personnels, professionnels et associatifs.",
-    tools: "Canva · Figma · Adobe · IA générative",
+    context:
+      "Missions ponctuelles de création de supports pour des projets personnels, professionnels et associatifs.",
+    missions: [
+      "Affiches, flyers et publications pour les réseaux sociaux",
+      "Logos et identités visuelles simples",
+      "Documents de présentation et supports numériques",
+    ],
+    tools: "Canva · Figma · Adobe",
+    results:
+      "Des supports homogènes et réutilisables, adaptés à chaque public et à chaque format.",
     icon: Palette,
   },
 ];
@@ -415,7 +448,7 @@ export function RealisationsSection() {
         <div className="container-tight">
           <SectionHeader
             eyebrow="Portfolio"
-            title="Mes réalisations"
+            title="Projets sélectionnés"
             intro="Quelques projets qui montrent concrètement ma manière de travailler."
           />
 
@@ -431,19 +464,40 @@ export function RealisationsSection() {
                   </h3>
                 </div>
                 <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                  {p.description}
+                  {p.context}
                 </p>
-                <p className="mt-4 text-xs font-medium text-foreground/70">
-                  {p.tools}
+
+                <p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Missions réalisées
+                </p>
+                <ul className="mt-2 space-y-1.5 text-sm leading-relaxed text-foreground/90">
+                  {p.missions.map((m) => (
+                    <li key={m} className="flex gap-2">
+                      <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-primary" />
+                      <span>{m}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Outils utilisés
+                </p>
+                <p className="mt-1 text-sm text-foreground/80">{p.tools}</p>
+
+                <p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Résultats
+                </p>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                  {p.results}
                 </p>
                 {p.href ? (
                   <a
                     href={p.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:opacity-80"
+                    className="mt-6 inline-flex w-fit items-center gap-2 rounded-full border border-primary/40 bg-primary/5 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
                   >
-                    Découvrir le site <ExternalLink size={14} />
+                    {p.linkLabel ?? "Voir le projet"} <ExternalLink size={14} />
                   </a>
                 ) : null}
               </Card>
@@ -565,7 +619,7 @@ const experiences: Experience[] = [
     ],
   },
   {
-    role: "Apprenti — Bac Pro Accueil et Vente",
+    role: "Apprenti — Baccalauréat professionnel Métiers de l'accueil",
     org: "Office de Tourisme Val de Sioule",
     period: "2023 – 2025",
     domain: "valdesioule.com",
@@ -693,7 +747,8 @@ function FormationSection() {
                     Diplôme de niveau 4 préparé en alternance dans une Maison
                     familiale rurale (MFR), un établissement de formation par
                     alternance qui associe périodes en entreprise et semaines de
-                    cours en petits groupes. Le Bac Pro Métiers de l'accueil
+                    cours en petits groupes. Le baccalauréat professionnel
+                    Métiers de l'accueil
                     forme à l'accueil physique et téléphonique, à la relation
                     client, à la vente de services et de produits, à la gestion
                     de l'information et au travail administratif au sein d'une
@@ -731,7 +786,7 @@ function FormationSection() {
                   <div className="mt-3 grid gap-4 md:grid-cols-2">
                     <YouTubeEmbed
                       id="knKUojBLR2I"
-                      title="Bac Pro Métiers de l'accueil — présentation"
+                      title="Baccalauréat professionnel Métiers de l'accueil — présentation"
                     />
                     <YouTubeEmbed
                       id="03vn5fWIIOQ"
@@ -905,7 +960,7 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
     title: "Création graphique",
     icon: Palette,
     tools: [
-      { name: "Canva", domain: "canva.com", use: "Affiches, publications, présentations et supports visuels." },
+      { name: "Canva Pro", domain: "canva.com", use: "Création de carrousels, affiches, identités visuelles et supports imprimés." },
       { name: "Adobe", domain: "adobe.com", use: "Retouches ponctuelles et exports pour supports print." },
     ],
   },
@@ -925,15 +980,15 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
     title: "Bureautique et collaboration",
     icon: ClipboardList,
     tools: [
-      { name: "Microsoft Office", domain: "microsoft.com", use: "Word, Excel, PowerPoint pour documents et présentations." },
-      { name: "Google Workspace", domain: "workspace.google.com", use: "Docs, Sheets, Drive et Gmail pour le travail en équipe." },
+      { name: "Microsoft Office", domain: "microsoft.com", use: "Rédaction, présentations, tableaux de suivi et travail collaboratif." },
+      { name: "Google Workspace", domain: "workspace.google.com", use: "Rédaction, présentations, tableaux de suivi et travail collaboratif." },
     ],
   },
   {
     title: "Communication et réseaux sociaux",
     icon: Users,
     tools: [
-      { name: "Meta Business Suite", domain: "business.facebook.com", use: "Gestion centralisée de Facebook, Instagram et Threads : publication, planification et statistiques." },
+      { name: "Meta Business Suite", domain: "business.facebook.com", use: "Programmation des publications, modération et suivi des performances." },
       { name: "TikTok", domain: "tiktok.com", use: "Formats courts, tendances et contenus vidéo verticaux." },
       { name: "LinkedIn", domain: "linkedin.com", use: "Publications professionnelles et mise en réseau." },
       { name: "YouTube", domain: "youtube.com", use: "Création de chaînes, shorts et playlists vidéo." },
@@ -945,7 +1000,7 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
     title: "Audio et vidéo",
     icon: Video,
     tools: [
-      { name: "MixPad", domain: "nch.com.au", use: "Montage audio pour projets radio." },
+      { name: "MixPad", domain: "nch.com.au", use: "Montage audio, podcasts, jingles et identités sonores." },
       { name: "CapCut", domain: "capcut.com", use: "Montage vidéo pour contenus courts et réseaux sociaux." },
     ],
   },
@@ -964,10 +1019,10 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
     title: "Intelligence artificielle",
     icon: Sparkles,
     tools: [
-      { name: "ChatGPT", domain: "chatgpt.com", use: "Recherche, organisation, rédaction et amélioration de contenus." },
-      { name: "Gemini", domain: "gemini.google.com", use: "Modèle rapide pour la recherche, la synthèse d'informations et les réponses concrètes." },
-      { name: "Claude", domain: "claude.ai", use: "Excellent pour la rédaction de texte, la reformulation et l'analyse de documents." },
-      { name: "NotebookLM", domain: "notebooklm.google.com", use: "Organisation de sources, synthèse de documents et audio overview à partir de notes." },
+      { name: "ChatGPT", domain: "chatgpt.com", use: "Recherche structurée, idéation, rédaction assistée et prototypage, avec vérification humaine systématique." },
+      { name: "Gemini", domain: "gemini.google.com", use: "Recherche rapide et synthèse de sources, toujours revérifiées avant utilisation." },
+      { name: "Claude", domain: "claude.ai", use: "Rédaction assistée, reformulation et analyse de documents, avec relecture humaine." },
+      { name: "NotebookLM", domain: "notebooklm.google.com", use: "Organisation de sources et synthèse de documents pour préparer un contenu." },
     ],
   },
 ];
