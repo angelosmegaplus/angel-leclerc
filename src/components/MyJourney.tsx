@@ -262,12 +262,12 @@ function AlternanceSection() {
             </div>
 
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Je prépare un BTS Communication en alternance avec l'école{" "}
+              Mon projet d'études&nbsp;: intégrer un BTS Communication en
+              alternance, puis poursuivre vers une formation spécialisée en
+              information-communication ou en journalisme. Je prépare ce BTS
+              avec l'école{" "}
               <strong className="text-foreground">Talis de Périgueux</strong>{" "}
-              à partir de septembre 2026. Mon objectif est de développer une
-              expérience professionnelle solide dans la communication. À plus
-              long terme, je souhaite poursuivre dans les domaines de
-              l'information, de la communication ou du journalisme. Le BTS
+              à partir de septembre 2026. Le BTS
               Communication est un diplôme d'État Bac+2 (niveau 5, RNCP 37198)
               préparé en 24 mois, dont environ{" "}
               <strong className="text-foreground">65 % du temps en entreprise</strong>.
@@ -403,7 +403,7 @@ const projects: Project[] = [
     title: "Créations graphiques et projets associatifs",
     description:
       "Réalisation d'affiches, de publications, de logos, de documents de présentation et de supports numériques dans le cadre de projets personnels, professionnels et associatifs.",
-    tools: "Canva · Figma · Adobe · IA générative",
+    tools: "Canva · Figma · Adobe",
     icon: Palette,
   },
 ];
@@ -565,7 +565,7 @@ const experiences: Experience[] = [
     ],
   },
   {
-    role: "Apprenti — Bac Pro Accueil et Vente",
+    role: "Apprenti — Baccalauréat professionnel Métiers de l'accueil",
     org: "Office de Tourisme Val de Sioule",
     period: "2023 – 2025",
     domain: "valdesioule.com",
@@ -693,7 +693,8 @@ function FormationSection() {
                     Diplôme de niveau 4 préparé en alternance dans une Maison
                     familiale rurale (MFR), un établissement de formation par
                     alternance qui associe périodes en entreprise et semaines de
-                    cours en petits groupes. Le Bac Pro Métiers de l'accueil
+                    cours en petits groupes. Le baccalauréat professionnel
+                    Métiers de l'accueil
                     forme à l'accueil physique et téléphonique, à la relation
                     client, à la vente de services et de produits, à la gestion
                     de l'information et au travail administratif au sein d'une
@@ -731,7 +732,7 @@ function FormationSection() {
                   <div className="mt-3 grid gap-4 md:grid-cols-2">
                     <YouTubeEmbed
                       id="knKUojBLR2I"
-                      title="Bac Pro Métiers de l'accueil — présentation"
+                      title="Baccalauréat professionnel Métiers de l'accueil — présentation"
                     />
                     <YouTubeEmbed
                       id="03vn5fWIIOQ"
@@ -905,7 +906,7 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
     title: "Création graphique",
     icon: Palette,
     tools: [
-      { name: "Canva", domain: "canva.com", use: "Affiches, publications, présentations et supports visuels." },
+      { name: "Canva Pro", domain: "canva.com", use: "Création de carrousels, affiches, identités visuelles et supports imprimés." },
       { name: "Adobe", domain: "adobe.com", use: "Retouches ponctuelles et exports pour supports print." },
     ],
   },
@@ -925,15 +926,15 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
     title: "Bureautique et collaboration",
     icon: ClipboardList,
     tools: [
-      { name: "Microsoft Office", domain: "microsoft.com", use: "Word, Excel, PowerPoint pour documents et présentations." },
-      { name: "Google Workspace", domain: "workspace.google.com", use: "Docs, Sheets, Drive et Gmail pour le travail en équipe." },
+      { name: "Microsoft Office", domain: "microsoft.com", use: "Rédaction, présentations, tableaux de suivi et travail collaboratif." },
+      { name: "Google Workspace", domain: "workspace.google.com", use: "Rédaction, présentations, tableaux de suivi et travail collaboratif." },
     ],
   },
   {
     title: "Communication et réseaux sociaux",
     icon: Users,
     tools: [
-      { name: "Meta Business Suite", domain: "business.facebook.com", use: "Gestion centralisée de Facebook, Instagram et Threads : publication, planification et statistiques." },
+      { name: "Meta Business Suite", domain: "business.facebook.com", use: "Programmation des publications, modération et suivi des performances." },
       { name: "TikTok", domain: "tiktok.com", use: "Formats courts, tendances et contenus vidéo verticaux." },
       { name: "LinkedIn", domain: "linkedin.com", use: "Publications professionnelles et mise en réseau." },
       { name: "YouTube", domain: "youtube.com", use: "Création de chaînes, shorts et playlists vidéo." },
@@ -945,7 +946,7 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
     title: "Audio et vidéo",
     icon: Video,
     tools: [
-      { name: "MixPad", domain: "nch.com.au", use: "Montage audio pour projets radio." },
+      { name: "MixPad", domain: "nch.com.au", use: "Montage audio, podcasts, jingles et identités sonores." },
       { name: "CapCut", domain: "capcut.com", use: "Montage vidéo pour contenus courts et réseaux sociaux." },
     ],
   },
@@ -964,10 +965,10 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
     title: "Intelligence artificielle",
     icon: Sparkles,
     tools: [
-      { name: "ChatGPT", domain: "chatgpt.com", use: "Recherche, organisation, rédaction et amélioration de contenus." },
-      { name: "Gemini", domain: "gemini.google.com", use: "Modèle rapide pour la recherche, la synthèse d'informations et les réponses concrètes." },
-      { name: "Claude", domain: "claude.ai", use: "Excellent pour la rédaction de texte, la reformulation et l'analyse de documents." },
-      { name: "NotebookLM", domain: "notebooklm.google.com", use: "Organisation de sources, synthèse de documents et audio overview à partir de notes." },
+      { name: "ChatGPT", domain: "chatgpt.com", use: "Recherche structurée, idéation, rédaction assistée et prototypage, avec vérification humaine systématique." },
+      { name: "Gemini", domain: "gemini.google.com", use: "Recherche rapide et synthèse de sources, toujours revérifiées avant utilisation." },
+      { name: "Claude", domain: "claude.ai", use: "Rédaction assistée, reformulation et analyse de documents, avec relecture humaine." },
+      { name: "NotebookLM", domain: "notebooklm.google.com", use: "Organisation de sources et synthèse de documents pour préparer un contenu." },
     ],
   },
 ];
