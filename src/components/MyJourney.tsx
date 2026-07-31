@@ -965,6 +965,8 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
     icon: Sparkles,
     tools: [
       { name: "ChatGPT", domain: "chatgpt.com", use: "Recherche, organisation, rédaction et amélioration de contenus." },
+      { name: "Gemini", domain: "gemini.google.com", use: "Modèle rapide pour la recherche, la synthèse d'informations et les réponses concrètes." },
+      { name: "Claude", domain: "claude.ai", use: "Excellent pour la rédaction de texte, la reformulation et l'analyse de documents." },
     ],
   },
 ];
