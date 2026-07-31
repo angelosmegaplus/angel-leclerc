@@ -209,6 +209,35 @@ function AlternanceSection() {
             ))}
           </div>
 
+          <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-card">
+            <div className="flex flex-wrap items-center justify-between gap-2 px-5 pt-5">
+              <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+                Ma zone de recherche
+              </p>
+              <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-full bg-primary" /> Sarlat · zone prioritaire
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-foreground/70" /> Villes envisageables
+                </span>
+              </div>
+            </div>
+            <div className="mt-4 overflow-hidden border-y border-border">
+              <ClientOnly fallback={<div className="h-[280px] w-full bg-muted sm:h-[300px]" />}>
+                <Suspense fallback={<div className="h-[280px] w-full bg-muted sm:h-[300px]" />}>
+                  <MobilityMap />
+                </Suspense>
+              </ClientOnly>
+            </div>
+            <p className="px-5 py-4 text-xs leading-relaxed text-muted-foreground">
+              Je privilégie une alternance à Sarlat ou dans un rayon d'environ 15&nbsp;km,
+              accessible en scooter au quotidien. Je peux toutefois envisager une opportunité
+              plus éloignée si elle est réellement cohérente avec mon projet, avec possibilité
+              de déménagement.
+            </p>
+          </div>
+
           <div className="mt-10 rounded-2xl border border-border bg-card p-6 md:p-8">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
