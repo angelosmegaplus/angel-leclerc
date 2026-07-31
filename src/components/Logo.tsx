@@ -48,6 +48,8 @@ const LOCAL_LOGOS: Record<string, string> = {
   "laligue.org": "/logos/laligue.org.png",
   "mfr.asso.fr": "/logos/mfr.asso.fr.svg",
   "nch.com.au": "/logos/nch.com.au.png",
+  "mokatourisme.fr": "/logos/mokatourisme.fr.svg",
+  "apidae-tourisme.com": "/logos/apidae-tourisme.com.svg",
 };
 
 // Minimum acceptable rendered resolution. Anything below is considered a
