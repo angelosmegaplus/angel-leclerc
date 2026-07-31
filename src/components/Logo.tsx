@@ -5,43 +5,46 @@ import { useState } from "react";
 // sharp on the site rather than blurry favicons.
 // All sources below are full-color, current brand marks (Iconify "logos"
 // collection, SVGL, or the brand's own high-res icon) — never monochrome.
-const HIGH_RES_OVERRIDES: Record<string, string> = {
-  "google.com": "https://api.iconify.design/logos/google-icon.svg",
-  "chatgpt.com": "https://api.iconify.design/logos/openai-icon.svg",
-  "openai.com": "https://api.iconify.design/logos/openai-icon.svg",
-  "canva.com": "https://svgl.app/library/canva.svg",
-  "figma.com": "https://api.iconify.design/logos/figma.svg",
-  "adobe.com": "https://api.iconify.design/logos/adobe.svg",
-  "office.com": "https://api.iconify.design/logos/microsoft-icon.svg",
-  "microsoft.com": "https://api.iconify.design/logos/microsoft-icon.svg",
-  "workspace.google.com": "https://api.iconify.design/logos/google-icon.svg",
-  "facebook.com": "https://api.iconify.design/logos/facebook.svg",
-  "business.facebook.com": "https://api.iconify.design/logos/meta-icon.svg",
-  "meta.com": "https://api.iconify.design/logos/meta-icon.svg",
-  "instagram.com": "https://api.iconify.design/logos/instagram-icon.svg",
-  "threads.com": "https://api.iconify.design/logos/threads-icon.svg",
-  "threads.net": "https://api.iconify.design/logos/threads-icon.svg",
-  "linkedin.com": "https://api.iconify.design/logos/linkedin-icon.svg",
-  "tiktok.com": "https://api.iconify.design/logos/tiktok-icon.svg",
-  "squarespace.com": "https://api.iconify.design/logos/squarespace.svg",
-  "wordpress.com": "https://api.iconify.design/logos/wordpress-icon.svg",
-  "capcut.com": "https://icons.duckduckgo.com/ip3/capcut.com.ico",
-  "brevo.com": "https://api.iconify.design/simple-icons/brevo.svg?color=%230B996E",
-  "helloasso.com": "https://www.helloasso.com/apple-touch-icon.png",
-  "avizi.fr": "https://www.google.com/s2/favicons?sz=256&domain=avizi.fr",
-  "claude.ai": "https://api.iconify.design/logos/claude-icon.svg",
-  "gemini.google.com": "https://api.iconify.design/logos/google-gemini.svg",
-  "revolut.com": "https://www.google.com/s2/favicons?sz=256&domain=revolut.com",
-  "sarlat.fr": "https://www.google.com/s2/favicons?sz=256&domain=sarlat.fr",
-  "valdesioule.com": "https://www.google.com/s2/favicons?sz=256&domain=valdesioule.com",
-  "laligue.org": "https://www.google.com/s2/favicons?sz=256&domain=laligue.org",
-  "mfr.asso.fr": "https://www.google.com/s2/favicons?sz=256&domain=mfr.asso.fr",
-  "webnode.com": "https://www.google.com/s2/favicons?sz=256&domain=webnode.com",
-  "play.google.com": "https://api.iconify.design/logos/google-play-icon.svg",
-  "substack.com": "https://api.iconify.design/simple-icons/substack.svg?color=%23FF6719",
-  "koesio.com": "https://icons.duckduckgo.com/ip3/koesio.com.ico",
-  "lovable.dev": "https://svgl.app/library/lovable.svg",
-  "nch.com.au": "https://icons.duckduckgo.com/ip3/nch.com.au.ico",
+// Every brand mark is stored locally in /public/logos so a logo NEVER falls
+// back to a grey placeholder globe or an empty circle. Remote favicon
+// services are only a last resort for domains not listed here.
+const LOCAL_LOGOS: Record<string, string> = {
+  "google.com": "/logos/google.com.svg",
+  "workspace.google.com": "/logos/workspace.google.com.svg",
+  "play.google.com": "/logos/play.google.com.svg",
+  "gemini.google.com": "/logos/gemini.google.com.svg",
+  "chatgpt.com": "/logos/chatgpt.com.svg",
+  "openai.com": "/logos/chatgpt.com.svg",
+  "claude.ai": "/logos/claude.ai.svg",
+  "canva.com": "/logos/canva.com.svg",
+  "figma.com": "/logos/figma.com.svg",
+  "adobe.com": "/logos/adobe.com.svg",
+  "microsoft.com": "/logos/microsoft.com.svg",
+  "office.com": "/logos/microsoft.com.svg",
+  "facebook.com": "/logos/facebook.com.svg",
+  "business.facebook.com": "/logos/business.facebook.com.svg",
+  "meta.com": "/logos/business.facebook.com.svg",
+  "instagram.com": "/logos/instagram.com.svg",
+  "threads.com": "/logos/threads.com.svg",
+  "threads.net": "/logos/threads.com.svg",
+  "linkedin.com": "/logos/linkedin.com.svg",
+  "tiktok.com": "/logos/tiktok.com.svg",
+  "substack.com": "/logos/substack.com.svg",
+  "squarespace.com": "/logos/squarespace.com.svg",
+  "wordpress.com": "/logos/wordpress.com.svg",
+  "webnode.com": "/logos/webnode.com.png",
+  "lovable.dev": "/logos/lovable.dev.svg",
+  "capcut.com": "/logos/capcut.com.png",
+  "brevo.com": "/logos/brevo.com.png",
+  "helloasso.com": "/logos/helloasso.com.png",
+  "avizi.fr": "/logos/avizi.fr.png",
+  "koesio.com": "/logos/koesio.com.png",
+  "revolut.com": "/logos/revolut.com.svg",
+  "sarlat.fr": "/logos/sarlat.fr.png",
+  "valdesioule.com": "/logos/valdesioule.com.png",
+  "laligue.org": "/logos/laligue.org.png",
+  "mfr.asso.fr": "/logos/mfr.asso.fr.png",
+  "nch.com.au": "/logos/nch.com.au.png",
 };
 
 // Minimum acceptable rendered resolution. Anything below is considered a
@@ -50,12 +53,11 @@ const MIN_ACCEPTABLE_PX = 48;
 
 function sources(domain: string): string[] {
   const list: string[] = [];
-  const override = HIGH_RES_OVERRIDES[domain];
-  if (override) list.push(override);
+  const local = LOCAL_LOGOS[domain];
+  if (local) list.push(local);
   // High-res favicon services with graceful degradation (largest first).
-  list.push(`https://www.google.com/s2/favicons?sz=256&domain=${domain}`);
   list.push(`https://icons.duckduckgo.com/ip3/${domain}.ico`);
-  list.push(`https://www.google.com/s2/favicons?sz=128&domain=${domain}`);
+  list.push(`https://www.google.com/s2/favicons?sz=256&domain=${domain}`);
   return list;
 }
 
@@ -113,8 +115,9 @@ export function Logo({
             // Auto-QA: if the loaded image is a tiny favicon, skip to next
             // source. Applies only to non-SVG raster fallbacks.
             const img = e.currentTarget;
+            const isLocal = src.startsWith("/logos/");
             const isSvg = /\.svg($|\?)/i.test(src) || src.includes("simpleicons.org");
-            if (!isSvg && img.naturalWidth > 0 && img.naturalWidth < MIN_ACCEPTABLE_PX) {
+            if (!isLocal && !isSvg && img.naturalWidth > 0 && img.naturalWidth < MIN_ACCEPTABLE_PX) {
               if (idx < chain.length - 1) setIdx(idx + 1);
             }
           }}
