@@ -948,8 +948,8 @@ const passions: { icon: LucideIcon; title: string; text: string }[] = [
   },
   {
     icon: Video,
-    title: "Vidéo et création de contenus",
-    text: "Écriture, tournage et montage de formats courts. J'aime expérimenter, raconter et donner du souffle à une idée par l'image et le son.",
+    title: "Motion design et logos animés",
+    text: "J'aime créer des logos animés, des génériques et des effets visuels qui donnent du souffle à une identité. Pas de contenu vidéo classique, plutôt du mouvement graphique et des habillages.",
   },
   {
     icon: PenTool,
