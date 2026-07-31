@@ -350,7 +350,14 @@ function AlternanceSection() {
                 rel="noopener noreferrer"
                 className="group flex items-center gap-4 rounded-xl border border-border bg-background p-4 transition-shadow hover:shadow-sm"
               >
-                <Logo domain="talis-business-school.com" alt="Talis" size={40} />
+                <img
+                  src={talisLogo}
+                  alt="Logo Talis Business School"
+                  width={40}
+                  height={40}
+                  className="h-10 w-auto shrink-0 object-contain"
+                  loading="lazy"
+                />
                 <div className="flex-1">
                   <p className="font-display text-sm font-semibold text-foreground group-hover:text-primary">
                     Talis
