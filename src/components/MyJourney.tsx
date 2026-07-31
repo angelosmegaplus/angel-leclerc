@@ -370,40 +370,73 @@ function AlternanceSection() {
 
 type Project = {
   title: string;
-  description: string;
+  context: string;
+  missions: string[];
   tools: string;
+  results: string;
   href?: string;
+  linkLabel?: string;
   icon: LucideIcon;
 };
 
 const projects: Project[] = [
   {
     title: "Tombola Patrimoine",
-    description:
-      "Participation à la communication d'une tombola destinée à financer la restauration de la chapelle de la Visitation à Besançon : création et amélioration du site internet, rédaction de contenus, publications sur les réseaux sociaux, recherche de relais médiatiques et coordination de la communication.",
+    context:
+      "Campagne de communication au service d'une tombola destinée à financer la restauration de la chapelle de la Visitation à Besançon.",
+    missions: [
+      "Création et amélioration du site internet de la campagne",
+      "Définition de la stratégie de communication et du calendrier éditorial",
+      "Rédaction et publication des contenus sur les réseaux sociaux",
+      "Relations presse et recherche de relais médiatiques",
+    ],
     tools: "Lovable · Canva · Meta Business Suite · rédaction web",
+    results:
+      "Une campagne visible en ligne et relayée par les médias locaux, avec un site clair pour informer et inciter à participer.",
     icon: PenLine,
   },
   {
     title: "Angel Leclerc Communication",
-    description:
-      "Création de mon identité professionnelle, de mon site internet et de mon offre de services autour de la gestion de projet, du conseil en communication et de la rédaction éditoriale.",
+    context:
+      "Création de mon activité de communication en tant qu'entrepreneur individuel.",
+    missions: [
+      "Construction de l'identité visuelle et de la ligne éditoriale",
+      "Conception et mise en ligne du site internet",
+      "Structuration de l'offre de services et des tarifs indicatifs",
+    ],
     tools: "Lovable · Canva · Figma · Squarespace",
+    results:
+      "Un site professionnel en ligne, une offre lisible et un premier canal de contact pour les clients.",
     href: "https://www.angel-leclerc.fr",
+    linkLabel: "Voir le projet",
     icon: Briefcase,
   },
   {
     title: "Projet d'émission jeunesse — Radio Bocage",
-    description:
-      "Participation au développement d'un projet d'émission jeunesse dans le cadre d'un service civique : réflexion sur le concept, recherche de sujets, préparation éditoriale et découverte de la production radiophonique.",
+    context:
+      "Service civique auprès de la Ligue de l'enseignement 03, au sein d'une radio associative.",
+    missions: [
+      "Réflexion sur le concept et le format de l'émission",
+      "Recherche de sujets et préparation éditoriale",
+      "Découverte de la production et du montage radiophonique",
+    ],
     tools: "Rédaction · recherche · montage audio · MixPad",
+    results:
+      "Un concept d'émission jeunesse construit et une première expérience concrète de la production radio.",
     icon: Radio,
   },
   {
     title: "Créations graphiques et projets associatifs",
-    description:
-      "Réalisation d'affiches, de publications, de logos, de documents de présentation et de supports numériques dans le cadre de projets personnels, professionnels et associatifs.",
+    context:
+      "Missions ponctuelles de création de supports pour des projets personnels, professionnels et associatifs.",
+    missions: [
+      "Affiches, flyers et publications pour les réseaux sociaux",
+      "Logos et identités visuelles simples",
+      "Documents de présentation et supports numériques",
+    ],
     tools: "Canva · Figma · Adobe",
+    results:
+      "Des supports homogènes et réutilisables, adaptés à chaque public et à chaque format.",
     icon: Palette,
   },
 ];
@@ -415,7 +448,7 @@ export function RealisationsSection() {
         <div className="container-tight">
           <SectionHeader
             eyebrow="Portfolio"
-            title="Mes réalisations"
+            title="Projets sélectionnés"
             intro="Quelques projets qui montrent concrètement ma manière de travailler."
           />
 
@@ -431,19 +464,40 @@ export function RealisationsSection() {
                   </h3>
                 </div>
                 <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                  {p.description}
+                  {p.context}
                 </p>
-                <p className="mt-4 text-xs font-medium text-foreground/70">
-                  {p.tools}
+
+                <p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Missions réalisées
+                </p>
+                <ul className="mt-2 space-y-1.5 text-sm leading-relaxed text-foreground/90">
+                  {p.missions.map((m) => (
+                    <li key={m} className="flex gap-2">
+                      <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-primary" />
+                      <span>{m}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Outils utilisés
+                </p>
+                <p className="mt-1 text-sm text-foreground/80">{p.tools}</p>
+
+                <p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Résultats
+                </p>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                  {p.results}
                 </p>
                 {p.href ? (
                   <a
                     href={p.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:opacity-80"
+                    className="mt-6 inline-flex w-fit items-center gap-2 rounded-full border border-primary/40 bg-primary/5 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
                   >
-                    Découvrir le site <ExternalLink size={14} />
+                    {p.linkLabel ?? "Voir le projet"} <ExternalLink size={14} />
                   </a>
                 ) : null}
               </Card>
