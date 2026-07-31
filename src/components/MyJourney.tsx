@@ -234,7 +234,7 @@ function AlternanceSection() {
               </ClientOnly>
             </div>
             <p className="px-5 py-4 text-xs leading-relaxed text-muted-foreground">
-              Je privilégie une alternance à Sarlat ou dans un rayon d'environ 15&nbsp;km,
+              Je privilégie une alternance à Sarlat ou dans un rayon d'environ 10&nbsp;km,
               accessible en scooter au quotidien. Je peux toutefois envisager une opportunité
               plus éloignée si elle est réellement cohérente avec mon projet, avec possibilité
               de déménagement.
