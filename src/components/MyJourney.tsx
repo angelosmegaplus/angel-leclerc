@@ -6,7 +6,6 @@ import {
   Bike,
   Calendar,
   Download,
-  ArrowRight,
   Sparkles,
   Briefcase,
   GraduationCap,
