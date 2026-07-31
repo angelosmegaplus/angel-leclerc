@@ -69,10 +69,7 @@ export function Footer() {
               </li>
               <li className="flex items-start gap-3">
                 <MapPin size={16} className="mt-0.5 shrink-0 text-primary" />
-                <span>
-                  CIAS, 4b rue Stéphane Hessel<br />
-                  24200 Sarlat-la-Canéda, France
-                </span>
+                <span>24200 Sarlat-la-Canéda, France</span>
               </li>
             </ul>
 
