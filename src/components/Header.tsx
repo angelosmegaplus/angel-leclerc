@@ -73,7 +73,7 @@ export function Header() {
             asChild
             className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
-            <a href="/entreprise#contact">Parler de votre projet</a>
+            <a href="/contact">Parler de votre projet</a>
           </Button>
         </nav>
 
@@ -136,7 +136,7 @@ export function Header() {
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={() => setMobileOpen(false)}
             >
-              <a href="/entreprise#contact">Parler de votre projet</a>
+              <a href="/contact">Parler de votre projet</a>
             </Button>
           </nav>
         </div>
