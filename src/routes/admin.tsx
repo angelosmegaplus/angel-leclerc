@@ -178,6 +178,11 @@ function AdminPage() {
   const save = useMutation({
     mutationFn: async (d: Draft) => {
       const slug = d.slug ? slugify(d.slug) : slugify(d.title);
+      const scheduledIso =
+        d.status === "programme" && d.scheduled_at
+          ? new Date(d.scheduled_at).toISOString()
+          : null;
+      const isPublished = d.status !== "brouillon";
       const payload = {
         title: d.title.trim(),
         slug,
@@ -185,11 +190,12 @@ function AdminPage() {
         excerpt: d.excerpt.trim() || null,
         content: d.content,
         cover_url: d.cover_url.trim() || null,
-        published: d.published,
+        published: isPublished,
+        scheduled_at: scheduledIso,
         is_private: d.is_private,
         featured: d.featured,
         attachments: d.attachments,
-        published_at: d.published ? new Date().toISOString() : null,
+        published_at: isPublished ? (scheduledIso ?? new Date().toISOString()) : null,
         author_id: user?.id ?? null,
       };
       if (d.id) {
@@ -202,15 +208,25 @@ function AdminPage() {
         }
         const { error } = await supabase
           .from("articles")
-          .update({ ...payload, published_at: undefined })
+          .update({
+            ...payload,
+            // la date de parution existante est préservée, sauf programmation
+            published_at: scheduledIso ?? undefined,
+          })
           .eq("id", d.id);
         if (error) throw error;
-        if (d.published) {
+        if (isPublished && !scheduledIso) {
           await supabase
             .from("articles")
             .update({ published_at: new Date().toISOString() })
             .eq("id", d.id)
             .is("published_at", null);
+        }
+        if (!isPublished) {
+          await supabase
+            .from("articles")
+            .update({ published_at: null })
+            .eq("id", d.id);
         }
       } else {
         if (d.featured) {
