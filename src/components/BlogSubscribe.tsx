@@ -1,0 +1,79 @@
+import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { CheckCircle2, Loader2, Mail } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { subscribeToBlog } from "@/lib/subscribers.functions";
+
+export function BlogSubscribe() {
+  const subscribe = useServerFn(subscribeToBlog);
+  const [email, setEmail] = useState("");
+  const [website, setWebsite] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
+  const [error, setError] = useState<string | null>(null);
+
+  if (status === "done") {
+    return (
+      <div className="rounded-xl border border-border bg-card p-5 text-sm text-foreground">
+        <p className="flex items-center gap-2 font-medium">
+          <CheckCircle2 className="h-4 w-4 text-primary" /> Inscription confirmée
+        </p>
+        <p className="mt-2 text-muted-foreground">
+          Vous recevrez un e-mail à chaque nouvel article.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <form
+      className="rounded-xl border border-border bg-card p-5"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        setError(null);
+        setStatus("loading");
+        try {
+          await subscribe({ data: { email, website } });
+          setStatus("done");
+        } catch (err) {
+          setStatus("idle");
+          setError(
+            err instanceof Error ? err.message : "Inscription impossible pour le moment.",
+          );
+        }
+      }}
+    >
+      <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
+        <Mail className="h-4 w-4 text-primary" /> Recevoir les nouveaux articles
+      </p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Un e-mail à chaque publication. Désinscription en un clic.
+      </p>
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+        <Input
+          type="email"
+          required
+          maxLength={255}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="votre@email.fr"
+          aria-label="Adresse e-mail"
+        />
+        <input
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+          className="hidden"
+          aria-hidden="true"
+        />
+        <Button type="submit" disabled={status === "loading"}>
+          {status === "loading" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          S'abonner
+        </Button>
+      </div>
+      {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
+    </form>
+  );
+}
