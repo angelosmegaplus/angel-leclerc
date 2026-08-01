@@ -60,6 +60,7 @@ function ArticlePage() {
     );
   }
 
+  const isHtml = /<\/?[a-z][\s\S]*>/i.test(article.content);
   const paragraphs = article.content.split(/\n{2,}/).filter(Boolean);
 
   return (
@@ -92,13 +93,20 @@ function ArticlePage() {
 
         <hr className="mt-8 border-border" />
 
-        <div className="mt-8 space-y-6 text-left text-[15px] leading-[1.8] text-foreground/90 md:text-base">
-          {paragraphs.map((p, i) => (
-            <p key={i} className="whitespace-pre-line">
-              {p}
-            </p>
-          ))}
-        </div>
+        {isHtml ? (
+          <div
+            className="article-content mt-8 text-left text-[15px] leading-[1.8] text-foreground/90 md:text-base"
+            dangerouslySetInnerHTML={{ __html: article.content }}
+          />
+        ) : (
+          <div className="mt-8 space-y-6 text-left text-[15px] leading-[1.8] text-foreground/90 md:text-base">
+            {paragraphs.map((p, i) => (
+              <p key={i} className="whitespace-pre-line">
+                {p}
+              </p>
+            ))}
+          </div>
+        )}
 
         <div className="mt-12">
           <Link
