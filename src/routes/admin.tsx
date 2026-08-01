@@ -349,6 +349,16 @@ function AdminPage() {
                 toast.error("Le contenu de l'article est vide.");
                 return;
               }
+              if (draft.status === "programme") {
+                if (!draft.scheduled_at) {
+                  toast.error("Choisissez une date de publication différée.");
+                  return;
+                }
+                if (new Date(draft.scheduled_at) <= new Date()) {
+                  toast.error("La date de publication doit être dans le futur.");
+                  return;
+                }
+              }
               save.mutate(draft);
             }}
           >
