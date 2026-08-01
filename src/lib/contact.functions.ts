@@ -55,8 +55,6 @@ export const submitProjectRequest = createServerFn({ method: "POST" })
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { sendEmail, escapeHtml } = await import("./email.server");
-
     const ip = getRequestIP({ xForwardedFor: true }) ?? null;
     const userAgent = getRequestHeader("user-agent") ?? null;
 
