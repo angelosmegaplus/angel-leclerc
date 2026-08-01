@@ -17,8 +17,11 @@ import { Route as EntrepriseRouteImport } from './routes/entreprise'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ArticlesIndexRouteImport } from './routes/articles/index'
 import { Route as ActualitesIndexRouteImport } from './routes/actualites/index'
 import { Route as CommuniquesReponseArticleChniTombolaPatrimoineRouteImport } from './routes/communiques/reponse-article-chni-tombola-patrimoine'
+import { Route as ArticlesReponseArticleChniTombolaPatrimoineRouteImport } from './routes/articles/reponse-article-chni-tombola-patrimoine'
+import { Route as ArticlesSlugRouteImport } from './routes/articles/$slug'
 import { Route as ActualitesSlugRouteImport } from './routes/actualites/$slug'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -62,6 +65,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ArticlesIndexRoute = ArticlesIndexRouteImport.update({
+  id: '/articles/',
+  path: '/articles/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ActualitesIndexRoute = ActualitesIndexRouteImport.update({
   id: '/actualites/',
   path: '/actualites/',
@@ -73,6 +81,17 @@ const CommuniquesReponseArticleChniTombolaPatrimoineRoute =
     path: '/communiques/reponse-article-chni-tombola-patrimoine',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ArticlesReponseArticleChniTombolaPatrimoineRoute =
+  ArticlesReponseArticleChniTombolaPatrimoineRouteImport.update({
+    id: '/articles/reponse-article-chni-tombola-patrimoine',
+    path: '/articles/reponse-article-chni-tombola-patrimoine',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ArticlesSlugRoute = ArticlesSlugRouteImport.update({
+  id: '/articles/$slug',
+  path: '/articles/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ActualitesSlugRoute = ActualitesSlugRouteImport.update({
   id: '/actualites/$slug',
   path: '/actualites/$slug',
@@ -89,8 +108,11 @@ export interface FileRoutesByFullPath {
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/actualites/$slug': typeof ActualitesSlugRoute
+  '/articles/$slug': typeof ArticlesSlugRoute
+  '/articles/reponse-article-chni-tombola-patrimoine': typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   '/actualites/': typeof ActualitesIndexRoute
+  '/articles/': typeof ArticlesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -102,8 +124,11 @@ export interface FileRoutesByTo {
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/actualites/$slug': typeof ActualitesSlugRoute
+  '/articles/$slug': typeof ArticlesSlugRoute
+  '/articles/reponse-article-chni-tombola-patrimoine': typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   '/actualites': typeof ActualitesIndexRoute
+  '/articles': typeof ArticlesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -116,8 +141,11 @@ export interface FileRoutesById {
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/actualites/$slug': typeof ActualitesSlugRoute
+  '/articles/$slug': typeof ArticlesSlugRoute
+  '/articles/reponse-article-chni-tombola-patrimoine': typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   '/actualites/': typeof ActualitesIndexRoute
+  '/articles/': typeof ArticlesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -131,8 +159,11 @@ export interface FileRouteTypes {
     | '/politique-confidentialite'
     | '/sitemap.xml'
     | '/actualites/$slug'
+    | '/articles/$slug'
+    | '/articles/reponse-article-chni-tombola-patrimoine'
     | '/communiques/reponse-article-chni-tombola-patrimoine'
     | '/actualites/'
+    | '/articles/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -144,8 +175,11 @@ export interface FileRouteTypes {
     | '/politique-confidentialite'
     | '/sitemap.xml'
     | '/actualites/$slug'
+    | '/articles/$slug'
+    | '/articles/reponse-article-chni-tombola-patrimoine'
     | '/communiques/reponse-article-chni-tombola-patrimoine'
     | '/actualites'
+    | '/articles'
   id:
     | '__root__'
     | '/'
@@ -157,8 +191,11 @@ export interface FileRouteTypes {
     | '/politique-confidentialite'
     | '/sitemap.xml'
     | '/actualites/$slug'
+    | '/articles/$slug'
+    | '/articles/reponse-article-chni-tombola-patrimoine'
     | '/communiques/reponse-article-chni-tombola-patrimoine'
     | '/actualites/'
+    | '/articles/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -171,8 +208,11 @@ export interface RootRouteChildren {
   PolitiqueConfidentialiteRoute: typeof PolitiqueConfidentialiteRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ActualitesSlugRoute: typeof ActualitesSlugRoute
+  ArticlesSlugRoute: typeof ArticlesSlugRoute
+  ArticlesReponseArticleChniTombolaPatrimoineRoute: typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
   CommuniquesReponseArticleChniTombolaPatrimoineRoute: typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   ActualitesIndexRoute: typeof ActualitesIndexRoute
+  ArticlesIndexRoute: typeof ArticlesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -233,6 +273,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/articles/': {
+      id: '/articles/'
+      path: '/articles'
+      fullPath: '/articles/'
+      preLoaderRoute: typeof ArticlesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/actualites/': {
       id: '/actualites/'
       path: '/actualites'
@@ -245,6 +292,20 @@ declare module '@tanstack/react-router' {
       path: '/communiques/reponse-article-chni-tombola-patrimoine'
       fullPath: '/communiques/reponse-article-chni-tombola-patrimoine'
       preLoaderRoute: typeof CommuniquesReponseArticleChniTombolaPatrimoineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/articles/reponse-article-chni-tombola-patrimoine': {
+      id: '/articles/reponse-article-chni-tombola-patrimoine'
+      path: '/articles/reponse-article-chni-tombola-patrimoine'
+      fullPath: '/articles/reponse-article-chni-tombola-patrimoine'
+      preLoaderRoute: typeof ArticlesReponseArticleChniTombolaPatrimoineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/articles/$slug': {
+      id: '/articles/$slug'
+      path: '/articles/$slug'
+      fullPath: '/articles/$slug'
+      preLoaderRoute: typeof ArticlesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/actualites/$slug': {
@@ -267,9 +328,13 @@ const rootRouteChildren: RootRouteChildren = {
   PolitiqueConfidentialiteRoute: PolitiqueConfidentialiteRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ActualitesSlugRoute: ActualitesSlugRoute,
+  ArticlesSlugRoute: ArticlesSlugRoute,
+  ArticlesReponseArticleChniTombolaPatrimoineRoute:
+    ArticlesReponseArticleChniTombolaPatrimoineRoute,
   CommuniquesReponseArticleChniTombolaPatrimoineRoute:
     CommuniquesReponseArticleChniTombolaPatrimoineRoute,
   ActualitesIndexRoute: ActualitesIndexRoute,
+  ArticlesIndexRoute: ArticlesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
