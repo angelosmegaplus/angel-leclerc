@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { sendTemplateEmail } from "./email-templates/send-email";
 
 const emailSchema = z.object({
   email: z.string().trim().email("E-mail invalide").max(255),
