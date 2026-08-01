@@ -49,11 +49,8 @@ function ArticlesPage() {
           Blog
         </p>
         <h1 className="mt-3 font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl md:text-4xl">
-          Mon Blog
-        </h1>
-        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
           Mes articles
-        </p>
+        </h1>
         <div className="mt-8 grid gap-5 sm:grid-cols-2">
           {isLoading && <p className="text-sm text-muted-foreground">Chargement…</p>}
           {!isLoading && articles.length === 0 && (
