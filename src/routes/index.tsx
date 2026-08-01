@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Briefcase, User, Sparkles, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.svg";
+import { LatestArticles } from "@/components/LatestArticles";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -48,6 +49,7 @@ const choices = [
 
 function LandingPage() {
   return (
+    <>
     <section className="relative overflow-hidden bg-background">
       {/* Decorative background layers */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
@@ -226,5 +228,7 @@ function LandingPage() {
         </div>
       </div>
     </section>
+      <LatestArticles />
+    </>
   );
 }
