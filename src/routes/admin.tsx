@@ -218,6 +218,11 @@ function AdminPage() {
             className="mt-10 space-y-5 rounded-xl border border-border bg-card p-6"
             onSubmit={(e) => {
               e.preventDefault();
+              const text = draft.content.replace(/<[^>]*>/g, "").trim();
+              if (!text && !draft.content.includes("<img")) {
+                toast.error("Le contenu de l'article est vide.");
+                return;
+              }
               save.mutate(draft);
             }}
           >
