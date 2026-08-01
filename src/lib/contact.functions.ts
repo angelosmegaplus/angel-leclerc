@@ -17,17 +17,6 @@ const ACCEPTED_MIME = new Set([
 
 const ACCEPTED_EXT = /\.(pdf|doc|docx|png|jpe?g|webp|pptx?)$/i;
 
-const PROJECT_TYPES = [
-  "Gestion de projet",
-  "Conseil en communication",
-  "Rédaction ou contenu éditorial",
-  "Affiche ou flyer",
-  "Identité visuelle",
-  "Recherche de prestataires",
-  "Production audio, vidéo ou numérique",
-  "Autre demande",
-] as const;
-
 const submissionSchema = z.object({
   fullName: z.string().trim().min(1, "Nom requis").max(120),
   email: z.string().trim().email("E-mail invalide").max(255),
