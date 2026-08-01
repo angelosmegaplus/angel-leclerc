@@ -541,27 +541,6 @@ function Services() {
                           {e.hint}
                         </span>
                       )}
-                      {e.substack && (
-                        <a
-                          href="https://blog.angel-leclerc.fr"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground hover:border-primary"
-                        >
-                          <img
-                            src="https://cdn.simpleicons.org/substack/FF6719"
-                            alt="Logo Substack"
-                            width={14}
-                            height={14}
-                            className="h-3.5 w-3.5"
-                            loading="lazy"
-                          />
-                          <span>
-                            Découvrez aussi mes articles et réflexions sur
-                            Substack
-                          </span>
-                        </a>
-                      )}
                     </div>
                   </li>
                 );
