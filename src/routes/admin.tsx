@@ -768,22 +768,24 @@ function AdminPage() {
                     <p className="truncate font-medium text-foreground">{a.title}</p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {a.category} ·{" "}
-                      {a.published
-                        ? `publié ${formatDate(a.published_at ?? a.created_at)}`
-                        : "brouillon"}
+                      {getArticleStatus(a) === "brouillon" && "brouillon"}
+                      {getArticleStatus(a) === "programme" &&
+                        `programmé pour le ${formatDateTime(a.scheduled_at)}`}
+                      {getArticleStatus(a) === "publie" &&
+                        `publié ${formatDate(a.published_at ?? a.created_at)}`}
                       {a.is_private && " · privé"}
                       {a.featured && " · à la une"}
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    {a.published && (
+                    {getArticleStatus(a) === "publie" && (
                       <Button asChild size="sm" variant="ghost">
                         <a href={`/articles/${a.slug}`} target="_blank" rel="noreferrer">
                           <Eye className="h-4 w-4" />
                         </a>
                       </Button>
                     )}
-                    {a.published && !a.is_private && (
+                    {getArticleStatus(a) === "publie" && !a.is_private && (
                       <Button
                         size="sm"
                         variant="ghost"
@@ -832,7 +834,8 @@ function AdminPage() {
                           excerpt: a.excerpt ?? "",
                           content: a.content,
                           cover_url: a.cover_url ?? "",
-                          published: a.published,
+                          status: getArticleStatus(a),
+                          scheduled_at: toLocalInput(a.scheduled_at),
                           is_private: a.is_private,
                           featured: a.featured,
                           attachments: getAttachments(a),
