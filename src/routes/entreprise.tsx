@@ -7,7 +7,6 @@ import {
   FileText,
   Layers,
   Mail,
-  Phone,
   Sparkles,
   Ear,
   Lightbulb,
