@@ -49,9 +49,6 @@ export function Footer() {
             <h3 className="font-display text-sm font-semibold uppercase tracking-wide text-foreground">
               Me contacter
             </h3>
-            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Coordonnées et formulaire réunis sur une seule page.
-            </p>
             <Link
               to="/contact"
               className="mt-4 inline-flex items-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-accent"

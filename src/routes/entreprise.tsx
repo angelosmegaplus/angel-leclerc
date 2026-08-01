@@ -781,7 +781,7 @@ function ContactSection() {
               </a>
             </Button>
             <p className="mt-3 text-xs text-muted-foreground">
-              Formulaire avec pièce jointe, e-mail et téléphone : tout y est réuni.
+              Formulaire avec pièce jointe possible (10 Mo max).
             </p>
           </div>
         </AnimatedSection>

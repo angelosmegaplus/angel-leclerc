@@ -18,6 +18,7 @@ import {
   Users,
   FileEdit,
   CalendarClock,
+  AlertCircle,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -35,6 +36,7 @@ import {
   type ArticleAttachment,
   type ArticleStatus,
 } from "@/lib/articles";
+import { describeDbError } from "@/lib/db-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -134,6 +136,7 @@ function AdminPage() {
   const { session, isAdmin, loading, user } = useAuth();
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [tab, setTab] = useState<"articles" | "messages" | "abonnes">("articles");
   const notifyFn = useServerFn(notifySubscribersOfArticle);
@@ -244,17 +247,19 @@ function AdminPage() {
     },
     onSuccess: () => {
       toast.success("Article enregistré");
+      setSaveError(null);
       queryClient.invalidateQueries({ queryKey: ["admin-articles"] });
       queryClient.invalidateQueries({ queryKey: ["articles"] });
       setDraft(null);
     },
     onError: (err: unknown) => {
-      const message = err instanceof Error ? err.message : "Erreur inconnue";
-      toast.error(
-        message.includes("duplicate key")
-          ? "Un article utilise déjà ce lien (slug). Modifiez-le."
-          : message,
-      );
+      const detail = describeDbError(err);
+      setSaveError(detail);
+      toast.error("Enregistrement impossible", {
+        description: detail,
+        duration: 12000,
+      });
+      console.error("[admin] échec d'enregistrement de l'article", err);
     },
   });
 
@@ -344,6 +349,7 @@ function AdminPage() {
             className="mt-10 space-y-5 rounded-xl border border-border bg-card p-6"
             onSubmit={(e) => {
               e.preventDefault();
+              setSaveError(null);
               const text = draft.content.replace(/<[^>]*>/g, "").trim();
               if (!text && !draft.content.includes("<img")) {
                 toast.error("Le contenu de l'article est vide.");
@@ -369,6 +375,23 @@ function AdminPage() {
             >
               <ArrowLeft className="mr-1 h-3.5 w-3.5" /> Retour à la liste
             </button>
+
+            {saveError && (
+              <div
+                role="alert"
+                className="flex items-start gap-3 rounded-lg border border-destructive/40 bg-destructive/10 p-4"
+              >
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-destructive">
+                    L'article n'a pas pu être enregistré
+                  </p>
+                  <p className="text-xs leading-relaxed text-foreground/80 break-words">
+                    {saveError}
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="title">Titre *</Label>
