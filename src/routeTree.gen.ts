@@ -14,6 +14,7 @@ import { Route as PolitiqueConfidentialiteRouteImport } from './routes/politique
 import { Route as ParcoursRouteImport } from './routes/parcours'
 import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
 import { Route as EntrepriseRouteImport } from './routes/entreprise'
+import { Route as DesabonnementRouteImport } from './routes/desabonnement'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -48,6 +49,11 @@ const MentionsLegalesRoute = MentionsLegalesRouteImport.update({
 const EntrepriseRoute = EntrepriseRouteImport.update({
   id: '/entreprise',
   path: '/entreprise',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DesabonnementRoute = DesabonnementRouteImport.update({
+  id: '/desabonnement',
+  path: '/desabonnement',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/desabonnement': typeof DesabonnementRoute
   '/entreprise': typeof EntrepriseRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/parcours': typeof ParcoursRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/desabonnement': typeof DesabonnementRoute
   '/entreprise': typeof EntrepriseRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/parcours': typeof ParcoursRoute
@@ -135,6 +143,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/desabonnement': typeof DesabonnementRoute
   '/entreprise': typeof EntrepriseRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/parcours': typeof ParcoursRoute
@@ -153,6 +162,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/desabonnement'
     | '/entreprise'
     | '/mentions-legales'
     | '/parcours'
@@ -169,6 +179,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/desabonnement'
     | '/entreprise'
     | '/mentions-legales'
     | '/parcours'
@@ -185,6 +196,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/desabonnement'
     | '/entreprise'
     | '/mentions-legales'
     | '/parcours'
@@ -202,6 +214,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
+  DesabonnementRoute: typeof DesabonnementRoute
   EntrepriseRoute: typeof EntrepriseRoute
   MentionsLegalesRoute: typeof MentionsLegalesRoute
   ParcoursRoute: typeof ParcoursRoute
@@ -250,6 +263,13 @@ declare module '@tanstack/react-router' {
       path: '/entreprise'
       fullPath: '/entreprise'
       preLoaderRoute: typeof EntrepriseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/desabonnement': {
+      id: '/desabonnement'
+      path: '/desabonnement'
+      fullPath: '/desabonnement'
+      preLoaderRoute: typeof DesabonnementRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -322,6 +342,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
+  DesabonnementRoute: DesabonnementRoute,
   EntrepriseRoute: EntrepriseRoute,
   MentionsLegalesRoute: MentionsLegalesRoute,
   ParcoursRoute: ParcoursRoute,
