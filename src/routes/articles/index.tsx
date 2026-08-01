@@ -6,31 +6,29 @@ import { fetchPublishedArticles, formatDate, type Article } from "@/lib/articles
 export const Route = createFileRoute("/articles/")({
   head: () => ({
     meta: [
-      { title: "Articles | Angel Leclerc Communication" },
+      { title: "Blog | Angel Leclerc Communication" },
       {
         name: "description",
         content:
-          "Articles publiés par Angel Leclerc Communication : projets, coulisses et prises de parole.",
+          "Le blog d'Angel Leclerc Communication : articles, projets, coulisses et prises de parole.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       {
         property: "og:title",
-        content: "Articles | Angel Leclerc Communication",
+        content: "Blog | Angel Leclerc Communication",
       },
       {
         property: "og:description",
-        content:
-          "Articles publiés par Angel Leclerc Communication.",
+        content: "Le blog d'Angel Leclerc Communication.",
       },
       {
         name: "twitter:title",
-        content: "Articles | Angel Leclerc Communication",
+        content: "Blog | Angel Leclerc Communication",
       },
       {
         name: "twitter:description",
-        content:
-          "Articles publiés par Angel Leclerc Communication.",
+        content: "Le blog d'Angel Leclerc Communication.",
       },
     ],
     links: [{ rel: "canonical", href: "https://www.angel-leclerc.fr/articles" }],
