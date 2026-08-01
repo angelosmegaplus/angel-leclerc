@@ -8,30 +8,28 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { loadEnv } from "vite";
 import path from "path";
 
-export default defineConfig(({ mode }) => {
-  // Existing line — do NOT change: loads VITE_* env vars for client code
-  const env = loadEnv(mode, process.cwd(), "VITE_");
+// Load all env vars into process.env for server-side code (server routes / server functions).
+// The @lovable.dev/vite-tanstack-config plugin already loads VITE_* vars into client code;
+// this separate call ensures non-VITE secrets (e.g., SUPABASE_SERVICE_ROLE_KEY, LOVABLE_API_KEY)
+// are available to server functions without leaking them into the client bundle.
+const mode = process.env.NODE_ENV || "development";
+const serverEnv = loadEnv(mode, process.cwd(), "");
+Object.assign(process.env, serverEnv);
 
-  // Load all env vars into process.env for server-side code (server routes / server functions).
-  // Do NOT add these keys to the returned envDefine — that would leak secrets into the client bundle.
-  const serverEnv = loadEnv(mode, process.cwd(), "");
-  Object.assign(process.env, serverEnv);
-
-  return {
-    tanstackStart: {
-      // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-      // nitro/vite builds from this
-      server: { entry: "server" },
-    },
-    vite: {
-      // React Email's htmlparser2 needs entities v4.5.0; pin every import path to the hoisted copy.
-      resolve: {
-        alias: {
-          "entities/lib/decode.js": path.resolve(process.cwd(), "node_modules/entities/lib/decode.js"),
-          "entities/lib/encode.js": path.resolve(process.cwd(), "node_modules/entities/lib/encode.js"),
-          entities: path.resolve(process.cwd(), "node_modules/entities"),
-        },
+export default defineConfig({
+  tanstackStart: {
+    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
+    // nitro/vite builds from this
+    server: { entry: "server" },
+  },
+  vite: {
+    // React Email's htmlparser2 needs entities v4.5.0; pin every import path to the hoisted copy.
+    resolve: {
+      alias: {
+        "entities/lib/decode.js": path.resolve(process.cwd(), "node_modules/entities/lib/decode.js"),
+        "entities/lib/encode.js": path.resolve(process.cwd(), "node_modules/entities/lib/encode.js"),
+        entities: path.resolve(process.cwd(), "node_modules/entities"),
       },
     },
-  };
+  },
 });
