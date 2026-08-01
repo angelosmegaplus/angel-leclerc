@@ -5,6 +5,7 @@ import { ArrowRight, Search } from "lucide-react";
 import { fetchPublishedArticles, formatDate, type Article } from "@/lib/articles";
 import { BlogSubscribe } from "@/components/BlogSubscribe";
 import { Input } from "@/components/ui/input";
+import { ShareArticle } from "@/components/ShareArticle";
 
 export const Route = createFileRoute("/articles/")({
   head: () => ({
@@ -98,11 +99,14 @@ function ArticlesPage() {
             </p>
           )}
           {filtered.map((a: Article) => (
-            <Link
+            <div
               key={a.id}
+              className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/50"
+            >
+            <Link
               to="/articles/$slug"
               params={{ slug: a.slug }}
-              className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/50"
+              className="flex flex-1 flex-col"
             >
               {a.cover_url && (
                 <img
@@ -130,6 +134,10 @@ function ArticlesPage() {
                 </div>
               </div>
             </Link>
+              <div className="border-t border-border px-5 py-3">
+                <ShareArticle title={a.title} slug={a.slug} excerpt={a.excerpt} />
+              </div>
+            </div>
           ))}
         </div>
 
