@@ -33,7 +33,7 @@ const submissionSchema = z.object({
   email: z.string().trim().email("E-mail invalide").max(255),
   phone: z.string().trim().max(40).optional().or(z.literal("")),
   structure: z.string().trim().max(200).optional().or(z.literal("")),
-  projectType: z.enum(PROJECT_TYPES),
+  projectType: z.string().trim().min(1, "Type requis").max(160),
   budget: z.string().trim().max(120).optional().or(z.literal("")),
   deadline: z.string().trim().max(120).optional().or(z.literal("")),
   description: z.string().trim().min(10, "Description trop courte").max(5000),
