@@ -769,33 +769,6 @@ function ContactSection() {
           </p>
         </AnimatedSection>
 
-        <AnimatedSection delay={0.1} className="mt-10">
-          <div className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row">
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="flex-1 border-foreground/20 bg-transparent text-foreground hover:bg-muted"
-            >
-              <a href="tel:+33601766978">
-                <Phone size={18} className="mr-2" />
-                Appeler — 06 01 76 69 78
-              </a>
-            </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="flex-1 border-foreground/20 bg-transparent text-foreground hover:bg-muted"
-            >
-              <a href="mailto:contact@angel-leclerc.fr">
-                <Mail size={18} className="mr-2" />
-                Envoyer un e-mail
-              </a>
-            </Button>
-          </div>
-        </AnimatedSection>
-
         <AnimatedSection delay={0.12} className="mt-8">
           <div className="mx-auto max-w-md text-center">
             <Button
@@ -803,10 +776,13 @@ function ContactSection() {
               size="lg"
               className="w-full bg-primary text-primary-foreground hover:bg-accent"
             >
-              <a href="/contact">Remplir le formulaire de contact</a>
+              <a href="/contact">
+                <Mail size={18} className="mr-2" />
+                Aller à la page contact
+              </a>
             </Button>
             <p className="mt-3 text-xs text-muted-foreground">
-              Formulaire détaillé, pièce jointe possible (10 Mo max).
+              Formulaire avec pièce jointe, e-mail et téléphone : tout y est réuni.
             </p>
           </div>
         </AnimatedSection>
@@ -861,7 +837,7 @@ function ContactSection() {
               asChild
               className="mt-5 bg-primary text-primary-foreground hover:bg-accent"
             >
-              <a href="mailto:contact@angel-leclerc.fr?subject=Demande%20de%20portfolio%20-%20Angel%20Leclerc%20Communication">
+              <a href="/contact">
                 Demander mon portfolio
                 <ArrowRight size={16} className="ml-2" />
               </a>
