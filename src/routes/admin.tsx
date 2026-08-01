@@ -1,7 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, LogOut, Plus, Trash2, Eye, Pencil, ArrowLeft } from "lucide-react";
+import {
+  Loader2,
+  LogOut,
+  Plus,
+  Trash2,
+  Eye,
+  Pencil,
+  ArrowLeft,
+  Paperclip,
+  Lock,
+  Star,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,8 +21,10 @@ import {
   ARTICLE_CATEGORIES,
   fetchAllArticles,
   formatDate,
+  getAttachments,
   slugify,
   type Article,
+  type ArticleAttachment,
 } from "@/lib/articles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,6 +68,9 @@ type Draft = {
   content: string;
   cover_url: string;
   published: boolean;
+  is_private: boolean;
+  featured: boolean;
+  attachments: ArticleAttachment[];
 };
 
 const emptyDraft: Draft = {
@@ -65,13 +82,33 @@ const emptyDraft: Draft = {
   content: "",
   cover_url: "",
   published: true,
+  is_private: false,
+  featured: false,
+  attachments: [],
 };
+
+const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
+
+async function uploadAttachment(file: File): Promise<ArticleAttachment> {
+  const safe = file.name.replace(/[^a-zA-Z0-9._-]+/g, "-");
+  const path = `${crypto.randomUUID()}-${safe}`;
+  const { error } = await supabase.storage
+    .from("article-files")
+    .upload(path, file, { cacheControl: "31536000", upsert: false });
+  if (error) throw error;
+  const { data, error: signErr } = await supabase.storage
+    .from("article-files")
+    .createSignedUrl(path, TEN_YEARS);
+  if (signErr || !data) throw signErr ?? new Error("URL indisponible");
+  return { name: file.name, url: data.signedUrl, size: file.size };
+}
 
 function AdminPage() {
   const navigate = useNavigate();
   const { session, isAdmin, loading, user } = useAuth();
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [uploadingFile, setUploadingFile] = useState(false);
 
   useEffect(() => {
     if (!loading && !session) navigate({ to: "/auth" });
@@ -94,10 +131,20 @@ function AdminPage() {
         content: d.content,
         cover_url: d.cover_url.trim() || null,
         published: d.published,
+        is_private: d.is_private,
+        featured: d.featured,
+        attachments: d.attachments,
         published_at: d.published ? new Date().toISOString() : null,
         author_id: user?.id ?? null,
       };
       if (d.id) {
+        if (d.featured) {
+          await supabase
+            .from("articles")
+            .update({ featured: false })
+            .neq("id", d.id)
+            .eq("featured", true);
+        }
         const { error } = await supabase
           .from("articles")
           .update({ ...payload, published_at: undefined })
@@ -111,6 +158,12 @@ function AdminPage() {
             .is("published_at", null);
         }
       } else {
+        if (d.featured) {
+          await supabase
+            .from("articles")
+            .update({ featured: false })
+            .eq("featured", true);
+        }
         const { error } = await supabase.from("articles").insert(payload);
         if (error) throw error;
       }
