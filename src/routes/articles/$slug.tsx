@@ -10,7 +10,7 @@ export const Route = createFileRoute("/articles/$slug")({
       {
         name: "description",
         content:
-          "Article publié par Angel Leclerc Communication : actualités, communiqués et retours d'expérience.",
+          "Article publié par Angel Leclerc Communication : projets, prises de parole et retours d'expérience.",
       },
       { property: "og:type", content: "article" },
       { name: "twitter:card", content: "summary_large_image" },

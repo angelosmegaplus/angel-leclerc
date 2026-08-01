@@ -4,12 +4,23 @@ import type { Database } from "@/integrations/supabase/types";
 export type Article = Database["public"]["Tables"]["articles"]["Row"];
 
 export const ARTICLE_CATEGORIES = [
-  "Presse",
+  "Article",
   "Annonce",
   "Presse",
   "Coulisses",
   "Projet",
 ] as const;
+
+export async function fetchLatestArticles(limit = 3): Promise<Article[]> {
+  const { data, error } = await supabase
+    .from("articles")
+    .select("*")
+    .eq("published", true)
+    .order("published_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return data ?? [];
+}
 
 export function slugify(input: string): string {
   return input

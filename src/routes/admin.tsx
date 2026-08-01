@@ -59,7 +59,7 @@ const emptyDraft: Draft = {
   id: null,
   title: "",
   slug: "",
-  category: "Actualité",
+  category: "Article",
   excerpt: "",
   content: "",
   cover_url: "",

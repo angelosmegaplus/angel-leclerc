@@ -35,10 +35,10 @@ export const Route = createFileRoute("/articles/")({
     ],
     links: [{ rel: "canonical", href: "https://www.angel-leclerc.fr/articles" }],
   }),
-  component: ActualitesPage,
+  component: ArticlesPage,
 });
 
-function ActualitesPage() {
+function ArticlesPage() {
   const { data: articles = [], isLoading } = useQuery({
     queryKey: ["articles"],
     queryFn: fetchPublishedArticles,
