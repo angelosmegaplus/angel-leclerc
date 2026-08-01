@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft } from "lucide-react";
-import { fetchArticleBySlug, formatDate } from "@/lib/articles";
+import { ArrowLeft, Download, Lock, Paperclip } from "lucide-react";
+import { fetchArticleBySlug, formatDate, getAttachments } from "@/lib/articles";
 
 export const Route = createFileRoute("/articles/$slug")({
   head: () => ({
@@ -62,6 +62,7 @@ function ArticlePage() {
 
   const isHtml = /<\/?[a-z][\s\S]*>/i.test(article.content);
   const paragraphs = article.content.split(/\n{2,}/).filter(Boolean);
+  const attachments = getAttachments(article);
 
   return (
     <article className="bg-background py-14 md:py-20">
@@ -75,6 +76,12 @@ function ArticlePage() {
         <p className="mt-4 text-sm text-muted-foreground">
           Publié le {formatDate(article.published_at ?? article.created_at)}
         </p>
+
+        {article.is_private && (
+          <p className="mt-3 inline-flex items-center gap-2 rounded-md border border-border bg-muted px-3 py-1.5 text-xs text-muted-foreground">
+            <Lock className="h-3.5 w-3.5" /> Article privé — non listé sur le site
+          </p>
+        )}
 
         {article.cover_url && (
           <img
@@ -105,6 +112,28 @@ function ArticlePage() {
                 {p}
               </p>
             ))}
+          </div>
+        )}
+
+        {attachments.length > 0 && (
+          <div className="mt-10 rounded-xl border border-border bg-card p-5">
+            <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <Paperclip className="h-4 w-4 text-primary" /> Documents joints
+            </p>
+            <ul className="mt-3 space-y-2">
+              {attachments.map((f) => (
+                <li key={f.url}>
+                  <a
+                    href={f.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+                  >
+                    <Download className="h-4 w-4" /> {f.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 

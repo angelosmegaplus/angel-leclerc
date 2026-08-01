@@ -1,7 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, LogOut, Plus, Trash2, Eye, Pencil, ArrowLeft } from "lucide-react";
+import {
+  Loader2,
+  LogOut,
+  Plus,
+  Trash2,
+  Eye,
+  Pencil,
+  ArrowLeft,
+  Paperclip,
+  Lock,
+  Star,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,8 +21,10 @@ import {
   ARTICLE_CATEGORIES,
   fetchAllArticles,
   formatDate,
+  getAttachments,
   slugify,
   type Article,
+  type ArticleAttachment,
 } from "@/lib/articles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,6 +68,9 @@ type Draft = {
   content: string;
   cover_url: string;
   published: boolean;
+  is_private: boolean;
+  featured: boolean;
+  attachments: ArticleAttachment[];
 };
 
 const emptyDraft: Draft = {
@@ -65,13 +82,33 @@ const emptyDraft: Draft = {
   content: "",
   cover_url: "",
   published: true,
+  is_private: false,
+  featured: false,
+  attachments: [],
 };
+
+const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
+
+async function uploadAttachment(file: File): Promise<ArticleAttachment> {
+  const safe = file.name.replace(/[^a-zA-Z0-9._-]+/g, "-");
+  const path = `${crypto.randomUUID()}-${safe}`;
+  const { error } = await supabase.storage
+    .from("article-files")
+    .upload(path, file, { cacheControl: "31536000", upsert: false });
+  if (error) throw error;
+  const { data, error: signErr } = await supabase.storage
+    .from("article-files")
+    .createSignedUrl(path, TEN_YEARS);
+  if (signErr || !data) throw signErr ?? new Error("URL indisponible");
+  return { name: file.name, url: data.signedUrl, size: file.size };
+}
 
 function AdminPage() {
   const navigate = useNavigate();
   const { session, isAdmin, loading, user } = useAuth();
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [uploadingFile, setUploadingFile] = useState(false);
 
   useEffect(() => {
     if (!loading && !session) navigate({ to: "/auth" });
@@ -94,10 +131,20 @@ function AdminPage() {
         content: d.content,
         cover_url: d.cover_url.trim() || null,
         published: d.published,
+        is_private: d.is_private,
+        featured: d.featured,
+        attachments: d.attachments,
         published_at: d.published ? new Date().toISOString() : null,
         author_id: user?.id ?? null,
       };
       if (d.id) {
+        if (d.featured) {
+          await supabase
+            .from("articles")
+            .update({ featured: false })
+            .neq("id", d.id)
+            .eq("featured", true);
+        }
         const { error } = await supabase
           .from("articles")
           .update({ ...payload, published_at: undefined })
@@ -111,6 +158,12 @@ function AdminPage() {
             .is("published_at", null);
         }
       } else {
+        if (d.featured) {
+          await supabase
+            .from("articles")
+            .update({ featured: false })
+            .eq("featured", true);
+        }
         const { error } = await supabase.from("articles").insert(payload);
         if (error) throw error;
       }
@@ -307,15 +360,100 @@ function AdminPage() {
               </p>
             </div>
 
-            <label className="flex items-center gap-2 text-sm text-foreground">
+            <div className="space-y-2">
+              <Label>Fichiers joints (PDF, images, documents…)</Label>
+              <div className="space-y-2">
+                {draft.attachments.map((f, i) => (
+                  <div
+                    key={f.url}
+                    className="flex items-center justify-between gap-3 rounded-md border border-border bg-background px-3 py-2 text-sm"
+                  >
+                    <span className="flex min-w-0 items-center gap-2">
+                      <Paperclip className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      <span className="truncate">{f.name}</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setDraft({
+                          ...draft,
+                          attachments: draft.attachments.filter((_, j) => j !== i),
+                        })
+                      }
+                      className="text-muted-foreground hover:text-destructive"
+                      aria-label={`Retirer ${f.name}`}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
               <input
-                type="checkbox"
-                checked={draft.published}
-                onChange={(e) => setDraft({ ...draft, published: e.target.checked })}
-                className="h-4 w-4 accent-[var(--color-primary)]"
+                id="attachments"
+                type="file"
+                multiple
+                disabled={uploadingFile}
+                onChange={async (e) => {
+                  const files = Array.from(e.target.files ?? []);
+                  e.target.value = "";
+                  if (files.length === 0) return;
+                  setUploadingFile(true);
+                  try {
+                    const uploaded = await Promise.all(files.map(uploadAttachment));
+                    setDraft((d) =>
+                      d ? { ...d, attachments: [...d.attachments, ...uploaded] } : d,
+                    );
+                    toast.success("Fichier(s) ajouté(s)");
+                  } catch (err) {
+                    toast.error(
+                      err instanceof Error ? err.message : "Échec de l'import",
+                    );
+                  } finally {
+                    setUploadingFile(false);
+                  }
+                }}
+                className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border file:border-input file:bg-background file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground"
               />
-              Publier immédiatement sur le site
-            </label>
+              {uploadingFile && (
+                <p className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                  <Loader2 className="h-3 w-3 animate-spin" /> Import en cours…
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-3 rounded-lg border border-border bg-background p-4">
+              <label className="flex items-center gap-2 text-sm text-foreground">
+                <input
+                  type="checkbox"
+                  checked={draft.published}
+                  onChange={(e) => setDraft({ ...draft, published: e.target.checked })}
+                  className="h-4 w-4 accent-[var(--color-primary)]"
+                />
+                Publier immédiatement sur le site
+              </label>
+              <label className="flex items-center gap-2 text-sm text-foreground">
+                <input
+                  type="checkbox"
+                  checked={draft.is_private}
+                  onChange={(e) =>
+                    setDraft({ ...draft, is_private: e.target.checked })
+                  }
+                  className="h-4 w-4 accent-[var(--color-primary)]"
+                />
+                <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                Article privé (visible uniquement depuis cet espace)
+              </label>
+              <label className="flex items-center gap-2 text-sm text-foreground">
+                <input
+                  type="checkbox"
+                  checked={draft.featured}
+                  onChange={(e) => setDraft({ ...draft, featured: e.target.checked })}
+                  className="h-4 w-4 accent-[var(--color-primary)]"
+                />
+                <Star className="h-3.5 w-3.5 text-muted-foreground" />
+                Mettre en avant en première page
+              </label>
+            </div>
 
             <div className="flex gap-2">
               <Button type="submit" disabled={save.isPending}>
@@ -354,6 +492,8 @@ function AdminPage() {
                       {a.published
                         ? `publié ${formatDate(a.published_at ?? a.created_at)}`
                         : "brouillon"}
+                      {a.is_private && " · privé"}
+                      {a.featured && " · à la une"}
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -377,6 +517,9 @@ function AdminPage() {
                           content: a.content,
                           cover_url: a.cover_url ?? "",
                           published: a.published,
+                          is_private: a.is_private,
+                          featured: a.featured,
+                          attachments: getAttachments(a),
                         })
                       }
                     >

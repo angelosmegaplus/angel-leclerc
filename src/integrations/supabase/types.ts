@@ -16,13 +16,16 @@ export type Database = {
     Tables: {
       articles: {
         Row: {
+          attachments: Json
           author_id: string | null
           category: string
           content: string
           cover_url: string | null
           created_at: string
           excerpt: string | null
+          featured: boolean
           id: string
+          is_private: boolean
           published: boolean
           published_at: string | null
           slug: string
@@ -30,13 +33,16 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          attachments?: Json
           author_id?: string | null
           category?: string
           content?: string
           cover_url?: string | null
           created_at?: string
           excerpt?: string | null
+          featured?: boolean
           id?: string
+          is_private?: boolean
           published?: boolean
           published_at?: string | null
           slug: string
@@ -44,13 +50,16 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          attachments?: Json
           author_id?: string | null
           category?: string
           content?: string
           cover_url?: string | null
           created_at?: string
           excerpt?: string | null
+          featured?: boolean
           id?: string
+          is_private?: boolean
           published?: boolean
           published_at?: string | null
           slug?: string

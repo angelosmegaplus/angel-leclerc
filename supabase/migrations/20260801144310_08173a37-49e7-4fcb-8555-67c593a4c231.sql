@@ -1,0 +1,4 @@
+CREATE POLICY "article files readable" ON storage.objects FOR SELECT USING (bucket_id = 'article-files');
+CREATE POLICY "admins upload article files" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'article-files' AND has_role(auth.uid(), 'admin'::app_role));
+CREATE POLICY "admins update article files" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'article-files' AND has_role(auth.uid(), 'admin'::app_role));
+CREATE POLICY "admins delete article files" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'article-files' AND has_role(auth.uid(), 'admin'::app_role));

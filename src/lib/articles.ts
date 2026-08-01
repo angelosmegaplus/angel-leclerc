@@ -3,6 +3,21 @@ import type { Database } from "@/integrations/supabase/types";
 
 export type Article = Database["public"]["Tables"]["articles"]["Row"];
 
+export type ArticleAttachment = {
+  name: string;
+  url: string;
+  size?: number;
+};
+
+export function getAttachments(article: Article): ArticleAttachment[] {
+  const raw = article.attachments;
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(
+    (a): a is ArticleAttachment =>
+      typeof a === "object" && a !== null && "url" in a && "name" in a,
+  );
+}
+
 export const ARTICLE_CATEGORIES = [
   "Article",
   "Annonce",
@@ -16,6 +31,8 @@ export async function fetchLatestArticles(limit = 3): Promise<Article[]> {
     .from("articles")
     .select("*")
     .eq("published", true)
+    .eq("is_private", false)
+    .order("featured", { ascending: false })
     .order("published_at", { ascending: false })
     .limit(limit);
   if (error) throw error;
@@ -47,6 +64,8 @@ export async function fetchPublishedArticles(): Promise<Article[]> {
     .from("articles")
     .select("*")
     .eq("published", true)
+    .eq("is_private", false)
+    .order("featured", { ascending: false })
     .order("published_at", { ascending: false });
   if (error) throw error;
   return data ?? [];
