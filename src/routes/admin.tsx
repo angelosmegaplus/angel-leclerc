@@ -16,6 +16,8 @@ import {
   Bell,
   Mail,
   Users,
+  FileEdit,
+  CalendarClock,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
