@@ -68,35 +68,6 @@ function ContactPage() {
           </AnimatedSection>
 
           <AnimatedSection delay={0.08} className="mt-10">
-            <div className="mx-auto grid max-w-3xl gap-4 sm:grid-cols-3">
-              <ContactCard
-                icon={<Mail size={18} className="text-primary" />}
-                label="E-mail"
-                value="contact@angel-leclerc.fr"
-                href="mailto:contact@angel-leclerc.fr"
-              />
-              <ContactCard
-                icon={<Phone size={18} className="text-primary" />}
-                label="Téléphone"
-                value="06 01 76 69 78"
-                href="tel:+33601766978"
-              />
-              <ContactCard
-                icon={<MapPin size={18} className="text-primary" />}
-                label="Courrier"
-                value="CIAS, 4b rue Stéphane Hessel, 24200 Sarlat-la-Canéda"
-              />
-            </div>
-          </AnimatedSection>
-
-          <AnimatedSection delay={0.12} className="mt-6">
-            <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-center gap-2 text-sm text-muted-foreground">
-              <Clock size={16} className="text-primary" />
-              Réponse sous 48&nbsp;h ouvrées en général.
-            </div>
-          </AnimatedSection>
-
-          <AnimatedSection delay={0.16} className="mt-10">
             <div className="mx-auto max-w-2xl">
               <div className="mb-4 flex items-start gap-3 rounded-xl border border-primary/25 bg-primary/5 px-4 py-3 text-sm leading-relaxed text-muted-foreground">
                 <Paperclip size={16} className="mt-0.5 shrink-0 text-primary" />
@@ -109,17 +80,49 @@ function ContactPage() {
             </div>
           </AnimatedSection>
 
+          <AnimatedSection delay={0.14} className="mt-12">
+            <div className="mx-auto max-w-3xl">
+              <h2 className="text-center font-display text-xl font-semibold text-foreground">
+                Mes coordonnées
+              </h2>
+              <div className="mt-5 grid gap-4 sm:grid-cols-3">
+                <ContactCard
+                  icon={<Mail size={18} className="text-primary" />}
+                  label="E-mail"
+                  value="contact@angel-leclerc.fr"
+                  href="mailto:contact@angel-leclerc.fr"
+                />
+                <ContactCard
+                  icon={<Phone size={18} className="text-primary" />}
+                  label="Téléphone"
+                  value="06 01 76 69 78"
+                  href="tel:+33601766978"
+                />
+                <ContactCard
+                  icon={<MapPin size={18} className="text-primary" />}
+                  label="Courrier"
+                  value="CIAS, 4b rue Stéphane Hessel, 24200 Sarlat-la-Canéda"
+                />
+              </div>
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-sm text-muted-foreground">
+                <Clock size={16} className="text-primary" />
+                Réponse sous 48&nbsp;h ouvrées en général.
+              </div>
+            </div>
+          </AnimatedSection>
+
           <AnimatedSection delay={0.2} className="mt-8">
             <div className="mx-auto max-w-2xl rounded-xl border border-border bg-card p-5">
               <div className="flex items-start gap-3">
                 <AlertCircle size={18} className="mt-0.5 shrink-0 text-primary" />
                 <div className="text-sm leading-relaxed text-muted-foreground">
                   <p className="font-medium text-foreground">
-                    Le formulaire ne répond pas&nbsp;?
+                    Pas de réponse&nbsp;? Appelez-moi.
                   </p>
                   <p className="mt-1">
-                    Si vous n'obtenez pas de réponse ou si l'envoi échoue, le plus
-                    simple reste de m'écrire directement par e-mail ou de m'appeler.
+                    Si votre demande est urgente, ou si vous n'avez pas de retour sous
+                    48&nbsp;h, le plus efficace reste un appel direct&nbsp;: je réponds
+                    volontiers de vive voix.
                   </p>
                   <div className="mt-4 flex flex-col gap-3 sm:flex-row">
                     <Button
