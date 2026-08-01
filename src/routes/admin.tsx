@@ -360,15 +360,100 @@ function AdminPage() {
               </p>
             </div>
 
-            <label className="flex items-center gap-2 text-sm text-foreground">
+            <div className="space-y-2">
+              <Label>Fichiers joints (PDF, images, documents…)</Label>
+              <div className="space-y-2">
+                {draft.attachments.map((f, i) => (
+                  <div
+                    key={f.url}
+                    className="flex items-center justify-between gap-3 rounded-md border border-border bg-background px-3 py-2 text-sm"
+                  >
+                    <span className="flex min-w-0 items-center gap-2">
+                      <Paperclip className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      <span className="truncate">{f.name}</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setDraft({
+                          ...draft,
+                          attachments: draft.attachments.filter((_, j) => j !== i),
+                        })
+                      }
+                      className="text-muted-foreground hover:text-destructive"
+                      aria-label={`Retirer ${f.name}`}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
               <input
-                type="checkbox"
-                checked={draft.published}
-                onChange={(e) => setDraft({ ...draft, published: e.target.checked })}
-                className="h-4 w-4 accent-[var(--color-primary)]"
+                id="attachments"
+                type="file"
+                multiple
+                disabled={uploadingFile}
+                onChange={async (e) => {
+                  const files = Array.from(e.target.files ?? []);
+                  e.target.value = "";
+                  if (files.length === 0) return;
+                  setUploadingFile(true);
+                  try {
+                    const uploaded = await Promise.all(files.map(uploadAttachment));
+                    setDraft((d) =>
+                      d ? { ...d, attachments: [...d.attachments, ...uploaded] } : d,
+                    );
+                    toast.success("Fichier(s) ajouté(s)");
+                  } catch (err) {
+                    toast.error(
+                      err instanceof Error ? err.message : "Échec de l'import",
+                    );
+                  } finally {
+                    setUploadingFile(false);
+                  }
+                }}
+                className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border file:border-input file:bg-background file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground"
               />
-              Publier immédiatement sur le site
-            </label>
+              {uploadingFile && (
+                <p className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                  <Loader2 className="h-3 w-3 animate-spin" /> Import en cours…
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-3 rounded-lg border border-border bg-background p-4">
+              <label className="flex items-center gap-2 text-sm text-foreground">
+                <input
+                  type="checkbox"
+                  checked={draft.published}
+                  onChange={(e) => setDraft({ ...draft, published: e.target.checked })}
+                  className="h-4 w-4 accent-[var(--color-primary)]"
+                />
+                Publier immédiatement sur le site
+              </label>
+              <label className="flex items-center gap-2 text-sm text-foreground">
+                <input
+                  type="checkbox"
+                  checked={draft.is_private}
+                  onChange={(e) =>
+                    setDraft({ ...draft, is_private: e.target.checked })
+                  }
+                  className="h-4 w-4 accent-[var(--color-primary)]"
+                />
+                <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                Article privé (visible uniquement depuis cet espace)
+              </label>
+              <label className="flex items-center gap-2 text-sm text-foreground">
+                <input
+                  type="checkbox"
+                  checked={draft.featured}
+                  onChange={(e) => setDraft({ ...draft, featured: e.target.checked })}
+                  className="h-4 w-4 accent-[var(--color-primary)]"
+                />
+                <Star className="h-3.5 w-3.5 text-muted-foreground" />
+                Mettre en avant en première page
+              </label>
+            </div>
 
             <div className="flex gap-2">
               <Button type="submit" disabled={save.isPending}>
@@ -407,6 +492,8 @@ function AdminPage() {
                       {a.published
                         ? `publié ${formatDate(a.published_at ?? a.created_at)}`
                         : "brouillon"}
+                      {a.is_private && " · privé"}
+                      {a.featured && " · à la une"}
                     </p>
                   </div>
                   <div className="flex gap-2">
