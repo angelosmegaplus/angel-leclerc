@@ -4,18 +4,41 @@ import { Loader2, Paperclip, Send, X, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { submitProjectRequest } from "@/lib/contact.functions";
 
-const PROJECT_TYPES = [
-  "Gestion de projet",
-  "Conseil en communication",
-  "Rédaction ou contenu éditorial",
-  "Création de site internet",
-  "Réseaux sociaux",
-  "Création d'association",
-  "Affiche ou flyer",
-  "Identité visuelle",
-  "Recherche de prestataires",
-  "Production audio, vidéo ou numérique",
-  "Autre demande",
+const PROJECT_GROUPS = [
+  {
+    label: "Professionnel — prestations",
+    options: [
+      "Gestion de projet",
+      "Conseil en communication",
+      "Rédaction ou contenu éditorial",
+      "Création de site internet",
+      "Réseaux sociaux",
+      "Création d'association",
+      "Affiche ou flyer",
+      "Identité visuelle",
+      "Recherche de prestataires",
+      "Production audio, vidéo ou numérique",
+    ],
+  },
+  {
+    label: "Alternance BTS Communication",
+    options: [
+      "Proposition d'alternance (BTS Communication)",
+      "Question sur mon parcours ou mon CV",
+    ],
+  },
+  {
+    label: "Blog & presse",
+    options: [
+      "À propos d'un article du blog",
+      "Demande presse ou droit de réponse",
+      "Proposition de sujet ou collaboration",
+    ],
+  },
+  {
+    label: "Autre",
+    options: ["Autre demande"],
+  },
 ] as const;
 
 const ACCEPT_ATTR =
@@ -66,9 +89,12 @@ function fileToBase64(file: File): Promise<string> {
   });
 }
 
-export function ProjectForm() {
+export function ProjectForm({ defaultProjectType = "" }: { defaultProjectType?: string } = {}) {
   const submit = useServerFn(submitProjectRequest);
-  const [state, setState] = useState<FormState>(initialState);
+  const [state, setState] = useState<FormState>({
+    ...initialState,
+    projectType: defaultProjectType,
+  });
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
@@ -135,7 +161,7 @@ export function ProjectForm() {
           email: state.email.trim(),
           phone: state.phone.trim(),
           structure: state.structure.trim(),
-          projectType: state.projectType as (typeof PROJECT_TYPES)[number],
+          projectType: state.projectType,
           budget: state.budget.trim(),
           deadline: state.deadline.trim(),
           description: state.description.trim(),
@@ -244,7 +270,7 @@ export function ProjectForm() {
           }
         />
         <Field
-          label="Projet"
+          label="Sujet de votre message"
           required
           error={errors.projectType}
           className="md:col-span-2"
@@ -255,10 +281,14 @@ export function ProjectForm() {
               className={inputClass(errors.projectType)}
             >
               <option value="">— Choisir —</option>
-              {PROJECT_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
+              {PROJECT_GROUPS.map((g) => (
+                <optgroup key={g.label} label={g.label}>
+                  {g.options.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           }

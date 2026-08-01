@@ -29,7 +29,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedSection } from "@/components/AnimatedSection";
-import { ProjectForm } from "@/components/ProjectForm";
 import heroImage from "@/assets/hero-illustration.jpg";
 import revolutInvoiceImage from "@/assets/revolut-invoice-example.jpg";
 
@@ -797,9 +796,18 @@ function ContactSection() {
           </div>
         </AnimatedSection>
 
-        <AnimatedSection delay={0.12} className="mt-10">
-          <div className="mx-auto max-w-2xl">
-            <ProjectForm />
+        <AnimatedSection delay={0.12} className="mt-8">
+          <div className="mx-auto max-w-md text-center">
+            <Button
+              asChild
+              size="lg"
+              className="w-full bg-primary text-primary-foreground hover:bg-accent"
+            >
+              <a href="/contact">Remplir le formulaire de contact</a>
+            </Button>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Formulaire détaillé, pièce jointe possible (10 Mo max).
+            </p>
           </div>
         </AnimatedSection>
 
