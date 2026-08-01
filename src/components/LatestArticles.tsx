@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Newspaper } from "lucide-react";
+import { ArrowRight, Newspaper, Star } from "lucide-react";
 import { fetchLatestArticles, formatDate, type Article } from "@/lib/articles";
 
 export function LatestArticles() {
@@ -17,10 +17,10 @@ export function LatestArticles() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
-              <Newspaper size={14} /> Articles
+              <Newspaper size={14} /> Blog
             </p>
             <h2 className="mt-3 font-display text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-              Les derniers articles
+              Blog
             </h2>
           </div>
           <Link
@@ -49,7 +49,8 @@ export function LatestArticles() {
                 />
               )}
               <div className="flex flex-1 flex-col p-5">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+                <span className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+                  {a.featured && <Star size={12} className="fill-current" />}
                   {a.category}
                 </span>
                 <h3 className="mt-2 font-display text-base font-bold leading-snug text-foreground">
