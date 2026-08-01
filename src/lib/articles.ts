@@ -4,9 +4,9 @@ import type { Database } from "@/integrations/supabase/types";
 export type Article = Database["public"]["Tables"]["articles"]["Row"];
 
 export const ARTICLE_CATEGORIES = [
-  "Actualité",
-  "Communiqué de presse",
-  "Article",
+  "Presse",
+  "Annonce",
+  "Presse",
   "Coulisses",
   "Projet",
 ] as const;

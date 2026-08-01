@@ -7,7 +7,7 @@ const navLinks = [
   { href: "/", label: "Accueil" },
   { href: "/entreprise", label: "Entreprise" },
   { href: "/parcours", label: "Parcours" },
-  { href: "/actualites", label: "Actualités" },
+  { href: "/articles", label: "Articles" },
   { href: "/entreprise#contact", label: "Contact" },
 ];
 

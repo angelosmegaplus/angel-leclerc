@@ -3,10 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { fetchArticleBySlug, formatDate } from "@/lib/articles";
 
-export const Route = createFileRoute("/actualites/$slug")({
+export const Route = createFileRoute("/articles/$slug")({
   head: () => ({
     meta: [
-      { title: "Publication | Angel Leclerc Communication" },
+      { title: "Article | Angel Leclerc Communication" },
       {
         name: "description",
         content:
@@ -14,12 +14,12 @@ export const Route = createFileRoute("/actualites/$slug")({
       },
       { property: "og:type", content: "article" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:title", content: "Publication | Angel Leclerc Communication" },
+      { property: "og:title", content: "Article | Angel Leclerc Communication" },
       {
         property: "og:description",
         content: "Article publié par Angel Leclerc Communication.",
       },
-      { name: "twitter:title", content: "Publication | Angel Leclerc Communication" },
+      { name: "twitter:title", content: "Article | Angel Leclerc Communication" },
       {
         name: "twitter:description",
         content: "Article publié par Angel Leclerc Communication.",
@@ -48,13 +48,13 @@ function ArticlePage() {
     return (
       <div className="container-tight py-20 text-center">
         <h1 className="font-display text-2xl font-bold text-foreground">
-          Publication introuvable
+          Article introuvable
         </h1>
         <Link
-          to="/actualites"
+          to="/articles"
           className="mt-6 inline-flex items-center text-sm text-primary hover:underline"
         >
-          <ArrowLeft className="mr-2 h-4 w-4" /> Toutes les actualités
+          <ArrowLeft className="mr-2 h-4 w-4" /> Tous les articles
         </Link>
       </div>
     );
@@ -102,10 +102,10 @@ function ArticlePage() {
 
         <div className="mt-12">
           <Link
-            to="/actualites"
+            to="/articles"
             className="inline-flex items-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" /> Toutes les actualités
+            <ArrowLeft className="mr-2 h-4 w-4" /> Tous les articles
           </Link>
         </div>
       </div>

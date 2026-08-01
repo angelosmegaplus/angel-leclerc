@@ -3,37 +3,37 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
 import { fetchPublishedArticles, formatDate, type Article } from "@/lib/articles";
 
-export const Route = createFileRoute("/actualites/")({
+export const Route = createFileRoute("/articles/")({
   head: () => ({
     meta: [
-      { title: "Actualités et communiqués | Angel Leclerc Communication" },
+      { title: "Articles | Angel Leclerc Communication" },
       {
         name: "description",
         content:
-          "Articles, actualités et communiqués publiés par Angel Leclerc Communication : projets, coulisses et prises de parole.",
+          "Articles publiés par Angel Leclerc Communication : projets, coulisses et prises de parole.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       {
         property: "og:title",
-        content: "Actualités et communiqués | Angel Leclerc Communication",
+        content: "Articles | Angel Leclerc Communication",
       },
       {
         property: "og:description",
         content:
-          "Articles, actualités et communiqués publiés par Angel Leclerc Communication.",
+          "Articles publiés par Angel Leclerc Communication.",
       },
       {
         name: "twitter:title",
-        content: "Actualités et communiqués | Angel Leclerc Communication",
+        content: "Articles | Angel Leclerc Communication",
       },
       {
         name: "twitter:description",
         content:
-          "Articles, actualités et communiqués publiés par Angel Leclerc Communication.",
+          "Articles publiés par Angel Leclerc Communication.",
       },
     ],
-    links: [{ rel: "canonical", href: "https://www.angel-leclerc.fr/actualites" }],
+    links: [{ rel: "canonical", href: "https://www.angel-leclerc.fr/articles" }],
   }),
   component: ActualitesPage,
 });
@@ -48,10 +48,10 @@ function ActualitesPage() {
     <section className="bg-background py-14 md:py-20">
       <div className="container-tight">
         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
-          Actualités
+          Articles
         </p>
         <h1 className="mt-3 font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl md:text-4xl">
-          Articles, communiqués et actualités
+          Articles
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
           Les publications d'Angel Leclerc Communication : projets accompagnés, prises de
@@ -68,7 +68,7 @@ function ActualitesPage() {
           {articles.map((a: Article) => (
             <Link
               key={a.id}
-              to="/actualites/$slug"
+              to="/articles/$slug"
               params={{ slug: a.slug }}
               className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/50"
             >

@@ -2,11 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute(
-  "/communiques/reponse-article-chni-tombola-patrimoine",
+  "/articles/reponse-article-chni-tombola-patrimoine",
 )({
   head: () => ({
     meta: [
-      { title: "Communiqué – Réponse à l'article du Ch'ni sur la Tombola Patrimoine" },
+      { title: "Article – Réponse à l'article du Ch'ni sur la Tombola Patrimoine" },
       {
         name: "description",
         content:
@@ -22,7 +22,7 @@ export const Route = createFileRoute(
       {
         property: "og:description",
         content:
-          "Communiqué officiel concernant la Tombola Patrimoine de la chapelle des Visitandines de Besançon.",
+          "Article concernant la Tombola Patrimoine de la chapelle des Visitandines de Besançon.",
       },
       {
         name: "twitter:title",
@@ -31,17 +31,17 @@ export const Route = createFileRoute(
       {
         name: "twitter:description",
         content:
-          "Communiqué officiel concernant la Tombola Patrimoine de la chapelle des Visitandines de Besançon.",
+          "Article concernant la Tombola Patrimoine de la chapelle des Visitandines de Besançon.",
       },
     ],
     links: [
       {
         rel: "canonical",
-        href: "https://www.angel-leclerc.fr/communiques/reponse-article-chni-tombola-patrimoine",
+        href: "https://www.angel-leclerc.fr/articles/reponse-article-chni-tombola-patrimoine",
       },
     ],
   }),
-  component: CommuniquePage,
+  component: ArticleReponseChniPage,
 });
 
 const paragraphs: string[] = [
@@ -65,12 +65,12 @@ const paragraphs: string[] = [
   "La restauration d'un bâtiment patrimonial peut être discutée, critiquée ou contestée. Elle ne peut cependant pas être transformée en soupçon financier ou politique sans faits directement liés à l'opération.",
 ];
 
-function CommuniquePage() {
+function ArticleReponseChniPage() {
   return (
     <article className="bg-background py-14 md:py-20">
       <div className="mx-auto w-full max-w-[850px] px-5 sm:px-6">
         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
-          Communiqué de presse
+          Article
         </p>
 
         <h1 className="mt-4 font-display text-2xl font-bold leading-snug tracking-tight text-foreground sm:text-3xl md:text-4xl">

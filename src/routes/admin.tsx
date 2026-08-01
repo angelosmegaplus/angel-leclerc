@@ -195,7 +195,7 @@ function AdminPage() {
           </div>
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="outline" size="sm">
-              <Link to="/actualites">
+              <Link to="/articles">
                 <Eye className="mr-2 h-4 w-4" /> Voir le site
               </Link>
             </Button>
@@ -263,7 +263,7 @@ function AdminPage() {
                   onChange={(e) => setDraft({ ...draft, slug: e.target.value })}
                 />
                 <p className="text-[11px] text-muted-foreground">
-                  /actualites/{previewSlug || "…"}
+                  /articles/{previewSlug || "…"}
                 </p>
               </div>
             </div>
@@ -353,7 +353,7 @@ function AdminPage() {
                   <div className="flex gap-2">
                     {a.published && (
                       <Button asChild size="sm" variant="ghost">
-                        <a href={`/actualites/${a.slug}`} target="_blank" rel="noreferrer">
+                        <a href={`/articles/${a.slug}`} target="_blank" rel="noreferrer">
                           <Eye className="h-4 w-4" />
                         </a>
                       </Button>
