@@ -55,7 +55,6 @@ export const notifySubscribersOfArticle = createServerFn({ method: "POST" })
     if (!adminRole) throw new Error("Accès refusé.");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { sendEmail, escapeHtml } = await import("./email.server");
 
     const { data: article } = await supabaseAdmin
       .from("articles")
@@ -76,31 +75,21 @@ export const notifySubscribersOfArticle = createServerFn({ method: "POST" })
     const recipients = subs ?? [];
     if (recipients.length === 0) return { ok: true as const, sent: 0 };
 
-    const fromAddress =
-      process.env["CONTACT_FROM_ADDRESS"] ||
-      "Angel Leclerc Communication <onboarding@resend.dev>";
     const url = `https://www.angel-leclerc.fr/articles/${article.slug}`;
-
-    const cream = "#F6F1E8";
-    const white = "#FFFDF9";
-    const ink = "#181716";
-    const terracotta = "#CE654B";
-    const body =
-      "'Inter','Helvetica Neue','Segoe UI',Arial,sans-serif";
-    const head = "'Manrope','Helvetica Neue','Segoe UI',Arial,sans-serif";
 
     let sent = 0;
     for (const sub of recipients) {
       const unsubUrl = `https://www.angel-leclerc.fr/desabonnement?token=${sub.unsubscribe_token}`;
-      const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head><body style="margin:0;padding:0;background:${cream};font-family:${body};color:${ink};"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${cream};padding:32px 16px;"><tr><td align="center"><table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:${white};border-radius:14px;overflow:hidden;"><tr><td style="padding:28px 32px 8px 32px;border-bottom:3px solid ${terracotta};"><div style="font-family:${head};font-size:18px;font-weight:700;">Angel Leclerc Communication</div><div style="font-size:13px;color:#6b6b6b;margin-top:2px;">Nouvel article sur le blog</div></td></tr><tr><td style="padding:28px 32px;font-size:15px;line-height:1.6;"><h2 style="margin:0 0 12px 0;font-family:${head};font-size:22px;">${escapeHtml(article.title)}</h2>${article.excerpt ? `<p style="margin:0 0 20px 0;color:#4b4b4b;">${escapeHtml(article.excerpt)}</p>` : ""}<p style="margin:24px 0 0 0;"><a href="${url}" style="background:${terracotta};color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;">Lire l'article</a></p></td></tr><tr><td style="padding:20px 32px;background:${cream};font-size:12px;color:#8a8a8a;text-align:center;">Vous recevez cet e-mail car vous êtes abonné au blog.<br/><a href="${unsubUrl}" style="color:${terracotta};">Se désabonner</a></td></tr></table></td></tr></table></body></html>`;
-
-      const result = await sendEmail({
-        from: fromAddress,
-        to: sub.email,
-        subject: `Nouvel article : ${article.title}`,
-        html,
+      const result = await sendTemplateEmail('blog-new-article', sub.email, {
+        templateData: {
+          title: article.title,
+          excerpt: article.excerpt ?? undefined,
+          url,
+          unsubscribeUrl: unsubUrl,
+        },
+        idempotencyKey: `article-${article.id}-subscriber-${sub.unsubscribe_token}`,
       });
-      if (result.ok) sent += 1;
+      if (result.sent) sent += 1;
     }
 
     return { ok: true as const, sent };
