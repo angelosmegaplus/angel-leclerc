@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader, getRequestIP } from "@tanstack/react-start/server";
 import { z } from "zod";
+import { sendTemplateEmail } from "./email-templates/send-email";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
@@ -54,8 +55,6 @@ export const submitProjectRequest = createServerFn({ method: "POST" })
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { sendEmail, escapeHtml } = await import("./email.server");
-
     const ip = getRequestIP({ xForwardedFor: true }) ?? null;
     const userAgent = getRequestHeader("user-agent") ?? null;
 
@@ -142,81 +141,51 @@ export const submitProjectRequest = createServerFn({ method: "POST" })
       throw new Error("La demande n'a pas pu être enregistrée.");
     }
 
-    // Emails
-    const now = new Date(inserted!.created_at).toLocaleString("fr-FR", {
+    // Send transactional emails via Lovable's managed email API.
+    const sentAt = new Date(inserted!.created_at).toLocaleString("fr-FR", {
       dateStyle: "long",
       timeStyle: "short",
       timeZone: "Europe/Paris",
     });
 
-    const fromAddress =
-      process.env.CONTACT_FROM_ADDRESS || "Angel Leclerc Communication <onboarding@resend.dev>";
-    const notifyAddress = process.env.CONTACT_NOTIFY_ADDRESS || "contact@angel-leclerc.fr";
+    const notificationResult = await sendTemplateEmail(
+      'contact-notification',
+      'contact@angel-leclerc.fr',
+      {
+        templateData: {
+          fullName: data.fullName,
+          email: data.email,
+          phone: data.phone || undefined,
+          structure: data.structure || undefined,
+          projectType: data.projectType,
+          budget: data.budget || undefined,
+          deadline: data.deadline || undefined,
+          description: data.description,
+          sentAt,
+          attachmentName: attachmentName ?? undefined,
+          signedUrl: signedUrl ?? undefined,
+        },
+        idempotencyKey: `contact-notification-${inserted!.id}`,
+        replyTo: data.email,
+      },
+    );
+    if (!notificationResult.sent) {
+      console.warn('[contact] notification suppressed for recipient');
+    }
 
-    const brandCream = "#F6F1E8";
-    const brandWarmWhite = "#FFFDF9";
-    const brandInk = "#181716";
-    const brandTerracotta = "#CE654B";
-    const fontHead =
-      "'Manrope','Helvetica Neue','Segoe UI',Arial,sans-serif";
-    const fontBody =
-      "'Inter','Helvetica Neue','Segoe UI',Arial,sans-serif";
-    const fontsLink = `<!--[if !mso]><!--><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700&display=swap" rel="stylesheet"/><!--<![endif]-->`;
-
-    const rowsHtml = [
-      ["Nom", data.fullName],
-      ["E-mail", data.email],
-      ["Téléphone", data.phone || "—"],
-      ["Structure", data.structure || "—"],
-      ["Type de projet", data.projectType],
-      ["Budget approximatif", data.budget || "—"],
-      ["Date ou délai souhaité", data.deadline || "—"],
-      ["Envoyé le", now],
-    ]
-      .map(
-        ([label, value]) =>
-          `<tr><td style="padding:8px 16px 8px 0;color:#6b6b6b;font-family:${fontBody};font-size:14px;vertical-align:top;">${escapeHtml(label)}</td><td style="padding:8px 0;color:${brandInk};font-weight:500;font-family:${fontBody};font-size:14px;">${escapeHtml(value)}</td></tr>`,
-      )
-      .join("");
-
-    const attachmentBlock = signedUrl
-      ? `<p style="margin:20px 0 0 0;font-family:${fontBody};font-size:14px;color:${brandInk};line-height:1.6;">Fichier joint&nbsp;: <strong>${escapeHtml(attachmentName ?? "fichier")}</strong><br/><a href="${signedUrl}" style="color:${brandTerracotta};text-decoration:underline;">Télécharger le fichier (lien valable 7 jours)</a></p>`
-      : "";
-
-    const wrap = (inner: string) => `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>${fontsLink}</head><body style="margin:0;padding:0;background:${brandCream};font-family:${fontBody};color:${brandInk};"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${brandCream};padding:32px 16px;"><tr><td align="center"><table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:${brandWarmWhite};border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(24,23,22,0.06);"><tr><td style="padding:28px 32px 8px 32px;border-bottom:3px solid ${brandTerracotta};"><div style="font-family:${fontHead};font-size:18px;font-weight:700;color:${brandInk};letter-spacing:-0.01em;">Angel Leclerc Communication</div><div style="font-family:${fontBody};font-size:13px;color:#6b6b6b;margin-top:2px;">Donner du souffle à vos idées</div></td></tr><tr><td style="padding:28px 32px;font-family:${fontBody};font-size:15px;line-height:1.6;color:${brandInk};">${inner}</td></tr><tr><td style="padding:20px 32px;background:${brandCream};font-family:${fontBody};font-size:12px;color:#8a8a8a;text-align:center;">Angel Leclerc Communication · <a href="https://angel-leclerc.fr" style="color:${brandTerracotta};text-decoration:none;">angel-leclerc.fr</a></td></tr></table></td></tr></table></body></html>`;
-
-    const notifyHtml = wrap(`
-      <h2 style="margin:0 0 20px 0;font-family:${fontHead};font-weight:700;font-size:22px;color:${brandInk};letter-spacing:-0.01em;">Nouvelle demande de projet</h2>
-      <table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;width:100%;">${rowsHtml}</table>
-      <h3 style="margin:24px 0 8px 0;font-family:${fontHead};font-weight:600;font-size:16px;color:${brandInk};">Description</h3>
-      <p style="white-space:pre-wrap;line-height:1.6;margin:0;font-family:${fontBody};font-size:14px;color:${brandInk};">${escapeHtml(data.description)}</p>
-      ${attachmentBlock}
-    `);
-
-    await sendEmail({
-      from: fromAddress,
-      to: notifyAddress,
-      reply_to: data.email,
-      subject: `Nouvelle demande de projet – ${data.fullName} – ${data.projectType}`,
-      html: notifyHtml,
-    });
-
-    const confirmationHtml = wrap(`
-      <h2 style="margin:0 0 16px 0;font-family:${fontHead};font-weight:700;font-size:22px;color:${brandInk};letter-spacing:-0.01em;">Votre demande a bien été reçue</h2>
-      <p style="margin:0 0 12px 0;">Bonjour ${escapeHtml(data.fullName.split(" ")[0] || "")},</p>
-      <p style="margin:0 0 12px 0;">Votre demande a bien été transmise à <strong>Angel Leclerc Communication</strong>.</p>
-      <p style="margin:0 0 20px 0;">Je reviendrai vers vous dès que possible afin d'échanger sur votre projet.</p>
-      <p style="margin:0;">Cordialement,<br/><span style="color:${brandTerracotta};font-weight:600;">Angel Leclerc</span></p>
-      <hr style="border:none;border-top:1px solid #eee;margin:24px 0;"/>
-      <p style="font-size:12px;color:#8a8a8a;margin:0;">Cet e-mail confirme la bonne réception de votre demande. Il ne contient pas d'information confidentielle.</p>
-    `);
-
-    await sendEmail({
-      from: fromAddress,
-      to: data.email,
-      subject: "Votre demande a bien été reçue",
-      html: confirmationHtml,
-    });
+    const confirmationResult = await sendTemplateEmail(
+      'contact-confirmation',
+      data.email,
+      {
+        templateData: {
+          firstName: data.fullName.split(' ')[0],
+        },
+        idempotencyKey: `contact-confirmation-${inserted!.id}`,
+      },
+    );
+    if (!confirmationResult.sent) {
+      console.warn('[contact] confirmation suppressed for', data.email);
+    }
 
     return { ok: true as const };
   });
