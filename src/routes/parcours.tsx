@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Mail, Phone, Linkedin, Download } from "lucide-react";
+import { Linkedin, Download, Mail } from "lucide-react";
 import {
   MyJourney,
   SkillsSection,
@@ -62,27 +62,19 @@ function ParcoursPage() {
             <div className="mx-auto mt-10 max-w-2xl">
               <div className="grid gap-4 sm:grid-cols-2">
                 <a
-                  href="mailto:contact@angel-leclerc.fr"
-                  className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary"
+                  href="/contact"
+                  className="flex items-center gap-4 rounded-2xl border border-primary/40 bg-primary/5 p-5 transition-colors hover:bg-primary/10 sm:col-span-2"
                 >
-                  <div className="inline-flex rounded-xl bg-primary/10 p-3 text-primary">
+                  <div className="inline-flex rounded-xl bg-primary/15 p-3 text-primary">
                     <Mail size={20} />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">E-mail</p>
-                    <p className="mt-1 text-sm font-medium text-foreground break-all">contact@angel-leclerc.fr</p>
-                  </div>
-                </a>
-                <a
-                  href="tel:+33601766978"
-                  className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary"
-                >
-                  <div className="inline-flex rounded-xl bg-primary/10 p-3 text-primary">
-                    <Phone size={20} />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Téléphone</p>
-                    <p className="mt-1 text-sm font-medium text-foreground">06 01 76 69 78</p>
+                    <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+                      Me contacter
+                    </p>
+                    <p className="mt-1 text-sm font-medium text-foreground">
+                      Formulaire et coordonnées sur la page contact
+                    </p>
                   </div>
                 </a>
                 <a
