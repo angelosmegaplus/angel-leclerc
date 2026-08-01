@@ -28,6 +28,7 @@ export type Database = {
           is_private: boolean
           published: boolean
           published_at: string | null
+          scheduled_at: string | null
           slug: string
           title: string
           updated_at: string
@@ -45,6 +46,7 @@ export type Database = {
           is_private?: boolean
           published?: boolean
           published_at?: string | null
+          scheduled_at?: string | null
           slug: string
           title: string
           updated_at?: string
@@ -62,6 +64,7 @@ export type Database = {
           is_private?: boolean
           published?: boolean
           published_at?: string | null
+          scheduled_at?: string | null
           slug?: string
           title?: string
           updated_at?: string

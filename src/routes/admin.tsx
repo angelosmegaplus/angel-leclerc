@@ -16,6 +16,8 @@ import {
   Bell,
   Mail,
   Users,
+  FileEdit,
+  CalendarClock,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -25,10 +27,13 @@ import {
   ARTICLE_CATEGORIES,
   fetchAllArticles,
   formatDate,
+  formatDateTime,
+  getArticleStatus,
   getAttachments,
   slugify,
   type Article,
   type ArticleAttachment,
+  type ArticleStatus,
 } from "@/lib/articles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,7 +77,8 @@ type Draft = {
   excerpt: string;
   content: string;
   cover_url: string;
-  published: boolean;
+  status: ArticleStatus;
+  scheduled_at: string;
   is_private: boolean;
   featured: boolean;
   attachments: ArticleAttachment[];
@@ -86,13 +92,28 @@ const emptyDraft: Draft = {
   excerpt: "",
   content: "",
   cover_url: "",
-  published: true,
+  status: "publie",
+  scheduled_at: "",
   is_private: false,
   featured: false,
   attachments: [],
 };
 
 const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
+
+/** ISO -> valeur d'un <input type="datetime-local"> en heure locale. */
+function toLocalInput(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function defaultSchedule(): string {
+  const d = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  d.setMinutes(0, 0, 0);
+  return toLocalInput(d.toISOString());
+}
 
 async function uploadAttachment(file: File): Promise<ArticleAttachment> {
   const safe = file.name.replace(/[^a-zA-Z0-9._-]+/g, "-");
@@ -159,6 +180,11 @@ function AdminPage() {
   const save = useMutation({
     mutationFn: async (d: Draft) => {
       const slug = d.slug ? slugify(d.slug) : slugify(d.title);
+      const scheduledIso =
+        d.status === "programme" && d.scheduled_at
+          ? new Date(d.scheduled_at).toISOString()
+          : null;
+      const isPublished = d.status !== "brouillon";
       const payload = {
         title: d.title.trim(),
         slug,
@@ -166,11 +192,12 @@ function AdminPage() {
         excerpt: d.excerpt.trim() || null,
         content: d.content,
         cover_url: d.cover_url.trim() || null,
-        published: d.published,
+        published: isPublished,
+        scheduled_at: scheduledIso,
         is_private: d.is_private,
         featured: d.featured,
         attachments: d.attachments,
-        published_at: d.published ? new Date().toISOString() : null,
+        published_at: isPublished ? (scheduledIso ?? new Date().toISOString()) : null,
         author_id: user?.id ?? null,
       };
       if (d.id) {
@@ -183,15 +210,25 @@ function AdminPage() {
         }
         const { error } = await supabase
           .from("articles")
-          .update({ ...payload, published_at: undefined })
+          .update({
+            ...payload,
+            // la date de parution existante est préservée, sauf programmation
+            published_at: scheduledIso ?? undefined,
+          })
           .eq("id", d.id);
         if (error) throw error;
-        if (d.published) {
+        if (isPublished && !scheduledIso) {
           await supabase
             .from("articles")
             .update({ published_at: new Date().toISOString() })
             .eq("id", d.id)
             .is("published_at", null);
+        }
+        if (!isPublished) {
+          await supabase
+            .from("articles")
+            .update({ published_at: null })
+            .eq("id", d.id);
         }
       } else {
         if (d.featured) {
@@ -311,6 +348,16 @@ function AdminPage() {
               if (!text && !draft.content.includes("<img")) {
                 toast.error("Le contenu de l'article est vide.");
                 return;
+              }
+              if (draft.status === "programme") {
+                if (!draft.scheduled_at) {
+                  toast.error("Choisissez une date de publication différée.");
+                  return;
+                }
+                if (new Date(draft.scheduled_at) <= new Date()) {
+                  toast.error("La date de publication doit être dans le futur.");
+                  return;
+                }
               }
               save.mutate(draft);
             }}
@@ -458,15 +505,66 @@ function AdminPage() {
             </div>
 
             <div className="space-y-3 rounded-lg border border-border bg-background p-4">
-              <label className="flex items-center gap-2 text-sm text-foreground">
-                <input
-                  type="checkbox"
-                  checked={draft.published}
-                  onChange={(e) => setDraft({ ...draft, published: e.target.checked })}
-                  className="h-4 w-4 accent-[var(--color-primary)]"
-                />
-                Publier immédiatement sur le site
-              </label>
+              <p className="text-sm font-medium text-foreground">Statut de publication</p>
+              <div className="space-y-2">
+                {(
+                  [
+                    ["brouillon", "Brouillon — non visible sur le site"],
+                    ["publie", "Publier immédiatement"],
+                    ["programme", "Publication différée (à une date et heure)"],
+                  ] as const
+                ).map(([value, label]) => (
+                  <label
+                    key={value}
+                    className="flex items-center gap-2 text-sm text-foreground"
+                  >
+                    <input
+                      type="radio"
+                      name="status"
+                      checked={draft.status === value}
+                      onChange={() =>
+                        setDraft({
+                          ...draft,
+                          status: value,
+                          scheduled_at:
+                            value === "programme"
+                              ? draft.scheduled_at || defaultSchedule()
+                              : "",
+                        })
+                      }
+                      className="h-4 w-4 accent-[var(--color-primary)]"
+                    />
+                    {value === "brouillon" && (
+                      <FileEdit className="h-3.5 w-3.5 text-muted-foreground" />
+                    )}
+                    {value === "programme" && (
+                      <CalendarClock className="h-3.5 w-3.5 text-muted-foreground" />
+                    )}
+                    {label}
+                  </label>
+                ))}
+              </div>
+              {draft.status === "programme" && (
+                <div className="space-y-1 pl-6">
+                  <Label htmlFor="scheduled_at" className="text-xs">
+                    Date et heure de mise en ligne
+                  </Label>
+                  <Input
+                    id="scheduled_at"
+                    type="datetime-local"
+                    required
+                    value={draft.scheduled_at}
+                    min={toLocalInput(new Date().toISOString())}
+                    onChange={(e) =>
+                      setDraft({ ...draft, scheduled_at: e.target.value })
+                    }
+                    className="max-w-xs"
+                  />
+                  <p className="text-[11px] text-muted-foreground">
+                    L'article apparaîtra automatiquement sur le site à cette date.
+                  </p>
+                </div>
+              )}
               <label className="flex items-center gap-2 text-sm text-foreground">
                 <input
                   type="checkbox"
@@ -680,22 +778,24 @@ function AdminPage() {
                     <p className="truncate font-medium text-foreground">{a.title}</p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {a.category} ·{" "}
-                      {a.published
-                        ? `publié ${formatDate(a.published_at ?? a.created_at)}`
-                        : "brouillon"}
+                      {getArticleStatus(a) === "brouillon" && "brouillon"}
+                      {getArticleStatus(a) === "programme" &&
+                        `programmé pour le ${formatDateTime(a.scheduled_at)}`}
+                      {getArticleStatus(a) === "publie" &&
+                        `publié ${formatDate(a.published_at ?? a.created_at)}`}
                       {a.is_private && " · privé"}
                       {a.featured && " · à la une"}
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    {a.published && (
+                    {getArticleStatus(a) === "publie" && (
                       <Button asChild size="sm" variant="ghost">
                         <a href={`/articles/${a.slug}`} target="_blank" rel="noreferrer">
                           <Eye className="h-4 w-4" />
                         </a>
                       </Button>
                     )}
-                    {a.published && !a.is_private && (
+                    {getArticleStatus(a) === "publie" && !a.is_private && (
                       <Button
                         size="sm"
                         variant="ghost"
@@ -744,7 +844,8 @@ function AdminPage() {
                           excerpt: a.excerpt ?? "",
                           content: a.content,
                           cover_url: a.cover_url ?? "",
-                          published: a.published,
+                          status: getArticleStatus(a),
+                          scheduled_at: toLocalInput(a.scheduled_at),
                           is_private: a.is_private,
                           featured: a.featured,
                           attachments: getAttachments(a),
