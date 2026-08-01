@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedSection } from "@/components/AnimatedSection";
+import { ProjectForm } from "@/components/ProjectForm";
 import heroImage from "@/assets/hero-illustration.jpg";
 import revolutInvoiceImage from "@/assets/revolut-invoice-example.jpg";
 
@@ -793,6 +794,12 @@ function ContactSection() {
                 Envoyer un e-mail
               </a>
             </Button>
+          </div>
+        </AnimatedSection>
+
+        <AnimatedSection delay={0.12} className="mt-10">
+          <div className="mx-auto max-w-2xl">
+            <ProjectForm />
           </div>
         </AnimatedSection>
 
