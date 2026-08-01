@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader, getRequestIP } from "@tanstack/react-start/server";
 import { z } from "zod";
+import { sendTemplateEmail } from "./email-templates/send-email";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
