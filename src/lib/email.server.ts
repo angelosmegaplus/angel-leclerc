@@ -11,6 +11,33 @@ type EmailPayload = {
   reply_to?: string;
 };
 
+async function sendViaLovable(payload: EmailPayload): Promise<
+  { ok: true; id?: string } | { ok: false; reason: "not_configured" | "provider_error"; body?: string }
+> {
+  const apiKey = process.env.LOVABLE_API_KEY;
+  if (!apiKey) return { ok: false, reason: "not_configured" };
+  try {
+    const { sendLovableEmail } = await import("@lovable.dev/email-js");
+    const to = Array.isArray(payload.to) ? payload.to[0]! : payload.to;
+    const res = await sendLovableEmail(
+      {
+        to,
+        from: payload.from,
+        subject: payload.subject,
+        html: payload.html,
+        text: payload.html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim(),
+        reply_to: payload.reply_to,
+      },
+      { apiKey },
+    );
+    if (!res.success) return { ok: false, reason: "provider_error" };
+    return { ok: true, id: res.message_id };
+  } catch (error) {
+    console.error("[email] Lovable email send failed", error);
+    return { ok: false, reason: "provider_error", body: String(error) };
+  }
+}
+
 export async function sendEmail(payload: EmailPayload): Promise<
   | { ok: true; id?: string }
   | { ok: false; reason: "not_configured" | "provider_error"; status?: number; body?: string }
@@ -19,11 +46,8 @@ export async function sendEmail(payload: EmailPayload): Promise<
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
   if (!LOVABLE_API_KEY || !RESEND_API_KEY) {
-    console.warn(
-      "[email] Resend connector not configured — skipping email send.",
-      { hasLovableKey: !!LOVABLE_API_KEY, hasResendKey: !!RESEND_API_KEY },
-    );
-    return { ok: false, reason: "not_configured" };
+    // No Resend connector: use Lovable's managed email infrastructure.
+    return sendViaLovable(payload);
   }
 
   const response = await fetch(`${GATEWAY_URL}/emails`, {
