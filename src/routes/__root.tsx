@@ -13,7 +13,6 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
-import { SubstackBanner } from "../components/SubstackBanner";
 import { ApprenticeshipBanner } from "../components/ApprenticeshipBanner";
 import { Toaster } from "../components/ui/sonner";
 
@@ -153,7 +152,6 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <div className="flex min-h-screen flex-col">
         <ApprenticeshipBanner />
-        <SubstackBanner />
         <Header />
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <main className="flex-1">

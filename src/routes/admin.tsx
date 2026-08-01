@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/RichTextEditor";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -217,6 +218,11 @@ function AdminPage() {
             className="mt-10 space-y-5 rounded-xl border border-border bg-card p-6"
             onSubmit={(e) => {
               e.preventDefault();
+              const text = draft.content.replace(/<[^>]*>/g, "").trim();
+              if (!text && !draft.content.includes("<img")) {
+                toast.error("Le contenu de l'article est vide.");
+                return;
+              }
               save.mutate(draft);
             }}
           >
@@ -291,14 +297,14 @@ function AdminPage() {
 
             <div className="space-y-2">
               <Label htmlFor="content">Contenu *</Label>
-              <Textarea
-                id="content"
-                required
-                rows={16}
+              <RichTextEditor
                 value={draft.content}
-                onChange={(e) => setDraft({ ...draft, content: e.target.value })}
-                placeholder="Rédigez votre article. Laissez une ligne vide entre chaque paragraphe."
+                onChange={(html) => setDraft({ ...draft, content: html })}
               />
+              <p className="text-[11px] text-muted-foreground">
+                Gras, italique, titres, listes, liens et images : utilisez la barre
+                d'outils ci-dessus.
+              </p>
             </div>
 
             <label className="flex items-center gap-2 text-sm text-foreground">
