@@ -68,6 +68,33 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_subscribers: {
+        Row: {
+          active: boolean
+          created_at: string
+          email: string
+          id: string
+          unsubscribe_token: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          email: string
+          id?: string
+          unsubscribe_token?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          email?: string
+          id?: string
+          unsubscribe_token?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contact_requests: {
         Row: {
           attachment_name: string | null
@@ -80,6 +107,7 @@ export type Database = {
           full_name: string
           id: string
           ip_address: string | null
+          is_read: boolean
           phone: string | null
           project_type: string
           structure: string | null
@@ -96,6 +124,7 @@ export type Database = {
           full_name: string
           id?: string
           ip_address?: string | null
+          is_read?: boolean
           phone?: string | null
           project_type: string
           structure?: string | null
@@ -112,6 +141,7 @@ export type Database = {
           full_name?: string
           id?: string
           ip_address?: string | null
+          is_read?: boolean
           phone?: string | null
           project_type?: string
           structure?: string | null
