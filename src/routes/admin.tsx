@@ -13,7 +13,11 @@ import {
   Lock,
   Star,
   X,
+  Bell,
+  Mail,
+  Users,
 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -31,6 +35,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RichTextEditor } from "@/components/RichTextEditor";
+import { notifySubscribersOfArticle } from "@/lib/subscribers.functions";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -109,6 +114,9 @@ function AdminPage() {
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<Draft | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [tab, setTab] = useState<"articles" | "messages" | "abonnes">("articles");
+  const notifyFn = useServerFn(notifySubscribersOfArticle);
+  const [notifyingId, setNotifyingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !session) navigate({ to: "/auth" });
@@ -119,6 +127,34 @@ function AdminPage() {
     queryFn: fetchAllArticles,
     enabled: Boolean(session) && isAdmin,
   });
+
+  const { data: messages = [] } = useQuery({
+    queryKey: ["admin-contact-requests"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("contact_requests")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: Boolean(session) && isAdmin,
+  });
+
+  const { data: subscribers = [] } = useQuery({
+    queryKey: ["admin-subscribers"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("blog_subscribers")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: Boolean(session) && isAdmin,
+  });
+
+  const unreadCount = messages.filter((m) => !m.is_read).length;
 
   const save = useMutation({
     mutationFn: async (d: Draft) => {
