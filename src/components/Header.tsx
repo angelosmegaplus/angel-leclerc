@@ -8,7 +8,7 @@ const navLinks = [
   { href: "/entreprise", label: "Entreprise" },
   { href: "/parcours", label: "Parcours" },
   { href: "/articles", label: "Blog" },
-  { href: "/entreprise#contact", label: "Contact" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export function Header() {

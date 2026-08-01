@@ -6,7 +6,7 @@ const navLinks = [
   { href: "/entreprise", label: "Entreprise" },
   { href: "/entreprise#services", label: "Services" },
   { href: "/parcours", label: "Parcours" },
-  { href: "/entreprise#contact", label: "Contact" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export function Footer() {
