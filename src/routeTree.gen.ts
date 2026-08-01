@@ -19,6 +19,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ActualitesIndexRouteImport } from './routes/actualites/index'
 import { Route as CommuniquesReponseArticleChniTombolaPatrimoineRouteImport } from './routes/communiques/reponse-article-chni-tombola-patrimoine'
+import { Route as ActualitesSlugRouteImport } from './routes/actualites/$slug'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -72,6 +73,11 @@ const CommuniquesReponseArticleChniTombolaPatrimoineRoute =
     path: '/communiques/reponse-article-chni-tombola-patrimoine',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ActualitesSlugRoute = ActualitesSlugRouteImport.update({
+  id: '/actualites/$slug',
+  path: '/actualites/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/parcours': typeof ParcoursRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/actualites/$slug': typeof ActualitesSlugRoute
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   '/actualites/': typeof ActualitesIndexRoute
 }
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/parcours': typeof ParcoursRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/actualites/$slug': typeof ActualitesSlugRoute
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   '/actualites': typeof ActualitesIndexRoute
 }
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/parcours': typeof ParcoursRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/actualites/$slug': typeof ActualitesSlugRoute
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   '/actualites/': typeof ActualitesIndexRoute
 }
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/parcours'
     | '/politique-confidentialite'
     | '/sitemap.xml'
+    | '/actualites/$slug'
     | '/communiques/reponse-article-chni-tombola-patrimoine'
     | '/actualites/'
   fileRoutesByTo: FileRoutesByTo
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/parcours'
     | '/politique-confidentialite'
     | '/sitemap.xml'
+    | '/actualites/$slug'
     | '/communiques/reponse-article-chni-tombola-patrimoine'
     | '/actualites'
   id:
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/parcours'
     | '/politique-confidentialite'
     | '/sitemap.xml'
+    | '/actualites/$slug'
     | '/communiques/reponse-article-chni-tombola-patrimoine'
     | '/actualites/'
   fileRoutesById: FileRoutesById
@@ -158,6 +170,7 @@ export interface RootRouteChildren {
   ParcoursRoute: typeof ParcoursRoute
   PolitiqueConfidentialiteRoute: typeof PolitiqueConfidentialiteRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ActualitesSlugRoute: typeof ActualitesSlugRoute
   CommuniquesReponseArticleChniTombolaPatrimoineRoute: typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   ActualitesIndexRoute: typeof ActualitesIndexRoute
 }
@@ -234,6 +247,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommuniquesReponseArticleChniTombolaPatrimoineRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/actualites/$slug': {
+      id: '/actualites/$slug'
+      path: '/actualites/$slug'
+      fullPath: '/actualites/$slug'
+      preLoaderRoute: typeof ActualitesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -246,6 +266,7 @@ const rootRouteChildren: RootRouteChildren = {
   ParcoursRoute: ParcoursRoute,
   PolitiqueConfidentialiteRoute: PolitiqueConfidentialiteRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ActualitesSlugRoute: ActualitesSlugRoute,
   CommuniquesReponseArticleChniTombolaPatrimoineRoute:
     CommuniquesReponseArticleChniTombolaPatrimoineRoute,
   ActualitesIndexRoute: ActualitesIndexRoute,

@@ -15,6 +15,7 @@ import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { SubstackBanner } from "../components/SubstackBanner";
 import { ApprenticeshipBanner } from "../components/ApprenticeshipBanner";
+import { Toaster } from "../components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -160,6 +161,7 @@ function RootComponent() {
         </main>
         <Footer />
       </div>
+      <Toaster />
     </QueryClientProvider>
   );
 }
