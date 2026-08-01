@@ -134,6 +134,7 @@ function AdminPage() {
   const { session, isAdmin, loading, user } = useAuth();
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [tab, setTab] = useState<"articles" | "messages" | "abonnes">("articles");
   const notifyFn = useServerFn(notifySubscribersOfArticle);
@@ -244,17 +245,19 @@ function AdminPage() {
     },
     onSuccess: () => {
       toast.success("Article enregistré");
+      setSaveError(null);
       queryClient.invalidateQueries({ queryKey: ["admin-articles"] });
       queryClient.invalidateQueries({ queryKey: ["articles"] });
       setDraft(null);
     },
     onError: (err: unknown) => {
-      const message = err instanceof Error ? err.message : "Erreur inconnue";
-      toast.error(
-        message.includes("duplicate key")
-          ? "Un article utilise déjà ce lien (slug). Modifiez-le."
-          : message,
-      );
+      const detail = describeDbError(err);
+      setSaveError(detail);
+      toast.error("Enregistrement impossible", {
+        description: detail,
+        duration: 12000,
+      });
+      console.error("[admin] échec d'enregistrement de l'article", err);
     },
   });
 
