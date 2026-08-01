@@ -9,7 +9,7 @@ import { EmailChangeEmail } from '@/lib/email-templates/email-change'
 import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
 
 // Configuration
-const SITE_NAME = "angel-leclerc"
+const SITE_NAME = "Angel Leclerc Communication"
 const SENDER_DOMAIN = "notification.angel-leclerc.fr"
 const ROOT_DOMAIN = "angel-leclerc.fr"
 const FROM_DOMAIN = "angel-leclerc.fr"
