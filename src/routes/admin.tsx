@@ -348,6 +348,7 @@ function AdminPage() {
             className="mt-10 space-y-5 rounded-xl border border-border bg-card p-6"
             onSubmit={(e) => {
               e.preventDefault();
+              setSaveError(null);
               const text = draft.content.replace(/<[^>]*>/g, "").trim();
               if (!text && !draft.content.includes("<img")) {
                 toast.error("Le contenu de l'article est vide.");
@@ -373,6 +374,23 @@ function AdminPage() {
             >
               <ArrowLeft className="mr-1 h-3.5 w-3.5" /> Retour à la liste
             </button>
+
+            {saveError && (
+              <div
+                role="alert"
+                className="flex items-start gap-3 rounded-lg border border-destructive/40 bg-destructive/10 p-4"
+              >
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-destructive">
+                    L'article n'a pas pu être enregistré
+                  </p>
+                  <p className="text-xs leading-relaxed text-foreground/80 break-words">
+                    {saveError}
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="title">Titre *</Label>
