@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Download, Lock, Paperclip } from "lucide-react";
 import { fetchArticleBySlug, formatDate, getAttachments } from "@/lib/articles";
+import { ShareArticle } from "@/components/ShareArticle";
 
 export const Route = createFileRoute("/articles/$slug")({
   head: () => ({
@@ -77,6 +78,13 @@ function ArticlePage() {
           Publié le {formatDate(article.published_at ?? article.created_at)}
         </p>
 
+        <ShareArticle
+          title={article.title}
+          slug={article.slug}
+          excerpt={article.excerpt}
+          className="mt-5"
+        />
+
         {article.is_private && (
           <p className="mt-3 inline-flex items-center gap-2 rounded-md border border-border bg-muted px-3 py-1.5 text-xs text-muted-foreground">
             <Lock className="h-3.5 w-3.5" /> Article privé — non listé sur le site
@@ -138,6 +146,15 @@ function ArticlePage() {
         )}
 
         <div className="mt-12">
+          <div className="mb-8 rounded-xl border border-border bg-card p-5">
+            <p className="text-sm font-semibold text-foreground">Partager cet article</p>
+            <ShareArticle
+              title={article.title}
+              slug={article.slug}
+              excerpt={article.excerpt}
+              className="mt-3"
+            />
+          </div>
           <Link
             to="/articles"
             className="inline-flex items-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
