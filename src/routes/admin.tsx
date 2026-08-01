@@ -430,6 +430,9 @@ function AdminPage() {
                           content: a.content,
                           cover_url: a.cover_url ?? "",
                           published: a.published,
+                          is_private: a.is_private,
+                          featured: a.featured,
+                          attachments: getAttachments(a),
                         })
                       }
                     >
