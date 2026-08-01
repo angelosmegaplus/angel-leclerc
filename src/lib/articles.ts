@@ -86,11 +86,9 @@ export function formatDate(value: string | null): string {
 }
 
 export async function fetchPublishedArticles(): Promise<Article[]> {
-  const { data, error } = await supabase
-    .from("articles")
-    .select("*")
-    .eq("published", true)
-    .eq("is_private", false)
+  const { data, error } = await visibleNow(
+    supabase.from("articles").select("*").eq("published", true).eq("is_private", false),
+  )
     .order("featured", { ascending: false })
     .order("published_at", { ascending: false });
   if (error) throw error;
