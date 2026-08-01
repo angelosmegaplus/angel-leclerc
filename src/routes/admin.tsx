@@ -503,6 +503,161 @@ function AdminPage() {
           </form>
         ) : (
           <>
+            <div className="mt-8 flex flex-wrap gap-2">
+              {(
+                [
+                  ["articles", `Articles (${articles.length})`],
+                  ["messages", `Messages${unreadCount ? ` (${unreadCount})` : ""}`],
+                  ["abonnes", `Abonnés (${subscribers.length})`],
+                ] as const
+              ).map(([key, label]) => (
+                <Button
+                  key={key}
+                  size="sm"
+                  variant={tab === key ? "default" : "outline"}
+                  onClick={() => setTab(key)}
+                >
+                  {key === "messages" && <Mail className="mr-2 h-4 w-4" />}
+                  {key === "abonnes" && <Users className="mr-2 h-4 w-4" />}
+                  {label}
+                </Button>
+              ))}
+            </div>
+
+            {tab === "messages" && (
+              <div className="mt-8 space-y-3">
+                {messages.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    Aucun message reçu pour le moment.
+                  </p>
+                )}
+                {messages.map((m) => (
+                  <details
+                    key={m.id}
+                    className="rounded-lg border border-border bg-card p-4"
+                  >
+                    <summary className="cursor-pointer list-none">
+                      <span className="flex flex-wrap items-center gap-2">
+                        {!m.is_read && (
+                          <span className="h-2 w-2 rounded-full bg-primary" />
+                        )}
+                        <span className="font-medium text-foreground">
+                          {m.full_name}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {m.project_type} · {formatDate(m.created_at)}
+                        </span>
+                      </span>
+                    </summary>
+                    <div className="mt-3 space-y-2 text-sm text-foreground">
+                      <p className="text-muted-foreground">
+                        {m.email}
+                        {m.phone ? ` · ${m.phone}` : ""}
+                        {m.structure ? ` · ${m.structure}` : ""}
+                      </p>
+                      {(m.budget || m.deadline) && (
+                        <p className="text-xs text-muted-foreground">
+                          Budget : {m.budget || "—"} · Délai : {m.deadline || "—"}
+                        </p>
+                      )}
+                      <p className="whitespace-pre-line">{m.description}</p>
+                      {m.attachment_name && (
+                        <p className="text-xs text-muted-foreground">
+                          Fichier joint : {m.attachment_name}
+                        </p>
+                      )}
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        <Button asChild size="sm" variant="outline">
+                          <a href={`mailto:${m.email}`}>Répondre</a>
+                        </Button>
+                        {!m.is_read && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={async () => {
+                              await supabase
+                                .from("contact_requests")
+                                .update({ is_read: true })
+                                .eq("id", m.id);
+                              queryClient.invalidateQueries({
+                                queryKey: ["admin-contact-requests"],
+                              });
+                            }}
+                          >
+                            Marquer comme lu
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={async () => {
+                            if (!confirm("Supprimer ce message ?")) return;
+                            await supabase
+                              .from("contact_requests")
+                              .delete()
+                              .eq("id", m.id);
+                            queryClient.invalidateQueries({
+                              queryKey: ["admin-contact-requests"],
+                            });
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </div>
+                  </details>
+                ))}
+              </div>
+            )}
+
+            {tab === "abonnes" && (
+              <div className="mt-8 space-y-2">
+                {subscribers.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    Aucun abonné pour le moment.
+                  </p>
+                )}
+                {subscribers.map((s) => (
+                  <div
+                    key={s.id}
+                    className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm"
+                  >
+                    <span className="min-w-0 truncate">
+                      {s.email}
+                      {!s.active && (
+                        <span className="ml-2 text-xs text-muted-foreground">
+                          désabonné
+                        </span>
+                      )}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">
+                        {formatDate(s.created_at)}
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={async () => {
+                          if (!confirm(`Supprimer ${s.email} ?`)) return;
+                          await supabase
+                            .from("blog_subscribers")
+                            .delete()
+                            .eq("id", s.id);
+                          queryClient.invalidateQueries({
+                            queryKey: ["admin-subscribers"],
+                          });
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {tab === "articles" && (
+            <>
             <Button className="mt-8" onClick={() => setDraft({ ...emptyDraft })}>
               <Plus className="mr-2 h-4 w-4" /> Nouvel article
             </Button>
@@ -540,6 +695,43 @@ function AdminPage() {
                         </a>
                       </Button>
                     )}
+                    {a.published && !a.is_private && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        title="Notifier les abonnés"
+                        disabled={notifyingId === a.id}
+                        onClick={async () => {
+                          if (
+                            !confirm(
+                              `Envoyer une notification aux abonnés pour « ${a.title} » ?`,
+                            )
+                          )
+                            return;
+                          setNotifyingId(a.id);
+                          try {
+                            const res = await notifyFn({
+                              data: { articleId: a.id },
+                            });
+                            toast.success(
+                              `Notification envoyée à ${res.sent} abonné(s).`,
+                            );
+                          } catch (err) {
+                            toast.error(
+                              err instanceof Error ? err.message : "Envoi impossible",
+                            );
+                          } finally {
+                            setNotifyingId(null);
+                          }
+                        }}
+                      >
+                        {notifyingId === a.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Bell className="h-4 w-4" />
+                        )}
+                      </Button>
+                    )}
                     <Button
                       size="sm"
                       variant="outline"
@@ -574,6 +766,8 @@ function AdminPage() {
                 </div>
               ))}
             </div>
+            </>
+            )}
           </>
         )}
       </div>
