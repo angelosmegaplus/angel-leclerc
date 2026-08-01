@@ -25,6 +25,7 @@ import { Route as CommuniquesReponseArticleChniTombolaPatrimoineRouteImport } fr
 import { Route as ArticlesReponseArticleChniTombolaPatrimoineRouteImport } from './routes/articles/reponse-article-chni-tombola-patrimoine'
 import { Route as ArticlesSlugRouteImport } from './routes/articles/$slug'
 import { Route as ActualitesSlugRouteImport } from './routes/actualites/$slug'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -109,6 +110,12 @@ const ActualitesSlugRoute = ActualitesSlugRouteImport.update({
   path: '/actualites/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByFullPath {
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   '/actualites/': typeof ActualitesIndexRoute
   '/articles/': typeof ArticlesIndexRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -145,6 +153,7 @@ export interface FileRoutesByTo {
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   '/actualites': typeof ActualitesIndexRoute
   '/articles': typeof ArticlesIndexRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -164,6 +173,7 @@ export interface FileRoutesById {
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   '/actualites/': typeof ActualitesIndexRoute
   '/articles/': typeof ArticlesIndexRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -184,6 +194,7 @@ export interface FileRouteTypes {
     | '/communiques/reponse-article-chni-tombola-patrimoine'
     | '/actualites/'
     | '/articles/'
+    | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -202,6 +213,7 @@ export interface FileRouteTypes {
     | '/communiques/reponse-article-chni-tombola-patrimoine'
     | '/actualites'
     | '/articles'
+    | '/lovable/email/transactional/preview'
   id:
     | '__root__'
     | '/'
@@ -220,6 +232,7 @@ export interface FileRouteTypes {
     | '/communiques/reponse-article-chni-tombola-patrimoine'
     | '/actualites/'
     | '/articles/'
+    | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -239,6 +252,7 @@ export interface RootRouteChildren {
   CommuniquesReponseArticleChniTombolaPatrimoineRoute: typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   ActualitesIndexRoute: typeof ActualitesIndexRoute
   ArticlesIndexRoute: typeof ArticlesIndexRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -355,6 +369,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ActualitesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -377,6 +398,7 @@ const rootRouteChildren: RootRouteChildren = {
     CommuniquesReponseArticleChniTombolaPatrimoineRoute,
   ActualitesIndexRoute: ActualitesIndexRoute,
   ArticlesIndexRoute: ArticlesIndexRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
