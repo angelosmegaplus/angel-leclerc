@@ -1,4 +1,4 @@
-import { Mail, MapPin, Phone, Linkedin, Instagram, Facebook } from "lucide-react";
+import { Linkedin, Instagram, Facebook } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 const navLinks = [
@@ -6,6 +6,7 @@ const navLinks = [
   { href: "/entreprise", label: "Entreprise" },
   { href: "/entreprise#services", label: "Services" },
   { href: "/parcours", label: "Parcours" },
+  { href: "/articles", label: "Blog" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -46,33 +47,17 @@ export function Footer() {
 
           <div>
             <h3 className="font-display text-sm font-semibold uppercase tracking-wide text-foreground">
-              Coordonnées
+              Me contacter
             </h3>
-            <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
-              <li className="flex items-start gap-3">
-                <Mail size={16} className="mt-0.5 shrink-0 text-primary" />
-                <a
-                  href="mailto:contact@angel-leclerc.fr"
-                  className="hover:text-foreground transition-colors break-all"
-                >
-                  contact@angel-leclerc.fr
-                </a>
-              </li>
-              <li className="flex items-start gap-3">
-                <Phone size={16} className="mt-0.5 shrink-0 text-primary" />
-                <a
-                  href="tel:+33601766978"
-                  className="hover:text-foreground transition-colors"
-                >
-                  06 01 76 69 78
-                </a>
-              </li>
-              <li className="flex items-start gap-3">
-                <MapPin size={16} className="mt-0.5 shrink-0 text-primary" />
-                <span>24200 Sarlat-la-Canéda, France</span>
-              </li>
-            </ul>
-
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+              Coordonnées et formulaire réunis sur une seule page.
+            </p>
+            <Link
+              to="/contact"
+              className="mt-4 inline-flex items-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-accent"
+            >
+              Page contact
+            </Link>
 
             <h3 className="mt-8 font-display text-sm font-semibold uppercase tracking-wide text-foreground">
               Réseaux sociaux
