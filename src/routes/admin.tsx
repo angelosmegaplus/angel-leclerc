@@ -493,15 +493,66 @@ function AdminPage() {
             </div>
 
             <div className="space-y-3 rounded-lg border border-border bg-background p-4">
-              <label className="flex items-center gap-2 text-sm text-foreground">
-                <input
-                  type="checkbox"
-                  checked={draft.published}
-                  onChange={(e) => setDraft({ ...draft, published: e.target.checked })}
-                  className="h-4 w-4 accent-[var(--color-primary)]"
-                />
-                Publier immédiatement sur le site
-              </label>
+              <p className="text-sm font-medium text-foreground">Statut de publication</p>
+              <div className="space-y-2">
+                {(
+                  [
+                    ["brouillon", "Brouillon — non visible sur le site"],
+                    ["publie", "Publier immédiatement"],
+                    ["programme", "Publication différée (à une date et heure)"],
+                  ] as const
+                ).map(([value, label]) => (
+                  <label
+                    key={value}
+                    className="flex items-center gap-2 text-sm text-foreground"
+                  >
+                    <input
+                      type="radio"
+                      name="status"
+                      checked={draft.status === value}
+                      onChange={() =>
+                        setDraft({
+                          ...draft,
+                          status: value,
+                          scheduled_at:
+                            value === "programme"
+                              ? draft.scheduled_at || defaultSchedule()
+                              : "",
+                        })
+                      }
+                      className="h-4 w-4 accent-[var(--color-primary)]"
+                    />
+                    {value === "brouillon" && (
+                      <FileEdit className="h-3.5 w-3.5 text-muted-foreground" />
+                    )}
+                    {value === "programme" && (
+                      <CalendarClock className="h-3.5 w-3.5 text-muted-foreground" />
+                    )}
+                    {label}
+                  </label>
+                ))}
+              </div>
+              {draft.status === "programme" && (
+                <div className="space-y-1 pl-6">
+                  <Label htmlFor="scheduled_at" className="text-xs">
+                    Date et heure de mise en ligne
+                  </Label>
+                  <Input
+                    id="scheduled_at"
+                    type="datetime-local"
+                    required
+                    value={draft.scheduled_at}
+                    min={toLocalInput(new Date().toISOString())}
+                    onChange={(e) =>
+                      setDraft({ ...draft, scheduled_at: e.target.value })
+                    }
+                    className="max-w-xs"
+                  />
+                  <p className="text-[11px] text-muted-foreground">
+                    L'article apparaîtra automatiquement sur le site à cette date.
+                  </p>
+                </div>
+              )}
               <label className="flex items-center gap-2 text-sm text-foreground">
                 <input
                   type="checkbox"
