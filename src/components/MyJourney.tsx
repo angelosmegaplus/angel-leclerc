@@ -181,9 +181,9 @@ function AlternanceSection() {
       <section id="alternance" className="section-padding bg-muted/40 scroll-mt-24">
         <div className="container-tight">
           <SectionHeader
-            eyebrow="Recherche d'alternance"
-            title="Ma recherche d'alternance"
-            intro="Je recherche une entreprise pour préparer un BTS Communication en alternance à partir de septembre 2026. Ma recherche se concentre principalement sur Sarlat-la-Canéda et les communes proches accessibles quotidiennement en scooter."
+            eyebrow="Alternance 2026"
+            title="Mon BTS Communication en alternance"
+            intro="Je prépare un BTS Communication en alternance avec l'école Talis (campus de Périgueux) à partir de septembre 2026 et je recherche l'entreprise qui m'accueillera. Ma recherche se concentre sur Sarlat-la-Canéda et les communes proches, accessibles quotidiennement en scooter."
           />
 
           <div className="mt-10 grid gap-4 md:grid-cols-2">
@@ -240,7 +240,7 @@ function AlternanceSection() {
                   Projet de formation
                 </p>
                 <h4 className="mt-2 font-display text-xl font-semibold text-foreground">
-                  Mon BTS Communication en alternance
+                  Le BTS Communication en détail
                 </h4>
               </div>
               <div className="flex flex-wrap gap-2">
