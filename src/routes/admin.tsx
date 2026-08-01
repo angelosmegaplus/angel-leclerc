@@ -25,10 +25,13 @@ import {
   ARTICLE_CATEGORIES,
   fetchAllArticles,
   formatDate,
+  formatDateTime,
+  getArticleStatus,
   getAttachments,
   slugify,
   type Article,
   type ArticleAttachment,
+  type ArticleStatus,
 } from "@/lib/articles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,7 +75,8 @@ type Draft = {
   excerpt: string;
   content: string;
   cover_url: string;
-  published: boolean;
+  status: ArticleStatus;
+  scheduled_at: string;
   is_private: boolean;
   featured: boolean;
   attachments: ArticleAttachment[];
@@ -86,13 +90,28 @@ const emptyDraft: Draft = {
   excerpt: "",
   content: "",
   cover_url: "",
-  published: true,
+  status: "publie",
+  scheduled_at: "",
   is_private: false,
   featured: false,
   attachments: [],
 };
 
 const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
+
+/** ISO -> valeur d'un <input type="datetime-local"> en heure locale. */
+function toLocalInput(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function defaultSchedule(): string {
+  const d = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  d.setMinutes(0, 0, 0);
+  return toLocalInput(d.toISOString());
+}
 
 async function uploadAttachment(file: File): Promise<ArticleAttachment> {
   const safe = file.name.replace(/[^a-zA-Z0-9._-]+/g, "-");
