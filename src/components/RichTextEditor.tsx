@@ -75,8 +75,6 @@ export function RichTextEditor({ value, onChange }: Props) {
     sync();
   };
 
-  const onPickImage = async (file: File | undefined) => {
-
   const onInsertVideo = () => {
     const url = prompt("Lien de la vidéo YouTube (https://youtu.be/…)");
     if (!url) return;
@@ -90,6 +88,8 @@ export function RichTextEditor({ value, onChange }: Props) {
     );
     toast.success("Vidéo ajoutée");
   };
+
+  const onPickImage = async (file: File | undefined) => {
     if (!file) return;
     setUploading(true);
     try {
