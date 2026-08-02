@@ -159,6 +159,14 @@ export function RichTextEditor({ value, onChange }: Props) {
         >
           {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
         </button>
+        <button
+          type="button"
+          className={btn}
+          title="Insérer une vidéo YouTube"
+          onClick={onInsertVideo}
+        >
+          <Youtube className="h-4 w-4" />
+        </button>
         <span className="mx-1 h-5 w-px bg-border" />
         <button type="button" className={btn} title="Annuler" onClick={() => cmd("undo")}>
           <Undo2 className="h-4 w-4" />
