@@ -13,6 +13,7 @@ import {
   Youtube,
   Film,
   Music2,
+  Radio,
   Loader2,
   Undo2,
   Redo2,
@@ -20,6 +21,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { buildEmbedHtml } from "@/lib/embeds";
 
 const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
 
@@ -91,6 +93,20 @@ export function RichTextEditor({ value, onChange }: Props) {
       `<div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/${id}" title="Vidéo YouTube" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div><p><br/></p>`,
     );
     toast.success("Vidéo ajoutée");
+  };
+
+  const onInsertEmbed = () => {
+    const url = prompt(
+      "Collez un lien Spotify, Deezer, SoundCloud, Apple Music/Podcasts, Vimeo, Dailymotion, Ausha, YouTube ou un fichier MP4/MP3",
+    );
+    if (!url) return;
+    const embed = buildEmbedHtml(url);
+    if (!embed) {
+      toast.error("Lien non reconnu ou plateforme non prise en charge");
+      return;
+    }
+    insertHtml(embed.html);
+    toast.success(`Contenu ${embed.label} intégré`);
   };
 
   const onPickMedia = async (
@@ -205,6 +221,14 @@ export function RichTextEditor({ value, onChange }: Props) {
           onClick={onInsertVideo}
         >
           <Youtube className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          className={btn}
+          title="Intégrer Spotify, Deezer, SoundCloud, Apple Music, Vimeo…"
+          onClick={onInsertEmbed}
+        >
+          <Radio className="h-4 w-4" />
         </button>
         <span className="mx-1 h-5 w-px bg-border" />
         <button type="button" className={btn} title="Annuler" onClick={() => cmd("undo")}>
