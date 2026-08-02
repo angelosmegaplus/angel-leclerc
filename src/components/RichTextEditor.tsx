@@ -11,6 +11,8 @@ import {
   Link2,
   ImagePlus,
   Youtube,
+  Film,
+  Music2,
   Loader2,
   Undo2,
   Redo2,
@@ -31,8 +33,8 @@ export function parseYouTubeId(input: string): string | null {
   return match ? match[1] : null;
 }
 
-async function uploadImage(file: File): Promise<string> {
-  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+async function uploadMedia(file: File): Promise<string> {
+  const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
   const path = `${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage
     .from("article-images")
@@ -53,7 +55,9 @@ type Props = {
 export function RichTextEditor({ value, onChange }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false);
+  const videoRef = useRef<HTMLInputElement>(null);
+  const audioRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState<null | "image" | "video" | "audio">(null);
 
   useEffect(() => {
     const el = ref.current;
@@ -89,20 +93,37 @@ export function RichTextEditor({ value, onChange }: Props) {
     toast.success("Vidéo ajoutée");
   };
 
-  const onPickImage = async (file: File | undefined) => {
+  const onPickMedia = async (
+    kind: "image" | "video" | "audio",
+    file: File | undefined,
+    input: HTMLInputElement | null,
+  ) => {
     if (!file) return;
-    setUploading(true);
+    setUploading(kind);
     try {
-      const url = await uploadImage(file);
-      insertHtml(
-        `<img src="${url}" alt="${file.name.replace(/"/g, "")}" style="max-width:100%;border-radius:12px" /><p><br/></p>`,
-      );
-      toast.success("Image ajoutée");
+      const url = await uploadMedia(file);
+      const name = file.name.replace(/"/g, "");
+      if (kind === "image") {
+        insertHtml(
+          `<img src="${url}" alt="${name}" style="max-width:100%;border-radius:12px" /><p><br/></p>`,
+        );
+        toast.success("Image ajoutée");
+      } else if (kind === "video") {
+        insertHtml(
+          `<video class="media-video" src="${url}" controls playsinline preload="metadata"></video><p><br/></p>`,
+        );
+        toast.success("Vidéo ajoutée");
+      } else {
+        insertHtml(
+          `<figure class="media-audio"><figcaption>${name}</figcaption><audio src="${url}" controls preload="metadata"></audio></figure><p><br/></p>`,
+        );
+        toast.success("Audio ajouté");
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Envoi impossible");
     } finally {
-      setUploading(false);
-      if (fileRef.current) fileRef.current.value = "";
+      setUploading(null);
+      if (input) input.value = "";
     }
   };
 
@@ -155,9 +176,27 @@ export function RichTextEditor({ value, onChange }: Props) {
           className={btn}
           title="Insérer une image"
           onClick={() => fileRef.current?.click()}
-          disabled={uploading}
+          disabled={uploading !== null}
         >
-          {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
+          {uploading === "image" ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
+        </button>
+        <button
+          type="button"
+          className={btn}
+          title="Insérer une vidéo (MP4)"
+          onClick={() => videoRef.current?.click()}
+          disabled={uploading !== null}
+        >
+          {uploading === "video" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Film className="h-4 w-4" />}
+        </button>
+        <button
+          type="button"
+          className={btn}
+          title="Insérer un son (MP3, WAV…)"
+          onClick={() => audioRef.current?.click()}
+          disabled={uploading !== null}
+        >
+          {uploading === "audio" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Music2 className="h-4 w-4" />}
         </button>
         <button
           type="button"
@@ -182,7 +221,21 @@ export function RichTextEditor({ value, onChange }: Props) {
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={(e) => onPickImage(e.target.files?.[0])}
+          onChange={(e) => onPickMedia("image", e.target.files?.[0], e.currentTarget)}
+        />
+        <input
+          ref={videoRef}
+          type="file"
+          accept="video/mp4,video/webm,video/quicktime,video/*"
+          className="hidden"
+          onChange={(e) => onPickMedia("video", e.target.files?.[0], e.currentTarget)}
+        />
+        <input
+          ref={audioRef}
+          type="file"
+          accept="audio/mpeg,audio/wav,audio/ogg,audio/mp4,audio/*"
+          className="hidden"
+          onChange={(e) => onPickMedia("audio", e.target.files?.[0], e.currentTarget)}
         />
       </div>
       <div
