@@ -10,6 +10,7 @@ import {
   Quote,
   Link2,
   ImagePlus,
+  Youtube,
   Loader2,
   Undo2,
   Redo2,
@@ -19,6 +20,16 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
+
+/** Extrait l'identifiant d'une vidéo YouTube depuis n'importe quelle forme d'URL. */
+export function parseYouTubeId(input: string): string | null {
+  const value = input.trim();
+  if (/^[\w-]{11}$/.test(value)) return value;
+  const match = value.match(
+    /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/,
+  );
+  return match ? match[1] : null;
+}
 
 async function uploadImage(file: File): Promise<string> {
   const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
@@ -65,6 +76,20 @@ export function RichTextEditor({ value, onChange }: Props) {
   };
 
   const onPickImage = async (file: File | undefined) => {
+
+  const onInsertVideo = () => {
+    const url = prompt("Lien de la vidéo YouTube (https://youtu.be/…)");
+    if (!url) return;
+    const id = parseYouTubeId(url);
+    if (!id) {
+      toast.error("Lien YouTube non reconnu");
+      return;
+    }
+    insertHtml(
+      `<div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/${id}" title="Vidéo YouTube" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div><p><br/></p>`,
+    );
+    toast.success("Vidéo ajoutée");
+  };
     if (!file) return;
     setUploading(true);
     try {
