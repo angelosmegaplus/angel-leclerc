@@ -221,21 +221,21 @@ export function RichTextEditor({ value, onChange }: Props) {
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={(e) => onPickMedia("image", e.target.files?.[0], e.currentTarget)}
+          onChange={(e) => onPickMedia("image", e.target.files?.[0], fileRef.current)}
         />
         <input
           ref={videoRef}
           type="file"
           accept="video/mp4,video/webm,video/quicktime,video/*"
           className="hidden"
-          onChange={(e) => onPickMedia("video", e.target.files?.[0], e.currentTarget)}
+          onChange={(e) => onPickMedia("video", e.target.files?.[0], videoRef.current)}
         />
         <input
           ref={audioRef}
           type="file"
           accept="audio/mpeg,audio/wav,audio/ogg,audio/mp4,audio/*"
           className="hidden"
-          onChange={(e) => onPickMedia("audio", e.target.files?.[0], e.currentTarget)}
+          onChange={(e) => onPickMedia("audio", e.target.files?.[0], audioRef.current)}
         />
       </div>
       <div
