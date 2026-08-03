@@ -19,6 +19,7 @@ import {
   FileEdit,
   CalendarClock,
   AlertCircle,
+  BarChart3,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -43,6 +44,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { notifySubscribersOfArticle } from "@/lib/subscribers.functions";
+import { AdminStats } from "@/components/AdminStats";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
