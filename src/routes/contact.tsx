@@ -116,6 +116,87 @@ function ContactPage() {
   );
 }
 
+function EmergencyContact() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mx-auto max-w-2xl">
+      <div className="rounded-xl border border-dashed border-border bg-card/60 p-4">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          className="flex w-full items-center gap-3 text-left"
+        >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-primary/30 bg-primary/5">
+            <AlertCircle size={16} className="text-primary" />
+          </span>
+          <span className="flex-1">
+            <span className="block text-sm font-medium text-foreground">
+              Uniquement en cas d'urgence
+            </span>
+            <span className="block text-xs text-muted-foreground">
+              Toutes les demandes passent par le formulaire ci-dessus. Afficher mes
+              coordonnées directes.
+            </span>
+          </span>
+          <ChevronDown
+            size={16}
+            className={`shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
+          />
+        </button>
+
+        {open && (
+          <div className="mt-4 space-y-4 border-t border-border pt-4">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <ContactCard
+                icon={<Mail size={18} className="text-primary" />}
+                label="E-mail"
+                value="contact@angel-leclerc.fr"
+                href="mailto:contact@angel-leclerc.fr"
+              />
+              <ContactCard
+                icon={<Phone size={18} className="text-primary" />}
+                label="Téléphone"
+                value="06 01 76 69 78"
+                href="tel:+33601766978"
+              />
+              <ContactCard
+                icon={<MapPin size={18} className="text-primary" />}
+                label="Courrier"
+                value="CIAS, 4b rue Stéphane Hessel, 24200 Sarlat-la-Canéda"
+              />
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Button
+                asChild
+                variant="outline"
+                className="flex-1 border-foreground/20 bg-transparent text-foreground hover:bg-muted"
+              >
+                <a href="mailto:contact@angel-leclerc.fr">
+                  <Mail size={18} className="mr-2" /> Envoyer un e-mail
+                </a>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="flex-1 border-foreground/20 bg-transparent text-foreground hover:bg-muted"
+              >
+                <a href="tel:+33601766978">
+                  <Phone size={18} className="mr-2" /> Appeler — 06 01 76 69 78
+                </a>
+              </Button>
+            </div>
+            <p className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Clock size={14} className="text-primary" />
+              Réponse sous 48&nbsp;h ouvrées en général.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ContactCard({
   icon,
   label,
