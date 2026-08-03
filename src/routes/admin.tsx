@@ -140,7 +140,9 @@ function AdminPage() {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
-  const [tab, setTab] = useState<"articles" | "messages" | "abonnes">("articles");
+  const [tab, setTab] = useState<"articles" | "messages" | "abonnes" | "stats">(
+    "articles",
+  );
   const notifyFn = useServerFn(notifySubscribersOfArticle);
   const [notifyingId, setNotifyingId] = useState<string | null>(null);
 
@@ -632,6 +634,7 @@ function AdminPage() {
                   ["articles", `Articles (${articles.length})`],
                   ["messages", `Messages${unreadCount ? ` (${unreadCount})` : ""}`],
                   ["abonnes", `Abonnés (${subscribers.length})`],
+                  ["stats", "Statistiques"],
                 ] as const
               ).map(([key, label]) => (
                 <Button
@@ -642,10 +645,13 @@ function AdminPage() {
                 >
                   {key === "messages" && <Mail className="mr-2 h-4 w-4" />}
                   {key === "abonnes" && <Users className="mr-2 h-4 w-4" />}
+                  {key === "stats" && <BarChart3 className="mr-2 h-4 w-4" />}
                   {label}
                 </Button>
               ))}
             </div>
+
+            {tab === "stats" && <AdminStats />}
 
             {tab === "messages" && (
               <div className="mt-8 space-y-3">
