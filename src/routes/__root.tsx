@@ -16,6 +16,7 @@ import { Footer } from "../components/Footer";
 import { ApprenticeshipBanner } from "../components/ApprenticeshipBanner";
 import { Toaster } from "../components/ui/sonner";
 import { NotFound404 } from "../components/NotFound404";
+import { PageViewTracker } from "../components/PageViewTracker";
 
 function NotFoundComponent() {
   return <NotFound404 />;
@@ -133,6 +134,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <PageViewTracker />
       <div className="flex min-h-screen flex-col">
         <ApprenticeshipBanner />
         <Header />
