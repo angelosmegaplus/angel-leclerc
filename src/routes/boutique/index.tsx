@@ -6,9 +6,9 @@ import { fetchProducts, formatPrice, type ShopifyProduct } from "@/lib/shopify";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { Button } from "@/components/ui/button";
 
-const TITLE = "ALC! — La boutique d'Angel Leclerc Communication";
+const TITLE = "Boutique | Angel Leclerc Communication";
 const DESCRIPTION =
-  "ALC!, la boutique d'Angel Leclerc Communication : produits, tailles et couleurs disponibles, paiement sécurisé et livraison suivie.";
+  "Boutique ALC! par Angel Leclerc Communication : produits, tailles et couleurs disponibles, paiement sécurisé et livraison suivie.";
 
 export const Route = createFileRoute("/boutique/")({
   head: () => ({
