@@ -667,8 +667,10 @@ export interface PrintfulCatalogStatus {
   storeId: string | null;
   storeName: string | null;
   storeType: string | null;
+  storeAllowed: boolean;
   stores: Array<{ id: number; name: string; type: string }>;
   apiProductCount: number;
+  apiVariantCount: number;
   apiTemplateCount: number;
   dbProductCount: number;
   lastSyncedAt: string | null;
@@ -680,7 +682,7 @@ export const getPrintfulCatalogStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<PrintfulCatalogStatus> => {
     await assertAdmin(context);
-    const { listPrintfulStores, listPrintfulSyncProducts, listPrintfulTemplates } =
+    const { listPrintfulStores, listPrintfulSyncProducts, listPrintfulTemplates, isApiStore } =
       await import("@/lib/printful.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -695,11 +697,19 @@ export const getPrintfulCatalogStatus = createServerFn({ method: "POST" })
     if (storeId && stores.length > 0 && !current) {
       errors.push(`La boutique ${storeId} n'est pas accessible avec ce jeton`);
     }
+    const storeAllowed = current ? isApiStore(current) : false;
+    if (current && !storeAllowed) {
+      errors.push(
+        `La boutique « ${current.name} » (${current.type}) n'est pas une boutique API dédiée : ` +
+          "aucune synchronisation ne sera effectuée. Créez une boutique API Printful pour " +
+          "angel-leclerc.fr, puis enregistrez son jeton.",
+      );
+    }
 
-    const sync = await listPrintfulSyncProducts();
-    if (!sync.ok) errors.push(sync.error);
-    const templates = await listPrintfulTemplates();
-    if (!templates.ok) errors.push(templates.error);
+    const sync = storeAllowed ? await listPrintfulSyncProducts() : null;
+    if (sync && !sync.ok) errors.push(sync.error);
+    const templates = storeAllowed ? await listPrintfulTemplates() : null;
+    if (templates && !templates.ok) errors.push(templates.error);
 
     const { count } = await supabaseAdmin
       .from("shop_products")
@@ -717,9 +727,13 @@ export const getPrintfulCatalogStatus = createServerFn({ method: "POST" })
       storeId,
       storeName: current?.name ?? null,
       storeType: current?.type ?? null,
+      storeAllowed,
       stores,
-      apiProductCount: sync.ok ? sync.items.length : 0,
-      apiTemplateCount: templates.ok ? templates.items.length : 0,
+      apiProductCount: sync?.ok ? sync.items.length : 0,
+      apiVariantCount: sync?.ok
+        ? sync.items.reduce((total, item) => total + item.variants.length, 0)
+        : 0,
+      apiTemplateCount: templates?.ok ? templates.items.length : 0,
       dbProductCount: count ?? 0,
       lastSyncedAt: (last as any)?.printful_synced_at ?? null,
       errors,
@@ -753,7 +767,7 @@ export const syncPrintfulCatalog = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<PrintfulSyncReport> => {
     await assertAdmin(context);
-    const { listPrintfulSyncProducts, listPrintfulTemplates } = await import(
+    const { listPrintfulStores, listPrintfulSyncProducts, isApiStore } = await import(
       "@/lib/printful.server"
     );
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -762,19 +776,33 @@ export const syncPrintfulCatalog = createServerFn({ method: "POST" })
     const errors: string[] = [];
     const incomplete: PrintfulSyncReport["incomplete"] = [];
 
+    // Garde-fou : jamais de synchronisation depuis une boutique Squarespace,
+    // Shopify ou « Personal orders ».
+    const storeId = process.env["PRINTFUL_STORE_ID"] ?? null;
+    const storeList = await listPrintfulStores();
+    if (!storeList.ok) {
+      return {
+        source: "none", created: 0, updated: 0, deactivated: 0, incomplete,
+        syncedAt, errors: [storeList.error],
+      };
+    }
+    const current = storeList.stores.find((s) => String(s.id) === storeId) ?? null;
+    if (!current || !isApiStore(current)) {
+      return {
+        source: "none", created: 0, updated: 0, deactivated: 0, incomplete, syncedAt,
+        errors: [
+          current
+            ? `Synchronisation bloquée : « ${current.name} » (${current.type}) n'est pas une boutique API dédiée.`
+            : "Aucune boutique API Printful valide n'est configurée.",
+        ],
+      };
+    }
+
     const sync = await listPrintfulSyncProducts();
     if (!sync.ok) errors.push(sync.error);
-    let items = sync.ok ? sync.items : [];
-    let source: PrintfulSyncReport["source"] = items.length > 0 ? "sync" : "none";
-
-    if (items.length === 0) {
-      const templates = await listPrintfulTemplates();
-      if (!templates.ok) errors.push(templates.error);
-      else if (templates.items.length > 0) {
-        items = templates.items;
-        source = "template";
-      }
-    }
+    // Uniquement les produits réellement publiés dans la boutique API.
+    const items = sync.ok ? sync.items : [];
+    const source: PrintfulSyncReport["source"] = items.length > 0 ? "sync" : "none";
 
     const { data: existingRows } = await supabaseAdmin
       .from("shop_products")
