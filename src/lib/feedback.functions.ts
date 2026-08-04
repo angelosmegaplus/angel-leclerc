@@ -125,14 +125,14 @@ export const submitFeedback = createServerFn({ method: "POST" })
 
 const supportSchema = z.object({
   feedbackId: z.string().uuid(),
-  amountCents: z.number().int().min(100).max(500000),
+  amountCents: z.number().int().min(100).max(500000).nullable().optional(),
 });
 
 export const startSupport = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => supportSchema.parse(data))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { linksOf, amountsOf } = await import("./feedback.server");
+    const { linksOf } = await import("./feedback.server");
 
     const { data: row } = await supabaseAdmin
       .from("feedback_settings")
@@ -142,19 +142,15 @@ export const startSupport = createServerFn({ method: "POST" })
     if (!row || !row.support_enabled) {
       throw new Error("Les contributions sont momentanément indisponibles.");
     }
-    const min = Math.max(100, row.min_amount_cents || 100);
-    if (data.amountCents < min) throw new Error("Montant trop faible.");
-
     const links = linksOf(row);
+    // Le montant est choisi directement sur la page de paiement Revolut.
     const url =
-      links[String(data.amountCents)] ??
-      (amountsOf(row).includes(data.amountCents) ? undefined : links["custom"]) ??
-      links["custom"];
+      (data.amountCents ? links[String(data.amountCents)] : undefined) ?? links["custom"];
     if (!url) throw new Error("Aucun lien de paiement n'est configuré pour ce montant.");
 
     await supabaseAdmin
       .from("content_feedback")
-      .update({ support_amount_cents: data.amountCents, payment_status: "pending" })
+      .update({ support_amount_cents: data.amountCents ?? null, payment_status: "pending" })
       .eq("id", data.feedbackId);
 
     return { url };
