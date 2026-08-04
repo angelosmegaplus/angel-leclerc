@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { ProjectForm } from "@/components/ProjectForm";
+import { LatestArticles } from "@/components/LatestArticles";
 
 const TITLE = "Contact — Angel Leclerc Communication";
 const DESCRIPTION =
@@ -112,41 +113,74 @@ function ContactPage() {
           </AnimatedSection>
         </div>
       </section>
+
+      <LatestArticles
+        eyebrow="Blog"
+        title="Mes derniers articles"
+        description="Communication, politique, société et idées pour comprendre ce qui change."
+      />
     </main>
   );
 }
 
 function EmergencyContact() {
-  const [open, setOpen] = useState(false);
+  const [step, setStep] = useState<"hidden" | "confirm" | "open">("hidden");
+  const open = step === "open";
   return (
     <div className="mx-auto max-w-2xl">
-      <div className="rounded-xl border border-dashed border-border bg-card/60 p-4">
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-expanded={open}
-          className="flex w-full items-center gap-3 text-left"
-        >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-primary/30 bg-primary/5">
-            <AlertCircle size={16} className="text-primary" />
-          </span>
-          <span className="flex-1">
-            <span className="block text-sm font-medium text-foreground">
-              Uniquement en cas d'urgence
-            </span>
-            <span className="block text-xs text-muted-foreground">
-              Toutes les demandes passent par le formulaire ci-dessus. Afficher mes
-              coordonnées directes.
-            </span>
-          </span>
-          <ChevronDown
-            size={16}
-            className={`shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
-          />
-        </button>
+      <div className="rounded-xl border border-dashed border-border/70 bg-transparent p-3">
+        {step === "hidden" && (
+          <button
+            type="button"
+            onClick={() => setStep("confirm")}
+            className="mx-auto flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground/70 transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <AlertCircle size={12} className="text-muted-foreground/70" />
+            Uniquement en cas d'urgence
+            <ChevronDown size={12} />
+          </button>
+        )}
+
+        {step === "confirm" && (
+          <div className="space-y-3 text-center">
+            <p className="text-sm font-medium text-foreground">
+              Votre demande est-elle vraiment urgente&nbsp;?
+            </p>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Toutes les demandes passent normalement par le formulaire ci-dessus, qui
+              me parvient immédiatement. Mes coordonnées directes sont réservées aux
+              urgences.
+            </p>
+            <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-foreground/20 bg-transparent text-muted-foreground hover:bg-muted"
+                onClick={() => setStep("hidden")}
+              >
+                Non, j'utilise le formulaire
+              </Button>
+              <Button size="sm" onClick={() => setStep("open")}>
+                Oui, afficher les coordonnées
+              </Button>
+            </div>
+          </div>
+        )}
 
         {open && (
-          <div className="mt-4 space-y-4 border-t border-border pt-4">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Coordonnées directes — urgences
+              </p>
+              <button
+                type="button"
+                onClick={() => setStep("hidden")}
+                className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+              >
+                Masquer
+              </button>
+            </div>
             <div className="grid gap-3 sm:grid-cols-3">
               <ContactCard
                 icon={<Mail size={18} className="text-primary" />}
