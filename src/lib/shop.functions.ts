@@ -801,7 +801,7 @@ export const syncPrintfulCatalog = createServerFn({ method: "POST" })
         if (missing.length === 0) payload["active"] = true;
         const { error } = await supabaseAdmin
           .from("shop_products")
-          .update(payload)
+          .update(payload as any)
           .eq("id", row.id);
         if (error) errors.push(`${item.name} : ${error.message}`);
         else updated += 1;
@@ -809,7 +809,7 @@ export const syncPrintfulCatalog = createServerFn({ method: "POST" })
         let slug = slugifyName(item.name);
         if (existing.some((r) => r.slug === slug)) slug = `${slug}-${index + 1}`;
         const { error } = await supabaseAdmin.from("shop_products").insert({
-          ...payload,
+          ...(payload as any),
           slug,
           description: "",
           price_cents: variant?.priceCents ?? 0,
