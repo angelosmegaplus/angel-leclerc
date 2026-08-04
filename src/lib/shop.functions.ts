@@ -671,7 +671,6 @@ export interface PrintfulCatalogStatus {
   stores: Array<{ id: number; name: string; type: string }>;
   apiProductCount: number;
   apiVariantCount: number;
-  apiTemplateCount: number;
   dbProductCount: number;
   lastSyncedAt: string | null;
   errors: string[];
@@ -682,7 +681,7 @@ export const getPrintfulCatalogStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<PrintfulCatalogStatus> => {
     await assertAdmin(context);
-    const { listPrintfulStores, listPrintfulSyncProducts, listPrintfulTemplates, isApiStore } =
+    const { listPrintfulStores, listPrintfulSyncProducts, isApiStore } =
       await import("@/lib/printful.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -708,8 +707,6 @@ export const getPrintfulCatalogStatus = createServerFn({ method: "POST" })
 
     const sync = storeAllowed ? await listPrintfulSyncProducts() : null;
     if (sync && !sync.ok) errors.push(sync.error);
-    const templates = storeAllowed ? await listPrintfulTemplates() : null;
-    if (templates && !templates.ok) errors.push(templates.error);
 
     const { count } = await supabaseAdmin
       .from("shop_products")
@@ -733,7 +730,6 @@ export const getPrintfulCatalogStatus = createServerFn({ method: "POST" })
       apiVariantCount: sync?.ok
         ? sync.items.reduce((total, item) => total + item.variants.length, 0)
         : 0,
-      apiTemplateCount: templates?.ok ? templates.items.length : 0,
       dbProductCount: count ?? 0,
       lastSyncedAt: (last as any)?.printful_synced_at ?? null,
       errors,
@@ -741,10 +737,13 @@ export const getPrintfulCatalogStatus = createServerFn({ method: "POST" })
   });
 
 export interface PrintfulSyncReport {
-  source: "sync" | "template" | "none";
+  source: "sync" | "none";
   created: number;
   updated: number;
   deactivated: number;
+  productCount: number;
+  variantCount: number;
+  webhook: "inchangé" | "enregistré" | "non configuré";
   incomplete: Array<{ name: string; missing: string[] }>;
   syncedAt: string;
   errors: string[];
