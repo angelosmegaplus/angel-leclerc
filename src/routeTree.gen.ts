@@ -33,6 +33,7 @@ import { Route as ActualitesSlugRouteImport } from './routes/actualites/$slug'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as ApiPublicPrintfulWebhookRouteImport } from './routes/api/public/printful/webhook'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicHooksNewsletterRouteImport } from './routes/api/public/hooks/newsletter'
 
@@ -160,6 +161,12 @@ const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
   path: '/lovable/email/auth/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPrintfulWebhookRoute =
+  ApiPublicPrintfulWebhookRouteImport.update({
+    id: '/api/public/printful/webhook',
+    path: '/api/public/printful/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -197,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/boutique/': typeof BoutiqueIndexRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/printful/webhook': typeof ApiPublicPrintfulWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -225,6 +233,7 @@ export interface FileRoutesByTo {
   '/boutique': typeof BoutiqueIndexRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/printful/webhook': typeof ApiPublicPrintfulWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -254,6 +263,7 @@ export interface FileRoutesById {
   '/boutique/': typeof BoutiqueIndexRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/printful/webhook': typeof ApiPublicPrintfulWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -284,6 +294,7 @@ export interface FileRouteTypes {
     | '/boutique/'
     | '/api/public/hooks/newsletter'
     | '/api/public/payments/webhook'
+    | '/api/public/printful/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/transactional/preview'
@@ -312,6 +323,7 @@ export interface FileRouteTypes {
     | '/boutique'
     | '/api/public/hooks/newsletter'
     | '/api/public/payments/webhook'
+    | '/api/public/printful/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/transactional/preview'
@@ -340,6 +352,7 @@ export interface FileRouteTypes {
     | '/boutique/'
     | '/api/public/hooks/newsletter'
     | '/api/public/payments/webhook'
+    | '/api/public/printful/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/transactional/preview'
@@ -369,6 +382,7 @@ export interface RootRouteChildren {
   BoutiqueIndexRoute: typeof BoutiqueIndexRoute
   ApiPublicHooksNewsletterRoute: typeof ApiPublicHooksNewsletterRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
+  ApiPublicPrintfulWebhookRoute: typeof ApiPublicPrintfulWebhookRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -544,6 +558,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/printful/webhook': {
+      id: '/api/public/printful/webhook'
+      path: '/api/public/printful/webhook'
+      fullPath: '/api/public/printful/webhook'
+      preLoaderRoute: typeof ApiPublicPrintfulWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -587,6 +608,7 @@ const rootRouteChildren: RootRouteChildren = {
   BoutiqueIndexRoute: BoutiqueIndexRoute,
   ApiPublicHooksNewsletterRoute: ApiPublicHooksNewsletterRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
+  ApiPublicPrintfulWebhookRoute: ApiPublicPrintfulWebhookRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
