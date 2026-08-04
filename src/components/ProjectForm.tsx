@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Paperclip, Send, X, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { submitProjectRequest } from "@/lib/contact.functions";
+import { Captcha, type CaptchaValue } from "@/components/Captcha";
 
 const PROJECT_GROUPS = [
   {
@@ -101,6 +102,8 @@ export function ProjectForm({ defaultProjectType = "" }: { defaultProjectType?: 
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [captcha, setCaptcha] = useState<CaptchaValue>({ token: "", answer: "" });
+  const [captchaError, setCaptchaError] = useState<string | null>(null);
 
   const setField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setState((s) => ({ ...s, [key]: value }));
@@ -130,7 +133,9 @@ export function ProjectForm({ defaultProjectType = "" }: { defaultProjectType?: 
       e.description = "Détaillez un peu plus votre besoin (10 caractères min).";
     if (!state.consent) e.consent = "Cochez cette case pour envoyer.";
     setErrors(e);
-    return Object.keys(e).length === 0;
+    const captchaMissing = !captcha.token || !captcha.answer.trim();
+    setCaptchaError(captchaMissing ? "Répondez au petit calcul de vérification." : null);
+    return Object.keys(e).length === 0 && !captchaMissing;
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -167,6 +172,8 @@ export function ProjectForm({ defaultProjectType = "" }: { defaultProjectType?: 
           description: state.description.trim(),
           consent: true,
           website: state.website,
+          captchaToken: captcha.token,
+          captchaAnswer: captcha.answer,
           file: filePayload,
         },
       });
