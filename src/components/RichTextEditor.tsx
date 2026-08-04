@@ -14,6 +14,7 @@ import {
   Film,
   Music2,
   Radio,
+  LayoutGrid,
   Loader2,
   Undo2,
   Redo2,
@@ -107,6 +108,41 @@ export function RichTextEditor({ value, onChange }: Props) {
     }
     insertHtml(embed.html);
     toast.success(`Contenu ${embed.label} intégré`);
+  };
+
+  /** Insère un bloc dédié ne contenant que des vidéos / intégrations externes. */
+  const onInsertEmbedSection = () => {
+    const title = prompt("Titre du bloc (laissez vide pour aucun titre)", "En vidéo") ?? "";
+    const raw = prompt(
+      "Collez un lien par ligne (YouTube, Vimeo, Spotify, Deezer, SoundCloud, Apple, Dailymotion, Ausha, MP4/MP3…)",
+    );
+    if (!raw) return;
+    const links = raw
+      .split(/[\n\s]+/)
+      .map((l) => l.trim())
+      .filter(Boolean);
+    const parts: string[] = [];
+    const rejected: string[] = [];
+    for (const link of links) {
+      const embed = buildEmbedHtml(link);
+      if (embed) parts.push(embed.html.replace(/<p><br\/><\/p>$/, ""));
+      else rejected.push(link);
+    }
+    if (parts.length === 0) {
+      toast.error("Aucun lien reconnu");
+      return;
+    }
+    const heading = title.trim()
+      ? `<h3>${title.trim().replace(/[<>]/g, "")}</h3>`
+      : "";
+    const grid = parts.length > 1 ? " is-grid" : "";
+    insertHtml(
+      `<section class="embed-section${grid}">${heading}${parts.join("")}</section><p><br/></p>`,
+    );
+    if (rejected.length > 0) {
+      toast.warning(`${rejected.length} lien(s) non reconnu(s)`);
+    }
+    toast.success(`Bloc créé avec ${parts.length} intégration(s)`);
   };
 
   const onPickMedia = async (
@@ -229,6 +265,14 @@ export function RichTextEditor({ value, onChange }: Props) {
           onClick={onInsertEmbed}
         >
           <Radio className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          className={btn}
+          title="Bloc dédié : plusieurs vidéos ou intégrations"
+          onClick={onInsertEmbedSection}
+        >
+          <LayoutGrid className="h-4 w-4" />
         </button>
         <span className="mx-1 h-5 w-px bg-border" />
         <button type="button" className={btn} title="Annuler" onClick={() => cmd("undo")}>
