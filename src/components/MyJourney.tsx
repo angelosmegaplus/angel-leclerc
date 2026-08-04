@@ -896,6 +896,17 @@ const certifications: {
 ];
 
 function CertificationsSection() {
+  const { data } = useQuery(contentQuery("certification"));
+  const list =
+    data && data.length
+      ? data.map((i: ContentItem) => ({
+          name: i.title,
+          org: i.subtitle ?? "",
+          detail: i.description ?? "",
+          domain: i.logo_domain ?? undefined,
+          icon: iconFor(i.icon, Award),
+        }))
+      : certifications;
   return (
     <AnimatedSection>
       <section id="certifications" className="section-padding bg-background scroll-mt-24">
@@ -903,8 +914,8 @@ function CertificationsSection() {
           <SectionHeader eyebrow="Attestations" title="Certifications" />
 
           <div className="mt-12 grid gap-4 md:grid-cols-2">
-            {certifications.map((c) => (
-              <Card key={c.name} className="flex items-start gap-4">
+            {list.map((c, idx) => (
+              <Card key={`${c.name}-${idx}`} className="flex items-start gap-4">
                 {c.domain ? (
                   <Logo domain={c.domain} alt={c.org} size={48} />
                 ) : (
@@ -969,6 +980,17 @@ const engagements: {
 ];
 
 function EngagementsSection() {
+  const { data } = useQuery(contentQuery("engagement"));
+  const list =
+    data && data.length
+      ? data.map((i: ContentItem) => ({
+          title: i.title,
+          org: i.subtitle ?? "",
+          period: i.period ?? undefined,
+          description: i.description ?? "",
+          icon: iconFor(i.icon, HeartHandshake),
+        }))
+      : engagements;
   return (
     <AnimatedSection>
       <section id="engagements" className="section-padding bg-muted/40 scroll-mt-24">
@@ -976,8 +998,8 @@ function EngagementsSection() {
           <SectionHeader eyebrow="Vie associative" title="Engagements associatifs" />
 
           <div className="mt-12 grid gap-6 md:grid-cols-2">
-            {engagements.map((e) => (
-              <Card key={e.org} className="flex h-full flex-col">
+            {list.map((e, idx) => (
+              <Card key={`${e.org}-${idx}`} className="flex h-full flex-col">
                 <div className="flex items-start gap-4">
                   <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <e.icon size={22} />
