@@ -395,56 +395,80 @@ export type Database = {
       shop_orders: {
         Row: {
           amount_cents: number
+          carrier: string | null
           created_at: string
           currency: string
           customer_email: string | null
           customer_name: string | null
           environment: string
           error_message: string | null
+          events: Json
           id: string
           items: Json
           printful_order_id: string | null
+          printful_shipped_at: string | null
           printful_status: string | null
+          printful_updated_at: string | null
+          refunded_amount_cents: number
+          refunded_at: string | null
           shipping: Json | null
           status: string
           stripe_payment_intent: string | null
           stripe_session_id: string
+          tracking_number: string | null
+          tracking_url: string | null
           updated_at: string
         }
         Insert: {
           amount_cents?: number
+          carrier?: string | null
           created_at?: string
           currency?: string
           customer_email?: string | null
           customer_name?: string | null
           environment?: string
           error_message?: string | null
+          events?: Json
           id?: string
           items?: Json
           printful_order_id?: string | null
+          printful_shipped_at?: string | null
           printful_status?: string | null
+          printful_updated_at?: string | null
+          refunded_amount_cents?: number
+          refunded_at?: string | null
           shipping?: Json | null
           status?: string
           stripe_payment_intent?: string | null
           stripe_session_id: string
+          tracking_number?: string | null
+          tracking_url?: string | null
           updated_at?: string
         }
         Update: {
           amount_cents?: number
+          carrier?: string | null
           created_at?: string
           currency?: string
           customer_email?: string | null
           customer_name?: string | null
           environment?: string
           error_message?: string | null
+          events?: Json
           id?: string
           items?: Json
           printful_order_id?: string | null
+          printful_shipped_at?: string | null
           printful_status?: string | null
+          printful_updated_at?: string | null
+          refunded_amount_cents?: number
+          refunded_at?: string | null
           shipping?: Json | null
           status?: string
           stripe_payment_intent?: string | null
           stripe_session_id?: string
+          tracking_number?: string | null
+          tracking_url?: string | null
           updated_at?: string
         }
         Relationships: []

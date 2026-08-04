@@ -209,3 +209,158 @@ export const listShopOrders = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     return data ?? [];
   });
+async function assertAdmin(context: any) {
+  const { data, error } = await context.supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", context.userId)
+    .eq("role", "admin")
+    .maybeSingle();
+  if (error || !data) throw new Error("Accès refusé");
+}
+
+/** Rembourse (totalement ou partiellement) une commande et annule la production. */
+export const refundShopOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { orderId: string; amountCents?: number }) => {
+    if (!/^[0-9a-f-]{36}$/i.test(data.orderId)) throw new Error("Commande invalide");
+    if (
+      data.amountCents !== undefined &&
+      (!Number.isInteger(data.amountCents) || data.amountCents < 1)
+    ) {
+      throw new Error("Montant invalide");
+    }
+    return data;
+  })
+  .handler(async ({ data, context }): Promise<{ ok: true } | { error: string }> => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { cancelPrintfulOrder } = await import("@/lib/printful.server");
+    const { appendEvent } = await import("@/lib/shop-orders.server");
+
+    const { data: order } = await supabaseAdmin
+      .from("shop_orders")
+      .select(
+        "id, stripe_payment_intent, environment, amount_cents, refunded_amount_cents, printful_order_id, printful_status, events",
+      )
+      .eq("id", data.orderId)
+      .maybeSingle();
+    if (!order) return { error: "Commande introuvable" };
+    const paymentIntent = (order as any).stripe_payment_intent as string | null;
+    if (!paymentIntent) return { error: "Paiement introuvable pour cette commande" };
+
+    try {
+      const stripe = createStripeClient((order as any).environment as StripeEnv);
+      const refund = await stripe.refunds.create({
+        payment_intent: paymentIntent,
+        ...(data.amountCents ? { amount: data.amountCents } : {}),
+      });
+
+      const now = new Date().toISOString();
+      const total =
+        ((order as any).refunded_amount_cents ?? 0) + (refund.amount ?? 0);
+      const partial = total < ((order as any).amount_cents ?? 0);
+
+      let events = appendEvent((order as any).events, {
+        at: now,
+        label: partial ? "Remboursement partiel (admin)" : "Remboursement total (admin)",
+      });
+
+      let printfulPatch: Record<string, unknown> = {};
+      const printfulId = (order as any).printful_order_id as string | null;
+      if (!partial && printfulId && (order as any).printful_status !== "fulfilled") {
+        const cancel = await cancelPrintfulOrder(printfulId);
+        printfulPatch = cancel.ok
+          ? { printful_status: "canceled", printful_updated_at: now }
+          : { error_message: cancel.error };
+        events = appendEvent(events, {
+          at: now,
+          label: cancel.ok
+            ? "Production annulée chez Printful"
+            : "Annulation Printful impossible",
+          detail: cancel.ok ? undefined : cancel.error,
+        });
+      }
+
+      await supabaseAdmin
+        .from("shop_orders")
+        .update({
+          refunded_amount_cents: total,
+          refunded_at: now,
+          status: partial ? "partially_refunded" : "refunded",
+          events,
+          ...printfulPatch,
+        })
+        .eq("id", (order as any).id);
+
+      return { ok: true };
+    } catch (error) {
+      return { error: getStripeErrorMessage(error) };
+    }
+  });
+
+/** Rafraîchit le statut Printful d'une commande à la demande. */
+export const syncPrintfulOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { orderId: string }) => {
+    if (!/^[0-9a-f-]{36}$/i.test(data.orderId)) throw new Error("Commande invalide");
+    return data;
+  })
+  .handler(async ({ data, context }): Promise<{ ok: true } | { error: string }> => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { getPrintfulOrder } = await import("@/lib/printful.server");
+    const { appendEvent, orderPatchFromPrintful, PRINTFUL_STATUS_LABEL } = await import(
+      "@/lib/shop-orders.server"
+    );
+
+    const { data: order } = await supabaseAdmin
+      .from("shop_orders")
+      .select("id, printful_order_id, printful_status, events")
+      .eq("id", data.orderId)
+      .maybeSingle();
+    if (!order) return { error: "Commande introuvable" };
+    const printfulId = (order as any).printful_order_id as string | null;
+    if (!printfulId) return { error: "Aucune commande Printful associée" };
+
+    const state = await getPrintfulOrder(printfulId);
+    if (!state.ok) return { error: state.error };
+
+    const patch = orderPatchFromPrintful(state.order);
+    const changed = state.order.status !== (order as any).printful_status;
+    await supabaseAdmin
+      .from("shop_orders")
+      .update({
+        ...patch,
+        ...(changed
+          ? {
+              events: appendEvent((order as any).events, {
+                at: new Date().toISOString(),
+                label:
+                  PRINTFUL_STATUS_LABEL[state.order.status] ?? state.order.status,
+              }),
+            }
+          : {}),
+      })
+      .eq("id", (order as any).id);
+
+    return { ok: true };
+  });
+
+/** Enregistre l'URL de webhook Printful pour la mise à jour automatique. */
+export const configurePrintfulWebhook = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { baseUrl: string }) => {
+    if (!/^https:\/\/[a-z0-9.-]+$/i.test(data.baseUrl)) throw new Error("URL invalide");
+    return data;
+  })
+  .handler(async ({ data, context }): Promise<{ ok: true } | { error: string }> => {
+    await assertAdmin(context);
+    const token = process.env["PRINTFUL_WEBHOOK_TOKEN"];
+    if (!token) return { error: "PRINTFUL_WEBHOOK_TOKEN manquant" };
+    const { setPrintfulWebhook } = await import("@/lib/printful.server");
+    const result = await setPrintfulWebhook(
+      `${data.baseUrl}/api/public/printful/webhook?token=${encodeURIComponent(token)}`,
+    );
+    return result.ok ? { ok: true } : { error: result.error };
+  });
