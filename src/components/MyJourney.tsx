@@ -701,6 +701,18 @@ function ExperienceLogo({ exp }: { exp: Experience }) {
 }
 
 function ExperiencesSection() {
+  const { data } = useQuery(contentQuery("experience"));
+  const list: Experience[] =
+    data && data.length
+      ? data.map((i: ContentItem) => ({
+          role: i.title,
+          org: i.subtitle ?? "",
+          period: i.period ?? "",
+          missions: toStringList(i.bullets),
+          domain: i.logo_domain ?? undefined,
+          fallbackIcon: iconFor(i.icon, Building2),
+        }))
+      : experiences;
   return (
     <AnimatedSection>
       <section id="experiences" className="section-padding bg-background scroll-mt-24">
@@ -708,8 +720,8 @@ function ExperiencesSection() {
           <SectionHeader eyebrow="Parcours" title="Expériences professionnelles" />
 
           <div className="mt-12 space-y-4">
-            {experiences.map((exp) => (
-              <Card key={exp.role}>
+            {list.map((exp, idx) => (
+              <Card key={`${exp.role}-${idx}`}>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                   <ExperienceLogo exp={exp} />
                   <div className="flex-1">
