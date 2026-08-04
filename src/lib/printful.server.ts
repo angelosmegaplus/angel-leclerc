@@ -130,6 +130,84 @@ export async function createPrintfulOrder(input: {
   };
 }
 
+export interface PrintfulShippingRate {
+  id: string;
+  name: string;
+  rateCents: number;
+  currency: string;
+  minDays: number | null;
+  maxDays: number | null;
+}
+
+/**
+ * Tarifs de livraison réels calculés par Printful pour une destination et un
+ * panier donnés. Sert à afficher le coût exact avant paiement.
+ */
+export async function getPrintfulShippingRates(input: {
+  recipient: { address1?: string | null; city?: string | null; country_code: string; state_code?: string | null; zip: string };
+  items: PrintfulLine[];
+  currency?: string;
+}): Promise<{ ok: true; rates: PrintfulShippingRate[] } | { ok: false; error: string }> {
+  if (input.items.length === 0) return { ok: false, error: "Panier vide" };
+  const response = await printfulRequest("/shipping/rates", {
+    method: "POST",
+    body: JSON.stringify({
+      recipient: {
+        address1: input.recipient.address1 || undefined,
+        city: input.recipient.city || undefined,
+        country_code: input.recipient.country_code,
+        state_code: input.recipient.state_code || undefined,
+        zip: input.recipient.zip,
+      },
+      items: input.items.map((i) => ({
+        ...(i.sync_variant_id
+          ? { sync_variant_id: i.sync_variant_id }
+          : { variant_id: i.variant_id }),
+        quantity: i.quantity,
+      })),
+      currency: (input.currency ?? "EUR").toUpperCase(),
+      locale: "fr_FR",
+    }),
+  });
+  if (!response.ok) return response;
+  const rates: PrintfulShippingRate[] = Array.isArray(response.result)
+    ? response.result.map((r: any) => ({
+        id: String(r.id ?? "STANDARD"),
+        name: String(r.name ?? "Livraison"),
+        rateCents: Math.round(Number(r.rate ?? 0) * 100),
+        currency: String(r.currency ?? input.currency ?? "EUR"),
+        minDays: r.minDeliveryDays != null ? Number(r.minDeliveryDays) : null,
+        maxDays: r.maxDeliveryDays != null ? Number(r.maxDeliveryDays) : null,
+      }))
+    : [];
+  if (rates.length === 0) return { ok: false, error: "Aucun tarif disponible pour cette destination" };
+  return { ok: true, rates };
+}
+
+async function _unusedLegacyCreateOrder(input: {
+  externalId: string;
+  recipient: PrintfulRecipient;
+  items: PrintfulLine[];
+  confirm: boolean;
+}): Promise<{ ok: true; id: string; status: string } | { ok: false; error: string }> {
+  if (input.items.length === 0) return { ok: false, error: "Aucun article imprimable" };
+
+  const response = await printfulRequest(`/orders?confirm=${input.confirm ? 1 : 0}`, {
+    method: "POST",
+    body: JSON.stringify({
+      external_id: input.externalId,
+      recipient: input.recipient,
+      items: input.items,
+    }),
+  });
+  if (!response.ok) return response;
+  return {
+    ok: true,
+    id: String(response.result?.id ?? ""),
+    status: response.result?.status ?? "draft",
+  };
+}
+
 /** Récupère une commande Printful déjà créée à partir de notre identifiant interne. */
 export async function findPrintfulOrderByExternalId(
   externalId: string,
