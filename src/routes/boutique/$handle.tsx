@@ -100,6 +100,46 @@ function ProductPage() {
             {formatPrice(product.priceCents, product.currency)}
           </p>
 
+          {product.availability && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              {product.availability === "in_stock"
+                ? "Disponible · impression à la demande"
+                : "Temporairement indisponible"}
+            </p>
+          )}
+
+          {product.sizes.length > 0 && (
+            <div className="mt-6">
+              <p className="text-sm font-medium text-foreground">Tailles disponibles</p>
+              <ul className="mt-2 flex flex-wrap gap-2">
+                {product.sizes.map((size) => (
+                  <li
+                    key={size}
+                    className="rounded-lg border border-border px-3 py-1 text-xs text-muted-foreground"
+                  >
+                    {size}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {product.colors.length > 0 && (
+            <div className="mt-5">
+              <p className="text-sm font-medium text-foreground">Couleurs disponibles</p>
+              <ul className="mt-2 flex flex-wrap gap-2">
+                {product.colors.map((color) => (
+                  <li
+                    key={color}
+                    className="rounded-lg border border-border px-3 py-1 text-xs text-muted-foreground"
+                  >
+                    {color}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <div className="mt-6 flex items-center gap-3">
             <span className="text-sm text-muted-foreground">Quantité</span>
             <input
@@ -117,6 +157,7 @@ function ProductPage() {
           <Button
             className="mt-6 w-full bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
             onClick={handleAdd}
+            disabled={product.availability === "out_of_stock"}
           >
             Ajouter au panier
           </Button>
