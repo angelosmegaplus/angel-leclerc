@@ -28,6 +28,7 @@ import { Route as ActualitesSlugRouteImport } from './routes/actualites/$slug'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as ApiPublicHooksNewsletterRouteImport } from './routes/api/public/hooks/newsletter'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -128,6 +129,12 @@ const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
   path: '/lovable/email/auth/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksNewsletterRoute =
+  ApiPublicHooksNewsletterRouteImport.update({
+    id: '/api/public/hooks/newsletter',
+    path: '/api/public/hooks/newsletter',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -146,6 +153,7 @@ export interface FileRoutesByFullPath {
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   '/actualites/': typeof ActualitesIndexRoute
   '/articles/': typeof ArticlesIndexRoute
+  '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -167,6 +175,7 @@ export interface FileRoutesByTo {
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   '/actualites': typeof ActualitesIndexRoute
   '/articles': typeof ArticlesIndexRoute
+  '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -189,6 +198,7 @@ export interface FileRoutesById {
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   '/actualites/': typeof ActualitesIndexRoute
   '/articles/': typeof ArticlesIndexRoute
+  '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -212,6 +222,7 @@ export interface FileRouteTypes {
     | '/communiques/reponse-article-chni-tombola-patrimoine'
     | '/actualites/'
     | '/articles/'
+    | '/api/public/hooks/newsletter'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/transactional/preview'
@@ -233,6 +244,7 @@ export interface FileRouteTypes {
     | '/communiques/reponse-article-chni-tombola-patrimoine'
     | '/actualites'
     | '/articles'
+    | '/api/public/hooks/newsletter'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/transactional/preview'
@@ -254,6 +266,7 @@ export interface FileRouteTypes {
     | '/communiques/reponse-article-chni-tombola-patrimoine'
     | '/actualites/'
     | '/articles/'
+    | '/api/public/hooks/newsletter'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/transactional/preview'
@@ -276,6 +289,7 @@ export interface RootRouteChildren {
   CommuniquesReponseArticleChniTombolaPatrimoineRoute: typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   ActualitesIndexRoute: typeof ActualitesIndexRoute
   ArticlesIndexRoute: typeof ArticlesIndexRoute
+  ApiPublicHooksNewsletterRoute: typeof ApiPublicHooksNewsletterRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -416,6 +430,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/newsletter': {
+      id: '/api/public/hooks/newsletter'
+      path: '/api/public/hooks/newsletter'
+      fullPath: '/api/public/hooks/newsletter'
+      preLoaderRoute: typeof ApiPublicHooksNewsletterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -438,6 +459,7 @@ const rootRouteChildren: RootRouteChildren = {
     CommuniquesReponseArticleChniTombolaPatrimoineRoute,
   ActualitesIndexRoute: ActualitesIndexRoute,
   ArticlesIndexRoute: ArticlesIndexRoute,
+  ApiPublicHooksNewsletterRoute: ApiPublicHooksNewsletterRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
