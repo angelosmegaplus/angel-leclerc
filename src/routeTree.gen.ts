@@ -24,6 +24,8 @@ import { Route as BoutiqueIndexRouteImport } from './routes/boutique/index'
 import { Route as ArticlesIndexRouteImport } from './routes/articles/index'
 import { Route as ActualitesIndexRouteImport } from './routes/actualites/index'
 import { Route as CommuniquesReponseArticleChniTombolaPatrimoineRouteImport } from './routes/communiques/reponse-article-chni-tombola-patrimoine'
+import { Route as BoutiqueMerciRouteImport } from './routes/boutique/merci'
+import { Route as BoutiqueCommandeRouteImport } from './routes/boutique/commande'
 import { Route as BoutiqueHandleRouteImport } from './routes/boutique/$handle'
 import { Route as ArticlesReponseArticleChniTombolaPatrimoineRouteImport } from './routes/articles/reponse-article-chni-tombola-patrimoine'
 import { Route as ArticlesSlugRouteImport } from './routes/articles/$slug'
@@ -31,6 +33,7 @@ import { Route as ActualitesSlugRouteImport } from './routes/actualites/$slug'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicHooksNewsletterRouteImport } from './routes/api/public/hooks/newsletter'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -110,6 +113,16 @@ const CommuniquesReponseArticleChniTombolaPatrimoineRoute =
     path: '/communiques/reponse-article-chni-tombola-patrimoine',
     getParentRoute: () => rootRouteImport,
   } as any)
+const BoutiqueMerciRoute = BoutiqueMerciRouteImport.update({
+  id: '/boutique/merci',
+  path: '/boutique/merci',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BoutiqueCommandeRoute = BoutiqueCommandeRouteImport.update({
+  id: '/boutique/commande',
+  path: '/boutique/commande',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BoutiqueHandleRoute = BoutiqueHandleRouteImport.update({
   id: '/boutique/$handle',
   path: '/boutique/$handle',
@@ -147,6 +160,12 @@ const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
   path: '/lovable/email/auth/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPaymentsWebhookRoute =
+  ApiPublicPaymentsWebhookRouteImport.update({
+    id: '/api/public/payments/webhook',
+    path: '/api/public/payments/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksNewsletterRoute =
   ApiPublicHooksNewsletterRouteImport.update({
     id: '/api/public/hooks/newsletter',
@@ -170,11 +189,14 @@ export interface FileRoutesByFullPath {
   '/articles/$slug': typeof ArticlesSlugRoute
   '/articles/reponse-article-chni-tombola-patrimoine': typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
   '/boutique/$handle': typeof BoutiqueHandleRoute
+  '/boutique/commande': typeof BoutiqueCommandeRoute
+  '/boutique/merci': typeof BoutiqueMerciRoute
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   '/actualites/': typeof ActualitesIndexRoute
   '/articles/': typeof ArticlesIndexRoute
   '/boutique/': typeof BoutiqueIndexRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -195,11 +217,14 @@ export interface FileRoutesByTo {
   '/articles/$slug': typeof ArticlesSlugRoute
   '/articles/reponse-article-chni-tombola-patrimoine': typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
   '/boutique/$handle': typeof BoutiqueHandleRoute
+  '/boutique/commande': typeof BoutiqueCommandeRoute
+  '/boutique/merci': typeof BoutiqueMerciRoute
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   '/actualites': typeof ActualitesIndexRoute
   '/articles': typeof ArticlesIndexRoute
   '/boutique': typeof BoutiqueIndexRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -221,11 +246,14 @@ export interface FileRoutesById {
   '/articles/$slug': typeof ArticlesSlugRoute
   '/articles/reponse-article-chni-tombola-patrimoine': typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
   '/boutique/$handle': typeof BoutiqueHandleRoute
+  '/boutique/commande': typeof BoutiqueCommandeRoute
+  '/boutique/merci': typeof BoutiqueMerciRoute
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   '/actualites/': typeof ActualitesIndexRoute
   '/articles/': typeof ArticlesIndexRoute
   '/boutique/': typeof BoutiqueIndexRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -248,11 +276,14 @@ export interface FileRouteTypes {
     | '/articles/$slug'
     | '/articles/reponse-article-chni-tombola-patrimoine'
     | '/boutique/$handle'
+    | '/boutique/commande'
+    | '/boutique/merci'
     | '/communiques/reponse-article-chni-tombola-patrimoine'
     | '/actualites/'
     | '/articles/'
     | '/boutique/'
     | '/api/public/hooks/newsletter'
+    | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/transactional/preview'
@@ -273,11 +304,14 @@ export interface FileRouteTypes {
     | '/articles/$slug'
     | '/articles/reponse-article-chni-tombola-patrimoine'
     | '/boutique/$handle'
+    | '/boutique/commande'
+    | '/boutique/merci'
     | '/communiques/reponse-article-chni-tombola-patrimoine'
     | '/actualites'
     | '/articles'
     | '/boutique'
     | '/api/public/hooks/newsletter'
+    | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/transactional/preview'
@@ -298,11 +332,14 @@ export interface FileRouteTypes {
     | '/articles/$slug'
     | '/articles/reponse-article-chni-tombola-patrimoine'
     | '/boutique/$handle'
+    | '/boutique/commande'
+    | '/boutique/merci'
     | '/communiques/reponse-article-chni-tombola-patrimoine'
     | '/actualites/'
     | '/articles/'
     | '/boutique/'
     | '/api/public/hooks/newsletter'
+    | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/transactional/preview'
@@ -324,11 +361,14 @@ export interface RootRouteChildren {
   ArticlesSlugRoute: typeof ArticlesSlugRoute
   ArticlesReponseArticleChniTombolaPatrimoineRoute: typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
   BoutiqueHandleRoute: typeof BoutiqueHandleRoute
+  BoutiqueCommandeRoute: typeof BoutiqueCommandeRoute
+  BoutiqueMerciRoute: typeof BoutiqueMerciRoute
   CommuniquesReponseArticleChniTombolaPatrimoineRoute: typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   ActualitesIndexRoute: typeof ActualitesIndexRoute
   ArticlesIndexRoute: typeof ArticlesIndexRoute
   BoutiqueIndexRoute: typeof BoutiqueIndexRoute
   ApiPublicHooksNewsletterRoute: typeof ApiPublicHooksNewsletterRoute
+  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -441,6 +481,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommuniquesReponseArticleChniTombolaPatrimoineRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/boutique/merci': {
+      id: '/boutique/merci'
+      path: '/boutique/merci'
+      fullPath: '/boutique/merci'
+      preLoaderRoute: typeof BoutiqueMerciRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/boutique/commande': {
+      id: '/boutique/commande'
+      path: '/boutique/commande'
+      fullPath: '/boutique/commande'
+      preLoaderRoute: typeof BoutiqueCommandeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/boutique/$handle': {
       id: '/boutique/$handle'
       path: '/boutique/$handle'
@@ -490,6 +544,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/payments/webhook': {
+      id: '/api/public/payments/webhook'
+      path: '/api/public/payments/webhook'
+      fullPath: '/api/public/payments/webhook'
+      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/newsletter': {
       id: '/api/public/hooks/newsletter'
       path: '/api/public/hooks/newsletter'
@@ -517,12 +578,15 @@ const rootRouteChildren: RootRouteChildren = {
   ArticlesReponseArticleChniTombolaPatrimoineRoute:
     ArticlesReponseArticleChniTombolaPatrimoineRoute,
   BoutiqueHandleRoute: BoutiqueHandleRoute,
+  BoutiqueCommandeRoute: BoutiqueCommandeRoute,
+  BoutiqueMerciRoute: BoutiqueMerciRoute,
   CommuniquesReponseArticleChniTombolaPatrimoineRoute:
     CommuniquesReponseArticleChniTombolaPatrimoineRoute,
   ActualitesIndexRoute: ActualitesIndexRoute,
   ArticlesIndexRoute: ArticlesIndexRoute,
   BoutiqueIndexRoute: BoutiqueIndexRoute,
   ApiPublicHooksNewsletterRoute: ApiPublicHooksNewsletterRoute,
+  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
@@ -530,13 +594,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

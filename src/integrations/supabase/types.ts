@@ -392,6 +392,111 @@ export type Database = {
         }
         Relationships: []
       }
+      shop_orders: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          currency: string
+          customer_email: string | null
+          customer_name: string | null
+          environment: string
+          error_message: string | null
+          id: string
+          items: Json
+          printful_order_id: string | null
+          printful_status: string | null
+          shipping: Json | null
+          status: string
+          stripe_payment_intent: string | null
+          stripe_session_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          environment?: string
+          error_message?: string | null
+          id?: string
+          items?: Json
+          printful_order_id?: string | null
+          printful_status?: string | null
+          shipping?: Json | null
+          status?: string
+          stripe_payment_intent?: string | null
+          stripe_session_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          environment?: string
+          error_message?: string | null
+          id?: string
+          items?: Json
+          printful_order_id?: string | null
+          printful_status?: string | null
+          shipping?: Json | null
+          status?: string
+          stripe_payment_intent?: string | null
+          stripe_session_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      shop_products: {
+        Row: {
+          active: boolean
+          created_at: string
+          currency: string
+          description: string
+          id: string
+          image_url: string | null
+          images: Json
+          name: string
+          price_cents: number
+          printful_variant_id: number | null
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          currency?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          images?: Json
+          name: string
+          price_cents: number
+          printful_variant_id?: number | null
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          currency?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          images?: Json
+          name?: string
+          price_cents?: number
+          printful_variant_id?: number | null
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

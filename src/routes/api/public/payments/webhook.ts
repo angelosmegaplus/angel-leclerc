@@ -1,0 +1,189 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { type StripeEnv, createStripeClient, verifyWebhook } from "@/lib/stripe.server";
+import { createPrintfulOrder } from "@/lib/printful.server";
+import { sendTemplateEmail } from "@/lib/email-templates/send-email";
+import { formatPrice } from "@/lib/shop";
+
+async function fulfillSession(session: any, env: StripeEnv) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const stripe = createStripeClient(env);
+
+  const full = await stripe.checkout.sessions.retrieve(session.id, {
+    expand: ["line_items"],
+  });
+  const lineItems = (full as any).line_items?.data ?? [];
+
+  let requested: Array<{ s: string; q: number }> = [];
+  try {
+    requested = JSON.parse(full.metadata?.["items"] ?? "[]");
+  } catch {
+    requested = [];
+  }
+
+  const { data: products } = await supabaseAdmin
+    .from("shop_products")
+    .select("slug, name, printful_variant_id")
+    .in(
+      "slug",
+      requested.map((i) => i.s),
+    );
+  const bySlug = new Map((products ?? []).map((p: any) => [p.slug as string, p]));
+
+  const currency = (full.currency ?? "eur").toUpperCase();
+  const items = lineItems.map((li: any) => ({
+    name: li.description as string,
+    quantity: li.quantity as number,
+    amount_cents: li.amount_total as number,
+  }));
+
+  const shipping =
+    (full as any).collected_information?.shipping_details ??
+    (full as any).shipping_details ??
+    null;
+  const customerName = full.customer_details?.name ?? shipping?.name ?? null;
+  const customerEmail = full.customer_details?.email ?? null;
+
+  const { data: order, error: orderError } = await supabaseAdmin
+    .from("shop_orders")
+    .upsert(
+      {
+        stripe_session_id: full.id,
+        stripe_payment_intent:
+          typeof full.payment_intent === "string" ? full.payment_intent : null,
+        environment: env,
+        customer_email: customerEmail,
+        customer_name: customerName,
+        amount_cents: full.amount_total ?? 0,
+        currency,
+        items,
+        shipping,
+        status: "paid",
+      },
+      { onConflict: "stripe_session_id" },
+    )
+    .select("id")
+    .single();
+
+  if (orderError) {
+    console.error("Order upsert failed:", orderError.message);
+    return;
+  }
+
+  // --- Envoi automatique vers Printful ---
+  const address = shipping?.address;
+  const printfulItems = requested
+    .map((i) => {
+      const product = bySlug.get(i.s);
+      const variantId = product?.printful_variant_id as number | null | undefined;
+      if (!variantId) return null;
+      return { variant_id: variantId, quantity: i.q, name: product?.name as string };
+    })
+    .filter(Boolean) as Array<{ variant_id: number; quantity: number; name: string }>;
+
+  if (address && printfulItems.length > 0) {
+    const result = await createPrintfulOrder({
+      externalId: order.id as string,
+      recipient: {
+        name: customerName ?? "Client ALC!",
+        address1: address.line1 ?? "",
+        address2: address.line2 ?? null,
+        city: address.city ?? "",
+        state_code: address.state ?? null,
+        country_code: address.country ?? "FR",
+        zip: address.postal_code ?? "",
+        email: customerEmail,
+      },
+      items: printfulItems,
+      confirm: true,
+    });
+
+    await supabaseAdmin
+      .from("shop_orders")
+      .update(
+        result.ok
+          ? {
+              printful_order_id: result.id,
+              printful_status: result.status,
+              status: "in_production",
+              error_message: null,
+            }
+          : { printful_status: "failed", error_message: result.error },
+      )
+      .eq("id", order.id);
+  } else {
+    await supabaseAdmin
+      .from("shop_orders")
+      .update({
+        printful_status: "skipped",
+        error_message: "Adresse ou référence Printful manquante",
+      })
+      .eq("id", order.id);
+  }
+
+  // --- E-mail de confirmation client ---
+  if (customerEmail) {
+    try {
+      await sendTemplateEmail("order-confirmation", customerEmail, {
+        idempotencyKey: `order-confirmation-${full.id}`,
+        templateData: {
+          firstName: customerName?.split(" ")[0] ?? undefined,
+          orderRef: (order.id as string).slice(0, 8).toUpperCase(),
+          total: formatPrice(full.amount_total ?? 0, currency),
+          items: items.map((i: any) => ({
+            name: i.name,
+            quantity: i.quantity,
+            price: formatPrice(i.amount_cents, currency),
+          })),
+          shippingAddress: address
+            ? [
+                address.line1,
+                address.line2,
+                `${address.postal_code ?? ""} ${address.city ?? ""}`.trim(),
+                address.country,
+              ]
+                .filter(Boolean)
+                .join("\n")
+            : undefined,
+        },
+      });
+    } catch (error) {
+      console.error("Order confirmation email failed:", error);
+    }
+  }
+}
+
+export const Route = createFileRoute("/api/public/payments/webhook")({
+  server: {
+    handlers: {
+      POST: async ({ request }) => {
+        const rawEnv = new URL(request.url).searchParams.get("env");
+        if (rawEnv !== "sandbox" && rawEnv !== "live") {
+          console.error("Webhook received with invalid env:", rawEnv);
+          return Response.json({ received: true, ignored: "invalid env" });
+        }
+        const env: StripeEnv = rawEnv;
+        try {
+          const event = await verifyWebhook(request, env);
+          switch (event.type) {
+            case "checkout.session.completed": {
+              const session = event.data.object;
+              if (session.payment_status !== "unpaid") {
+                await fulfillSession(session, env);
+              }
+              break;
+            }
+            case "checkout.session.async_payment_succeeded":
+              await fulfillSession(event.data.object, env);
+              break;
+            default:
+              console.log("Unhandled event:", event.type);
+          }
+          return Response.json({ received: true });
+        } catch (error) {
+          console.error("Webhook error:", error);
+          return new Response("Webhook error", { status: 400 });
+        }
+      },
+    },
+  },
+});

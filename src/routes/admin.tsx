@@ -21,8 +21,10 @@ import {
   AlertCircle,
   BarChart3,
   LayoutList,
+  ShoppingBag,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
+import { ShopAdmin } from "@/components/ShopAdmin";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -144,7 +146,7 @@ function AdminPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [tab, setTab] = useState<
-    "articles" | "messages" | "abonnes" | "stats" | "contenus" | "avis"
+    "articles" | "messages" | "abonnes" | "stats" | "contenus" | "avis" | "boutique"
   >("articles");
   const sendNewsletter = useServerFn(sendNewsletterNow);
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
@@ -639,6 +641,7 @@ function AdminPage() {
                   ["abonnes", `Abonnés (${subscribers.length})`],
                   ["contenus", "Parcours & services"],
                   ["avis", "Avis et soutiens"],
+                  ["boutique", "Boutique"],
                   ["stats", "Statistiques"],
                 ] as const
               ).map(([key, label]) => (
@@ -653,6 +656,7 @@ function AdminPage() {
                   {key === "stats" && <BarChart3 className="mr-2 h-4 w-4" />}
                   {key === "contenus" && <LayoutList className="mr-2 h-4 w-4" />}
                   {key === "avis" && <Star className="mr-2 h-4 w-4" />}
+                  {key === "boutique" && <ShoppingBag className="mr-2 h-4 w-4" />}
                   {label}
                 </Button>
               ))}
@@ -663,6 +667,8 @@ function AdminPage() {
             {tab === "contenus" && <ContentAdmin />}
 
             {tab === "avis" && <FeedbackAdmin />}
+
+            {tab === "boutique" && <ShopAdmin />}
 
             {tab === "messages" && (
               <div className="mt-8 space-y-3">
