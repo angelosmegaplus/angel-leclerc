@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Menu, X, Linkedin, Instagram, Facebook } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CartButton } from "@/components/CartButton";
 import logo from "@/assets/logo.svg";
 
 const navLinks = [
   { href: "/", label: "Accueil" },
   { href: "/entreprise", label: "Entreprise" },
   { href: "/parcours", label: "Parcours" },
+  { href: "/boutique", label: "Boutique" },
   { href: "/articles", label: "Blog" },
   { href: "/contact", label: "Contact" },
 ];
@@ -68,6 +70,7 @@ export function Header() {
             >
               <Facebook size={20} />
             </a>
+            <CartButton />
           </div>
           <Button
             asChild
@@ -79,6 +82,7 @@ export function Header() {
 
         <button
           className="md:hidden p-2 text-foreground"
+          type="button"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? "Fermer le menu" : "Ouvrir le menu"}
         >
