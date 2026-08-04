@@ -70,6 +70,85 @@ export function ShopAdmin() {
     setSavingId(null);
   };
 
+  const emptyForm = {
+    id: "" as string,
+    name: "",
+    slug: "",
+    price: "",
+    description: "",
+    image_url: "",
+    printful_variant_id: "",
+  };
+  const [form, setForm] = useState(emptyForm);
+  const [savingProduct, setSavingProduct] = useState(false);
+
+  const slugify = (value: string) =>
+    value
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 80);
+
+  const editProduct = (product: any) => {
+    setForm({
+      id: product.id,
+      name: product.name ?? "",
+      slug: product.slug ?? "",
+      price: ((product.price_cents ?? 0) / 100).toString(),
+      description: product.description ?? "",
+      image_url: product.image_url ?? "",
+      printful_variant_id: product.printful_variant_id?.toString() ?? "",
+    });
+  };
+
+  const saveProduct = async () => {
+    const slug = slugify(form.slug || form.name);
+    const priceCents = Math.round(Number(form.price.replace(",", ".")) * 100);
+    if (!form.name.trim() || !slug) {
+      toast.error("Nom et référence obligatoires");
+      return;
+    }
+    if (!Number.isInteger(priceCents) || priceCents < 100) {
+      toast.error("Prix invalide (minimum 1,00 €)");
+      return;
+    }
+    setSavingProduct(true);
+    const payload = {
+      name: form.name.trim(),
+      slug,
+      price_cents: priceCents,
+      description: form.description.trim(),
+      image_url: form.image_url.trim() || null,
+      printful_variant_id: form.printful_variant_id
+        ? Number(form.printful_variant_id)
+        : null,
+    };
+    const { error } = form.id
+      ? await supabase.from("shop_products").update(payload).eq("id", form.id)
+      : await supabase.from("shop_products").insert({ ...payload, active: true });
+    setSavingProduct(false);
+    if (error) {
+      toast.error("Enregistrement impossible", { description: error.message });
+      return;
+    }
+    toast.success(form.id ? "Produit mis à jour" : "Produit ajouté");
+    setForm(emptyForm);
+    await queryClient.invalidateQueries({ queryKey: ["admin-shop-products"] });
+  };
+
+  const deleteProduct = async (product: any) => {
+    if (!window.confirm(`Supprimer définitivement « ${product.name} » ?`)) return;
+    const { error } = await supabase.from("shop_products").delete().eq("id", product.id);
+    if (error) {
+      toast.error("Suppression impossible", { description: error.message });
+      return;
+    }
+    if (form.id === product.id) setForm(emptyForm);
+    await queryClient.invalidateQueries({ queryKey: ["admin-shop-products"] });
+  };
+
   const runRefund = async (order: any) => {
     const remaining = (order.amount_cents ?? 0) - (order.refunded_amount_cents ?? 0);
     if (remaining <= 0) return;
@@ -249,6 +328,62 @@ export function ShopAdmin() {
 
       <section>
         <h2 className="font-display text-lg font-bold text-foreground">Produits</h2>
+        <div className="mt-4 rounded-xl border border-border bg-card p-4">
+          <p className="text-sm font-semibold text-foreground">
+            {form.id ? "Modifier le produit" : "Ajouter un produit"}
+          </p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <input
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              placeholder="Nom du produit"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+            />
+            <input
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              placeholder="Référence URL (auto si vide)"
+              value={form.slug}
+              onChange={(e) => setForm({ ...form, slug: e.target.value })}
+            />
+            <input
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              placeholder="Prix TTC en € (ex. 19,00)"
+              value={form.price}
+              onChange={(e) => setForm({ ...form, price: e.target.value })}
+            />
+            <input
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              placeholder="ID variante Printful (ex. 1320)"
+              value={form.printful_variant_id}
+              onChange={(e) =>
+                setForm({ ...form, printful_variant_id: e.target.value })
+              }
+            />
+            <input
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm sm:col-span-2"
+              placeholder="URL de l'image principale"
+              value={form.image_url}
+              onChange={(e) => setForm({ ...form, image_url: e.target.value })}
+            />
+            <textarea
+              className="min-h-24 rounded-lg border border-border bg-background px-3 py-2 text-sm sm:col-span-2"
+              placeholder="Description affichée sur la fiche produit"
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button size="sm" onClick={saveProduct} disabled={savingProduct}>
+              {savingProduct && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
+              {form.id ? "Enregistrer" : "Ajouter au catalogue"}
+            </Button>
+            {form.id && (
+              <Button size="sm" variant="outline" onClick={() => setForm(emptyForm)}>
+                Annuler
+              </Button>
+            )}
+          </div>
+        </div>
         <div className="mt-4 space-y-3">
           {(products as any[]).map((product) => (
             <div
@@ -263,14 +398,27 @@ export function ShopAdmin() {
                   {product.printful_variant_id ?? "non définie"}
                 </p>
               </div>
-              <Button
-                size="sm"
-                variant={product.active ? "outline" : "default"}
-                disabled={savingId === product.id}
-                onClick={() => toggleActive(product.id, !product.active)}
-              >
-                {product.active ? "Masquer" : "Publier"}
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" onClick={() => editProduct(product)}>
+                  Modifier
+                </Button>
+                <Button
+                  size="sm"
+                  variant={product.active ? "outline" : "default"}
+                  disabled={savingId === product.id}
+                  onClick={() => toggleActive(product.id, !product.active)}
+                >
+                  {product.active ? "Masquer" : "Publier"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-destructive"
+                  onClick={() => deleteProduct(product)}
+                >
+                  Supprimer
+                </Button>
+              </div>
             </div>
           ))}
           {products.length === 0 && (
