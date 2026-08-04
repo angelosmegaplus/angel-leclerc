@@ -330,10 +330,14 @@ function ShopAdminInner() {
           </div>
         </div>
 
+        <p className="mt-1 text-[11px] text-muted-foreground">
+          Statuts Printful synchronisés automatiquement toutes les 2 minutes
+          {autoSync
+            ? ` · dernier contrôle à ${new Date(autoSync.at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })} — ${autoSync.checked} en cours, ${autoSync.updated} mise(s) à jour`
+            : "…"}
+        </p>
+
         {isLoading ? (
-          <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="animate-spin" size={16} /> Chargement…
-          </p>
           <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="animate-spin" size={16} /> Chargement…
           </p>
