@@ -74,25 +74,37 @@ export type Database = {
       blog_subscribers: {
         Row: {
           active: boolean
+          confirm_token: string
+          confirmed_at: string | null
           created_at: string
           email: string
+          first_name: string | null
           id: string
+          last_newsletter_at: string | null
           unsubscribe_token: string
           updated_at: string
         }
         Insert: {
           active?: boolean
+          confirm_token?: string
+          confirmed_at?: string | null
           created_at?: string
           email: string
+          first_name?: string | null
           id?: string
+          last_newsletter_at?: string | null
           unsubscribe_token?: string
           updated_at?: string
         }
         Update: {
           active?: boolean
+          confirm_token?: string
+          confirmed_at?: string | null
           created_at?: string
           email?: string
+          first_name?: string | null
           id?: string
+          last_newsletter_at?: string | null
           unsubscribe_token?: string
           updated_at?: string
         }
@@ -218,6 +230,30 @@ export type Database = {
           updated_at?: string
           url?: string | null
           videos?: Json
+        }
+        Relationships: []
+      }
+      newsletter_runs: {
+        Row: {
+          article_count: number
+          created_at: string
+          id: string
+          recipient_count: number
+          sent_at: string
+        }
+        Insert: {
+          article_count?: number
+          created_at?: string
+          id?: string
+          recipient_count?: number
+          sent_at?: string
+        }
+        Update: {
+          article_count?: number
+          created_at?: string
+          id?: string
+          recipient_count?: number
+          sent_at?: string
         }
         Relationships: []
       }
