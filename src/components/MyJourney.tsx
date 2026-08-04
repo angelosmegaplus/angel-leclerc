@@ -756,6 +756,8 @@ function ExperiencesSection() {
 }
 
 function FormationSection() {
+  const { data } = useQuery(contentQuery("formation"));
+  const list = data ?? [];
   return (
     <AnimatedSection>
       <section id="formation" className="section-padding bg-muted/40 scroll-mt-24">
@@ -766,82 +768,91 @@ function FormationSection() {
             intro="Mon parcours actuel et mon projet de poursuite d'études en alternance."
           />
 
-          <div className="mt-12">
-            <Card>
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                <span className="inline-flex h-[64px] w-[120px] shrink-0 items-center justify-center rounded-xl border border-border bg-background p-2">
-                  <img
-                    src="/logos/mfr.asso.fr.svg"
-                    alt="Logo des Maisons familiales rurales (MFR)"
-                    className="h-full w-full object-contain"
-                    loading="lazy"
-                  />
-                </span>
-                <div className="flex-1">
-                  <div className="flex flex-col justify-between gap-1 sm:flex-row sm:items-baseline">
-                    <h3 className="font-display text-lg font-semibold text-foreground">
-                      Baccalauréat professionnel Métiers de l'accueil
-                    </h3>
-                    <span className="text-xs font-medium uppercase tracking-widest text-primary">
-                      Sept. 2023 – Juil. 2025
+          <div className="mt-12 space-y-6">
+            {list.map((item) => {
+              const bullets = toStringList(item.bullets);
+              const tags = toStringList(item.tags);
+              const videos = toVideoList(item.videos);
+              const FallbackIcon = iconFor(item.icon, GraduationCap);
+              return (
+                <Card key={item.id}>
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                    <span className="inline-flex h-[64px] w-[120px] shrink-0 items-center justify-center rounded-xl border border-border bg-background p-2">
+                      {item.logo_domain ? (
+                        <Logo domain={item.logo_domain} alt={item.subtitle ?? item.title} size={52} />
+                      ) : (
+                        <img
+                          src="/logos/mfr.asso.fr.svg"
+                          alt="Logo des Maisons familiales rurales (MFR)"
+                          className="h-full w-full object-contain"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                      )}
+                      {!item.logo_domain && false && <FallbackIcon size={22} />}
                     </span>
+                    <div className="flex-1">
+                      <div className="flex flex-col justify-between gap-1 sm:flex-row sm:items-baseline">
+                        <h3 className="font-display text-lg font-semibold text-foreground">
+                          {item.title}
+                        </h3>
+                        {item.period && (
+                          <span className="text-xs font-medium uppercase tracking-widest text-primary">
+                            {item.period}
+                          </span>
+                        )}
+                      </div>
+                      {item.subtitle && (
+                        <p className="text-sm font-medium text-foreground/80">
+                          {item.subtitle}
+                        </p>
+                      )}
+                      {item.description && (
+                        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                          {item.description}
+                        </p>
+                      )}
+                      {bullets.length > 0 && (
+                        <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
+                          {bullets.map((b) => (
+                            <li key={b} className="flex items-start gap-2">
+                              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                              {b}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {tags.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {tags.map((t) => (
+                            <span
+                              key={t}
+                              className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary"
+                            >
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {videos.length > 0 && (
+                        <>
+                          <p className="mt-6 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                            En vidéo
+                          </p>
+                          <div className="mt-3 grid gap-4 md:grid-cols-2">
+                            {videos.map((v) => (
+                              <YouTubeEmbed key={v.id} id={v.id} title={v.title ?? item.title} />
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-sm font-medium text-foreground/80">
-                    MFR du Périgord noir — Salignac
-                  </p>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                    Diplôme de niveau 4 préparé en alternance dans une Maison
-                    familiale rurale (MFR), un établissement de formation par
-                    alternance qui associe périodes en entreprise et semaines de
-                    cours en petits groupes. Le baccalauréat professionnel
-                    Métiers de l'accueil
-                    forme à l'accueil physique et téléphonique, à la relation
-                    client, à la vente de services et de produits, à la gestion
-                    de l'information et au travail administratif au sein d'une
-                    structure recevant du public.
-                  </p>
-                  <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
-                    <li className="flex items-start gap-2">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                      Accueil, orientation et conseil des visiteurs et des clients
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                      Vente, gestion des demandes et suivi administratif
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                      Communication écrite et orale, outils numériques et bureautiques
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                      Deux ans en alternance à l'Office de Tourisme Val de Sioule
-                    </li>
-                  </ul>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                      Mention Bien
-                    </span>
-                    <span className="rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground">
-                      SST — Sauveteur secouriste du travail
-                    </span>
-                  </div>
-                  <p className="mt-6 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                    En vidéo
-                  </p>
-                  <div className="mt-3 grid gap-4 md:grid-cols-2">
-                    <YouTubeEmbed
-                      id="knKUojBLR2I"
-                      title="Baccalauréat professionnel Métiers de l'accueil — présentation"
-                    />
-                    <YouTubeEmbed
-                      id="03vn5fWIIOQ"
-                      title="MFR du Périgord noir — Salignac"
-                    />
-                  </div>
-                </div>
-              </div>
-            </Card>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
