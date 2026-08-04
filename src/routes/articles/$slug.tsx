@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Download, Lock, Paperclip } from "lucide-react";
 import { fetchArticleBySlug, formatDate, getAttachments } from "@/lib/articles";
+import { ShareArticle } from "@/components/ShareArticle";
 export const SITE_URL = "https://www.angel-leclerc.fr";
 
 function absoluteUrl(value: string | null | undefined): string | null {
@@ -73,6 +74,8 @@ export const Route = createFileRoute("/articles/$slug")({
 
 function ArticlePage() {
   const article = Route.useLoaderData();
+  const { slug } = Route.useParams();
+  const shareUrl = `${SITE_URL}/articles/${slug}`;
 
   if (!article) {
     return (
@@ -111,6 +114,10 @@ function ArticlePage() {
           <p className="mt-3 inline-flex items-center gap-2 rounded-md border border-border bg-muted px-3 py-1.5 text-xs text-muted-foreground">
             <Lock className="h-3.5 w-3.5" /> Article privé — non listé sur le site
           </p>
+        )}
+
+        {!article.is_private && (
+          <ShareArticle url={shareUrl} title={article.title} className="mt-6" />
         )}
 
         {article.cover_url && (
@@ -167,7 +174,13 @@ function ArticlePage() {
           </div>
         )}
 
-        <div className="mt-12">
+        {!article.is_private && (
+          <div className="mt-12 border-t border-border pt-6">
+            <ShareArticle url={shareUrl} title={article.title} />
+          </div>
+        )}
+
+        <div className="mt-10">
           <Link
             to="/articles"
             className="inline-flex items-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
