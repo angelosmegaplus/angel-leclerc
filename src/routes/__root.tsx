@@ -18,7 +18,6 @@ import { Toaster } from "../components/ui/sonner";
 import { NotFound404 } from "../components/NotFound404";
 import { PageViewTracker } from "../components/PageViewTracker";
 import { CartDrawer } from "../components/CartDrawer";
-import { useCartSync } from "../hooks/useCartSync";
 
 function NotFoundComponent() {
   return <NotFound404 />;
@@ -133,7 +132,6 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  useCartSync();
 
   return (
     <QueryClientProvider client={queryClient}>
