@@ -22,6 +22,7 @@ import {
   configurePrintfulWebhook,
   checkPrintfulSetup,
   type PrintfulDiagnostics,
+  type PrintfulSyncReport,
 } from "@/lib/shop.functions";
 import {
   getPrintfulCatalogStatus,
