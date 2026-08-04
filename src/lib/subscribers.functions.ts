@@ -6,12 +6,19 @@ import { sendTemplateEmail } from "./email-templates/send-email";
 const emailSchema = z.object({
   email: z.string().trim().email("E-mail invalide").max(255),
   website: z.string().max(0).optional().or(z.literal("")),
+  captchaToken: z.string().min(1).max(400),
+  captchaAnswer: z.string().trim().min(1).max(10),
 });
 
 export const subscribeToBlog = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => emailSchema.parse(data))
   .handler(async ({ data }) => {
     if (data.website && data.website.length > 0) return { ok: true as const };
+
+    const { verifyChallenge } = await import("./captcha.server");
+    if (!(await verifyChallenge(data.captchaToken, data.captchaAnswer))) {
+      throw new Error("Vérification anti-robot incorrecte ou expirée. Merci de réessayer.");
+    }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const email = data.email.toLowerCase();
