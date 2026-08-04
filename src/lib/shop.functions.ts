@@ -643,3 +643,196 @@ export const syncPendingPrintfulOrders = createServerFn({ method: "POST" })
       return syncOpenPrintfulOrders();
     },
   );
+
+/* ------------------------- Catalogue Printful ------------------------- */
+
+export interface PrintfulCatalogStatus {
+  storeId: string | null;
+  storeName: string | null;
+  storeType: string | null;
+  stores: Array<{ id: number; name: string; type: string }>;
+  apiProductCount: number;
+  apiTemplateCount: number;
+  dbProductCount: number;
+  lastSyncedAt: string | null;
+  errors: string[];
+}
+
+/** État du catalogue : boutique utilisée, produits API vs produits en base. */
+export const getPrintfulCatalogStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<PrintfulCatalogStatus> => {
+    await assertAdmin(context);
+    const { listPrintfulStores, listPrintfulSyncProducts, listPrintfulTemplates } =
+      await import("@/lib/printful.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const errors: string[] = [];
+    const storeId = process.env["PRINTFUL_STORE_ID"] ?? null;
+    let stores: Array<{ id: number; name: string; type: string }> = [];
+    const storeList = await listPrintfulStores();
+    if (storeList.ok) stores = storeList.stores;
+    else errors.push(storeList.error);
+
+    const current = stores.find((s) => String(s.id) === storeId) ?? null;
+    if (storeId && stores.length > 0 && !current) {
+      errors.push(`La boutique ${storeId} n'est pas accessible avec ce jeton`);
+    }
+
+    const sync = await listPrintfulSyncProducts();
+    if (!sync.ok) errors.push(sync.error);
+    const templates = await listPrintfulTemplates();
+    if (!templates.ok) errors.push(templates.error);
+
+    const { count } = await supabaseAdmin
+      .from("shop_products")
+      .select("id", { count: "exact", head: true });
+
+    const { data: last } = await supabaseAdmin
+      .from("shop_products")
+      .select("printful_synced_at")
+      .not("printful_synced_at", "is", null)
+      .order("printful_synced_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    return {
+      storeId,
+      storeName: current?.name ?? null,
+      storeType: current?.type ?? null,
+      stores,
+      apiProductCount: sync.ok ? sync.items.length : 0,
+      apiTemplateCount: templates.ok ? templates.items.length : 0,
+      dbProductCount: count ?? 0,
+      lastSyncedAt: (last as any)?.printful_synced_at ?? null,
+      errors,
+    };
+  });
+
+export interface PrintfulSyncReport {
+  source: "sync" | "template" | "none";
+  created: number;
+  updated: number;
+  deactivated: number;
+  incomplete: Array<{ name: string; missing: string[] }>;
+  syncedAt: string;
+  errors: string[];
+}
+
+function slugifyName(value: string) {
+  return (
+    value
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 70) || "produit"
+  );
+}
+
+/** Synchronise la boutique Printful vers la table locale (sans doublon). */
+export const syncPrintfulCatalog = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<PrintfulSyncReport> => {
+    await assertAdmin(context);
+    const { listPrintfulSyncProducts, listPrintfulTemplates } = await import(
+      "@/lib/printful.server"
+    );
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const syncedAt = new Date().toISOString();
+    const errors: string[] = [];
+    const incomplete: PrintfulSyncReport["incomplete"] = [];
+
+    const sync = await listPrintfulSyncProducts();
+    if (!sync.ok) errors.push(sync.error);
+    let items = sync.ok ? sync.items : [];
+    let source: PrintfulSyncReport["source"] = items.length > 0 ? "sync" : "none";
+
+    if (items.length === 0) {
+      const templates = await listPrintfulTemplates();
+      if (!templates.ok) errors.push(templates.error);
+      else if (templates.items.length > 0) {
+        items = templates.items;
+        source = "template";
+      }
+    }
+
+    const { data: existingRows } = await supabaseAdmin
+      .from("shop_products")
+      .select("id, slug, printful_external_id, price_cents, active");
+    const existing = (existingRows ?? []) as any[];
+    const byExternal = new Map(
+      existing.filter((r) => r.printful_external_id).map((r) => [r.printful_external_id, r]),
+    );
+
+    let created = 0;
+    let updated = 0;
+    const seen = new Set<string>();
+
+    for (const [index, item] of items.entries()) {
+      const variant =
+        item.variants.find((v) => v.syncVariantId) ?? item.variants[0] ?? null;
+      const missing: string[] = [];
+      if (!variant) missing.push("variante");
+      if (!variant?.priceCents) missing.push("prix de vente");
+      if (!item.thumbnail && !variant?.imageUrl) missing.push("image");
+      if (!variant?.syncVariantId && !variant?.printFileUrl) missing.push("fichier d'impression");
+      if (missing.length > 0) incomplete.push({ name: item.name, missing });
+
+      seen.add(item.externalId);
+      const row = byExternal.get(item.externalId);
+      const payload: Record<string, unknown> = {
+        name: item.name,
+        image_url: item.thumbnail ?? variant?.imageUrl ?? null,
+        currency: variant?.currency || "EUR",
+        printful_variant_id: variant?.variantId ?? null,
+        printful_sync_variant_id: variant?.syncVariantId ?? null,
+        printful_print_file_url: variant?.printFileUrl ?? null,
+        printful_source: item.source,
+        printful_external_id: item.externalId,
+        printful_synced_at: syncedAt,
+      };
+
+      if (row) {
+        // Prix Printful prioritaire ; sinon on garde le prix saisi en admin.
+        if (variant?.priceCents) payload["price_cents"] = variant.priceCents;
+        if (missing.length === 0) payload["active"] = true;
+        const { error } = await supabaseAdmin
+          .from("shop_products")
+          .update(payload as any)
+          .eq("id", row.id);
+        if (error) errors.push(`${item.name} : ${error.message}`);
+        else updated += 1;
+      } else {
+        let slug = slugifyName(item.name);
+        if (existing.some((r) => r.slug === slug)) slug = `${slug}-${index + 1}`;
+        const { error } = await supabaseAdmin.from("shop_products").insert({
+          ...(payload as any),
+          slug,
+          description: "",
+          price_cents: variant?.priceCents ?? 0,
+          sort_order: index,
+          // Un produit incomplet reste masqué tant qu'il n'est pas finalisé.
+          active: missing.length === 0,
+        });
+        if (error) errors.push(`${item.name} : ${error.message}`);
+        else created += 1;
+      }
+    }
+
+    const stale = existing.filter(
+      (r) => r.printful_external_id && !seen.has(r.printful_external_id) && r.active,
+    );
+    let deactivated = 0;
+    for (const row of stale) {
+      const { error } = await supabaseAdmin
+        .from("shop_products")
+        .update({ active: false, printful_synced_at: syncedAt })
+        .eq("id", row.id);
+      if (!error) deactivated += 1;
+    }
+
+    return { source, created, updated, deactivated, incomplete, syncedAt, errors };
+  });

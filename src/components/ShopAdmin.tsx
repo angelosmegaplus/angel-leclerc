@@ -23,6 +23,10 @@ import {
   checkPrintfulSetup,
   type PrintfulDiagnostics,
 } from "@/lib/shop.functions";
+import {
+  getPrintfulCatalogStatus,
+  syncPrintfulCatalog,
+} from "@/lib/shop.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPrice } from "@/lib/shop";
 
@@ -80,6 +84,56 @@ function ShopAdminInner() {
   const [diagLoading, setDiagLoading] = useState(false);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [busyOrder, setBusyOrder] = useState<string | null>(null);
+  const fetchCatalogStatus = useServerFn(getPrintfulCatalogStatus);
+  const runCatalogSync = useServerFn(syncPrintfulCatalog);
+  const [catalogSyncing, setCatalogSyncing] = useState(false);
+
+  const { data: catalog, refetch: refetchCatalog } = useQuery({
+    queryKey: ["admin-printful-catalog"],
+    queryFn: () => fetchCatalogStatus({ data: undefined }),
+    refetchInterval: 300_000,
+    refetchOnWindowFocus: true,
+  });
+
+  const runProductSync = async () => {
+    setCatalogSyncing(true);
+    try {
+      const report = await runCatalogSync({ data: undefined });
+      await queryClient.invalidateQueries({ queryKey: ["admin-shop-products"] });
+      await queryClient.invalidateQueries({ queryKey: ["shop-products"] });
+      await refetchCatalog();
+      if (report.errors.length > 0) {
+        toast.error("Synchronisation partielle", {
+          description: report.errors.join(" · "),
+        });
+      } else if (report.created + report.updated + report.deactivated === 0) {
+        toast.warning("Aucun produit publié trouvé dans la boutique Printful");
+      } else {
+        toast.success(
+          `${report.created} ajouté(s), ${report.updated} mis à jour, ${report.deactivated} désactivé(s)`,
+          {
+            description:
+              report.source === "template"
+                ? "Source : vos créations Printful (modèles non publiés)"
+                : "Source : produits publiés dans la boutique Printful",
+          },
+        );
+      }
+      if (report.incomplete.length > 0) {
+        toast.warning("Produits incomplets (masqués)", {
+          description: report.incomplete
+            .map((i) => `${i.name} — manque ${i.missing.join(", ")}`)
+            .join(" · "),
+        });
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Synchronisation impossible",
+      );
+    } finally {
+      setCatalogSyncing(false);
+    }
+  };
 
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["admin-shop-orders"],
@@ -260,6 +314,76 @@ function ShopAdminInner() {
 
   return (
     <div className="mt-8 space-y-10">
+      <section className="rounded-xl border border-border bg-card p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="font-display text-lg font-bold text-foreground">
+            Catalogue Printful
+          </h2>
+          <Button size="sm" onClick={runProductSync} disabled={catalogSyncing}>
+            {catalogSyncing ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="mr-2 h-4 w-4" />
+            )}
+            Synchroniser les produits Printful
+          </Button>
+        </div>
+
+        {catalog ? (
+          <>
+            <dl className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                {
+                  label: "Boutique API",
+                  value: catalog.storeName
+                    ? `${catalog.storeName} · #${catalog.storeId}`
+                    : `#${catalog.storeId ?? "non définie"}`,
+                },
+                { label: "Produits publiés (API)", value: String(catalog.apiProductCount) },
+                { label: "Créations enregistrées", value: String(catalog.apiTemplateCount) },
+                { label: "Produits en base", value: String(catalog.dbProductCount) },
+              ].map((stat) => (
+                <div key={stat.label} className="rounded-lg border border-border p-3">
+                  <dt className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                    {stat.label}
+                  </dt>
+                  <dd className="mt-1 text-sm font-semibold text-foreground">
+                    {stat.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Dernière synchronisation :{" "}
+              {catalog.lastSyncedAt
+                ? new Date(catalog.lastSyncedAt).toLocaleString("fr-FR")
+                : "jamais"}
+            </p>
+            {catalog.apiProductCount === 0 && catalog.apiTemplateCount > 0 && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Aucun produit n'est publié dans cette boutique Printful : la
+                synchronisation importera vos créations enregistrées, qui resteront
+                masquées tant que le prix de vente n'est pas défini ici.
+              </p>
+            )}
+            {catalog.errors.length > 0 && (
+              <ul className="mt-3 space-y-1">
+                {catalog.errors.map((error) => (
+                  <li key={error} className="flex items-start gap-2 text-xs text-destructive">
+                    <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    {error}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        ) : (
+          <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="animate-spin" size={16} /> Lecture du catalogue Printful…
+          </p>
+        )}
+      </section>
+
       <section className="rounded-xl border border-border bg-card p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-display text-lg font-bold text-foreground">

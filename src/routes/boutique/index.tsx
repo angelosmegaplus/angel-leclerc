@@ -39,7 +39,9 @@ function BoutiquePage() {
     queryKey: ["shop-products"],
     queryFn: () => listShopProducts(),
     staleTime: 30_000,
+    refetchInterval: 120_000,
     refetchOnWindowFocus: true,
+    refetchOnMount: "always",
   });
 
   const sorted = useMemo(() => {

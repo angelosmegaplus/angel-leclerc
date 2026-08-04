@@ -304,3 +304,107 @@ export async function setPrintfulWebhook(
   if (!response.ok) return response;
   return { ok: true };
 }
+
+/* ------------------------------------------------------------------ */
+/*  Catalogue Printful (API v1 — les produits synchronisés ne sont pas
+    disponibles via l'API v2, on reste donc sur /store/products et
+    /product-templates, puis on les miroite dans notre table locale).   */
+/* ------------------------------------------------------------------ */
+
+export interface PrintfulCatalogVariant {
+  syncVariantId: number | null;
+  variantId: number | null;
+  name: string;
+  priceCents: number;
+  currency: string;
+  imageUrl: string | null;
+  printFileUrl: string | null;
+}
+
+export interface PrintfulCatalogItem {
+  source: "sync" | "template";
+  externalId: string;
+  name: string;
+  thumbnail: string | null;
+  variants: PrintfulCatalogVariant[];
+}
+
+/** Produits réellement publiés/synchronisés dans la boutique API sélectionnée. */
+export async function listPrintfulSyncProducts(): Promise<
+  { ok: true; items: PrintfulCatalogItem[] } | { ok: false; error: string }
+> {
+  const list = await printfulRequest("/store/products?limit=100");
+  if (!list.ok) return list;
+  const rows: any[] = Array.isArray(list.result) ? list.result : [];
+  const items: PrintfulCatalogItem[] = [];
+
+  for (const row of rows) {
+    const detail = await printfulRequest(`/store/products/${row.id}`);
+    if (!detail.ok) return detail;
+    const syncProduct = detail.result?.sync_product ?? {};
+    const syncVariants: any[] = Array.isArray(detail.result?.sync_variants)
+      ? detail.result.sync_variants
+      : [];
+    items.push({
+      source: "sync",
+      externalId: `sync:${row.id}`,
+      name: String(syncProduct.name ?? row.name ?? "Produit Printful"),
+      thumbnail: syncProduct.thumbnail_url ?? row.thumbnail_url ?? null,
+      variants: syncVariants.map((v) => ({
+        syncVariantId: Number(v.id) || null,
+        variantId: Number(v.variant_id) || null,
+        name: String(v.name ?? ""),
+        priceCents: Math.round(Number(v.retail_price ?? 0) * 100),
+        currency: String(v.currency ?? "EUR"),
+        imageUrl:
+          (Array.isArray(v.files)
+            ? v.files.find((f: any) => f.type === "preview")?.preview_url
+            : null) ?? syncProduct.thumbnail_url ?? null,
+        printFileUrl:
+          (Array.isArray(v.files)
+            ? v.files.find((f: any) => f.type !== "preview")?.url
+            : null) ?? null,
+      })),
+    });
+  }
+  return { ok: true, items };
+}
+
+/** Créations enregistrées dans le studio Printful (modèles non publiés). */
+export async function listPrintfulTemplates(): Promise<
+  { ok: true; items: PrintfulCatalogItem[] } | { ok: false; error: string }
+> {
+  const list = await printfulRequest("/product-templates?limit=100");
+  if (!list.ok) return list;
+  const rows: any[] = Array.isArray(list.result?.items) ? list.result.items : [];
+  const items: PrintfulCatalogItem[] = [];
+
+  for (const row of rows) {
+    const detail = await printfulRequest(`/product-templates/${row.id}`);
+    if (!detail.ok) return detail;
+    const tpl = detail.result ?? {};
+    const variantIds: number[] = Array.isArray(tpl.available_variant_ids)
+      ? tpl.available_variant_ids.map((v: any) => Number(v))
+      : [];
+    const printFile =
+      (Array.isArray(tpl.placements)
+        ? tpl.placements.find((p: any) => p.layers?.[0]?.url)?.layers?.[0]?.url
+        : null) ?? null;
+    items.push({
+      source: "template",
+      externalId: `template:${row.id}`,
+      name: String(tpl.title ?? row.title ?? "Création Printful"),
+      thumbnail: tpl.mockup_file_url ?? row.mockup_file_url ?? null,
+      variants: variantIds.map((variantId) => ({
+        syncVariantId: null,
+        variantId,
+        name: String(tpl.title ?? ""),
+        priceCents: 0,
+        currency: "EUR",
+        imageUrl: tpl.mockup_file_url ?? null,
+        printFileUrl: printFile,
+      })),
+    });
+  }
+  return { ok: true, items };
+}
