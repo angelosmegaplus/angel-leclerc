@@ -19,6 +19,8 @@ import {
   Undo2,
   Redo2,
   Eraser,
+  Eye,
+  Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -57,6 +59,7 @@ type Props = {
 
 export function RichTextEditor({ value, onChange }: Props) {
   const ref = useRef<HTMLDivElement>(null);
+  const [preview, setPreview] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
   const audioRef = useRef<HTMLInputElement>(null);
@@ -284,6 +287,18 @@ export function RichTextEditor({ value, onChange }: Props) {
         <button type="button" className={btn} title="Effacer la mise en forme" onClick={() => cmd("removeFormat")}>
           <Eraser className="h-4 w-4" />
         </button>
+        <span className="mx-1 h-5 w-px bg-border" />
+        <button
+          type="button"
+          className={`${btn} ${preview ? "bg-primary/10 text-primary" : ""}`}
+          title={preview ? "Revenir à l'édition" : "Aperçu de l'article"}
+          onClick={() => setPreview((v) => !v)}
+        >
+          {preview ? <Pencil className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          <span className="ml-1.5 text-xs font-medium">
+            {preview ? "Éditer" : "Aperçu"}
+          </span>
+        </button>
         <input
           ref={fileRef}
           type="file"
@@ -306,7 +321,19 @@ export function RichTextEditor({ value, onChange }: Props) {
           onChange={(e) => onPickMedia("audio", e.target.files?.[0], audioRef.current)}
         />
       </div>
+      {preview && (
+        <div className="border-t border-border bg-background px-4 py-6">
+          <p className="mb-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Aperçu — rendu tel qu'il apparaîtra sur le site
+          </p>
+          <div
+            className="article-content text-sm leading-relaxed text-foreground"
+            dangerouslySetInnerHTML={{ __html: value || "<p>Aucun contenu pour le moment.</p>" }}
+          />
+        </div>
+      )}
       <div
+        hidden={preview}
         ref={ref}
         contentEditable
         suppressContentEditableWarning
