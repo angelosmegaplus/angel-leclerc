@@ -334,6 +334,9 @@ function ShopAdminInner() {
           <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="animate-spin" size={16} /> Chargement…
           </p>
+          <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="animate-spin" size={16} /> Chargement…
+          </p>
         ) : orders.length === 0 ? (
           <p className="mt-4 text-sm text-muted-foreground">
             Aucune commande pour le moment.
