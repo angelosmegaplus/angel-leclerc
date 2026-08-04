@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -25,8 +26,10 @@ import {
   Globe,
   Smartphone,
   Building2,
+  type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { contentQuery, iconFor, toStringList } from "@/lib/content";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import heroImage from "@/assets/hero-illustration.jpg";
 import revolutInvoiceImage from "@/assets/revolut-invoice-example.jpg";
