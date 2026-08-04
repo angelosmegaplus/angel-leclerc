@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Search } from "lucide-react";
 import { fetchPublishedArticles, formatDate, type Article } from "@/lib/articles";
 import { BlogSubscribe } from "@/components/BlogSubscribe";
+import { ShareArticle } from "@/components/ShareArticle";
+import { SITE_URL } from "@/routes/articles/$slug";
 import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/articles/")({
