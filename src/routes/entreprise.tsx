@@ -31,6 +31,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { contentQuery, iconFor, toStringList } from "@/lib/content";
 import { AnimatedSection } from "@/components/AnimatedSection";
+import { FeedbackBlock } from "@/components/FeedbackBlock";
 import heroImage from "@/assets/hero-illustration.jpg";
 import revolutInvoiceImage from "@/assets/revolut-invoice-example.jpg";
 
@@ -783,6 +784,13 @@ function ContactSection() {
   return (
     <section id="contact" className="section-padding bg-background">
       <div className="container-tight">
+        <div className="mx-auto mb-10 max-w-3xl">
+          <FeedbackBlock
+            contentType="service"
+            contentKey="/entreprise"
+            contentTitle="Services — Angel Leclerc Communication"
+          />
+        </div>
         <AnimatedSection className="mx-auto max-w-3xl text-center">
           <span className="text-xs font-semibold uppercase tracking-widest text-primary">
             Contact
