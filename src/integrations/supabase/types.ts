@@ -476,6 +476,8 @@ export type Database = {
       shop_products: {
         Row: {
           active: boolean
+          availability: string | null
+          colors: Json
           created_at: string
           currency: string
           description: string
@@ -486,16 +488,22 @@ export type Database = {
           price_cents: number
           printful_external_id: string | null
           printful_print_file_url: string | null
+          printful_product_id: number | null
           printful_source: string | null
+          printful_sync_product_id: number | null
           printful_sync_variant_id: number | null
           printful_synced_at: string | null
           printful_variant_id: number | null
+          sizes: Json
           slug: string
           sort_order: number
           updated_at: string
+          variants: Json
         }
         Insert: {
           active?: boolean
+          availability?: string | null
+          colors?: Json
           created_at?: string
           currency?: string
           description?: string
@@ -506,16 +514,22 @@ export type Database = {
           price_cents: number
           printful_external_id?: string | null
           printful_print_file_url?: string | null
+          printful_product_id?: number | null
           printful_source?: string | null
+          printful_sync_product_id?: number | null
           printful_sync_variant_id?: number | null
           printful_synced_at?: string | null
           printful_variant_id?: number | null
+          sizes?: Json
           slug: string
           sort_order?: number
           updated_at?: string
+          variants?: Json
         }
         Update: {
           active?: boolean
+          availability?: string | null
+          colors?: Json
           created_at?: string
           currency?: string
           description?: string
@@ -526,13 +540,17 @@ export type Database = {
           price_cents?: number
           printful_external_id?: string | null
           printful_print_file_url?: string | null
+          printful_product_id?: number | null
           printful_source?: string | null
+          printful_sync_product_id?: number | null
           printful_sync_variant_id?: number | null
           printful_synced_at?: string | null
           printful_variant_id?: number | null
+          sizes?: Json
           slug?: string
           sort_order?: number
           updated_at?: string
+          variants?: Json
         }
         Relationships: []
       }
