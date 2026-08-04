@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ShoppingBag, Loader2 } from "lucide-react";
-import { fetchProducts, formatPrice } from "@/lib/shopify";
+import { useMemo, useState } from "react";
+import { ShoppingBag, Loader2, Sparkles, Mail, RefreshCw } from "lucide-react";
+import { fetchProducts, formatPrice, type ShopifyProduct } from "@/lib/shopify";
 import { AnimatedSection } from "@/components/AnimatedSection";
+import { Button } from "@/components/ui/button";
 
 const TITLE = "ALC! — La boutique d'Angel Leclerc Communication";
 const DESCRIPTION =
@@ -24,11 +26,63 @@ export const Route = createFileRoute("/boutique/")({
 });
 
 function BoutiquePage() {
-  const { data: products, isLoading, isError } = useQuery({
+  const {
+    data: products,
+    isLoading,
+    isError,
+    isFetching,
+    refetch,
+  } = useQuery({
     queryKey: ["shopify-products"],
     queryFn: () => fetchProducts(50),
-    staleTime: 60_000,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
+    refetchOnMount: "always",
   });
+
+  const [sort, setSort] = useState("recent");
+  const [availability, setAvailability] = useState("all");
+  const [variant, setVariant] = useState("all");
+
+  const variantOptions = useMemo(() => {
+    const set = new Set<string>();
+    (products ?? []).forEach(({ node }) =>
+      node.options?.forEach((o) => {
+        if (o.name.toLowerCase() !== "title")
+          o.values.forEach((v) => set.add(`${o.name}: ${v}`));
+      }),
+    );
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "fr"));
+  }, [products]);
+
+  const visible = useMemo(() => {
+    let list: ShopifyProduct[] = [...(products ?? [])];
+    if (availability === "in")
+      list = list.filter(({ node }) => node.availableForSale);
+    if (availability === "out")
+      list = list.filter(({ node }) => !node.availableForSale);
+    if (variant !== "all") {
+      const [name, value] = variant.split(": ");
+      list = list.filter(({ node }) =>
+        node.options?.some((o) => o.name === name && o.values.includes(value)),
+      );
+    }
+    const price = (p: ShopifyProduct) =>
+      parseFloat(p.node.priceRange.minVariantPrice.amount);
+    if (sort === "price-asc") list.sort((a, b) => price(a) - price(b));
+    if (sort === "price-desc") list.sort((a, b) => price(b) - price(a));
+    if (sort === "name")
+      list.sort((a, b) => a.node.title.localeCompare(b.node.title, "fr"));
+    if (sort === "availability")
+      list.sort(
+        (a, b) => Number(b.node.availableForSale) - Number(a.node.availableForSale),
+      );
+    return list;
+  }, [products, availability, variant, sort]);
+
+  const selectClass =
+    "rounded-full border border-border bg-card px-4 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary";
 
   return (
     <div className="bg-background">
@@ -50,6 +104,56 @@ function BoutiquePage() {
       </section>
 
       <section className="container-tight py-12 sm:py-16">
+        {!isLoading && !isError && (products?.length ?? 0) > 0 && (
+          <div className="mb-8 flex flex-wrap items-center gap-3">
+            <select
+              aria-label="Trier les produits"
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              className={selectClass}
+            >
+              <option value="recent">Tri : nouveautés</option>
+              <option value="price-asc">Prix croissant</option>
+              <option value="price-desc">Prix décroissant</option>
+              <option value="name">Nom (A–Z)</option>
+              <option value="availability">Disponibles d'abord</option>
+            </select>
+            <select
+              aria-label="Filtrer par disponibilité"
+              value={availability}
+              onChange={(e) => setAvailability(e.target.value)}
+              className={selectClass}
+            >
+              <option value="all">Toutes disponibilités</option>
+              <option value="in">En stock</option>
+              <option value="out">Épuisés</option>
+            </select>
+            {variantOptions.length > 0 && (
+              <select
+                aria-label="Filtrer par variante"
+                value={variant}
+                onChange={(e) => setVariant(e.target.value)}
+                className={selectClass}
+              >
+                <option value="all">Toutes les variantes</option>
+                {variantOptions.map((v) => (
+                  <option key={v} value={v}>
+                    {v}
+                  </option>
+                ))}
+              </select>
+            )}
+            <span className="ml-auto inline-flex items-center gap-2 text-xs text-muted-foreground">
+              <RefreshCw
+                size={13}
+                className={isFetching ? "animate-spin" : undefined}
+              />
+              {visible.length} produit{visible.length > 1 ? "s" : ""} · mise à jour
+              automatique
+            </span>
+          </div>
+        )}
+
         {isLoading && (
           <div className="flex items-center justify-center gap-3 py-20 text-muted-foreground">
             <Loader2 className="animate-spin" size={20} />
@@ -69,20 +173,60 @@ function BoutiquePage() {
         )}
 
         {!isLoading && !isError && (products?.length ?? 0) === 0 && (
+          <AnimatedSection>
+            <div className="relative overflow-hidden rounded-3xl border border-border bg-card px-6 py-14 text-center sm:px-12">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary/10 blur-2xl"
+              />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -bottom-20 -left-16 h-56 w-56 rounded-full bg-primary/5 blur-2xl"
+              />
+              <div className="relative mx-auto flex max-w-xl flex-col items-center">
+                <span className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <Sparkles size={28} />
+                </span>
+                <p className="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                  Bientôt disponible
+                </p>
+                <h2 className="mt-3 font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                  La boutique ALC! prépare ses premières créations
+                </h2>
+                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                  Objets, supports et créations signés Angel Leclerc
+                  Communication arrivent très prochainement. Cette page se met à
+                  jour automatiquement dès la mise en ligne d'un produit.
+                </p>
+                <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                  <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
+                    <Link to="/contact">
+                      <Mail className="mr-2 h-4 w-4" /> Être prévenu du lancement
+                    </Link>
+                  </Button>
+                  <Button variant="outline" onClick={() => refetch()}>
+                    <RefreshCw
+                      className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
+                    />
+                    Actualiser
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </AnimatedSection>
+        )}
+
+        {!isLoading && !isError && (products?.length ?? 0) > 0 && visible.length === 0 && (
           <div className="rounded-2xl border border-border bg-card p-10 text-center">
-            <ShoppingBag size={32} className="mx-auto text-muted-foreground" />
-            <p className="mt-4 font-display text-lg font-bold text-foreground">
-              Aucun produit pour le moment
-            </p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Les articles publiés dans la boutique ALC! apparaîtront ici
-              automatiquement.
+            <ShoppingBag size={28} className="mx-auto text-muted-foreground" />
+            <p className="mt-4 text-sm text-muted-foreground">
+              Aucun produit ne correspond à ces filtres.
             </p>
           </div>
         )}
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {products?.map(({ node }) => {
+          {visible.map(({ node }) => {
             const image = node.images.edges[0]?.node;
             return (
               <Link
@@ -115,7 +259,13 @@ function BoutiquePage() {
                       node.priceRange.minVariantPrice.currencyCode,
                     )}
                   </p>
-                  <span className="mt-auto text-xs text-muted-foreground">
+                  <span
+                    className={`mt-auto inline-flex w-fit rounded-full px-2.5 py-1 text-[11px] font-medium ${
+                      node.availableForSale
+                        ? "bg-primary/10 text-primary"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
                     {node.availableForSale ? "En stock" : "Épuisé"}
                   </span>
                 </div>

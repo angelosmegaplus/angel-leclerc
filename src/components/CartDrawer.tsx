@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
+import { Loader2, Lock, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/stores/cartStore";
 import { formatPrice } from "@/lib/shopify";
@@ -27,6 +27,7 @@ export function CartDrawer() {
     (sum, i) => sum + parseFloat(i.price.amount) * i.quantity,
     0,
   );
+  const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
 
   if (!open) return null;
 
@@ -38,10 +39,20 @@ export function CartDrawer() {
         className="absolute inset-0 bg-foreground/40 backdrop-blur-sm"
       />
       <aside className="relative flex h-full w-full max-w-md flex-col border-l border-border bg-background shadow-xl">
-        <div className="flex items-center justify-between border-b border-border px-6 py-4">
-          <h2 className="font-display text-lg font-bold text-foreground">
-            Mon panier
-          </h2>
+        <div className="flex items-center justify-between border-b border-border bg-card px-6 py-4">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
+              ALC!
+            </p>
+            <h2 className="mt-1 font-display text-lg font-bold text-foreground">
+              Mon panier
+              {totalItems > 0 && (
+                <span className="ml-2 text-sm font-medium text-muted-foreground">
+                  · {totalItems} article{totalItems > 1 ? "s" : ""}
+                </span>
+              )}
+            </h2>
+          </div>
           <button
             onClick={() => setOpen(false)}
             aria-label="Fermer le panier"
@@ -54,8 +65,11 @@ export function CartDrawer() {
         {items.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
             <ShoppingBag size={40} className="text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
-              Votre panier est vide pour le moment.
+            <p className="font-display text-base font-bold text-foreground">
+              Votre panier est vide
+            </p>
+            <p className="-mt-1 text-sm text-muted-foreground">
+              Ajoutez une création ALC! pour commencer votre commande.
             </p>
             <Button asChild variant="outline" onClick={() => setOpen(false)}>
               <a href="/boutique">Voir la boutique ALC!</a>
@@ -136,25 +150,54 @@ export function CartDrawer() {
               })}
             </div>
 
-            <div className="space-y-3 border-t border-border px-6 py-5">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Sous-total</span>
-                <span className="font-display text-lg font-bold text-foreground">
-                  {formatPrice(subtotal, currency)}
-                </span>
+            <div className="space-y-4 border-t border-border bg-card px-6 py-5">
+              <div className="rounded-xl border border-border bg-background p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  Résumé de la commande
+                </p>
+                <dl className="mt-3 space-y-2 text-sm">
+                  <div className="flex items-center justify-between">
+                    <dt className="text-muted-foreground">
+                      Articles ({totalItems})
+                    </dt>
+                    <dd className="text-foreground">
+                      {formatPrice(subtotal, currency)}
+                    </dd>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <dt className="text-muted-foreground">Livraison</dt>
+                    <dd className="text-muted-foreground">
+                      Calculée au paiement
+                    </dd>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-border pt-2">
+                    <dt className="font-medium text-foreground">Total estimé</dt>
+                    <dd className="font-display text-lg font-bold text-primary">
+                      {formatPrice(subtotal, currency)}
+                    </dd>
+                  </div>
+                </dl>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Livraison et taxes calculées lors du paiement sécurisé.
-              </p>
               <Button
+                size="lg"
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                 disabled={isLoading || !checkoutUrl}
                 onClick={() => {
-                  if (checkoutUrl) window.location.href = checkoutUrl;
+                  if (checkoutUrl) window.open(checkoutUrl, "_blank");
                 }}
               >
-                Passer au paiement sécurisé
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <Lock className="mr-2 h-4 w-4" /> Payer en toute sécurité
+                  </>
+                )}
               </Button>
+              <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
+                Paiement sécurisé Shopify · Confirmation et suivi de commande
+                envoyés par e-mail.
+              </p>
             </div>
           </>
         )}
