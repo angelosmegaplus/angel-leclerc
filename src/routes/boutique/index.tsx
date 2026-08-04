@@ -6,9 +6,9 @@ import { fetchProducts, formatPrice, type ShopifyProduct } from "@/lib/shopify";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { Button } from "@/components/ui/button";
 
-const TITLE = "ALC! — La boutique d'Angel Leclerc Communication";
+const TITLE = "Boutique | Angel Leclerc Communication";
 const DESCRIPTION =
-  "ALC!, la boutique d'Angel Leclerc Communication : produits, tailles et couleurs disponibles, paiement sécurisé et livraison suivie.";
+  "Boutique ALC! par Angel Leclerc Communication : produits, tailles et couleurs disponibles, paiement sécurisé et livraison suivie.";
 
 export const Route = createFileRoute("/boutique/")({
   head: () => ({
@@ -89,11 +89,11 @@ function BoutiquePage() {
       <section className="border-b border-border bg-card">
         <div className="container-tight py-14 sm:py-20">
           <AnimatedSection>
-            <p className="text-xs uppercase tracking-[0.2em] text-primary">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
               ALC!
             </p>
             <h1 className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-              ALC! — la boutique
+              Boutique
             </h1>
             <p className="mt-4 max-w-2xl text-muted-foreground">
               Commande en quelques clics, paiement sécurisé et suivi de commande
