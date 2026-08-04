@@ -1,7 +1,17 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, PackageCheck, RefreshCw, Truck, Undo2, Webhook } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Loader2,
+  PackageCheck,
+  RefreshCw,
+  Stethoscope,
+  Truck,
+  Undo2,
+  Webhook,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,6 +19,8 @@ import {
   refundShopOrder,
   syncPrintfulOrder,
   configurePrintfulWebhook,
+  checkPrintfulSetup,
+  type PrintfulDiagnostics,
 } from "@/lib/shop.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPrice } from "@/lib/shop";
@@ -41,6 +53,9 @@ export function ShopAdmin() {
   const refund = useServerFn(refundShopOrder);
   const sync = useServerFn(syncPrintfulOrder);
   const setWebhook = useServerFn(configurePrintfulWebhook);
+  const runDiagnostics = useServerFn(checkPrintfulSetup);
+  const [diagnostics, setDiagnostics] = useState<PrintfulDiagnostics | null>(null);
+  const [diagLoading, setDiagLoading] = useState(false);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [busyOrder, setBusyOrder] = useState<string | null>(null);
 
@@ -186,8 +201,70 @@ export function ShopAdmin() {
     else toast.success("Webhook Printful activé pour ce domaine");
   };
 
+  const checkSetup = async () => {
+    setDiagLoading(true);
+    try {
+      setDiagnostics(await runDiagnostics({ data: undefined }));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Diagnostic impossible");
+    } finally {
+      setDiagLoading(false);
+    }
+  };
+
   return (
     <div className="mt-8 space-y-10">
+      <section className="rounded-xl border border-border bg-card p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="font-display text-lg font-bold text-foreground">
+            Diagnostic Stripe → Printful
+          </h2>
+          <Button size="sm" variant="outline" onClick={checkSetup} disabled={diagLoading}>
+            {diagLoading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Stethoscope className="mr-2 h-4 w-4" />
+            )}
+            Vérifier la connexion
+          </Button>
+        </div>
+
+        {diagnostics && (
+          <ul className="mt-4 space-y-2 text-sm">
+            <DiagRow
+              ok={diagnostics.tokenConfigured}
+              label="Jeton API Printful"
+              detail={diagnostics.tokenConfigured ? "Configuré (serveur uniquement)" : "Absent"}
+            />
+            <DiagRow
+              ok={Boolean(diagnostics.storeName)}
+              label="Boutique Printful"
+              detail={
+                diagnostics.storeName
+                  ? `${diagnostics.storeName} (#${diagnostics.storeId})`
+                  : "Aucune boutique sélectionnée"
+              }
+            />
+            <DiagRow
+              ok={Boolean(diagnostics.webhookUrl)}
+              label="Webhook Printful"
+              detail={diagnostics.webhookUrl ?? "Non enregistré — cliquez sur « Activer le suivi Printful »"}
+            />
+            {diagnostics.variants.map((v) => (
+              <DiagRow
+                key={v.slug}
+                ok={v.valid}
+                label={`Variante — ${v.name}`}
+                detail={v.variantId ? `#${v.variantId} · ${v.detail}` : v.detail}
+              />
+            ))}
+            {diagnostics.errors.map((error) => (
+              <DiagRow key={error} ok={false} label="Erreur" detail={error} />
+            ))}
+          </ul>
+        )}
+      </section>
+
       <section>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-display text-lg font-bold text-foreground">Commandes</h2>
