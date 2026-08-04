@@ -6,7 +6,7 @@ import {
   PassionsSection,
   RealisationsSection,
 } from "@/components/MyJourney";
-import LatestSubstackArticles from "@/components/LatestSubstackArticles";
+import { LatestArticles } from "@/components/LatestArticles";
 import { AnimatedSection } from "@/components/AnimatedSection";
 
 export const Route = createFileRoute("/parcours")({
@@ -38,7 +38,11 @@ function ParcoursPage() {
       <RealisationsSection />
       <SkillsSection />
       <PassionsSection />
-      <LatestSubstackArticles />
+      <LatestArticles
+        title="Mes derniers articles"
+        description="Communication, politique, société et idées pour comprendre ce qui change."
+        eyebrow="Analyses et réflexions"
+      />
 
       <AnimatedSection>
         <section id="contact-alternance" className="section-padding bg-muted/40 scroll-mt-24">
