@@ -10,7 +10,7 @@ import { useCartUi } from "@/components/CartDrawer";
 
 export const Route = createFileRoute("/boutique/$handle")({
   head: ({ params }) => {
-    const title = "Produit — Boutique Angel Leclerc Communication";
+    const title = "Produit — ALC! par Angel Leclerc Communication";
     const description = `Fiche produit « ${params.handle} » : variantes, disponibilité et paiement sécurisé.`;
     return {
       meta: [
@@ -63,7 +63,7 @@ function ProductPage() {
           Produit introuvable
         </p>
         <Button asChild variant="outline" className="mt-6">
-          <Link to="/boutique">Retour à la boutique</Link>
+          <Link to="/boutique">Retour à la boutique ALC!</Link>
         </Button>
       </div>
     );
@@ -93,7 +93,7 @@ function ProductPage() {
         to="/boutique"
         className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
-        <ArrowLeft size={16} /> Boutique
+        <ArrowLeft size={16} /> ALC!
       </Link>
 
       <div className="mt-8 grid gap-10 lg:grid-cols-2">
