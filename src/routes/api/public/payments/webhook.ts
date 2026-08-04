@@ -1,6 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { type StripeEnv, createStripeClient, verifyWebhook } from "@/lib/stripe.server";
-import { createPrintfulOrder } from "@/lib/printful.server";
+import {
+  createPrintfulOrder,
+  cancelPrintfulOrder,
+  toPrintfulRecipient,
+} from "@/lib/printful.server";
+import { appendEvent } from "@/lib/shop-orders.server";
 import { sendTemplateEmail } from "@/lib/email-templates/send-email";
 import { formatPrice } from "@/lib/shop";
 
@@ -70,7 +75,11 @@ async function fulfillSession(session: any, env: StripeEnv) {
   }
 
   // --- Envoi automatique vers Printful ---
-  const address = shipping?.address;
+  const recipient = toPrintfulRecipient({
+    name: customerName,
+    email: customerEmail,
+    address: shipping?.address ?? full.customer_details?.address ?? null,
+  });
   const printfulItems = requested
     .map((i) => {
       const product = bySlug.get(i.s);
@@ -80,19 +89,16 @@ async function fulfillSession(session: any, env: StripeEnv) {
     })
     .filter(Boolean) as Array<{ variant_id: number; quantity: number; name: string }>;
 
-  if (address && printfulItems.length > 0) {
+  const events = appendEvent([], {
+    at: new Date().toISOString(),
+    label: "Paiement confirmé",
+    detail: formatPrice(full.amount_total ?? 0, currency),
+  });
+
+  if (recipient.ok && printfulItems.length > 0) {
     const result = await createPrintfulOrder({
       externalId: order.id as string,
-      recipient: {
-        name: customerName ?? "Client ALC!",
-        address1: address.line1 ?? "",
-        address2: address.line2 ?? null,
-        city: address.city ?? "",
-        state_code: address.state ?? null,
-        country_code: address.country ?? "FR",
-        zip: address.postal_code ?? "",
-        email: customerEmail,
-      },
+      recipient: recipient.recipient,
       items: printfulItems,
       confirm: true,
     });
@@ -104,18 +110,42 @@ async function fulfillSession(session: any, env: StripeEnv) {
           ? {
               printful_order_id: result.id,
               printful_status: result.status,
+              printful_updated_at: new Date().toISOString(),
               status: "in_production",
               error_message: null,
+              events: appendEvent(events, {
+                at: new Date().toISOString(),
+                label: "Commande envoyée en production",
+                detail: `Printful #${result.id}`,
+              }),
             }
-          : { printful_status: "failed", error_message: result.error },
+          : {
+              printful_status: "failed",
+              printful_updated_at: new Date().toISOString(),
+              error_message: result.error,
+              events: appendEvent(events, {
+                at: new Date().toISOString(),
+                label: "Échec de l'envoi Printful",
+                detail: result.error,
+              }),
+            },
       )
       .eq("id", order.id);
   } else {
+    const reason = !recipient.ok
+      ? recipient.error
+      : "Aucun article relié à une variante Printful";
     await supabaseAdmin
       .from("shop_orders")
       .update({
         printful_status: "skipped",
-        error_message: "Adresse ou référence Printful manquante",
+        printful_updated_at: new Date().toISOString(),
+        error_message: reason,
+        events: appendEvent(events, {
+          at: new Date().toISOString(),
+          label: "Production non déclenchée",
+          detail: reason,
+        }),
       })
       .eq("id", order.id);
   }
@@ -134,12 +164,12 @@ async function fulfillSession(session: any, env: StripeEnv) {
             quantity: i.quantity,
             price: formatPrice(i.amount_cents, currency),
           })),
-          shippingAddress: address
+          shippingAddress: recipient.ok
             ? [
-                address.line1,
-                address.line2,
-                `${address.postal_code ?? ""} ${address.city ?? ""}`.trim(),
-                address.country,
+                recipient.recipient.address1,
+                recipient.recipient.address2,
+                `${recipient.recipient.zip} ${recipient.recipient.city}`.trim(),
+                recipient.recipient.country_code,
               ]
                 .filter(Boolean)
                 .join("\n")
@@ -150,6 +180,77 @@ async function fulfillSession(session: any, env: StripeEnv) {
       console.error("Order confirmation email failed:", error);
     }
   }
+}
+
+async function handleRefund(charge: any, env: StripeEnv) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const paymentIntent =
+    typeof charge.payment_intent === "string" ? charge.payment_intent : null;
+  if (!paymentIntent) return;
+
+  const { data: order } = await supabaseAdmin
+    .from("shop_orders")
+    .select("id, amount_cents, currency, printful_order_id, printful_status, events")
+    .eq("stripe_payment_intent", paymentIntent)
+    .eq("environment", env)
+    .maybeSingle();
+  if (!order) return;
+
+  const refunded = (charge.amount_refunded as number) ?? 0;
+  const partial = refunded > 0 && refunded < ((charge.amount as number) ?? 0);
+  const now = new Date().toISOString();
+
+  let events = appendEvent((order as any).events, {
+    at: now,
+    label: partial ? "Remboursement partiel" : "Remboursement total",
+    detail: formatPrice(refunded, ((order as any).currency as string) || "EUR"),
+  });
+
+  // Annulation Printful si la commande n'est pas encore expédiée.
+  let printfulPatch: Record<string, unknown> = {};
+  const printfulId = (order as any).printful_order_id as string | null;
+  const printfulStatus = (order as any).printful_status as string | null;
+  if (!partial && printfulId && printfulStatus !== "fulfilled") {
+    const cancel = await cancelPrintfulOrder(printfulId);
+    printfulPatch = cancel.ok
+      ? { printful_status: "canceled", printful_updated_at: now }
+      : { error_message: cancel.error };
+    events = appendEvent(events, {
+      at: now,
+      label: cancel.ok ? "Production annulée chez Printful" : "Annulation Printful impossible",
+      detail: cancel.ok ? undefined : cancel.error,
+    });
+  }
+
+  await supabaseAdmin
+    .from("shop_orders")
+    .update({
+      refunded_amount_cents: refunded,
+      refunded_at: now,
+      status: partial ? "partially_refunded" : "refunded",
+      events,
+      ...printfulPatch,
+    })
+    .eq("id", (order as any).id);
+}
+
+async function handleCanceledIntent(intent: any, env: StripeEnv) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: order } = await supabaseAdmin
+    .from("shop_orders")
+    .select("id, events")
+    .eq("stripe_payment_intent", intent.id)
+    .eq("environment", env)
+    .maybeSingle();
+  if (!order) return;
+  const now = new Date().toISOString();
+  await supabaseAdmin
+    .from("shop_orders")
+    .update({
+      status: "canceled",
+      events: appendEvent((order as any).events, { at: now, label: "Paiement annulé" }),
+    })
+    .eq("id", (order as any).id);
 }
 
 export const Route = createFileRoute("/api/public/payments/webhook")({
@@ -174,6 +275,13 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
             }
             case "checkout.session.async_payment_succeeded":
               await fulfillSession(event.data.object, env);
+              break;
+            case "charge.refunded":
+            case "charge.refund.updated":
+              await handleRefund(event.data.object, env);
+              break;
+            case "payment_intent.canceled":
+              await handleCanceledIntent(event.data.object, env);
               break;
             default:
               console.log("Unhandled event:", event.type);
