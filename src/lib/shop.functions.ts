@@ -416,12 +416,26 @@ export const checkPrintfulSetup = createServerFn({ method: "POST" })
 
     const { data: rows } = await supabaseAdmin
       .from("shop_products")
-      .select("slug, name, printful_variant_id, active")
+      .select(
+        "slug, name, printful_variant_id, printful_sync_variant_id, printful_print_file_url, active",
+      )
       .eq("active", true);
 
     const variants: PrintfulDiagnostics["variants"] = [];
     for (const row of (rows ?? []) as any[]) {
       const variantId = (row.printful_variant_id as number | null) ?? null;
+      const syncVariantId = (row.printful_sync_variant_id as number | null) ?? null;
+      const fileUrl = (row.printful_print_file_url as string | null) ?? null;
+      if (syncVariantId) {
+        variants.push({
+          slug: row.slug,
+          name: row.name,
+          variantId: syncVariantId,
+          valid: true,
+          detail: "Produit synchronisé Printful (visuel géré par Printful)",
+        });
+        continue;
+      }
       if (!variantId) {
         variants.push({
           slug: row.slug,
@@ -435,6 +449,16 @@ export const checkPrintfulSetup = createServerFn({ method: "POST" })
       const check = tokenConfigured
         ? await checkPrintfulVariant(variantId)
         : ({ ok: false, error: "Jeton absent" } as const);
+      if (check.ok && !fileUrl) {
+        variants.push({
+          slug: row.slug,
+          name: row.name,
+          variantId,
+          valid: false,
+          detail: `${check.name} — fichier d'impression manquant`,
+        });
+        continue;
+      }
       variants.push({
         slug: row.slug,
         name: row.name,
