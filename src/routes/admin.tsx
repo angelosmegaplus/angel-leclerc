@@ -44,7 +44,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RichTextEditor } from "@/components/RichTextEditor";
-import { notifySubscribersOfArticle } from "@/lib/subscribers.functions";
+import { sendNewsletterNow } from "@/lib/subscribers.functions";
 import { AdminStats } from "@/components/AdminStats";
 import { ContentAdmin } from "@/components/ContentAdmin";
 
@@ -145,8 +145,8 @@ function AdminPage() {
   const [tab, setTab] = useState<
     "articles" | "messages" | "abonnes" | "stats" | "contenus"
   >("articles");
-  const notifyFn = useServerFn(notifySubscribersOfArticle);
-  const [notifyingId, setNotifyingId] = useState<string | null>(null);
+  const sendNewsletter = useServerFn(sendNewsletterNow);
+  const [sendingNewsletter, setSendingNewsletter] = useState(false);
 
   useEffect(() => {
     if (!loading && !session) navigate({ to: "/auth" });
@@ -746,7 +746,49 @@ function AdminPage() {
             )}
 
             {tab === "abonnes" && (
-              <div className="mt-8 space-y-2">
+              <div className="mt-8 space-y-4">
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <p className="text-sm font-semibold text-foreground">
+                    Lettre hebdomadaire
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Envoi automatique chaque dimanche soir aux abonnés confirmés,
+                    uniquement s'il y a de nouveaux articles depuis le dernier envoi.
+                  </p>
+                  <Button
+                    size="sm"
+                    className="mt-3"
+                    disabled={sendingNewsletter}
+                    onClick={async () => {
+                      if (!confirm("Envoyer la lettre maintenant aux abonnés confirmés ?"))
+                        return;
+                      setSendingNewsletter(true);
+                      try {
+                        const res = await sendNewsletter({ data: undefined });
+                        toast.success(
+                          res.skipped
+                            ? res.skipped
+                            : `Lettre envoyée à ${res.sent} abonné(s) — ${res.articles} article(s).`,
+                        );
+                        queryClient.invalidateQueries({ queryKey: ["admin-subscribers"] });
+                      } catch (err) {
+                        toast.error(
+                          err instanceof Error ? err.message : "Envoi impossible",
+                        );
+                      } finally {
+                        setSendingNewsletter(false);
+                      }
+                    }}
+                  >
+                    {sendingNewsletter ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Bell className="mr-2 h-4 w-4" />
+                    )}
+                    Envoyer maintenant
+                  </Button>
+                </div>
+
                 {subscribers.length === 0 && (
                   <p className="text-sm text-muted-foreground">
                     Aucun abonné pour le moment.
@@ -758,17 +800,46 @@ function AdminPage() {
                     className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm"
                   >
                     <span className="min-w-0 truncate">
+                      {s.first_name ? `${s.first_name} · ` : ""}
                       {s.email}
-                      {!s.active && (
-                        <span className="ml-2 text-xs text-muted-foreground">
-                          désabonné
-                        </span>
-                      )}
+                      <span
+                        className={`ml-2 rounded-full px-2 py-0.5 text-[11px] ${
+                          !s.active
+                            ? "bg-muted text-muted-foreground"
+                            : s.confirmed_at
+                              ? "bg-primary/10 text-primary"
+                              : "bg-amber-100 text-amber-700"
+                        }`}
+                      >
+                        {!s.active
+                          ? "désabonné"
+                          : s.confirmed_at
+                            ? "confirmé"
+                            : "en attente"}
+                      </span>
                     </span>
                     <span className="flex items-center gap-2">
                       <span className="text-xs text-muted-foreground">
                         {formatDate(s.created_at)}
                       </span>
+                      {s.active && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={async () => {
+                            await supabase
+                              .from("blog_subscribers")
+                              .update({ active: false })
+                              .eq("id", s.id);
+                            queryClient.invalidateQueries({
+                              queryKey: ["admin-subscribers"],
+                            });
+                            toast.success("Abonné désinscrit.");
+                          }}
+                        >
+                          Désinscrire
+                        </Button>
+                      )}
                       <Button
                         size="sm"
                         variant="ghost"
@@ -830,43 +901,6 @@ function AdminPage() {
                         <a href={`/articles/${a.slug}`} target="_blank" rel="noreferrer">
                           <Eye className="h-4 w-4" />
                         </a>
-                      </Button>
-                    )}
-                    {getArticleStatus(a) === "publie" && !a.is_private && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        title="Notifier les abonnés"
-                        disabled={notifyingId === a.id}
-                        onClick={async () => {
-                          if (
-                            !confirm(
-                              `Envoyer une notification aux abonnés pour « ${a.title} » ?`,
-                            )
-                          )
-                            return;
-                          setNotifyingId(a.id);
-                          try {
-                            const res = await notifyFn({
-                              data: { articleId: a.id },
-                            });
-                            toast.success(
-                              `Notification envoyée à ${res.sent} abonné(s).`,
-                            );
-                          } catch (err) {
-                            toast.error(
-                              err instanceof Error ? err.message : "Envoi impossible",
-                            );
-                          } finally {
-                            setNotifyingId(null);
-                          }
-                        }}
-                      >
-                        {notifyingId === a.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Bell className="h-4 w-4" />
-                        )}
                       </Button>
                     )}
                     <Button
