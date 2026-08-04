@@ -2,6 +2,7 @@
 import type { PrintfulOrderState } from "@/lib/printful.server";
 
 export interface OrderEvent {
+  [key: string]: string | undefined;
   at: string;
   label: string;
   detail?: string;
