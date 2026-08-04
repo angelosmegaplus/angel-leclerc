@@ -280,9 +280,9 @@
 .article-content .embed-section {
   margin: 2rem 0;
   padding: 1.25rem;
-  border: 1px solid hsl(var(--border));
+  border: 1px solid var(--border);
   border-radius: 1rem;
-  background: hsl(var(--muted) / 0.35);
+  background: color-mix(in oklab, var(--muted) 45%, transparent);
 }
 
 .article-content .embed-section > h3 {
