@@ -275,3 +275,36 @@
   margin: 1.25rem 0;
   overflow: hidden;
 }
+
+/* Bloc dédié : uniquement des vidéos / intégrations externes */
+.article-content .embed-section {
+  margin: 2rem 0;
+  padding: 1.25rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 1rem;
+  background: hsl(var(--muted) / 0.35);
+}
+
+.article-content .embed-section > h3 {
+  margin: 0 0 0.75rem;
+}
+
+.article-content .embed-section > .video-embed:first-of-type,
+.article-content .embed-section > .media-frame:first-of-type,
+.article-content .embed-section > .media-video:first-of-type {
+  margin-top: 0;
+}
+
+.article-content .embed-section.is-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .article-content .embed-section.is-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .article-content .embed-section.is-grid > h3 {
+    grid-column: 1 / -1;
+  }
+}
