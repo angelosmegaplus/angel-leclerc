@@ -23,6 +23,10 @@ import {
   checkPrintfulSetup,
   type PrintfulDiagnostics,
 } from "@/lib/shop.functions";
+import {
+  getPrintfulCatalogStatus,
+  syncPrintfulCatalog,
+} from "@/lib/shop.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPrice } from "@/lib/shop";
 
@@ -80,6 +84,56 @@ function ShopAdminInner() {
   const [diagLoading, setDiagLoading] = useState(false);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [busyOrder, setBusyOrder] = useState<string | null>(null);
+  const fetchCatalogStatus = useServerFn(getPrintfulCatalogStatus);
+  const runCatalogSync = useServerFn(syncPrintfulCatalog);
+  const [catalogSyncing, setCatalogSyncing] = useState(false);
+
+  const { data: catalog, refetch: refetchCatalog } = useQuery({
+    queryKey: ["admin-printful-catalog"],
+    queryFn: () => fetchCatalogStatus({ data: undefined }),
+    refetchInterval: 300_000,
+    refetchOnWindowFocus: true,
+  });
+
+  const runProductSync = async () => {
+    setCatalogSyncing(true);
+    try {
+      const report = await runCatalogSync({ data: undefined });
+      await queryClient.invalidateQueries({ queryKey: ["admin-shop-products"] });
+      await queryClient.invalidateQueries({ queryKey: ["shop-products"] });
+      await refetchCatalog();
+      if (report.errors.length > 0) {
+        toast.error("Synchronisation partielle", {
+          description: report.errors.join(" · "),
+        });
+      } else if (report.created + report.updated + report.deactivated === 0) {
+        toast.warning("Aucun produit publié trouvé dans la boutique Printful");
+      } else {
+        toast.success(
+          `${report.created} ajouté(s), ${report.updated} mis à jour, ${report.deactivated} désactivé(s)`,
+          {
+            description:
+              report.source === "template"
+                ? "Source : vos créations Printful (modèles non publiés)"
+                : "Source : produits publiés dans la boutique Printful",
+          },
+        );
+      }
+      if (report.incomplete.length > 0) {
+        toast.warning("Produits incomplets (masqués)", {
+          description: report.incomplete
+            .map((i) => `${i.name} — manque ${i.missing.join(", ")}`)
+            .join(" · "),
+        });
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Synchronisation impossible",
+      );
+    } finally {
+      setCatalogSyncing(false);
+    }
+  };
 
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["admin-shop-orders"],
