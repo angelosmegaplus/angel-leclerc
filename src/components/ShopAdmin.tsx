@@ -319,7 +319,11 @@ function ShopAdminInner() {
           <h2 className="font-display text-lg font-bold text-foreground">
             Catalogue Printful
           </h2>
-          <Button size="sm" onClick={runProductSync} disabled={catalogSyncing}>
+          <Button
+            size="sm"
+            onClick={runProductSync}
+            disabled={catalogSyncing || (catalog ? !catalog.storeAllowed : false)}
+          >
             {catalogSyncing ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -336,11 +340,11 @@ function ShopAdminInner() {
                 {
                   label: "Boutique API",
                   value: catalog.storeName
-                    ? `${catalog.storeName} · #${catalog.storeId}`
+                    ? `${catalog.storeName} · #${catalog.storeId} (${catalog.storeType ?? "?"})`
                     : `#${catalog.storeId ?? "non définie"}`,
                 },
                 { label: "Produits publiés (API)", value: String(catalog.apiProductCount) },
-                { label: "Créations enregistrées", value: String(catalog.apiTemplateCount) },
+                { label: "Variantes publiées", value: String(catalog.apiVariantCount) },
                 { label: "Produits en base", value: String(catalog.dbProductCount) },
               ].map((stat) => (
                 <div key={stat.label} className="rounded-lg border border-border p-3">
@@ -359,11 +363,19 @@ function ShopAdminInner() {
                 ? new Date(catalog.lastSyncedAt).toLocaleString("fr-FR")
                 : "jamais"}
             </p>
-            {catalog.apiProductCount === 0 && catalog.apiTemplateCount > 0 && (
+            {!catalog.storeAllowed && (
               <p className="mt-2 text-xs text-muted-foreground">
-                Aucun produit n'est publié dans cette boutique Printful : la
-                synchronisation importera vos créations enregistrées, qui resteront
-                masquées tant que le prix de vente n'est pas défini ici.
+                Synchronisation désactivée : seule une boutique API Printful dédiée à
+                angel-leclerc.fr peut alimenter le catalogue. Les boutiques Squarespace,
+                Shopify et « Personal orders » sont ignorées.
+              </p>
+            )}
+            {catalog.storeAllowed && catalog.apiProductCount === 0 && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Aucun produit n'est encore publié dans cette boutique API
+                {catalog.apiTemplateCount > 0
+                  ? ` (${catalog.apiTemplateCount} création(s) enregistrée(s) non publiée(s)).`
+                  : "."}
               </p>
             )}
             {catalog.errors.length > 0 && (

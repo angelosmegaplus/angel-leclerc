@@ -215,6 +215,19 @@ export async function listPrintfulStores(): Promise<
   return { ok: true, stores };
 }
 
+/**
+ * Seules les boutiques Printful de type « API » sont pilotées par ce site.
+ * Les boutiques Squarespace/Shopify (plateformes e-commerce tierces) et la
+ * boutique « Personal orders » (commandes manuelles) sont exclues : le
+ * catalogue et les paiements sont gérés ici, pas chez un tiers.
+ */
+export function isApiStore(store: { name: string; type: string }): boolean {
+  const type = store.type.toLowerCase();
+  if (type !== "api" && type !== "native") return false;
+  // « Personal orders » est la boutique de commandes manuelles par défaut.
+  return store.name.trim().toLowerCase() !== "personal orders";
+}
+
 /** Vérifie qu'un identifiant de variante Printful existe réellement. */
 export async function checkPrintfulVariant(
   variantId: number,
