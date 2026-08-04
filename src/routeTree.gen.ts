@@ -33,6 +33,7 @@ import { Route as ActualitesSlugRouteImport } from './routes/actualites/$slug'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicHooksNewsletterRouteImport } from './routes/api/public/hooks/newsletter'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -159,6 +160,12 @@ const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
   path: '/lovable/email/auth/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPaymentsWebhookRoute =
+  ApiPublicPaymentsWebhookRouteImport.update({
+    id: '/api/public/payments/webhook',
+    path: '/api/public/payments/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksNewsletterRoute =
   ApiPublicHooksNewsletterRouteImport.update({
     id: '/api/public/hooks/newsletter',
@@ -189,6 +196,7 @@ export interface FileRoutesByFullPath {
   '/articles/': typeof ArticlesIndexRoute
   '/boutique/': typeof BoutiqueIndexRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -216,6 +224,7 @@ export interface FileRoutesByTo {
   '/articles': typeof ArticlesIndexRoute
   '/boutique': typeof BoutiqueIndexRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -244,6 +253,7 @@ export interface FileRoutesById {
   '/articles/': typeof ArticlesIndexRoute
   '/boutique/': typeof BoutiqueIndexRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -273,6 +283,7 @@ export interface FileRouteTypes {
     | '/articles/'
     | '/boutique/'
     | '/api/public/hooks/newsletter'
+    | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/transactional/preview'
@@ -300,6 +311,7 @@ export interface FileRouteTypes {
     | '/articles'
     | '/boutique'
     | '/api/public/hooks/newsletter'
+    | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/transactional/preview'
@@ -327,6 +339,7 @@ export interface FileRouteTypes {
     | '/articles/'
     | '/boutique/'
     | '/api/public/hooks/newsletter'
+    | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/transactional/preview'
@@ -355,6 +368,7 @@ export interface RootRouteChildren {
   ArticlesIndexRoute: typeof ArticlesIndexRoute
   BoutiqueIndexRoute: typeof BoutiqueIndexRoute
   ApiPublicHooksNewsletterRoute: typeof ApiPublicHooksNewsletterRoute
+  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -530,6 +544,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/payments/webhook': {
+      id: '/api/public/payments/webhook'
+      path: '/api/public/payments/webhook'
+      fullPath: '/api/public/payments/webhook'
+      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/newsletter': {
       id: '/api/public/hooks/newsletter'
       path: '/api/public/hooks/newsletter'
@@ -565,6 +586,7 @@ const rootRouteChildren: RootRouteChildren = {
   ArticlesIndexRoute: ArticlesIndexRoute,
   BoutiqueIndexRoute: BoutiqueIndexRoute,
   ApiPublicHooksNewsletterRoute: ApiPublicHooksNewsletterRoute,
+  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
