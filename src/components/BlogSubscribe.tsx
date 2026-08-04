@@ -4,11 +4,13 @@ import { CheckCircle2, Loader2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { subscribeToBlog } from "@/lib/subscribers.functions";
+import { Captcha, type CaptchaValue } from "@/components/Captcha";
 
 export function BlogSubscribe() {
   const subscribe = useServerFn(subscribeToBlog);
   const [email, setEmail] = useState("");
   const [website, setWebsite] = useState("");
+  const [captcha, setCaptcha] = useState<CaptchaValue>({ token: "", answer: "" });
   const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
   const [error, setError] = useState<string | null>(null);
 
@@ -33,7 +35,14 @@ export function BlogSubscribe() {
         setError(null);
         setStatus("loading");
         try {
-          await subscribe({ data: { email, website } });
+          await subscribe({
+            data: {
+              email,
+              website,
+              captchaToken: captcha.token,
+              captchaAnswer: captcha.answer,
+            },
+          });
           setStatus("done");
         } catch (err) {
           setStatus("idle");
@@ -72,6 +81,9 @@ export function BlogSubscribe() {
           {status === "loading" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           S'abonner
         </Button>
+      </div>
+      <div className="mt-4">
+        <Captcha value={captcha} onChange={setCaptcha} />
       </div>
       {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
     </form>
