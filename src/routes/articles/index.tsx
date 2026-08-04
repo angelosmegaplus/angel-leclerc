@@ -5,7 +5,6 @@ import { ArrowRight, Search } from "lucide-react";
 import { fetchPublishedArticles, formatDate, type Article } from "@/lib/articles";
 import { BlogSubscribe } from "@/components/BlogSubscribe";
 import { Input } from "@/components/ui/input";
-import { ShareArticle } from "@/components/ShareArticle";
 
 export const Route = createFileRoute("/articles/")({
   head: () => ({
@@ -134,9 +133,6 @@ function ArticlesPage() {
                 </div>
               </div>
             </Link>
-              <div className="border-t border-border px-5 py-3">
-                <ShareArticle title={a.title} slug={a.slug} excerpt={a.excerpt} />
-              </div>
             </div>
           ))}
         </div>
