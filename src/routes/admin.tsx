@@ -22,6 +22,7 @@ import {
   BarChart3,
   LayoutList,
   ShoppingBag,
+  FileText,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { ShopAdmin } from "@/components/ShopAdmin";
