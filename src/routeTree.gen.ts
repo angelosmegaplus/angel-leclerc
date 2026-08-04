@@ -24,6 +24,7 @@ import { Route as BoutiqueIndexRouteImport } from './routes/boutique/index'
 import { Route as ArticlesIndexRouteImport } from './routes/articles/index'
 import { Route as ActualitesIndexRouteImport } from './routes/actualites/index'
 import { Route as CommuniquesReponseArticleChniTombolaPatrimoineRouteImport } from './routes/communiques/reponse-article-chni-tombola-patrimoine'
+import { Route as BoutiqueSuiviRouteImport } from './routes/boutique/suivi'
 import { Route as BoutiqueMerciRouteImport } from './routes/boutique/merci'
 import { Route as BoutiqueCommandeRouteImport } from './routes/boutique/commande'
 import { Route as BoutiqueHandleRouteImport } from './routes/boutique/$handle'
@@ -114,6 +115,11 @@ const CommuniquesReponseArticleChniTombolaPatrimoineRoute =
     path: '/communiques/reponse-article-chni-tombola-patrimoine',
     getParentRoute: () => rootRouteImport,
   } as any)
+const BoutiqueSuiviRoute = BoutiqueSuiviRouteImport.update({
+  id: '/boutique/suivi',
+  path: '/boutique/suivi',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BoutiqueMerciRoute = BoutiqueMerciRouteImport.update({
   id: '/boutique/merci',
   path: '/boutique/merci',
@@ -198,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/boutique/$handle': typeof BoutiqueHandleRoute
   '/boutique/commande': typeof BoutiqueCommandeRoute
   '/boutique/merci': typeof BoutiqueMerciRoute
+  '/boutique/suivi': typeof BoutiqueSuiviRoute
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   '/actualites/': typeof ActualitesIndexRoute
   '/articles/': typeof ArticlesIndexRoute
@@ -227,6 +234,7 @@ export interface FileRoutesByTo {
   '/boutique/$handle': typeof BoutiqueHandleRoute
   '/boutique/commande': typeof BoutiqueCommandeRoute
   '/boutique/merci': typeof BoutiqueMerciRoute
+  '/boutique/suivi': typeof BoutiqueSuiviRoute
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   '/actualites': typeof ActualitesIndexRoute
   '/articles': typeof ArticlesIndexRoute
@@ -257,6 +265,7 @@ export interface FileRoutesById {
   '/boutique/$handle': typeof BoutiqueHandleRoute
   '/boutique/commande': typeof BoutiqueCommandeRoute
   '/boutique/merci': typeof BoutiqueMerciRoute
+  '/boutique/suivi': typeof BoutiqueSuiviRoute
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   '/actualites/': typeof ActualitesIndexRoute
   '/articles/': typeof ArticlesIndexRoute
@@ -288,6 +297,7 @@ export interface FileRouteTypes {
     | '/boutique/$handle'
     | '/boutique/commande'
     | '/boutique/merci'
+    | '/boutique/suivi'
     | '/communiques/reponse-article-chni-tombola-patrimoine'
     | '/actualites/'
     | '/articles/'
@@ -317,6 +327,7 @@ export interface FileRouteTypes {
     | '/boutique/$handle'
     | '/boutique/commande'
     | '/boutique/merci'
+    | '/boutique/suivi'
     | '/communiques/reponse-article-chni-tombola-patrimoine'
     | '/actualites'
     | '/articles'
@@ -346,6 +357,7 @@ export interface FileRouteTypes {
     | '/boutique/$handle'
     | '/boutique/commande'
     | '/boutique/merci'
+    | '/boutique/suivi'
     | '/communiques/reponse-article-chni-tombola-patrimoine'
     | '/actualites/'
     | '/articles/'
@@ -376,6 +388,7 @@ export interface RootRouteChildren {
   BoutiqueHandleRoute: typeof BoutiqueHandleRoute
   BoutiqueCommandeRoute: typeof BoutiqueCommandeRoute
   BoutiqueMerciRoute: typeof BoutiqueMerciRoute
+  BoutiqueSuiviRoute: typeof BoutiqueSuiviRoute
   CommuniquesReponseArticleChniTombolaPatrimoineRoute: typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   ActualitesIndexRoute: typeof ActualitesIndexRoute
   ArticlesIndexRoute: typeof ArticlesIndexRoute
@@ -495,6 +508,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommuniquesReponseArticleChniTombolaPatrimoineRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/boutique/suivi': {
+      id: '/boutique/suivi'
+      path: '/boutique/suivi'
+      fullPath: '/boutique/suivi'
+      preLoaderRoute: typeof BoutiqueSuiviRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/boutique/merci': {
       id: '/boutique/merci'
       path: '/boutique/merci'
@@ -601,6 +621,7 @@ const rootRouteChildren: RootRouteChildren = {
   BoutiqueHandleRoute: BoutiqueHandleRoute,
   BoutiqueCommandeRoute: BoutiqueCommandeRoute,
   BoutiqueMerciRoute: BoutiqueMerciRoute,
+  BoutiqueSuiviRoute: BoutiqueSuiviRoute,
   CommuniquesReponseArticleChniTombolaPatrimoineRoute:
     CommuniquesReponseArticleChniTombolaPatrimoineRoute,
   ActualitesIndexRoute: ActualitesIndexRoute,

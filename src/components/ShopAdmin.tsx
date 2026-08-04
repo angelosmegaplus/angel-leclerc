@@ -18,6 +18,7 @@ import {
   listShopOrders,
   refundShopOrder,
   syncPrintfulOrder,
+  syncPendingPrintfulOrders,
   configurePrintfulWebhook,
   checkPrintfulSetup,
   type PrintfulDiagnostics,
@@ -72,6 +73,7 @@ function ShopAdminInner() {
   const fetchOrders = useServerFn(listShopOrders);
   const refund = useServerFn(refundShopOrder);
   const sync = useServerFn(syncPrintfulOrder);
+  const syncAll = useServerFn(syncPendingPrintfulOrders);
   const setWebhook = useServerFn(configurePrintfulWebhook);
   const runDiagnostics = useServerFn(checkPrintfulSetup);
   const [diagnostics, setDiagnostics] = useState<PrintfulDiagnostics | null>(null);
@@ -84,6 +86,22 @@ function ShopAdminInner() {
     queryFn: () => fetchOrders(),
     refetchInterval: 60_000,
     refetchOnWindowFocus: true,
+  });
+
+  // Récupération automatique des statuts Printful (brouillon, confirmé,
+  // expédié, retour, échec) : aucune action manuelle nécessaire.
+  const { data: autoSync } = useQuery({
+    queryKey: ["admin-shop-auto-sync"],
+    queryFn: async () => {
+      const result = await syncAll({ data: undefined });
+      if (result.updated > 0) {
+        await queryClient.invalidateQueries({ queryKey: ["admin-shop-orders"] });
+      }
+      return { ...result, at: new Date().toISOString() };
+    },
+    refetchInterval: 120_000,
+    refetchOnWindowFocus: true,
+    staleTime: 60_000,
   });
 
   const { data: products = [] } = useQuery({
@@ -311,6 +329,13 @@ function ShopAdminInner() {
             </Button>
           </div>
         </div>
+
+        <p className="mt-1 text-[11px] text-muted-foreground">
+          Statuts Printful synchronisés automatiquement toutes les 2 minutes
+          {autoSync
+            ? ` · dernier contrôle à ${new Date(autoSync.at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })} — ${autoSync.checked} en cours, ${autoSync.updated} mise(s) à jour`
+            : "…"}
+        </p>
 
         {isLoading ? (
           <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">

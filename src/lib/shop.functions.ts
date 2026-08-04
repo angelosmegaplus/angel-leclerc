@@ -262,6 +262,20 @@ export const createShopCheckout = createServerFn({ method: "POST" })
     }
   });
 
+export interface PublicOrderTracking {
+  createdAt: string;
+  status: string;
+  printfulStatus: string | null;
+  shippedAt: string | null;
+  trackingNumber: string | null;
+  trackingUrl: string | null;
+  carrier: string | null;
+  amountCents: number;
+  currency: string;
+  items: Array<{ name: string; quantity: number }>;
+  events: Array<{ at: string; label: string }>;
+}
+
 export const getCheckoutStatus = createServerFn({ method: "POST" })
   .inputValidator((data: { sessionId: string; environment: StripeEnv }) => {
     if (!/^cs_[A-Za-z0-9_]+$/.test(data.sessionId)) throw new Error("Session invalide");
@@ -570,3 +584,62 @@ export const checkPrintfulSetup = createServerFn({ method: "POST" })
       errors,
     };
   });
+
+/**
+ * Suivi public d'une commande : accessible via l'identifiant de session Stripe
+ * (non devinable) transmis au client après paiement.
+ */
+export const trackShopOrder = createServerFn({ method: "POST" })
+  .inputValidator((data: { sessionId: string }) => {
+    if (!/^cs_[A-Za-z0-9_]+$/.test(data.sessionId)) throw new Error("Référence invalide");
+    return data;
+  })
+  .handler(async ({ data }): Promise<PublicOrderTracking | { error: string }> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: order } = await supabaseAdmin
+      .from("shop_orders")
+      .select(
+        "created_at, status, printful_status, printful_shipped_at, tracking_number, tracking_url, carrier, items, amount_cents, currency, events",
+      )
+      .eq("stripe_session_id", data.sessionId)
+      .maybeSingle();
+    if (!order) return { error: "Commande introuvable" };
+
+    const row = order as any;
+    return {
+      createdAt: row.created_at,
+      status: row.status,
+      printfulStatus: row.printful_status ?? null,
+      shippedAt: row.printful_shipped_at ?? null,
+      trackingNumber: row.tracking_number ?? null,
+      trackingUrl: row.tracking_url ?? null,
+      carrier: row.carrier ?? null,
+      amountCents: row.amount_cents ?? 0,
+      currency: row.currency ?? "EUR",
+      items: Array.isArray(row.items)
+        ? row.items.map((i: any) => ({
+            name: String(i.name ?? i.slug ?? "Article"),
+            quantity: Number(i.quantity ?? 1),
+          }))
+        : [],
+      events: Array.isArray(row.events)
+        ? row.events
+            .filter((e: any) => e && typeof e.at === "string")
+            .map((e: any) => ({ at: e.at, label: String(e.label ?? "") }))
+        : [],
+    };
+  });
+
+/**
+ * Rafraîchit automatiquement toutes les commandes encore en cours auprès de
+ * Printful. Appelée en boucle par l'espace admin, sans action manuelle.
+ */
+export const syncPendingPrintfulOrders = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(
+    async ({ context }): Promise<{ checked: number; updated: number; error?: string }> => {
+      await assertAdmin(context);
+      const { syncOpenPrintfulOrders } = await import("@/lib/shop-sync.server");
+      return syncOpenPrintfulOrders();
+    },
+  );

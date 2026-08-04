@@ -7,6 +7,7 @@ import { getCheckoutStatus } from "@/lib/shop.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { useCartStore } from "@/stores/cartStore";
 import { formatPrice } from "@/lib/shop";
+import { OrderTracker } from "@/components/OrderTracker";
 
 export const Route = createFileRoute("/boutique/merci")({
   validateSearch: (search: Record<string, unknown>): { session_id?: string } => ({
@@ -82,6 +83,12 @@ function MerciPage() {
           </p>
         </>
       )}
+      {paid && sessionId && (
+        <div className="mx-auto mt-10 max-w-xl">
+          <OrderTracker sessionId={sessionId} />
+        </div>
+      )}
+
       <Button asChild variant="outline" className="mt-8">
         <Link to="/boutique">Retour à la boutique</Link>
       </Button>
