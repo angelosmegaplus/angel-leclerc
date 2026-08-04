@@ -30,6 +30,8 @@ const submissionSchema = z.object({
   consent: z.literal(true, {
     errorMap: () => ({ message: "Consentement requis" }),
   }),
+  captchaToken: z.string().min(1, "Vérification anti-robot requise").max(400),
+  captchaAnswer: z.string().trim().min(1, "Vérification anti-robot requise").max(10),
   // Honeypot: must be empty
   website: z.string().max(0).optional().or(z.literal("")),
   // Optional file (base64-encoded)
@@ -52,6 +54,12 @@ export const submitProjectRequest = createServerFn({ method: "POST" })
     // Reject bots that filled the honeypot silently (act as success).
     if (data.website && data.website.length > 0) {
       return { ok: true as const };
+    }
+
+    const { verifyChallenge } = await import("./captcha.server");
+    const humanOk = await verifyChallenge(data.captchaToken, data.captchaAnswer);
+    if (!humanOk) {
+      throw new Error("Vérification anti-robot incorrecte ou expirée. Merci de réessayer.");
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
