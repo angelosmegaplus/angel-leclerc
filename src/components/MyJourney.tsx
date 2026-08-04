@@ -450,6 +450,20 @@ const projects: Project[] = [
 ];
 
 export function RealisationsSection() {
+  const { data } = useQuery(contentQuery("projet"));
+  const list: Project[] =
+    data && data.length
+      ? data.map((i: ContentItem) => ({
+          title: i.title,
+          context: i.description ?? "",
+          missions: toStringList(i.bullets),
+          tools: i.extra_label ?? "",
+          results: i.extra_value ?? "",
+          href: i.url ?? undefined,
+          linkLabel: i.link_label ?? undefined,
+          icon: iconFor(i.icon, PenLine),
+        }))
+      : projects;
   return (
     <AnimatedSection>
       <section id="realisations" className="section-padding bg-background scroll-mt-24">
@@ -461,7 +475,7 @@ export function RealisationsSection() {
           />
 
           <div className="mt-12 grid gap-6 md:grid-cols-2">
-            {projects.map((p) => (
+            {list.map((p) => (
               <Card key={p.title} className="flex h-full flex-col">
                 <div className="flex items-center gap-4">
                   <div className="inline-flex rounded-xl bg-primary/10 p-3 text-primary">
@@ -475,29 +489,41 @@ export function RealisationsSection() {
                   {p.context}
                 </p>
 
-                <p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                  Missions réalisées
-                </p>
-                <ul className="mt-2 space-y-1.5 text-sm leading-relaxed text-foreground/90">
-                  {p.missions.map((m) => (
-                    <li key={m} className="flex gap-2">
-                      <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-primary" />
-                      <span>{m}</span>
-                    </li>
-                  ))}
-                </ul>
+                {p.missions.length > 0 && (
+                  <>
+                    <p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                      Missions réalisées
+                    </p>
+                    <ul className="mt-2 space-y-1.5 text-sm leading-relaxed text-foreground/90">
+                      {p.missions.map((m) => (
+                        <li key={m} className="flex gap-2">
+                          <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-primary" />
+                          <span>{m}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
 
-                <p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                  Outils utilisés
-                </p>
-                <p className="mt-1 text-sm text-foreground/80">{p.tools}</p>
+                {p.tools && (
+                  <>
+                    <p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                      Outils utilisés
+                    </p>
+                    <p className="mt-1 text-sm text-foreground/80">{p.tools}</p>
+                  </>
+                )}
 
-                <p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                  Résultats
-                </p>
-                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                  {p.results}
-                </p>
+                {p.results && (
+                  <>
+                    <p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                      Résultats
+                    </p>
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                      {p.results}
+                    </p>
+                  </>
+                )}
                 {p.href ? (
                   <a
                     href={p.href}
