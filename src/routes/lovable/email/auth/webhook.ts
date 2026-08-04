@@ -10,7 +10,7 @@ import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
 
 // Configuration
 const SITE_NAME = "Angel Leclerc Communication"
-const SENDER_DOMAIN = "notification.angel-leclerc.fr"
+const SENDER_DOMAIN = "notify.angel-leclerc.fr"
 const ROOT_DOMAIN = "angel-leclerc.fr"
 const FROM_DOMAIN = "angel-leclerc.fr"
 const SITE_URL = `https://${ROOT_DOMAIN}`
