@@ -311,6 +311,10 @@ export async function setPrintfulWebhook(
         "order_canceled",
         "order_put_hold",
         "order_remove_hold",
+        "product_synced",
+        "product_updated",
+        "product_deleted",
+        "stock_updated",
       ],
     }),
   });
