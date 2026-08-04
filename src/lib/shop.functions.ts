@@ -35,6 +35,9 @@ type ProductRow = {
   currency: string;
   image_url: string | null;
   images: unknown;
+  printful_sync_variant_id?: number | null;
+  printful_variant_id?: number | null;
+  printful_print_file_url?: string | null;
 };
 
 function toProduct(row: ProductRow): ShopProduct {
@@ -50,18 +53,31 @@ function toProduct(row: ProductRow): ShopProduct {
   };
 }
 
+const PRODUCT_COLUMNS =
+  "id, slug, name, description, price_cents, currency, image_url, images, printful_sync_variant_id, printful_variant_id, printful_print_file_url";
+
+/**
+ * Un produit n'est visible publiquement que s'il est réellement fabricable :
+ * prix de vente, image, variante Printful et fichier d'impression.
+ */
+function isSellable(row: ProductRow): boolean {
+  const hasVariant = Boolean(row.printful_sync_variant_id || row.printful_variant_id);
+  const hasPrintFile = Boolean(row.printful_sync_variant_id || row.printful_print_file_url);
+  return row.price_cents > 0 && Boolean(row.image_url) && hasVariant && hasPrintFile;
+}
+
 export const listShopProducts = createServerFn({ method: "GET" }).handler(
   async (): Promise<ShopProduct[]> => {
     const { data, error } = await publicClient()
       .from("shop_products")
-      .select("id, slug, name, description, price_cents, currency, image_url, images")
+      .select(PRODUCT_COLUMNS)
       .eq("active", true)
       .order("sort_order", { ascending: true });
     if (error) {
       console.error("listShopProducts:", error.message);
       return [];
     }
-    return ((data ?? []) as ProductRow[]).map(toProduct);
+    return ((data ?? []) as ProductRow[]).filter(isSellable).map(toProduct);
   },
 );
 
@@ -73,11 +89,12 @@ export const getShopProduct = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<ShopProduct | null> => {
     const { data: row, error } = await publicClient()
       .from("shop_products")
-      .select("id, slug, name, description, price_cents, currency, image_url, images")
+      .select(PRODUCT_COLUMNS)
       .eq("slug", data.slug)
       .eq("active", true)
       .maybeSingle();
     if (error || !row) return null;
+    if (!isSellable(row as ProductRow)) return null;
     return toProduct(row as ProductRow);
   });
 
