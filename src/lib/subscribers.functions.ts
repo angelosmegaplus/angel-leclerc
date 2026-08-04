@@ -3,8 +3,11 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { sendTemplateEmail } from "./email-templates/send-email";
 
+const SITE = "https://www.angel-leclerc.fr";
+
 const emailSchema = z.object({
   email: z.string().trim().email("E-mail invalide").max(255),
+  firstName: z.string().trim().max(80).optional().or(z.literal("")),
   website: z.string().max(0).optional().or(z.literal("")),
   captchaToken: z.string().min(1).max(400),
   captchaAnswer: z.string().trim().min(1).max(10),
@@ -23,17 +26,64 @@ export const subscribeToBlog = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const email = data.email.toLowerCase();
 
-    const { error } = await supabaseAdmin
+    const { data: existing } = await supabaseAdmin
       .from("blog_subscribers")
-      .upsert({ email, active: true }, { onConflict: "email" });
-    if (error) {
-      console.error("[subscribers] upsert failed", error);
-      throw new Error("L'inscription n'a pas pu être enregistrée.");
+      .select("id, active, confirmed_at, confirm_token, unsubscribe_token, first_name")
+      .eq("email", email)
+      .maybeSingle();
+
+    // Une personne désinscrite n'est jamais réactivée automatiquement :
+    // elle doit reconfirmer via le lien reçu par e-mail.
+    let row = existing;
+    if (!row) {
+      const { data: inserted, error } = await supabaseAdmin
+        .from("blog_subscribers")
+        .insert({ email, first_name: data.firstName || null, active: true })
+        .select("id, active, confirmed_at, confirm_token, unsubscribe_token, first_name")
+        .single();
+      if (error) {
+        console.error("[subscribers] insert failed", error);
+        throw new Error("L'inscription n'a pas pu être enregistrée.");
+      }
+      row = inserted;
+    } else if (data.firstName && !row.first_name) {
+      await supabaseAdmin
+        .from("blog_subscribers")
+        .update({ first_name: data.firstName })
+        .eq("id", row.id);
     }
-    return { ok: true as const };
+
+    if (row.active && row.confirmed_at) {
+      return { ok: true as const, alreadyConfirmed: true as const };
+    }
+
+    await sendTemplateEmail("subscribe-welcome", email, {
+      templateData: {
+        firstName: data.firstName || row.first_name || undefined,
+        confirmUrl: `${SITE}/confirmation-abonnement?token=${row.confirm_token}`,
+        unsubscribeUrl: `${SITE}/desabonnement?token=${row.unsubscribe_token}`,
+      },
+      idempotencyKey: `subscribe-welcome-${row.confirm_token}`,
+    });
+
+    return { ok: true as const, alreadyConfirmed: false as const };
   });
 
 const tokenSchema = z.object({ token: z.string().uuid() });
+
+export const confirmSubscription = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => tokenSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: updated, error } = await supabaseAdmin
+      .from("blog_subscribers")
+      .update({ confirmed_at: new Date().toISOString(), active: true })
+      .eq("confirm_token", data.token)
+      .select("email")
+      .maybeSingle();
+    if (error || !updated) throw new Error("Lien de confirmation invalide ou expiré.");
+    return { ok: true as const };
+  });
 
 export const unsubscribeFromBlog = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => tokenSchema.parse(data))
@@ -47,12 +97,10 @@ export const unsubscribeFromBlog = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
-const notifySchema = z.object({ articleId: z.string().uuid() });
-
-export const notifySubscribersOfArticle = createServerFn({ method: "POST" })
+/** Envoi manuel de la lettre hebdomadaire depuis l'espace administrateur. */
+export const sendNewsletterNow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => notifySchema.parse(data))
-  .handler(async ({ data, context }) => {
+  .handler(async ({ context }) => {
     const { data: adminRole } = await context.supabase
       .from("user_roles")
       .select("role")
@@ -61,43 +109,6 @@ export const notifySubscribersOfArticle = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!adminRole) throw new Error("Accès refusé.");
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    const { data: article } = await supabaseAdmin
-      .from("articles")
-      .select("id, title, slug, excerpt, published, is_private")
-      .eq("id", data.articleId)
-      .maybeSingle();
-
-    if (!article) throw new Error("Article introuvable.");
-    if (!article.published || article.is_private) {
-      throw new Error("Cet article n'est pas public : publiez-le avant de notifier.");
-    }
-
-    const { data: subs } = await supabaseAdmin
-      .from("blog_subscribers")
-      .select("email, unsubscribe_token")
-      .eq("active", true);
-
-    const recipients = subs ?? [];
-    if (recipients.length === 0) return { ok: true as const, sent: 0 };
-
-    const url = `https://www.angel-leclerc.fr/articles/${article.slug}`;
-
-    let sent = 0;
-    for (const sub of recipients) {
-      const unsubUrl = `https://www.angel-leclerc.fr/desabonnement?token=${sub.unsubscribe_token}`;
-      const result = await sendTemplateEmail('blog-new-article', sub.email, {
-        templateData: {
-          title: article.title,
-          excerpt: article.excerpt ?? undefined,
-          url,
-          unsubscribeUrl: unsubUrl,
-        },
-        idempotencyKey: `article-${article.id}-subscriber-${sub.unsubscribe_token}`,
-      });
-      if (result.sent) sent += 1;
-    }
-
-    return { ok: true as const, sent };
+    const { sendWeeklyNewsletter } = await import("./newsletter.server");
+    return sendWeeklyNewsletter();
   });

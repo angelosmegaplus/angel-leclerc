@@ -9,6 +9,7 @@ import { Captcha, type CaptchaValue } from "@/components/Captcha";
 export function BlogSubscribe() {
   const subscribe = useServerFn(subscribeToBlog);
   const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
   const [website, setWebsite] = useState("");
   const [captcha, setCaptcha] = useState<CaptchaValue>({ token: "", answer: "" });
   const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
@@ -18,10 +19,11 @@ export function BlogSubscribe() {
     return (
       <div className="rounded-xl border border-border bg-card p-5 text-sm text-foreground">
         <p className="flex items-center gap-2 font-medium">
-          <CheckCircle2 className="h-4 w-4 text-primary" /> Inscription confirmée
+          <CheckCircle2 className="h-4 w-4 text-primary" /> Vérifiez votre boîte mail
         </p>
         <p className="mt-2 text-muted-foreground">
-          Vous recevrez un e-mail à chaque nouvel article.
+          Un e-mail vient de vous être envoyé : cliquez sur le lien de confirmation pour
+          recevoir la lettre hebdomadaire, chaque dimanche soir.
         </p>
       </div>
     );
@@ -38,6 +40,7 @@ export function BlogSubscribe() {
           await subscribe({
             data: {
               email,
+              firstName,
               website,
               captchaToken: captcha.token,
               captchaAnswer: captcha.answer,
@@ -56,9 +59,18 @@ export function BlogSubscribe() {
         <Mail className="h-4 w-4 text-primary" /> Recevoir les nouveaux articles
       </p>
       <p className="mt-1 text-xs text-muted-foreground">
-        Un e-mail à chaque publication. Désinscription en un clic.
+        Une lettre par semaine, le dimanche soir, avec les articles publiés. Désinscription en un clic.
       </p>
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+        <Input
+          type="text"
+          maxLength={80}
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+          placeholder="Prénom (facultatif)"
+          aria-label="Prénom"
+          className="sm:max-w-[40%]"
+        />
         <Input
           type="email"
           required

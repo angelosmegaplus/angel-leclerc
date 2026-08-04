@@ -187,6 +187,7 @@ export const submitProjectRequest = createServerFn({ method: "POST" })
       {
         templateData: {
           firstName: data.fullName.split(' ')[0],
+          subject: data.projectType,
         },
         idempotencyKey: `contact-confirmation-${inserted!.id}`,
       },

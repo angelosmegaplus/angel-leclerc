@@ -2,7 +2,8 @@ import type { ComponentType } from 'react'
 
 import { ContactConfirmationEmail } from './contact-confirmation'
 import { ContactNotificationEmail } from './contact-notification'
-import { BlogNewArticleEmail } from './blog-new-article'
+import { SubscribeWelcomeEmail } from './subscribe-welcome'
+import { WeeklyNewsletterEmail } from './weekly-newsletter'
 
 export interface TemplateEntry {
   component: ComponentType<any>
@@ -16,14 +17,14 @@ export interface TemplateEntry {
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'contact-confirmation': {
     component: ContactConfirmationEmail,
-    subject: 'Votre demande a bien été reçue',
+    subject: 'Votre message a bien été reçu',
     displayName: 'Confirmation de demande de contact',
-    previewData: { firstName: 'Marie' },
+    previewData: { firstName: 'Marie', subject: 'Conseil en communication' },
   },
   'contact-notification': {
     component: ContactNotificationEmail,
-    subject: (data) => `Nouvelle demande de projet – ${data.fullName} – ${data.projectType}`,
-    displayName: 'Notification de nouvelle demande',
+    subject: (data) => `Nouveau message – ${data.fullName} – ${data.projectType}`,
+    displayName: 'Notification administrateur',
     to: 'contact@angel-leclerc.fr',
     previewData: {
       fullName: 'Marie Dupont',
@@ -39,15 +40,33 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
       signedUrl: 'https://example.com/signed-url',
     },
   },
-  'blog-new-article': {
-    component: BlogNewArticleEmail,
-    subject: (data) => `Nouvel article : ${data.title}`,
-    displayName: 'Notification de nouvel article',
+  'subscribe-welcome': {
+    component: SubscribeWelcomeEmail,
+    subject: 'Confirmez votre inscription aux articles',
+    displayName: 'Bienvenue / confirmation d’inscription',
     previewData: {
-      title: 'Titre de l’article',
-      excerpt: 'Un court extrait de l’article pour donner envie de cliquer.',
-      url: 'https://angel-leclerc.fr/articles/titre-de-l-article',
-      unsubscribeUrl: 'https://angel-leclerc.fr/desabonnement?token=00000000-0000-0000-0000-000000000000',
+      firstName: 'Marie',
+      confirmUrl: 'https://www.angel-leclerc.fr/confirmation-abonnement?token=00000000-0000-0000-0000-000000000000',
+      unsubscribeUrl: 'https://www.angel-leclerc.fr/desabonnement?token=00000000-0000-0000-0000-000000000000',
+    },
+  },
+  'weekly-newsletter': {
+    component: WeeklyNewsletterEmail,
+    subject: (data) =>
+      data.articles?.length === 1
+        ? `Les articles de la semaine : ${data.articles[0].title}`
+        : 'Les articles de la semaine',
+    displayName: 'Newsletter hebdomadaire',
+    previewData: {
+      articles: [
+        {
+          title: 'Titre de l’article',
+          excerpt: 'Un court extrait de l’article pour donner envie de cliquer.',
+          url: 'https://www.angel-leclerc.fr/articles/titre-de-l-article',
+          date: '2 août 2026',
+        },
+      ],
+      unsubscribeUrl: 'https://www.angel-leclerc.fr/desabonnement?token=00000000-0000-0000-0000-000000000000',
     },
   },
 }
