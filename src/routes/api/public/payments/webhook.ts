@@ -277,7 +277,6 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
               await fulfillSession(event.data.object, env);
               break;
             case "charge.refunded":
-            case "charge.refund.updated":
               await handleRefund(event.data.object, env);
               break;
             case "payment_intent.canceled":
