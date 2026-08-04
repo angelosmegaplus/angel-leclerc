@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Download, Lock, Paperclip } from "lucide-react";
 import { fetchArticleBySlug, formatDate, getAttachments } from "@/lib/articles";
 import { ShareArticle } from "@/components/ShareArticle";
+import { FeedbackBlock } from "@/components/FeedbackBlock";
 export const SITE_URL = "https://www.angel-leclerc.fr";
 
 function absoluteUrl(value: string | null | undefined): string | null {
@@ -179,6 +180,13 @@ function ArticlePage() {
             <ShareArticle url={shareUrl} title={article.title} />
           </div>
         )}
+
+        <FeedbackBlock
+          contentType="article"
+          contentKey={`/articles/${slug}`}
+          contentTitle={article.title}
+          className="mt-8"
+        />
 
         <div className="mt-10">
           <Link
