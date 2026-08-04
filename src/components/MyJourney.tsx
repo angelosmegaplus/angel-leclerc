@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { ClientOnly } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 const MobilityMap = lazy(() => import("@/components/MobilityMap"));
 import {
   MapPin,
@@ -39,6 +40,13 @@ import { Logo } from "@/components/Logo";
 import { YouTubeEmbed } from "@/components/YouTubeEmbed";
 import photo from "@/assets/angel-leclerc.png.asset.json";
 import talisLogo from "@/assets/talis-logo.png";
+import {
+  contentQuery,
+  iconFor,
+  toStringList,
+  toVideoList,
+  type ContentItem,
+} from "@/lib/content";
 
 function SectionHeader({
   eyebrow,
