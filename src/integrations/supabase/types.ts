@@ -164,6 +164,60 @@ export type Database = {
         }
         Relationships: []
       }
+      content_feedback: {
+        Row: {
+          comment: string | null
+          content_key: string
+          content_title: string | null
+          content_type: string
+          created_at: string
+          email: string | null
+          id: string
+          paid_amount_cents: number | null
+          payment_reference: string | null
+          payment_status: string
+          rating: number
+          support_amount_cents: number | null
+          updated_at: string
+          user_agent: string | null
+          visitor_hash: string | null
+        }
+        Insert: {
+          comment?: string | null
+          content_key: string
+          content_title?: string | null
+          content_type: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          paid_amount_cents?: number | null
+          payment_reference?: string | null
+          payment_status?: string
+          rating: number
+          support_amount_cents?: number | null
+          updated_at?: string
+          user_agent?: string | null
+          visitor_hash?: string | null
+        }
+        Update: {
+          comment?: string | null
+          content_key?: string
+          content_title?: string | null
+          content_type?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          paid_amount_cents?: number | null
+          payment_reference?: string | null
+          payment_status?: string
+          rating?: number
+          support_amount_cents?: number | null
+          updated_at?: string
+          user_agent?: string | null
+          visitor_hash?: string | null
+        }
+        Relationships: []
+      }
       content_items: {
         Row: {
           bullets: Json
@@ -230,6 +284,57 @@ export type Database = {
           updated_at?: string
           url?: string | null
           videos?: Json
+        }
+        Relationships: []
+      }
+      feedback_settings: {
+        Row: {
+          amounts_cents: Json
+          comment_enabled: boolean
+          confirmation_texts: Json
+          created_at: string
+          disabled_paths: Json
+          enabled: boolean
+          id: boolean
+          min_amount_cents: number
+          min_rating_for_support: number
+          public_display: string
+          questions: Json
+          revolut_links: Json
+          support_enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          amounts_cents?: Json
+          comment_enabled?: boolean
+          confirmation_texts?: Json
+          created_at?: string
+          disabled_paths?: Json
+          enabled?: boolean
+          id?: boolean
+          min_amount_cents?: number
+          min_rating_for_support?: number
+          public_display?: string
+          questions?: Json
+          revolut_links?: Json
+          support_enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          amounts_cents?: Json
+          comment_enabled?: boolean
+          confirmation_texts?: Json
+          created_at?: string
+          disabled_paths?: Json
+          enabled?: boolean
+          id?: boolean
+          min_amount_cents?: number
+          min_rating_for_support?: number
+          public_display?: string
+          questions?: Json
+          revolut_links?: Json
+          support_enabled?: boolean
+          updated_at?: string
         }
         Relationships: []
       }

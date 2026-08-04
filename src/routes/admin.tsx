@@ -47,6 +47,7 @@ import { RichTextEditor } from "@/components/RichTextEditor";
 import { sendNewsletterNow } from "@/lib/subscribers.functions";
 import { AdminStats } from "@/components/AdminStats";
 import { ContentAdmin } from "@/components/ContentAdmin";
+import { FeedbackAdmin } from "@/components/FeedbackAdmin";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -143,7 +144,7 @@ function AdminPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [tab, setTab] = useState<
-    "articles" | "messages" | "abonnes" | "stats" | "contenus"
+    "articles" | "messages" | "abonnes" | "stats" | "contenus" | "avis"
   >("articles");
   const sendNewsletter = useServerFn(sendNewsletterNow);
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
@@ -637,6 +638,7 @@ function AdminPage() {
                   ["messages", `Messages${unreadCount ? ` (${unreadCount})` : ""}`],
                   ["abonnes", `Abonnés (${subscribers.length})`],
                   ["contenus", "Parcours & services"],
+                  ["avis", "Avis et soutiens"],
                   ["stats", "Statistiques"],
                 ] as const
               ).map(([key, label]) => (
@@ -650,6 +652,7 @@ function AdminPage() {
                   {key === "abonnes" && <Users className="mr-2 h-4 w-4" />}
                   {key === "stats" && <BarChart3 className="mr-2 h-4 w-4" />}
                   {key === "contenus" && <LayoutList className="mr-2 h-4 w-4" />}
+                  {key === "avis" && <Star className="mr-2 h-4 w-4" />}
                   {label}
                 </Button>
               ))}
@@ -658,6 +661,8 @@ function AdminPage() {
             {tab === "stats" && <AdminStats />}
 
             {tab === "contenus" && <ContentAdmin />}
+
+            {tab === "avis" && <FeedbackAdmin />}
 
             {tab === "messages" && (
               <div className="mt-8 space-y-3">
