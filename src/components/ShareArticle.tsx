@@ -27,7 +27,7 @@ export function ShareArticle({ title, slug, excerpt, className }: Props) {
       : `${SITE_URL}/articles/${slug}`;
 
   const handleNativeShare = async () => {
-    if (typeof navigator !== "undefined" && navigator.share) {
+    if (typeof navigator !== "undefined" && "share" in navigator) {
       try {
         await navigator.share({ title, text: excerpt ?? title, url });
       } catch {
@@ -86,7 +86,7 @@ export function ShareArticle({ title, slug, excerpt, className }: Props) {
             type="button"
             aria-label="Partager cet article"
             onClick={(e) => {
-              if (typeof navigator !== "undefined" && navigator.share) {
+              if (typeof navigator !== "undefined" && "share" in navigator) {
                 e.preventDefault();
                 void handleNativeShare();
               }
