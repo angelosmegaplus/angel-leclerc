@@ -137,7 +137,7 @@ function ArticlePage() {
           />
         ) : (
           <div className="mt-8 space-y-6 text-left text-[15px] leading-[1.8] text-foreground/90 md:text-base">
-            {paragraphs.map((p, i) => (
+            {paragraphs.map((p: string, i: number) => (
               <p key={i} className="whitespace-pre-line">
                 {p}
               </p>
