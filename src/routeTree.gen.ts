@@ -20,9 +20,11 @@ import { Route as ConfirmationAbonnementRouteImport } from './routes/confirmatio
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BoutiqueIndexRouteImport } from './routes/boutique/index'
 import { Route as ArticlesIndexRouteImport } from './routes/articles/index'
 import { Route as ActualitesIndexRouteImport } from './routes/actualites/index'
 import { Route as CommuniquesReponseArticleChniTombolaPatrimoineRouteImport } from './routes/communiques/reponse-article-chni-tombola-patrimoine'
+import { Route as BoutiqueHandleRouteImport } from './routes/boutique/$handle'
 import { Route as ArticlesReponseArticleChniTombolaPatrimoineRouteImport } from './routes/articles/reponse-article-chni-tombola-patrimoine'
 import { Route as ArticlesSlugRouteImport } from './routes/articles/$slug'
 import { Route as ActualitesSlugRouteImport } from './routes/actualites/$slug'
@@ -87,6 +89,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BoutiqueIndexRoute = BoutiqueIndexRouteImport.update({
+  id: '/boutique/',
+  path: '/boutique/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ArticlesIndexRoute = ArticlesIndexRouteImport.update({
   id: '/articles/',
   path: '/articles/',
@@ -103,6 +110,11 @@ const CommuniquesReponseArticleChniTombolaPatrimoineRoute =
     path: '/communiques/reponse-article-chni-tombola-patrimoine',
     getParentRoute: () => rootRouteImport,
   } as any)
+const BoutiqueHandleRoute = BoutiqueHandleRouteImport.update({
+  id: '/boutique/$handle',
+  path: '/boutique/$handle',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ArticlesReponseArticleChniTombolaPatrimoineRoute =
   ArticlesReponseArticleChniTombolaPatrimoineRouteImport.update({
     id: '/articles/reponse-article-chni-tombola-patrimoine',
@@ -157,9 +169,11 @@ export interface FileRoutesByFullPath {
   '/actualites/$slug': typeof ActualitesSlugRoute
   '/articles/$slug': typeof ArticlesSlugRoute
   '/articles/reponse-article-chni-tombola-patrimoine': typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
+  '/boutique/$handle': typeof BoutiqueHandleRoute
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   '/actualites/': typeof ActualitesIndexRoute
   '/articles/': typeof ArticlesIndexRoute
+  '/boutique/': typeof BoutiqueIndexRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -180,9 +194,11 @@ export interface FileRoutesByTo {
   '/actualites/$slug': typeof ActualitesSlugRoute
   '/articles/$slug': typeof ArticlesSlugRoute
   '/articles/reponse-article-chni-tombola-patrimoine': typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
+  '/boutique/$handle': typeof BoutiqueHandleRoute
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   '/actualites': typeof ActualitesIndexRoute
   '/articles': typeof ArticlesIndexRoute
+  '/boutique': typeof BoutiqueIndexRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -204,9 +220,11 @@ export interface FileRoutesById {
   '/actualites/$slug': typeof ActualitesSlugRoute
   '/articles/$slug': typeof ArticlesSlugRoute
   '/articles/reponse-article-chni-tombola-patrimoine': typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
+  '/boutique/$handle': typeof BoutiqueHandleRoute
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   '/actualites/': typeof ActualitesIndexRoute
   '/articles/': typeof ArticlesIndexRoute
+  '/boutique/': typeof BoutiqueIndexRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -229,9 +247,11 @@ export interface FileRouteTypes {
     | '/actualites/$slug'
     | '/articles/$slug'
     | '/articles/reponse-article-chni-tombola-patrimoine'
+    | '/boutique/$handle'
     | '/communiques/reponse-article-chni-tombola-patrimoine'
     | '/actualites/'
     | '/articles/'
+    | '/boutique/'
     | '/api/public/hooks/newsletter'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -252,9 +272,11 @@ export interface FileRouteTypes {
     | '/actualites/$slug'
     | '/articles/$slug'
     | '/articles/reponse-article-chni-tombola-patrimoine'
+    | '/boutique/$handle'
     | '/communiques/reponse-article-chni-tombola-patrimoine'
     | '/actualites'
     | '/articles'
+    | '/boutique'
     | '/api/public/hooks/newsletter'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -275,9 +297,11 @@ export interface FileRouteTypes {
     | '/actualites/$slug'
     | '/articles/$slug'
     | '/articles/reponse-article-chni-tombola-patrimoine'
+    | '/boutique/$handle'
     | '/communiques/reponse-article-chni-tombola-patrimoine'
     | '/actualites/'
     | '/articles/'
+    | '/boutique/'
     | '/api/public/hooks/newsletter'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -299,9 +323,11 @@ export interface RootRouteChildren {
   ActualitesSlugRoute: typeof ActualitesSlugRoute
   ArticlesSlugRoute: typeof ArticlesSlugRoute
   ArticlesReponseArticleChniTombolaPatrimoineRoute: typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
+  BoutiqueHandleRoute: typeof BoutiqueHandleRoute
   CommuniquesReponseArticleChniTombolaPatrimoineRoute: typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
   ActualitesIndexRoute: typeof ActualitesIndexRoute
   ArticlesIndexRoute: typeof ArticlesIndexRoute
+  BoutiqueIndexRoute: typeof BoutiqueIndexRoute
   ApiPublicHooksNewsletterRoute: typeof ApiPublicHooksNewsletterRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -387,6 +413,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/boutique/': {
+      id: '/boutique/'
+      path: '/boutique'
+      fullPath: '/boutique/'
+      preLoaderRoute: typeof BoutiqueIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/articles/': {
       id: '/articles/'
       path: '/articles'
@@ -406,6 +439,13 @@ declare module '@tanstack/react-router' {
       path: '/communiques/reponse-article-chni-tombola-patrimoine'
       fullPath: '/communiques/reponse-article-chni-tombola-patrimoine'
       preLoaderRoute: typeof CommuniquesReponseArticleChniTombolaPatrimoineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/boutique/$handle': {
+      id: '/boutique/$handle'
+      path: '/boutique/$handle'
+      fullPath: '/boutique/$handle'
+      preLoaderRoute: typeof BoutiqueHandleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/articles/reponse-article-chni-tombola-patrimoine': {
@@ -476,10 +516,12 @@ const rootRouteChildren: RootRouteChildren = {
   ArticlesSlugRoute: ArticlesSlugRoute,
   ArticlesReponseArticleChniTombolaPatrimoineRoute:
     ArticlesReponseArticleChniTombolaPatrimoineRoute,
+  BoutiqueHandleRoute: BoutiqueHandleRoute,
   CommuniquesReponseArticleChniTombolaPatrimoineRoute:
     CommuniquesReponseArticleChniTombolaPatrimoineRoute,
   ActualitesIndexRoute: ActualitesIndexRoute,
   ArticlesIndexRoute: ArticlesIndexRoute,
+  BoutiqueIndexRoute: BoutiqueIndexRoute,
   ApiPublicHooksNewsletterRoute: ApiPublicHooksNewsletterRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
