@@ -8,6 +8,7 @@ import {
 } from "@/components/MyJourney";
 import { LatestArticles } from "@/components/LatestArticles";
 import { AnimatedSection } from "@/components/AnimatedSection";
+import { FeedbackBlock } from "@/components/FeedbackBlock";
 
 export const Route = createFileRoute("/parcours")({
   head: () => ({
@@ -47,6 +48,13 @@ function ParcoursPage() {
       <AnimatedSection>
         <section id="contact-alternance" className="section-padding bg-muted/40 scroll-mt-24">
           <div className="container-tight">
+            <div className="mx-auto mb-10 max-w-2xl">
+              <FeedbackBlock
+                contentType="parcours"
+                contentKey="/parcours"
+                contentTitle="Mon parcours"
+              />
+            </div>
             <div className="mx-auto max-w-2xl text-center">
               <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-primary">
                 Contact
