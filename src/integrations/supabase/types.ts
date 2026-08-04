@@ -484,8 +484,11 @@ export type Database = {
           images: Json
           name: string
           price_cents: number
+          printful_external_id: string | null
           printful_print_file_url: string | null
+          printful_source: string | null
           printful_sync_variant_id: number | null
+          printful_synced_at: string | null
           printful_variant_id: number | null
           slug: string
           sort_order: number
@@ -501,8 +504,11 @@ export type Database = {
           images?: Json
           name: string
           price_cents: number
+          printful_external_id?: string | null
           printful_print_file_url?: string | null
+          printful_source?: string | null
           printful_sync_variant_id?: number | null
+          printful_synced_at?: string | null
           printful_variant_id?: number | null
           slug: string
           sort_order?: number
@@ -518,8 +524,11 @@ export type Database = {
           images?: Json
           name?: string
           price_cents?: number
+          printful_external_id?: string | null
           printful_print_file_url?: string | null
+          printful_source?: string | null
           printful_sync_variant_id?: number | null
+          printful_synced_at?: string | null
           printful_variant_id?: number | null
           slug?: string
           sort_order?: number
