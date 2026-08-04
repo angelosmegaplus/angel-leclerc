@@ -88,6 +88,9 @@ export function Header() {
         >
           {mobileOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
+        <div className="md:hidden flex items-center gap-3">
+          <CartButton className="p-2" />
+        </div>
       </div>
 
       {mobileOpen && (
