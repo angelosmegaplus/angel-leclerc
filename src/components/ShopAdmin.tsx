@@ -111,6 +111,8 @@ function ShopAdminInner() {
       setLastReport(report);
       await queryClient.invalidateQueries({ queryKey: ["admin-shop-products"] });
       await queryClient.invalidateQueries({ queryKey: ["shop-products"] });
+      await queryClient.invalidateQueries({ queryKey: ["shop-catalog"] });
+      await queryClient.invalidateQueries({ queryKey: ["shop-product"] });
       await refetchCatalog();
       if (report.errors.length > 0) {
         toast.error("Synchronisation partielle", {
@@ -391,6 +393,7 @@ function ShopAdminInner() {
                     {lastReport.updated} mis à jour, {lastReport.deactivated} désactivé(s))
                   </li>
                   <li>Variantes : {lastReport.variantCount}</li>
+                  <li>Produits visibles en boutique : {lastReport.visibleCount}</li>
                   <li>Webhook Printful : {lastReport.webhook}</li>
                   <li>Date : {new Date(lastReport.syncedAt).toLocaleString("fr-FR")}</li>
                   <li>

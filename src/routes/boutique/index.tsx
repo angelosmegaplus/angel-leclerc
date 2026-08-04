@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, ShoppingBag, Sparkles } from "lucide-react";
+import { AlertTriangle, Loader2, ShoppingBag, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { listShopProducts } from "@/lib/shop.functions";
+import { getShopCatalog } from "@/lib/shop.functions";
 import { formatPrice, type ShopProduct } from "@/lib/shop";
 import { useCartStore } from "@/stores/cartStore";
 import { useCartUi } from "@/components/CartDrawer";
@@ -35,14 +35,15 @@ function BoutiquePage() {
   const addItem = useCartStore((s) => s.addItem);
   const setCartOpen = useCartUi((s) => s.setOpen);
 
-  const { data: products = [], isLoading } = useQuery({
-    queryKey: ["shop-products"],
-    queryFn: () => listShopProducts(),
+  const { data: catalog, isLoading } = useQuery({
+    queryKey: ["shop-catalog"],
+    queryFn: () => getShopCatalog(),
     staleTime: 30_000,
     refetchInterval: 120_000,
     refetchOnWindowFocus: true,
     refetchOnMount: "always",
   });
+  const products = catalog?.products ?? [];
 
   const sorted = useMemo(() => {
     const list = [...products];
@@ -105,13 +106,26 @@ function BoutiquePage() {
       ) : sorted.length === 0 ? (
         <div className="relative mt-10 overflow-hidden rounded-2xl border border-border bg-card px-6 py-16 text-center">
           <div className="pointer-events-none absolute left-1/2 top-0 h-40 w-40 -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" />
-          <Sparkles className="relative mx-auto text-primary" size={28} />
+          {catalog?.reason === "db-error" ? (
+            <AlertTriangle className="relative mx-auto text-destructive" size={28} />
+          ) : (
+            <Sparkles className="relative mx-auto text-primary" size={28} />
+          )}
           <p className="relative mt-4 font-display text-xl font-bold text-foreground">
-            La boutique arrive bientôt
+            {catalog?.reason === "db-error"
+              ? "Catalogue indisponible"
+              : "La boutique arrive bientôt"}
           </p>
           <p className="relative mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-            Les premières créations ALC! sont en préparation. Revenez très vite.
+            {catalog?.message ??
+              "Les premières créations ALC! sont en préparation. Revenez très vite."}
           </p>
+          {catalog?.lastSyncedAt && (
+            <p className="relative mt-3 text-xs text-muted-foreground">
+              Dernière synchronisation Printful :{" "}
+              {new Date(catalog.lastSyncedAt).toLocaleString("fr-FR")}
+            </p>
+          )}
         </div>
       ) : (
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -150,10 +164,34 @@ function BoutiquePage() {
                 <p className="mt-3 font-display text-lg text-primary">
                   {formatPrice(product.priceCents, product.currency)}
                 </p>
+                {(product.sizes.length > 0 || product.colors.length > 0) && (
+                  <dl className="mt-3 space-y-1 text-xs text-muted-foreground">
+                    {product.sizes.length > 0 && (
+                      <div className="flex gap-1.5">
+                        <dt className="font-medium text-foreground">Tailles :</dt>
+                        <dd>{product.sizes.join(", ")}</dd>
+                      </div>
+                    )}
+                    {product.colors.length > 0 && (
+                      <div className="flex gap-1.5">
+                        <dt className="font-medium text-foreground">Couleurs :</dt>
+                        <dd>{product.colors.join(", ")}</dd>
+                      </div>
+                    )}
+                  </dl>
+                )}
+                {product.availability && (
+                  <p className="mt-2 text-xs font-medium text-muted-foreground">
+                    {product.availability === "in_stock"
+                      ? "Disponible · impression à la demande"
+                      : "Temporairement indisponible"}
+                  </p>
+                )}
                 <div className="mt-4 flex gap-2">
                   <Button
                     className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
                     onClick={() => handleAdd(product)}
+                    disabled={product.availability === "out_of_stock"}
                   >
                     Ajouter
                   </Button>
