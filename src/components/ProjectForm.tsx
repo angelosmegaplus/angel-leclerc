@@ -418,6 +418,17 @@ export function ProjectForm({ defaultProjectType = "" }: { defaultProjectType?: 
         </div>
       </div>
 
+      <div className="mt-6">
+        <Captcha
+          value={captcha}
+          onChange={(v) => {
+            setCaptcha(v);
+            setCaptchaError(null);
+          }}
+          error={captchaError ?? undefined}
+        />
+      </div>
+
       {globalError && (
         <div className="mt-6 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
           {globalError}
