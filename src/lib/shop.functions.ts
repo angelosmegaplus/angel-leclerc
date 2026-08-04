@@ -6,7 +6,7 @@ import {
   createStripeClient,
   getStripeErrorMessage,
 } from "@/lib/stripe.server";
-import type { ShopProduct } from "@/lib/shop";
+import type { ShopCatalog, ShopProduct, ShopVariant } from "@/lib/shop";
 import { SHIPPING_CENTS } from "@/lib/shop";
 
 function publicClient() {
@@ -38,7 +38,15 @@ type ProductRow = {
   printful_sync_variant_id?: number | null;
   printful_variant_id?: number | null;
   printful_print_file_url?: string | null;
+  sizes?: unknown;
+  colors?: unknown;
+  availability?: string | null;
+  variants?: unknown;
 };
+
+function toStringList(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : [];
+}
 
 function toProduct(row: ProductRow): ShopProduct {
   return {
@@ -50,11 +58,15 @@ function toProduct(row: ProductRow): ShopProduct {
     currency: row.currency || "EUR",
     imageUrl: row.image_url,
     images: Array.isArray(row.images) ? (row.images as string[]) : [],
+    sizes: toStringList(row.sizes),
+    colors: toStringList(row.colors),
+    availability: row.availability ?? null,
+    variants: Array.isArray(row.variants) ? (row.variants as ShopVariant[]) : [],
   };
 }
 
 const PRODUCT_COLUMNS =
-  "id, slug, name, description, price_cents, currency, image_url, images, printful_sync_variant_id, printful_variant_id, printful_print_file_url";
+  "id, slug, name, description, price_cents, currency, image_url, images, printful_sync_variant_id, printful_variant_id, printful_print_file_url, sizes, colors, availability, variants";
 
 /**
  * Un produit n'est visible publiquement que s'il est réellement fabricable :
@@ -78,6 +90,57 @@ export const listShopProducts = createServerFn({ method: "GET" }).handler(
       return [];
     }
     return ((data ?? []) as ProductRow[]).filter(isSellable).map(toProduct);
+  },
+);
+
+/**
+ * Catalogue public complet : produits vendables + raison explicite lorsqu'il
+ * n'y a rien à afficher (aucun produit publié, produits incomplets, erreur).
+ */
+export const getShopCatalog = createServerFn({ method: "GET" }).handler(
+  async (): Promise<ShopCatalog> => {
+    const { data, error } = await publicClient()
+      .from("shop_products")
+      .select(`${PRODUCT_COLUMNS}, active, printful_synced_at`)
+      .order("sort_order", { ascending: true });
+    if (error) {
+      console.error("getShopCatalog:", error.message);
+      return {
+        products: [],
+        reason: "db-error",
+        message: "Le catalogue est momentanément indisponible. Réessayez dans un instant.",
+        lastSyncedAt: null,
+      };
+    }
+
+    const rows = (data ?? []) as Array<ProductRow & { active: boolean; printful_synced_at: string | null }>;
+    const lastSyncedAt =
+      rows
+        .map((r) => r.printful_synced_at)
+        .filter((v): v is string => Boolean(v))
+        .sort()
+        .pop() ?? null;
+    const products = rows.filter((r) => r.active).filter(isSellable).map(toProduct);
+
+    if (products.length > 0) {
+      return { products, reason: "none", message: null, lastSyncedAt };
+    }
+    if (rows.length === 0) {
+      return {
+        products,
+        reason: "no-products",
+        message:
+          "Aucun produit n'est encore publié dans la boutique Printful. Publiez un produit puis lancez la synchronisation.",
+        lastSyncedAt,
+      };
+    }
+    return {
+      products,
+      reason: "not-published",
+      message:
+        "Des produits existent mais ne sont pas encore vendables : il leur manque un prix, une image, une variante ou un fichier d'impression.",
+      lastSyncedAt,
+    };
   },
 );
 
