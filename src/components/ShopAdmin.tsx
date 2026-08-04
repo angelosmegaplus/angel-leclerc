@@ -113,6 +113,8 @@ function ShopAdminInner() {
     description: "",
     image_url: "",
     printful_variant_id: "",
+    printful_sync_variant_id: "",
+    printful_print_file_url: "",
   };
   const [form, setForm] = useState(emptyForm);
   const [savingProduct, setSavingProduct] = useState(false);
@@ -135,6 +137,8 @@ function ShopAdminInner() {
       description: product.description ?? "",
       image_url: product.image_url ?? "",
       printful_variant_id: product.printful_variant_id?.toString() ?? "",
+      printful_sync_variant_id: product.printful_sync_variant_id?.toString() ?? "",
+      printful_print_file_url: product.printful_print_file_url ?? "",
     });
   };
 
@@ -159,6 +163,10 @@ function ShopAdminInner() {
       printful_variant_id: form.printful_variant_id
         ? Number(form.printful_variant_id)
         : null,
+      printful_sync_variant_id: form.printful_sync_variant_id
+        ? Number(form.printful_sync_variant_id)
+        : null,
+      printful_print_file_url: form.printful_print_file_url.trim() || null,
     };
     const { error } = form.id
       ? await supabase.from("shop_products").update(payload).eq("id", form.id)
@@ -454,6 +462,22 @@ function ShopAdminInner() {
               value={form.printful_variant_id}
               onChange={(e) =>
                 setForm({ ...form, printful_variant_id: e.target.value })
+              }
+            />
+            <input
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              placeholder="ID produit synchronisé Printful (facultatif)"
+              value={form.printful_sync_variant_id}
+              onChange={(e) =>
+                setForm({ ...form, printful_sync_variant_id: e.target.value })
+              }
+            />
+            <input
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm sm:col-span-2"
+              placeholder="URL du fichier d'impression (visuel PNG haute résolution)"
+              value={form.printful_print_file_url}
+              onChange={(e) =>
+                setForm({ ...form, printful_print_file_url: e.target.value })
               }
             />
             <input
