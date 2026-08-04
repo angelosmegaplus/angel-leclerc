@@ -1,6 +1,14 @@
 import { useState } from "react";
-import { Check, Facebook, Linkedin, Link2, Mail, Share2 } from "lucide-react";
+import { Check, Facebook, Linkedin, Link2, Mail, MessageCircle, Send, Share2 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+export const SITE_URL = "https://www.angel-leclerc.fr";
 
 type Props = {
   title: string;
@@ -11,11 +19,12 @@ type Props = {
 
 export function ShareArticle({ title, slug, excerpt, className }: Props) {
   const [copied, setCopied] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const url =
     typeof window !== "undefined"
       ? `${window.location.origin}/articles/${slug}`
-      : `https://www.angel-leclerc.fr/articles/${slug}`;
+      : `${SITE_URL}/articles/${slug}`;
 
   const handleNativeShare = async () => {
     if (typeof navigator !== "undefined" && navigator.share) {
@@ -26,7 +35,7 @@ export function ShareArticle({ title, slug, excerpt, className }: Props) {
       }
       return;
     }
-    void handleCopy();
+    setOpen(true);
   };
 
   const handleCopy = async () => {
@@ -43,58 +52,68 @@ export function ShareArticle({ title, slug, excerpt, className }: Props) {
   const enc = encodeURIComponent;
   const links = [
     {
-      label: "Partager sur LinkedIn",
+      label: "LinkedIn",
       href: `https://www.linkedin.com/sharing/share-offsite/?url=${enc(url)}`,
       icon: Linkedin,
     },
     {
-      label: "Partager sur Facebook",
+      label: "Facebook",
       href: `https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`,
       icon: Facebook,
     },
     {
-      label: "Partager par e-mail",
+      label: "WhatsApp",
+      href: `https://api.whatsapp.com/send?text=${enc(`${title} ${url}`)}`,
+      icon: MessageCircle,
+    },
+    {
+      label: "X (Twitter)",
+      href: `https://twitter.com/intent/tweet?text=${enc(title)}&url=${enc(url)}`,
+      icon: Send,
+    },
+    {
+      label: "E-mail",
       href: `mailto:?subject=${enc(title)}&body=${enc(`${excerpt ? excerpt + "\n\n" : ""}${url}`)}`,
       icon: Mail,
     },
   ];
 
-  const itemClass =
-    "inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-foreground transition-colors hover:border-primary/60 hover:text-primary";
-
   return (
-    <div className={`flex flex-wrap items-center gap-2 ${className ?? ""}`}>
-      <button
-        type="button"
-        onClick={handleNativeShare}
-        className="inline-flex items-center gap-2 rounded-full border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-      >
-        <Share2 className="h-4 w-4 text-primary" /> Partager
-      </button>
-
-      {links.map((l) => (
-        <a
-          key={l.label}
-          href={l.href}
-          target="_blank"
-          rel="noreferrer"
-          aria-label={l.label}
-          title={l.label}
-          className={itemClass}
-        >
-          <l.icon className="h-4 w-4" />
-        </a>
-      ))}
-
-      <button
-        type="button"
-        onClick={handleCopy}
-        aria-label="Copier le lien de l'article"
-        title="Copier le lien"
-        className={itemClass}
-      >
-        {copied ? <Check className="h-4 w-4 text-primary" /> : <Link2 className="h-4 w-4" />}
-      </button>
-    </div>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <div className={className}>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            aria-label="Partager cet article"
+            onClick={(e) => {
+              if (typeof navigator !== "undefined" && navigator.share) {
+                e.preventDefault();
+                void handleNativeShare();
+              }
+            }}
+            className="inline-flex items-center gap-2 rounded-full border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/60 hover:text-primary"
+          >
+            <Share2 className="h-4 w-4 text-primary" /> Partager
+          </button>
+        </DropdownMenuTrigger>
+      </div>
+      <DropdownMenuContent align="start" className="w-52">
+        {links.map((l) => (
+          <DropdownMenuItem key={l.label} asChild>
+            <a href={l.href} target="_blank" rel="noreferrer" className="cursor-pointer">
+              <l.icon className="mr-2 h-4 w-4 text-primary" /> {l.label}
+            </a>
+          </DropdownMenuItem>
+        ))}
+        <DropdownMenuItem onSelect={() => void handleCopy()} className="cursor-pointer">
+          {copied ? (
+            <Check className="mr-2 h-4 w-4 text-primary" />
+          ) : (
+            <Link2 className="mr-2 h-4 w-4 text-primary" />
+          )}
+          Copier le lien
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
