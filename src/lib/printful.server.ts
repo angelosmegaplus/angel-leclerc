@@ -338,6 +338,7 @@ export interface PrintfulCatalogItem {
   source: "sync" | "template";
   externalId: string;
   name: string;
+  description: string;
   thumbnail: string | null;
   variants: PrintfulCatalogVariant[];
 }
@@ -350,6 +351,8 @@ export async function listPrintfulSyncProducts(): Promise<
   if (!list.ok) return list;
   const rows: any[] = Array.isArray(list.result) ? list.result : [];
   const items: PrintfulCatalogItem[] = [];
+  // Descriptions : lues une seule fois par produit du catalogue Printful.
+  const descriptions = new Map<number, string>();
 
   for (const row of rows) {
     const detail = await printfulRequest(`/store/products/${row.id}`);
@@ -358,10 +361,25 @@ export async function listPrintfulSyncProducts(): Promise<
     const syncVariants: any[] = Array.isArray(detail.result?.sync_variants)
       ? detail.result.sync_variants
       : [];
+
+    const catalogId = Number(syncVariants[0]?.product?.product_id) || null;
+    let description = "";
+    if (catalogId) {
+      if (!descriptions.has(catalogId)) {
+        const product = await printfulRequest(`/products/${catalogId}`);
+        descriptions.set(
+          catalogId,
+          product.ok ? String(product.result?.product?.description ?? "") : "",
+        );
+      }
+      description = descriptions.get(catalogId) ?? "";
+    }
+
     items.push({
       source: "sync",
       externalId: `sync:${row.id}`,
       name: String(syncProduct.name ?? row.name ?? "Produit Printful"),
+      description,
       thumbnail: syncProduct.thumbnail_url ?? row.thumbnail_url ?? null,
       variants: syncVariants.map((v) => ({
         syncVariantId: Number(v.id) || null,
@@ -383,41 +401,18 @@ export async function listPrintfulSyncProducts(): Promise<
   return { ok: true, items };
 }
 
-/** Créations enregistrées dans le studio Printful (modèles non publiés). */
-export async function listPrintfulTemplates(): Promise<
-  { ok: true; items: PrintfulCatalogItem[] } | { ok: false; error: string }
-> {
-  const list = await printfulRequest("/product-templates?limit=100");
-  if (!list.ok) return list;
-  const rows: any[] = Array.isArray(list.result?.items) ? list.result.items : [];
-  const items: PrintfulCatalogItem[] = [];
-
-  for (const row of rows) {
-    const detail = await printfulRequest(`/product-templates/${row.id}`);
-    if (!detail.ok) return detail;
-    const tpl = detail.result ?? {};
-    const variantIds: number[] = Array.isArray(tpl.available_variant_ids)
-      ? tpl.available_variant_ids.map((v: any) => Number(v))
-      : [];
-    const printFile =
-      (Array.isArray(tpl.placements)
-        ? tpl.placements.find((p: any) => p.layers?.[0]?.url)?.layers?.[0]?.url
-        : null) ?? null;
-    items.push({
-      source: "template",
-      externalId: `template:${row.id}`,
-      name: String(tpl.title ?? row.title ?? "Création Printful"),
-      thumbnail: tpl.mockup_file_url ?? row.mockup_file_url ?? null,
-      variants: variantIds.map((variantId) => ({
-        syncVariantId: null,
-        variantId,
-        name: String(tpl.title ?? ""),
-        priceCents: 0,
-        currency: "EUR",
-        imageUrl: tpl.mockup_file_url ?? null,
-        printFileUrl: printFile,
-      })),
-    });
-  }
-  return { ok: true, items };
+/**
+ * Enregistre le webhook s'il est absent ou pointe vers une autre URL.
+ * L'endpoint /product-templates n'est plus utilisé : il renvoie 403 avec les
+ * jetons de boutique API.
+ */
+export async function ensurePrintfulWebhook(
+  url: string,
+): Promise<{ ok: true; changed: boolean } | { ok: false; error: string }> {
+  const current = await getPrintfulWebhook();
+  if (!current.ok) return current;
+  if (current.url === url) return { ok: true, changed: false };
+  const result = await setPrintfulWebhook(url);
+  if (!result.ok) return result;
+  return { ok: true, changed: true };
 }

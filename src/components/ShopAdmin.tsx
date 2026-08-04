@@ -22,6 +22,7 @@ import {
   configurePrintfulWebhook,
   checkPrintfulSetup,
   type PrintfulDiagnostics,
+  type PrintfulSyncReport,
 } from "@/lib/shop.functions";
 import {
   getPrintfulCatalogStatus,
@@ -87,6 +88,7 @@ function ShopAdminInner() {
   const fetchCatalogStatus = useServerFn(getPrintfulCatalogStatus);
   const runCatalogSync = useServerFn(syncPrintfulCatalog);
   const [catalogSyncing, setCatalogSyncing] = useState(false);
+  const [lastReport, setLastReport] = useState<PrintfulSyncReport | null>(null);
 
   const { data: catalog, refetch: refetchCatalog } = useQuery({
     queryKey: ["admin-printful-catalog"],
@@ -98,7 +100,15 @@ function ShopAdminInner() {
   const runProductSync = async () => {
     setCatalogSyncing(true);
     try {
-      const report = await runCatalogSync({ data: undefined });
+      const report = await runCatalogSync({
+        data: {
+          baseUrl:
+            typeof window !== "undefined" && window.location.protocol === "https:"
+              ? window.location.origin
+              : undefined,
+        },
+      });
+      setLastReport(report);
       await queryClient.invalidateQueries({ queryKey: ["admin-shop-products"] });
       await queryClient.invalidateQueries({ queryKey: ["shop-products"] });
       await refetchCatalog();
@@ -112,10 +122,7 @@ function ShopAdminInner() {
         toast.success(
           `${report.created} ajouté(s), ${report.updated} mis à jour, ${report.deactivated} désactivé(s)`,
           {
-            description:
-              report.source === "template"
-                ? "Source : vos créations Printful (modèles non publiés)"
-                : "Source : produits publiés dans la boutique Printful",
+            description: `${report.productCount} produit(s) et ${report.variantCount} variante(s) publiés dans la boutique Printful`,
           },
         );
       }
@@ -372,11 +379,26 @@ function ShopAdminInner() {
             )}
             {catalog.storeAllowed && catalog.apiProductCount === 0 && (
               <p className="mt-2 text-xs text-muted-foreground">
-                Aucun produit n'est encore publié dans cette boutique API
-                {catalog.apiTemplateCount > 0
-                  ? ` (${catalog.apiTemplateCount} création(s) enregistrée(s) non publiée(s)).`
-                  : "."}
+                Aucun produit n'est encore publié dans cette boutique API.
               </p>
+            )}
+            {lastReport && (
+              <div className="mt-4 rounded-lg border border-border bg-muted/40 p-3 text-xs">
+                <p className="font-semibold text-foreground">Dernière synchronisation</p>
+                <ul className="mt-1 space-y-0.5 text-muted-foreground">
+                  <li>
+                    Produits importés : {lastReport.productCount} ({lastReport.created} ajouté(s),{" "}
+                    {lastReport.updated} mis à jour, {lastReport.deactivated} désactivé(s))
+                  </li>
+                  <li>Variantes : {lastReport.variantCount}</li>
+                  <li>Webhook Printful : {lastReport.webhook}</li>
+                  <li>Date : {new Date(lastReport.syncedAt).toLocaleString("fr-FR")}</li>
+                  <li>
+                    Erreurs :{" "}
+                    {lastReport.errors.length === 0 ? "aucune" : lastReport.errors.join(" · ")}
+                  </li>
+                </ul>
+              </div>
             )}
             {catalog.errors.length > 0 && (
               <ul className="mt-3 space-y-1">

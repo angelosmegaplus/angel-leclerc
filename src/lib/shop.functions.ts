@@ -671,7 +671,6 @@ export interface PrintfulCatalogStatus {
   stores: Array<{ id: number; name: string; type: string }>;
   apiProductCount: number;
   apiVariantCount: number;
-  apiTemplateCount: number;
   dbProductCount: number;
   lastSyncedAt: string | null;
   errors: string[];
@@ -682,7 +681,7 @@ export const getPrintfulCatalogStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<PrintfulCatalogStatus> => {
     await assertAdmin(context);
-    const { listPrintfulStores, listPrintfulSyncProducts, listPrintfulTemplates, isApiStore } =
+    const { listPrintfulStores, listPrintfulSyncProducts, isApiStore } =
       await import("@/lib/printful.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -708,8 +707,6 @@ export const getPrintfulCatalogStatus = createServerFn({ method: "POST" })
 
     const sync = storeAllowed ? await listPrintfulSyncProducts() : null;
     if (sync && !sync.ok) errors.push(sync.error);
-    const templates = storeAllowed ? await listPrintfulTemplates() : null;
-    if (templates && !templates.ok) errors.push(templates.error);
 
     const { count } = await supabaseAdmin
       .from("shop_products")
@@ -733,7 +730,6 @@ export const getPrintfulCatalogStatus = createServerFn({ method: "POST" })
       apiVariantCount: sync?.ok
         ? sync.items.reduce((total, item) => total + item.variants.length, 0)
         : 0,
-      apiTemplateCount: templates?.ok ? templates.items.length : 0,
       dbProductCount: count ?? 0,
       lastSyncedAt: (last as any)?.printful_synced_at ?? null,
       errors,
@@ -741,10 +737,13 @@ export const getPrintfulCatalogStatus = createServerFn({ method: "POST" })
   });
 
 export interface PrintfulSyncReport {
-  source: "sync" | "template" | "none";
+  source: "sync" | "none";
   created: number;
   updated: number;
   deactivated: number;
+  productCount: number;
+  variantCount: number;
+  webhook: "inchangé" | "enregistré" | "non configuré";
   incomplete: Array<{ name: string; missing: string[] }>;
   syncedAt: string;
   errors: string[];
@@ -765,16 +764,20 @@ function slugifyName(value: string) {
 /** Synchronise la boutique Printful vers la table locale (sans doublon). */
 export const syncPrintfulCatalog = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<PrintfulSyncReport> => {
+  .inputValidator((data: { baseUrl?: string } | undefined) => data ?? {})
+  .handler(async ({ data, context }): Promise<PrintfulSyncReport> => {
     await assertAdmin(context);
-    const { listPrintfulStores, listPrintfulSyncProducts, isApiStore } = await import(
-      "@/lib/printful.server"
-    );
+    const { listPrintfulStores, listPrintfulSyncProducts, isApiStore, ensurePrintfulWebhook } =
+      await import("@/lib/printful.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const syncedAt = new Date().toISOString();
     const errors: string[] = [];
     const incomplete: PrintfulSyncReport["incomplete"] = [];
+    const empty = {
+      created: 0, updated: 0, deactivated: 0, productCount: 0, variantCount: 0,
+      webhook: "non configuré" as const, incomplete, syncedAt,
+    };
 
     // Garde-fou : jamais de synchronisation depuis une boutique Squarespace,
     // Shopify ou « Personal orders ».
@@ -782,14 +785,13 @@ export const syncPrintfulCatalog = createServerFn({ method: "POST" })
     const storeList = await listPrintfulStores();
     if (!storeList.ok) {
       return {
-        source: "none", created: 0, updated: 0, deactivated: 0, incomplete,
-        syncedAt, errors: [storeList.error],
+        source: "none", ...empty, errors: [storeList.error],
       };
     }
     const current = storeList.stores.find((s) => String(s.id) === storeId) ?? null;
     if (!current || !isApiStore(current)) {
       return {
-        source: "none", created: 0, updated: 0, deactivated: 0, incomplete, syncedAt,
+        source: "none", ...empty,
         errors: [
           current
             ? `Synchronisation bloquée : « ${current.name} » (${current.type}) n'est pas une boutique API dédiée.`
@@ -803,10 +805,23 @@ export const syncPrintfulCatalog = createServerFn({ method: "POST" })
     // Uniquement les produits réellement publiés dans la boutique API.
     const items = sync.ok ? sync.items : [];
     const source: PrintfulSyncReport["source"] = items.length > 0 ? "sync" : "none";
+    const variantCount = items.reduce((total, item) => total + item.variants.length, 0);
+
+    // Webhook : enregistré automatiquement s'il manque ou pointe ailleurs.
+    let webhook: PrintfulSyncReport["webhook"] = "non configuré";
+    const webhookToken = process.env["PRINTFUL_WEBHOOK_TOKEN"];
+    if (!webhookToken) errors.push("PRINTFUL_WEBHOOK_TOKEN manquant : webhook non enregistré");
+    else if (data.baseUrl && /^https:\/\/[a-z0-9.-]+$/i.test(data.baseUrl)) {
+      const hook = await ensurePrintfulWebhook(
+        `${data.baseUrl}/api/public/printful/webhook?token=${encodeURIComponent(webhookToken)}`,
+      );
+      if (!hook.ok) errors.push(`Webhook : ${hook.error}`);
+      else webhook = hook.changed ? "enregistré" : "inchangé";
+    }
 
     const { data: existingRows } = await supabaseAdmin
       .from("shop_products")
-      .select("id, slug, printful_external_id, price_cents, active");
+      .select("id, slug, printful_external_id, price_cents, active, description");
     const existing = (existingRows ?? []) as any[];
     const byExternal = new Map(
       existing.filter((r) => r.printful_external_id).map((r) => [r.printful_external_id, r]),
@@ -831,6 +846,10 @@ export const syncPrintfulCatalog = createServerFn({ method: "POST" })
       const payload: Record<string, unknown> = {
         name: item.name,
         image_url: item.thumbnail ?? variant?.imageUrl ?? null,
+        images: item.variants
+          .map((v) => v.imageUrl)
+          .filter((url): url is string => Boolean(url))
+          .slice(0, 8),
         currency: variant?.currency || "EUR",
         printful_variant_id: variant?.variantId ?? null,
         printful_sync_variant_id: variant?.syncVariantId ?? null,
@@ -843,6 +862,8 @@ export const syncPrintfulCatalog = createServerFn({ method: "POST" })
       if (row) {
         // Prix Printful prioritaire ; sinon on garde le prix saisi en admin.
         if (variant?.priceCents) payload["price_cents"] = variant.priceCents;
+        // La description Printful ne remplace jamais un texte saisi en admin.
+        if (item.description && !row.description) payload["description"] = item.description;
         if (missing.length === 0) payload["active"] = true;
         const { error } = await supabaseAdmin
           .from("shop_products")
@@ -856,7 +877,7 @@ export const syncPrintfulCatalog = createServerFn({ method: "POST" })
         const { error } = await supabaseAdmin.from("shop_products").insert({
           ...(payload as any),
           slug,
-          description: "",
+          description: item.description,
           price_cents: variant?.priceCents ?? 0,
           sort_order: index,
           // Un produit incomplet reste masqué tant qu'il n'est pas finalisé.
@@ -879,5 +900,8 @@ export const syncPrintfulCatalog = createServerFn({ method: "POST" })
       if (!error) deactivated += 1;
     }
 
-    return { source, created, updated, deactivated, incomplete, syncedAt, errors };
+    return {
+      source, created, updated, deactivated, incomplete, syncedAt, errors,
+      productCount: items.length, variantCount, webhook,
+    };
   });
