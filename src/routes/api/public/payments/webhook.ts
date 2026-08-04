@@ -113,11 +113,34 @@ async function fulfillSession(session: any, env: StripeEnv) {
   const printfulItems = requested
     .map((i) => {
       const product = bySlug.get(i.s);
-      const variantId = product?.printful_variant_id as number | null | undefined;
-      if (!variantId) return null;
-      return { variant_id: variantId, quantity: i.q, name: product?.name as string };
+      if (!product) return null;
+      // Produit synchronisé Printful : le visuel est déjà attaché côté Printful.
+      const syncVariantId = product.printful_sync_variant_id as number | null;
+      if (syncVariantId) {
+        return {
+          sync_variant_id: syncVariantId,
+          quantity: i.q,
+          name: product.name as string,
+        };
+      }
+      // Sinon : variante catalogue + fichier d'impression (exigé par Printful).
+      const variantId = product.printful_variant_id as number | null;
+      const fileUrl = product.printful_print_file_url as string | null;
+      if (!variantId || !fileUrl) return null;
+      return {
+        variant_id: variantId,
+        quantity: i.q,
+        name: product.name as string,
+        files: [{ url: fileUrl }],
+      };
     })
-    .filter(Boolean) as Array<{ variant_id: number; quantity: number; name: string }>;
+    .filter(Boolean) as Array<{
+    variant_id?: number;
+    sync_variant_id?: number;
+    quantity: number;
+    name: string;
+    files?: Array<{ url: string }>;
+  }>;
 
   const events = appendEvent([], {
     at: new Date().toISOString(),
@@ -175,7 +198,7 @@ async function fulfillSession(session: any, env: StripeEnv) {
   } else {
     const reason = !recipient.ok
       ? recipient.error
-      : "Aucun article relié à une variante Printful";
+      : "Aucun article prêt pour Printful (variante ou fichier d'impression manquant)";
     await supabaseAdmin
       .from("shop_orders")
       .update({
