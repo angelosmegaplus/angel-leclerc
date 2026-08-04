@@ -328,6 +328,9 @@ export interface PrintfulCatalogVariant {
   syncVariantId: number | null;
   variantId: number | null;
   name: string;
+  size: string | null;
+  color: string | null;
+  available: boolean;
   priceCents: number;
   currency: string;
   imageUrl: string | null;
@@ -337,6 +340,8 @@ export interface PrintfulCatalogVariant {
 export interface PrintfulCatalogItem {
   source: "sync" | "template";
   externalId: string;
+  syncProductId: number | null;
+  catalogProductId: number | null;
   name: string;
   description: string;
   thumbnail: string | null;
@@ -353,6 +358,20 @@ export async function listPrintfulSyncProducts(): Promise<
   const items: PrintfulCatalogItem[] = [];
   // Descriptions : lues une seule fois par produit du catalogue Printful.
   const descriptions = new Map<number, string>();
+  // Taille / couleur : lues une seule fois par variante catalogue.
+  const variantInfo = new Map<number, { size: string | null; color: string | null }>();
+
+  const readVariantInfo = async (variantId: number | null) => {
+    if (!variantId) return { size: null, color: null };
+    if (!variantInfo.has(variantId)) {
+      const detail = await printfulRequest(`/products/variant/${variantId}`);
+      variantInfo.set(variantId, {
+        size: detail.ok ? (detail.result?.variant?.size ?? null) : null,
+        color: detail.ok ? (detail.result?.variant?.color ?? null) : null,
+      });
+    }
+    return variantInfo.get(variantId)!;
+  };
 
   for (const row of rows) {
     const detail = await printfulRequest(`/store/products/${row.id}`);
@@ -375,27 +394,43 @@ export async function listPrintfulSyncProducts(): Promise<
       description = descriptions.get(catalogId) ?? "";
     }
 
-    items.push({
-      source: "sync",
-      externalId: `sync:${row.id}`,
-      name: String(syncProduct.name ?? row.name ?? "Produit Printful"),
-      description,
-      thumbnail: syncProduct.thumbnail_url ?? row.thumbnail_url ?? null,
-      variants: syncVariants.map((v) => ({
+    const variants: PrintfulCatalogVariant[] = [];
+    for (const v of syncVariants) {
+      if (v.is_ignored === true) continue;
+      const variantId = Number(v.variant_id) || null;
+      const info = await readVariantInfo(variantId);
+      variants.push({
         syncVariantId: Number(v.id) || null,
-        variantId: Number(v.variant_id) || null,
+        variantId,
         name: String(v.name ?? ""),
+        size: v.size ?? info.size ?? null,
+        color: v.color ?? info.color ?? null,
+        available: String(v.availability_status ?? "active") === "active",
         priceCents: Math.round(Number(v.retail_price ?? 0) * 100),
         currency: String(v.currency ?? "EUR"),
         imageUrl:
           (Array.isArray(v.files)
             ? v.files.find((f: any) => f.type === "preview")?.preview_url
-            : null) ?? syncProduct.thumbnail_url ?? null,
+            : null) ??
+          v.product?.image ??
+          syncProduct.thumbnail_url ??
+          null,
         printFileUrl:
           (Array.isArray(v.files)
             ? v.files.find((f: any) => f.type !== "preview")?.url
             : null) ?? null,
-      })),
+      });
+    }
+
+    items.push({
+      source: "sync",
+      externalId: `sync:${row.id}`,
+      syncProductId: Number(syncProduct.id ?? row.id) || null,
+      catalogProductId: catalogId,
+      name: String(syncProduct.name ?? row.name ?? "Produit Printful"),
+      description,
+      thumbnail: syncProduct.thumbnail_url ?? row.thumbnail_url ?? null,
+      variants,
     });
   }
   return { ok: true, items };
