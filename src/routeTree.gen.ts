@@ -16,6 +16,7 @@ import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
 import { Route as EntrepriseRouteImport } from './routes/entreprise'
 import { Route as DesabonnementRouteImport } from './routes/desabonnement'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as ConfirmationAbonnementRouteImport } from './routes/confirmation-abonnement'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -64,6 +65,11 @@ const DesabonnementRoute = DesabonnementRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfirmationAbonnementRoute = ConfirmationAbonnementRouteImport.update({
+  id: '/confirmation-abonnement',
+  path: '/confirmation-abonnement',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -140,6 +146,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/confirmation-abonnement': typeof ConfirmationAbonnementRoute
   '/contact': typeof ContactRoute
   '/desabonnement': typeof DesabonnementRoute
   '/entreprise': typeof EntrepriseRoute
@@ -162,6 +169,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/confirmation-abonnement': typeof ConfirmationAbonnementRoute
   '/contact': typeof ContactRoute
   '/desabonnement': typeof DesabonnementRoute
   '/entreprise': typeof EntrepriseRoute
@@ -185,6 +193,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/confirmation-abonnement': typeof ConfirmationAbonnementRoute
   '/contact': typeof ContactRoute
   '/desabonnement': typeof DesabonnementRoute
   '/entreprise': typeof EntrepriseRoute
@@ -209,6 +218,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/confirmation-abonnement'
     | '/contact'
     | '/desabonnement'
     | '/entreprise'
@@ -231,6 +241,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/confirmation-abonnement'
     | '/contact'
     | '/desabonnement'
     | '/entreprise'
@@ -253,6 +264,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/confirmation-abonnement'
     | '/contact'
     | '/desabonnement'
     | '/entreprise'
@@ -276,6 +288,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
+  ConfirmationAbonnementRoute: typeof ConfirmationAbonnementRoute
   ContactRoute: typeof ContactRoute
   DesabonnementRoute: typeof DesabonnementRoute
   EntrepriseRoute: typeof EntrepriseRoute
@@ -344,6 +357,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/confirmation-abonnement': {
+      id: '/confirmation-abonnement'
+      path: '/confirmation-abonnement'
+      fullPath: '/confirmation-abonnement'
+      preLoaderRoute: typeof ConfirmationAbonnementRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -444,6 +464,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
+  ConfirmationAbonnementRoute: ConfirmationAbonnementRoute,
   ContactRoute: ContactRoute,
   DesabonnementRoute: DesabonnementRoute,
   EntrepriseRoute: EntrepriseRoute,
