@@ -152,6 +152,75 @@ export type Database = {
         }
         Relationships: []
       }
+      content_items: {
+        Row: {
+          bullets: Json
+          created_at: string
+          description: string | null
+          extra_label: string | null
+          extra_value: string | null
+          icon: string | null
+          id: string
+          link_label: string | null
+          logo_domain: string | null
+          logo_url: string | null
+          period: string | null
+          published: boolean
+          section: string
+          sort_order: number
+          subtitle: string | null
+          tags: Json
+          title: string
+          updated_at: string
+          url: string | null
+          videos: Json
+        }
+        Insert: {
+          bullets?: Json
+          created_at?: string
+          description?: string | null
+          extra_label?: string | null
+          extra_value?: string | null
+          icon?: string | null
+          id?: string
+          link_label?: string | null
+          logo_domain?: string | null
+          logo_url?: string | null
+          period?: string | null
+          published?: boolean
+          section: string
+          sort_order?: number
+          subtitle?: string | null
+          tags?: Json
+          title: string
+          updated_at?: string
+          url?: string | null
+          videos?: Json
+        }
+        Update: {
+          bullets?: Json
+          created_at?: string
+          description?: string | null
+          extra_label?: string | null
+          extra_value?: string | null
+          icon?: string | null
+          id?: string
+          link_label?: string | null
+          logo_domain?: string | null
+          logo_url?: string | null
+          period?: string | null
+          published?: boolean
+          section?: string
+          sort_order?: number
+          subtitle?: string | null
+          tags?: Json
+          title?: string
+          updated_at?: string
+          url?: string | null
+          videos?: Json
+        }
+        Relationships: []
+      }
       page_views: {
         Row: {
           country: string | null
