@@ -136,8 +136,8 @@ export const estimateShippingRates = createServerFn({ method: "POST" })
     },
   )
   .handler(async ({ data }): Promise<{ rates: ShippingQuote[]; estimated: boolean }> => {
-    const quotes = await quoteShipping(data.items, data.destination);
-    return quotes;
+    const { quoteShipping } = await import("@/lib/shop-shipping.server");
+    return quoteShipping(data.items, data.destination);
   });
 
 export const createShopCheckout = createServerFn({ method: "POST" })
@@ -194,6 +194,7 @@ export const createShopCheckout = createServerFn({ method: "POST" })
       });
 
       // Frais de port réels Printful pour la destination saisie par le client.
+      const { quoteShipping } = await import("@/lib/shop-shipping.server");
       const shipping = await quoteShipping(data.items, data.destination);
       const shippingOptions = shipping.rates.slice(0, 5).map((rate) => ({
         shipping_rate_data: {
