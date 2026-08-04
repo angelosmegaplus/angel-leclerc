@@ -1,3 +1,14 @@
+export interface ShopVariant {
+  syncVariantId: number | null;
+  variantId: number | null;
+  name: string;
+  size: string | null;
+  color: string | null;
+  available: boolean;
+  priceCents: number;
+  imageUrl: string | null;
+}
+
 export interface ShopProduct {
   id: string;
   slug: string;
@@ -7,6 +18,24 @@ export interface ShopProduct {
   currency: string;
   imageUrl: string | null;
   images: string[];
+  sizes: string[];
+  colors: string[];
+  availability: string | null;
+  variants: ShopVariant[];
+}
+
+/** Raison pour laquelle la boutique n'affiche aucun produit. */
+export type ShopEmptyReason =
+  | "none"
+  | "no-products"
+  | "not-published"
+  | "db-error";
+
+export interface ShopCatalog {
+  products: ShopProduct[];
+  reason: ShopEmptyReason;
+  message: string | null;
+  lastSyncedAt: string | null;
 }
 
 export function formatPrice(cents: number, currency = "EUR") {

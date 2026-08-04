@@ -26,6 +26,20 @@ export const Route = createFileRoute("/api/public/printful/webhook")({
         }
 
         const type = String(payload?.type ?? "");
+
+        // Catalogue automatique : tout produit publié, modifié ou supprimé
+        // chez Printful déclenche une resynchronisation immédiate.
+        if (
+          type === "product_synced" ||
+          type === "product_updated" ||
+          type === "product_deleted" ||
+          type === "stock_updated"
+        ) {
+          const { syncPrintfulCatalogToDb } = await import("@/lib/shop-catalog.server");
+          const report = await syncPrintfulCatalogToDb({});
+          return Response.json({ received: true, catalog: report });
+        }
+
         const order = payload?.data?.order ?? payload?.data?.shipment?.order ?? null;
         const shipment = payload?.data?.shipment ?? null;
         const printfulId = order?.id ? String(order.id) : null;
