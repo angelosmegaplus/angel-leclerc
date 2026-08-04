@@ -36,7 +36,9 @@ async function fulfillSession(session: any, env: StripeEnv) {
 
   const { data: products } = await supabaseAdmin
     .from("shop_products")
-    .select("slug, name, printful_variant_id")
+    .select(
+      "slug, name, printful_variant_id, printful_sync_variant_id, printful_print_file_url",
+    )
     .in(
       "slug",
       requested.map((i) => i.s),

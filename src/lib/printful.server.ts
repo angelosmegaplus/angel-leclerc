@@ -17,9 +17,11 @@ export interface PrintfulRecipient {
 }
 
 export interface PrintfulLine {
-  variant_id: number;
+  variant_id?: number;
+  sync_variant_id?: number;
   quantity: number;
   name?: string;
+  files?: Array<{ url: string }>;
 }
 
 /** Normalise une adresse Stripe vers le format attendu par Printful. */
