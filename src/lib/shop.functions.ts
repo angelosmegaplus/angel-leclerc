@@ -83,12 +83,70 @@ export const getShopProduct = createServerFn({ method: "GET" })
 
 type CheckoutResult = { clientSecret: string } | { error: string };
 
+const ALLOWED_COUNTRIES = [
+  "FR", "BE", "LU", "CH", "DE", "ES", "IT", "NL", "PT", "AT", "IE", "DK", "SE", "FI", "PL",
+] as const;
+
+export interface ShippingQuote {
+  id: string;
+  name: string;
+  amountCents: number;
+  currency: string;
+  minDays: number | null;
+  maxDays: number | null;
+}
+
+type Destination = { country: string; postalCode: string; city?: string; state?: string };
+
+function validateDestination(d: Destination): Destination {
+  const country = (d.country ?? "").toUpperCase();
+  if (!(ALLOWED_COUNTRIES as readonly string[]).includes(country)) {
+    throw new Error("Pays de livraison non desservi");
+  }
+  const postalCode = (d.postalCode ?? "").trim();
+  if (!/^[A-Za-z0-9][A-Za-z0-9 -]{1,11}$/.test(postalCode)) {
+    throw new Error("Code postal invalide");
+  }
+  return {
+    country,
+    postalCode,
+    city: (d.city ?? "").trim().slice(0, 80),
+    state: (d.state ?? "").trim().slice(0, 10).toUpperCase(),
+  };
+}
+
+/**
+ * Frais de port réels renvoyés par Printful pour la destination saisie.
+ * Repli sur un tarif forfaitaire si Printful est indisponible.
+ */
+export const estimateShippingRates = createServerFn({ method: "POST" })
+  .inputValidator(
+    (data: {
+      items: Array<{ slug: string; quantity: number }>;
+      destination: Destination;
+    }) => {
+      if (!Array.isArray(data.items) || data.items.length === 0) throw new Error("Panier vide");
+      for (const item of data.items) {
+        if (!/^[a-z0-9-]{1,80}$/.test(item.slug)) throw new Error("Référence invalide");
+        if (!Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 20) {
+          throw new Error("Quantité invalide");
+        }
+      }
+      return { items: data.items, destination: validateDestination(data.destination) };
+    },
+  )
+  .handler(async ({ data }): Promise<{ rates: ShippingQuote[]; estimated: boolean }> => {
+    const { quoteShipping } = await import("@/lib/shop-shipping.server");
+    return quoteShipping(data.items, data.destination);
+  });
+
 export const createShopCheckout = createServerFn({ method: "POST" })
   .inputValidator(
     (data: {
       items: Array<{ slug: string; quantity: number }>;
       returnUrl: string;
       environment: StripeEnv;
+      destination: Destination;
     }) => {
       if (!Array.isArray(data.items) || data.items.length === 0) {
         throw new Error("Panier vide");
@@ -101,7 +159,7 @@ export const createShopCheckout = createServerFn({ method: "POST" })
         }
       }
       if (!/^https?:\/\//.test(data.returnUrl)) throw new Error("URL de retour invalide");
-      return data;
+      return { ...data, destination: validateDestination(data.destination) };
     },
   )
   .handler(async ({ data }): Promise<CheckoutResult> => {
@@ -128,42 +186,75 @@ export const createShopCheckout = createServerFn({ method: "POST" })
               ...(product.image_url ? { images: [product.image_url as string] } : {}),
             },
             unit_amount: product.price_cents as number,
+            // Prix affichés TTC : la TVA calculée par Stripe est incluse dedans.
+            tax_behavior: "inclusive",
           },
           quantity: item.quantity,
         };
       });
 
+      // Frais de port réels Printful pour la destination saisie par le client.
+      const { quoteShipping } = await import("@/lib/shop-shipping.server");
+      const shipping = await quoteShipping(data.items, data.destination);
+      const shippingOptions = shipping.rates.slice(0, 5).map((rate) => ({
+        shipping_rate_data: {
+          type: "fixed_amount" as const,
+          display_name: rate.name,
+          fixed_amount: {
+            amount: rate.amountCents,
+            currency: (rate.currency || "EUR").toLowerCase(),
+          },
+          tax_behavior: "inclusive" as const,
+          ...(rate.minDays && rate.maxDays
+            ? {
+                delivery_estimate: {
+                  minimum: { unit: "business_day" as const, value: rate.minDays },
+                  maximum: { unit: "business_day" as const, value: rate.maxDays },
+                },
+              }
+            : {}),
+        },
+      }));
+
       const stripe = createStripeClient(data.environment);
-      const session = await stripe.checkout.sessions.create({
+      const params: any = {
         mode: "payment",
         ui_mode: "embedded_page",
         return_url: data.returnUrl,
         line_items: lineItems,
         payment_intent_data: { description: "Commande boutique ALC!" },
         shipping_address_collection: {
-          allowed_countries: ["FR", "BE", "LU", "CH", "DE", "ES", "IT", "NL", "PT"],
+          allowed_countries: [data.destination.country],
         },
         phone_number_collection: { enabled: false },
-        shipping_options: [
-          {
-            shipping_rate_data: {
-              type: "fixed_amount",
-              display_name: "Livraison standard",
-              fixed_amount: { amount: SHIPPING_CENTS, currency: "eur" },
-              delivery_estimate: {
-                minimum: { unit: "business_day", value: 5 },
-                maximum: { unit: "business_day", value: 10 },
-              },
-            },
-          },
-        ],
+        shipping_options: shippingOptions,
+        // TVA calculée automatiquement par Stripe selon la destination.
+        automatic_tax: { enabled: true },
         metadata: {
           source: "boutique-alc",
+          destination: `${data.destination.country} ${data.destination.postalCode}`,
+          shipping_source: shipping.estimated ? "forfait" : "printful",
           items: JSON.stringify(
             data.items.map((i) => ({ s: i.slug, q: i.quantity })),
           ).slice(0, 480),
         },
-      } as any);
+      };
+
+      let session;
+      try {
+        session = await stripe.checkout.sessions.create(params);
+      } catch (taxError) {
+        // Stripe Tax pas encore activé sur le compte : on n'empêche pas la vente.
+        const message = getStripeErrorMessage(taxError);
+        if (!/tax/i.test(message)) throw taxError;
+        console.error("Stripe Tax indisponible, repli sans calcul de TVA:", message);
+        delete params.automatic_tax;
+        for (const line of params.line_items) delete line.price_data.tax_behavior;
+        for (const option of params.shipping_options) {
+          delete option.shipping_rate_data.tax_behavior;
+        }
+        session = await stripe.checkout.sessions.create(params);
+      }
 
       return { clientSecret: session.client_secret ?? "" };
     } catch (error) {

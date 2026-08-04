@@ -3,6 +3,7 @@ import type { ComponentType } from 'react'
 import { ContactConfirmationEmail } from './contact-confirmation'
 import { ContactNotificationEmail } from './contact-notification'
 import { template as orderConfirmationTemplate } from './order-confirmation'
+import { template as orderShippedTemplate } from './order-shipped'
 import { SubscribeWelcomeEmail } from './subscribe-welcome'
 import { WeeklyNewsletterEmail } from './weekly-newsletter'
 
@@ -17,6 +18,7 @@ export interface TemplateEntry {
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'order-confirmation': orderConfirmationTemplate,
+  'order-shipped': orderShippedTemplate,
   'contact-confirmation': {
     component: ContactConfirmationEmail,
     subject: 'Votre message a bien été reçu',

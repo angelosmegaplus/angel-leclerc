@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Lock, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/stores/cartStore";
-import { formatPrice, SHIPPING_CENTS } from "@/lib/shop";
+import { formatPrice } from "@/lib/shop";
 
 interface CartUiStore {
   open: boolean;
@@ -144,16 +144,19 @@ export function CartDrawer() {
                   <div className="flex items-center justify-between">
                     <dt className="text-muted-foreground">Livraison standard</dt>
                     <dd className="text-foreground">
-                      {formatPrice(SHIPPING_CENTS, currency)}
+                      <span className="text-xs">Calculée à l'étape suivante</span>
                     </dd>
                   </div>
                   <div className="flex items-center justify-between border-t border-border pt-2">
-                    <dt className="font-medium text-foreground">Total estimé</dt>
+                    <dt className="font-medium text-foreground">Sous-total</dt>
                     <dd className="font-display text-lg font-bold text-primary">
-                      {formatPrice(subtotal + SHIPPING_CENTS, currency)}
+                      {formatPrice(subtotal, currency)}
                     </dd>
                   </div>
                 </dl>
+                <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+                  Frais de port et TVA calculés selon votre adresse avant le paiement.
+                </p>
               </div>
               <Button
                 size="lg"

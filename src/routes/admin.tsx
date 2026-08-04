@@ -22,6 +22,7 @@ import {
   BarChart3,
   LayoutList,
   ShoppingBag,
+  FileText,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { ShopAdmin } from "@/components/ShopAdmin";
@@ -331,8 +332,11 @@ function AdminPage() {
               Espace personnel
             </p>
             <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-              Mes publications
+              Tableau de bord
             </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Publications, messages, boutique et statistiques au même endroit.
+            </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="outline" size="sm">
@@ -633,34 +637,53 @@ function AdminPage() {
           </form>
         ) : (
           <>
-            <div className="mt-8 flex flex-wrap gap-2">
-              {(
-                [
-                  ["articles", `Articles (${articles.length})`],
-                  ["messages", `Messages${unreadCount ? ` (${unreadCount})` : ""}`],
-                  ["abonnes", `Abonnés (${subscribers.length})`],
-                  ["contenus", "Parcours & services"],
-                  ["avis", "Avis et soutiens"],
-                  ["boutique", "Boutique"],
-                  ["stats", "Statistiques"],
-                ] as const
-              ).map(([key, label]) => (
-                <Button
-                  key={key}
-                  size="sm"
-                  variant={tab === key ? "default" : "outline"}
-                  onClick={() => setTab(key)}
-                >
-                  {key === "messages" && <Mail className="mr-2 h-4 w-4" />}
-                  {key === "abonnes" && <Users className="mr-2 h-4 w-4" />}
-                  {key === "stats" && <BarChart3 className="mr-2 h-4 w-4" />}
-                  {key === "contenus" && <LayoutList className="mr-2 h-4 w-4" />}
-                  {key === "avis" && <Star className="mr-2 h-4 w-4" />}
-                  {key === "boutique" && <ShoppingBag className="mr-2 h-4 w-4" />}
-                  {label}
-                </Button>
-              ))}
-            </div>
+            <nav
+              aria-label="Sections de l'espace personnel"
+              className="sticky top-2 z-20 mt-8 -mx-1 overflow-x-auto rounded-2xl border border-border bg-card/80 p-1.5 backdrop-blur supports-[backdrop-filter]:bg-card/60"
+            >
+              <div className="flex min-w-max gap-1">
+                {(
+                  [
+                    ["articles", "Articles", FileText, articles.length],
+                    ["messages", "Messages", Mail, unreadCount],
+                    ["abonnes", "Abonnés", Users, subscribers.length],
+                    ["contenus", "Parcours & services", LayoutList, 0],
+                    ["avis", "Avis et soutiens", Star, 0],
+                    ["boutique", "Boutique", ShoppingBag, 0],
+                    ["stats", "Statistiques", BarChart3, 0],
+                  ] as const
+                ).map(([key, label, Icon, count]) => {
+                  const active = tab === key;
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setTab(key)}
+                      aria-current={active ? "page" : undefined}
+                      className={`group inline-flex items-center gap-2 whitespace-nowrap rounded-xl px-3.5 py-2 text-sm font-medium transition-colors ${
+                        active
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {label}
+                      {count > 0 && (
+                        <span
+                          className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums ${
+                            active
+                              ? "bg-primary-foreground/20 text-primary-foreground"
+                              : "bg-muted text-foreground/70 group-hover:bg-background"
+                          }`}
+                        >
+                          {count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </nav>
 
             {tab === "stats" && <AdminStats />}
 

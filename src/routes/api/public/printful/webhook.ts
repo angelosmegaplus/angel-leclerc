@@ -37,7 +37,9 @@ export const Route = createFileRoute("/api/public/printful/webhook")({
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const query = supabaseAdmin
           .from("shop_orders")
-          .select("id, events, printful_status");
+          .select(
+            "id, events, printful_status, customer_email, customer_name, items, shipping, printful_shipped_at",
+          );
         const { data: row } = externalId
           ? await query.eq("id", externalId).maybeSingle()
           : await query.eq("printful_order_id", printfulId as string).maybeSingle();
@@ -75,8 +77,55 @@ export const Route = createFileRoute("/api/public/printful/webhook")({
           })
           .eq("id", (row as any).id);
 
+        // Notification d'expédition : envoyée une seule fois, avec le suivi.
+        const alreadyNotified = (row as any).printful_shipped_at != null;
+        if (type === "package_shipped" && !alreadyNotified) {
+          await notifyShipment(row, shipment);
+        }
+
         return Response.json({ received: true });
       },
     },
   },
 });
+
+/** Envoie au client l'e-mail « commande expédiée » avec le numéro de suivi. */
+async function notifyShipment(row: any, shipment: any) {
+  const email = row.customer_email as string | null;
+  if (!email) return;
+  try {
+    const { sendTemplateEmail } = await import("@/lib/email-templates/send-email");
+    const shippingAddress = row.shipping
+      ? [
+          row.shipping.line1,
+          row.shipping.line2,
+          [row.shipping.postal_code, row.shipping.city].filter(Boolean).join(" "),
+          row.shipping.country,
+        ]
+          .filter(Boolean)
+          .join("\n")
+      : undefined;
+    const items = Array.isArray(row.items)
+      ? row.items.map((i: any) => ({
+          name: String(i.name ?? i.slug ?? "Article"),
+          quantity: Number(i.quantity ?? 1),
+        }))
+      : [];
+
+    await sendTemplateEmail("order-shipped", email, {
+      templateData: {
+        firstName: (row.customer_name ?? "").toString().split(" ")[0] || undefined,
+        orderRef: String(row.id).slice(0, 8).toUpperCase(),
+        carrier: shipment?.carrier ?? shipment?.service ?? undefined,
+        trackingNumber: shipment?.tracking_number ?? undefined,
+        trackingUrl: shipment?.tracking_url ?? undefined,
+        items,
+        shippingAddress,
+      },
+      idempotencyKey: `order-shipped-${row.id}-${shipment?.tracking_number ?? "no-tracking"}`,
+    });
+  } catch (error) {
+    // L'e-mail ne doit jamais faire échouer le webhook (Printful réessaierait).
+    console.error("Notification d'expédition impossible:", error);
+  }
+}
