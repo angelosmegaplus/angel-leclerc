@@ -69,6 +69,12 @@ function BoutiquePage() {
           Objets imprimés à la demande, fabriqués et expédiés par notre partenaire
           d'impression. Paiement sécurisé par carte, Apple Pay ou Google Pay.
         </p>
+        <Link
+          to="/boutique/suivi"
+          className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+        >
+          Suivre ma commande
+        </Link>
       </header>
 
       {products.length > 0 && (
