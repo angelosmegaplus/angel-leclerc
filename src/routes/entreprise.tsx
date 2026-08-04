@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -25,8 +26,10 @@ import {
   Globe,
   Smartphone,
   Building2,
+  type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { contentQuery, iconFor, toStringList } from "@/lib/content";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import heroImage from "@/assets/hero-illustration.jpg";
 import revolutInvoiceImage from "@/assets/revolut-invoice-example.jpg";
@@ -433,6 +436,31 @@ function Intro() {
 }
 
 function Services() {
+  const { data: dbMain } = useQuery(contentQuery("service"));
+  const { data: dbExtra } = useQuery(contentQuery("service_extra"));
+  const services =
+    dbMain && dbMain.length
+      ? dbMain.map((i) => ({
+          icon: iconFor(i.icon, Layers),
+          title: i.title,
+          intro: i.description ?? "",
+          items: toStringList(i.bullets),
+        }))
+      : mainServices;
+  const extras: {
+    icon: LucideIcon;
+    label: string;
+    price: string;
+    hint?: React.ReactNode;
+  }[] =
+    dbExtra && dbExtra.length
+      ? dbExtra.map((i) => ({
+          icon: iconFor(i.icon, Sparkles),
+          label: i.title,
+          price: i.extra_value ?? "sur devis",
+          hint: i.description ?? undefined,
+        }))
+      : extraServices;
   return (
     <section id="services" className="section-padding bg-background">
       <div className="container-tight">
@@ -449,7 +477,7 @@ function Services() {
         </AnimatedSection>
 
         <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {mainServices.map((s, i) => (
+          {services.map((s, i) => (
             <AnimatedSection key={s.title} delay={i * 0.08}>
               <article className="flex h-full flex-col rounded-2xl border border-border bg-card p-8">
                 <h3 className="font-display text-xl font-bold text-foreground md:text-2xl flex items-start gap-2">
@@ -520,7 +548,7 @@ function Services() {
               Réalisables seuls ou intégrés à une mission globale.
             </p>
             <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {extraServices.map((e) => {
+              {extras.map((e) => {
                 const Icon = e.icon;
                 return (
                   <li

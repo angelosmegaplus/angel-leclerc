@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { ClientOnly } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 const MobilityMap = lazy(() => import("@/components/MobilityMap"));
 import {
   MapPin,
@@ -39,6 +40,13 @@ import { Logo } from "@/components/Logo";
 import { YouTubeEmbed } from "@/components/YouTubeEmbed";
 import photo from "@/assets/angel-leclerc.png.asset.json";
 import talisLogo from "@/assets/talis-logo.png";
+import {
+  contentQuery,
+  iconFor,
+  toStringList,
+  toVideoList,
+  type ContentItem,
+} from "@/lib/content";
 
 function SectionHeader({
   eyebrow,
@@ -442,6 +450,20 @@ const projects: Project[] = [
 ];
 
 export function RealisationsSection() {
+  const { data } = useQuery(contentQuery("projet"));
+  const list: Project[] =
+    data && data.length
+      ? data.map((i: ContentItem) => ({
+          title: i.title,
+          context: i.description ?? "",
+          missions: toStringList(i.bullets),
+          tools: i.extra_label ?? "",
+          results: i.extra_value ?? "",
+          href: i.url ?? undefined,
+          linkLabel: i.link_label ?? undefined,
+          icon: iconFor(i.icon, PenLine),
+        }))
+      : projects;
   return (
     <AnimatedSection>
       <section id="realisations" className="section-padding bg-background scroll-mt-24">
@@ -453,7 +475,7 @@ export function RealisationsSection() {
           />
 
           <div className="mt-12 grid gap-6 md:grid-cols-2">
-            {projects.map((p) => (
+            {list.map((p) => (
               <Card key={p.title} className="flex h-full flex-col">
                 <div className="flex items-center gap-4">
                   <div className="inline-flex rounded-xl bg-primary/10 p-3 text-primary">
@@ -467,29 +489,41 @@ export function RealisationsSection() {
                   {p.context}
                 </p>
 
-                <p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                  Missions réalisées
-                </p>
-                <ul className="mt-2 space-y-1.5 text-sm leading-relaxed text-foreground/90">
-                  {p.missions.map((m) => (
-                    <li key={m} className="flex gap-2">
-                      <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-primary" />
-                      <span>{m}</span>
-                    </li>
-                  ))}
-                </ul>
+                {p.missions.length > 0 && (
+                  <>
+                    <p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                      Missions réalisées
+                    </p>
+                    <ul className="mt-2 space-y-1.5 text-sm leading-relaxed text-foreground/90">
+                      {p.missions.map((m) => (
+                        <li key={m} className="flex gap-2">
+                          <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-primary" />
+                          <span>{m}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
 
-                <p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                  Outils utilisés
-                </p>
-                <p className="mt-1 text-sm text-foreground/80">{p.tools}</p>
+                {p.tools && (
+                  <>
+                    <p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                      Outils utilisés
+                    </p>
+                    <p className="mt-1 text-sm text-foreground/80">{p.tools}</p>
+                  </>
+                )}
 
-                <p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                  Résultats
-                </p>
-                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                  {p.results}
-                </p>
+                {p.results && (
+                  <>
+                    <p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                      Résultats
+                    </p>
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                      {p.results}
+                    </p>
+                  </>
+                )}
                 {p.href ? (
                   <a
                     href={p.href}
@@ -667,6 +701,18 @@ function ExperienceLogo({ exp }: { exp: Experience }) {
 }
 
 function ExperiencesSection() {
+  const { data } = useQuery(contentQuery("experience"));
+  const list: Experience[] =
+    data && data.length
+      ? data.map((i: ContentItem) => ({
+          role: i.title,
+          org: i.subtitle ?? "",
+          period: i.period ?? "",
+          missions: toStringList(i.bullets),
+          domain: i.logo_domain ?? undefined,
+          fallbackIcon: iconFor(i.icon, Building2),
+        }))
+      : experiences;
   return (
     <AnimatedSection>
       <section id="experiences" className="section-padding bg-background scroll-mt-24">
@@ -674,8 +720,8 @@ function ExperiencesSection() {
           <SectionHeader eyebrow="Parcours" title="Expériences professionnelles" />
 
           <div className="mt-12 space-y-4">
-            {experiences.map((exp) => (
-              <Card key={exp.role}>
+            {list.map((exp, idx) => (
+              <Card key={`${exp.role}-${idx}`}>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                   <ExperienceLogo exp={exp} />
                   <div className="flex-1">
@@ -710,6 +756,8 @@ function ExperiencesSection() {
 }
 
 function FormationSection() {
+  const { data } = useQuery(contentQuery("formation"));
+  const list = data ?? [];
   return (
     <AnimatedSection>
       <section id="formation" className="section-padding bg-muted/40 scroll-mt-24">
@@ -720,82 +768,89 @@ function FormationSection() {
             intro="Mon parcours actuel et mon projet de poursuite d'études en alternance."
           />
 
-          <div className="mt-12">
-            <Card>
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                <span className="inline-flex h-[64px] w-[120px] shrink-0 items-center justify-center rounded-xl border border-border bg-background p-2">
-                  <img
-                    src="/logos/mfr.asso.fr.svg"
-                    alt="Logo des Maisons familiales rurales (MFR)"
-                    className="h-full w-full object-contain"
-                    loading="lazy"
-                  />
-                </span>
-                <div className="flex-1">
-                  <div className="flex flex-col justify-between gap-1 sm:flex-row sm:items-baseline">
-                    <h3 className="font-display text-lg font-semibold text-foreground">
-                      Baccalauréat professionnel Métiers de l'accueil
-                    </h3>
-                    <span className="text-xs font-medium uppercase tracking-widest text-primary">
-                      Sept. 2023 – Juil. 2025
+          <div className="mt-12 space-y-6">
+            {list.map((item) => {
+              const bullets = toStringList(item.bullets);
+              const tags = toStringList(item.tags);
+              const videos = toVideoList(item.videos);
+              return (
+                <Card key={item.id}>
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                    <span className="inline-flex h-[64px] w-[120px] shrink-0 items-center justify-center rounded-xl border border-border bg-background p-2">
+                      {item.logo_domain ? (
+                        <Logo domain={item.logo_domain} alt={item.subtitle ?? item.title} size={52} />
+                      ) : (
+                        <img
+                          src="/logos/mfr.asso.fr.svg"
+                          alt="Logo des Maisons familiales rurales (MFR)"
+                          className="h-full w-full object-contain"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                      )}
                     </span>
+                    <div className="flex-1">
+                      <div className="flex flex-col justify-between gap-1 sm:flex-row sm:items-baseline">
+                        <h3 className="font-display text-lg font-semibold text-foreground">
+                          {item.title}
+                        </h3>
+                        {item.period && (
+                          <span className="text-xs font-medium uppercase tracking-widest text-primary">
+                            {item.period}
+                          </span>
+                        )}
+                      </div>
+                      {item.subtitle && (
+                        <p className="text-sm font-medium text-foreground/80">
+                          {item.subtitle}
+                        </p>
+                      )}
+                      {item.description && (
+                        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                          {item.description}
+                        </p>
+                      )}
+                      {bullets.length > 0 && (
+                        <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
+                          {bullets.map((b) => (
+                            <li key={b} className="flex items-start gap-2">
+                              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                              {b}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {tags.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {tags.map((t) => (
+                            <span
+                              key={t}
+                              className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary"
+                            >
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {videos.length > 0 && (
+                        <>
+                          <p className="mt-6 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                            En vidéo
+                          </p>
+                          <div className="mt-3 grid gap-4 md:grid-cols-2">
+                            {videos.map((v) => (
+                              <YouTubeEmbed key={v.id} id={v.id} title={v.title ?? item.title} />
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-sm font-medium text-foreground/80">
-                    MFR du Périgord noir — Salignac
-                  </p>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                    Diplôme de niveau 4 préparé en alternance dans une Maison
-                    familiale rurale (MFR), un établissement de formation par
-                    alternance qui associe périodes en entreprise et semaines de
-                    cours en petits groupes. Le baccalauréat professionnel
-                    Métiers de l'accueil
-                    forme à l'accueil physique et téléphonique, à la relation
-                    client, à la vente de services et de produits, à la gestion
-                    de l'information et au travail administratif au sein d'une
-                    structure recevant du public.
-                  </p>
-                  <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
-                    <li className="flex items-start gap-2">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                      Accueil, orientation et conseil des visiteurs et des clients
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                      Vente, gestion des demandes et suivi administratif
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                      Communication écrite et orale, outils numériques et bureautiques
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                      Deux ans en alternance à l'Office de Tourisme Val de Sioule
-                    </li>
-                  </ul>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                      Mention Bien
-                    </span>
-                    <span className="rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground">
-                      SST — Sauveteur secouriste du travail
-                    </span>
-                  </div>
-                  <p className="mt-6 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                    En vidéo
-                  </p>
-                  <div className="mt-3 grid gap-4 md:grid-cols-2">
-                    <YouTubeEmbed
-                      id="knKUojBLR2I"
-                      title="Baccalauréat professionnel Métiers de l'accueil — présentation"
-                    />
-                    <YouTubeEmbed
-                      id="03vn5fWIIOQ"
-                      title="MFR du Périgord noir — Salignac"
-                    />
-                  </div>
-                </div>
-              </div>
-            </Card>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -841,6 +896,17 @@ const certifications: {
 ];
 
 function CertificationsSection() {
+  const { data } = useQuery(contentQuery("certification"));
+  const list =
+    data && data.length
+      ? data.map((i: ContentItem) => ({
+          name: i.title,
+          org: i.subtitle ?? "",
+          detail: i.description ?? "",
+          domain: i.logo_domain ?? undefined,
+          icon: iconFor(i.icon, Award),
+        }))
+      : certifications;
   return (
     <AnimatedSection>
       <section id="certifications" className="section-padding bg-background scroll-mt-24">
@@ -848,8 +914,8 @@ function CertificationsSection() {
           <SectionHeader eyebrow="Attestations" title="Certifications" />
 
           <div className="mt-12 grid gap-4 md:grid-cols-2">
-            {certifications.map((c) => (
-              <Card key={c.name} className="flex items-start gap-4">
+            {list.map((c, idx) => (
+              <Card key={`${c.name}-${idx}`} className="flex items-start gap-4">
                 {c.domain ? (
                   <Logo domain={c.domain} alt={c.org} size={48} />
                 ) : (
@@ -914,6 +980,17 @@ const engagements: {
 ];
 
 function EngagementsSection() {
+  const { data } = useQuery(contentQuery("engagement"));
+  const list =
+    data && data.length
+      ? data.map((i: ContentItem) => ({
+          title: i.title,
+          org: i.subtitle ?? "",
+          period: i.period ?? undefined,
+          description: i.description ?? "",
+          icon: iconFor(i.icon, HeartHandshake),
+        }))
+      : engagements;
   return (
     <AnimatedSection>
       <section id="engagements" className="section-padding bg-muted/40 scroll-mt-24">
@@ -921,8 +998,8 @@ function EngagementsSection() {
           <SectionHeader eyebrow="Vie associative" title="Engagements associatifs" />
 
           <div className="mt-12 grid gap-6 md:grid-cols-2">
-            {engagements.map((e) => (
-              <Card key={e.org} className="flex h-full flex-col">
+            {list.map((e, idx) => (
+              <Card key={`${e.org}-${idx}`} className="flex h-full flex-col">
                 <div className="flex items-start gap-4">
                   <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <e.icon size={22} />
