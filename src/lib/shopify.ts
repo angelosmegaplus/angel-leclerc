@@ -83,7 +83,7 @@ export async function storefrontApiRequest(
   });
 
   if (response.status === 402) {
-    toast.error("Boutique momentanément indisponible", {
+    toast.error("Boutique ALC! momentanément indisponible", {
       description: "L'accès au catalogue nécessite un forfait Shopify actif.",
     });
     return null;

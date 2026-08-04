@@ -58,7 +58,7 @@ export function CartDrawer() {
               Votre panier est vide pour le moment.
             </p>
             <Button asChild variant="outline" onClick={() => setOpen(false)}>
-              <a href="/boutique">Voir la boutique</a>
+              <a href="/boutique">Voir la boutique ALC!</a>
             </Button>
           </div>
         ) : (

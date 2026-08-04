@@ -4,9 +4,9 @@ import { ShoppingBag, Loader2 } from "lucide-react";
 import { fetchProducts, formatPrice } from "@/lib/shopify";
 import { AnimatedSection } from "@/components/AnimatedSection";
 
-const TITLE = "Boutique — Angel Leclerc Communication";
+const TITLE = "ALC! — La boutique d'Angel Leclerc Communication";
 const DESCRIPTION =
-  "La boutique d'Angel Leclerc Communication : produits, tailles et couleurs disponibles, paiement sécurisé et livraison suivie.";
+  "ALC!, la boutique d'Angel Leclerc Communication : produits, tailles et couleurs disponibles, paiement sécurisé et livraison suivie.";
 
 export const Route = createFileRoute("/boutique/")({
   head: () => ({
@@ -36,10 +36,10 @@ function BoutiquePage() {
         <div className="container-tight py-14 sm:py-20">
           <AnimatedSection>
             <p className="text-xs uppercase tracking-[0.2em] text-primary">
-              Boutique
+              ALC!
             </p>
             <h1 className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-              Les produits Angel Leclerc Communication
+              ALC! — la boutique
             </h1>
             <p className="mt-4 max-w-2xl text-muted-foreground">
               Commande en quelques clics, paiement sécurisé et suivi de commande
@@ -60,7 +60,7 @@ function BoutiquePage() {
         {isError && (
           <div className="rounded-2xl border border-border bg-card p-8 text-center">
             <p className="text-foreground">
-              La boutique est momentanément indisponible.
+              La boutique ALC! est momentanément indisponible.
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
               Merci de réessayer dans quelques instants.
@@ -75,7 +75,7 @@ function BoutiquePage() {
               Aucun produit pour le moment
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Les articles publiés dans la boutique apparaîtront ici
+              Les articles publiés dans la boutique ALC! apparaîtront ici
               automatiquement.
             </p>
           </div>
