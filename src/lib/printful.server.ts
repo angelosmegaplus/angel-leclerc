@@ -184,30 +184,6 @@ export async function getPrintfulShippingRates(input: {
   return { ok: true, rates };
 }
 
-async function _unusedLegacyCreateOrder(input: {
-  externalId: string;
-  recipient: PrintfulRecipient;
-  items: PrintfulLine[];
-  confirm: boolean;
-}): Promise<{ ok: true; id: string; status: string } | { ok: false; error: string }> {
-  if (input.items.length === 0) return { ok: false, error: "Aucun article imprimable" };
-
-  const response = await printfulRequest(`/orders?confirm=${input.confirm ? 1 : 0}`, {
-    method: "POST",
-    body: JSON.stringify({
-      external_id: input.externalId,
-      recipient: input.recipient,
-      items: input.items,
-    }),
-  });
-  if (!response.ok) return response;
-  return {
-    ok: true,
-    id: String(response.result?.id ?? ""),
-    status: response.result?.status ?? "draft",
-  };
-}
-
 /** Récupère une commande Printful déjà créée à partir de notre identifiant interne. */
 export async function findPrintfulOrderByExternalId(
   externalId: string,
