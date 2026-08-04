@@ -301,94 +301,24 @@ export function FeedbackBlock({
                     Cette contribution est totalement facultative.
                   </p>
 
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {settings.amountsCents.map((cents) => (
-                      <Button
-                        key={cents}
-                        type="button"
-                        size="sm"
-                        variant={amount === cents && step === "support" ? "default" : "outline"}
-                        onClick={() => {
-                          setAmount(cents);
-                          setStep("support");
-                        }}
-                      >
-                        {euros(cents)}
-                      </Button>
-                    ))}
-                    {settings.hasCustomLink && (
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant={step === "custom" ? "default" : "outline"}
-                        onClick={() => {
-                          setStep("custom");
-                          setAmount(null);
-                        }}
-                      >
-                        Montant libre
-                      </Button>
-                    )}
+                  {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
+                  <div className="mt-4 flex flex-col gap-2">
+                    <Button className="w-full" disabled={redirecting} onClick={goToPayment}>
+                      {redirecting ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Heart className="mr-2 h-4 w-4" />
+                      )}
+                      Faire un don
+                    </Button>
+                    <Button variant="outline" className="w-full" onClick={close}>
+                      Non merci
+                    </Button>
                   </div>
-
-                  {step === "custom" && (
-                    <div className="mt-4">
-                      <Label htmlFor="fb-amount" className="text-sm">
-                        Montant en euros (minimum {euros(settings.minAmountCents)})
-                      </Label>
-                      <Input
-                        id="fb-amount"
-                        inputMode="decimal"
-                        value={customValue}
-                        onChange={(e) => setCustomValue(e.target.value)}
-                        placeholder="Ex. 15"
-                        className="mt-2 max-w-[160px]"
-                      />
-                    </div>
-                  )}
-
-                  {(() => {
-                    const cents = step === "custom" ? customCents : amount;
-                    const valid =
-                      cents !== null && cents >= settings.minAmountCents && cents <= 500000;
-                    return (
-                      <>
-                        {valid && (
-                          <p className="mt-4 text-sm font-medium text-foreground">
-                            Montant sélectionné : {euros(cents!)}
-                          </p>
-                        )}
-                        {cents !== null && !valid && (
-                          <p className="mt-4 text-sm text-destructive">
-                            Montant invalide. Choisissez un montant entre{" "}
-                            {euros(settings.minAmountCents)} et {euros(500000)}.
-                          </p>
-                        )}
-                        {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
-                        <div className="mt-4 flex flex-col gap-2">
-                          <Button
-                            className="w-full"
-                            disabled={!valid || redirecting}
-                            onClick={() => valid && goToPayment(cents!)}
-                          >
-                            {redirecting ? (
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            ) : (
-                              <Heart className="mr-2 h-4 w-4" />
-                            )}
-                            Continuer vers le paiement
-                          </Button>
-                          <Button variant="outline" className="w-full" onClick={close}>
-                            Non merci
-                          </Button>
-                        </div>
-                        <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
-                          Paiement sécurisé traité par Revolut. Aucune coordonnée bancaire n'est
-                          demandée ni conservée sur ce site.
-                        </p>
-                      </>
-                    );
-                  })()}
+                  <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+                    Vous choisissez librement le montant sur la page de paiement sécurisée Revolut.
+                    Aucune coordonnée bancaire n'est demandée ni conservée sur ce site.
+                  </p>
                 </div>
               ) : (
                 <div className="mt-6 flex flex-col gap-3">
