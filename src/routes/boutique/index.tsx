@@ -89,11 +89,11 @@ function BoutiquePage() {
       <section className="border-b border-border bg-card">
         <div className="container-tight py-14 sm:py-20">
           <AnimatedSection>
-            <p className="text-xs uppercase tracking-[0.2em] text-primary">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
               ALC!
             </p>
             <h1 className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-              ALC! — la boutique
+              Boutique
             </h1>
             <p className="mt-4 max-w-2xl text-muted-foreground">
               Commande en quelques clics, paiement sécurisé et suivi de commande
