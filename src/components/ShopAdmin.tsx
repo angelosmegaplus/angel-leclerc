@@ -48,6 +48,26 @@ const PRINTFUL_LABEL: Record<string, string> = {
 };
 
 export function ShopAdmin() {
+  return <ShopAdminInner />;
+}
+
+function DiagRow({ ok, label, detail }: { ok: boolean; label: string; detail: string }) {
+  return (
+    <li className="flex items-start gap-2">
+      {ok ? (
+        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+      ) : (
+        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+      )}
+      <span>
+        <span className="font-medium text-foreground">{label}</span>{" "}
+        <span className="text-muted-foreground">— {detail}</span>
+      </span>
+    </li>
+  );
+}
+
+function ShopAdminInner() {
   const queryClient = useQueryClient();
   const fetchOrders = useServerFn(listShopOrders);
   const refund = useServerFn(refundShopOrder);
