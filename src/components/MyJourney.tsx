@@ -773,7 +773,6 @@ function FormationSection() {
               const bullets = toStringList(item.bullets);
               const tags = toStringList(item.tags);
               const videos = toVideoList(item.videos);
-              const FallbackIcon = iconFor(item.icon, GraduationCap);
               return (
                 <Card key={item.id}>
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
@@ -791,7 +790,6 @@ function FormationSection() {
                           }}
                         />
                       )}
-                      {!item.logo_domain && false && <FallbackIcon size={22} />}
                     </span>
                     <div className="flex-1">
                       <div className="flex flex-col justify-between gap-1 sm:flex-row sm:items-baseline">
