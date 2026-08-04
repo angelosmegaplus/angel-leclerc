@@ -364,3 +364,118 @@ export const configurePrintfulWebhook = createServerFn({ method: "POST" })
     );
     return result.ok ? { ok: true } : { error: result.error };
   });
+
+export interface PrintfulDiagnostics {
+  tokenConfigured: boolean;
+  storeId: string | null;
+  storeName: string | null;
+  stores: Array<{ id: number; name: string; type: string }>;
+  webhookUrl: string | null;
+  webhookTypes: string[];
+  variants: Array<{ slug: string; name: string; variantId: number | null; valid: boolean; detail: string }>;
+  errors: string[];
+}
+
+/** Diagnostic complet de la chaîne Stripe → backend → Printful. */
+export const checkPrintfulSetup = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<PrintfulDiagnostics> => {
+    await assertAdmin(context);
+    const { listPrintfulStores, checkPrintfulVariant, getPrintfulWebhook } = await import(
+      "@/lib/printful.server"
+    );
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const errors: string[] = [];
+    const tokenConfigured = Boolean(process.env["PRINTFUL_API_KEY"]);
+    const storeId = process.env["PRINTFUL_STORE_ID"] ?? null;
+
+    let stores: Array<{ id: number; name: string; type: string }> = [];
+    if (tokenConfigured) {
+      const list = await listPrintfulStores();
+      if (list.ok) stores = list.stores;
+      else errors.push(list.error);
+    } else {
+      errors.push("Jeton API Printful absent");
+    }
+    const storeName =
+      stores.find((s) => String(s.id) === storeId)?.name ?? (storeId ? null : null);
+    if (storeId && stores.length > 0 && !storeName) {
+      errors.push(`La boutique ${storeId} n'est pas accessible avec ce jeton`);
+    }
+
+    let webhookUrl: string | null = null;
+    let webhookTypes: string[] = [];
+    if (tokenConfigured) {
+      const hook = await getPrintfulWebhook();
+      if (hook.ok) {
+        webhookUrl = hook.url;
+        webhookTypes = hook.types;
+      } else errors.push(hook.error);
+    }
+
+    const { data: rows } = await supabaseAdmin
+      .from("shop_products")
+      .select(
+        "slug, name, printful_variant_id, printful_sync_variant_id, printful_print_file_url, active",
+      )
+      .eq("active", true);
+
+    const variants: PrintfulDiagnostics["variants"] = [];
+    for (const row of (rows ?? []) as any[]) {
+      const variantId = (row.printful_variant_id as number | null) ?? null;
+      const syncVariantId = (row.printful_sync_variant_id as number | null) ?? null;
+      const fileUrl = (row.printful_print_file_url as string | null) ?? null;
+      if (syncVariantId) {
+        variants.push({
+          slug: row.slug,
+          name: row.name,
+          variantId: syncVariantId,
+          valid: true,
+          detail: "Produit synchronisé Printful (visuel géré par Printful)",
+        });
+        continue;
+      }
+      if (!variantId) {
+        variants.push({
+          slug: row.slug,
+          name: row.name,
+          variantId: null,
+          valid: false,
+          detail: "Aucune variante Printful renseignée",
+        });
+        continue;
+      }
+      const check = tokenConfigured
+        ? await checkPrintfulVariant(variantId)
+        : ({ ok: false, error: "Jeton absent" } as const);
+      if (check.ok && !fileUrl) {
+        variants.push({
+          slug: row.slug,
+          name: row.name,
+          variantId,
+          valid: false,
+          detail: `${check.name} — fichier d'impression manquant`,
+        });
+        continue;
+      }
+      variants.push({
+        slug: row.slug,
+        name: row.name,
+        variantId,
+        valid: check.ok,
+        detail: check.ok ? check.name : check.error,
+      });
+    }
+
+    return {
+      tokenConfigured,
+      storeId,
+      storeName,
+      stores,
+      webhookUrl,
+      webhookTypes,
+      variants,
+      errors,
+    };
+  });

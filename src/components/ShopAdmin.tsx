@@ -1,7 +1,17 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, PackageCheck, RefreshCw, Truck, Undo2, Webhook } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Loader2,
+  PackageCheck,
+  RefreshCw,
+  Stethoscope,
+  Truck,
+  Undo2,
+  Webhook,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,6 +19,8 @@ import {
   refundShopOrder,
   syncPrintfulOrder,
   configurePrintfulWebhook,
+  checkPrintfulSetup,
+  type PrintfulDiagnostics,
 } from "@/lib/shop.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPrice } from "@/lib/shop";
@@ -36,11 +48,34 @@ const PRINTFUL_LABEL: Record<string, string> = {
 };
 
 export function ShopAdmin() {
+  return <ShopAdminInner />;
+}
+
+function DiagRow({ ok, label, detail }: { ok: boolean; label: string; detail: string }) {
+  return (
+    <li className="flex items-start gap-2">
+      {ok ? (
+        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+      ) : (
+        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+      )}
+      <span>
+        <span className="font-medium text-foreground">{label}</span>{" "}
+        <span className="text-muted-foreground">— {detail}</span>
+      </span>
+    </li>
+  );
+}
+
+function ShopAdminInner() {
   const queryClient = useQueryClient();
   const fetchOrders = useServerFn(listShopOrders);
   const refund = useServerFn(refundShopOrder);
   const sync = useServerFn(syncPrintfulOrder);
   const setWebhook = useServerFn(configurePrintfulWebhook);
+  const runDiagnostics = useServerFn(checkPrintfulSetup);
+  const [diagnostics, setDiagnostics] = useState<PrintfulDiagnostics | null>(null);
+  const [diagLoading, setDiagLoading] = useState(false);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [busyOrder, setBusyOrder] = useState<string | null>(null);
 
@@ -78,6 +113,8 @@ export function ShopAdmin() {
     description: "",
     image_url: "",
     printful_variant_id: "",
+    printful_sync_variant_id: "",
+    printful_print_file_url: "",
   };
   const [form, setForm] = useState(emptyForm);
   const [savingProduct, setSavingProduct] = useState(false);
@@ -100,6 +137,8 @@ export function ShopAdmin() {
       description: product.description ?? "",
       image_url: product.image_url ?? "",
       printful_variant_id: product.printful_variant_id?.toString() ?? "",
+      printful_sync_variant_id: product.printful_sync_variant_id?.toString() ?? "",
+      printful_print_file_url: product.printful_print_file_url ?? "",
     });
   };
 
@@ -124,6 +163,10 @@ export function ShopAdmin() {
       printful_variant_id: form.printful_variant_id
         ? Number(form.printful_variant_id)
         : null,
+      printful_sync_variant_id: form.printful_sync_variant_id
+        ? Number(form.printful_sync_variant_id)
+        : null,
+      printful_print_file_url: form.printful_print_file_url.trim() || null,
     };
     const { error } = form.id
       ? await supabase.from("shop_products").update(payload).eq("id", form.id)
@@ -186,8 +229,70 @@ export function ShopAdmin() {
     else toast.success("Webhook Printful activé pour ce domaine");
   };
 
+  const checkSetup = async () => {
+    setDiagLoading(true);
+    try {
+      setDiagnostics(await runDiagnostics({ data: undefined }));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Diagnostic impossible");
+    } finally {
+      setDiagLoading(false);
+    }
+  };
+
   return (
     <div className="mt-8 space-y-10">
+      <section className="rounded-xl border border-border bg-card p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="font-display text-lg font-bold text-foreground">
+            Diagnostic Stripe → Printful
+          </h2>
+          <Button size="sm" variant="outline" onClick={checkSetup} disabled={diagLoading}>
+            {diagLoading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Stethoscope className="mr-2 h-4 w-4" />
+            )}
+            Vérifier la connexion
+          </Button>
+        </div>
+
+        {diagnostics && (
+          <ul className="mt-4 space-y-2 text-sm">
+            <DiagRow
+              ok={diagnostics.tokenConfigured}
+              label="Jeton API Printful"
+              detail={diagnostics.tokenConfigured ? "Configuré (serveur uniquement)" : "Absent"}
+            />
+            <DiagRow
+              ok={Boolean(diagnostics.storeName)}
+              label="Boutique Printful"
+              detail={
+                diagnostics.storeName
+                  ? `${diagnostics.storeName} (#${diagnostics.storeId})`
+                  : "Aucune boutique sélectionnée"
+              }
+            />
+            <DiagRow
+              ok={Boolean(diagnostics.webhookUrl)}
+              label="Webhook Printful"
+              detail={diagnostics.webhookUrl ?? "Non enregistré — cliquez sur « Activer le suivi Printful »"}
+            />
+            {diagnostics.variants.map((v) => (
+              <DiagRow
+                key={v.slug}
+                ok={v.valid}
+                label={`Variante — ${v.name}`}
+                detail={v.variantId ? `#${v.variantId} · ${v.detail}` : v.detail}
+              />
+            ))}
+            {diagnostics.errors.map((error) => (
+              <DiagRow key={error} ok={false} label="Erreur" detail={error} />
+            ))}
+          </ul>
+        )}
+      </section>
+
       <section>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-display text-lg font-bold text-foreground">Commandes</h2>
@@ -357,6 +462,22 @@ export function ShopAdmin() {
               value={form.printful_variant_id}
               onChange={(e) =>
                 setForm({ ...form, printful_variant_id: e.target.value })
+              }
+            />
+            <input
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              placeholder="ID produit synchronisé Printful (facultatif)"
+              value={form.printful_sync_variant_id}
+              onChange={(e) =>
+                setForm({ ...form, printful_sync_variant_id: e.target.value })
+              }
+            />
+            <input
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm sm:col-span-2"
+              placeholder="URL du fichier d'impression (visuel PNG haute résolution)"
+              value={form.printful_print_file_url}
+              onChange={(e) =>
+                setForm({ ...form, printful_print_file_url: e.target.value })
               }
             />
             <input

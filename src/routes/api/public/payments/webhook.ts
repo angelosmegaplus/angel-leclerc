@@ -3,6 +3,7 @@ import { type StripeEnv, createStripeClient, verifyWebhook } from "@/lib/stripe.
 import {
   createPrintfulOrder,
   cancelPrintfulOrder,
+  findPrintfulOrderByExternalId,
   toPrintfulRecipient,
 } from "@/lib/printful.server";
 import { appendEvent } from "@/lib/shop-orders.server";
@@ -16,6 +17,14 @@ async function fulfillSession(session: any, env: StripeEnv) {
   const full = await stripe.checkout.sessions.retrieve(session.id, {
     expand: ["line_items"],
   });
+
+  // 5. Vérification du statut réel du paiement auprès de Stripe (pas de confiance
+  //    dans le corps de l'événement, et rien n'est produit tant que c'est "unpaid").
+  if (full.payment_status === "unpaid") {
+    console.log("Session non payée, production différée:", full.id);
+    return;
+  }
+
   const lineItems = (full as any).line_items?.data ?? [];
 
   let requested: Array<{ s: string; q: number }> = [];
@@ -27,7 +36,9 @@ async function fulfillSession(session: any, env: StripeEnv) {
 
   const { data: products } = await supabaseAdmin
     .from("shop_products")
-    .select("slug, name, printful_variant_id")
+    .select(
+      "slug, name, printful_variant_id, printful_sync_variant_id, printful_print_file_url",
+    )
     .in(
       "slug",
       requested.map((i) => i.s),
@@ -66,11 +77,30 @@ async function fulfillSession(session: any, env: StripeEnv) {
       },
       { onConflict: "stripe_session_id" },
     )
-    .select("id")
+    .select("id, printful_order_id, printful_status")
     .single();
 
   if (orderError) {
     console.error("Order upsert failed:", orderError.message);
+    return;
+  }
+
+  // 6. Idempotence : une commande déjà transmise (ou en cours de transmission)
+  //    n'est jamais renvoyée à Printful, même si Stripe rejoue le webhook.
+  if ((order as any).printful_order_id) {
+    console.log("Printful order already exists for", full.id);
+    return;
+  }
+  const { data: claim } = await supabaseAdmin
+    .from("shop_orders")
+    .update({ printful_status: "submitting" })
+    .eq("id", order.id)
+    .is("printful_order_id", null)
+    .neq("printful_status", "submitting")
+    .select("id")
+    .maybeSingle();
+  if (!claim) {
+    console.log("Printful submission already in progress for", full.id);
     return;
   }
 
@@ -83,11 +113,34 @@ async function fulfillSession(session: any, env: StripeEnv) {
   const printfulItems = requested
     .map((i) => {
       const product = bySlug.get(i.s);
-      const variantId = product?.printful_variant_id as number | null | undefined;
-      if (!variantId) return null;
-      return { variant_id: variantId, quantity: i.q, name: product?.name as string };
+      if (!product) return null;
+      // Produit synchronisé Printful : le visuel est déjà attaché côté Printful.
+      const syncVariantId = product.printful_sync_variant_id as number | null;
+      if (syncVariantId) {
+        return {
+          sync_variant_id: syncVariantId,
+          quantity: i.q,
+          name: product.name as string,
+        };
+      }
+      // Sinon : variante catalogue + fichier d'impression (exigé par Printful).
+      const variantId = product.printful_variant_id as number | null;
+      const fileUrl = product.printful_print_file_url as string | null;
+      if (!variantId || !fileUrl) return null;
+      return {
+        variant_id: variantId,
+        quantity: i.q,
+        name: product.name as string,
+        files: [{ url: fileUrl }],
+      };
     })
-    .filter(Boolean) as Array<{ variant_id: number; quantity: number; name: string }>;
+    .filter(Boolean) as Array<{
+    variant_id?: number;
+    sync_variant_id?: number;
+    quantity: number;
+    name: string;
+    files?: Array<{ url: string }>;
+  }>;
 
   const events = appendEvent([], {
     at: new Date().toISOString(),
@@ -96,12 +149,20 @@ async function fulfillSession(session: any, env: StripeEnv) {
   });
 
   if (recipient.ok && printfulItems.length > 0) {
-    const result = await createPrintfulOrder({
+    // En sandbox, la commande est créée en brouillon (confirm=0) : aucune
+    // fabrication ni facturation Printful pendant les tests.
+    let result = await createPrintfulOrder({
       externalId: order.id as string,
       recipient: recipient.recipient,
       items: printfulItems,
-      confirm: true,
+      confirm: env === "live",
     });
+    if (!result.ok) {
+      // Filet de sécurité : si Printful a déjà cette commande (external_id
+      // dupliqué suite à un rejeu), on la récupère au lieu d'en créer une autre.
+      const existing = await findPrintfulOrderByExternalId(order.id as string);
+      if (existing.ok && existing.id) result = existing;
+    }
 
     await supabaseAdmin
       .from("shop_orders")
@@ -111,11 +172,14 @@ async function fulfillSession(session: any, env: StripeEnv) {
               printful_order_id: result.id,
               printful_status: result.status,
               printful_updated_at: new Date().toISOString(),
-              status: "in_production",
+              status: env === "live" ? "in_production" : "paid",
               error_message: null,
               events: appendEvent(events, {
                 at: new Date().toISOString(),
-                label: "Commande envoyée en production",
+                label:
+                  env === "live"
+                    ? "Commande envoyée en production"
+                    : "Commande créée en brouillon (test)",
                 detail: `Printful #${result.id}`,
               }),
             }
@@ -134,7 +198,7 @@ async function fulfillSession(session: any, env: StripeEnv) {
   } else {
     const reason = !recipient.ok
       ? recipient.error
-      : "Aucun article relié à une variante Printful";
+      : "Aucun article prêt pour Printful (variante ou fichier d'impression manquant)";
     await supabaseAdmin
       .from("shop_orders")
       .update({

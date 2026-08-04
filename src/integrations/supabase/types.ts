@@ -484,6 +484,8 @@ export type Database = {
           images: Json
           name: string
           price_cents: number
+          printful_print_file_url: string | null
+          printful_sync_variant_id: number | null
           printful_variant_id: number | null
           slug: string
           sort_order: number
@@ -499,6 +501,8 @@ export type Database = {
           images?: Json
           name: string
           price_cents: number
+          printful_print_file_url?: string | null
+          printful_sync_variant_id?: number | null
           printful_variant_id?: number | null
           slug: string
           sort_order?: number
@@ -514,6 +518,8 @@ export type Database = {
           images?: Json
           name?: string
           price_cents?: number
+          printful_print_file_url?: string | null
+          printful_sync_variant_id?: number | null
           printful_variant_id?: number | null
           slug?: string
           sort_order?: number

@@ -17,9 +17,11 @@ export interface PrintfulRecipient {
 }
 
 export interface PrintfulLine {
-  variant_id: number;
+  variant_id?: number;
+  sync_variant_id?: number;
   quantity: number;
   name?: string;
+  files?: Array<{ url: string }>;
 }
 
 /** Normalise une adresse Stripe vers le format attendu par Printful. */
@@ -79,12 +81,15 @@ async function printfulRequest(
 ): Promise<{ ok: true; result: any } | { ok: false; error: string }> {
   const apiKey = process.env["PRINTFUL_API_KEY"];
   if (!apiKey) return { ok: false, error: "PRINTFUL_API_KEY manquante" };
+  const storeId = process.env["PRINTFUL_STORE_ID"];
   try {
     const response = await fetch(`${PRINTFUL_API}${path}`, {
       ...init,
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
+        // Jeton de compte : Printful exige la boutique cible sur chaque appel.
+        ...(storeId ? { "X-PF-Store-Id": storeId } : {}),
         ...(init?.headers ?? {}),
       },
     });
@@ -122,6 +127,59 @@ export async function createPrintfulOrder(input: {
     ok: true,
     id: String(response.result?.id ?? ""),
     status: response.result?.status ?? "draft",
+  };
+}
+
+/** Récupère une commande Printful déjà créée à partir de notre identifiant interne. */
+export async function findPrintfulOrderByExternalId(
+  externalId: string,
+): Promise<{ ok: true; id: string; status: string } | { ok: false; error: string }> {
+  const response = await printfulRequest(
+    `/orders/@${encodeURIComponent(externalId)}`,
+  );
+  if (!response.ok) return response;
+  return {
+    ok: true,
+    id: String(response.result?.id ?? ""),
+    status: response.result?.status ?? "draft",
+  };
+}
+
+/** Liste les boutiques Printful accessibles avec le jeton configuré. */
+export async function listPrintfulStores(): Promise<
+  { ok: true; stores: Array<{ id: number; name: string; type: string }> } | { ok: false; error: string }
+> {
+  const response = await printfulRequest("/stores");
+  if (!response.ok) return response;
+  const stores = Array.isArray(response.result)
+    ? response.result.map((s: any) => ({
+        id: Number(s.id),
+        name: String(s.name ?? ""),
+        type: String(s.type ?? ""),
+      }))
+    : [];
+  return { ok: true, stores };
+}
+
+/** Vérifie qu'un identifiant de variante Printful existe réellement. */
+export async function checkPrintfulVariant(
+  variantId: number,
+): Promise<{ ok: true; name: string } | { ok: false; error: string }> {
+  const response = await printfulRequest(`/products/variant/${variantId}`);
+  if (!response.ok) return response;
+  return { ok: true, name: String(response.result?.variant?.name ?? `#${variantId}`) };
+}
+
+/** Lit l'URL de webhook actuellement enregistrée chez Printful. */
+export async function getPrintfulWebhook(): Promise<
+  { ok: true; url: string | null; types: string[] } | { ok: false; error: string }
+> {
+  const response = await printfulRequest("/webhooks");
+  if (!response.ok) return response;
+  return {
+    ok: true,
+    url: response.result?.url ?? null,
+    types: Array.isArray(response.result?.types) ? response.result.types : [],
   };
 }
 
