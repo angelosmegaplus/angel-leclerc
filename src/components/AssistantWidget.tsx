@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { MessageCircle, X, Send } from "lucide-react";
+import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { askAssistant } from "@/lib/assistant.functions";
 import {
   answer,
   WELCOME,
@@ -42,9 +44,11 @@ export function AssistantWidget() {
   const [teaser, setTeaser] = useState(false);
   const [teaserDone, setTeaserDone] = useState(false);
   const [input, setInput] = useState("");
+  const [pending, setPending] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([
     { id: nextId(), role: "assistant", reply: WELCOME },
   ]);
+  const ask = useServerFn(askAssistant);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -71,15 +75,32 @@ export function AssistantWidget() {
   const suggestions =
     last?.role === "assistant" ? (last.reply.suggestions ?? DEFAULT_SUGGESTIONS) : [];
 
-  function send(value: string) {
+  async function send(value: string) {
     const question = value.trim();
-    if (!question) return;
+    if (!question || pending) return;
     setInput("");
+    const history = messages.slice(-6).map((m) => ({
+      role: m.role,
+      content: m.reply.text.slice(0, 2000),
+    }));
     setMessages((prev) => [
       ...prev,
       { id: nextId(), role: "user", reply: { text: question } },
-      { id: nextId(), role: "assistant", reply: answer(question) },
     ]);
+    setPending(true);
+
+    const local = answer(question);
+    let reply: AssistantReply = local;
+    try {
+      const result = await ask({ data: { question: question.slice(0, 500), history } });
+      if (result?.text) {
+        reply = { text: result.text, links: local.links, suggestions: local.suggestions };
+      }
+    } catch {
+      /* repli silencieux sur le moteur local */
+    }
+    setMessages((prev) => [...prev, { id: nextId(), role: "assistant", reply }]);
+    setPending(false);
   }
 
   return (
