@@ -100,6 +100,9 @@ export function AssistantWidget() {
   const [relaySent, setRelaySent] = useState(false);
   const [relayError, setRelayError] = useState<string | null>(null);
   const [relaySending, setRelaySending] = useState(false);
+  const [briefIdx, setBriefIdx] = useState(0);
+  const [brief, setBrief] = useState<Record<string, string>>({});
+  const [briefFree, setBriefFree] = useState("");
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -172,20 +175,45 @@ export function AssistantWidget() {
   function openRelay() {
     setRelayError(null);
     setRelaySent(false);
+    setBriefIdx(0);
+    setBrief({});
+    setBriefFree("");
+    setRelay(true);
+  }
+
+  function buildBriefMessage(answers: Record<string, string>) {
     const context = messages
       .filter((m) => m.role === "user")
       .slice(-3)
       .map((m) => m.reply.text)
-      .join(" ");
-    setForm((f) => ({
-      ...f,
-      message:
-        f.message ||
-        (context
-          ? `Bonjour Angel,\n\nJ'ai échangé avec l'assistant du site au sujet de : ${context}\n\nPourriez-vous me recontacter ?`
-          : "Bonjour Angel,\n\n"),
-    }));
-    setRelay(true);
+      .join(" · ");
+    const lines = BRIEF_STEPS.filter((s) => answers[s.key]).map(
+      (s) => `- ${s.label} : ${answers[s.key]}`,
+    );
+    return [
+      "Bonjour Angel,",
+      "",
+      "Voici un résumé de mon besoin :",
+      ...lines,
+      context ? `\nSujets abordés avec l'assistant : ${context}` : "",
+      "",
+      "Pourriez-vous me recontacter ?",
+    ]
+      .filter((l) => l !== undefined)
+      .join("\n");
+  }
+
+  function answerBrief(value: string) {
+    const step = BRIEF_STEPS[briefIdx];
+    if (!step) return;
+    const next = { ...brief, ...(value ? { [step.key]: value } : {}) };
+    setBrief(next);
+    setBriefFree("");
+    const nextIdx = briefIdx + 1;
+    setBriefIdx(nextIdx);
+    if (nextIdx >= BRIEF_STEPS.length) {
+      setForm((f) => ({ ...f, message: buildBriefMessage(next) }));
+    }
   }
 
   async function submitRelay(e: React.FormEvent) {
