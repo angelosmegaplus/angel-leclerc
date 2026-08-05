@@ -85,12 +85,6 @@ function LandingPage() {
               « Donner du souffle à vos idées. »
             </p>
 
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg">
-              J'accompagne des entreprises, associations, collectivités et porteurs
-              de projet partout en France, à distance ou sur le terrain selon les
-              besoins&nbsp;: gestion de projet, conseil en communication et rédaction.
-            </p>
-
             <div className="mt-8 grid w-full max-w-md grid-cols-1 gap-3 sm:flex sm:max-w-none sm:flex-row sm:justify-center">
               <Button
                 asChild
