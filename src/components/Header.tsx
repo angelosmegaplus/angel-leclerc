@@ -1,14 +1,12 @@
 import { useState } from "react";
 import { Menu, X, Linkedin, Instagram, Facebook } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { CartButton } from "@/components/CartButton";
 import logo from "@/assets/logo.svg";
+import { Button } from "@/components/ui/button";
 
 const navLinks = [
   { href: "/", label: "Accueil" },
   { href: "/entreprise", label: "Entreprise" },
   { href: "/parcours", label: "Parcours" },
-  { href: "/boutique", label: "Boutique" },
   { href: "/articles", label: "Blog" },
   { href: "/contact", label: "Contact" },
 ];
@@ -70,7 +68,6 @@ export function Header() {
             >
               <Facebook size={20} />
             </a>
-            <CartButton />
           </div>
           <Button
             asChild
@@ -88,9 +85,6 @@ export function Header() {
         >
           {mobileOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
-        <div className="md:hidden flex items-center gap-3">
-          <CartButton className="p-2" />
-        </div>
       </div>
 
       {mobileOpen && (

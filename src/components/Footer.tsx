@@ -127,6 +127,13 @@ export function Footer() {
               >
                 Politique de confidentialité
               </Link>
+              <span aria-hidden className="text-muted-foreground/60">·</span>
+              <Link
+                to="/boutique"
+                className="text-muted-foreground/90 underline-offset-4 transition-colors hover:text-foreground hover:underline"
+              >
+                Boutique
+              </Link>
             </p>
           </div>
         </div>
