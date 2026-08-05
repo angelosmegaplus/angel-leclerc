@@ -85,15 +85,37 @@ export function AssistantWidget() {
   return (
     <>
       {!open && (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="fixed bottom-20 right-4 z-50 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-colors hover:bg-primary/90 sm:bottom-24 sm:right-6"
-          aria-label="Ouvrir l'assistant ALC"
-        >
-          <MessageCircle size={18} aria-hidden />
-          <span>Une question&nbsp;?</span>
-        </button>
+        <div className="fixed bottom-20 right-4 z-50 flex items-center gap-2 sm:bottom-24 sm:right-6">
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(true);
+              setTeaser(false);
+              setTeaserDone(true);
+            }}
+            aria-hidden={!teaser}
+            tabIndex={teaser ? 0 : -1}
+            className={`rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground shadow-sm transition-all duration-500 ease-out hover:text-foreground ${
+              teaser
+                ? "pointer-events-auto translate-x-0 opacity-100"
+                : "pointer-events-none translate-x-1 opacity-0"
+            } ${teaserDone && !teaser ? "hidden" : ""}`}
+          >
+            Une question&nbsp;?
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(true);
+              setTeaser(false);
+              setTeaserDone(true);
+            }}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            aria-label="Ouvrir l'assistant ALC"
+          >
+            <MessageCircle size={18} aria-hidden />
+          </button>
+        </div>
       )}
 
       {open && (
