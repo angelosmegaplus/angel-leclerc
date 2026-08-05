@@ -328,6 +328,69 @@ export function AssistantWidget() {
                     Revenir à l'assistant
                   </button>
                 </div>
+              ) : briefIdx < BRIEF_STEPS.length ? (
+                (() => {
+                  const step = BRIEF_STEPS[briefIdx]!;
+                  return (
+                    <div className="space-y-3">
+                      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                        Question {briefIdx + 1} / {BRIEF_STEPS.length}
+                      </p>
+                      <p className="text-sm font-medium text-foreground">{step.question}</p>
+                      {step.options && (
+                        <div className="flex flex-wrap gap-2">
+                          {step.options.map((o) => (
+                            <button
+                              key={o}
+                              type="button"
+                              onClick={() => answerBrief(o)}
+                              className="rounded-full border border-border bg-background px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+                            >
+                              {o}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {step.free && (
+                        <textarea
+                          rows={4}
+                          value={briefFree}
+                          maxLength={1000}
+                          onChange={(e) => setBriefFree(e.target.value)}
+                          placeholder="Votre message…"
+                          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+                        />
+                      )}
+                      <div className="flex items-center gap-3 pt-1">
+                        {step.free && (
+                          <button
+                            type="button"
+                            onClick={() => answerBrief(briefFree.trim())}
+                            className="rounded-full bg-primary px-4 py-2 text-xs font-medium text-primary-foreground"
+                          >
+                            Continuer
+                          </button>
+                        )}
+                        {!step.free && (
+                          <button
+                            type="button"
+                            onClick={() => answerBrief("")}
+                            className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+                          >
+                            Passer
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setRelay(false)}
+                          className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+                        >
+                          Annuler
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()
               ) : (
                 <form onSubmit={submitRelay} className="space-y-3">
                   <p className="text-xs text-muted-foreground">
