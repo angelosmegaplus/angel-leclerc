@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { ArrowRight, Briefcase, User, Sparkles, FileText } from "lucide-react";
+import { ArrowRight, Briefcase, User, Sparkles, FileText, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.svg";
 import { LatestArticles } from "@/components/LatestArticles";
