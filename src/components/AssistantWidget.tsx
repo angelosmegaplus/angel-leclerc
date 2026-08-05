@@ -182,9 +182,15 @@ export function AssistantWidget() {
               ),
             )}
             <div ref={bottomRef} />
+            {pending && (
+              <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 size={14} className="animate-spin" aria-hidden />
+                L'assistant rédige une réponse…
+              </p>
+            )}
           </div>
 
-          {suggestions.length > 0 && (
+          {suggestions.length > 0 && !pending && (
             <div className="flex flex-wrap gap-2 border-t border-border px-4 py-3">
               {suggestions.map((s) => (
                 <button
@@ -215,11 +221,12 @@ export function AssistantWidget() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Posez votre question…"
+              maxLength={500}
               className="min-w-0 flex-1 rounded-full border border-border bg-card px-4 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary"
             />
             <button
               type="submit"
-              disabled={!input.trim()}
+              disabled={!input.trim() || pending}
               className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity disabled:opacity-40"
               aria-label="Envoyer la question"
             >
@@ -228,7 +235,8 @@ export function AssistantWidget() {
           </form>
 
           <p className="border-t border-border bg-background px-4 py-2 text-[10px] leading-snug text-muted-foreground">
-            Réponses automatiques fondées uniquement sur les informations publiques de ce site.
+            Réponses générées automatiquement à partir des informations publiques de ce site.
+            Elles peuvent contenir des imprécisions&nbsp;: en cas de doute, contactez Angel.
           </p>
         </div>
       )}
