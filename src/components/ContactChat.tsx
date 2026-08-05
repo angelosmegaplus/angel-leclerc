@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { AnimatePresence, motion } from "framer-motion";
@@ -7,12 +7,19 @@ import {
   ArrowRight,
   CheckCircle2,
   FileText,
+  Info,
   Loader2,
+  Mail,
+  MessageCircleQuestion,
   Pencil,
+  Phone,
   Send,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { submitConversationalContact } from "@/lib/contact-chat.functions";
+import { askAssistant } from "@/lib/assistant.functions";
+import { answer as localAnswer } from "@/lib/assistant-engine";
 
 export type Track = "projet" | "alternance" | "autre";
 
@@ -24,7 +31,6 @@ type Step = {
   options?: readonly string[];
   optional?: boolean;
   placeholder?: string;
-  type?: "text" | "email" | "tel";
 };
 
 const PROJET_STEPS: Step[] = [
@@ -111,7 +117,7 @@ const PROJET_STEPS: Step[] = [
     optional: true,
     placeholder: "Contraintes, existant, personnes impliquées…",
   },
-  { id: "contact", question: "Comment puis-je vous répondre ?", kind: "contact" },
+  { id: "contact", question: "Comment Angel peut-il vous répondre ?", kind: "contact" },
 ];
 
 const ALTERNANCE_STEPS: Step[] = [
@@ -123,7 +129,7 @@ const ALTERNANCE_STEPS: Step[] = [
   },
   {
     id: "interlocuteur",
-    question: "Qui vous êtes, et quelle est votre fonction ?",
+    question: "Qui êtes-vous, et quelle est votre fonction ?",
     kind: "text",
     placeholder: "Ex. : Camille Martin, responsable communication",
   },
@@ -147,6 +153,7 @@ const ALTERNANCE_STEPS: Step[] = [
   {
     id: "localisation",
     question: "Où se situerait le poste ?",
+    help: "Pour l'alternance uniquement, Angel recherche autour de Sarlat-la-Canéda.",
     kind: "text",
     placeholder: "Ville ou secteur",
   },
@@ -169,21 +176,17 @@ const ALTERNANCE_STEPS: Step[] = [
     kind: "textarea",
     optional: true,
   },
-  {
-    id: "contact",
-    question: "Vos coordonnées professionnelles",
-    kind: "contact",
-  },
+  { id: "contact", question: "Vos coordonnées professionnelles", kind: "contact" },
 ];
 
 const AUTRE_STEPS: Step[] = [
   {
     id: "message",
-    question: "Je vous écoute : que souhaitez-vous me dire ou me demander ?",
+    question: "Je vous écoute : que souhaitez-vous dire ou demander à Angel ?",
     kind: "textarea",
     placeholder: "Écrivez librement…",
   },
-  { id: "contact", question: "Comment puis-je vous répondre ?", kind: "contact" },
+  { id: "contact", question: "Comment Angel peut-il vous répondre ?", kind: "contact" },
 ];
 
 const TRACKS: Record<Track, { label: string; steps: Step[]; intro: string }> = {
@@ -191,28 +194,51 @@ const TRACKS: Record<Track, { label: string; steps: Step[]; intro: string }> = {
     label: "Parler d'un projet de communication",
     steps: PROJET_STEPS,
     intro:
-      "Avec plaisir. Quelques questions rapides pour bien cerner votre besoin — vous pouvez revenir en arrière à tout moment.",
+      "Très bien. Je vais préparer un récapitulatif clair pour Angel. Quelques questions, une par une — et vous pouvez m'interrompre pour poser une question à tout moment.",
   },
   alternance: {
     label: "Me contacter pour une alternance",
     steps: ALTERNANCE_STEPS,
     intro:
-      "Merci beaucoup. Je recherche une alternance en BTS Communication pour la rentrée 2026, autour de Sarlat-la-Canéda pour la partie alternance uniquement. Quelques questions pour préparer notre échange.",
+      "Merci beaucoup. Angel recherche une alternance en BTS Communication pour la rentrée 2026, autour de Sarlat-la-Canéda pour cette alternance uniquement. Préparons votre message.",
   },
   autre: {
     label: "Poser une autre question",
     steps: AUTRE_STEPS,
-    intro: "Bien sûr. Dites-moi tout, je reviens vers vous rapidement.",
+    intro:
+      "Bien sûr. Posez votre question : j'y réponds à partir des informations publiques du site, et je peux transmettre le nécessaire à Angel.",
   },
+};
+
+const NEXT_STEPS: Record<Track, string> = {
+  projet:
+    "Premier échange pour cadrer le besoin, puis proposition écrite et chiffrée si le projet se confirme.",
+  alternance:
+    "Échange téléphonique ou visio, envoi du CV détaillé et point sur le rythme d'alternance.",
+  autre: "Réponse directe au visiteur, puis orientation vers la bonne ressource du site.",
 };
 
 const STORAGE_KEY = "alc-contact-chat";
 
-type Saved = {
-  track: Track | null;
-  index: number;
-  answers: Record<string, string>;
-  contact: ContactState;
+const URGENT_PATTERNS =
+  /(urgent|urgence|aujourd'?hui|dans l'heure|immédiat|tout de suite|au plus vite|demain matin|crise|sinistre|litige|juridique|décès|presse|journaliste|incident)/i;
+
+const START_SUGGESTIONS = [
+  "Que propose Angel exactement ?",
+  "Combien coûte une affiche ?",
+  "Comment se passe une mission ?",
+  "Quel est son parcours ?",
+];
+
+type Msg = {
+  id: string;
+  role: "bot" | "user";
+  text: string;
+  /** Index d'étape auquel la réponse a été donnée (pour le retour arrière). */
+  stepIndex?: number;
+  /** Message hors parcours (question libre / réponse de l'assistant). */
+  aside?: boolean;
+  recap?: boolean;
 };
 
 type ContactState = {
@@ -224,35 +250,63 @@ type ContactState = {
 
 const EMPTY_CONTACT: ContactState = { name: "", email: "", phone: "", preference: "" };
 
+type Saved = {
+  track: Track | null;
+  index: number;
+  answers: Record<string, string>;
+  contact: ContactState;
+  messages: Msg[];
+};
+
 const emailOk = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
+const uid = () => Math.random().toString(36).slice(2, 10);
+
+function detectTrack(text: string): Track | null {
+  const t = text.toLowerCase();
+  if (/(alternance|apprenti|stage|bts|recrut|poste|cv)/.test(t)) return "alternance";
+  if (/(projet|devis|affiche|flyer|logo|site|communication|rédaction|réseaux)/.test(t))
+    return "projet";
+  return null;
+}
 
 export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
   const [track, setTrack] = useState<Track | null>(initialTrack ?? null);
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [messages, setMessages] = useState<Msg[]>([]);
   const [contact, setContact] = useState<ContactState>(EMPTY_CONTACT);
   const [consent, setConsent] = useState(false);
   const [honey, setHoney] = useState("");
+  const [ask, setAsk] = useState("");
+  const [thinking, setThinking] = useState(false);
+  const [urgent, setUrgent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const headingRef = useRef<HTMLParagraphElement>(null);
+  const transcriptEndRef = useRef<HTMLDivElement>(null);
 
   const submit = useServerFn(submitConversationalContact);
+  const askServer = useServerFn(askAssistant);
 
-  // Restauration de session (uniquement côté navigateur).
+  const steps = track ? TRACKS[track].steps : [];
+  const total = steps.length + 1; // + résumé
+  const onSummary = track !== null && index >= steps.length;
+  const current = onSummary ? null : (steps[index] ?? null);
+
+  // Restauration de session (navigateur uniquement).
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as Saved;
-        if (parsed.track && TRACKS[parsed.track]) {
-          setTrack(initialTrack ?? parsed.track);
-          setIndex(initialTrack && initialTrack !== parsed.track ? 0 : parsed.index);
-          setAnswers(parsed.answers ?? {});
-          setContact({ ...EMPTY_CONTACT, ...(parsed.contact ?? {}) });
-        }
+        const sameTrack = !initialTrack || initialTrack === parsed.track;
+        if (parsed.track && TRACKS[parsed.track]) setTrack(initialTrack ?? parsed.track);
+        setIndex(sameTrack ? (parsed.index ?? 0) : 0);
+        setAnswers(sameTrack ? (parsed.answers ?? {}) : {});
+        setContact({ ...EMPTY_CONTACT, ...(parsed.contact ?? {}) });
+        if (Array.isArray(parsed.messages)) setMessages(parsed.messages.slice(-30));
       }
     } catch {
       /* stockage indisponible */
@@ -266,21 +320,26 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
     try {
       sessionStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ track, index, answers, contact } satisfies Saved),
+        JSON.stringify({
+          track,
+          index,
+          answers,
+          contact,
+          messages: messages.slice(-30),
+        } satisfies Saved),
       );
     } catch {
       /* stockage indisponible */
     }
-  }, [hydrated, track, index, answers, contact]);
-
-  const steps = track ? TRACKS[track].steps : [];
-  const total = steps.length + 1; // + résumé
-  const onSummary = track !== null && index >= steps.length;
-  const current = onSummary ? null : (steps[index] ?? null);
+  }, [hydrated, track, index, answers, contact, messages]);
 
   useEffect(() => {
-    if (track) headingRef.current?.focus();
+    if (track) headingRef.current?.focus({ preventScroll: true });
   }, [index, track]);
+
+  useEffect(() => {
+    transcriptEndRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [messages.length, thinking]);
 
   const progress = track ? Math.min(100, Math.round((index / total) * 100)) : 0;
 
@@ -291,22 +350,103 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
       .map((s, i) => ({ step: s, i, value: answers[s.id] ?? "—" }));
   }, [track, steps, answers]);
 
-  function setAnswer(id: string, value: string) {
-    setAnswers((prev) => ({ ...prev, [id]: value }));
+  const push = useCallback((msg: Omit<Msg, "id">) => {
+    setMessages((prev) => [...prev, { id: uid(), ...msg }]);
+  }, []);
+
+  /** Répond à une question libre du visiteur, sans perdre l'étape en cours. */
+  const handleAsk = useCallback(
+    async (raw: string) => {
+      const question = raw.trim();
+      if (question.length < 2 || thinking) return;
+      setAsk("");
+      setError(null);
+      push({ role: "user", text: question, aside: true });
+      if (URGENT_PATTERNS.test(question)) setUrgent(true);
+      setThinking(true);
+
+      const history = messages
+        .slice(-6)
+        .map((m) => ({
+          role: m.role === "bot" ? ("assistant" as const) : ("user" as const),
+          content: m.text.slice(0, 1500),
+        }));
+
+      let text: string | null = null;
+      try {
+        const res = await askServer({
+          data: { question: question.slice(0, 500), mode: "contact" as const, history },
+        });
+        text = res.text;
+      } catch {
+        text = null;
+      }
+      if (!text) text = localAnswer(question).text;
+      setThinking(false);
+      push({ role: "bot", text, aside: true });
+
+      if (!track) {
+        const guessed = detectTrack(question);
+        if (guessed) {
+          push({
+            role: "bot",
+            aside: true,
+            text: `Si vous le souhaitez, je peux préparer un récapitulatif pour Angel sur ce sujet : « ${TRACKS[guessed].label} ».`,
+          });
+        }
+      }
+    },
+    [askServer, messages, push, thinking, track],
+  );
+
+  function startTrack(t: Track) {
+    setTrack(t);
+    setIndex(0);
+    setError(null);
+    push({ role: "user", text: TRACKS[t].label });
+    push({ role: "bot", text: TRACKS[t].intro });
   }
 
-  function next() {
-    setError(null);
-    setIndex((i) => i + 1);
+  function recordAnswer(step: Step, value: string, stepIndex: number) {
+    setMessages((prev) => [
+      ...prev.filter((m) => m.stepIndex !== stepIndex),
+      { id: uid(), role: "user", text: value, stepIndex },
+    ]);
+    if (URGENT_PATTERNS.test(value)) setUrgent(true);
+    // Récapitulatif régulier, tous les trois éléments collectés.
+    const collected = Object.entries({ ...answers, [step.id]: value }).filter(
+      ([, v]) => v.trim().length > 0,
+    );
+    if (collected.length > 0 && collected.length % 3 === 0) {
+      const recap = collected
+        .slice(-3)
+        .map(([id, v]) => {
+          const s = steps.find((x) => x.id === id);
+          return `• ${s ? s.question.replace(/\s*[:?]\s*$/, "") : id} : ${v}`;
+        })
+        .join("\n");
+      push({
+        role: "bot",
+        recap: true,
+        text: `Ce que j'ai compris jusqu'ici :\n${recap}`,
+      });
+    }
+  }
+
+  function setAnswer(id: string, value: string) {
+    setAnswers((prev) => ({ ...prev, [id]: value }));
   }
 
   function back() {
     setError(null);
     if (index === 0) {
       setTrack(null);
+      setMessages((prev) => prev.filter((m) => m.aside));
       return;
     }
-    setIndex((i) => Math.max(0, i - 1));
+    const target = index - 1;
+    setMessages((prev) => prev.filter((m) => m.stepIndex === undefined || m.stepIndex < target));
+    setIndex(target);
   }
 
   function validateAndNext() {
@@ -314,7 +454,14 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
     if (current.kind === "contact") {
       if (!contact.name.trim()) return setError("Merci d'indiquer votre nom.");
       if (!emailOk(contact.email)) return setError("Merci d'indiquer un e-mail valide.");
-      return next();
+      recordAnswer(
+        current,
+        `${contact.name} — ${contact.email}${contact.phone ? ` — ${contact.phone}` : ""}`,
+        index,
+      );
+      setError(null);
+      setIndex((i) => i + 1);
+      return;
     }
     const value = (answers[current.id] ?? "").trim();
     if (!current.optional && value.length < (current.kind === "textarea" ? 10 : 2)) {
@@ -324,7 +471,9 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
           : "Merci de compléter cette réponse.",
       );
     }
-    next();
+    if (value) recordAnswer(current, value, index);
+    setError(null);
+    setIndex((i) => i + 1);
   }
 
   async function handleSubmit() {
@@ -344,6 +493,13 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
       setError("Merci de compléter au moins une réponse.");
       return;
     }
+    const transcript = messages
+      .filter((m) => m.aside && !m.recap)
+      .slice(-12)
+      .map((m) => `${m.role === "user" ? "Visiteur" : "Assistant"} : ${m.text}`)
+      .join("\n\n")
+      .slice(0, 5900);
+
     setSending(true);
     try {
       await submit({
@@ -357,6 +513,8 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
           structure: (answers["structure"] ?? answers["organisation"] ?? "").slice(0, 200),
           budget: (answers["budget"] ?? "").slice(0, 120),
           deadline: (answers["delai"] ?? answers["echange"] ?? "").slice(0, 120),
+          transcript,
+          nextSteps: NEXT_STEPS[track],
           consent: true,
           website: honey,
         },
@@ -371,7 +529,7 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
       setError(
         e instanceof Error && e.message
           ? e.message
-          : "L'envoi n'a pas abouti. Réessayez ou écrivez à contact@angel-leclerc.fr.",
+          : "L'envoi n'a pas abouti. Réessayez dans quelques instants.",
       );
     } finally {
       setSending(false);
@@ -383,19 +541,19 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
       <div className="rounded-2xl border border-border bg-card p-8 text-center">
         <CheckCircle2 size={32} className="mx-auto text-primary" aria-hidden />
         <h2 className="mt-4 font-display text-xl font-bold text-foreground">
-          Message bien reçu, merci&nbsp;!
+          Récapitulatif transmis à Angel
         </h2>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          Un accusé de réception vient de partir vers {contact.email}. Je lis
-          personnellement chaque demande et je réponds en général sous 48&nbsp;h ouvrées
-          — parfois un peu plus en période chargée.
+          Il vient de partir avec vos coordonnées, et un accusé de réception a été envoyé
+          à {contact.email}. Angel lit personnellement chaque message et vous répondra
+          dès qu'il aura pu en prendre connaissance.
         </p>
         <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
           <Button asChild variant="outline">
             <Link to="/entreprise">Voir les services</Link>
           </Button>
           <Button asChild variant="outline">
-            <Link to="/parcours">Voir mon CV</Link>
+            <Link to="/parcours">Voir le CV</Link>
           </Button>
         </div>
       </div>
@@ -404,7 +562,7 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5 md:p-7">
-      {/* Progression */}
+      {/* Progression discrète */}
       {track && (
         <div className="mb-5">
           <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
@@ -435,6 +593,28 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
         className="absolute h-0 w-0 opacity-0"
       />
 
+      {/* Transcription */}
+      {messages.length > 0 && (
+        <div
+          className="mb-5 space-y-2.5"
+          aria-live="polite"
+          aria-label="Conversation en cours"
+        >
+          {messages.map((m) => (
+            <Bubble key={m.id} msg={m} />
+          ))}
+          {thinking && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Loader2 size={13} className="animate-spin" aria-hidden />
+              L'assistant cherche dans le contenu du site…
+            </div>
+          )}
+          <div ref={transcriptEndRef} />
+        </div>
+      )}
+
+      {urgent && <UrgentCard onDismiss={() => setUrgent(false)} />}
+
       <AnimatePresence mode="wait">
         <motion.div
           key={track ? `${track}-${index}` : "start"}
@@ -453,19 +633,15 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
                 Que souhaitez-vous faire&nbsp;?
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
-                Choisissez une entrée : je vous pose ensuite quelques questions, une par
-                une.
+                Posez d'abord votre question si vous en avez une : j'y réponds à partir du
+                contenu du site. Sinon, choisissez une entrée.
               </p>
               <div className="mt-5 grid gap-2.5">
                 {(Object.keys(TRACKS) as Track[]).map((t) => (
                   <button
                     key={t}
                     type="button"
-                    onClick={() => {
-                      setTrack(t);
-                      setIndex(0);
-                      setError(null);
-                    }}
+                    onClick={() => startTrack(t)}
                     className="group flex items-center justify-between gap-3 rounded-xl border border-border bg-background px-4 py-3.5 text-left text-sm font-medium text-foreground transition-colors hover:border-primary hover:bg-primary/5"
                   >
                     {TRACKS[t].label}
@@ -477,13 +653,21 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
                   </button>
                 ))}
               </div>
+              {messages.length === 0 && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {START_SUGGESTIONS.map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => void handleAsk(s)}
+                      className="rounded-full border border-border bg-background px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
             </>
-          )}
-
-          {track && index === 0 && (
-            <p className="mb-4 rounded-xl bg-muted px-4 py-3 text-sm leading-relaxed text-muted-foreground">
-              {TRACKS[track].intro}
-            </p>
           )}
 
           {track && current && (
@@ -511,6 +695,7 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
                           onClick={() => {
                             setAnswer(current.id, opt);
                             setError(null);
+                            recordAnswer(current, opt, index);
                             setTimeout(() => setIndex((i) => i + 1), 120);
                           }}
                           className={`rounded-xl border px-4 py-3 text-left text-sm transition-colors ${
@@ -539,10 +724,10 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
                           type="button"
                           aria-pressed={active}
                           onClick={() => {
-                            const next = active
+                            const nextValues = active
                               ? selected.filter((s) => s !== opt)
                               : [...selected, opt];
-                            setAnswer(current.id, next.join(", "));
+                            setAnswer(current.id, nextValues.join(", "));
                             setError(null);
                           }}
                           className={`rounded-xl border px-4 py-3 text-left text-sm transition-colors ${
@@ -588,6 +773,9 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
 
                 {current.kind === "contact" && (
                   <div className="grid gap-3">
+                    <p className="text-xs leading-relaxed text-muted-foreground">
+                      Uniquement ce qui est nécessaire pour vous répondre.
+                    </p>
                     <label className="text-sm">
                       <span className="mb-1 block text-xs font-medium text-muted-foreground">
                         Nom et prénom *
@@ -687,7 +875,14 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
                   </Button>
                 )}
                 {current.kind === "choice" && current.optional && (
-                  <Button variant="outline" size="sm" onClick={next}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setError(null);
+                      setIndex((i) => i + 1);
+                    }}
+                  >
                     Passer
                   </Button>
                 )}
@@ -702,7 +897,7 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
                 tabIndex={-1}
                 className="font-display text-lg font-bold text-foreground outline-none md:text-xl"
               >
-                Un dernier regard avant d'envoyer
+                Voici ce que je vais transmettre à Angel
               </p>
               <p className="mt-1.5 text-xs text-muted-foreground">
                 Cliquez sur une ligne pour la modifier.
@@ -786,13 +981,110 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
                   ) : (
                     <Send size={16} aria-hidden />
                   )}
-                  {sending ? "Envoi…" : "Envoyer ma demande"}
+                  {sending ? "Envoi…" : "Envoyer le récapitulatif"}
                 </Button>
               </div>
             </>
           )}
         </motion.div>
       </AnimatePresence>
+
+      {/* Question libre, toujours disponible */}
+      <div className="mt-6 border-t border-border pt-4">
+        <label htmlFor="alc-ask" className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+          <MessageCircleQuestion size={14} className="text-primary" aria-hidden />
+          Une question&nbsp;? Posez-la, j'y réponds puis nous reprenons.
+        </label>
+        <div className="mt-2 flex gap-2">
+          <input
+            id="alc-ask"
+            type="text"
+            value={ask}
+            onChange={(e) => setAsk(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                void handleAsk(ask);
+              }
+            }}
+            placeholder="Ex. : quel est le tarif d'une affiche ?"
+            className="min-w-0 flex-1 rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground outline-none focus:border-primary"
+          />
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => void handleAsk(ask)}
+            disabled={thinking || ask.trim().length < 2}
+          >
+            {thinking ? (
+              <Loader2 size={15} className="animate-spin" aria-hidden />
+            ) : (
+              <Sparkles size={15} aria-hidden />
+            )}
+            <span className="sr-only sm:not-sr-only">Demander</span>
+          </Button>
+        </div>
+        <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-relaxed text-muted-foreground">
+          <Info size={12} className="mt-0.5 shrink-0" aria-hidden />
+          Les réponses sont générées à partir des informations publiques du site et peuvent
+          contenir des erreurs ou des interprétations.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Bubble({ msg }: { msg: Msg }) {
+  const isUser = msg.role === "user";
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+      className={`flex ${isUser ? "justify-end" : "justify-start"}`}
+    >
+      <div
+        className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
+          isUser
+            ? "rounded-br-sm bg-primary/10 text-foreground"
+            : msg.recap
+              ? "rounded-bl-sm border border-dashed border-border bg-background text-muted-foreground"
+              : "rounded-bl-sm bg-muted text-foreground"
+        }`}
+      >
+        {msg.text}
+      </div>
+    </motion.div>
+  );
+}
+
+function UrgentCard({ onDismiss }: { onDismiss: () => void }) {
+  return (
+    <div className="mb-5 rounded-xl border border-primary/40 bg-primary/5 p-4">
+      <p className="text-sm font-medium text-foreground">
+        Votre demande semble urgente.
+      </p>
+      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+        Dans ce cas seulement, vous pouvez joindre Angel directement. Sinon, le
+        récapitulatif envoyé depuis cette page lui parvient immédiatement.
+      </p>
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+        <Button asChild size="sm" variant="outline">
+          <a href="tel:+33601766978">
+            <Phone size={15} aria-hidden />
+            06 01 76 69 78
+          </a>
+        </Button>
+        <Button asChild size="sm" variant="outline">
+          <a href="mailto:contact@angel-leclerc.fr">
+            <Mail size={15} aria-hidden />
+            contact@angel-leclerc.fr
+          </a>
+        </Button>
+        <Button size="sm" variant="ghost" onClick={onDismiss}>
+          Continuer la conversation
+        </Button>
+      </div>
     </div>
   );
 }

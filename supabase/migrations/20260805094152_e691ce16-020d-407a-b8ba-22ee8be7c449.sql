@@ -1,0 +1,1 @@
+DELETE FROM public.contact_requests WHERE email = 'test-auto@angel-leclerc.fr';

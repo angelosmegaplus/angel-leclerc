@@ -18,7 +18,7 @@ import { LatestArticles } from "@/components/LatestArticles";
 
 const TITLE = "Contact — Angel Leclerc Communication";
 const DESCRIPTION =
-  "Contacter Angel Leclerc : formulaire avec pièce jointe, e-mail contact@angel-leclerc.fr ou téléphone 06 01 76 69 78. Projet de communication, alternance BTS ou article du blog.";
+  "Échangez avec l'assistant du site : il répond à vos questions sur les services, les tarifs indicatifs et le parcours d'Angel Leclerc, puis prépare un récapitulatif de votre demande.";
 
 export const Route = createFileRoute("/contact")({
   validateSearch: (search: Record<string, unknown>): { parcours?: Track } => {
@@ -71,8 +71,9 @@ function ContactPage() {
               Me contacter
             </h1>
             <p className="mt-4 leading-relaxed text-muted-foreground">
-              Pas de long formulaire&nbsp;: je vous pose quelques questions, une par une,
-              et vous pouvez revenir en arrière à tout moment.
+              Pas de long formulaire&nbsp;: une conversation. L'assistant répond d'abord à
+              vos questions à partir du contenu public du site, puis prépare avec vous un
+              récapitulatif envoyé directement à Angel.
             </p>
           </AnimatedSection>
 

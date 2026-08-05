@@ -3,6 +3,7 @@ import { z } from "zod";
 
 const AskSchema = z.object({
   question: z.string().trim().min(2).max(500),
+  mode: z.enum(["site", "contact"]).optional(),
   history: z
     .array(
       z.object({
@@ -72,8 +73,15 @@ export const askAssistant = createServerFn({ method: "POST" })
     if (!checkAssistantRate(ip)) return { text: null, source: "fallback" };
 
     const { ASSISTANT_SYSTEM_PROMPT } = await import("./assistant-context");
+    const { CONTACT_ASSISTANT_ADDENDUM } = await import("./assistant-context");
     const messages = [
-      { role: "system", content: ASSISTANT_SYSTEM_PROMPT },
+      {
+        role: "system",
+        content:
+          data.mode === "contact"
+            ? `${ASSISTANT_SYSTEM_PROMPT}\n\n${CONTACT_ASSISTANT_ADDENDUM}`
+            : ASSISTANT_SYSTEM_PROMPT,
+      },
       ...(data.history ?? []).slice(-6),
       { role: "user", content: data.question },
     ];
