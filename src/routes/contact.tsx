@@ -54,7 +54,7 @@ export const Route = createFileRoute("/contact")({
 
 function ContactPage() {
   return (
-    <main className="bg-background">
+    <div className="bg-background">
       <section className="section-padding">
         <div className="container-tight">
           <AnimatedSection className="mx-auto max-w-2xl text-center">
@@ -119,7 +119,7 @@ function ContactPage() {
         title="Mes derniers articles"
         description="Communication, politique, société et idées pour comprendre ce qui change."
       />
-    </main>
+    </div>
   );
 }
 
