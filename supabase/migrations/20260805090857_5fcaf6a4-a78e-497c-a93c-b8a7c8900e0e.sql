@@ -1,0 +1,1 @@
+DELETE FROM public.contact_requests WHERE project_type = 'Assistant ALC' AND email = 'test@example.com';
