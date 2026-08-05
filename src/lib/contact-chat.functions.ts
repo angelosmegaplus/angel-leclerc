@@ -6,7 +6,7 @@ import { sendTemplateEmail } from "./email-templates/send-email";
 const TRACK_LABELS = {
   projet: "Projet de communication",
   alternance: "Proposition d'alternance (BTS Communication)",
-  autre: "Autre question",
+  autre: "Autre demande",
 } as const;
 
 const schema = z.object({
@@ -27,6 +27,8 @@ const schema = z.object({
   structure: z.string().trim().max(200).optional().or(z.literal("")),
   budget: z.string().trim().max(120).optional().or(z.literal("")),
   deadline: z.string().trim().max(120).optional().or(z.literal("")),
+  transcript: z.string().trim().max(6000).optional().or(z.literal("")),
+  nextSteps: z.string().trim().max(600).optional().or(z.literal("")),
   consent: z.literal(true, { errorMap: () => ({ message: "Consentement requis" }) }),
   // Honeypot : doit rester vide.
   website: z.string().max(0).optional().or(z.literal("")),
@@ -61,6 +63,10 @@ export const submitConversationalContact = createServerFn({ method: "POST" })
     const description = [
       ...data.answers.map((a) => `${a.question}\n→ ${a.answer}`),
       data.preference ? `Préférence de contact\n→ ${data.preference}` : null,
+      data.nextSteps ? `Prochaines étapes possibles\n→ ${data.nextSteps}` : null,
+      data.transcript
+        ? `— — —\nTranscription condensée de la conversation\n\n${data.transcript}`
+        : null,
     ]
       .filter(Boolean)
       .join("\n\n");
