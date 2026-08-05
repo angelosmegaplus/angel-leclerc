@@ -41,7 +41,7 @@ const choices = [
     icon: User,
     eyebrow: "Partie personnelle",
     title: "Mon parcours",
-    text: "Découvrez mon parcours, mes compétences, mes réalisations et ma recherche d'alternance en BTS Communication à Sarlat et dans ses environs.",
+    text: "Découvrez mon parcours, mes compétences, mes réalisations et ma recherche d'alternance en BTS Communication (Périgueux, Brive-la-Gaillarde et environs).",
     cta: "Voir mon parcours",
     badge: "Recherche d'alternance — septembre 2026",
   },
@@ -144,7 +144,7 @@ function LandingPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.9 }}
-            className="mt-8"
+            className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center"
           >
             <Button
               asChild
@@ -154,6 +154,12 @@ function LandingPage() {
               <Link to="/parcours">
                 <FileText size={18} />
                 Voir mon CV
+              </Link>
+            </Button>
+            <Button asChild size="lg" variant="outline">
+              <Link to="/contact">
+                <Mail size={18} />
+                Me contacter
               </Link>
             </Button>
           </motion.div>
