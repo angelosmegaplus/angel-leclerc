@@ -4,6 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { askAssistant } from "@/lib/assistant.functions";
 import { sendAssistantRelay } from "@/lib/assistant-relay.functions";
+import { Captcha, type CaptchaValue } from "@/components/Captcha";
 import {
   answer,
   WELCOME,
@@ -112,6 +113,7 @@ export function AssistantWidget() {
     website: "",
   });
   const ask = useServerFn(askAssistant);
+  const [captcha, setCaptcha] = useState<CaptchaValue>({ token: "", answer: "" });
   const relayFn = useServerFn(sendAssistantRelay);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -226,6 +228,8 @@ export function AssistantWidget() {
     if (form.message.trim().length < 10)
       return setRelayError("Merci d'écrire un message un peu plus détaillé.");
     if (!form.consent) return setRelayError("Merci d'accepter d'être recontacté par e-mail.");
+    if (!captcha.token || !captcha.answer.trim())
+      return setRelayError("Merci de compléter la vérification anti-robot.");
 
     setRelaySending(true);
     try {
@@ -236,6 +240,8 @@ export function AssistantWidget() {
           phone: form.phone.trim().slice(0, 40),
           message: form.message.trim().slice(0, 3000),
           consent: true as const,
+          captchaToken: captcha.token,
+          captchaAnswer: captcha.answer.trim(),
           website: form.website,
           transcript: messages
             .slice(-6)
@@ -245,7 +251,7 @@ export function AssistantWidget() {
       setRelaySent(true);
     } catch {
       setRelayError(
-        "L'envoi n'a pas abouti. Votre texte est conservé : réessayez, écrivez à contact@angel-leclerc.fr ou passez par la page Contact.",
+        "L'envoi n'a pas abouti. Votre texte est conservé : réessayez ou passez par la page Contact.",
       );
     } finally {
       setRelaySending(false);
@@ -472,6 +478,10 @@ export function AssistantWidget() {
                       J'accepte qu'Angel me recontacte par e-mail au sujet de ce message.
                     </span>
                   </label>
+                  <div className="mt-3">
+                    <Captcha value={captcha} onChange={setCaptcha} />
+                  </div>
+
                   {relayError && (
                     <p className="rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">
                       {relayError}

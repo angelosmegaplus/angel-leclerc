@@ -1,18 +1,7 @@
-import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  Mail,
-  Phone,
-  MapPin,
-  Clock,
-  Linkedin,
-  Instagram,
-  Facebook,
-  AlertCircle,
-  ChevronDown,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Linkedin, Instagram, Facebook } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
+import { RevealContact } from "@/components/RevealContact";
 import { ContactChat, type Track } from "@/components/ContactChat";
 import { LatestArticles } from "@/components/LatestArticles";
 
@@ -47,8 +36,7 @@ export const Route = createFileRoute("/contact")({
           mainEntity: {
             "@type": "Person",
             name: "Angel Leclerc",
-            email: "contact@angel-leclerc.fr",
-            telephone: "+33 6 01 76 69 78",
+            url: "https://www.angel-leclerc.fr/contact",
           },
         }),
       },
@@ -84,7 +72,7 @@ function ContactPage() {
           </AnimatedSection>
 
           <AnimatedSection delay={0.14} className="mt-10">
-            <EmergencyContact />
+            <RevealContact />
           </AnimatedSection>
 
           <AnimatedSection delay={0.24} className="mt-10">
@@ -120,145 +108,6 @@ function ContactPage() {
         description="Communication, politique, société et idées pour comprendre ce qui change."
       />
     </div>
-  );
-}
-
-function EmergencyContact() {
-  const [step, setStep] = useState<"hidden" | "confirm" | "open">("hidden");
-  const open = step === "open";
-  return (
-    <div className="mx-auto max-w-2xl">
-      <div className="rounded-xl border border-dashed border-border/70 bg-transparent p-3">
-        {step === "hidden" && (
-          <button
-            type="button"
-            onClick={() => setStep("confirm")}
-            className="mx-auto flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground/70 transition-colors hover:bg-muted hover:text-foreground"
-          >
-            <AlertCircle size={12} className="text-muted-foreground/70" />
-            Uniquement en cas d'urgence
-            <ChevronDown size={12} />
-          </button>
-        )}
-
-        {step === "confirm" && (
-          <div className="space-y-3 text-center">
-            <p className="text-sm font-medium text-foreground">
-              Votre demande est-elle vraiment urgente&nbsp;?
-            </p>
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              Toutes les demandes passent normalement par le formulaire ci-dessus, qui
-              me parvient immédiatement. Mes coordonnées directes sont réservées aux
-              urgences.
-            </p>
-            <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-foreground/20 bg-transparent text-muted-foreground hover:bg-muted"
-                onClick={() => setStep("hidden")}
-              >
-                Non, j'utilise le formulaire
-              </Button>
-              <Button size="sm" onClick={() => setStep("open")}>
-                Oui, afficher les coordonnées
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {open && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Coordonnées directes — urgences
-              </p>
-              <button
-                type="button"
-                onClick={() => setStep("hidden")}
-                className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
-              >
-                Masquer
-              </button>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <ContactCard
-                icon={<Mail size={18} className="text-primary" />}
-                label="E-mail"
-                value="contact@angel-leclerc.fr"
-                href="mailto:contact@angel-leclerc.fr"
-              />
-              <ContactCard
-                icon={<Phone size={18} className="text-primary" />}
-                label="Téléphone"
-                value="06 01 76 69 78"
-                href="tel:+33601766978"
-              />
-              <ContactCard
-                icon={<MapPin size={18} className="text-primary" />}
-                label="Courrier"
-                value="CIAS, 4b rue Stéphane Hessel, 24200 Sarlat-la-Canéda"
-              />
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button
-                asChild
-                variant="outline"
-                className="flex-1 border-foreground/20 bg-transparent text-foreground hover:bg-muted"
-              >
-                <a href="mailto:contact@angel-leclerc.fr">
-                  <Mail size={18} className="mr-2" /> Envoyer un e-mail
-                </a>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="flex-1 border-foreground/20 bg-transparent text-foreground hover:bg-muted"
-              >
-                <a href="tel:+33601766978">
-                  <Phone size={18} className="mr-2" /> Appeler — 06 01 76 69 78
-                </a>
-              </Button>
-            </div>
-            <p className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Clock size={14} className="text-primary" />
-              Réponse sous 48&nbsp;h ouvrées en général.
-            </p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function ContactCard({
-  icon,
-  label,
-  value,
-  href,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  href?: string;
-}) {
-  const body = (
-    <div className="h-full rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary">
-      <div className="flex items-center gap-2">
-        {icon}
-        <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          {label}
-        </span>
-      </div>
-      <p className="mt-2 text-sm font-medium leading-relaxed text-foreground">{value}</p>
-    </div>
-  );
-  return href ? (
-    <a href={href} className="block h-full">
-      {body}
-    </a>
-  ) : (
-    body
   );
 }
 

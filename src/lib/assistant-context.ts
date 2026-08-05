@@ -45,14 +45,15 @@ CONTENUS
 - Une petite boutique existe, accessible depuis le pied de page.
 
 COORDONNÉES PUBLIQUES
-- Formulaire et coordonnées : page /contact. Téléphone : 06 01 76 69 78.
-- E-mail : contact@angel-leclerc.fr.
+- Contact : page /contact (conversation guidée). Les coordonnées directes (téléphone,
+  e-mail) ne doivent jamais être citées par l'assistant : elles s'affichent sur /contact
+  après une vérification anti-robot, uniquement pour les demandes urgentes.
 - Courrier : CIAS, 4b rue Stéphane Hessel, 24200 Sarlat-la-Canéda.
 - Réseaux : LinkedIn (entreprise), Instagram, Facebook.
 
 PAGES DU SITE
 - / (accueil), /entreprise (services, méthode, tarifs), /parcours (CV et réalisations),
-  /articles (blog), /contact, /mentions-legales, /politique-confidentialite.
+  /articles (blog), /contact, /mentions-legales, /politique-confidentialite, /politique-cookies.
 `.trim();
 
 export const ASSISTANT_SYSTEM_PROMPT = `
