@@ -27,7 +27,10 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   },
   'contact-notification': {
     component: ContactNotificationEmail,
-    subject: (data) => `Nouveau message – ${data.fullName} – ${data.projectType}`,
+    subject: (data) =>
+      data.projectType === 'Assistant ALC'
+        ? `Nouveau message depuis l'Assistant ALC – ${data.fullName}`
+        : `Nouveau message – ${data.fullName} – ${data.projectType}`,
     displayName: 'Notification administrateur',
     to: 'contact@angel-leclerc.fr',
     previewData: {
