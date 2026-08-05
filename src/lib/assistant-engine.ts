@@ -12,9 +12,6 @@ export type AssistantReply = {
   suggestions?: string[];
 };
 
-const PHONE = "06 01 76 69 78";
-const PHONE_HREF = "tel:+33601766978";
-const EMAIL = "contact@angel-leclerc.fr";
 
 export const DEFAULT_SUGGESTIONS = [
   "Quels services propose Angel ?",
@@ -122,7 +119,7 @@ const INTENTS: Intent[] = [
     id: "contact",
     keywords: ["contact", "contacter", "joindre", "email", "mail", "ecrire", "rendez", "rdv", "parler", "discuter", "adresse"],
     reply: {
-      text: `Le plus simple est le formulaire de contact du site : vous décrivez votre besoin, avec pièce jointe possible. Vous pouvez aussi écrire à ${EMAIL}.`,
+      text: `Le plus simple est le formulaire de contact du site : vous décrivez votre besoin, avec pièce jointe possible. Le récapitulatif parvient directement à Angel.`,
       links: [CONTACT_LINK],
       suggestions: ["Parler d'un projet de communication", "Quels sont les tarifs ?"],
     },
@@ -239,7 +236,7 @@ export function answer(input: string): AssistantReply {
       { label: "Présenter mon projet", to: "/contact" },
       { label: "Voir les services", to: "/entreprise#services" },
     ];
-    if (urgent) links.push({ label: `Appeler le ${PHONE}`, to: PHONE_HREF, external: true });
+    if (urgent) links.push({ label: "Afficher les coordonnées directes", to: "/contact" });
     return {
       text: `Si je résume, votre besoin porte sur ${services.join(" et ")}. C'est exactement le type de mission qu'Angel prend en charge. Le mieux est de décrire votre projet via le formulaire de contact : vous recevrez une proposition écrite et chiffrée après un premier échange.`,
       links,
@@ -263,8 +260,8 @@ export function answer(input: string): AssistantReply {
     if (urgent && (best.id === "contact" || best.id === "tarifs" || best.id === "services")) {
       return {
         ...reply,
-        text: `${reply.text} Si votre demande est urgente, vous pouvez appeler directement le ${PHONE}.`,
-        links: [...(reply.links ?? []), { label: `Appeler le ${PHONE}`, to: PHONE_HREF, external: true }],
+        text: `${reply.text} Si votre demande est urgente, la page Contact permet d'afficher les coordonnées directes après une courte vérification.`,
+        links: [...(reply.links ?? []), { label: "Afficher les coordonnées directes", to: "/contact" }],
       };
     }
     return reply;

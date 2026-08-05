@@ -17,6 +17,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { RevealContact } from "@/components/RevealContact";
+import { Captcha, type CaptchaValue } from "@/components/Captcha";
 import { submitConversationalContact } from "@/lib/contact-chat.functions";
 import { askAssistant } from "@/lib/assistant.functions";
 import { answer as localAnswer } from "@/lib/assistant-engine";
@@ -276,6 +278,7 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [contact, setContact] = useState<ContactState>(EMPTY_CONTACT);
   const [consent, setConsent] = useState(false);
+  const [captcha, setCaptcha] = useState<CaptchaValue>({ token: "", answer: "" });
   const [honey, setHoney] = useState("");
   const [ask, setAsk] = useState("");
   const [thinking, setThinking] = useState(false);
@@ -480,6 +483,9 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
     if (!track || sending) return;
     setError(null);
     if (!consent) return setError("Merci d'accepter d'être recontacté·e.");
+    if (!captcha.token || !captcha.answer.trim()) {
+      return setError("Merci de compléter la vérification anti-robot.");
+    }
     if (!contact.name.trim() || !emailOk(contact.email)) {
       setError("Vos coordonnées sont incomplètes.");
       setIndex(steps.length - 1);
@@ -516,6 +522,8 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
           transcript,
           nextSteps: NEXT_STEPS[track],
           consent: true,
+          captchaToken: captcha.token,
+          captchaAnswer: captcha.answer.trim(),
           website: honey,
         },
       });
@@ -964,6 +972,10 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
                 </span>
               </label>
 
+              <div className="mt-4">
+                <Captcha value={captcha} onChange={setCaptcha} />
+              </div>
+
               {error && (
                 <p role="alert" className="mt-3 text-sm text-destructive">
                   {error}
@@ -1065,22 +1077,14 @@ function UrgentCard({ onDismiss }: { onDismiss: () => void }) {
         Votre demande semble urgente.
       </p>
       <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-        Dans ce cas seulement, vous pouvez joindre Angel directement. Sinon, le
-        récapitulatif envoyé depuis cette page lui parvient immédiatement.
+        Dans ce cas seulement, vous pouvez afficher les coordonnées directes après une
+        courte vérification. Sinon, le récapitulatif envoyé depuis cette page parvient
+        immédiatement à Angel.
       </p>
-      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-        <Button asChild size="sm" variant="outline">
-          <a href="tel:+33601766978">
-            <Phone size={15} aria-hidden />
-            06 01 76 69 78
-          </a>
-        </Button>
-        <Button asChild size="sm" variant="outline">
-          <a href="mailto:contact@angel-leclerc.fr">
-            <Mail size={15} aria-hidden />
-            contact@angel-leclerc.fr
-          </a>
-        </Button>
+      <div className="mt-3">
+        <RevealContact compact />
+      </div>
+      <div className="mt-3">
         <Button size="sm" variant="ghost" onClick={onDismiss}>
           Continuer la conversation
         </Button>

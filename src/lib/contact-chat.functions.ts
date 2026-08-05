@@ -30,6 +30,8 @@ const schema = z.object({
   transcript: z.string().trim().max(6000).optional().or(z.literal("")),
   nextSteps: z.string().trim().max(600).optional().or(z.literal("")),
   consent: z.literal(true, { errorMap: () => ({ message: "Consentement requis" }) }),
+  captchaToken: z.string().trim().min(1, "Vérification requise").max(300),
+  captchaAnswer: z.string().trim().min(1, "Vérification requise").max(10),
   // Honeypot : doit rester vide.
   website: z.string().max(0).optional().or(z.literal("")),
 });
@@ -40,6 +42,11 @@ export const submitConversationalContact = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => schema.parse(data))
   .handler(async ({ data }) => {
     if (data.website && data.website.length > 0) return { ok: true as const };
+
+    const { verifyChallenge } = await import("./captcha.server");
+    if (!(await verifyChallenge(data.captchaToken, data.captchaAnswer))) {
+      throw new Error("Vérification anti-robot incorrecte ou expirée.");
+    }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const ip = getRequestIP({ xForwardedFor: true }) ?? null;
@@ -54,7 +61,7 @@ export const submitConversationalContact = createServerFn({ method: "POST" })
         .gte("created_at", since);
       if ((count ?? 0) >= 5) {
         throw new Error(
-          "Trop de demandes envoyées récemment depuis votre connexion. Merci de réessayer plus tard ou d'écrire à contact@angel-leclerc.fr.",
+          "Trop de demandes envoyées récemment depuis votre connexion. Merci de réessayer plus tard.",
         );
       }
     }

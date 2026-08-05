@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as PolitiqueCookiesRouteImport } from './routes/politique-cookies'
 import { Route as PolitiqueConfidentialiteRouteImport } from './routes/politique-confidentialite'
 import { Route as ParcoursRouteImport } from './routes/parcours'
 import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
@@ -41,6 +42,11 @@ import { Route as ApiPublicHooksNewsletterRouteImport } from './routes/api/publi
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PolitiqueCookiesRoute = PolitiqueCookiesRouteImport.update({
+  id: '/politique-cookies',
+  path: '/politique-cookies',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PolitiqueConfidentialiteRoute =
@@ -197,6 +203,7 @@ export interface FileRoutesByFullPath {
   '/mentions-legales': typeof MentionsLegalesRoute
   '/parcours': typeof ParcoursRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
+  '/politique-cookies': typeof PolitiqueCookiesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/actualites/$slug': typeof ActualitesSlugRoute
   '/articles/$slug': typeof ArticlesSlugRoute
@@ -227,6 +234,7 @@ export interface FileRoutesByTo {
   '/mentions-legales': typeof MentionsLegalesRoute
   '/parcours': typeof ParcoursRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
+  '/politique-cookies': typeof PolitiqueCookiesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/actualites/$slug': typeof ActualitesSlugRoute
   '/articles/$slug': typeof ArticlesSlugRoute
@@ -258,6 +266,7 @@ export interface FileRoutesById {
   '/mentions-legales': typeof MentionsLegalesRoute
   '/parcours': typeof ParcoursRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
+  '/politique-cookies': typeof PolitiqueCookiesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/actualites/$slug': typeof ActualitesSlugRoute
   '/articles/$slug': typeof ArticlesSlugRoute
@@ -290,6 +299,7 @@ export interface FileRouteTypes {
     | '/mentions-legales'
     | '/parcours'
     | '/politique-confidentialite'
+    | '/politique-cookies'
     | '/sitemap.xml'
     | '/actualites/$slug'
     | '/articles/$slug'
@@ -320,6 +330,7 @@ export interface FileRouteTypes {
     | '/mentions-legales'
     | '/parcours'
     | '/politique-confidentialite'
+    | '/politique-cookies'
     | '/sitemap.xml'
     | '/actualites/$slug'
     | '/articles/$slug'
@@ -350,6 +361,7 @@ export interface FileRouteTypes {
     | '/mentions-legales'
     | '/parcours'
     | '/politique-confidentialite'
+    | '/politique-cookies'
     | '/sitemap.xml'
     | '/actualites/$slug'
     | '/articles/$slug'
@@ -381,6 +393,7 @@ export interface RootRouteChildren {
   MentionsLegalesRoute: typeof MentionsLegalesRoute
   ParcoursRoute: typeof ParcoursRoute
   PolitiqueConfidentialiteRoute: typeof PolitiqueConfidentialiteRoute
+  PolitiqueCookiesRoute: typeof PolitiqueCookiesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ActualitesSlugRoute: typeof ActualitesSlugRoute
   ArticlesSlugRoute: typeof ArticlesSlugRoute
@@ -408,6 +421,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/politique-cookies': {
+      id: '/politique-cookies'
+      path: '/politique-cookies'
+      fullPath: '/politique-cookies'
+      preLoaderRoute: typeof PolitiqueCookiesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/politique-confidentialite': {
@@ -613,6 +633,7 @@ const rootRouteChildren: RootRouteChildren = {
   MentionsLegalesRoute: MentionsLegalesRoute,
   ParcoursRoute: ParcoursRoute,
   PolitiqueConfidentialiteRoute: PolitiqueConfidentialiteRoute,
+  PolitiqueCookiesRoute: PolitiqueCookiesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ActualitesSlugRoute: ActualitesSlugRoute,
   ArticlesSlugRoute: ArticlesSlugRoute,

@@ -19,6 +19,7 @@ import { NotFound404 } from "../components/NotFound404";
 import { PageViewTracker } from "../components/PageViewTracker";
 import { CartDrawer } from "../components/CartDrawer";
 import { AssistantWidget } from "../components/AssistantWidget";
+import { CookieConsent } from "../components/CookieConsent";
 
 function NotFoundComponent() {
   return <NotFound404 />;
@@ -148,6 +149,7 @@ function RootComponent() {
       </div>
       <CartDrawer />
       <AssistantWidget />
+      <CookieConsent />
       <Toaster position="top-center" />
     </QueryClientProvider>
   );

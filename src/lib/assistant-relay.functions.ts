@@ -11,6 +11,8 @@ const relaySchema = z.object({
   consent: z.literal(true, {
     errorMap: () => ({ message: "Consentement requis" }),
   }),
+  captchaToken: z.string().trim().min(1, "Vérification requise").max(300),
+  captchaAnswer: z.string().trim().min(1, "Vérification requise").max(10),
   // Honeypot anti-spam : doit rester vide.
   website: z.string().max(0).optional().or(z.literal("")),
   // Derniers échanges publics du chat, uniquement pour donner du contexte.
@@ -35,6 +37,11 @@ export const sendAssistantRelay = createServerFn({ method: "POST" })
       return { ok: true as const };
     }
 
+    const { verifyChallenge } = await import("./captcha.server");
+    if (!(await verifyChallenge(data.captchaToken, data.captchaAnswer))) {
+      throw new Error("Vérification anti-robot incorrecte ou expirée.");
+    }
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const ip = getRequestIP({ xForwardedFor: true }) ?? null;
 
@@ -48,7 +55,7 @@ export const sendAssistantRelay = createServerFn({ method: "POST" })
         .gte("created_at", since);
       if ((count ?? 0) >= 5) {
         throw new Error(
-          "Trop de messages envoyés récemment. Merci de réessayer plus tard ou d'écrire à contact@angel-leclerc.fr.",
+          "Trop de messages envoyés récemment. Merci de réessayer plus tard.",
         );
       }
     }

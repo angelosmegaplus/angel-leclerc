@@ -103,8 +103,7 @@ export const Route = createFileRoute("/entreprise")({
           name: "Angel Leclerc Communication",
           description:
             "Gestion de projets de communication, conseil stratégique et rédaction éditoriale.",
-          email: "contact@angel-leclerc.fr",
-          telephone: "+33 6 01 76 69 78",
+          url: "https://www.angel-leclerc.fr/contact",
           address: {
             "@type": "PostalAddress",
             streetAddress: "25 Grande Rue",
