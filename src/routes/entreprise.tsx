@@ -84,7 +84,7 @@ export const Route = createFileRoute("/entreprise")({
       {
         property: "og:title",
         content:
-          "Angel Leclerc Communication | Gestion de projet, conseil et rédaction",
+          "Services de communication à Sarlat | Angel Leclerc Communication",
       },
       {
         property: "og:description",
