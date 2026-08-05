@@ -8,7 +8,6 @@ import {
   Linkedin,
   Instagram,
   Facebook,
-  Paperclip,
   AlertCircle,
   ChevronDown,
 } from "lucide-react";
