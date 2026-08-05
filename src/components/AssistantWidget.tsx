@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { MessageCircle, X, Send, Loader2 } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, Mail, CheckCircle2 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { askAssistant } from "@/lib/assistant.functions";
+import { sendAssistantRelay } from "@/lib/assistant-relay.functions";
 import {
   answer,
   WELCOME,
@@ -48,7 +49,20 @@ export function AssistantWidget() {
   const [messages, setMessages] = useState<Msg[]>([
     { id: nextId(), role: "assistant", reply: WELCOME },
   ]);
+  const [relay, setRelay] = useState(false);
+  const [relaySent, setRelaySent] = useState(false);
+  const [relayError, setRelayError] = useState<string | null>(null);
+  const [relaySending, setRelaySending] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+    consent: false,
+    website: "",
+  });
   const ask = useServerFn(askAssistant);
+  const relayFn = useServerFn(sendAssistantRelay);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -72,6 +86,11 @@ export function AssistantWidget() {
   }, [open, messages]);
 
   const last = messages[messages.length - 1];
+  const needsHuman = messages.slice(-2).some((m) =>
+    /parler à angel|contacter angel|un humain|une vraie personne|devis|rappel|rappeler|je ne peux pas|je n'ai pas cette information|contactez angel/i.test(
+      m.reply.text,
+    ),
+  );
   const suggestions =
     last?.role === "assistant" ? (last.reply.suggestions ?? DEFAULT_SUGGESTIONS) : [];
 
@@ -101,6 +120,61 @@ export function AssistantWidget() {
     }
     setMessages((prev) => [...prev, { id: nextId(), role: "assistant", reply }]);
     setPending(false);
+  }
+
+  function openRelay() {
+    setRelayError(null);
+    setRelaySent(false);
+    const context = messages
+      .filter((m) => m.role === "user")
+      .slice(-3)
+      .map((m) => m.reply.text)
+      .join(" ");
+    setForm((f) => ({
+      ...f,
+      message:
+        f.message ||
+        (context
+          ? `Bonjour Angel,\n\nJ'ai échangé avec l'assistant du site au sujet de : ${context}\n\nPourriez-vous me recontacter ?`
+          : "Bonjour Angel,\n\n"),
+    }));
+    setRelay(true);
+  }
+
+  async function submitRelay(e: React.FormEvent) {
+    e.preventDefault();
+    if (relaySending || relaySent) return;
+    setRelayError(null);
+    if (!form.name.trim()) return setRelayError("Merci d'indiquer votre nom.");
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email.trim()))
+      return setRelayError("Merci d'indiquer une adresse e-mail valide.");
+    if (form.message.trim().length < 10)
+      return setRelayError("Merci d'écrire un message un peu plus détaillé.");
+    if (!form.consent) return setRelayError("Merci d'accepter d'être recontacté par e-mail.");
+
+    setRelaySending(true);
+    try {
+      await relayFn({
+        data: {
+          name: form.name.trim().slice(0, 120),
+          email: form.email.trim().slice(0, 255),
+          phone: form.phone.trim().slice(0, 40),
+          message: form.message.trim().slice(0, 3000),
+          consent: true as const,
+          website: form.website,
+          transcript: messages
+            .slice(-6)
+            .map((m) => ({ role: m.role, content: m.reply.text.slice(0, 600) })),
+        },
+      });
+      setRelaySent(true);
+    } catch {
+      setRelayError(
+        "L'envoi n'a pas abouti. Votre texte est conservé : réessayez, écrivez à contact@angel-leclerc.fr ou passez par la page Contact.",
+      );
+    } finally {
+      setRelaySending(false);
+    }
   }
 
   return (
