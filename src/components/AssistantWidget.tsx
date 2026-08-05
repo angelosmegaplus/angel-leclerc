@@ -74,7 +74,7 @@ export function AssistantWidget() {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="fixed bottom-4 right-4 z-50 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-colors hover:bg-primary/90 sm:bottom-6 sm:right-6"
+          className="fixed bottom-20 right-4 z-50 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-colors hover:bg-primary/90 sm:bottom-24 sm:right-6"
           aria-label="Ouvrir l'assistant ALC"
         >
           <MessageCircle size={18} aria-hidden />
@@ -86,7 +86,7 @@ export function AssistantWidget() {
         <div
           role="dialog"
           aria-label="Assistant ALC"
-          className="fixed inset-x-3 bottom-3 z-50 flex max-h-[80dvh] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl sm:inset-x-auto sm:bottom-6 sm:right-6 sm:h-[560px] sm:max-h-[calc(100dvh-3rem)] sm:w-[380px]"
+          className="fixed inset-x-3 bottom-20 z-50 flex max-h-[calc(100dvh-6.5rem)] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl sm:inset-x-auto sm:bottom-24 sm:right-6 sm:h-[560px] sm:max-h-[calc(100dvh-8rem)] sm:w-[380px]"
         >
           <div className="flex items-center justify-between border-b border-border bg-background px-4 py-3">
             <div>
