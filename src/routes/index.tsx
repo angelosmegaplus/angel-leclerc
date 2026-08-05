@@ -91,7 +91,7 @@ function LandingPage() {
               besoins&nbsp;: gestion de projet, conseil en communication et rédaction.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <div className="mt-8 grid w-full max-w-md grid-cols-1 gap-3 sm:flex sm:max-w-none sm:flex-row sm:justify-center">
               <Button
                 asChild
                 size="lg"
@@ -102,11 +102,17 @@ function LandingPage() {
                   <ArrowRight size={18} />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link to="/entreprise">
-                  Voir les services
-                </Link>
-              </Button>
+              <div className="grid grid-cols-2 gap-3 sm:contents">
+                <Button asChild size="lg" variant="outline">
+                  <Link to="/entreprise">Voir les services</Link>
+                </Button>
+                <Button asChild size="lg" variant="outline">
+                  <Link to="/parcours">
+                    <FileText size={18} aria-hidden />
+                    Voir mon CV
+                  </Link>
+                </Button>
+              </div>
             </div>
           </motion.div>
         </div>

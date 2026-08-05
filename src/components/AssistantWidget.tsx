@@ -583,6 +583,14 @@ export function AssistantWidget() {
             <Mail size={13} aria-hidden />
             Écrire directement à Angel
           </button>
+          <Link
+            to="/contact"
+            search={{ parcours: "projet" as const }}
+            onClick={() => setOpen(false)}
+            className="flex w-full items-center justify-center gap-2 border-t border-border bg-background px-4 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            Passer par le parcours guidé
+          </Link>
           </>
           )}
 
