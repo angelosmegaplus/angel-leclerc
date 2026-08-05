@@ -14,6 +14,53 @@ import {
 
 type Msg = { id: string; role: "user" | "assistant"; reply: AssistantReply };
 
+type BriefStep = {
+  key: string;
+  label: string;
+  question: string;
+  options?: string[];
+  free?: boolean;
+};
+
+const BRIEF_STEPS: BriefStep[] = [
+  {
+    key: "objectif",
+    label: "Objectif",
+    question: "Quel est votre objectif principal ?",
+    options: [
+      "Créer ou refondre un site",
+      "Animer mes réseaux sociaux",
+      "Identité visuelle & supports",
+      "Accompagner une association",
+      "Autre besoin",
+    ],
+  },
+  {
+    key: "structure",
+    label: "Structure",
+    question: "Vous représentez…",
+    options: ["Une entreprise", "Une association", "Une collectivité", "Un projet personnel"],
+  },
+  {
+    key: "delai",
+    label: "Échéance",
+    question: "Pour quand souhaitez-vous démarrer ?",
+    options: ["Dès que possible", "Sous 1 mois", "Dans 2 à 3 mois", "Pas encore défini"],
+  },
+  {
+    key: "budget",
+    label: "Budget",
+    question: "Quel budget avez-vous en tête ?",
+    options: ["Moins de 300 €", "300 à 800 €", "800 à 2 000 €", "Plus de 2 000 €", "À définir"],
+  },
+  {
+    key: "details",
+    label: "Précisions",
+    question: "Un détail utile à ajouter ? (facultatif)",
+    free: true,
+  },
+];
+
 let counter = 0;
 const nextId = () => `m${++counter}`;
 
@@ -53,6 +100,9 @@ export function AssistantWidget() {
   const [relaySent, setRelaySent] = useState(false);
   const [relayError, setRelayError] = useState<string | null>(null);
   const [relaySending, setRelaySending] = useState(false);
+  const [briefIdx, setBriefIdx] = useState(0);
+  const [brief, setBrief] = useState<Record<string, string>>({});
+  const [briefFree, setBriefFree] = useState("");
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -125,20 +175,45 @@ export function AssistantWidget() {
   function openRelay() {
     setRelayError(null);
     setRelaySent(false);
+    setBriefIdx(0);
+    setBrief({});
+    setBriefFree("");
+    setRelay(true);
+  }
+
+  function buildBriefMessage(answers: Record<string, string>) {
     const context = messages
       .filter((m) => m.role === "user")
       .slice(-3)
       .map((m) => m.reply.text)
-      .join(" ");
-    setForm((f) => ({
-      ...f,
-      message:
-        f.message ||
-        (context
-          ? `Bonjour Angel,\n\nJ'ai échangé avec l'assistant du site au sujet de : ${context}\n\nPourriez-vous me recontacter ?`
-          : "Bonjour Angel,\n\n"),
-    }));
-    setRelay(true);
+      .join(" · ");
+    const lines = BRIEF_STEPS.filter((s) => answers[s.key]).map(
+      (s) => `- ${s.label} : ${answers[s.key]}`,
+    );
+    return [
+      "Bonjour Angel,",
+      "",
+      "Voici un résumé de mon besoin :",
+      ...lines,
+      context ? `\nSujets abordés avec l'assistant : ${context}` : "",
+      "",
+      "Pourriez-vous me recontacter ?",
+    ]
+      .filter((l) => l !== undefined)
+      .join("\n");
+  }
+
+  function answerBrief(value: string) {
+    const step = BRIEF_STEPS[briefIdx];
+    if (!step) return;
+    const next = { ...brief, ...(value ? { [step.key]: value } : {}) };
+    setBrief(next);
+    setBriefFree("");
+    const nextIdx = briefIdx + 1;
+    setBriefIdx(nextIdx);
+    if (nextIdx >= BRIEF_STEPS.length) {
+      setForm((f) => ({ ...f, message: buildBriefMessage(next) }));
+    }
   }
 
   async function submitRelay(e: React.FormEvent) {
@@ -253,6 +328,69 @@ export function AssistantWidget() {
                     Revenir à l'assistant
                   </button>
                 </div>
+              ) : briefIdx < BRIEF_STEPS.length ? (
+                (() => {
+                  const step = BRIEF_STEPS[briefIdx]!;
+                  return (
+                    <div className="space-y-3">
+                      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                        Question {briefIdx + 1} / {BRIEF_STEPS.length}
+                      </p>
+                      <p className="text-sm font-medium text-foreground">{step.question}</p>
+                      {step.options && (
+                        <div className="flex flex-wrap gap-2">
+                          {step.options.map((o) => (
+                            <button
+                              key={o}
+                              type="button"
+                              onClick={() => answerBrief(o)}
+                              className="rounded-full border border-border bg-background px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+                            >
+                              {o}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {step.free && (
+                        <textarea
+                          rows={4}
+                          value={briefFree}
+                          maxLength={1000}
+                          onChange={(e) => setBriefFree(e.target.value)}
+                          placeholder="Votre message…"
+                          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+                        />
+                      )}
+                      <div className="flex items-center gap-3 pt-1">
+                        {step.free && (
+                          <button
+                            type="button"
+                            onClick={() => answerBrief(briefFree.trim())}
+                            className="rounded-full bg-primary px-4 py-2 text-xs font-medium text-primary-foreground"
+                          >
+                            Continuer
+                          </button>
+                        )}
+                        {!step.free && (
+                          <button
+                            type="button"
+                            onClick={() => answerBrief("")}
+                            className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+                          >
+                            Passer
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setRelay(false)}
+                          className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+                        >
+                          Annuler
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()
               ) : (
                 <form onSubmit={submitRelay} className="space-y-3">
                   <p className="text-xs text-muted-foreground">

@@ -16,8 +16,38 @@ const AskSchema = z.object({
 
 export type AskAssistantResult = {
   text: string | null;
-  source: "openai" | "fallback";
+  source: "openai" | "lovable" | "fallback";
 };
+
+async function chat(
+  url: string,
+  headers: Record<string, string>,
+  body: Record<string, unknown>,
+): Promise<string | null> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20_000);
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      signal: controller.signal,
+      headers: { "Content-Type": "application/json", ...headers },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      console.error("[assistant] erreur IA", url, res.status, await res.text());
+      return null;
+    }
+    const json = (await res.json()) as {
+      choices?: Array<{ message?: { content?: string } }>;
+    };
+    return json.choices?.[0]?.message?.content?.trim() || null;
+  } catch (error) {
+    console.error("[assistant] appel IA impossible", url, error);
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 /**
  * Interroge OpenAI côté serveur. Ne renvoie jamais d'erreur technique au visiteur :
@@ -28,7 +58,8 @@ export const askAssistant = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => AskSchema.parse(input))
   .handler(async ({ data }): Promise<AskAssistantResult> => {
     const apiKey = process.env["OPENAI_API_KEY"];
-    if (!apiKey) return { text: null, source: "fallback" };
+    const lovableKey = process.env["LOVABLE_API_KEY"];
+    if (!apiKey && !lovableKey) return { text: null, source: "fallback" };
 
     const { getRequestIP } = await import("@tanstack/react-start/server");
     const { checkAssistantRate } = await import("./assistant-rate.server");
@@ -41,44 +72,30 @@ export const askAssistant = createServerFn({ method: "POST" })
     if (!checkAssistantRate(ip)) return { text: null, source: "fallback" };
 
     const { ASSISTANT_SYSTEM_PROMPT } = await import("./assistant-context");
+    const messages = [
+      { role: "system", content: ASSISTANT_SYSTEM_PROMPT },
+      ...(data.history ?? []).slice(-6),
+      { role: "user", content: data.question },
+    ];
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 20_000);
-    try {
-      const res = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        signal: controller.signal,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          temperature: 0.3,
-          max_tokens: 400,
-          messages: [
-            { role: "system", content: ASSISTANT_SYSTEM_PROMPT },
-            ...(data.history ?? []).slice(-6),
-            { role: "user", content: data.question },
-          ],
-        }),
-      });
-
-      if (!res.ok) {
-        console.error("[assistant] OpenAI error", res.status, await res.text());
-        return { text: null, source: "fallback" };
-      }
-
-      const json = (await res.json()) as {
-        choices?: Array<{ message?: { content?: string } }>;
-      };
-      const text = json.choices?.[0]?.message?.content?.trim();
-      if (!text) return { text: null, source: "fallback" };
-      return { text: text.slice(0, 1500), source: "openai" };
-    } catch (error) {
-      console.error("[assistant] appel OpenAI impossible", error);
-      return { text: null, source: "fallback" };
-    } finally {
-      clearTimeout(timeout);
+    if (apiKey) {
+      const text = await chat(
+        "https://api.openai.com/v1/chat/completions",
+        { Authorization: `Bearer ${apiKey}` },
+        { model: "gpt-4o-mini", temperature: 0.3, max_tokens: 400, messages },
+      );
+      if (text) return { text: text.slice(0, 1500), source: "openai" };
     }
+
+    // Repli : passerelle IA Lovable (aucune clé à fournir, quota inclus).
+    if (lovableKey) {
+      const text = await chat(
+        "https://ai.gateway.lovable.dev/v1/chat/completions",
+        { "Lovable-API-Key": lovableKey },
+        { model: "google/gemini-3-flash-preview", messages },
+      );
+      if (text) return { text: text.slice(0, 1500), source: "lovable" };
+    }
+
+    return { text: null, source: "fallback" };
   });
