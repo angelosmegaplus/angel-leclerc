@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Menu, X, Linkedin, Instagram, Facebook } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import logo from "@/assets/logo.svg";
 import { Button } from "@/components/ui/button";
 
@@ -17,7 +18,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
       <div className="container-tight flex h-16 items-center justify-between">
-        <a href="/" className="flex items-center gap-3">
+        <Link to="/" className="flex items-center gap-3">
           <img
             src={logo}
             alt="Logo Angel Leclerc Communication"
@@ -28,17 +29,19 @@ export function Header() {
           <span className="font-display text-base sm:text-lg font-bold tracking-tight text-foreground">
             Angel Leclerc <span className="text-primary">Communication</span>
           </span>
-        </a>
+        </Link>
 
         <nav className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => (
-            <a
+            <Link
               key={link.href}
-              href={link.href}
+              to={link.href}
+              activeOptions={{ exact: link.href === "/" }}
+              activeProps={{ className: "text-foreground font-medium" }}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               {link.label}
-            </a>
+            </Link>
           ))}
           <div className="flex items-center gap-4">
             <a
@@ -73,15 +76,16 @@ export function Header() {
             asChild
             className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
-            <a href="/contact">Parler de votre projet</a>
+            <Link to="/contact">Parler de votre projet</Link>
           </Button>
         </nav>
 
         <button
-          className="md:hidden p-2 text-foreground"
+          className="md:hidden inline-flex h-11 w-11 items-center justify-center text-foreground"
           type="button"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? "Fermer le menu" : "Ouvrir le menu"}
+          aria-expanded={mobileOpen}
         >
           {mobileOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -91,14 +95,16 @@ export function Header() {
         <div className="md:hidden border-t border-border bg-background">
           <nav className="container-tight flex flex-col gap-4 py-6">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.href}
-                href={link.href}
+                to={link.href}
+                activeOptions={{ exact: link.href === "/" }}
+                activeProps={{ className: "text-primary font-medium" }}
                 onClick={() => setMobileOpen(false)}
                 className="text-base py-2 text-foreground hover:text-primary transition-colors"
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
             <div className="grid grid-cols-3 gap-3 py-2">
               <a
@@ -137,7 +143,7 @@ export function Header() {
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={() => setMobileOpen(false)}
             >
-              <a href="/contact">Parler de votre projet</a>
+              <Link to="/contact">Parler de votre projet</Link>
             </Button>
           </nav>
         </div>

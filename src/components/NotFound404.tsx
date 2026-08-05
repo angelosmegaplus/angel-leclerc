@@ -60,7 +60,7 @@ export function NotFound404() {
   }, []);
 
   return (
-    <main className="relative flex min-h-[80vh] items-center justify-center overflow-hidden bg-background px-4 py-20">
+    <section className="relative flex min-h-[80vh] items-center justify-center overflow-hidden bg-background px-4 py-20">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-[0.55]"
@@ -120,6 +120,6 @@ export function NotFound404() {
           {played ? "Rejouer le petit son" : "Activer le petit son"}
         </button>
       </div>
-    </main>
+    </section>
   );
 }

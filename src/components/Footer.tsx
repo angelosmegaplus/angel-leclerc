@@ -2,12 +2,12 @@ import { Linkedin, Instagram, Facebook } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 const navLinks = [
-  { href: "/", label: "Accueil" },
-  { href: "/entreprise", label: "Entreprise" },
-  { href: "/entreprise#services", label: "Services" },
-  { href: "/parcours", label: "Parcours" },
-  { href: "/articles", label: "Blog" },
-  { href: "/contact", label: "Contact" },
+  { to: "/", label: "Accueil" },
+  { to: "/entreprise", label: "Entreprise" },
+  { to: "/entreprise", hash: "services", label: "Services" },
+  { to: "/parcours", label: "Parcours" },
+  { to: "/articles", label: "Blog" },
+  { to: "/contact", label: "Contact" },
 ];
 
 export function Footer() {
@@ -33,13 +33,14 @@ export function Footer() {
             </h3>
             <ul className="mt-4 space-y-2">
               {navLinks.map((link) => (
-                <li key={link.href}>
-                  <a
-                    href={link.href}
+                <li key={link.label}>
+                  <Link
+                    to={link.to}
+                    hash={link.hash}
                     className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
