@@ -18,6 +18,7 @@ import { Toaster } from "../components/ui/sonner";
 import { NotFound404 } from "../components/NotFound404";
 import { PageViewTracker } from "../components/PageViewTracker";
 import { CartDrawer } from "../components/CartDrawer";
+import { AssistantWidget } from "../components/AssistantWidget";
 
 function NotFoundComponent() {
   return <NotFound404 />;
@@ -146,6 +147,7 @@ function RootComponent() {
         <Footer />
       </div>
       <CartDrawer />
+      <AssistantWidget />
       <Toaster position="top-center" />
     </QueryClientProvider>
   );
