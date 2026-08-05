@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { MessageCircle, X, Send } from "lucide-react";
+import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { askAssistant } from "@/lib/assistant.functions";
 import {
   answer,
   WELCOME,
@@ -42,9 +44,11 @@ export function AssistantWidget() {
   const [teaser, setTeaser] = useState(false);
   const [teaserDone, setTeaserDone] = useState(false);
   const [input, setInput] = useState("");
+  const [pending, setPending] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([
     { id: nextId(), role: "assistant", reply: WELCOME },
   ]);
+  const ask = useServerFn(askAssistant);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -71,15 +75,32 @@ export function AssistantWidget() {
   const suggestions =
     last?.role === "assistant" ? (last.reply.suggestions ?? DEFAULT_SUGGESTIONS) : [];
 
-  function send(value: string) {
+  async function send(value: string) {
     const question = value.trim();
-    if (!question) return;
+    if (!question || pending) return;
     setInput("");
+    const history = messages.slice(-6).map((m) => ({
+      role: m.role,
+      content: m.reply.text.slice(0, 2000),
+    }));
     setMessages((prev) => [
       ...prev,
       { id: nextId(), role: "user", reply: { text: question } },
-      { id: nextId(), role: "assistant", reply: answer(question) },
     ]);
+    setPending(true);
+
+    const local = answer(question);
+    let reply: AssistantReply = local;
+    try {
+      const result = await ask({ data: { question: question.slice(0, 500), history } });
+      if (result?.text) {
+        reply = { text: result.text, links: local.links, suggestions: local.suggestions };
+      }
+    } catch {
+      /* repli silencieux sur le moteur local */
+    }
+    setMessages((prev) => [...prev, { id: nextId(), role: "assistant", reply }]);
+    setPending(false);
   }
 
   return (
@@ -161,9 +182,15 @@ export function AssistantWidget() {
               ),
             )}
             <div ref={bottomRef} />
+            {pending && (
+              <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 size={14} className="animate-spin" aria-hidden />
+                L'assistant rédige une réponse…
+              </p>
+            )}
           </div>
 
-          {suggestions.length > 0 && (
+          {suggestions.length > 0 && !pending && (
             <div className="flex flex-wrap gap-2 border-t border-border px-4 py-3">
               {suggestions.map((s) => (
                 <button
@@ -194,11 +221,12 @@ export function AssistantWidget() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Posez votre question…"
+              maxLength={500}
               className="min-w-0 flex-1 rounded-full border border-border bg-card px-4 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary"
             />
             <button
               type="submit"
-              disabled={!input.trim()}
+              disabled={!input.trim() || pending}
               className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity disabled:opacity-40"
               aria-label="Envoyer la question"
             >
@@ -207,7 +235,8 @@ export function AssistantWidget() {
           </form>
 
           <p className="border-t border-border bg-background px-4 py-2 text-[10px] leading-snug text-muted-foreground">
-            Réponses automatiques fondées uniquement sur les informations publiques de ce site.
+            Réponses générées automatiquement à partir des informations publiques de ce site.
+            Elles peuvent contenir des imprécisions&nbsp;: en cas de doute, contactez Angel.
           </p>
         </div>
       )}
