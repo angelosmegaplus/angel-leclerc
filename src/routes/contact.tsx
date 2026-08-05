@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedSection } from "@/components/AnimatedSection";
-import { ProjectForm } from "@/components/ProjectForm";
+import { ContactChat, type Track } from "@/components/ContactChat";
 import { LatestArticles } from "@/components/LatestArticles";
 
 const TITLE = "Contact — Angel Leclerc Communication";
@@ -22,6 +22,12 @@ const DESCRIPTION =
   "Contacter Angel Leclerc : formulaire avec pièce jointe, e-mail contact@angel-leclerc.fr ou téléphone 06 01 76 69 78. Projet de communication, alternance BTS ou article du blog.";
 
 export const Route = createFileRoute("/contact")({
+  validateSearch: (search: Record<string, unknown>): { parcours?: Track } => {
+    const raw = typeof search['parcours'] === "string" ? (search['parcours'] as string) : "";
+    return raw === "projet" || raw === "alternance" || raw === "autre"
+      ? { parcours: raw }
+      : {};
+  },
   head: () => ({
     meta: [
       { title: TITLE },
@@ -53,6 +59,7 @@ export const Route = createFileRoute("/contact")({
 });
 
 function ContactPage() {
+  const { parcours } = Route.useSearch();
   return (
     <div className="bg-background">
       <section className="section-padding">
@@ -65,21 +72,14 @@ function ContactPage() {
               Me contacter
             </h1>
             <p className="mt-4 leading-relaxed text-muted-foreground">
-              Un projet de communication, une proposition d'alternance, une réaction à
-              un article du blog ou une demande presse&nbsp;: tout passe par ici.
+              Pas de long formulaire&nbsp;: je vous pose quelques questions, une par une,
+              et vous pouvez revenir en arrière à tout moment.
             </p>
           </AnimatedSection>
 
           <AnimatedSection delay={0.08} className="mt-10">
             <div className="mx-auto max-w-2xl">
-              <div className="mb-4 flex items-start gap-3 rounded-xl border border-primary/25 bg-primary/5 px-4 py-3 text-sm leading-relaxed text-muted-foreground">
-                <Paperclip size={16} className="mt-0.5 shrink-0 text-primary" />
-                <p>
-                  Vous pouvez joindre un document au formulaire (cahier des charges,
-                  offre d'alternance, visuel, PDF…) — 10&nbsp;Mo maximum.
-                </p>
-              </div>
-              <ProjectForm />
+              <ContactChat {...(parcours ? { initialTrack: parcours } : {})} />
             </div>
           </AnimatedSection>
 
