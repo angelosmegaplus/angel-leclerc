@@ -39,12 +39,26 @@ function LinkChip({ link, onDone }: { link: AssistantLink; onDone: () => void })
 
 export function AssistantWidget() {
   const [open, setOpen] = useState(false);
+  const [teaser, setTeaser] = useState(false);
+  const [teaserDone, setTeaserDone] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Msg[]>([
     { id: nextId(), role: "assistant", reply: WELCOME },
   ]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const show = window.setTimeout(() => setTeaser(true), 900);
+    const hide = window.setTimeout(() => {
+      setTeaser(false);
+      setTeaserDone(true);
+    }, 6000);
+    return () => {
+      window.clearTimeout(show);
+      window.clearTimeout(hide);
+    };
+  }, []);
 
   useEffect(() => {
     if (open) {
