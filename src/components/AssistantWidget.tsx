@@ -14,6 +14,53 @@ import {
 
 type Msg = { id: string; role: "user" | "assistant"; reply: AssistantReply };
 
+type BriefStep = {
+  key: string;
+  label: string;
+  question: string;
+  options?: string[];
+  free?: boolean;
+};
+
+const BRIEF_STEPS: BriefStep[] = [
+  {
+    key: "objectif",
+    label: "Objectif",
+    question: "Quel est votre objectif principal ?",
+    options: [
+      "Créer ou refondre un site",
+      "Animer mes réseaux sociaux",
+      "Identité visuelle & supports",
+      "Accompagner une association",
+      "Autre besoin",
+    ],
+  },
+  {
+    key: "structure",
+    label: "Structure",
+    question: "Vous représentez…",
+    options: ["Une entreprise", "Une association", "Une collectivité", "Un projet personnel"],
+  },
+  {
+    key: "delai",
+    label: "Échéance",
+    question: "Pour quand souhaitez-vous démarrer ?",
+    options: ["Dès que possible", "Sous 1 mois", "Dans 2 à 3 mois", "Pas encore défini"],
+  },
+  {
+    key: "budget",
+    label: "Budget",
+    question: "Quel budget avez-vous en tête ?",
+    options: ["Moins de 300 €", "300 à 800 €", "800 à 2 000 €", "Plus de 2 000 €", "À définir"],
+  },
+  {
+    key: "details",
+    label: "Précisions",
+    question: "Un détail utile à ajouter ? (facultatif)",
+    free: true,
+  },
+];
+
 let counter = 0;
 const nextId = () => `m${++counter}`;
 
