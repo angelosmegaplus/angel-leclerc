@@ -74,22 +74,22 @@ export const Route = createFileRoute("/entreprise")({
     meta: [
       {
         title:
-          "Services de communication à Sarlat | Angel Leclerc Communication",
+          "Services de communication | Angel Leclerc Communication",
       },
       {
         name: "description",
         content:
-          "Gestion de projets de communication, conseil stratégique, rédaction éditoriale et journalistique pour professionnels, associations et porteurs de projets.",
+          "Gestion de projets de communication, conseil stratégique, rédaction éditoriale et journalistique pour entreprises, associations, collectivités et porteurs de projet, partout en France.",
       },
       {
         property: "og:title",
         content:
-          "Services de communication à Sarlat | Angel Leclerc Communication",
+          "Services de communication | Angel Leclerc Communication",
       },
       {
         property: "og:description",
         content:
-          "Gestion de projets de communication, conseil stratégique, rédaction éditoriale et journalistique pour professionnels, associations et porteurs de projets.",
+          "Gestion de projets de communication, conseil stratégique, rédaction éditoriale et journalistique pour entreprises, associations, collectivités et porteurs de projet, partout en France.",
       },
       { property: "og:url", content: "/entreprise" },
     ],
