@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { ArrowRight, Briefcase, User, Sparkles, FileText } from "lucide-react";
+import { ArrowRight, Briefcase, User, MapPin, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.svg";
 import { LatestArticles } from "@/components/LatestArticles";
@@ -8,18 +8,20 @@ import { LatestArticles } from "@/components/LatestArticles";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Angel Leclerc — Entreprise & Parcours" },
+      { title: "Angel Leclerc — Communication à Sarlat | Services & CV" },
       {
         name: "description",
         content:
-          "Choisissez votre entrée : découvrez Angel Leclerc Communication (services aux professionnels et associations) ou consultez mon parcours personnel et mon CV en ligne.",
+          "Angel Leclerc, communication à Sarlat et en Périgord noir : gestion de projet, conseil et rédaction pour professionnels et associations. Parcours et CV en ligne.",
       },
-      { property: "og:title", content: "Angel Leclerc — Entreprise & Parcours" },
+      { property: "og:title", content: "Angel Leclerc — Communication à Sarlat | Services & CV" },
       {
         property: "og:description",
         content:
-          "Deux entrées : Angel Leclerc Communication (services) ou mon parcours personnel (CV en ligne).",
+          "Gestion de projet, conseil en communication et rédaction pour professionnels et associations. Parcours et CV en ligne.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { property: "og:url", content: "/" },
     ],
     links: [{ rel: "canonical", href: "/" }],
@@ -102,15 +104,15 @@ function LandingPage() {
             </div>
           </motion.div>
 
-          <motion.span
+          <motion.p
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.35 }}
             className="mt-10 inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-muted-foreground backdrop-blur"
           >
-            <Sparkles size={12} className="text-primary" />
-            Bienvenue
-          </motion.span>
+            <MapPin size={12} className="text-primary" />
+            Communication · Sarlat &amp; Périgord noir
+          </motion.p>
 
           <motion.h1
             initial={{ opacity: 0, y: 16 }}
@@ -136,21 +138,28 @@ function LandingPage() {
             transition={{ duration: 0.6, delay: 0.75 }}
             className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg"
           >
-            Ce site a deux entrées&nbsp;: mon activité professionnelle et mon
-            parcours personnel. Choisissez celle qui vous intéresse.
+            J'accompagne professionnels, associations et collectivités dans leur
+            communication&nbsp;: gestion de projet, conseil et rédaction. Ce site
+            présente aussi mon parcours et mon CV en ligne.
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.9 }}
-            className="mt-8"
+            className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center"
           >
             <Button
               asChild
               size="lg"
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
+              <Link to="/contact">
+                Parler de votre projet
+                <ArrowRight size={18} />
+              </Link>
+            </Button>
+            <Button asChild size="lg" variant="outline">
               <Link to="/parcours">
                 <FileText size={18} />
                 Voir mon CV
