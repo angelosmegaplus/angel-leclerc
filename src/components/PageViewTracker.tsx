@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { trackPageView } from "@/lib/analytics.functions";
-import { useConsentFor } from "@/hooks/useConsent";
 
 function deviceType(): "mobile" | "tablette" | "ordinateur" {
   const w = window.innerWidth;
@@ -30,11 +29,9 @@ export function PageViewTracker() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const track = useServerFn(trackPageView);
   const last = useRef<string | null>(null);
-  const allowed = useConsentFor("audience");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (!allowed) return;
     if (last.current === pathname) return;
     if (pathname.startsWith("/admin") || pathname.startsWith("/auth")) return;
     last.current = pathname;
@@ -46,7 +43,7 @@ export function PageViewTracker() {
         sessionId: sessionId(),
       },
     }).catch(() => {});
-  }, [pathname, track, allowed]);
+  }, [pathname, track]);
 
   return null;
 }
