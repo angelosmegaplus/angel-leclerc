@@ -8,6 +8,7 @@ import { getShopCatalog } from "@/lib/shop.functions";
 import { formatPrice, type ShopProduct } from "@/lib/shop";
 import { useCartStore } from "@/stores/cartStore";
 import { useCartUi } from "@/components/CartDrawer";
+import { CartButton } from "@/components/CartButton";
 
 export const Route = createFileRoute("/boutique/")({
   head: () => {
