@@ -71,6 +71,63 @@ export type Database = {
         }
         Relationships: []
       }
+      audio_items: {
+        Row: {
+          audio_url: string
+          author: string | null
+          created_at: string
+          description: string | null
+          duration_seconds: number | null
+          id: string
+          image_url: string | null
+          in_radio: boolean
+          kind: string
+          published: boolean
+          published_at: string | null
+          sort_order: number
+          source_label: string | null
+          source_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          audio_url: string
+          author?: string | null
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number | null
+          id?: string
+          image_url?: string | null
+          in_radio?: boolean
+          kind?: string
+          published?: boolean
+          published_at?: string | null
+          sort_order?: number
+          source_label?: string | null
+          source_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          audio_url?: string
+          author?: string | null
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number | null
+          id?: string
+          image_url?: string | null
+          in_radio?: boolean
+          kind?: string
+          published?: boolean
+          published_at?: string | null
+          sort_order?: number
+          source_label?: string | null
+          source_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       blog_subscribers: {
         Row: {
           active: boolean
