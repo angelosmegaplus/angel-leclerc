@@ -8,6 +8,7 @@ import { getShopCatalog } from "@/lib/shop.functions";
 import { formatPrice, type ShopProduct } from "@/lib/shop";
 import { useCartStore } from "@/stores/cartStore";
 import { useCartUi } from "@/components/CartDrawer";
+import { CartButton } from "@/components/CartButton";
 
 export const Route = createFileRoute("/boutique/")({
   head: () => {
@@ -62,9 +63,12 @@ function BoutiquePage() {
   return (
     <div className="container-tight py-10 sm:py-16">
       <header className="max-w-2xl">
-        <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-          Boutique
-        </h1>
+        <div className="flex items-start justify-between gap-4">
+          <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            Boutique
+          </h1>
+          <CartButton className="mt-2" />
+        </div>
         <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-primary">
           ALC!
         </p>
