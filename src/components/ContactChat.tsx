@@ -373,7 +373,6 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
       setAsk("");
       setError(null);
       push({ role: "user", text: question, aside: true });
-      if (URGENT_PATTERNS.test(question)) setUrgent(true);
       setThinking(true);
 
       const history = messages
@@ -423,7 +422,6 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
       ...prev.filter((m) => m.stepIndex !== stepIndex),
       { id: uid(), role: "user", text: value, stepIndex },
     ]);
-    if (URGENT_PATTERNS.test(value)) setUrgent(true);
     // Récapitulatif régulier, tous les trois éléments collectés.
     const collected = Object.entries({ ...answers, [step.id]: value }).filter(
       ([, v]) => v.trim().length > 0,
