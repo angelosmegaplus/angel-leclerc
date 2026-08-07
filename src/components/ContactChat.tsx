@@ -627,8 +627,6 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
         </div>
       )}
 
-      {urgent && <UrgentCard onDismiss={() => setUrgent(false)} />}
-
       <AnimatePresence mode="wait">
         <motion.div
           key={track ? `${track}-${index}` : "start"}
@@ -854,6 +852,102 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
                         ))}
                       </div>
                     </fieldset>
+
+                    <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-border bg-background px-4 py-3 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={contact.callback}
+                        onChange={(e) =>
+                          setContact((c) => ({ ...c, callback: e.target.checked }))
+                        }
+                        className="mt-0.5 h-4 w-4 accent-[var(--color-primary)]"
+                      />
+                      <span>
+                        <span className="block text-foreground">
+                          Je souhaite être rappelé·e
+                        </span>
+                        <span className="block text-xs text-muted-foreground">
+                          Facultatif — vous pouvez indiquer un moment qui vous arrange.
+                        </span>
+                      </span>
+                    </label>
+
+                    {contact.callback && (
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <label className="text-sm">
+                          <span className="mb-1 block text-xs font-medium text-muted-foreground">
+                            Date souhaitée (facultatif)
+                          </span>
+                          <input
+                            type="date"
+                            value={contact.callbackDate}
+                            onChange={(e) =>
+                              setContact((c) => ({ ...c, callbackDate: e.target.value }))
+                            }
+                            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary"
+                          />
+                        </label>
+                        <label className="text-sm">
+                          <span className="mb-1 block text-xs font-medium text-muted-foreground">
+                            Heure ou créneau (facultatif)
+                          </span>
+                          <input
+                            type="text"
+                            value={contact.callbackSlot}
+                            placeholder="Ex. : matin, ou 14 h - 16 h"
+                            onChange={(e) =>
+                              setContact((c) => ({ ...c, callbackSlot: e.target.value }))
+                            }
+                            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary"
+                          />
+                        </label>
+                      </div>
+                    )}
+
+                    <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-border bg-background px-4 py-3 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={urgent}
+                        onChange={(e) => {
+                          setUrgent(e.target.checked);
+                          if (!e.target.checked) setUrgentConfirmed(false);
+                        }}
+                        className="mt-0.5 h-4 w-4 accent-[var(--color-primary)]"
+                      />
+                      <span>
+                        <span className="block text-foreground">C'est urgent</span>
+                        <span className="block text-xs text-muted-foreground">
+                          Réservé aux demandes réellement urgentes.
+                        </span>
+                      </span>
+                    </label>
+
+                    {urgent && !urgentConfirmed && (
+                      <div className="rounded-xl border border-primary/40 bg-primary/5 p-4">
+                        <p className="flex items-start gap-2 text-sm font-medium text-foreground">
+                          <AlertTriangle size={15} className="mt-0.5 text-primary" aria-hidden />
+                          Confirmez-vous qu'il s'agit d'une demande urgente&nbsp;?
+                        </p>
+                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                          Après confirmation, les moyens de contact directs s'afficheront
+                          ici, avec des boutons pour les copier.
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <Button size="sm" onClick={() => setUrgentConfirmed(true)}>
+                            Oui, c'est urgent
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setUrgent(false)}
+                          >
+                            Non, annuler
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {urgent && urgentConfirmed && <RevealContact compact />}
                   </div>
                 )}
               </div>
