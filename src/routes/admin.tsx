@@ -147,7 +147,7 @@ function AdminPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [tab, setTab] = useState<
-    "articles" | "messages" | "abonnes" | "stats" | "contenus" | "avis" | "boutique" | "radio"
+    "articles" | "messages" | "abonnes" | "stats" | "contenus" | "avis" | "boutique"
   >("articles");
   const sendNewsletter = useServerFn(sendNewsletterNow);
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
