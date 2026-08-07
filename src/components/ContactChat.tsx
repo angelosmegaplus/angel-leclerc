@@ -5,14 +5,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
   ArrowRight,
+  AlertTriangle,
   CheckCircle2,
   FileText,
   Info,
   Loader2,
-  Mail,
   MessageCircleQuestion,
   Pencil,
-  Phone,
   Send,
   Sparkles,
 } from "lucide-react";
@@ -222,9 +221,6 @@ const NEXT_STEPS: Record<Track, string> = {
 
 const STORAGE_KEY = "alc-contact-chat";
 
-const URGENT_PATTERNS =
-  /(urgent|urgence|aujourd'?hui|dans l'heure|immédiat|tout de suite|au plus vite|demain matin|crise|sinistre|litige|juridique|décès|presse|journaliste|incident)/i;
-
 const START_SUGGESTIONS = [
   "Que propose Angel exactement ?",
   "Combien coûte une affiche ?",
@@ -248,9 +244,20 @@ type ContactState = {
   email: string;
   phone: string;
   preference: string;
+  callback: boolean;
+  callbackDate: string;
+  callbackSlot: string;
 };
 
-const EMPTY_CONTACT: ContactState = { name: "", email: "", phone: "", preference: "" };
+const EMPTY_CONTACT: ContactState = {
+  name: "",
+  email: "",
+  phone: "",
+  preference: "",
+  callback: false,
+  callbackDate: "",
+  callbackSlot: "",
+};
 
 type Saved = {
   track: Track | null;
@@ -283,6 +290,7 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
   const [ask, setAsk] = useState("");
   const [thinking, setThinking] = useState(false);
   const [urgent, setUrgent] = useState(false);
+  const [urgentConfirmed, setUrgentConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -365,7 +373,6 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
       setAsk("");
       setError(null);
       push({ role: "user", text: question, aside: true });
-      if (URGENT_PATTERNS.test(question)) setUrgent(true);
       setThinking(true);
 
       const history = messages
@@ -415,7 +422,6 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
       ...prev.filter((m) => m.stepIndex !== stepIndex),
       { id: uid(), role: "user", text: value, stepIndex },
     ]);
-    if (URGENT_PATTERNS.test(value)) setUrgent(true);
     // Récapitulatif régulier, tous les trois éléments collectés.
     const collected = Object.entries({ ...answers, [step.id]: value }).filter(
       ([, v]) => v.trim().length > 0,
@@ -495,6 +501,18 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
       .filter((s) => s.kind !== "contact")
       .map((s) => ({ question: s.question, answer: (answers[s.id] ?? "").trim() }))
       .filter((a) => a.answer.length > 0);
+    if (contact.callback) {
+      const when = [contact.callbackDate.trim(), contact.callbackSlot.trim()]
+        .filter(Boolean)
+        .join(" — ");
+      payload.push({
+        question: "Souhaite être rappelé·e",
+        answer: when || "Oui, sans préférence de créneau",
+      });
+    }
+    if (urgent && urgentConfirmed) {
+      payload.push({ question: "Demande signalée comme urgente", answer: "Oui" });
+    }
     if (payload.length === 0) {
       setError("Merci de compléter au moins une réponse.");
       return;
@@ -620,8 +638,6 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
           <div ref={transcriptEndRef} />
         </div>
       )}
-
-      {urgent && <UrgentCard onDismiss={() => setUrgent(false)} />}
 
       <AnimatePresence mode="wait">
         <motion.div
@@ -848,6 +864,102 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
                         ))}
                       </div>
                     </fieldset>
+
+                    <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-border bg-background px-4 py-3 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={contact.callback}
+                        onChange={(e) =>
+                          setContact((c) => ({ ...c, callback: e.target.checked }))
+                        }
+                        className="mt-0.5 h-4 w-4 accent-[var(--color-primary)]"
+                      />
+                      <span>
+                        <span className="block text-foreground">
+                          Je souhaite être rappelé·e
+                        </span>
+                        <span className="block text-xs text-muted-foreground">
+                          Facultatif — vous pouvez indiquer un moment qui vous arrange.
+                        </span>
+                      </span>
+                    </label>
+
+                    {contact.callback && (
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <label className="text-sm">
+                          <span className="mb-1 block text-xs font-medium text-muted-foreground">
+                            Date souhaitée (facultatif)
+                          </span>
+                          <input
+                            type="date"
+                            value={contact.callbackDate}
+                            onChange={(e) =>
+                              setContact((c) => ({ ...c, callbackDate: e.target.value }))
+                            }
+                            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary"
+                          />
+                        </label>
+                        <label className="text-sm">
+                          <span className="mb-1 block text-xs font-medium text-muted-foreground">
+                            Heure ou créneau (facultatif)
+                          </span>
+                          <input
+                            type="text"
+                            value={contact.callbackSlot}
+                            placeholder="Ex. : matin, ou 14 h - 16 h"
+                            onChange={(e) =>
+                              setContact((c) => ({ ...c, callbackSlot: e.target.value }))
+                            }
+                            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary"
+                          />
+                        </label>
+                      </div>
+                    )}
+
+                    <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-border bg-background px-4 py-3 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={urgent}
+                        onChange={(e) => {
+                          setUrgent(e.target.checked);
+                          if (!e.target.checked) setUrgentConfirmed(false);
+                        }}
+                        className="mt-0.5 h-4 w-4 accent-[var(--color-primary)]"
+                      />
+                      <span>
+                        <span className="block text-foreground">C'est urgent</span>
+                        <span className="block text-xs text-muted-foreground">
+                          Réservé aux demandes réellement urgentes.
+                        </span>
+                      </span>
+                    </label>
+
+                    {urgent && !urgentConfirmed && (
+                      <div className="rounded-xl border border-primary/40 bg-primary/5 p-4">
+                        <p className="flex items-start gap-2 text-sm font-medium text-foreground">
+                          <AlertTriangle size={15} className="mt-0.5 text-primary" aria-hidden />
+                          Confirmez-vous qu'il s'agit d'une demande urgente&nbsp;?
+                        </p>
+                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                          Après confirmation, les moyens de contact directs s'afficheront
+                          ici, avec des boutons pour les copier.
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <Button size="sm" onClick={() => setUrgentConfirmed(true)}>
+                            Oui, c'est urgent
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setUrgent(false)}
+                          >
+                            Non, annuler
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {urgent && urgentConfirmed && <RevealContact compact />}
                   </div>
                 )}
               </div>
@@ -1070,25 +1182,3 @@ function Bubble({ msg }: { msg: Msg }) {
   );
 }
 
-function UrgentCard({ onDismiss }: { onDismiss: () => void }) {
-  return (
-    <div className="mb-5 rounded-xl border border-primary/40 bg-primary/5 p-4">
-      <p className="text-sm font-medium text-foreground">
-        Votre demande semble urgente.
-      </p>
-      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-        Dans ce cas seulement, vous pouvez afficher les coordonnées directes après une
-        courte vérification. Sinon, le récapitulatif envoyé depuis cette page parvient
-        immédiatement à Angel.
-      </p>
-      <div className="mt-3">
-        <RevealContact compact />
-      </div>
-      <div className="mt-3">
-        <Button size="sm" variant="ghost" onClick={onDismiss}>
-          Continuer la conversation
-        </Button>
-      </div>
-    </div>
-  );
-}

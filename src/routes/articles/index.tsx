@@ -5,8 +5,6 @@ import { ArrowRight, Search } from "lucide-react";
 import { fetchPublishedArticles, formatDate, type Article } from "@/lib/articles";
 import { BlogSubscribe } from "@/components/BlogSubscribe";
 import { ShareArticle } from "@/components/ShareArticle";
-import { RadioSkingomz } from "@/components/RadioSkingomz";
-import { PodcastList } from "@/components/PodcastList";
 import { SITE_URL } from "@/routes/articles/$slug";
 import { Input } from "@/components/ui/input";
 
@@ -143,10 +141,6 @@ function ArticlesPage() {
             </div>
           ))}
         </div>
-
-        <RadioSkingomz />
-
-        <PodcastList />
 
         <div className="mt-12 max-w-xl">
           <BlogSubscribe />

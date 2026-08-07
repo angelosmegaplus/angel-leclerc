@@ -1,6 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
-import { CATEGORY_INFO, openCookiePreferences } from "@/lib/cookie-consent";
+
+const CATEGORY_INFO = [
+  {
+    id: "necessaires",
+    label: "Strictement nécessaires",
+    purpose:
+      "Fonctionnement du site : session de connexion à l'espace personnel, panier de la boutique, sécurité des formulaires (anti-robot).",
+    examples: "Authentification, panier, vérification anti-robot",
+    duration: "Session à 6 mois",
+  },
+  {
+    id: "mesure",
+    label: "Mesure d'audience anonyme",
+    purpose:
+      "Comptage interne et anonyme des pages vues, sans profilage, sans partage avec un tiers et sans régie publicitaire. Cette mesure est exemptée de consentement.",
+    examples: "Statistiques internes (identifiant de session temporaire)",
+    duration: "Session",
+  },
+] as const;
 
 const TITLE = "Politique des cookies — Angel Leclerc Communication";
 const DESCRIPTION =
@@ -30,10 +47,10 @@ function CookiePolicyPage() {
             Politique des cookies
           </h1>
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-            Ce site utilise un nombre volontairement réduit de traceurs. Les cookies et
-            stockages strictement nécessaires au fonctionnement sont toujours actifs&nbsp;;
-            toutes les autres catégories dépendent de votre consentement explicite, qui
-            n'est jamais présélectionné et peut être retiré à tout moment.
+            Ce site n'utilise aucun traceur soumis à consentement : ni publicité, ni
+            profilage, ni outil d'analyse tiers. Seuls des stockages strictement
+            nécessaires au fonctionnement et une mesure d'audience interne et anonyme
+            sont utilisés. Aucun bandeau de consentement n'est donc nécessaire.
           </p>
 
           <div className="mt-8 space-y-4">
@@ -52,22 +69,12 @@ function CookiePolicyPage() {
             Prestataires et contenus tiers
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Hébergement et base de données : Lovable et Supabase (Union européenne).
+            Hébergement et base de données : Lovable (Union européenne).
             Envoi d'e-mails transactionnels : Resend. Boutique et paiements :
             Stripe et Printful, uniquement si vous passez commande. Médias intégrés
-            (vidéos, lecteurs) : chargés seulement après acceptation de la catégorie
-            « Services tiers / médias intégrés ». Aucune régie publicitaire ni pixel
+            (vidéos) : chargés en mode sans cookie (youtube-nocookie). Aucune régie publicitaire ni pixel
             marketing n'est utilisé aujourd'hui&nbsp;; cette page sera mise à jour si
             cela venait à changer.
-          </p>
-
-          <h2 className="mt-8 font-display text-xl font-bold text-foreground">
-            Preuve de votre choix
-          </h2>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Seuls la version du bandeau, la date du choix et les catégories acceptées
-            sont conservées dans votre navigateur. Aucune donnée personnelle n'y est
-            associée.
           </p>
 
           <h2 className="mt-8 font-display text-xl font-bold text-foreground">
@@ -79,10 +86,6 @@ function CookiePolicyPage() {
             utilisée à des fins commerciales et n'est conservée que le temps nécessaire
             au traitement de la demande.
           </p>
-
-          <div className="mt-10">
-            <Button onClick={openCookiePreferences}>Gérer mes cookies</Button>
-          </div>
         </div>
       </section>
     </div>

@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Linkedin, Instagram, Facebook } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
-import { RevealContact } from "@/components/RevealContact";
 import { ContactChat, type Track } from "@/components/ContactChat";
 import { LatestArticles } from "@/components/LatestArticles";
 
@@ -69,10 +68,6 @@ function ContactPage() {
             <div className="mx-auto max-w-2xl">
               <ContactChat {...(parcours ? { initialTrack: parcours } : {})} />
             </div>
-          </AnimatedSection>
-
-          <AnimatedSection delay={0.14} className="mt-10">
-            <RevealContact />
           </AnimatedSection>
 
           <AnimatedSection delay={0.24} className="mt-10">
