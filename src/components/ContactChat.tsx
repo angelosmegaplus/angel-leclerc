@@ -5,14 +5,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
   ArrowRight,
+  AlertTriangle,
   CheckCircle2,
   FileText,
   Info,
   Loader2,
-  Mail,
   MessageCircleQuestion,
   Pencil,
-  Phone,
   Send,
   Sparkles,
 } from "lucide-react";
@@ -222,9 +221,6 @@ const NEXT_STEPS: Record<Track, string> = {
 
 const STORAGE_KEY = "alc-contact-chat";
 
-const URGENT_PATTERNS =
-  /(urgent|urgence|aujourd'?hui|dans l'heure|immédiat|tout de suite|au plus vite|demain matin|crise|sinistre|litige|juridique|décès|presse|journaliste|incident)/i;
-
 const START_SUGGESTIONS = [
   "Que propose Angel exactement ?",
   "Combien coûte une affiche ?",
@@ -248,9 +244,20 @@ type ContactState = {
   email: string;
   phone: string;
   preference: string;
+  callback: boolean;
+  callbackDate: string;
+  callbackSlot: string;
 };
 
-const EMPTY_CONTACT: ContactState = { name: "", email: "", phone: "", preference: "" };
+const EMPTY_CONTACT: ContactState = {
+  name: "",
+  email: "",
+  phone: "",
+  preference: "",
+  callback: false,
+  callbackDate: "",
+  callbackSlot: "",
+};
 
 type Saved = {
   track: Track | null;
@@ -283,6 +290,7 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
   const [ask, setAsk] = useState("");
   const [thinking, setThinking] = useState(false);
   const [urgent, setUrgent] = useState(false);
+  const [urgentConfirmed, setUrgentConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
