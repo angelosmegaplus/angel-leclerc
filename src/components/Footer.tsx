@@ -1,6 +1,5 @@
 import { Linkedin, Instagram, Facebook } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { openCookiePreferences } from "@/lib/cookie-consent";
 
 const navLinks = [
   { to: "/", label: "Accueil" },
@@ -136,14 +135,6 @@ export function Footer() {
               >
                 Politique des cookies
               </Link>
-              <span aria-hidden className="text-muted-foreground/60">·</span>
-              <button
-                type="button"
-                onClick={openCookiePreferences}
-                className="text-muted-foreground/90 underline-offset-4 transition-colors hover:text-foreground hover:underline"
-              >
-                Gérer mes cookies
-              </button>
               <span aria-hidden className="text-muted-foreground/60">·</span>
               <Link
                 to="/boutique"

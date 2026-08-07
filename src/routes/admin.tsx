@@ -23,10 +23,8 @@ import {
   LayoutList,
   ShoppingBag,
   FileText,
-  Radio,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { AudioAdmin } from "@/components/AudioAdmin";
 import { ShopAdmin } from "@/components/ShopAdmin";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -651,7 +649,6 @@ function AdminPage() {
                     ["abonnes", "Abonnés", Users, subscribers.length],
                     ["contenus", "Parcours & services", LayoutList, 0],
                     ["avis", "Avis et soutiens", Star, 0],
-                    ["radio", "Radio & podcasts", Radio, 0],
                     ["boutique", "Boutique", ShoppingBag, 0],
                     ["stats", "Statistiques", BarChart3, 0],
                   ] as const
@@ -693,8 +690,6 @@ function AdminPage() {
             {tab === "contenus" && <ContentAdmin />}
 
             {tab === "avis" && <FeedbackAdmin />}
-
-            {tab === "radio" && <AudioAdmin />}
 
             {tab === "boutique" && <ShopAdmin />}
 

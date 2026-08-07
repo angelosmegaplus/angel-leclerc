@@ -54,7 +54,10 @@ function MentionsLegales() {
               <li><span className="text-foreground">Code APE :</span> 7021Z — Conseil en relations publiques et communication</li>
               <li><span className="text-foreground">TVA :</span> non applicable, article 293 B du Code général des impôts</li>
               <li><span className="text-foreground">Email :</span> contact@angel-leclerc.fr</li>
-              <li><span className="text-foreground">Téléphone :</span> 06 01 76 69 78</li>
+              <li>
+                <span className="text-foreground">Téléphone :</span> communiqué sur demande via la
+                page Contact
+              </li>
             </ul>
           </div>
 
