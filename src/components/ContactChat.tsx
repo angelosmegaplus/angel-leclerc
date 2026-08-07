@@ -501,6 +501,18 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
       .filter((s) => s.kind !== "contact")
       .map((s) => ({ question: s.question, answer: (answers[s.id] ?? "").trim() }))
       .filter((a) => a.answer.length > 0);
+    if (contact.callback) {
+      const when = [contact.callbackDate.trim(), contact.callbackSlot.trim()]
+        .filter(Boolean)
+        .join(" — ");
+      payload.push({
+        question: "Souhaite être rappelé·e",
+        answer: when || "Oui, sans préférence de créneau",
+      });
+    }
+    if (urgent && urgentConfirmed) {
+      payload.push({ question: "Demande signalée comme urgente", answer: "Oui" });
+    }
     if (payload.length === 0) {
       setError("Merci de compléter au moins une réponse.");
       return;
@@ -1170,25 +1182,3 @@ function Bubble({ msg }: { msg: Msg }) {
   );
 }
 
-function UrgentCard({ onDismiss }: { onDismiss: () => void }) {
-  return (
-    <div className="mb-5 rounded-xl border border-primary/40 bg-primary/5 p-4">
-      <p className="text-sm font-medium text-foreground">
-        Votre demande semble urgente.
-      </p>
-      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-        Dans ce cas seulement, vous pouvez afficher les coordonnées directes après une
-        courte vérification. Sinon, le récapitulatif envoyé depuis cette page parvient
-        immédiatement à Angel.
-      </p>
-      <div className="mt-3">
-        <RevealContact compact />
-      </div>
-      <div className="mt-3">
-        <Button size="sm" variant="ghost" onClick={onDismiss}>
-          Continuer la conversation
-        </Button>
-      </div>
-    </div>
-  );
-}
