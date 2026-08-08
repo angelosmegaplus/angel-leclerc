@@ -67,11 +67,11 @@ function SectionHeader({
           {eyebrow}
         </span>
       )}
-      <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
+      <h2 className="mt-3 font-display text-[1.65rem] font-bold leading-tight text-foreground sm:text-3xl md:text-4xl">
         {title}
       </h2>
       {intro && (
-        <p className="mt-4 text-muted-foreground leading-relaxed">{intro}</p>
+        <p className="mt-3 text-[0.95rem] leading-relaxed text-muted-foreground md:mt-4 md:text-base">{intro}</p>
       )}
     </div>
   );
@@ -87,7 +87,7 @@ function Card({
   return (
     <div
       className={
-        "rounded-2xl border border-border bg-card p-6 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-shadow hover:shadow-md " +
+        "rounded-2xl border border-border bg-card p-4 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-shadow hover:shadow-md sm:p-6 " +
         className
       }
     >
@@ -104,19 +104,19 @@ function IntroSection() {
         <div className="absolute -bottom-32 -right-24 h-[420px] w-[420px] rounded-full bg-secondary/20 blur-3xl" />
       </div>
 
-      <div className="container-tight relative py-16 md:py-24">
-        <div className="grid items-center gap-10 md:grid-cols-[1.4fr_1fr]">
-          <div>
+      <div className="container-tight relative py-10 md:py-24">
+        <div className="grid items-center gap-8 md:grid-cols-[1.4fr_1fr] md:gap-10">
+          <div className="order-2 md:order-1">
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
               <Calendar size={12} /> Disponible à partir de septembre 2026
             </span>
-            <h1 className="mt-4 font-display text-5xl font-bold leading-tight tracking-tight text-foreground md:text-6xl">
+            <h1 className="mt-4 font-display text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl md:text-6xl">
               Angel <span className="italic text-primary">Leclerc</span>
             </h1>
-            <p className="mt-3 font-display text-lg text-foreground/80 md:text-xl">
+            <p className="mt-3 font-display text-base text-foreground/80 sm:text-lg md:text-xl">
               Étudiant en communication — recherche d'alternance à Sarlat
             </p>
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground">
+            <p className="mt-4 max-w-xl text-[0.95rem] leading-relaxed text-muted-foreground md:mt-6 md:text-base">
               Je recherche une entreprise pour préparer un BTS Communication en
               alternance à partir de septembre 2026. Création de contenus,
               rédaction, communication numérique, accueil du public et gestion
@@ -124,36 +124,36 @@ function IntroSection() {
               d'une structure située à Sarlat-la-Canéda ou dans ses environs
               accessibles en scooter.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-6 grid grid-cols-1 gap-2.5 sm:flex sm:flex-wrap sm:gap-3 md:mt-8">
               <a
                 href="#cv"
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 sm:justify-start"
               >
                 <FileText size={16} /> Voir mon CV
               </a>
               <a
                 href="/cv-angel-leclerc.pdf"
                 download
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary sm:justify-start"
               >
                 <Download size={16} /> Télécharger mon CV
               </a>
               <a
                 href="#alternance"
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary sm:justify-start"
               >
                 <GraduationCap size={16} /> Voir le BTS Communication
               </a>
               <a
                 href="#outils"
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary sm:justify-start"
               >
                 <Wrench size={16} /> Voir les outils utilisés
               </a>
             </div>
           </div>
 
-          <div className="mx-auto flex w-full max-w-sm items-center justify-center md:mx-0">
+          <div className="order-1 mx-auto flex w-full max-w-sm items-center justify-center md:order-2 md:mx-0">
             <div className="relative">
               <div
                 aria-hidden
@@ -162,7 +162,7 @@ function IntroSection() {
               <img
                 src={photo.url}
                 alt="Portrait d'Angel Leclerc"
-                className="relative h-56 w-56 rounded-full border border-border object-cover shadow-lg md:h-64 md:w-64"
+                className="relative h-40 w-40 rounded-full border border-border object-cover shadow-lg sm:h-56 sm:w-56 md:h-64 md:w-64"
                 width={256}
                 height={256}
               />
@@ -474,7 +474,7 @@ export function RealisationsSection() {
             intro="Quelques projets qui montrent concrètement ma manière de travailler."
           />
 
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
+          <div className="mt-8 grid md:mt-12 gap-6 md:grid-cols-2">
             {list.map((p) => (
               <Card key={p.title} className="flex h-full flex-col">
                 <div className="flex items-center gap-4">
@@ -601,7 +601,7 @@ export function SkillsSection() {
         <div className="container-tight">
           <SectionHeader eyebrow="Savoir-faire" title="Mes compétences" />
 
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
+          <div className="mt-8 grid md:mt-12 gap-6 md:grid-cols-2">
             {skills.map((s) => (
               <Card key={s.title}>
                 <div className="flex items-center gap-3">
@@ -719,7 +719,7 @@ function ExperiencesSection() {
         <div className="container-tight">
           <SectionHeader eyebrow="Parcours" title="Expériences professionnelles" />
 
-          <div className="mt-12 space-y-4">
+          <div className="mt-8 space-y-4 md:mt-12">
             {list.map((exp, idx) => (
               <Card key={`${exp.role}-${idx}`}>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
@@ -913,7 +913,7 @@ function CertificationsSection() {
         <div className="container-tight">
           <SectionHeader eyebrow="Attestations" title="Certifications" />
 
-          <div className="mt-12 grid gap-4 md:grid-cols-2">
+          <div className="mt-8 grid md:mt-12 gap-4 md:grid-cols-2">
             {list.map((c, idx) => (
               <Card key={`${c.name}-${idx}`} className="flex items-start gap-4">
                 {c.domain ? (
@@ -997,7 +997,7 @@ function EngagementsSection() {
         <div className="container-tight">
           <SectionHeader eyebrow="Vie associative" title="Engagements associatifs" />
 
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
+          <div className="mt-8 grid md:mt-12 gap-6 md:grid-cols-2">
             {list.map((e, idx) => (
               <Card key={`${e.org}-${idx}`} className="flex h-full flex-col">
                 <div className="flex items-start gap-4">
@@ -1196,7 +1196,7 @@ export function PassionsSection() {
             title="Mes passions"
             intro="Au-delà de la communication, de nombreuses choses nourrissent ma créativité et mon envie de créer."
           />
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid md:mt-12 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {passions.map((p) => (
               <Card key={p.title} className="flex h-full flex-col">
                 <p.icon size={24} className="text-primary" />
