@@ -1124,9 +1124,15 @@ function ToolsSection() {
                 </div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {cat.tools.map((t) => (
-                    <div key={t.name} className="flex items-start gap-3 rounded-xl border border-border bg-card p-4">
+                    <a
+                      key={t.name}
+                      href={t.domain ? `https://${t.domain}` : undefined}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-start gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary"
+                    >
                       {t.domain ? (
-                        <Logo domain={t.domain} alt={t.name} size={40} />
+                        <Logo domain={t.domain} alt={t.name} size={40} link={false} />
                       ) : (
                         <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-background text-primary">
                           {t.icon ? <t.icon size={18} /> : <Wrench size={18} />}
@@ -1140,7 +1146,7 @@ function ToolsSection() {
                           {t.use}
                         </p>
                       </div>
-                    </div>
+                    </a>
                   ))}
                 </div>
               </div>
