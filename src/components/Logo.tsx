@@ -80,12 +80,18 @@ export function Logo({
   size = 40,
   rounded = true,
   bare = false,
+  href,
+  link = true,
 }: {
   domain: string;
   alt: string;
   size?: number;
   rounded?: boolean;
   bare?: boolean;
+  /** Explicit destination. Defaults to the brand's own site. */
+  href?: string;
+  /** Set to false when the logo is already inside a link. */
+  link?: boolean;
 }) {
   const chain = sources(domain);
   const [idx, setIdx] = useState(0);
@@ -98,7 +104,7 @@ export function Logo({
     ? "inline-flex shrink-0 items-center justify-center"
     : `inline-flex shrink-0 items-center justify-center border border-border bg-background ${rounded ? "rounded-xl" : ""}`;
 
-  return (
+  const box = (
     <span
       className={boxCls}
       style={{ width: size, height: size }}
@@ -138,5 +144,20 @@ export function Logo({
         </span>
       )}
     </span>
+  );
+
+  if (!link) return box;
+
+  return (
+    <a
+      href={href ?? `https://${domain}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`${alt} — ouvrir le site`}
+      title={alt}
+      className="inline-flex shrink-0 rounded-xl transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      {box}
+    </a>
   );
 }
