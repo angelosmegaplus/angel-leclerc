@@ -67,11 +67,11 @@ function SectionHeader({
           {eyebrow}
         </span>
       )}
-      <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
+      <h2 className="mt-3 font-display text-[1.65rem] font-bold leading-tight text-foreground sm:text-3xl md:text-4xl">
         {title}
       </h2>
       {intro && (
-        <p className="mt-4 text-muted-foreground leading-relaxed">{intro}</p>
+        <p className="mt-3 text-[0.95rem] leading-relaxed text-muted-foreground md:mt-4 md:text-base">{intro}</p>
       )}
     </div>
   );
@@ -87,7 +87,7 @@ function Card({
   return (
     <div
       className={
-        "rounded-2xl border border-border bg-card p-6 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-shadow hover:shadow-md " +
+        "rounded-2xl border border-border bg-card p-4 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-shadow hover:shadow-md sm:p-6 " +
         className
       }
     >
