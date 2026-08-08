@@ -474,7 +474,7 @@ export function RealisationsSection() {
             intro="Quelques projets qui montrent concrètement ma manière de travailler."
           />
 
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
+          <div className="mt-8 grid md:mt-12 gap-6 md:grid-cols-2">
             {list.map((p) => (
               <Card key={p.title} className="flex h-full flex-col">
                 <div className="flex items-center gap-4">
@@ -601,7 +601,7 @@ export function SkillsSection() {
         <div className="container-tight">
           <SectionHeader eyebrow="Savoir-faire" title="Mes compétences" />
 
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
+          <div className="mt-8 grid md:mt-12 gap-6 md:grid-cols-2">
             {skills.map((s) => (
               <Card key={s.title}>
                 <div className="flex items-center gap-3">
@@ -719,7 +719,7 @@ function ExperiencesSection() {
         <div className="container-tight">
           <SectionHeader eyebrow="Parcours" title="Expériences professionnelles" />
 
-          <div className="mt-12 space-y-4">
+          <div className="mt-8 space-y-4 md:mt-12">
             {list.map((exp, idx) => (
               <Card key={`${exp.role}-${idx}`}>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
@@ -913,7 +913,7 @@ function CertificationsSection() {
         <div className="container-tight">
           <SectionHeader eyebrow="Attestations" title="Certifications" />
 
-          <div className="mt-12 grid gap-4 md:grid-cols-2">
+          <div className="mt-8 grid md:mt-12 gap-4 md:grid-cols-2">
             {list.map((c, idx) => (
               <Card key={`${c.name}-${idx}`} className="flex items-start gap-4">
                 {c.domain ? (
@@ -997,7 +997,7 @@ function EngagementsSection() {
         <div className="container-tight">
           <SectionHeader eyebrow="Vie associative" title="Engagements associatifs" />
 
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
+          <div className="mt-8 grid md:mt-12 gap-6 md:grid-cols-2">
             {list.map((e, idx) => (
               <Card key={`${e.org}-${idx}`} className="flex h-full flex-col">
                 <div className="flex items-start gap-4">
@@ -1196,7 +1196,7 @@ export function PassionsSection() {
             title="Mes passions"
             intro="Au-delà de la communication, de nombreuses choses nourrissent ma créativité et mon envie de créer."
           />
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid md:mt-12 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {passions.map((p) => (
               <Card key={p.title} className="flex h-full flex-col">
                 <p.icon size={24} className="text-primary" />
