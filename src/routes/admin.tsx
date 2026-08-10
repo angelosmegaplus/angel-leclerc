@@ -632,6 +632,72 @@ function AdminPage() {
               )}
             </div>
 
+            <div className="space-y-2">
+              <Label>Sources / crédits</Label>
+              <p className="text-[11px] text-muted-foreground">
+                Affichés en bas de l'article public dans « Sources et crédits ».
+              </p>
+              <div className="space-y-2">
+                {draft.sources.map((s, i) => (
+                  <div key={i} className="flex flex-wrap items-center gap-2">
+                    <Input
+                      className="min-w-[9rem] flex-1"
+                      placeholder="Libellé (ex. Le Monde)"
+                      value={s.label}
+                      onChange={(e) =>
+                        setDraft({
+                          ...draft,
+                          sources: draft.sources.map((x, j) =>
+                            j === i ? { ...x, label: e.target.value } : x,
+                          ),
+                        })
+                      }
+                    />
+                    <Input
+                      className="min-w-[9rem] flex-1"
+                      type="url"
+                      placeholder="https://…"
+                      value={s.url}
+                      onChange={(e) =>
+                        setDraft({
+                          ...draft,
+                          sources: draft.sources.map((x, j) =>
+                            j === i ? { ...x, url: e.target.value } : x,
+                          ),
+                        })
+                      }
+                    />
+                    <button
+                      type="button"
+                      aria-label={`Retirer la source ${i + 1}`}
+                      onClick={() =>
+                        setDraft({
+                          ...draft,
+                          sources: draft.sources.filter((_, j) => j !== i),
+                        })
+                      }
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  setDraft({
+                    ...draft,
+                    sources: [...draft.sources, { label: "", url: "" }],
+                  })
+                }
+              >
+                <Plus className="mr-2 h-4 w-4" /> Ajouter une source
+              </Button>
+            </div>
+
             <div className="space-y-3 rounded-lg border border-border bg-background p-4">
               <p className="text-sm font-medium text-foreground">Statut de publication</p>
               <div className="space-y-2">
