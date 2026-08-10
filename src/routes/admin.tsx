@@ -229,6 +229,7 @@ function AdminPage() {
         is_private: d.is_private,
         featured: d.featured,
         attachments: d.attachments,
+        sources: d.sources.filter((s) => s.label.trim() && s.url.trim()),
         published_at: isPublished ? (scheduledIso ?? new Date().toISOString()) : null,
         author_id: user?.id ?? null,
       };
@@ -973,6 +974,7 @@ function AdminPage() {
                           is_private: a.is_private,
                           featured: a.featured,
                           attachments: getAttachments(a),
+                          sources: getSources(a),
                         })
                       }
                     >
