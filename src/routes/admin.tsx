@@ -496,6 +496,70 @@ function AdminPage() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="cover-upload">
+                …ou importer une image de couverture
+              </Label>
+              <input
+                id="cover-upload"
+                type="file"
+                accept="image/*"
+                disabled={uploadingCover}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
+                  if (!file) return;
+                  setUploadingCover(true);
+                  try {
+                    const url = await uploadCover(file);
+                    setDraft((d) => (d ? { ...d, cover_url: url } : d));
+                    toast.success("Couverture importée");
+                  } catch (err) {
+                    toast.error(
+                      err instanceof Error ? err.message : "Échec de l'import",
+                    );
+                  } finally {
+                    setUploadingCover(false);
+                  }
+                }}
+                className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border file:border-input file:bg-background file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground"
+              />
+              {uploadingCover && (
+                <p className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                  <Loader2 className="h-3 w-3 animate-spin" /> Import en cours…
+                </p>
+              )}
+              {draft.cover_url && (
+                <div className="space-y-2 rounded-lg border border-border bg-background p-3">
+                  <img
+                    src={draft.cover_url}
+                    alt="Aperçu de la couverture"
+                    className="max-h-48 w-full rounded-md object-cover"
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() =>
+                        document.getElementById("cover-upload")?.click()
+                      }
+                    >
+                      Remplacer
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setDraft({ ...draft, cover_url: "" })}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" /> Retirer
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="content">Contenu *</Label>
               <RichTextEditor
                 value={draft.content}
