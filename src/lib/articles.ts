@@ -9,6 +9,23 @@ export type ArticleAttachment = {
   size?: number;
 };
 
+export type ArticleSource = {
+  label: string;
+  url: string;
+};
+
+export function getSources(article: { sources?: unknown }): ArticleSource[] {
+  const raw = article.sources;
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(
+    (s): s is ArticleSource =>
+      typeof s === "object" &&
+      s !== null &&
+      typeof (s as ArticleSource).label === "string" &&
+      (s as ArticleSource).label.trim().length > 0,
+  );
+}
+
 export function getAttachments(article: Article): ArticleAttachment[] {
   const raw = article.attachments;
   if (!Array.isArray(raw)) return [];
