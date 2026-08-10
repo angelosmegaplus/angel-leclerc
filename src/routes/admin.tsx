@@ -20,6 +20,7 @@ import {
   CalendarClock,
   AlertCircle,
   BarChart3,
+  Inbox,
   LayoutList,
   ShoppingBag,
   FileText,
