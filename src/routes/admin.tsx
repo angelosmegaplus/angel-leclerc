@@ -41,6 +41,8 @@ import {
   type ArticleAttachment,
   type ArticleStatus,
 } from "@/lib/articles";
+import { getSources, type ArticleSource } from "@/lib/articles";
+import { MailboxAdmin } from "@/components/MailboxAdmin";
 import { describeDbError } from "@/lib/db-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -92,6 +94,7 @@ type Draft = {
   is_private: boolean;
   featured: boolean;
   attachments: ArticleAttachment[];
+  sources: ArticleSource[];
 };
 
 const emptyDraft: Draft = {
@@ -107,6 +110,7 @@ const emptyDraft: Draft = {
   is_private: false,
   featured: false,
   attachments: [],
+  sources: [],
 };
 
 const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
@@ -137,6 +141,21 @@ async function uploadAttachment(file: File): Promise<ArticleAttachment> {
     .createSignedUrl(path, TEN_YEARS);
   if (signErr || !data) throw signErr ?? new Error("URL indisponible");
   return { name: file.name, url: data.signedUrl, size: file.size };
+}
+
+/** Import d'une image de couverture dans le stockage Supabase. */
+async function uploadCover(file: File): Promise<string> {
+  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const path = `covers/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage
+    .from("article-images")
+    .upload(path, file, { cacheControl: "31536000", upsert: false });
+  if (error) throw error;
+  const { data, error: signErr } = await supabase.storage
+    .from("article-images")
+    .createSignedUrl(path, TEN_YEARS);
+  if (signErr || !data) throw signErr ?? new Error("URL indisponible");
+  return data.signedUrl;
 }
 
 function AdminPage() {
