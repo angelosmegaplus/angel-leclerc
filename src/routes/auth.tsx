@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { Loader2, LogIn } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Captcha, type CaptchaValue } from "@/components/Captcha";
+import { verifyCaptchaAnswer } from "@/lib/captcha.functions";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -43,6 +46,9 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+  const [captcha, setCaptcha] = useState<CaptchaValue>({ token: "", answer: "" });
+  const [captchaKey, setCaptchaKey] = useState(0);
+  const verifyCaptcha = useServerFn(verifyCaptchaAnswer);
 
   useEffect(() => {
     if (!loading && session) navigate({ to: "/admin" });
@@ -54,6 +60,7 @@ function AuthPage() {
     setError(null);
     setInfo(null);
     try {
+      await verifyCaptcha({ data: { token: captcha.token, answer: captcha.answer } });
       if (mode === "signup") {
         const { error: err } = await supabase.auth.signUp({
           email: email.trim(),
@@ -78,6 +85,7 @@ function AuthPage() {
           ? "Identifiants incorrects."
           : message,
       );
+      setCaptchaKey((k) => k + 1);
     } finally {
       setBusy(false);
     }
@@ -122,6 +130,9 @@ function AuthPage() {
           </div>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
+
+          <Captcha key={captchaKey} value={captcha} onChange={setCaptcha} />
+
           {info && <p className="text-sm text-primary">{info}</p>}
 
           <Button type="submit" disabled={busy} className="w-full">
