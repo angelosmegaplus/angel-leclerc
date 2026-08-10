@@ -25,8 +25,9 @@ import {
   mailboxRead,
   mailboxSend,
   mailboxStatus,
+  type MailAction,
+  type MailFolder,
 } from "@/lib/mailbox.functions";
-import type { MailFolder } from "@/lib/mailbox.server";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -75,8 +76,7 @@ export function MailboxAdmin() {
   });
 
   const action = useMutation({
-    mutationFn: (vars: { id: string; action: Parameters<typeof act>[0] extends never ? never : any }) =>
-      act({ data: vars }),
+    mutationFn: (vars: { id: string; action: MailAction }) => act({ data: vars }),
     onSuccess: () => {
       toast.success("Message mis à jour");
       setOpenId(null);
