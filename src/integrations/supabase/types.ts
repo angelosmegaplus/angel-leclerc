@@ -30,6 +30,7 @@ export type Database = {
           published_at: string | null
           scheduled_at: string | null
           slug: string
+          sources: Json
           title: string
           updated_at: string
         }
@@ -48,6 +49,7 @@ export type Database = {
           published_at?: string | null
           scheduled_at?: string | null
           slug: string
+          sources?: Json
           title: string
           updated_at?: string
         }
@@ -66,6 +68,7 @@ export type Database = {
           published_at?: string | null
           scheduled_at?: string | null
           slug?: string
+          sources?: Json
           title?: string
           updated_at?: string
         }
