@@ -8,6 +8,8 @@ import type {
   MailboxStatus,
 } from "./mailbox.server";
 
+export type { MailAction, MailFolder };
+
 async function assertAdmin(context: any) {
   const { data, error } = await context.supabase
     .from("user_roles")
