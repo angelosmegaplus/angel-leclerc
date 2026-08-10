@@ -64,6 +64,8 @@ export function RichTextEditor({ value, onChange }: Props) {
   const videoRef = useRef<HTMLInputElement>(null);
   const audioRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState<null | "image" | "video" | "audio">(null);
+  const replaceRef = useRef<HTMLInputElement>(null);
+  const [selectedImg, setSelectedImg] = useState<HTMLImageElement | null>(null);
 
   useEffect(() => {
     const el = ref.current;
@@ -72,6 +74,53 @@ export function RichTextEditor({ value, onChange }: Props) {
   }, []);
 
   const sync = () => onChange(ref.current?.innerHTML ?? "");
+
+  /** Sélection d'une image déjà insérée dans le contenu. */
+  const onEditorClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName === "IMG") {
+      const img = target as HTMLImageElement;
+      ref.current?.querySelectorAll("img").forEach((i) => i.classList.remove("is-selected"));
+      img.classList.add("is-selected");
+      img.style.outline = "2px solid var(--primary, #CE654B)";
+      setSelectedImg(img);
+    } else if (selectedImg) {
+      selectedImg.style.outline = "";
+      selectedImg.classList.remove("is-selected");
+      setSelectedImg(null);
+    }
+  };
+
+  const resizeSelected = (width: string) => {
+    if (!selectedImg) return;
+    selectedImg.style.width = width;
+    selectedImg.style.maxWidth = "100%";
+    sync();
+  };
+
+  const deleteSelected = () => {
+    if (!selectedImg) return;
+    selectedImg.remove();
+    setSelectedImg(null);
+    sync();
+  };
+
+  const replaceSelected = async (file: File | undefined, input: HTMLInputElement | null) => {
+    if (!file || !selectedImg) return;
+    setUploading("image");
+    try {
+      const url = await uploadMedia(file);
+      selectedImg.src = url;
+      selectedImg.alt = file.name.replace(/"/g, "");
+      sync();
+      toast.success("Image remplacée");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Envoi impossible");
+    } finally {
+      setUploading(null);
+      if (input) input.value = "";
+    }
+  };
 
   const cmd = (command: string, arg?: string) => {
     ref.current?.focus();
@@ -321,6 +370,42 @@ export function RichTextEditor({ value, onChange }: Props) {
           onChange={(e) => onPickMedia("audio", e.target.files?.[0], audioRef.current)}
         />
       </div>
+      {selectedImg && !preview && (
+        <div className="flex flex-wrap items-center gap-2 border-b border-border bg-primary/5 px-3 py-2 text-xs">
+          <span className="font-medium text-foreground">Image sélectionnée :</span>
+          {(["25%", "50%", "75%", "100%"] as const).map((w) => (
+            <button
+              key={w}
+              type="button"
+              onClick={() => resizeSelected(w)}
+              className="rounded-md border border-border bg-background px-2 py-1 text-foreground hover:bg-muted"
+            >
+              {w}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => replaceRef.current?.click()}
+            className="rounded-md border border-border bg-background px-2 py-1 text-foreground hover:bg-muted"
+          >
+            Remplacer
+          </button>
+          <button
+            type="button"
+            onClick={deleteSelected}
+            className="rounded-md border border-border bg-background px-2 py-1 text-destructive hover:bg-muted"
+          >
+            Supprimer
+          </button>
+          <input
+            ref={replaceRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => void replaceSelected(e.target.files?.[0], replaceRef.current)}
+          />
+        </div>
+      )}
       {preview && (
         <div className="border-t border-border bg-background px-4 py-6">
           <p className="mb-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -342,6 +427,7 @@ export function RichTextEditor({ value, onChange }: Props) {
         aria-label="Contenu de l'article"
         onInput={sync}
         onBlur={sync}
+        onClick={onEditorClick}
         className="article-content min-h-[320px] w-full px-4 py-3 text-sm leading-relaxed text-foreground outline-none"
       />
     </div>

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Download, Lock, Paperclip } from "lucide-react";
-import { fetchArticleBySlug, formatDate, getAttachments } from "@/lib/articles";
+import { ArrowLeft, BookMarked, Download, Lock, Paperclip } from "lucide-react";
+import { fetchArticleBySlug, formatDate, getAttachments, getSources } from "@/lib/articles";
 import { ShareArticle } from "@/components/ShareArticle";
 import { FeedbackBlock } from "@/components/FeedbackBlock";
 export const SITE_URL = "https://www.angel-leclerc.fr";
@@ -97,6 +97,7 @@ function ArticlePage() {
   const isHtml = /<\/?[a-z][\s\S]*>/i.test(article.content);
   const paragraphs = article.content.split(/\n{2,}/).filter(Boolean);
   const attachments = getAttachments(article);
+  const sources = getSources(article);
 
   return (
     <article className="bg-background py-14 md:py-20">
@@ -178,6 +179,32 @@ function ArticlePage() {
         {!article.is_private && (
           <div className="mt-12 border-t border-border pt-6">
             <ShareArticle url={shareUrl} title={article.title} />
+          </div>
+        )}
+
+        {sources.length > 0 && (
+          <div className="mt-10 rounded-xl border border-border bg-card p-5">
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <BookMarked className="h-4 w-4 text-primary" /> Sources et crédits
+            </h2>
+            <ul className="mt-3 space-y-2">
+              {sources.map((s, i) => (
+                <li key={`${s.url}-${i}`} className="text-sm text-muted-foreground">
+                  {s.url ? (
+                    <a
+                      href={s.url}
+                      target="_blank"
+                      rel="noreferrer nofollow"
+                      className="text-primary hover:underline"
+                    >
+                      {s.label}
+                    </a>
+                  ) : (
+                    s.label
+                  )}
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 

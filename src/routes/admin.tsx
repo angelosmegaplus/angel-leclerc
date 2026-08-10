@@ -20,6 +20,7 @@ import {
   CalendarClock,
   AlertCircle,
   BarChart3,
+  Inbox,
   LayoutList,
   ShoppingBag,
   FileText,
@@ -41,6 +42,8 @@ import {
   type ArticleAttachment,
   type ArticleStatus,
 } from "@/lib/articles";
+import { getSources, type ArticleSource } from "@/lib/articles";
+import { MailboxAdmin } from "@/components/MailboxAdmin";
 import { describeDbError } from "@/lib/db-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -92,6 +95,7 @@ type Draft = {
   is_private: boolean;
   featured: boolean;
   attachments: ArticleAttachment[];
+  sources: ArticleSource[];
 };
 
 const emptyDraft: Draft = {
@@ -107,6 +111,7 @@ const emptyDraft: Draft = {
   is_private: false,
   featured: false,
   attachments: [],
+  sources: [],
 };
 
 const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
@@ -139,6 +144,21 @@ async function uploadAttachment(file: File): Promise<ArticleAttachment> {
   return { name: file.name, url: data.signedUrl, size: file.size };
 }
 
+/** Import d'une image de couverture dans le stockage Supabase. */
+async function uploadCover(file: File): Promise<string> {
+  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const path = `covers/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage
+    .from("article-images")
+    .upload(path, file, { cacheControl: "31536000", upsert: false });
+  if (error) throw error;
+  const { data, error: signErr } = await supabase.storage
+    .from("article-images")
+    .createSignedUrl(path, TEN_YEARS);
+  if (signErr || !data) throw signErr ?? new Error("URL indisponible");
+  return data.signedUrl;
+}
+
 function AdminPage() {
   const navigate = useNavigate();
   const { session, isAdmin, loading, user } = useAuth();
@@ -146,8 +166,16 @@ function AdminPage() {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
   const [tab, setTab] = useState<
-    "articles" | "messages" | "abonnes" | "stats" | "contenus" | "avis" | "boutique"
+    | "articles"
+    | "messages"
+    | "boite-mail"
+    | "abonnes"
+    | "stats"
+    | "contenus"
+    | "avis"
+    | "boutique"
   >("articles");
   const sendNewsletter = useServerFn(sendNewsletterNow);
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
@@ -210,6 +238,7 @@ function AdminPage() {
         is_private: d.is_private,
         featured: d.featured,
         attachments: d.attachments,
+        sources: d.sources.filter((s) => s.label.trim() && s.url.trim()),
         published_at: isPublished ? (scheduledIso ?? new Date().toISOString()) : null,
         author_id: user?.id ?? null,
       };
@@ -468,6 +497,70 @@ function AdminPage() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="cover-upload">
+                …ou importer une image de couverture
+              </Label>
+              <input
+                id="cover-upload"
+                type="file"
+                accept="image/*"
+                disabled={uploadingCover}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
+                  if (!file) return;
+                  setUploadingCover(true);
+                  try {
+                    const url = await uploadCover(file);
+                    setDraft((d) => (d ? { ...d, cover_url: url } : d));
+                    toast.success("Couverture importée");
+                  } catch (err) {
+                    toast.error(
+                      err instanceof Error ? err.message : "Échec de l'import",
+                    );
+                  } finally {
+                    setUploadingCover(false);
+                  }
+                }}
+                className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border file:border-input file:bg-background file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground"
+              />
+              {uploadingCover && (
+                <p className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                  <Loader2 className="h-3 w-3 animate-spin" /> Import en cours…
+                </p>
+              )}
+              {draft.cover_url && (
+                <div className="space-y-2 rounded-lg border border-border bg-background p-3">
+                  <img
+                    src={draft.cover_url}
+                    alt="Aperçu de la couverture"
+                    className="max-h-48 w-full rounded-md object-cover"
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() =>
+                        document.getElementById("cover-upload")?.click()
+                      }
+                    >
+                      Remplacer
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setDraft({ ...draft, cover_url: "" })}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" /> Retirer
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="content">Contenu *</Label>
               <RichTextEditor
                 value={draft.content}
@@ -538,6 +631,72 @@ function AdminPage() {
                   <Loader2 className="h-3 w-3 animate-spin" /> Import en cours…
                 </p>
               )}
+            </div>
+
+            <div className="space-y-2">
+              <Label>Sources / crédits</Label>
+              <p className="text-[11px] text-muted-foreground">
+                Affichés en bas de l'article public dans « Sources et crédits ».
+              </p>
+              <div className="space-y-2">
+                {draft.sources.map((s, i) => (
+                  <div key={i} className="flex flex-wrap items-center gap-2">
+                    <Input
+                      className="min-w-[9rem] flex-1"
+                      placeholder="Libellé (ex. Le Monde)"
+                      value={s.label}
+                      onChange={(e) =>
+                        setDraft({
+                          ...draft,
+                          sources: draft.sources.map((x, j) =>
+                            j === i ? { ...x, label: e.target.value } : x,
+                          ),
+                        })
+                      }
+                    />
+                    <Input
+                      className="min-w-[9rem] flex-1"
+                      type="url"
+                      placeholder="https://…"
+                      value={s.url}
+                      onChange={(e) =>
+                        setDraft({
+                          ...draft,
+                          sources: draft.sources.map((x, j) =>
+                            j === i ? { ...x, url: e.target.value } : x,
+                          ),
+                        })
+                      }
+                    />
+                    <button
+                      type="button"
+                      aria-label={`Retirer la source ${i + 1}`}
+                      onClick={() =>
+                        setDraft({
+                          ...draft,
+                          sources: draft.sources.filter((_, j) => j !== i),
+                        })
+                      }
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  setDraft({
+                    ...draft,
+                    sources: [...draft.sources, { label: "", url: "" }],
+                  })
+                }
+              >
+                <Plus className="mr-2 h-4 w-4" /> Ajouter une source
+              </Button>
             </div>
 
             <div className="space-y-3 rounded-lg border border-border bg-background p-4">
@@ -646,6 +805,7 @@ function AdminPage() {
                   [
                     ["articles", "Articles", FileText, articles.length],
                     ["messages", "Messages", Mail, unreadCount],
+                    ["boite-mail", "Boîte mail", Inbox, 0],
                     ["abonnes", "Abonnés", Users, subscribers.length],
                     ["contenus", "Parcours & services", LayoutList, 0],
                     ["avis", "Avis et soutiens", Star, 0],
@@ -692,6 +852,12 @@ function AdminPage() {
             {tab === "avis" && <FeedbackAdmin />}
 
             {tab === "boutique" && <ShopAdmin />}
+
+            {tab === "boite-mail" && (
+              <div className="mt-8">
+                <MailboxAdmin />
+              </div>
+            )}
 
             {tab === "messages" && (
               <div className="mt-8 space-y-3">
@@ -954,6 +1120,7 @@ function AdminPage() {
                           is_private: a.is_private,
                           featured: a.featured,
                           attachments: getAttachments(a),
+                          sources: getSources(a),
                         })
                       }
                     >
