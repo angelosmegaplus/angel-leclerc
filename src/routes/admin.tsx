@@ -804,6 +804,7 @@ function AdminPage() {
                   [
                     ["articles", "Articles", FileText, articles.length],
                     ["messages", "Messages", Mail, unreadCount],
+                    ["boite-mail", "Boîte mail", Inbox, 0],
                     ["abonnes", "Abonnés", Users, subscribers.length],
                     ["contenus", "Parcours & services", LayoutList, 0],
                     ["avis", "Avis et soutiens", Star, 0],
@@ -850,6 +851,12 @@ function AdminPage() {
             {tab === "avis" && <FeedbackAdmin />}
 
             {tab === "boutique" && <ShopAdmin />}
+
+            {tab === "boite-mail" && (
+              <div className="mt-8">
+                <MailboxAdmin />
+              </div>
+            )}
 
             {tab === "messages" && (
               <div className="mt-8 space-y-3">
