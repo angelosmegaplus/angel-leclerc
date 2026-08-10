@@ -573,6 +573,9 @@ function AdminPage() {
 
             <div className="space-y-2">
               <Label>Fichiers joints (PDF, images, documents…)</Label>
+            </div>
+            <div className="hidden" />
+            <div className="space-y-2">
               <div className="space-y-2">
                 {draft.attachments.map((f, i) => (
                   <div
