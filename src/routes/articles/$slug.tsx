@@ -1,7 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, BookMarked, Download, Lock, Paperclip } from "lucide-react";
-import { fetchArticleBySlug, formatDate, getAttachments, getSources } from "@/lib/articles";
+import {
+  fetchArticleBySlug,
+  formatDate,
+  getAiDisclosure,
+  getAttachments,
+  getSources,
+} from "@/lib/articles";
 import { ShareArticle } from "@/components/ShareArticle";
+import { AiTransparency } from "@/components/AiTransparency";
 import { FeedbackBlock } from "@/components/FeedbackBlock";
 export const SITE_URL = "https://www.angel-leclerc.fr";
 
@@ -98,6 +105,7 @@ function ArticlePage() {
   const paragraphs = article.content.split(/\n{2,}/).filter(Boolean);
   const attachments = getAttachments(article);
   const sources = getSources(article);
+  const disclosure = getAiDisclosure(article);
 
   return (
     <article className="bg-background py-14 md:py-20">
@@ -214,6 +222,8 @@ function ArticlePage() {
           contentTitle={article.title}
           className="mt-8"
         />
+
+        <AiTransparency disclosure={disclosure} className="mt-8" />
 
         <div className="mt-10">
           <Link

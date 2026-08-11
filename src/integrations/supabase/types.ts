@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       articles: {
         Row: {
+          ai_disclosure: Json
           attachments: Json
           author_id: string | null
           category: string
@@ -35,6 +36,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ai_disclosure?: Json
           attachments?: Json
           author_id?: string | null
           category?: string
@@ -54,6 +56,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ai_disclosure?: Json
           attachments?: Json
           author_id?: string | null
           category?: string

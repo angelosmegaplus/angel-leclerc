@@ -14,6 +14,44 @@ export type ArticleSource = {
   url: string;
 };
 
+/** Transparence sur l'usage de l'IA dans un article. */
+export type AiDisclosure = {
+  personal: boolean;
+  chatgpt: boolean;
+  otherAi: boolean;
+  otherAiName: string;
+  images: boolean;
+  imagesTool: string;
+};
+
+export const emptyAiDisclosure: AiDisclosure = {
+  personal: false,
+  chatgpt: false,
+  otherAi: false,
+  otherAiName: "",
+  images: false,
+  imagesTool: "",
+};
+
+export function getAiDisclosure(article: { ai_disclosure?: unknown }): AiDisclosure {
+  const raw = article.ai_disclosure;
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw))
+    return emptyAiDisclosure;
+  const r = raw as Record<string, unknown>;
+  return {
+    personal: r.personal === true,
+    chatgpt: r.chatgpt === true,
+    otherAi: r.otherAi === true,
+    otherAiName: typeof r.otherAiName === "string" ? r.otherAiName : "",
+    images: r.images === true,
+    imagesTool: typeof r.imagesTool === "string" ? r.imagesTool : "",
+  };
+}
+
+export function hasAiDisclosure(d: AiDisclosure): boolean {
+  return d.personal || d.chatgpt || d.otherAi || d.images;
+}
+
 export function getSources(article: { sources?: unknown }): ArticleSource[] {
   const raw = article.sources;
   if (!Array.isArray(raw)) return [];
