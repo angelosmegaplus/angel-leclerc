@@ -106,25 +106,48 @@ export function MailboxAdmin() {
 
   if (!connected) {
     return (
-      <div className="rounded-xl border border-dashed border-border bg-muted/20 p-6">
+      <div className="rounded-xl border border-dashed border-border bg-muted/20 p-5 sm:p-6">
         <h3 className="flex items-center gap-2 font-display text-lg font-semibold text-foreground">
-          <Mail className="h-5 w-5 text-primary" /> Boîte mail non connectée
+          <Mail className="h-5 w-5 text-primary" /> Boîte mail — connexion requise
         </h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          L'interface et la couche d'intégration sont en place, mais le compte
-          contact@angel-leclerc.fr n'est pas encore relié au projet. Aucun message
-          n'est affiché tant que la connexion n'est pas active.
+          L'interface et la couche d'intégration Gmail sont opérationnelles, mais la
+          connexion « Angel's Gmail » n'est pas reliée à ce projet. Aucun message
+          n'est affiché et rien n'est simulé.
         </p>
-        <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-          {(statusQuery.data?.missing ?? []).map((m) => (
-            <li key={m}>{m}</li>
-          ))}
-        </ul>
-        <p className="mt-3 text-xs text-muted-foreground">
-          À faire : autoriser l'accès à la connexion Gmail « Angel's Gmail » pour le
-          propriétaire du projet, puis la relier au projet (portées requises :
-          lecture, envoi et modification des messages).
-        </p>
+        <div className="mt-4 rounded-lg border border-border bg-background p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-foreground">
+            Ce qui bloque aujourd'hui
+          </p>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            La connexion Gmail existe dans l'espace de travail, mais le propriétaire
+            du projet n'y a pas accès : elle ne peut donc pas être reliée ici.
+          </p>
+        </div>
+        <div className="mt-3 rounded-lg border border-border bg-background p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-foreground">
+            Étapes pour l'activer
+          </p>
+          <ol className="mt-1.5 list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
+            <li>
+              Dans les réglages des connecteurs, partager la connexion « Angel's Gmail »
+              avec le propriétaire du projet.
+            </li>
+            <li>
+              Vérifier que le compte autorisé est bien contact@angel-leclerc.fr.
+            </li>
+            <li>
+              Autoriser les portées : lecture (gmail.readonly), envoi (gmail.send) et
+              modification/classement (gmail.modify).
+            </li>
+            <li>Relier ensuite la connexion à ce projet.</li>
+          </ol>
+        </div>
+        {(statusQuery.data?.missing ?? []).length > 0 && (
+          <p className="mt-3 text-xs text-muted-foreground">
+            Éléments manquants côté serveur : {(statusQuery.data?.missing ?? []).join(", ")}
+          </p>
+        )}
       </div>
     );
   }
