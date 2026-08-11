@@ -42,7 +42,13 @@ import {
   type ArticleAttachment,
   type ArticleStatus,
 } from "@/lib/articles";
-import { getSources, type ArticleSource } from "@/lib/articles";
+import {
+  getSources,
+  getAiDisclosure,
+  emptyAiDisclosure,
+  type ArticleSource,
+  type AiDisclosure,
+} from "@/lib/articles";
 import { MailboxAdmin } from "@/components/MailboxAdmin";
 import { describeDbError } from "@/lib/db-error";
 import { Button } from "@/components/ui/button";
