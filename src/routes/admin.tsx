@@ -102,6 +102,7 @@ type Draft = {
   featured: boolean;
   attachments: ArticleAttachment[];
   sources: ArticleSource[];
+  ai: AiDisclosure;
 };
 
 const emptyDraft: Draft = {
@@ -118,6 +119,7 @@ const emptyDraft: Draft = {
   featured: false,
   attachments: [],
   sources: [],
+  ai: emptyAiDisclosure,
 };
 
 const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
@@ -245,6 +247,7 @@ function AdminPage() {
         featured: d.featured,
         attachments: d.attachments,
         sources: d.sources.filter((s) => s.label.trim() && s.url.trim()),
+        ai_disclosure: d.ai,
         published_at: isPublished ? (scheduledIso ?? new Date().toISOString()) : null,
         author_id: user?.id ?? null,
       };
@@ -1179,6 +1182,7 @@ function AdminPage() {
                           featured: a.featured,
                           attachments: getAttachments(a),
                           sources: getSources(a),
+                          ai: getAiDisclosure(a),
                         })
                       }
                     >
