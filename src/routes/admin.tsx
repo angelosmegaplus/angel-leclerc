@@ -745,6 +745,76 @@ function AdminPage() {
             </div>
 
             <div className="space-y-3 rounded-lg border border-border bg-background p-4">
+              <p className="text-sm font-medium text-foreground">Transparence IA</p>
+              <p className="text-[11px] text-muted-foreground">
+                Rien n'est affiché publiquement si aucune case n'est cochée.
+              </p>
+              <label className="flex items-start gap-2 text-sm text-foreground">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={draft.ai.personal}
+                  onChange={(e) =>
+                    setDraft({ ...draft, ai: { ...draft.ai, personal: e.target.checked } })
+                  }
+                />
+                Texte personnel / réflexion personnelle
+              </label>
+              <label className="flex items-start gap-2 text-sm text-foreground">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={draft.ai.chatgpt}
+                  onChange={(e) =>
+                    setDraft({ ...draft, ai: { ...draft.ai, chatgpt: e.target.checked } })
+                  }
+                />
+                ChatGPT utilisé pour reformuler certains passages et améliorer la
+                lisibilité
+              </label>
+              <label className="flex items-start gap-2 text-sm text-foreground">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={draft.ai.otherAi}
+                  onChange={(e) =>
+                    setDraft({ ...draft, ai: { ...draft.ai, otherAi: e.target.checked } })
+                  }
+                />
+                Autre IA utilisée pour le texte
+              </label>
+              {draft.ai.otherAi && (
+                <Input
+                  placeholder="Nom de l'IA (ex. Gemini, Claude…) — facultatif"
+                  value={draft.ai.otherAiName}
+                  onChange={(e) =>
+                    setDraft({ ...draft, ai: { ...draft.ai, otherAiName: e.target.value } })
+                  }
+                />
+              )}
+              <label className="flex items-start gap-2 text-sm text-foreground">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={draft.ai.images}
+                  onChange={(e) =>
+                    setDraft({ ...draft, ai: { ...draft.ai, images: e.target.checked } })
+                  }
+                />
+                Images générées ou retouchées avec une IA
+              </label>
+              {draft.ai.images && (
+                <Input
+                  placeholder="Outil utilisé (facultatif)"
+                  value={draft.ai.imagesTool}
+                  onChange={(e) =>
+                    setDraft({ ...draft, ai: { ...draft.ai, imagesTool: e.target.value } })
+                  }
+                />
+              )}
+            </div>
+
+            <div className="space-y-3 rounded-lg border border-border bg-background p-4">
               <p className="text-sm font-medium text-foreground">Statut de publication</p>
               <div className="space-y-2">
                 {(
