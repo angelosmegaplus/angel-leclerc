@@ -353,38 +353,74 @@ function AdminPage() {
   }
 
   return (
-    <section className="bg-background py-12 md:py-16">
+    <section className="bg-background py-8 md:py-14">
       <div className="container-tight">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
-              Espace personnel
-            </p>
-            <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-              Tableau de bord
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Publications, messages, boutique et statistiques au même endroit.
-            </p>
+        <header className="rounded-2xl border border-border bg-card p-5 sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
+                Espace personnel
+              </p>
+              <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                Tableau de bord
+              </h1>
+              <p className="mt-1 truncate text-sm text-muted-foreground">
+                {user?.email ?? "Connecté"}
+              </p>
+            </div>
+            <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+              <Button
+                size="sm"
+                className="min-h-10 flex-1 sm:flex-none"
+                onClick={() => {
+                  setTab("articles");
+                  setDraft({ ...emptyDraft });
+                }}
+              >
+                <Plus className="mr-2 h-4 w-4" /> Nouvel article
+              </Button>
+              <Button asChild variant="outline" size="sm" className="min-h-10 flex-1 sm:flex-none">
+                <Link to="/articles">
+                  <Eye className="mr-2 h-4 w-4" /> Voir le site
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="min-h-10 flex-1 sm:flex-none"
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  navigate({ to: "/auth" });
+                }}
+              >
+                <LogOut className="mr-2 h-4 w-4" /> Déconnexion
+              </Button>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Button asChild variant="outline" size="sm">
-              <Link to="/articles">
-                <Eye className="mr-2 h-4 w-4" /> Voir le site
-              </Link>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={async () => {
-                await supabase.auth.signOut();
-                navigate({ to: "/auth" });
-              }}
-            >
-              <LogOut className="mr-2 h-4 w-4" /> Déconnexion
-            </Button>
-          </div>
-        </div>
+
+          <dl className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {(
+              [
+                ["Articles", articles.length, FileText],
+                ["Messages non lus", unreadCount, Mail],
+                ["Abonnés", subscribers.length, Users],
+                ["Publiés", articles.filter((a) => getArticleStatus(a) === "publie").length, Eye],
+              ] as const
+            ).map(([label, value, Icon]) => (
+              <div
+                key={label}
+                className="rounded-xl border border-border/70 bg-background px-3 py-2.5"
+              >
+                <dt className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+                  <Icon className="h-3.5 w-3.5" /> {label}
+                </dt>
+                <dd className="mt-0.5 font-display text-xl font-bold tabular-nums text-foreground">
+                  {value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </header>
 
         {draft ? (
           <form
@@ -798,7 +834,7 @@ function AdminPage() {
           <>
             <nav
               aria-label="Sections de l'espace personnel"
-              className="sticky top-2 z-20 mt-8 -mx-1 overflow-x-auto rounded-2xl border border-border bg-card/80 p-1.5 backdrop-blur supports-[backdrop-filter]:bg-card/60"
+              className="sticky top-2 z-20 mt-6 overflow-x-auto rounded-2xl border border-border bg-card/85 p-1.5 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-card/70 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
               <div className="flex min-w-max gap-1">
                 {(
@@ -820,7 +856,7 @@ function AdminPage() {
                       type="button"
                       onClick={() => setTab(key)}
                       aria-current={active ? "page" : undefined}
-                      className={`group inline-flex items-center gap-2 whitespace-nowrap rounded-xl px-3.5 py-2 text-sm font-medium transition-colors ${
+                      className={`group inline-flex min-h-10 items-center gap-2 whitespace-nowrap rounded-xl px-3.5 py-2 text-sm font-medium transition-colors ${
                         active
                           ? "bg-primary text-primary-foreground shadow-sm"
                           : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -845,16 +881,32 @@ function AdminPage() {
               </div>
             </nav>
 
-            {tab === "stats" && <AdminStats />}
+            {tab === "stats" && (
+              <div className="mt-6 rounded-2xl border border-border bg-card p-4 sm:p-6">
+                <AdminStats />
+              </div>
+            )}
 
-            {tab === "contenus" && <ContentAdmin />}
+            {tab === "contenus" && (
+              <div className="mt-6 rounded-2xl border border-border bg-card p-4 sm:p-6">
+                <ContentAdmin />
+              </div>
+            )}
 
-            {tab === "avis" && <FeedbackAdmin />}
+            {tab === "avis" && (
+              <div className="mt-6 rounded-2xl border border-border bg-card p-4 sm:p-6">
+                <FeedbackAdmin />
+              </div>
+            )}
 
-            {tab === "boutique" && <ShopAdmin />}
+            {tab === "boutique" && (
+              <div className="mt-6 rounded-2xl border border-border bg-card p-4 sm:p-6">
+                <ShopAdmin />
+              </div>
+            )}
 
             {tab === "boite-mail" && (
-              <div className="mt-8">
+              <div className="mt-6 rounded-2xl border border-border bg-card p-4 sm:p-6">
                 <MailboxAdmin />
               </div>
             )}
