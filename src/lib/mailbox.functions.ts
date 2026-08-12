@@ -25,7 +25,7 @@ export const mailboxStatus = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<MailboxStatus> => {
     await assertAdmin(context);
     const { getStatus } = await import("./mailbox.server");
-    return getStatus();
+    return getStatus(context.userId);
   });
 
 export const mailboxList = createServerFn({ method: "POST" })
@@ -34,7 +34,7 @@ export const mailboxList = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<MailSummary[]> => {
     await assertAdmin(context);
     const { listMail } = await import("./mailbox.server");
-    return listMail(data.folder, data.search ?? "");
+    return listMail(context.userId, data.folder, data.search ?? "");
   });
 
 export const mailboxRead = createServerFn({ method: "POST" })
@@ -43,8 +43,8 @@ export const mailboxRead = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<MailDetail> => {
     await assertAdmin(context);
     const { readMail, actOnMail } = await import("./mailbox.server");
-    const mail = await readMail(data.id);
-    if (mail.unread) await actOnMail(data.id, "read").catch(() => undefined);
+    const mail = await readMail(context.userId, data.id);
+    if (mail.unread) await actOnMail(context.userId, data.id, "read").catch(() => undefined);
     return mail;
   });
 
@@ -54,7 +54,7 @@ export const mailboxAct = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { actOnMail } = await import("./mailbox.server");
-    await actOnMail(data.id, data.action);
+    await actOnMail(context.userId, data.id, data.action);
     return { ok: true };
   });
 
@@ -76,6 +76,6 @@ export const mailboxSend = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { sendMail } = await import("./mailbox.server");
-    await sendMail(data);
+    await sendMail(context.userId, data);
     return { ok: true };
   });
