@@ -412,8 +412,10 @@ function AdminPage() {
     { key: "stats", label: "Statistiques", icon: BarChart3, group: "Activité" },
     { key: "projets", label: "Projets", icon: FolderKanban, group: "Modules" },
     { key: "candidatures", label: "Candidatures", icon: Briefcase, group: "Modules" },
+    { key: "studio", label: "Studio & journalisme", icon: Mic, group: "Modules" },
     { key: "agenda", label: "Agenda", icon: CalendarDays, group: "Modules" },
     { key: "fichiers", label: "Fichiers", icon: FolderOpen, group: "Modules" },
+    { key: "activite", label: "Activité", icon: Activity, group: "Système" },
     { key: "angel-ai", label: "Angel AI", icon: Sparkles, group: "Système" },
     { key: "connexions", label: "Connexions", icon: Plug, group: "Système" },
   ];
@@ -433,6 +435,16 @@ function AdminPage() {
       subtitle={user?.email ?? "Connecté"}
       actions={
         <>
+          <Button
+            variant="outline"
+            size="sm"
+            className="min-h-10"
+            aria-label="Recherche globale"
+            onClick={() => setSearchOpen(true)}
+          >
+            <Search className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Rechercher</span>
+          </Button>
           <Button
             size="sm"
             className="min-h-10"
@@ -465,9 +477,38 @@ function AdminPage() {
         </>
       }
     >
+      <GlobalSearch
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        onNavigate={(key) => {
+          setTab(key as AdminTab);
+          setDraft(null);
+        }}
+      />
       <div>
         {tab === "dashboard" && !draft && (
           <div className="space-y-5">
+          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {(
+              [
+                ["Nouvel article", () => { setTab("articles"); setDraft({ ...emptyDraft }); }],
+                ["Nouveau projet", () => setTab("projets")],
+                ["Nouvelle candidature", () => setTab("candidatures")],
+                ["Studio", () => setTab("studio")],
+                ["Agenda", () => setTab("agenda")],
+              ] as const
+            ).map(([label, action]) => (
+              <Button
+                key={label}
+                variant="outline"
+                size="sm"
+                className="min-h-10 shrink-0"
+                onClick={action}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
           <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {(
               [
