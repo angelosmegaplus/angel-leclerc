@@ -752,6 +752,7 @@ function AdminPage() {
 
             <div className="space-y-3 rounded-lg border border-border bg-background p-4">
               <p className="text-sm font-medium text-foreground">Transparence IA</p>
+              <span className="sr-only" />
               <p className="text-[11px] text-muted-foreground">
                 Rien n'est affiché publiquement si aucune case n'est cochée.
               </p>
