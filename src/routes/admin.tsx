@@ -31,6 +31,9 @@ import {
   FolderOpen,
   Plug,
   Sparkles,
+  Mic,
+  Activity,
+  Search,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { ShopAdmin } from "@/components/ShopAdmin";
@@ -72,12 +75,19 @@ import { FeedbackAdmin } from "@/components/FeedbackAdmin";
 import {
   AdminShell,
   AdminCard,
-  ModulePlaceholder,
   type AdminNavItem,
 } from "@/components/admin/AdminShell";
 import { AiActionsPanel } from "@/components/admin/AiActionsPanel";
 import { AiSuggestions } from "@/components/admin/AiSuggestions";
 import { ConnectionsPanel } from "@/components/admin/ConnectionsPanel";
+import { ProjectsPanel } from "@/components/admin/ProjectsPanel";
+import { StudioPanel } from "@/components/admin/StudioPanel";
+import { AgendaPanel } from "@/components/admin/AgendaPanel";
+import { FilesPanel } from "@/components/admin/FilesPanel";
+import { ActivityPanel } from "@/components/admin/ActivityPanel";
+import { GlobalSearch } from "@/components/admin/GlobalSearch";
+import { CrudModule } from "@/components/admin/CrudModule";
+import { applicationFields, str } from "@/lib/angelos";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -159,6 +169,8 @@ type AdminTab =
   | "candidatures"
   | "agenda"
   | "fichiers"
+  | "studio"
+  | "activite"
   | "connexions"
   | "angel-ai";
 
@@ -214,6 +226,7 @@ function AdminPage() {
   const [uploadingFile, setUploadingFile] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [tab, setTab] = useState<AdminTab>("dashboard");
+  const [searchOpen, setSearchOpen] = useState(false);
   const sendNewsletter = useServerFn(sendNewsletterNow);
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
 
@@ -403,8 +416,10 @@ function AdminPage() {
     { key: "stats", label: "Statistiques", icon: BarChart3, group: "Activité" },
     { key: "projets", label: "Projets", icon: FolderKanban, group: "Modules" },
     { key: "candidatures", label: "Candidatures", icon: Briefcase, group: "Modules" },
+    { key: "studio", label: "Studio & journalisme", icon: Mic, group: "Modules" },
     { key: "agenda", label: "Agenda", icon: CalendarDays, group: "Modules" },
     { key: "fichiers", label: "Fichiers", icon: FolderOpen, group: "Modules" },
+    { key: "activite", label: "Activité", icon: Activity, group: "Système" },
     { key: "angel-ai", label: "Angel AI", icon: Sparkles, group: "Système" },
     { key: "connexions", label: "Connexions", icon: Plug, group: "Système" },
   ];
@@ -424,6 +439,16 @@ function AdminPage() {
       subtitle={user?.email ?? "Connecté"}
       actions={
         <>
+          <Button
+            variant="outline"
+            size="sm"
+            className="min-h-10"
+            aria-label="Recherche globale"
+            onClick={() => setSearchOpen(true)}
+          >
+            <Search className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Rechercher</span>
+          </Button>
           <Button
             size="sm"
             className="min-h-10"
@@ -456,9 +481,38 @@ function AdminPage() {
         </>
       }
     >
+      <GlobalSearch
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        onNavigate={(key) => {
+          setTab(key as AdminTab);
+          setDraft(null);
+        }}
+      />
       <div>
         {tab === "dashboard" && !draft && (
           <div className="space-y-5">
+          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {(
+              [
+                ["Nouvel article", () => { setTab("articles"); setDraft({ ...emptyDraft }); }],
+                ["Nouveau projet", () => setTab("projets")],
+                ["Nouvelle candidature", () => setTab("candidatures")],
+                ["Studio", () => setTab("studio")],
+                ["Agenda", () => setTab("agenda")],
+              ] as const
+            ).map(([label, action]) => (
+              <Button
+                key={label}
+                variant="outline"
+                size="sm"
+                className="min-h-10 shrink-0"
+                onClick={action}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
           <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {(
               [
@@ -1082,51 +1136,54 @@ function AdminPage() {
             {tab === "connexions" && <ConnectionsPanel />}
 
             {tab === "projets" && (
-              <ModulePlaceholder
-                title="Projets"
-                description="Suivi des missions clients dans Angel OS."
-                points={[
-                  "Fiches de mission reliées aux demandes de contact reçues",
-                  "Étapes, échéances et acompte Revolut",
-                  "Historique des livrables",
-                ]}
-              />
+              <div className="mt-6">
+                <ProjectsPanel />
+              </div>
+            )}
+
+            {tab === "studio" && (
+              <div className="mt-6">
+                <StudioPanel />
+              </div>
+            )}
+
+            {tab === "activite" && (
+              <div className="mt-6">
+                <ActivityPanel />
+              </div>
             )}
 
             {tab === "candidatures" && (
-              <ModulePlaceholder
-                title="Candidatures"
-                description="Suivi de la recherche d'alternance BTS Communication."
-                points={[
-                  "Entreprises contactées et statut de chaque candidature",
-                  "Relances programmées",
-                  "Documents envoyés (CV, lettre)",
-                ]}
-              />
+              <div className="mt-6">
+                <CrudModule
+                  table="applications"
+                  entityLabel="Candidature"
+                  title="Candidatures BTS Communication"
+                  description="Entreprises contactées, relances et réponses."
+                  fields={applicationFields}
+                  titleField="company"
+                  subtitleFields={["position", "city"]}
+                  statusField="status"
+                  duplicateKeys={["company", "email"]}
+                  filters={[
+                    { label: "À envoyer", test: (r) => str(r, "status") === "a_envoyer" },
+                    { label: "En attente", test: (r) => ["envoyee", "relance"].includes(str(r, "status")) },
+                    { label: "Entretien", test: (r) => str(r, "status") === "entretien" },
+                  ]}
+                />
+              </div>
             )}
 
             {tab === "agenda" && (
-              <ModulePlaceholder
-                title="Agenda"
-                description="Vue calendrier centralisée."
-                points={[
-                  "Publications programmées du blog",
-                  "Rendez-vous et échéances de mission",
-                  "Synchronisation Google Agenda une fois la connexion établie",
-                ]}
-              />
+              <div className="mt-6">
+                <AgendaPanel />
+              </div>
             )}
 
             {tab === "fichiers" && (
-              <ModulePlaceholder
-                title="Fichiers"
-                description="Bibliothèque des documents et visuels."
-                points={[
-                  "Images de couverture et pièces jointes déjà stockées",
-                  "Recherche et réutilisation dans l'éditeur",
-                  "Connexion Drive optionnelle",
-                ]}
-              />
+              <div className="mt-6">
+                <FilesPanel />
+              </div>
             )}
 
             {tab === "stats" && (

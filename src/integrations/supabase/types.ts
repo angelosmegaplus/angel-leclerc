@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_log: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          source: string
+          status: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          source?: string
+          status?: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          source?: string
+          status?: string
+        }
+        Relationships: []
+      }
       ai_actions: {
         Row: {
           created_at: string
@@ -59,11 +92,99 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_messages: {
+        Row: {
+          author: string
+          content: string
+          context: Json
+          created_at: string
+          id: string
+          response: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          author?: string
+          content: string
+          context?: Json
+          created_at?: string
+          id?: string
+          response?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string
+          content?: string
+          context?: Json
+          created_at?: string
+          id?: string
+          response?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      applications: {
+        Row: {
+          city: string | null
+          company: string
+          contact_name: string | null
+          created_at: string
+          document_url: string | null
+          email: string | null
+          follow_up_at: string | null
+          id: string
+          notes: string | null
+          phone: string | null
+          position: string | null
+          response: string | null
+          sent_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          city?: string | null
+          company: string
+          contact_name?: string | null
+          created_at?: string
+          document_url?: string | null
+          email?: string | null
+          follow_up_at?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          position?: string | null
+          response?: string | null
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          city?: string | null
+          company?: string
+          contact_name?: string | null
+          created_at?: string
+          document_url?: string | null
+          email?: string | null
+          follow_up_at?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          position?: string | null
+          response?: string | null
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       articles: {
         Row: {
           ai_disclosure: Json
           attachments: Json
           author_id: string | null
+          badges: Json
           category: string
           content: string
           cover_url: string | null
@@ -85,6 +206,7 @@ export type Database = {
           ai_disclosure?: Json
           attachments?: Json
           author_id?: string | null
+          badges?: Json
           category?: string
           content?: string
           cover_url?: string | null
@@ -106,6 +228,7 @@ export type Database = {
           ai_disclosure?: Json
           attachments?: Json
           author_id?: string | null
+          badges?: Json
           category?: string
           content?: string
           cover_url?: string | null
@@ -272,6 +395,51 @@ export type Database = {
           project_type?: string
           structure?: string | null
           user_agent?: string | null
+        }
+        Relationships: []
+      }
+      contacts_sources: {
+        Row: {
+          created_at: string
+          email: string | null
+          first_name: string | null
+          id: string
+          kind: string
+          last_name: string
+          notes: string | null
+          organization: string | null
+          phone: string | null
+          role: string | null
+          tags: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          kind?: string
+          last_name: string
+          notes?: string | null
+          organization?: string | null
+          phone?: string | null
+          role?: string | null
+          tags?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          kind?: string
+          last_name?: string
+          notes?: string | null
+          organization?: string | null
+          phone?: string | null
+          role?: string | null
+          tags?: Json
+          updated_at?: string
         }
         Relationships: []
       }
@@ -449,6 +617,105 @@ export type Database = {
         }
         Relationships: []
       }
+      interviews: {
+        Row: {
+          contact_id: string | null
+          created_at: string
+          id: string
+          media_url: string | null
+          notes: string | null
+          person: string | null
+          questions: string | null
+          reportage_id: string | null
+          scheduled_at: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          media_url?: string | null
+          notes?: string | null
+          person?: string | null
+          questions?: string | null
+          reportage_id?: string | null
+          scheduled_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          media_url?: string | null
+          notes?: string | null
+          person?: string | null
+          questions?: string | null
+          reportage_id?: string | null
+          scheduled_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interviews_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts_sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "interviews_reportage_id_fkey"
+            columns: ["reportage_id"]
+            isOneToOne: false
+            referencedRelation: "reportages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investigations: {
+        Row: {
+          created_at: string
+          facts: string | null
+          hypotheses: string | null
+          id: string
+          notes: string | null
+          status: string
+          summary: string | null
+          timeline: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          facts?: string | null
+          hypotheses?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+          summary?: string | null
+          timeline?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          facts?: string | null
+          hypotheses?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+          summary?: string | null
+          timeline?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       newsletter_runs: {
         Row: {
           article_count: number
@@ -470,6 +737,36 @@ export type Database = {
           id?: string
           recipient_count?: number
           sent_at?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          is_read: boolean
+          kind: string
+          link: string | null
+          title: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          kind?: string
+          link?: string | null
+          title: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          kind?: string
+          link?: string | null
+          title?: string
         }
         Relationships: []
       }
@@ -502,6 +799,212 @@ export type Database = {
           session_id?: string | null
         }
         Relationships: []
+      }
+      press_review: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          project_id: string | null
+          reportage_id: string | null
+          source: string | null
+          tags: Json
+          title: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          project_id?: string | null
+          reportage_id?: string | null
+          source?: string | null
+          tags?: Json
+          title: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          project_id?: string | null
+          reportage_id?: string | null
+          source?: string | null
+          tags?: Json
+          title?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "press_review_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "press_review_reportage_id_fkey"
+            columns: ["reportage_id"]
+            isOneToOne: false
+            referencedRelation: "reportages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_tasks: {
+        Row: {
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          notes: string | null
+          priority: string
+          project_id: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          priority?: string
+          project_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          priority?: string
+          project_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          amount_cents: number | null
+          client_name: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          notes: string | null
+          payment_status: string | null
+          priority: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents?: number | null
+          client_name?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          payment_status?: string | null
+          priority?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number | null
+          client_name?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          payment_status?: string | null
+          priority?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reportages: {
+        Row: {
+          article_id: string | null
+          created_at: string
+          event_date: string | null
+          id: string
+          location: string | null
+          media_url: string | null
+          notes: string | null
+          project_id: string | null
+          status: string
+          tags: Json
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          article_id?: string | null
+          created_at?: string
+          event_date?: string | null
+          id?: string
+          location?: string | null
+          media_url?: string | null
+          notes?: string | null
+          project_id?: string | null
+          status?: string
+          tags?: Json
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          article_id?: string | null
+          created_at?: string
+          event_date?: string | null
+          id?: string
+          location?: string | null
+          media_url?: string | null
+          notes?: string | null
+          project_id?: string | null
+          status?: string
+          tags?: Json
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reportages_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reportages_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       shop_orders: {
         Row: {
