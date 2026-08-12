@@ -32,6 +32,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import {
   ARTICLE_CATEGORIES,
+  ARTICLE_TOPICS,
+  getTopics,
   fetchAllArticles,
   formatDate,
   formatDateTime,
@@ -102,8 +104,10 @@ type Draft = {
   featured: boolean;
   attachments: ArticleAttachment[];
   sources: ArticleSource[];
+  topics: string[];
   ai: AiDisclosure;
 };
+
 
 const emptyDraft: Draft = {
   id: null,
@@ -119,6 +123,7 @@ const emptyDraft: Draft = {
   featured: false,
   attachments: [],
   sources: [],
+  topics: [],
   ai: emptyAiDisclosure,
 };
 
@@ -247,6 +252,7 @@ function AdminPage() {
         featured: d.featured,
         attachments: d.attachments,
         sources: d.sources.filter((s) => s.label.trim() && s.url.trim()),
+        topics: d.topics,
         ai_disclosure: d.ai,
         published_at: isPublished ? (scheduledIso ?? new Date().toISOString()) : null,
         author_id: user?.id ?? null,
@@ -742,6 +748,40 @@ function AdminPage() {
               >
                 <Plus className="mr-2 h-4 w-4" /> Ajouter une source
               </Button>
+            </div>
+
+            <div className="space-y-2 rounded-lg border border-border bg-background p-4">
+              <Label>Catégories thématiques</Label>
+              <p className="text-[11px] text-muted-foreground">
+                Optionnel — une ou plusieurs. Affichées en badges sur le blog.
+              </p>
+              <div className="flex flex-wrap gap-2 pt-1">
+                {ARTICLE_TOPICS.map((t) => {
+                  const active = draft.topics.includes(t);
+                  return (
+                    <button
+                      key={t}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() =>
+                        setDraft({
+                          ...draft,
+                          topics: active
+                            ? draft.topics.filter((x) => x !== t)
+                            : [...draft.topics, t],
+                        })
+                      }
+                      className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
+                        active
+                          ? "border-primary bg-primary/10 font-medium text-primary"
+                          : "border-input text-muted-foreground hover:border-primary/40"
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="space-y-3 rounded-lg border border-border bg-background p-4">
@@ -1252,6 +1292,7 @@ function AdminPage() {
                           featured: a.featured,
                           attachments: getAttachments(a),
                           sources: getSources(a),
+                          topics: getTopics(a),
                           ai: getAiDisclosure(a),
                         })
                       }

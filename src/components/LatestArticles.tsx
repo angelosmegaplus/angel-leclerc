@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Newspaper, Star } from "lucide-react";
-import { fetchLatestArticles, formatDate, type Article } from "@/lib/articles";
+import { fetchLatestArticles, formatDate, getTopics, type Article } from "@/lib/articles";
+import { TopicBadges } from "@/components/TopicBadges";
 
 export function LatestArticles({
   title = "Blog",
@@ -69,6 +70,7 @@ export function LatestArticles({
                 <h3 className="mt-2 font-display text-base font-bold leading-snug text-foreground">
                   {a.title}
                 </h3>
+                <TopicBadges topics={getTopics(a)} className="mt-2" />
                 {a.excerpt && (
                   <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
                     {a.excerpt}

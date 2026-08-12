@@ -2,13 +2,23 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Search } from "lucide-react";
-import { fetchPublishedArticles, formatDate, type Article } from "@/lib/articles";
+import {
+  ARTICLE_TOPICS,
+  fetchPublishedArticles,
+  formatDate,
+  getTopics,
+  type Article,
+} from "@/lib/articles";
+import { TopicBadges } from "@/components/TopicBadges";
 import { BlogSubscribe } from "@/components/BlogSubscribe";
 import { ShareArticle } from "@/components/ShareArticle";
 import { SITE_URL } from "@/routes/articles/$slug";
 import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/articles/")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    topic: typeof search.topic === "string" ? search.topic : "",
+  }),
   head: () => ({
     meta: [
       { title: "Blog | Angel Leclerc Communication" },
@@ -46,6 +56,8 @@ function ArticlesPage() {
     queryKey: ["articles"],
     queryFn: fetchPublishedArticles,
   });
+  const { topic } = Route.useSearch();
+  const navigate = Route.useNavigate();
   const [query, setQuery] = useState("");
 
   const normalize = (value: string) =>
@@ -56,13 +68,21 @@ function ArticlesPage() {
 
   const filtered = useMemo(() => {
     const q = normalize(query.trim());
-    if (!q) return articles;
-    return articles.filter((a: Article) =>
+    let list = articles as Article[];
+    if (topic) list = list.filter((a) => getTopics(a).includes(topic));
+    if (!q) return list;
+    return list.filter((a: Article) =>
       normalize(
         `${a.title} ${a.excerpt ?? ""} ${a.category} ${a.content.replace(/<[^>]*>/g, " ")}`,
       ).includes(q),
     );
-  }, [articles, query]);
+  }, [articles, query, topic]);
+
+  const usedTopics = useMemo(() => {
+    const set = new Set<string>();
+    (articles as Article[]).forEach((a) => getTopics(a).forEach((t) => set.add(t)));
+    return ARTICLE_TOPICS.filter((t) => set.has(t));
+  }, [articles]);
 
   return (
     <section className="bg-background py-14 md:py-20">
@@ -86,6 +106,28 @@ function ArticlesPage() {
             />
           </div>
         </div>
+
+        {usedTopics.length > 0 && (
+          <div className="mt-5 flex flex-wrap gap-2" role="group" aria-label="Filtrer par catégorie">
+            {[{ key: "", label: "Tous" }, ...usedTopics.map((t) => ({ key: t, label: t }))].map(
+              (t) => (
+                <button
+                  key={t.key || "all"}
+                  type="button"
+                  aria-pressed={topic === t.key}
+                  onClick={() => navigate({ search: { topic: t.key }, replace: true })}
+                  className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
+                    topic === t.key
+                      ? "border-primary bg-primary/10 font-medium text-primary"
+                      : "border-input text-muted-foreground hover:border-primary/40"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ),
+            )}
+          </div>
+        )}
 
         <div className="mt-8 grid gap-5 sm:grid-cols-2">
           {isLoading && <p className="text-sm text-muted-foreground">Chargement…</p>}
@@ -124,6 +166,7 @@ function ArticlesPage() {
                 <h2 className="mt-2 font-display text-lg font-bold leading-snug text-foreground">
                   {a.title}
                 </h2>
+                <TopicBadges topics={getTopics(a)} className="mt-2" />
                 {a.excerpt && (
                   <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
                     {a.excerpt}

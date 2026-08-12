@@ -7,6 +7,8 @@ import {
   getAttachments,
   getSources,
 } from "@/lib/articles";
+import { getTopics } from "@/lib/articles";
+import { TopicBadges } from "@/components/TopicBadges";
 import { ShareArticle } from "@/components/ShareArticle";
 import { AiTransparency } from "@/components/AiTransparency";
 import { FeedbackBlock } from "@/components/FeedbackBlock";
@@ -119,6 +121,8 @@ function ArticlePage() {
         <p className="mt-4 text-sm text-muted-foreground">
           Publié le {formatDate(article.published_at ?? article.created_at)}
         </p>
+
+        <TopicBadges topics={getTopics(article)} linkToFilter className="mt-4" />
 
         {article.is_private && (
           <p className="mt-3 inline-flex items-center gap-2 rounded-md border border-border bg-muted px-3 py-1.5 text-xs text-muted-foreground">
