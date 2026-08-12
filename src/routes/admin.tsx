@@ -32,6 +32,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import {
   ARTICLE_CATEGORIES,
+  ARTICLE_TOPICS,
+  getTopics,
   fetchAllArticles,
   formatDate,
   formatDateTime,
@@ -102,6 +104,7 @@ type Draft = {
   featured: boolean;
   attachments: ArticleAttachment[];
   sources: ArticleSource[];
+  topics: string[];
   ai: AiDisclosure;
 };
 
@@ -120,6 +123,7 @@ const emptyDraft: Draft = {
   featured: false,
   attachments: [],
   sources: [],
+  topics: [],
   ai: emptyAiDisclosure,
 };
 
@@ -248,6 +252,7 @@ function AdminPage() {
         featured: d.featured,
         attachments: d.attachments,
         sources: d.sources.filter((s) => s.label.trim() && s.url.trim()),
+        topics: d.topics,
         ai_disclosure: d.ai,
         published_at: isPublished ? (scheduledIso ?? new Date().toISOString()) : null,
         author_id: user?.id ?? null,
