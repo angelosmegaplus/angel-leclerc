@@ -31,6 +31,9 @@ import {
   FolderOpen,
   Plug,
   Sparkles,
+  Mic,
+  Activity,
+  Search,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { ShopAdmin } from "@/components/ShopAdmin";
@@ -223,6 +226,7 @@ function AdminPage() {
   const [uploadingFile, setUploadingFile] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [tab, setTab] = useState<AdminTab>("dashboard");
+  const [searchOpen, setSearchOpen] = useState(false);
   const sendNewsletter = useServerFn(sendNewsletterNow);
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
 
