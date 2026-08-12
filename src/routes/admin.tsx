@@ -1054,12 +1054,23 @@ function AdminPage() {
               </label>
             </div>
 
-            <div className="flex gap-2">
-              <Button type="submit" disabled={save.isPending}>
+            <AiSuggestions
+              draft={{
+                title: draft.title,
+                excerpt: draft.excerpt,
+                content: draft.content,
+                topics: draft.topics,
+                category: draft.category,
+              }}
+              onApply={(patch) => setDraft({ ...draft, ...patch })}
+            />
+
+            <div className="flex flex-wrap gap-2">
+              <Button type="submit" disabled={save.isPending} className="min-h-11">
                 {save.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Valider et enregistrer
               </Button>
-              <Button type="button" variant="outline" onClick={() => setDraft(null)}>
+              <Button type="button" variant="outline" className="min-h-11" onClick={() => setDraft(null)}>
                 Annuler
               </Button>
             </div>
