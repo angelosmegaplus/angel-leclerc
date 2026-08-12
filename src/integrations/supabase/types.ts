@@ -33,6 +33,7 @@ export type Database = {
           slug: string
           sources: Json
           title: string
+          topics: Json
           updated_at: string
         }
         Insert: {
@@ -53,6 +54,7 @@ export type Database = {
           slug: string
           sources?: Json
           title: string
+          topics?: Json
           updated_at?: string
         }
         Update: {
@@ -73,6 +75,7 @@ export type Database = {
           slug?: string
           sources?: Json
           title?: string
+          topics?: Json
           updated_at?: string
         }
         Relationships: []
