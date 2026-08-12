@@ -91,30 +91,31 @@ import { AgendaPanel } from "@/components/admin/AgendaPanel";
 import { FilesPanel } from "@/components/admin/FilesPanel";
 import { ActivityPanel } from "@/components/admin/ActivityPanel";
 import { GlobalSearch } from "@/components/admin/GlobalSearch";
-import { CrudModule } from "@/components/admin/CrudModule";
-import { applicationFields, str } from "@/lib/angelos";
+import { AdminBootIntro } from "@/components/admin/AdminBootIntro";
+import { AngelCommandCenter } from "@/components/admin/AngelCommandCenter";
+import { ApplicationsPanel } from "@/components/admin/ApplicationsPanel";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "Mes publications | Espace personnel" },
+      { title: "Angel OS | Centre de contrôle" },
       {
         name: "description",
         content:
-          "Espace de rédaction privé : création, modification et publication des actualités du site Angel Leclerc Communication.",
+          "Centre de contrôle privé Angel OS : commandes IA, candidatures, contenus, projets et connexions.",
       },
       { name: "robots", content: "noindex, nofollow" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { property: "og:title", content: "Mes publications | Espace personnel" },
+      { property: "og:title", content: "Angel OS | Centre de contrôle" },
       {
         property: "og:description",
-        content: "Rédaction et publication des actualités du site.",
+        content: "Centre de contrôle privé Angel OS.",
       },
-      { name: "twitter:title", content: "Mes publications | Espace personnel" },
+      { name: "twitter:title", content: "Angel OS | Centre de contrôle" },
       {
         name: "twitter:description",
-        content: "Rédaction et publication des actualités du site.",
+        content: "Centre de contrôle privé Angel OS.",
       },
     ],
   }),
@@ -425,23 +426,23 @@ function AdminPage() {
   }
 
   const navItems: AdminNavItem[] = [
-    { key: "dashboard", label: "Vue d'ensemble", icon: LayoutDashboard, group: "Angel OS" },
-    { key: "articles", label: "Articles", icon: FileText, badge: articles.length, group: "Publication" },
+    { key: "dashboard", label: "Vue d'ensemble", icon: LayoutDashboard, group: "Essentiel", primary: true },
+    { key: "angel-ai", label: "Demander à l'IA", icon: Sparkles, group: "Essentiel", primary: true },
+    { key: "candidatures", label: "Candidatures", icon: Briefcase, group: "Essentiel", primary: true },
+    { key: "messages", label: "Messages", icon: Mail, badge: unreadCount, group: "Essentiel", primary: true },
+    { key: "articles", label: "Articles", icon: FileText, badge: articles.length, group: "Essentiel", primary: true },
+    { key: "agenda", label: "Agenda", icon: CalendarDays, group: "Essentiel", primary: true },
+    { key: "connexions", label: "Connexions", icon: Plug, group: "Essentiel", primary: true },
     { key: "contenus", label: "Parcours & services", icon: LayoutList, group: "Publication" },
     { key: "avis", label: "Avis et soutiens", icon: Star, group: "Publication" },
-    { key: "messages", label: "Messages", icon: Mail, badge: unreadCount, group: "Relations" },
     { key: "boite-mail", label: "Boîte mail", icon: Inbox, group: "Relations" },
     { key: "abonnes", label: "Abonnés", icon: Users, badge: subscribers.length, group: "Relations" },
     { key: "boutique", label: "Boutique", icon: ShoppingBag, group: "Activité" },
     { key: "stats", label: "Statistiques", icon: BarChart3, group: "Activité" },
     { key: "projets", label: "Projets", icon: FolderKanban, group: "Modules" },
-    { key: "candidatures", label: "Candidatures", icon: Briefcase, group: "Modules" },
     { key: "studio", label: "Studio / Journalisme", icon: Mic2, group: "Modules" },
-    { key: "agenda", label: "Agenda", icon: CalendarDays, group: "Modules" },
     { key: "fichiers", label: "Fichiers", icon: FolderOpen, group: "Modules" },
     { key: "activite", label: "Activité", icon: Activity, group: "Système" },
-    { key: "angel-ai", label: "Angel AI", icon: Sparkles, group: "Système" },
-    { key: "connexions", label: "Connexions", icon: Plug, group: "Système" },
     { key: "notifications", label: "Notifications", icon: Bell, group: "Système" },
     { key: "automatisation", label: "Automatisation", icon: Gauge, group: "Système" },
   ];
@@ -503,6 +504,7 @@ function AdminPage() {
         </>
       }
     >
+      <AdminBootIntro />
       <GlobalSearch
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
@@ -515,6 +517,7 @@ function AdminPage() {
         <InstallPrompt />
         {tab === "dashboard" && !draft && (
           <div className="space-y-5">
+          <AngelCommandCenter compact />
           <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {(
               [
@@ -609,22 +612,10 @@ function AdminPage() {
             </AdminCard>
           </div>
 
-          <AdminCard
-            title="Services externes"
-            description="Seules les vraies données sont affichées ; un service non branché reste marqué comme tel."
-          >
-            <div className="grid gap-2 sm:grid-cols-3">
-              {[
-                ["Boutique Stripe / Printful", "Connecté"],
-                ["Statistiques du site", "Connecté"],
-                ["Boîte mail Google", "Service non connecté"],
-              ].map(([name, status]) => (
-                <div key={name} className="rounded-lg border border-border/70 bg-background px-3 py-2.5">
-                  <p className="text-sm font-medium text-foreground">{name}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{status}</p>
-                </div>
-              ))}
-            </div>
+          <AdminCard title="Connexions réelles" description="Aucun service n'est déclaré connecté sans preuve serveur.">
+            <Button variant="outline" className="min-h-11" onClick={() => setTab("connexions")}>
+              <Plug className="mr-2 h-4 w-4" /> Vérifier les connexions
+            </Button>
           </AdminCard>
           </div>
         )}
@@ -1154,7 +1145,12 @@ function AdminPage() {
           </form>
         ) : (
           <>
-            {tab === "angel-ai" && <AiActionsPanel />}
+            {tab === "angel-ai" && (
+              <div className="space-y-5">
+                <AngelCommandCenter />
+                <AiActionsPanel />
+              </div>
+            )}
 
             {tab === "connexions" && <ConnectionsPanel />}
 
@@ -1182,22 +1178,7 @@ function AdminPage() {
 
             {tab === "candidatures" && (
               <div className="mt-6">
-                <CrudModule
-                  table="applications"
-                  entityLabel="Candidature"
-                  title="Candidatures BTS Communication"
-                  description="Entreprises contactées, relances et réponses."
-                  fields={applicationFields}
-                  titleField="company"
-                  subtitleFields={["position", "city"]}
-                  statusField="status"
-                  duplicateKeys={["company", "email"]}
-                  filters={[
-                    { label: "À envoyer", test: (r) => str(r, "status") === "a_envoyer" },
-                    { label: "En attente", test: (r) => ["envoyee", "relance"].includes(str(r, "status")) },
-                    { label: "Entretien", test: (r) => str(r, "status") === "entretien" },
-                  ]}
-                />
+                <ApplicationsPanel />
               </div>
             )}
 

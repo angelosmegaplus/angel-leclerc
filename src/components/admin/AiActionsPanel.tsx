@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Loader2, ShieldAlert, Trash2, X } from "lucide-react";
+import { Check, Clock3, Loader2, ShieldAlert, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,7 @@ type AiAction = {
 };
 
 /** Applique localement une action sûre : mise à jour de champs d'un article brouillon. */
-async function applyAction(action: AiAction) {
+async function applyAction(action: AiAction): Promise<{ message: string; status: string }> {
   const payload = (action.payload ?? {}) as Record<string, unknown>;
   if (action.target_type === "article" && action.target_id) {
     const patch = payload.article_patch;
@@ -30,10 +30,14 @@ async function applyAction(action: AiAction) {
         .update(patch as never)
         .eq("id", action.target_id);
       if (error) throw error;
-      return "Article mis à jour.";
+      return { message: "Article mis à jour.", status: "approved" };
     }
   }
-  return "Proposition validée.";
+  return {
+    message:
+      "Validation enregistrée. La demande attend maintenant sa prise en charge par l'opérateur IA.",
+    status: "awaiting_operator",
+  };
 }
 
 export function AiActionsPanel() {
@@ -62,10 +66,15 @@ export function AiActionsPanel() {
       status: "approved" | "rejected";
     }) => {
       let message = "Proposition refusée.";
-      if (status === "approved") message = await applyAction(action);
+      let finalStatus: string = status;
+      if (status === "approved") {
+        const outcome = await applyAction(action);
+        message = outcome.message;
+        finalStatus = outcome.status;
+      }
       const { error } = await supabase
         .from("ai_actions")
-        .update({ status, resolved_at: new Date().toISOString() })
+        .update({ status: finalStatus, resolved_at: new Date().toISOString() })
         .eq("id", action.id);
       if (error) throw error;
       return message;
@@ -78,14 +87,6 @@ export function AiActionsPanel() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Échec"),
   });
 
-  const remove = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("ai_actions").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["ai-actions"] }),
-  });
-
   const pending = actions.filter((a) => a.status === "pending");
   const history = actions.filter((a) => a.status !== "pending");
 
@@ -93,7 +94,7 @@ export function AiActionsPanel() {
     <div className="space-y-5">
       <AdminCard
         title="Angel AI — file d'actions"
-        description="Propositions en attente de votre validation. Rien n'est appliqué sans un clic explicite ; les actions sensibles demandent une confirmation supplémentaire."
+        description="Les opérations locales sûres peuvent être exécutées immédiatement par le centre de commande. Cette file conserve les demandes qui nécessitent une validation ou un opérateur externe."
       >
         {isLoading && (
           <p className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -102,24 +103,18 @@ export function AiActionsPanel() {
         )}
         {!isLoading && pending.length === 0 && (
           <p className="text-sm text-muted-foreground">
-            Aucune proposition en attente. La file est prête : les suggestions
-            déposées ici (par vous ou par un assistant externe) apparaîtront
-            automatiquement.
+            Aucune proposition en attente. La file est prête : les suggestions déposées ici (par
+            vous ou par un assistant externe) apparaîtront automatiquement.
           </p>
         )}
         <ul className="space-y-3">
           {pending.map((a) => (
-            <li
-              key={a.id}
-              className="rounded-xl border border-border bg-background p-4"
-            >
+            <li key={a.id} className="rounded-xl border border-border bg-background p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="font-medium text-foreground">{a.title}</p>
                   {a.description && (
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {a.description}
-                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">{a.description}</p>
                   )}
                   <p className="mt-2 text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
                     {a.kind}
@@ -177,17 +172,16 @@ export function AiActionsPanel() {
               >
                 <span className="min-w-0 truncate">{a.title}</span>
                 <span className="flex items-center gap-2">
+                  {a.status === "awaiting_operator" && (
+                    <Clock3 className="h-3.5 w-3.5 text-amber-600" />
+                  )}
                   <span className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-                    {a.status === "approved" ? "validée" : "refusée"}
+                    {a.status === "approved"
+                      ? "exécutée"
+                      : a.status === "awaiting_operator"
+                        ? "opérateur requis"
+                        : "refusée"}
                   </span>
-                  <button
-                    type="button"
-                    aria-label="Supprimer"
-                    onClick={() => remove.mutate(a.id)}
-                    className="text-muted-foreground hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
                 </span>
               </li>
             ))}

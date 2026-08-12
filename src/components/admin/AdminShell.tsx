@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Menu, X, type LucideIcon } from "lucide-react";
+import { ChevronDown, ChevronUp, Menu, X, type LucideIcon } from "lucide-react";
 
 export type AdminNavItem = {
   key: string;
@@ -7,6 +7,7 @@ export type AdminNavItem = {
   icon: LucideIcon;
   badge?: number;
   group: string;
+  primary?: boolean;
 };
 
 export function AdminShell({
@@ -27,6 +28,7 @@ export function AdminShell({
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -35,61 +37,81 @@ export function AdminShell({
     };
   }, [open]);
 
-  const groups = items.reduce<Record<string, AdminNavItem[]>>((acc, item) => {
+  const visibleItems = expanded
+    ? items
+    : items.filter((item) => item.primary || item.key === active);
+  const groups = visibleItems.reduce<Record<string, AdminNavItem[]>>((acc, item) => {
     (acc[item.group] ??= []).push(item);
     return acc;
   }, {});
 
   const nav = (
-    <nav aria-label="Navigation Angel OS" className="space-y-5">
-      {Object.entries(groups).map(([group, list]) => (
-        <div key={group}>
-          <p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/35">
-            {group}
-          </p>
-          <ul className="space-y-0.5">
-            {list.map(({ key, label, icon: Icon, badge }) => {
-              const isActive = active === key;
-              return (
-                <li key={key}>
-                  <button
-                    type="button"
-                    aria-current={isActive ? "page" : undefined}
-                    onClick={() => {
-                      onSelect(key);
-                      setOpen(false);
-                    }}
-                    className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-medium transition-colors ${
-                      isActive
-                        ? "bg-white/12 text-white"
-                        : "text-white/60 hover:bg-white/8 hover:text-white"
-                    }`}
-                  >
-                    <Icon className="h-4 w-4 shrink-0" />
-                    <span className="min-w-0 flex-1 truncate">{label}</span>
-                    {badge ? (
-                      <span className="rounded-full bg-white/15 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-white">
-                        {badge}
-                      </span>
-                    ) : null}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
-    </nav>
+    <>
+      <nav aria-label="Navigation Angel OS" className="space-y-5">
+        {Object.entries(groups).map(([group, list]) => (
+          <div key={group}>
+            <p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/35">
+              {group}
+            </p>
+            <ul className="space-y-0.5">
+              {list.map(({ key, label, icon: Icon, badge }) => {
+                const isActive = active === key;
+                return (
+                  <li key={key}>
+                    <button
+                      type="button"
+                      aria-current={isActive ? "page" : undefined}
+                      onClick={() => {
+                        onSelect(key);
+                        setOpen(false);
+                      }}
+                      className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-medium transition-colors ${
+                        isActive
+                          ? "bg-white/12 text-white"
+                          : "text-white/60 hover:bg-white/8 hover:text-white"
+                      }`}
+                    >
+                      <Icon className="h-4 w-4 shrink-0" />
+                      <span className="min-w-0 flex-1 truncate">{label}</span>
+                      {badge ? (
+                        <span className="rounded-full bg-white/15 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-white">
+                          {badge}
+                        </span>
+                      ) : null}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </nav>
+      <button
+        type="button"
+        onClick={() => setExpanded((value) => !value)}
+        className="mt-5 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/10 px-3 text-xs font-medium text-white/60 hover:bg-white/8 hover:text-white"
+      >
+        {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        {expanded ? "Masquer les modules" : "Tous les modules"}
+      </button>
+    </>
+  );
+
+  const brand = (
+    <div className="flex items-center gap-3">
+      <img src="/angel-os/logo.png" alt="" className="h-11 w-11 shrink-0 object-contain" />
+      <div className="min-w-0">
+        <p className="font-display text-lg font-bold text-white">Angel OS</p>
+        <p className="mt-0.5 truncate text-[11px] text-white/45">{subtitle}</p>
+      </div>
+    </div>
   );
 
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-background lg:flex">
       {/* Sidebar desktop */}
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col overflow-y-auto bg-[#181716] px-3 py-5 lg:flex">
-        <div className="px-3 pb-5">
-          <p className="font-display text-lg font-bold text-white">Angel OS</p>
-          <p className="mt-0.5 truncate text-[11px] text-white/45">{subtitle}</p>
-        </div>
+        <div className="px-3 pb-5">{brand}</div>
         {nav}
       </aside>
 
@@ -104,10 +126,7 @@ export function AdminShell({
           />
           <div className="absolute inset-y-0 left-0 flex w-[82%] max-w-xs flex-col overflow-y-auto bg-[#181716] px-3 py-5">
             <div className="flex items-start justify-between px-3 pb-5">
-              <div className="min-w-0">
-                <p className="font-display text-lg font-bold text-white">Angel OS</p>
-                <p className="mt-0.5 truncate text-[11px] text-white/45">{subtitle}</p>
-              </div>
+              {brand}
               <button
                 type="button"
                 onClick={() => setOpen(false)}
@@ -159,15 +178,9 @@ export function AdminCard({
   className?: string;
 }) {
   return (
-    <section
-      className={`rounded-2xl border border-border bg-card p-4 sm:p-6 ${className}`}
-    >
-      {title && (
-        <h2 className="font-display text-base font-bold text-foreground">{title}</h2>
-      )}
-      {description && (
-        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-      )}
+    <section className={`rounded-2xl border border-border bg-card p-4 sm:p-6 ${className}`}>
+      {title && <h2 className="font-display text-base font-bold text-foreground">{title}</h2>}
+      {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
       <div className={title || description ? "mt-4" : ""}>{children}</div>
     </section>
   );
