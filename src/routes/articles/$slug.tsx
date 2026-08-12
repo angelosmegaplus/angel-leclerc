@@ -27,6 +27,27 @@ function firstImageFromContent(content: string): string | null {
   return match ? absoluteUrl(match[1]) : null;
 }
 
+type CoverMeta = {
+  source?: string;
+  pageUrl?: string;
+  credit?: string;
+  license?: string;
+  alt?: string;
+};
+
+function getCoverMeta(article: { cover_meta?: unknown }): CoverMeta | null {
+  const raw = article.cover_meta;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const value = raw as Record<string, unknown>;
+  return {
+    source: typeof value.source === "string" ? value.source : undefined,
+    pageUrl: typeof value.pageUrl === "string" ? value.pageUrl : undefined,
+    credit: typeof value.credit === "string" ? value.credit : undefined,
+    license: typeof value.license === "string" ? value.license : undefined,
+    alt: typeof value.alt === "string" ? value.alt : undefined,
+  };
+}
+
 export const Route = createFileRoute("/articles/$slug")({
   loader: ({ params }) => fetchArticleBySlug(params.slug),
   head: ({ params, loaderData }) => {
@@ -108,6 +129,7 @@ function ArticlePage() {
   const attachments = getAttachments(article);
   const sources = getSources(article);
   const disclosure = getAiDisclosure(article);
+  const coverMeta = getCoverMeta(article);
 
   return (
     <article className="bg-background py-14 md:py-20">
@@ -135,12 +157,34 @@ function ArticlePage() {
         )}
 
         {article.cover_url && (
-          <img
-            src={article.cover_url}
-            alt={article.title}
-            loading="lazy"
-            className="mt-8 w-full rounded-xl object-cover"
-          />
+          <figure className="mt-8">
+            <img
+              src={article.cover_url}
+              alt={coverMeta?.alt || article.title}
+              loading="lazy"
+              className="w-full rounded-xl object-cover"
+            />
+            {(coverMeta?.credit || coverMeta?.source || coverMeta?.license) && (
+              <figcaption className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                Image : {coverMeta?.credit || "auteur non précisé"}
+                {coverMeta?.source ? ` · ${coverMeta.source}` : ""}
+                {coverMeta?.license ? ` · ${coverMeta.license}` : ""}
+                {coverMeta?.pageUrl && (
+                  <>
+                    {" · "}
+                    <a
+                      href={coverMeta.pageUrl}
+                      target="_blank"
+                      rel="noreferrer nofollow"
+                      className="text-primary hover:underline"
+                    >
+                      source de l’image
+                    </a>
+                  </>
+                )}
+              </figcaption>
+            )}
+          </figure>
         )}
 
         {article.excerpt && (
