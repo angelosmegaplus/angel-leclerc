@@ -43,7 +43,7 @@ function tagList(row: Row) {
   );
 }
 
-function StudioCapture() {
+function StudioCapture({ onGo }: { onGo: (view: View) => void }) {
   const [last, setLast] = useState<{ url: string; name: string } | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -64,23 +64,38 @@ function StudioCapture() {
           />
 
           <div className="rounded-lg border border-dashed border-border p-4">
-            <label className="text-sm font-medium text-foreground" htmlFor="studio-import">
-              Importer un fichier existant
+            <p className="text-sm font-medium text-foreground">Kit terrain</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Importer photo, vidéo, audio ou document, prendre une note de terrain,
+              ajouter une source et préparer une interview.
+            </p>
+            <label
+              className="mt-3 block text-sm font-medium text-foreground"
+              htmlFor="studio-import"
+            >
+              Importer des fichiers
             </label>
             <input
               id="studio-import"
               type="file"
-              accept="audio/*,video/*,image/*"
+              multiple
+              accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"
               disabled={uploading}
               className="mt-2 block w-full text-sm"
               onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
+                const files = Array.from(e.target.files ?? []);
+                if (files.length === 0) return;
                 setUploading(true);
                 try {
-                  const url = await uploadMedia(file, file.name);
-                  setLast({ url, name: file.name });
-                  toast.success("Fichier importé.");
+                  for (const file of files) {
+                    const url = await uploadMedia(file, file.name);
+                    setLast({ url, name: file.name });
+                  }
+                  toast.success(
+                    files.length > 1
+                      ? `${files.length} fichiers importés.`
+                      : "Fichier importé.",
+                  );
                 } catch (err) {
                   toast.error(err instanceof Error ? err.message : "Import impossible");
                 } finally {
@@ -89,6 +104,37 @@ function StudioCapture() {
                 }
               }}
             />
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="min-h-11"
+                onClick={() => onGo("reportages")}
+              >
+                Nouvelle note terrain
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="min-h-11"
+                onClick={() => onGo("contacts_sources")}
+              >
+                Nouvelle source / contact
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="min-h-11"
+                onClick={() => onGo("interviews")}
+              >
+                Préparer une interview
+              </Button>
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Les fichiers restent dans le stockage du site : rien n'est envoyé
+              automatiquement à un service externe. L'envoi vers Drive sera proposé
+              lorsque le compte Google sera connecté.
+            </p>
           </div>
 
           {last && (
@@ -144,7 +190,7 @@ export function StudioPanel() {
         ))}
       </div>
 
-      {view === "studio" && <StudioCapture />}
+      {view === "studio" && <StudioCapture onGo={setView} />}
 
       {view === "reportages" && (
         <CrudModule
