@@ -29,7 +29,7 @@ const schema = z.object({
   deadline: z.string().trim().max(120).optional().or(z.literal("")),
   transcript: z.string().trim().max(6000).optional().or(z.literal("")),
   nextSteps: z.string().trim().max(600).optional().or(z.literal("")),
-  consent: z.literal(true, { errorMap: () => ({ message: "Consentement requis" }) }),
+  consent: z.literal(true, { error: "Consentement requis" }),
   captchaToken: z.string().trim().min(1, "Vérification requise").max(300),
   captchaAnswer: z.string().trim().min(1, "Vérification requise").max(10),
   // Honeypot : doit rester vide.
