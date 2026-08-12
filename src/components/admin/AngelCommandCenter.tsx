@@ -5,6 +5,7 @@ import { Bot, CheckCircle2, Clock3, Loader2, Send, ShieldAlert } from "lucide-re
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { runAngelCommand } from "@/lib/angel-command.functions";
+import { isArticleCommand, runArticleCommand } from "@/lib/article-command.functions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { AdminCard } from "./AdminShell";
@@ -26,6 +27,7 @@ const EXAMPLES = [
 
 export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
   const execute = useServerFn(runAngelCommand);
+  const executeArticle = useServerFn(runArticleCommand);
   const queryClient = useQueryClient();
   const [command, setCommand] = useState("");
 
@@ -43,12 +45,15 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
   });
 
   const mutation = useMutation({
-    mutationFn: (value: string) => execute({ data: { command: value } }),
+    mutationFn: (value: string) =>
+      isArticleCommand(value)
+        ? executeArticle({ data: { command: value } })
+        : execute({ data: { command: value } }),
     onSuccess: (result) => {
       setCommand("");
       if (result.status === "completed") toast.success("Commande exécutée et tracée.");
       else if (result.status === "partial")
-        toast.warning("Commande partiellement exécutée et tracée.");
+        toast.warning("Commande mise en attente ou partiellement exécutée.");
       else toast.info("Commande enregistrée et tracée.");
       void queryClient.invalidateQueries({ queryKey: ["angel-ai-messages"] });
       void queryClient.invalidateQueries({ queryKey: ["ai-actions"] });
@@ -68,7 +73,7 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
     <AdminCard
       className="border-primary/30 bg-gradient-to-br from-primary/8 via-card to-card"
       title="Demander à Angel AI"
-      description="Une commande, un résultat réel et une trace. Les tâches et brouillons locaux sont exécutés ; les actions externes restent soumises à validation."
+      description="Une commande, un résultat réel et une trace. Les articles sont générés immédiatement si le moteur IA est disponible ; sinon la demande est mise en attente sans créer de faux contenu."
     >
       <div className="space-y-3">
         <div className="relative">
@@ -80,7 +85,7 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
             }}
             rows={compact ? 3 : 4}
             maxLength={2_000}
-            placeholder="Ex. Analyse mes candidatures et indique les relances à faire."
+            placeholder="Ex. Rédige un article complet sur l'actualité locale avec sources et image créditée."
             className="min-h-24 resize-y bg-background pr-12"
           />
           <Button
@@ -123,6 +128,7 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
               const partial = message.status === "partial";
               const notConnected = message.status === "not_connected";
               const failed = message.status === "failed";
+              const queued = message.context?.queued === true;
               return (
                 <li key={message.id} className="rounded-xl border border-border bg-background p-3">
                   <div className="flex items-start gap-2">
@@ -144,13 +150,15 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
                         )}
                         {failed
                           ? "échec"
-                          : waiting
-                            ? "validation nécessaire"
-                            : partial
-                              ? "partiel"
-                              : notConnected
-                                ? "connexion requise"
-                                : "terminé"}
+                          : queued
+                            ? "en attente IA"
+                            : waiting
+                              ? "validation nécessaire"
+                              : partial
+                                ? "partiel"
+                                : notConnected
+                                  ? "connexion requise"
+                                  : "terminé"}
                         <span>·</span>
                         <span>
                           {message.context?.source === "openai" ? "OpenAI" : "moteur local"}
