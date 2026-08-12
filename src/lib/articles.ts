@@ -81,6 +81,30 @@ export const ARTICLE_CATEGORIES = [
   "Projet",
 ] as const;
 
+/** Catégories thématiques globales (multiples, optionnelles). */
+export const ARTICLE_TOPICS = [
+  "Politique",
+  "Société",
+  "Emploi & formation",
+  "Entreprise & économie",
+  "Communication & médias",
+  "International & géopolitique",
+  "Religion",
+  "Scoutisme",
+  "Technologie & numérique",
+  "Culture & idées",
+] as const;
+
+export type ArticleTopic = (typeof ARTICLE_TOPICS)[number];
+
+export function getTopics(article: { topics?: unknown }): string[] {
+  const raw = article.topics;
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(
+    (t): t is string => typeof t === "string" && t.trim().length > 0,
+  );
+}
+
 function visibleNow(query: any) {
   return query.or(`scheduled_at.is.null,scheduled_at.lte.${new Date().toISOString()}`);
 }
