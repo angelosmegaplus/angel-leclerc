@@ -4,8 +4,8 @@
 
 1. **La source de vérité est GitHub.** Tout le code du site (TanStack Start + React + Tailwind) est versionné dans le dépôt GitHub connecté au projet. Aucune modification ne doit exister uniquement dans Lovable.
 2. **CI avant production.** Chaque branche/PR doit passer :
-   - `bun install`
-   - `bunx tsgo --noEmit` (TypeScript)
+   - `bun install --frozen-lockfile`
+   - `bunx tsc --noEmit --pretty false` (TypeScript)
    - `bun run build` (build de production)
    Une PR qui échoue ne doit jamais être fusionnée sur `main`.
 3. **Lovable = hébergement / publication.** Lovable sert uniquement à builder et publier `main` sur `angel-leclerc.fr`. Aucun service de déploiement supplémentaire (Cloudflare, Vercel, etc.) n'est utilisé ni nécessaire.
@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
-      - run: bunx tsgo --noEmit
+      - run: bunx tsc --noEmit --pretty false
       - run: bun run build
 ```
 
