@@ -15,7 +15,6 @@ export function AdminShell({
   active,
   onSelect,
   title,
-  subtitle,
   actions,
   children,
 }: {
@@ -23,7 +22,6 @@ export function AdminShell({
   active: string;
   onSelect: (key: string) => void;
   title: string;
-  subtitle?: string;
   actions?: ReactNode;
   children: ReactNode;
 }) {
