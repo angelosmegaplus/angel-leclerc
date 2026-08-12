@@ -770,6 +770,48 @@ export type Database = {
         }
         Relationships: []
       }
+      oauth_connections: {
+        Row: {
+          account_label: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          last_sync_at: string | null
+          provider: string
+          scopes: string[]
+          status: string
+          token_ciphertext: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_label?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          last_sync_at?: string | null
+          provider: string
+          scopes?: string[]
+          status?: string
+          token_ciphertext: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_label?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          last_sync_at?: string | null
+          provider?: string
+          scopes?: string[]
+          status?: string
+          token_ciphertext?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       page_views: {
         Row: {
           country: string | null
