@@ -750,9 +750,42 @@ function AdminPage() {
               </Button>
             </div>
 
+            <div className="space-y-2 rounded-lg border border-border bg-background p-4">
+              <Label>Catégories thématiques</Label>
+              <p className="text-[11px] text-muted-foreground">
+                Optionnel — une ou plusieurs. Affichées en badges sur le blog.
+              </p>
+              <div className="flex flex-wrap gap-2 pt-1">
+                {ARTICLE_TOPICS.map((t) => {
+                  const active = draft.topics.includes(t);
+                  return (
+                    <button
+                      key={t}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() =>
+                        setDraft({
+                          ...draft,
+                          topics: active
+                            ? draft.topics.filter((x) => x !== t)
+                            : [...draft.topics, t],
+                        })
+                      }
+                      className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
+                        active
+                          ? "border-primary bg-primary/10 font-medium text-primary"
+                          : "border-input text-muted-foreground hover:border-primary/40"
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div className="space-y-3 rounded-lg border border-border bg-background p-4">
               <p className="text-sm font-medium text-foreground">Transparence IA</p>
-              <span className="sr-only" />
               <p className="text-[11px] text-muted-foreground">
                 Rien n'est affiché publiquement si aucune case n'est cochée.
               </p>
