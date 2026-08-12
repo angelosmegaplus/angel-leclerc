@@ -82,6 +82,7 @@ import { AiSuggestions } from "@/components/admin/AiSuggestions";
 import { ConnectionsPanel } from "@/components/admin/ConnectionsPanel";
 import { ProjectsPanel } from "@/components/admin/ProjectsPanel";
 import { StudioPanel } from "@/components/admin/StudioPanel";
+import { APP_SUBTITLE } from "@/config/navigation";
 import { AgendaPanel } from "@/components/admin/AgendaPanel";
 import { FilesPanel } from "@/components/admin/FilesPanel";
 import { ActivityPanel } from "@/components/admin/ActivityPanel";
@@ -416,7 +417,7 @@ function AdminPage() {
     { key: "stats", label: "Statistiques", icon: BarChart3, group: "Activité" },
     { key: "projets", label: "Projets", icon: FolderKanban, group: "Modules" },
     { key: "candidatures", label: "Candidatures", icon: Briefcase, group: "Modules" },
-    { key: "studio", label: "Studio & journalisme", icon: Mic, group: "Modules" },
+    { key: "studio", label: "Studio / Journalisme", icon: Mic2, group: "Modules" },
     { key: "agenda", label: "Agenda", icon: CalendarDays, group: "Modules" },
     { key: "fichiers", label: "Fichiers", icon: FolderOpen, group: "Modules" },
     { key: "activite", label: "Activité", icon: Activity, group: "Système" },
@@ -436,7 +437,7 @@ function AdminPage() {
         setDraft(null);
       }}
       title={draft ? (draft.id ? "Modifier l'article" : "Nouvel article") : currentLabel}
-      subtitle={user?.email ?? "Connecté"}
+      subtitle={APP_SUBTITLE}
       actions={
         <>
           <Button
