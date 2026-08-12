@@ -145,6 +145,23 @@ const emptyDraft: Draft = {
 
 const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
 
+type AdminTab =
+  | "dashboard"
+  | "articles"
+  | "messages"
+  | "boite-mail"
+  | "abonnes"
+  | "stats"
+  | "contenus"
+  | "avis"
+  | "boutique"
+  | "projets"
+  | "candidatures"
+  | "agenda"
+  | "fichiers"
+  | "connexions"
+  | "angel-ai";
+
 /** ISO -> valeur d'un <input type="datetime-local"> en heure locale. */
 function toLocalInput(iso: string | null): string {
   if (!iso) return "";
