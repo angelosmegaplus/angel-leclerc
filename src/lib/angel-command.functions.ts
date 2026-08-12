@@ -10,19 +10,20 @@ type Db = SupabaseClient<Database>;
 
 export type AngelCommandResult = {
   response: string;
-  status: "completed" | "awaiting_approval";
+  status: "completed" | "partial" | "not_connected" | "awaiting_approval";
   source: "openai" | "local";
   autoExecuted: boolean;
   actionId: string | null;
 };
 
 async function assertAdmin(context: { supabase: Db; userId: string }) {
-  const { data } = await context.supabase
+  const { data, error } = await context.supabase
     .from("user_roles")
     .select("role")
     .eq("user_id", context.userId)
     .eq("role", "admin")
     .maybeSingle();
+  if (error) throw error;
   if (!data) throw new Error("Accès réservé à l'administrateur.");
 }
 
@@ -51,7 +52,8 @@ async function counts(db: Db) {
   const [applications, projects, tasks, articles, actions] = await Promise.all([
     db
       .from("applications")
-      .select("company, city, position, status, sent_at, follow_up_at")
+      .select("company, city, position, status, sent_at, follow_up_at, created_at")
+      .order("created_at", { ascending: false })
       .limit(300),
     db.from("projects").select("status").limit(300),
     db.from("project_tasks").select("status, due_date").limit(300),
@@ -159,9 +161,9 @@ export const runAngelCommand = createServerFn({ method: "POST" })
         const sync = await syncApplicationsForUser(context.userId, db);
         result = {
           response: sync.message,
-          status: "completed",
+          status: sync.status,
           source: "local",
-          autoExecuted: sync.status === "completed",
+          autoExecuted: sync.status !== "not_connected",
           actionId: null,
         };
       } else if (/(?:ajoute|crée|cree|note).*(?:tâche|tache)|(?:tâche|tache)\s*:/i.test(command)) {
@@ -283,7 +285,7 @@ export const runAngelCommand = createServerFn({ method: "POST" })
         }
       }
 
-      await db
+      const { error: completionError } = await db
         .from("ai_messages")
         .update({
           response: result.response,
@@ -295,27 +297,36 @@ export const runAngelCommand = createServerFn({ method: "POST" })
           },
         })
         .eq("id", message.id);
-      await db.from("activity_log").insert({
+      if (completionError) throw completionError;
+
+      const { error: completionLogError } = await db.from("activity_log").insert({
         source: "ai",
         action: "command_completed",
         entity_type: "ai_messages",
         entity_id: message.id,
         details: { status: result.status, action_id: result.actionId },
       });
+      if (completionLogError) throw completionLogError;
       return result;
     } catch (error) {
       const detail = error instanceof Error ? error.message : "Erreur inconnue";
-      await db
+      const { error: failureStatusError } = await db
         .from("ai_messages")
         .update({ response: detail, status: "failed", context: { error: detail } })
         .eq("id", message.id);
-      await db.from("activity_log").insert({
+      const { error: failureLogError } = await db.from("activity_log").insert({
         source: "ai",
         action: "command_failed",
         entity_type: "ai_messages",
         entity_id: message.id,
         details: { error: detail },
       });
+      if (failureStatusError || failureLogError) {
+        const loggingError = failureStatusError ?? failureLogError;
+        throw new Error(
+          `${detail} Journalisation impossible : ${loggingError?.message ?? "erreur inconnue"}`,
+        );
+      }
       throw error;
     }
   });

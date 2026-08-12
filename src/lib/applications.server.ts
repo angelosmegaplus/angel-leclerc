@@ -1,4 +1,5 @@
 import { getAccessToken } from "./oauth/oauth.server";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -204,13 +205,48 @@ function key(value: unknown): string {
 }
 
 export type ApplicationSyncResult = {
-  status: "completed" | "not_connected";
+  status: "completed" | "partial" | "not_connected";
   imported: number;
   updated: number;
   skipped: number;
   message: string;
   syncedAt: string | null;
 };
+
+const GMAIL_PAGE_SIZE = 50;
+const GMAIL_MAX_MESSAGES = 200;
+
+async function candidateMessageIds(token: string) {
+  const ids: string[] = [];
+  let pageToken: string | undefined;
+
+  do {
+    const remaining = GMAIL_MAX_MESSAGES - ids.length;
+    const params = new URLSearchParams({
+      q: "in:sent (subject:candidature OR subject:alternance)",
+      maxResults: String(Math.min(GMAIL_PAGE_SIZE, remaining)),
+    });
+    if (pageToken) params.set("pageToken", pageToken);
+
+    const page = await gmailGet<{
+      messages?: Array<{ id: string }>;
+      nextPageToken?: string;
+    }>(token, "/messages", params);
+    ids.push(...(page.messages ?? []).map((message) => message.id));
+    pageToken = page.nextPageToken;
+  } while (pageToken && ids.length < GMAIL_MAX_MESSAGES);
+
+  return { ids, truncated: Boolean(pageToken) };
+}
+
+async function candidateMessages(token: string, ids: string[]) {
+  const messages: GmailMessage[] = [];
+  for (let offset = 0; offset < ids.length; offset += 20) {
+    const batch = ids.slice(offset, offset + 20);
+    messages.push(...(await Promise.all(batch.map((id) => messageMetadata(token, id)))));
+  }
+  return messages;
+}
 
 export async function syncApplicationsForUser(
   userId: string,
@@ -229,17 +265,8 @@ export async function syncApplicationsForUser(
   }
 
   const profile = await gmailGet<{ emailAddress: string }>(token, "/profile");
-  const list = await gmailGet<{ messages?: Array<{ id: string }> }>(
-    token,
-    "/messages",
-    new URLSearchParams({
-      q: "in:sent (subject:candidature OR subject:alternance)",
-      maxResults: "30",
-    }),
-  );
-  const messages = await Promise.all(
-    (list.messages ?? []).map((item) => messageMetadata(token, item.id)),
-  );
+  const listed = await candidateMessageIds(token);
+  const messages = await candidateMessages(token, listed.ids);
   const originals = messages.filter((message) => {
     const subject = header(message, "Subject");
     return /candidature|alternance/i.test(subject) && !/^(re|tr|fwd?)\s*:/i.test(subject);
@@ -249,9 +276,7 @@ export async function syncApplicationsForUser(
   for (let offset = 0; offset < originals.length; offset += 8) {
     const batch = originals.slice(offset, offset + 8);
     const replies = await Promise.all(
-      batch.map((message) =>
-        threadReply(token, message.threadId, profile.emailAddress).catch(() => null),
-      ),
+      batch.map((message) => threadReply(token, message.threadId, profile.emailAddress)),
     );
     batch.forEach((message, index) => {
       const subject = header(message, "Subject");
@@ -275,7 +300,7 @@ export async function syncApplicationsForUser(
 
   const { data: rows, error: readError } = await db
     .from("applications")
-    .select("id, company, email, status, response, notes");
+    .select("id, company, email, sent_at, follow_up_at, status, response, notes");
   if (readError) throw readError;
   const existing = (rows ?? []) as Array<Record<string, unknown>>;
   let imported = 0;
@@ -284,8 +309,9 @@ export async function syncApplicationsForUser(
 
   for (const candidate of candidates) {
     const match = existing.find((row) => {
-      const sameEmail = candidate.email && key(row.email) === key(candidate.email);
-      return Boolean(sameEmail) || key(row.company) === key(candidate.company);
+      const sameDate = key(row.sent_at) === key(candidate.sent_at);
+      if (candidate.email) return key(row.email) === key(candidate.email) && sameDate;
+      return key(row.company) === key(candidate.company) && sameDate;
     });
     if (!match) {
       const { data, error } = await db.from("applications").insert(candidate).select("id").single();
@@ -297,6 +323,7 @@ export async function syncApplicationsForUser(
 
     const patch: ApplicationUpdate = {};
     if (!match.response && candidate.response) patch.response = candidate.response;
+    if (candidate.response && match.follow_up_at) patch.follow_up_at = null;
     if (candidate.status === "refusee" && ["envoyee", "relance"].includes(key(match.status))) {
       patch.status = "refusee";
       patch.follow_up_at = null;
@@ -312,24 +339,39 @@ export async function syncApplicationsForUser(
   }
 
   const syncedAt = new Date().toISOString();
-  await db
+  const { data: connection, error: syncMetadataError } = await supabaseAdmin
     .from("oauth_connections")
     .update({ last_sync_at: syncedAt, updated_at: syncedAt })
     .eq("user_id", userId)
-    .eq("provider", "google");
-  await db.from("activity_log").insert({
+    .eq("provider", "google")
+    .select("id")
+    .maybeSingle();
+  if (syncMetadataError) throw syncMetadataError;
+  if (!connection) throw new Error("Connexion Google introuvable après la synchronisation.");
+
+  const { error: activityError } = await db.from("activity_log").insert({
     source: "ai",
     action: "gmail_applications_sync",
     entity_type: "applications",
-    details: { imported, updated, skipped, reviewed: candidates.length },
+    details: {
+      imported,
+      updated,
+      skipped,
+      reviewed: candidates.length,
+      listed: listed.ids.length,
+      truncated: listed.truncated,
+    },
   });
+  if (activityError) throw activityError;
 
   return {
-    status: "completed",
+    status: listed.truncated ? "partial" : "completed",
     imported,
     updated,
     skipped,
-    message: `${candidates.length} candidature(s) vérifiée(s), ${imported} ajoutée(s), ${updated} mise(s) à jour.`,
+    message: listed.truncated
+      ? `${candidates.length} candidature(s) vérifiée(s) parmi les ${GMAIL_MAX_MESSAGES} messages les plus récents. La limite de sécurité a été atteinte : le contrôle est partiel.`
+      : `${candidates.length} candidature(s) vérifiée(s), ${imported} ajoutée(s), ${updated} mise(s) à jour.`,
     syncedAt,
   };
 }

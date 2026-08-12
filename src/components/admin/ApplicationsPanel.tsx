@@ -22,6 +22,7 @@ export function ApplicationsPanel() {
     mutationFn: () => sync(),
     onSuccess: (result) => {
       if (result.status === "completed") toast.success(result.message);
+      else if (result.status === "partial") toast.warning(result.message);
       void queryClient.invalidateQueries({ queryKey: ["angel", "applications"] });
       void queryClient.invalidateQueries({ queryKey: ["integration-readiness"] });
     },
