@@ -1091,51 +1091,54 @@ function AdminPage() {
             {tab === "connexions" && <ConnectionsPanel />}
 
             {tab === "projets" && (
-              <ModulePlaceholder
-                title="Projets"
-                description="Suivi des missions clients dans Angel OS."
-                points={[
-                  "Fiches de mission reliées aux demandes de contact reçues",
-                  "Étapes, échéances et acompte Revolut",
-                  "Historique des livrables",
-                ]}
-              />
+              <div className="mt-6">
+                <ProjectsPanel />
+              </div>
+            )}
+
+            {tab === "studio" && (
+              <div className="mt-6">
+                <StudioPanel />
+              </div>
+            )}
+
+            {tab === "activite" && (
+              <div className="mt-6">
+                <ActivityPanel />
+              </div>
             )}
 
             {tab === "candidatures" && (
-              <ModulePlaceholder
-                title="Candidatures"
-                description="Suivi de la recherche d'alternance BTS Communication."
-                points={[
-                  "Entreprises contactées et statut de chaque candidature",
-                  "Relances programmées",
-                  "Documents envoyés (CV, lettre)",
-                ]}
-              />
+              <div className="mt-6">
+                <CrudModule
+                  table="applications"
+                  entityLabel="Candidature"
+                  title="Candidatures BTS Communication"
+                  description="Entreprises contactées, relances et réponses."
+                  fields={applicationFields}
+                  titleField="company"
+                  subtitleFields={["position", "city"]}
+                  statusField="status"
+                  duplicateKeys={["company", "email"]}
+                  filters={[
+                    { label: "À envoyer", test: (r) => str(r, "status") === "a_envoyer" },
+                    { label: "En attente", test: (r) => ["envoyee", "relance"].includes(str(r, "status")) },
+                    { label: "Entretien", test: (r) => str(r, "status") === "entretien" },
+                  ]}
+                />
+              </div>
             )}
 
             {tab === "agenda" && (
-              <ModulePlaceholder
-                title="Agenda"
-                description="Vue calendrier centralisée."
-                points={[
-                  "Publications programmées du blog",
-                  "Rendez-vous et échéances de mission",
-                  "Synchronisation Google Agenda une fois la connexion établie",
-                ]}
-              />
+              <div className="mt-6">
+                <AgendaPanel />
+              </div>
             )}
 
             {tab === "fichiers" && (
-              <ModulePlaceholder
-                title="Fichiers"
-                description="Bibliothèque des documents et visuels."
-                points={[
-                  "Images de couverture et pièces jointes déjà stockées",
-                  "Recherche et réutilisation dans l'éditeur",
-                  "Connexion Drive optionnelle",
-                ]}
-              />
+              <div className="mt-6">
+                <FilesPanel />
+              </div>
             )}
 
             {tab === "stats" && (
