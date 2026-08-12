@@ -51,8 +51,23 @@ function b64url(input: Buffer | string): string {
   return Buffer.from(input).toString("base64url");
 }
 
+function sealState(payload: StatePayload): string {
+  const iv = randomBytes(12);
+  const cipher = createCipheriv("aes-256-gcm", keyFrom("OAUTH_STATE_SECRET"), iv);
+  const ct = Buffer.concat([cipher.update(JSON.stringify(payload), "utf8"), cipher.final()]);
+  return Buffer.concat([iv, cipher.getAuthTag(), ct]).toString("base64url");
+}
+
+function openState(sealed: string): StatePayload {
+  const buf = Buffer.from(sealed, "base64url");
+  const decipher = createDecipheriv("aes-256-gcm", keyFrom("OAUTH_STATE_SECRET"), buf.subarray(0, 12));
+  decipher.setAuthTag(buf.subarray(12, 28));
+  const out = Buffer.concat([decipher.update(buf.subarray(28)), decipher.final()]).toString("utf8");
+  return JSON.parse(out) as StatePayload;
+}
+
 export function signState(payload: StatePayload): string {
-  const body = b64url(JSON.stringify(payload));
+  const body = sealState(payload);
   const sig = createHmac("sha256", process.env["OAUTH_STATE_SECRET"] ?? "").update(body).digest("base64url");
   return `${body}.${sig}`;
 }
@@ -65,7 +80,7 @@ export function verifyState(state: string): StatePayload | null {
   const b = Buffer.from(expected);
   if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
   try {
-    const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8")) as StatePayload;
+    const payload = openState(body);
     if (payload.exp < Date.now()) return null;
     return payload;
   } catch {
@@ -218,7 +233,7 @@ export async function saveConnection(params: {
     {
       provider: params.provider,
       user_id: params.userId,
-      account_label: params.accountLabel,
+      ...(params.accountLabel ? { account_label: params.accountLabel } : {}),
       token_ciphertext: encryptTokens(params.tokens),
       scopes: params.scopes,
       status: "connected",
