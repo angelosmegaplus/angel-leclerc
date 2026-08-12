@@ -391,53 +391,75 @@ function AdminPage() {
     );
   }
 
-  return (
-    <section className="bg-background py-8 md:py-14">
-      <div className="container-tight">
-        <header className="rounded-2xl border border-border bg-card p-5 sm:p-6">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
-                Espace personnel
-              </p>
-              <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                Tableau de bord
-              </h1>
-              <p className="mt-1 truncate text-sm text-muted-foreground">
-                {user?.email ?? "Connecté"}
-              </p>
-            </div>
-            <div className="flex w-full flex-wrap gap-2 sm:w-auto">
-              <Button
-                size="sm"
-                className="min-h-10 flex-1 sm:flex-none"
-                onClick={() => {
-                  setTab("articles");
-                  setDraft({ ...emptyDraft });
-                }}
-              >
-                <Plus className="mr-2 h-4 w-4" /> Nouvel article
-              </Button>
-              <Button asChild variant="outline" size="sm" className="min-h-10 flex-1 sm:flex-none">
-                <Link to="/articles">
-                  <Eye className="mr-2 h-4 w-4" /> Voir le site
-                </Link>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="min-h-10 flex-1 sm:flex-none"
-                onClick={async () => {
-                  await supabase.auth.signOut();
-                  navigate({ to: "/auth" });
-                }}
-              >
-                <LogOut className="mr-2 h-4 w-4" /> Déconnexion
-              </Button>
-            </div>
-          </div>
+  const navItems: AdminNavItem[] = [
+    { key: "dashboard", label: "Vue d'ensemble", icon: LayoutDashboard, group: "Angel OS" },
+    { key: "articles", label: "Articles", icon: FileText, badge: articles.length, group: "Publication" },
+    { key: "contenus", label: "Parcours & services", icon: LayoutList, group: "Publication" },
+    { key: "avis", label: "Avis et soutiens", icon: Star, group: "Publication" },
+    { key: "messages", label: "Messages", icon: Mail, badge: unreadCount, group: "Relations" },
+    { key: "boite-mail", label: "Boîte mail", icon: Inbox, group: "Relations" },
+    { key: "abonnes", label: "Abonnés", icon: Users, badge: subscribers.length, group: "Relations" },
+    { key: "boutique", label: "Boutique", icon: ShoppingBag, group: "Activité" },
+    { key: "stats", label: "Statistiques", icon: BarChart3, group: "Activité" },
+    { key: "projets", label: "Projets", icon: FolderKanban, group: "Modules" },
+    { key: "candidatures", label: "Candidatures", icon: Briefcase, group: "Modules" },
+    { key: "agenda", label: "Agenda", icon: CalendarDays, group: "Modules" },
+    { key: "fichiers", label: "Fichiers", icon: FolderOpen, group: "Modules" },
+    { key: "angel-ai", label: "Angel AI", icon: Sparkles, group: "Système" },
+    { key: "connexions", label: "Connexions", icon: Plug, group: "Système" },
+  ];
 
-          <dl className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+  const currentLabel =
+    navItems.find((i) => i.key === tab)?.label ?? "Angel OS";
+
+  return (
+    <AdminShell
+      items={navItems}
+      active={tab}
+      onSelect={(key) => {
+        setTab(key as AdminTab);
+        setDraft(null);
+      }}
+      title={draft ? (draft.id ? "Modifier l'article" : "Nouvel article") : currentLabel}
+      subtitle={user?.email ?? "Connecté"}
+      actions={
+        <>
+          <Button
+            size="sm"
+            className="min-h-10"
+            onClick={() => {
+              setTab("articles");
+              setDraft({ ...emptyDraft });
+            }}
+          >
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Nouvel article</span>
+          </Button>
+          <Button asChild variant="outline" size="sm" className="hidden min-h-10 sm:inline-flex">
+            <Link to="/articles">
+              <Eye className="mr-2 h-4 w-4" /> Voir le site
+            </Link>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="min-h-10"
+            aria-label="Déconnexion"
+            onClick={async () => {
+              await supabase.auth.signOut();
+              navigate({ to: "/auth" });
+            }}
+          >
+            <LogOut className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Déconnexion</span>
+          </Button>
+        </>
+      }
+    >
+      <div>
+        {tab === "dashboard" && !draft && (
+          <div className="space-y-5">
+          <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {(
               [
                 ["Articles", articles.length, FileText],
