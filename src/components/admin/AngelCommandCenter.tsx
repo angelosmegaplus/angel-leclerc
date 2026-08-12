@@ -46,9 +46,10 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
     mutationFn: (value: string) => execute({ data: { command: value } }),
     onSuccess: (result) => {
       setCommand("");
-      toast.success(
-        result.autoExecuted ? "Commande exécutée et tracée." : "Commande enregistrée et tracée.",
-      );
+      if (result.status === "completed") toast.success("Commande exécutée et tracée.");
+      else if (result.status === "partial")
+        toast.warning("Commande partiellement exécutée et tracée.");
+      else toast.info("Commande enregistrée et tracée.");
       void queryClient.invalidateQueries({ queryKey: ["angel-ai-messages"] });
       void queryClient.invalidateQueries({ queryKey: ["ai-actions"] });
       void queryClient.invalidateQueries({ queryKey: ["angel"] });
@@ -119,6 +120,8 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
           <ul className="space-y-2">
             {messages.map((message) => {
               const waiting = message.status === "awaiting_approval";
+              const partial = message.status === "partial";
+              const notConnected = message.status === "not_connected";
               const failed = message.status === "failed";
               return (
                 <li key={message.id} className="rounded-xl border border-border bg-background p-3">
@@ -134,12 +137,20 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
                       <p className="mt-2 flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
                         {failed ? (
                           <ShieldAlert className="h-3.5 w-3.5 text-destructive" />
-                        ) : waiting ? (
+                        ) : waiting || partial || notConnected ? (
                           <Clock3 className="h-3.5 w-3.5 text-amber-600" />
                         ) : (
                           <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
                         )}
-                        {failed ? "échec" : waiting ? "validation nécessaire" : "terminé"}
+                        {failed
+                          ? "échec"
+                          : waiting
+                            ? "validation nécessaire"
+                            : partial
+                              ? "partiel"
+                              : notConnected
+                                ? "connexion requise"
+                                : "terminé"}
                         <span>·</span>
                         <span>
                           {message.context?.source === "openai" ? "OpenAI" : "moteur local"}
