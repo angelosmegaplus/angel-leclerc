@@ -29,6 +29,7 @@ import {
   Briefcase,
   CalendarDays,
   FolderOpen,
+  Gauge,
   Plug,
   Sparkles,
   Mic2,
@@ -80,6 +81,9 @@ import {
 import { AiActionsPanel } from "@/components/admin/AiActionsPanel";
 import { AiSuggestions } from "@/components/admin/AiSuggestions";
 import { ConnectionsPanel } from "@/components/admin/ConnectionsPanel";
+import { NotificationsPanel } from "@/components/admin/NotificationsPanel";
+import { AutomationPanel } from "@/components/admin/AutomationPanel";
+import { InstallPrompt } from "@/components/admin/InstallPrompt";
 import { ProjectsPanel } from "@/components/admin/ProjectsPanel";
 import { StudioPanel } from "@/components/admin/StudioPanel";
 import { APP_SUBTITLE } from "@/config/navigation";
@@ -173,6 +177,8 @@ type AdminTab =
   | "studio"
   | "activite"
   | "connexions"
+  | "notifications"
+  | "automatisation"
   | "angel-ai";
 
 /** ISO -> valeur d'un <input type="datetime-local"> en heure locale. */
@@ -423,6 +429,8 @@ function AdminPage() {
     { key: "activite", label: "Activité", icon: Activity, group: "Système" },
     { key: "angel-ai", label: "Angel AI", icon: Sparkles, group: "Système" },
     { key: "connexions", label: "Connexions", icon: Plug, group: "Système" },
+    { key: "notifications", label: "Notifications", icon: Bell, group: "Système" },
+    { key: "automatisation", label: "Automatisation", icon: Gauge, group: "Système" },
   ];
 
   const currentLabel =
@@ -491,6 +499,7 @@ function AdminPage() {
         }}
       />
       <div>
+        <InstallPrompt />
         {tab === "dashboard" && !draft && (
           <div className="space-y-5">
           <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -1135,6 +1144,10 @@ function AdminPage() {
             {tab === "angel-ai" && <AiActionsPanel />}
 
             {tab === "connexions" && <ConnectionsPanel />}
+
+            {tab === "notifications" && <NotificationsPanel />}
+
+            {tab === "automatisation" && <AutomationPanel />}
 
             {tab === "projets" && (
               <div className="mt-6">
