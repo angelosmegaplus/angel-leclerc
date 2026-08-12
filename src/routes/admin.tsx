@@ -105,6 +105,7 @@ type Draft = {
   ai: AiDisclosure;
 };
 
+
 const emptyDraft: Draft = {
   id: null,
   title: "",
