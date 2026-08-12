@@ -72,12 +72,19 @@ import { FeedbackAdmin } from "@/components/FeedbackAdmin";
 import {
   AdminShell,
   AdminCard,
-  ModulePlaceholder,
   type AdminNavItem,
 } from "@/components/admin/AdminShell";
 import { AiActionsPanel } from "@/components/admin/AiActionsPanel";
 import { AiSuggestions } from "@/components/admin/AiSuggestions";
 import { ConnectionsPanel } from "@/components/admin/ConnectionsPanel";
+import { ProjectsPanel } from "@/components/admin/ProjectsPanel";
+import { StudioPanel } from "@/components/admin/StudioPanel";
+import { AgendaPanel } from "@/components/admin/AgendaPanel";
+import { FilesPanel } from "@/components/admin/FilesPanel";
+import { ActivityPanel } from "@/components/admin/ActivityPanel";
+import { GlobalSearch } from "@/components/admin/GlobalSearch";
+import { CrudModule } from "@/components/admin/CrudModule";
+import { applicationFields, str } from "@/lib/angelos";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -159,6 +166,8 @@ type AdminTab =
   | "candidatures"
   | "agenda"
   | "fichiers"
+  | "studio"
+  | "activite"
   | "connexions"
   | "angel-ai";
 
