@@ -1066,54 +1066,57 @@ function AdminPage() {
           </form>
         ) : (
           <>
-            <nav
-              aria-label="Sections de l'espace personnel"
-              className="sticky top-2 z-20 mt-6 overflow-x-auto rounded-2xl border border-border bg-card/85 p-1.5 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-card/70 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-            >
-              <div className="flex min-w-max gap-1">
-                {(
-                  [
-                    ["articles", "Articles", FileText, articles.length],
-                    ["messages", "Messages", Mail, unreadCount],
-                    ["boite-mail", "Boîte mail", Inbox, 0],
-                    ["abonnes", "Abonnés", Users, subscribers.length],
-                    ["contenus", "Parcours & services", LayoutList, 0],
-                    ["avis", "Avis et soutiens", Star, 0],
-                    ["boutique", "Boutique", ShoppingBag, 0],
-                    ["stats", "Statistiques", BarChart3, 0],
-                  ] as const
-                ).map(([key, label, Icon, count]) => {
-                  const active = tab === key;
-                  return (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => setTab(key)}
-                      aria-current={active ? "page" : undefined}
-                      className={`group inline-flex min-h-10 items-center gap-2 whitespace-nowrap rounded-xl px-3.5 py-2 text-sm font-medium transition-colors ${
-                        active
-                          ? "bg-primary text-primary-foreground shadow-sm"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                      }`}
-                    >
-                      <Icon className="h-4 w-4" />
-                      {label}
-                      {count > 0 && (
-                        <span
-                          className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums ${
-                            active
-                              ? "bg-primary-foreground/20 text-primary-foreground"
-                              : "bg-muted text-foreground/70 group-hover:bg-background"
-                          }`}
-                        >
-                          {count}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </nav>
+            {tab === "angel-ai" && <AiActionsPanel />}
+
+            {tab === "connexions" && <ConnectionsPanel />}
+
+            {tab === "projets" && (
+              <ModulePlaceholder
+                title="Projets"
+                description="Suivi des missions clients dans Angel OS."
+                points={[
+                  "Fiches de mission reliées aux demandes de contact reçues",
+                  "Étapes, échéances et acompte Revolut",
+                  "Historique des livrables",
+                ]}
+              />
+            )}
+
+            {tab === "candidatures" && (
+              <ModulePlaceholder
+                title="Candidatures"
+                description="Suivi de la recherche d'alternance BTS Communication."
+                points={[
+                  "Entreprises contactées et statut de chaque candidature",
+                  "Relances programmées",
+                  "Documents envoyés (CV, lettre)",
+                ]}
+              />
+            )}
+
+            {tab === "agenda" && (
+              <ModulePlaceholder
+                title="Agenda"
+                description="Vue calendrier centralisée."
+                points={[
+                  "Publications programmées du blog",
+                  "Rendez-vous et échéances de mission",
+                  "Synchronisation Google Agenda une fois la connexion établie",
+                ]}
+              />
+            )}
+
+            {tab === "fichiers" && (
+              <ModulePlaceholder
+                title="Fichiers"
+                description="Bibliothèque des documents et visuels."
+                points={[
+                  "Images de couverture et pièces jointes déjà stockées",
+                  "Recherche et réutilisation dans l'éditeur",
+                  "Connexion Drive optionnelle",
+                ]}
+              />
+            )}
 
             {tab === "stats" && (
               <div className="mt-6 rounded-2xl border border-border bg-card p-4 sm:p-6">
