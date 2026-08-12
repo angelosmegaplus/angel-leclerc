@@ -1435,6 +1435,6 @@ function AdminPage() {
           </>
         )}
       </div>
-    </section>
+    </AdminShell>
   );
 }
