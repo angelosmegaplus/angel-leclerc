@@ -18,6 +18,7 @@ import { Toaster } from "../components/ui/sonner";
 import { NotFound404 } from "../components/NotFound404";
 import { PageViewTracker } from "../components/PageViewTracker";
 import { CartDrawer } from "../components/CartDrawer";
+import { PwaRegistrar } from "../components/PwaRegistrar";
 
 function NotFoundComponent() {
   return <NotFound404 />;
@@ -65,7 +66,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      { name: "theme-color", content: "#181716" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: "Angel OS" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "mobile-web-app-capable", content: "yes" },
       { title: "Angel Leclerc Communication | Gestion de projet, conseil et rédaction" },
       {
         name: "description",
@@ -95,6 +101,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
       {
         rel: "preconnect",
         href: "https://fonts.googleapis.com",
@@ -136,6 +144,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <PageViewTracker />
+      <PwaRegistrar />
       <div className="flex min-h-screen flex-col">
         <ApprenticeshipBanner />
         <Header />
