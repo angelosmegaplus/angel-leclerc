@@ -187,6 +187,7 @@ export type Database = {
           badges: Json
           category: string
           content: string
+          cover_meta: Json
           cover_url: string | null
           created_at: string
           excerpt: string | null
@@ -209,6 +210,7 @@ export type Database = {
           badges?: Json
           category?: string
           content?: string
+          cover_meta?: Json
           cover_url?: string | null
           created_at?: string
           excerpt?: string | null
@@ -231,6 +233,7 @@ export type Database = {
           badges?: Json
           category?: string
           content?: string
+          cover_meta?: Json
           cover_url?: string | null
           created_at?: string
           excerpt?: string | null
