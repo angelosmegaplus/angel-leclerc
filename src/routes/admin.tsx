@@ -233,6 +233,19 @@ function AdminPage() {
   const [uploadingFile, setUploadingFile] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [tab, setTab] = useState<AdminTab>("dashboard");
+
+  // Raccourcis d'application installée et retours OAuth : /admin?tab=studio
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("tab");
+    if (requested) setTab(requested as AdminTab);
+  }, []);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("tab") === tab) return;
+    url.searchParams.set("tab", tab);
+    window.history.replaceState(null, "", url.toString());
+  }, [tab]);
   const [searchOpen, setSearchOpen] = useState(false);
   const sendNewsletter = useServerFn(sendNewsletterNow);
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
