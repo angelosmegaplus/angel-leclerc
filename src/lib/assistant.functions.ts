@@ -17,7 +17,7 @@ const AskSchema = z.object({
 
 export type AskAssistantResult = {
   text: string | null;
-  source: "openai" | "lovable" | "fallback";
+  source: "openai" | "fallback";
 };
 
 async function chat(
@@ -51,16 +51,14 @@ async function chat(
 }
 
 /**
- * Interroge OpenAI côté serveur. Ne renvoie jamais d'erreur technique au visiteur :
- * en cas de clé absente, de quota, de délai dépassé ou d'abus, `text` vaut null et
- * le client bascule automatiquement sur le moteur local.
+ * Interroge OpenAI côté serveur. Si la clé est absente ou si l'appel échoue,
+ * le client utilise le moteur local : aucune dépendance à Lovable n'est requise.
  */
 export const askAssistant = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => AskSchema.parse(input))
   .handler(async ({ data }): Promise<AskAssistantResult> => {
     const apiKey = process.env["OPENAI_API_KEY"];
-    const lovableKey = process.env["LOVABLE_API_KEY"];
-    if (!apiKey && !lovableKey) return { text: null, source: "fallback" };
+    if (!apiKey) return { text: null, source: "fallback" };
 
     const { getRequestIP } = await import("@tanstack/react-start/server");
     const { checkAssistantRate } = await import("./assistant-rate.server");
@@ -72,8 +70,9 @@ export const askAssistant = createServerFn({ method: "POST" })
     }
     if (!checkAssistantRate(ip)) return { text: null, source: "fallback" };
 
-    const { ASSISTANT_SYSTEM_PROMPT } = await import("./assistant-context");
-    const { CONTACT_ASSISTANT_ADDENDUM } = await import("./assistant-context");
+    const { ASSISTANT_SYSTEM_PROMPT, CONTACT_ASSISTANT_ADDENDUM } = await import(
+      "./assistant-context"
+    );
     const messages = [
       {
         role: "system",
@@ -86,24 +85,12 @@ export const askAssistant = createServerFn({ method: "POST" })
       { role: "user", content: data.question },
     ];
 
-    if (apiKey) {
-      const text = await chat(
-        "https://api.openai.com/v1/chat/completions",
-        { Authorization: `Bearer ${apiKey}` },
-        { model: "gpt-4o-mini", temperature: 0.3, max_tokens: 400, messages },
-      );
-      if (text) return { text: text.slice(0, 1500), source: "openai" };
-    }
-
-    // Repli : passerelle IA Lovable (aucune clé à fournir, quota inclus).
-    if (lovableKey) {
-      const text = await chat(
-        "https://ai.gateway.lovable.dev/v1/chat/completions",
-        { "Lovable-API-Key": lovableKey },
-        { model: "google/gemini-3-flash-preview", messages },
-      );
-      if (text) return { text: text.slice(0, 1500), source: "lovable" };
-    }
+    const text = await chat(
+      "https://api.openai.com/v1/chat/completions",
+      { Authorization: `Bearer ${apiKey}` },
+      { model: "gpt-4o-mini", temperature: 0.3, max_tokens: 400, messages },
+    );
+    if (text) return { text: text.slice(0, 1500), source: "openai" };
 
     return { text: null, source: "fallback" };
   });
