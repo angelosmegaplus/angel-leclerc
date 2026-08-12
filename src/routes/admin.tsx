@@ -24,6 +24,13 @@ import {
   LayoutList,
   ShoppingBag,
   FileText,
+  LayoutDashboard,
+  FolderKanban,
+  Briefcase,
+  CalendarDays,
+  FolderOpen,
+  Plug,
+  Sparkles,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { ShopAdmin } from "@/components/ShopAdmin";
@@ -62,6 +69,15 @@ import { sendNewsletterNow } from "@/lib/subscribers.functions";
 import { AdminStats } from "@/components/AdminStats";
 import { ContentAdmin } from "@/components/ContentAdmin";
 import { FeedbackAdmin } from "@/components/FeedbackAdmin";
+import {
+  AdminShell,
+  AdminCard,
+  ModulePlaceholder,
+  type AdminNavItem,
+} from "@/components/admin/AdminShell";
+import { AiActionsPanel } from "@/components/admin/AiActionsPanel";
+import { AiSuggestions } from "@/components/admin/AiSuggestions";
+import { ConnectionsPanel } from "@/components/admin/ConnectionsPanel";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
