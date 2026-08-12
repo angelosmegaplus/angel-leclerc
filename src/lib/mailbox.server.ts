@@ -1,19 +1,14 @@
 /**
- * Boîte mail contact@angel-leclerc.fr — couche d'intégration Gmail via le
- * connecteur Lovable (connector gateway). Aucune donnée n'est simulée :
- * si la connexion n'est pas reliée au projet, les fonctions renvoient un
- * statut « non connecté » et l'interface l'affiche explicitement.
+ * Boîte mail Angel OS.
+ * Priorité : OAuth Google natif stocké dans oauth_connections.
+ * Secours : ancien connecteur Lovable Gmail s'il est encore configuré.
+ * Aucune donnée n'est simulée.
  */
 
-const GATEWAY = "https://connector-gateway.lovable.dev/google_mail/gmail/v1";
+const GMAIL_API = "https://gmail.googleapis.com/gmail/v1";
+const LOVABLE_GATEWAY = "https://connector-gateway.lovable.dev/google_mail/gmail/v1";
 
-export type MailFolder =
-  | "inbox"
-  | "sent"
-  | "archive"
-  | "trash"
-  | "spam"
-  | "unread";
+export type MailFolder = "inbox" | "sent" | "archive" | "trash" | "spam" | "unread";
 
 export type MailSummary = {
   id: string;
@@ -32,65 +27,121 @@ export type MailboxStatus = {
   connected: boolean;
   missing: string[];
   address: string | null;
+  provider?: "google" | "lovable-google" | null;
+  reconnectRequired?: boolean;
 };
 
-function keys() {
+type RequestInitLite = {
+  method?: string;
+  body?: unknown;
+  query?: Record<string, string | undefined>;
+};
+
+type Transport = {
+  provider: "google" | "lovable-google";
+  request: (path: string, init?: RequestInitLite) => Promise<any>;
+};
+
+function buildUrl(base: string, path: string, query?: Record<string, string | undefined>) {
+  const url = new URL(`${base}${path}`);
+  for (const [key, value] of Object.entries(query ?? {})) {
+    if (value !== undefined && value !== "") url.searchParams.set(key, value);
+  }
+  return url;
+}
+
+async function nativeGoogleTransport(userId: string): Promise<Transport | null> {
+  try {
+    const { getAccessToken } = await import("./oauth/oauth.server");
+    const token = await getAccessToken(userId, "google");
+    if (!token) return null;
+    return {
+      provider: "google",
+      request: async (path, init) => {
+        const response = await fetch(buildUrl(GMAIL_API, path, init?.query), {
+          method: init?.method ?? "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            ...(init?.body ? { "Content-Type": "application/json" } : {}),
+          },
+          ...(init?.body ? { body: JSON.stringify(init.body) } : {}),
+        });
+        const text = await response.text();
+        if (!response.ok) {
+          console.error(`[mailbox] Google ${response.status}: ${text}`);
+          throw new Error(`Google Mail a refusé la requête (${response.status}).`);
+        }
+        return text ? JSON.parse(text) : {};
+      },
+    };
+  } catch (error) {
+    console.error("[mailbox] OAuth Google natif indisponible", error);
+    return null;
+  }
+}
+
+function lovableTransport(): Transport | null {
+  const lovable = process.env["LOVABLE_API_KEY"];
+  const connection = process.env["GOOGLE_MAIL_API_KEY"];
+  if (!lovable || !connection) return null;
   return {
-    lovable: process.env["LOVABLE_API_KEY"],
-    connection: process.env["GOOGLE_MAIL_API_KEY"],
+    provider: "lovable-google",
+    request: async (path, init) => {
+      const response = await fetch(buildUrl(LOVABLE_GATEWAY, path, init?.query), {
+        method: init?.method ?? "GET",
+        headers: {
+          Authorization: `Bearer ${lovable}`,
+          "X-Connection-Api-Key": connection,
+          ...(init?.body ? { "Content-Type": "application/json" } : {}),
+        },
+        ...(init?.body ? { body: JSON.stringify(init.body) } : {}),
+      });
+      const text = await response.text();
+      if (!response.ok) {
+        console.error(`[mailbox] Lovable Gmail ${response.status}: ${text}`);
+        throw new Error(`Connecteur Gmail Lovable indisponible (${response.status}).`);
+      }
+      return text ? JSON.parse(text) : {};
+    },
   };
 }
 
-export function mailboxMissing(): string[] {
-  const { lovable, connection } = keys();
-  const missing: string[] = [];
-  if (!lovable) missing.push("LOVABLE_API_KEY");
-  if (!connection) missing.push("GOOGLE_MAIL_API_KEY (connecteur Gmail à relier au projet)");
-  return missing;
+async function getTransport(userId: string): Promise<Transport> {
+  const native = await nativeGoogleTransport(userId);
+  if (native) return native;
+  const fallback = lovableTransport();
+  if (fallback) return fallback;
+  throw new Error("Aucune connexion Google Mail active. Connectez ou reconnectez Google depuis Angel OS → Connexions.");
 }
 
-async function gmail(
-  path: string,
-  init?: { method?: string; body?: unknown; query?: Record<string, string | undefined> },
-): Promise<any> {
-  const { lovable, connection } = keys();
-  if (!lovable || !connection) {
-    throw new Error("Boîte mail non connectée.");
+export async function getStatus(userId: string): Promise<MailboxStatus> {
+  const native = await nativeGoogleTransport(userId);
+  if (native) {
+    try {
+      const profile = await native.request("/users/me/profile");
+      return { connected: true, missing: [], address: profile.emailAddress ?? null, provider: "google", reconnectRequired: false };
+    } catch (error) {
+      return { connected: false, missing: [error instanceof Error ? error.message : "Connexion Google à vérifier"], address: null, provider: "google", reconnectRequired: true };
+    }
   }
-  const url = new URL(`${GATEWAY}${path}`);
-  for (const [k, v] of Object.entries(init?.query ?? {})) {
-    if (v !== undefined && v !== "") url.searchParams.set(k, v);
-  }
-  const res = await fetch(url.toString(), {
-    method: init?.method ?? "GET",
-    headers: {
-      Authorization: `Bearer ${lovable}`,
-      "X-Connection-Api-Key": connection,
-      ...(init?.body ? { "Content-Type": "application/json" } : {}),
-    },
-    ...(init?.body ? { body: JSON.stringify(init.body) } : {}),
-  });
-  const text = await res.text();
-  if (!res.ok) {
-    console.error(`[mailbox] Gmail ${res.status}: ${text}`);
-    throw new Error(`Gmail a refusé la requête (${res.status}) : ${text.slice(0, 300)}`);
-  }
-  return text ? JSON.parse(text) : {};
-}
 
-export async function getStatus(): Promise<MailboxStatus> {
-  const missing = mailboxMissing();
-  if (missing.length > 0) return { connected: false, missing, address: null };
-  try {
-    const profile = await gmail("/users/me/profile");
-    return { connected: true, missing: [], address: profile.emailAddress ?? null };
-  } catch (e) {
-    return {
-      connected: false,
-      missing: [e instanceof Error ? e.message : "Erreur inconnue"],
-      address: null,
-    };
+  const fallback = lovableTransport();
+  if (fallback) {
+    try {
+      const profile = await fallback.request("/users/me/profile");
+      return { connected: true, missing: [], address: profile.emailAddress ?? null, provider: "lovable-google", reconnectRequired: false };
+    } catch (error) {
+      return { connected: false, missing: [error instanceof Error ? error.message : "Connecteur Gmail Lovable à vérifier"], address: null, provider: "lovable-google", reconnectRequired: true };
+    }
   }
+
+  return {
+    connected: false,
+    missing: ["Connexion Google Workspace requise dans Angel OS"],
+    address: null,
+    provider: null,
+    reconnectRequired: false,
+  };
 }
 
 function folderQuery(folder: MailFolder, search: string): string {
@@ -106,10 +157,7 @@ function folderQuery(folder: MailFolder, search: string): string {
 }
 
 function header(headers: any[], name: string): string {
-  const found = headers?.find(
-    (h) => String(h.name).toLowerCase() === name.toLowerCase(),
-  );
-  return found?.value ?? "";
+  return headers?.find((h) => String(h.name).toLowerCase() === name.toLowerCase())?.value ?? "";
 }
 
 function decodeB64(data: string): string {
@@ -157,11 +205,9 @@ function toSummary(message: any): MailSummary {
   };
 }
 
-export async function listMail(
-  folder: MailFolder,
-  search: string,
-): Promise<MailSummary[]> {
-  const list = await gmail("/users/me/messages", {
+export async function listMail(userId: string, folder: MailFolder, search: string): Promise<MailSummary[]> {
+  const mail = await getTransport(userId);
+  const list = await mail.request("/users/me/messages", {
     query: {
       maxResults: "25",
       q: folderQuery(folder, search),
@@ -170,38 +216,27 @@ export async function listMail(
   });
   const ids: Array<{ id: string }> = list.messages ?? [];
   const details = await Promise.all(
-    ids.map((m) =>
-      gmail(`/users/me/messages/${m.id}`, {
-        query: { format: "metadata" },
-      }).catch(() => null),
-    ),
+    ids.map((m) => mail.request(`/users/me/messages/${m.id}`, { query: { format: "metadata" } }).catch(() => null)),
   );
   return details.filter(Boolean).map(toSummary);
 }
 
-export async function readMail(id: string): Promise<MailDetail> {
-  const message = await gmail(`/users/me/messages/${id}`, {
-    query: { format: "full" },
-  });
+export async function readMail(userId: string, id: string): Promise<MailDetail> {
+  const mail = await getTransport(userId);
+  const message = await mail.request(`/users/me/messages/${id}`, { query: { format: "full" } });
   return { ...toSummary(message), body: extractBody(message.payload) };
 }
 
-export type MailAction =
-  | "read"
-  | "unread"
-  | "archive"
-  | "trash"
-  | "untrash"
-  | "spam"
-  | "unspam";
+export type MailAction = "read" | "unread" | "archive" | "trash" | "untrash" | "spam" | "unspam";
 
-export async function actOnMail(id: string, action: MailAction): Promise<void> {
+export async function actOnMail(userId: string, id: string, action: MailAction): Promise<void> {
+  const mail = await getTransport(userId);
   if (action === "trash") {
-    await gmail(`/users/me/messages/${id}/trash`, { method: "POST" });
+    await mail.request(`/users/me/messages/${id}/trash`, { method: "POST" });
     return;
   }
   if (action === "untrash") {
-    await gmail(`/users/me/messages/${id}/untrash`, { method: "POST" });
+    await mail.request(`/users/me/messages/${id}/untrash`, { method: "POST" });
     return;
   }
   const map: Record<string, { addLabelIds?: string[]; removeLabelIds?: string[] }> = {
@@ -211,27 +246,21 @@ export async function actOnMail(id: string, action: MailAction): Promise<void> {
     spam: { addLabelIds: ["SPAM"], removeLabelIds: ["INBOX"] },
     unspam: { removeLabelIds: ["SPAM"], addLabelIds: ["INBOX"] },
   };
-  await gmail(`/users/me/messages/${id}/modify`, {
-    method: "POST",
-    body: map[action],
-  });
+  await mail.request(`/users/me/messages/${id}/modify`, { method: "POST", body: map[action] });
 }
 
 function encodeRaw(input: string): string {
   const bytes = new TextEncoder().encode(input);
   let bin = "";
-  bytes.forEach((b) => {
-    bin += String.fromCharCode(b);
-  });
+  bytes.forEach((b) => { bin += String.fromCharCode(b); });
   return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-export async function sendMail(input: {
-  to: string;
-  subject: string;
-  body: string;
-  threadId?: string | undefined;
-}): Promise<void> {
+export async function sendMail(
+  userId: string,
+  input: { to: string; subject: string; body: string; threadId?: string | undefined },
+): Promise<void> {
+  const mail = await getTransport(userId);
   const mime = [
     `To: ${input.to}`,
     `Subject: ${input.subject}`,
@@ -240,10 +269,8 @@ export async function sendMail(input: {
     "",
     input.body,
   ].join("\r\n");
-  await gmail("/users/me/messages/send", {
+  await mail.request("/users/me/messages/send", {
     method: "POST",
-    body: input.threadId
-      ? { raw: encodeRaw(mime), threadId: input.threadId }
-      : { raw: encodeRaw(mime) },
+    body: input.threadId ? { raw: encodeRaw(mime), threadId: input.threadId } : { raw: encodeRaw(mime) },
   });
 }
