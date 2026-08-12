@@ -4,10 +4,11 @@ import { AdminCard } from "./AdminShell";
 import { integrationReadiness } from "@/lib/system.functions";
 import { pushStatus } from "@/lib/notifications.functions";
 
-type Level = "auto" | "scheduled" | "manual" | "pending";
+type Level = "auto" | "approval" | "scheduled" | "manual" | "pending";
 
 const LABELS: Record<Level, { text: string; className: string }> = {
   auto: { text: "Automatique", className: "bg-primary/10 text-primary" },
+  approval: { text: "Après validation", className: "bg-sky-500/10 text-sky-700" },
   scheduled: { text: "Planifié", className: "bg-emerald-500/10 text-emerald-700" },
   manual: { text: "Manuel", className: "bg-amber-500/10 text-amber-700" },
   pending: { text: "En attente de connexion", className: "bg-muted text-muted-foreground" },
@@ -46,20 +47,21 @@ export function AutomationPanel() {
   const rows: { name: string; level: Level; detail: string }[] = [
     {
       name: "Build & vérifications GitHub",
-      level: "manual",
+      level: "auto",
       detail:
-        "Le code est versionné dans GitHub ; le contrôle TypeScript/build s'exécute à chaque passe, la fusion reste décidée par vous.",
+        "GitHub Actions installe les dépendances puis contrôle TypeScript et le build sur chaque PR et chaque push vers main.",
     },
     {
       name: "Publication Lovable",
-      level: "manual",
-      detail: "La mise en ligne est déclenchée explicitement, jamais à chaque enregistrement.",
+      level: "approval",
+      detail:
+        "Après CI et fusion autorisée, l'opérateur publie via le mécanisme officiel Lovable puis vérifie le site réel.",
     },
     {
       name: "File Angel AI (ai_actions)",
-      level: "manual",
+      level: "approval",
       detail:
-        "Les actions proposées sont enregistrées localement et attendent votre validation avant exécution.",
+        "Les commandes locales sûres s'exécutent et sont journalisées ; les actions externes ou irréversibles attendent une validation finale.",
     },
     {
       name: "Rafraîchissement des jetons OAuth",
@@ -84,8 +86,14 @@ export function AutomationPanel() {
       name: "Synchronisation Gmail / Drive / Agenda",
       level: connected("google") ? "auto" : "pending",
       detail: connected("google")
-        ? "Compte Google connecté : lecture possible via le serveur."
+        ? "Compte Google connecté : les candidatures sont vérifiées automatiquement à l'ouverture du module et les jetons sont renouvelés côté serveur."
         : "Nécessite la connexion du compte Google depuis Connexions.",
+    },
+    {
+      name: "Supervision et journal IA",
+      level: "auto",
+      detail:
+        "Chaque commande, exécution, erreur et synchronisation importante est enregistrée dans Angel OS.",
     },
     {
       name: "Newsletter hebdomadaire",
@@ -95,15 +103,16 @@ export function AutomationPanel() {
     {
       name: "Synchronisation boutique Printful",
       level: "manual",
-      detail: "Import déclenché depuis l'onglet Boutique ; le webhook met ensuite les commandes à jour automatiquement.",
+      detail:
+        "Import déclenché depuis l'onglet Boutique ; le webhook met ensuite les commandes à jour automatiquement.",
     },
   ];
 
   return (
     <AdminCard title="Automatisation réelle">
       <p className="mb-3 text-sm text-muted-foreground">
-        État honnête de chaque mécanisme : rien n'est marqué « automatique » sans dispositif
-        concret derrière.
+        État honnête de chaque mécanisme : rien n'est marqué « automatique » sans dispositif concret
+        derrière.
       </p>
       <ul className="grid gap-2">
         {rows.map((r) => (
