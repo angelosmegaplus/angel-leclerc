@@ -27,9 +27,7 @@ const submissionSchema = z.object({
   budget: z.string().trim().max(120).optional().or(z.literal("")),
   deadline: z.string().trim().max(120).optional().or(z.literal("")),
   description: z.string().trim().min(10, "Description trop courte").max(5000),
-  consent: z.literal(true, {
-    errorMap: () => ({ message: "Consentement requis" }),
-  }),
+  consent: z.literal(true, { error: "Consentement requis" }),
   captchaToken: z.string().min(1, "Vérification anti-robot requise").max(400),
   captchaAnswer: z.string().trim().min(1, "Vérification anti-robot requise").max(10),
   // Honeypot: must be empty
