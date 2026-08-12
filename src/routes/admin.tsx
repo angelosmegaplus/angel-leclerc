@@ -24,6 +24,13 @@ import {
   LayoutList,
   ShoppingBag,
   FileText,
+  LayoutDashboard,
+  FolderKanban,
+  Briefcase,
+  CalendarDays,
+  FolderOpen,
+  Plug,
+  Sparkles,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { ShopAdmin } from "@/components/ShopAdmin";
@@ -62,6 +69,15 @@ import { sendNewsletterNow } from "@/lib/subscribers.functions";
 import { AdminStats } from "@/components/AdminStats";
 import { ContentAdmin } from "@/components/ContentAdmin";
 import { FeedbackAdmin } from "@/components/FeedbackAdmin";
+import {
+  AdminShell,
+  AdminCard,
+  ModulePlaceholder,
+  type AdminNavItem,
+} from "@/components/admin/AdminShell";
+import { AiActionsPanel } from "@/components/admin/AiActionsPanel";
+import { AiSuggestions } from "@/components/admin/AiSuggestions";
+import { ConnectionsPanel } from "@/components/admin/ConnectionsPanel";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -129,6 +145,23 @@ const emptyDraft: Draft = {
 
 const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
 
+type AdminTab =
+  | "dashboard"
+  | "articles"
+  | "messages"
+  | "boite-mail"
+  | "abonnes"
+  | "stats"
+  | "contenus"
+  | "avis"
+  | "boutique"
+  | "projets"
+  | "candidatures"
+  | "agenda"
+  | "fichiers"
+  | "connexions"
+  | "angel-ai";
+
 /** ISO -> valeur d'un <input type="datetime-local"> en heure locale. */
 function toLocalInput(iso: string | null): string {
   if (!iso) return "";
@@ -180,16 +213,7 @@ function AdminPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
-  const [tab, setTab] = useState<
-    | "articles"
-    | "messages"
-    | "boite-mail"
-    | "abonnes"
-    | "stats"
-    | "contenus"
-    | "avis"
-    | "boutique"
-  >("articles");
+  const [tab, setTab] = useState<AdminTab>("dashboard");
   const sendNewsletter = useServerFn(sendNewsletterNow);
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
 
@@ -367,53 +391,75 @@ function AdminPage() {
     );
   }
 
-  return (
-    <section className="bg-background py-8 md:py-14">
-      <div className="container-tight">
-        <header className="rounded-2xl border border-border bg-card p-5 sm:p-6">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
-                Espace personnel
-              </p>
-              <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                Tableau de bord
-              </h1>
-              <p className="mt-1 truncate text-sm text-muted-foreground">
-                {user?.email ?? "Connecté"}
-              </p>
-            </div>
-            <div className="flex w-full flex-wrap gap-2 sm:w-auto">
-              <Button
-                size="sm"
-                className="min-h-10 flex-1 sm:flex-none"
-                onClick={() => {
-                  setTab("articles");
-                  setDraft({ ...emptyDraft });
-                }}
-              >
-                <Plus className="mr-2 h-4 w-4" /> Nouvel article
-              </Button>
-              <Button asChild variant="outline" size="sm" className="min-h-10 flex-1 sm:flex-none">
-                <Link to="/articles">
-                  <Eye className="mr-2 h-4 w-4" /> Voir le site
-                </Link>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="min-h-10 flex-1 sm:flex-none"
-                onClick={async () => {
-                  await supabase.auth.signOut();
-                  navigate({ to: "/auth" });
-                }}
-              >
-                <LogOut className="mr-2 h-4 w-4" /> Déconnexion
-              </Button>
-            </div>
-          </div>
+  const navItems: AdminNavItem[] = [
+    { key: "dashboard", label: "Vue d'ensemble", icon: LayoutDashboard, group: "Angel OS" },
+    { key: "articles", label: "Articles", icon: FileText, badge: articles.length, group: "Publication" },
+    { key: "contenus", label: "Parcours & services", icon: LayoutList, group: "Publication" },
+    { key: "avis", label: "Avis et soutiens", icon: Star, group: "Publication" },
+    { key: "messages", label: "Messages", icon: Mail, badge: unreadCount, group: "Relations" },
+    { key: "boite-mail", label: "Boîte mail", icon: Inbox, group: "Relations" },
+    { key: "abonnes", label: "Abonnés", icon: Users, badge: subscribers.length, group: "Relations" },
+    { key: "boutique", label: "Boutique", icon: ShoppingBag, group: "Activité" },
+    { key: "stats", label: "Statistiques", icon: BarChart3, group: "Activité" },
+    { key: "projets", label: "Projets", icon: FolderKanban, group: "Modules" },
+    { key: "candidatures", label: "Candidatures", icon: Briefcase, group: "Modules" },
+    { key: "agenda", label: "Agenda", icon: CalendarDays, group: "Modules" },
+    { key: "fichiers", label: "Fichiers", icon: FolderOpen, group: "Modules" },
+    { key: "angel-ai", label: "Angel AI", icon: Sparkles, group: "Système" },
+    { key: "connexions", label: "Connexions", icon: Plug, group: "Système" },
+  ];
 
-          <dl className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+  const currentLabel =
+    navItems.find((i) => i.key === tab)?.label ?? "Angel OS";
+
+  return (
+    <AdminShell
+      items={navItems}
+      active={tab}
+      onSelect={(key) => {
+        setTab(key as AdminTab);
+        setDraft(null);
+      }}
+      title={draft ? (draft.id ? "Modifier l'article" : "Nouvel article") : currentLabel}
+      subtitle={user?.email ?? "Connecté"}
+      actions={
+        <>
+          <Button
+            size="sm"
+            className="min-h-10"
+            onClick={() => {
+              setTab("articles");
+              setDraft({ ...emptyDraft });
+            }}
+          >
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Nouvel article</span>
+          </Button>
+          <Button asChild variant="outline" size="sm" className="hidden min-h-10 sm:inline-flex">
+            <Link to="/articles">
+              <Eye className="mr-2 h-4 w-4" /> Voir le site
+            </Link>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="min-h-10"
+            aria-label="Déconnexion"
+            onClick={async () => {
+              await supabase.auth.signOut();
+              navigate({ to: "/auth" });
+            }}
+          >
+            <LogOut className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Déconnexion</span>
+          </Button>
+        </>
+      }
+    >
+      <div>
+        {tab === "dashboard" && !draft && (
+          <div className="space-y-5">
+          <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {(
               [
                 ["Articles", articles.length, FileText],
@@ -435,7 +481,76 @@ function AdminPage() {
               </div>
             ))}
           </dl>
-        </header>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <AdminCard title="Derniers articles" description="Vos publications les plus récemment modifiées.">
+              {articles.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Aucun article pour l'instant.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {articles.slice(0, 5).map((a) => (
+                    <li key={a.id} className="flex items-center justify-between gap-3 rounded-lg border border-border/70 bg-background px-3 py-2">
+                      <span className="min-w-0 truncate text-sm text-foreground">{a.title}</span>
+                      <span className="shrink-0 text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
+                        {getArticleStatus(a)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4 min-h-10"
+                onClick={() => setTab("articles")}
+              >
+                Ouvrir les articles
+              </Button>
+            </AdminCard>
+
+            <AdminCard title="Derniers messages" description="Demandes reçues via le site.">
+              {messages.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Aucun message reçu.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {messages.slice(0, 5).map((m) => (
+                    <li key={m.id} className="rounded-lg border border-border/70 bg-background px-3 py-2">
+                      <p className="truncate text-sm font-medium text-foreground">{m.full_name}</p>
+                      <p className="truncate text-xs text-muted-foreground">{m.project_type}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4 min-h-10"
+                onClick={() => setTab("messages")}
+              >
+                Ouvrir la messagerie
+              </Button>
+            </AdminCard>
+          </div>
+
+          <AdminCard
+            title="Services externes"
+            description="Seules les vraies données sont affichées ; un service non branché reste marqué comme tel."
+          >
+            <div className="grid gap-2 sm:grid-cols-3">
+              {[
+                ["Boutique Stripe / Printful", "Connecté"],
+                ["Statistiques du site", "Connecté"],
+                ["Boîte mail Google", "Service non connecté"],
+              ].map(([name, status]) => (
+                <div key={name} className="rounded-lg border border-border/70 bg-background px-3 py-2.5">
+                  <p className="text-sm font-medium text-foreground">{name}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{status}</p>
+                </div>
+              ))}
+            </div>
+          </AdminCard>
+          </div>
+        )}
 
         {draft ? (
           <form
@@ -939,66 +1054,80 @@ function AdminPage() {
               </label>
             </div>
 
-            <div className="flex gap-2">
-              <Button type="submit" disabled={save.isPending}>
+            <AiSuggestions
+              draft={{
+                title: draft.title,
+                excerpt: draft.excerpt,
+                content: draft.content,
+                topics: draft.topics,
+                category: draft.category,
+              }}
+              onApply={(patch) => setDraft({ ...draft, ...patch })}
+            />
+
+            <div className="flex flex-wrap gap-2">
+              <Button type="submit" disabled={save.isPending} className="min-h-11">
                 {save.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Valider et enregistrer
               </Button>
-              <Button type="button" variant="outline" onClick={() => setDraft(null)}>
+              <Button type="button" variant="outline" className="min-h-11" onClick={() => setDraft(null)}>
                 Annuler
               </Button>
             </div>
           </form>
         ) : (
           <>
-            <nav
-              aria-label="Sections de l'espace personnel"
-              className="sticky top-2 z-20 mt-6 overflow-x-auto rounded-2xl border border-border bg-card/85 p-1.5 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-card/70 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-            >
-              <div className="flex min-w-max gap-1">
-                {(
-                  [
-                    ["articles", "Articles", FileText, articles.length],
-                    ["messages", "Messages", Mail, unreadCount],
-                    ["boite-mail", "Boîte mail", Inbox, 0],
-                    ["abonnes", "Abonnés", Users, subscribers.length],
-                    ["contenus", "Parcours & services", LayoutList, 0],
-                    ["avis", "Avis et soutiens", Star, 0],
-                    ["boutique", "Boutique", ShoppingBag, 0],
-                    ["stats", "Statistiques", BarChart3, 0],
-                  ] as const
-                ).map(([key, label, Icon, count]) => {
-                  const active = tab === key;
-                  return (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => setTab(key)}
-                      aria-current={active ? "page" : undefined}
-                      className={`group inline-flex min-h-10 items-center gap-2 whitespace-nowrap rounded-xl px-3.5 py-2 text-sm font-medium transition-colors ${
-                        active
-                          ? "bg-primary text-primary-foreground shadow-sm"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                      }`}
-                    >
-                      <Icon className="h-4 w-4" />
-                      {label}
-                      {count > 0 && (
-                        <span
-                          className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums ${
-                            active
-                              ? "bg-primary-foreground/20 text-primary-foreground"
-                              : "bg-muted text-foreground/70 group-hover:bg-background"
-                          }`}
-                        >
-                          {count}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </nav>
+            {tab === "angel-ai" && <AiActionsPanel />}
+
+            {tab === "connexions" && <ConnectionsPanel />}
+
+            {tab === "projets" && (
+              <ModulePlaceholder
+                title="Projets"
+                description="Suivi des missions clients dans Angel OS."
+                points={[
+                  "Fiches de mission reliées aux demandes de contact reçues",
+                  "Étapes, échéances et acompte Revolut",
+                  "Historique des livrables",
+                ]}
+              />
+            )}
+
+            {tab === "candidatures" && (
+              <ModulePlaceholder
+                title="Candidatures"
+                description="Suivi de la recherche d'alternance BTS Communication."
+                points={[
+                  "Entreprises contactées et statut de chaque candidature",
+                  "Relances programmées",
+                  "Documents envoyés (CV, lettre)",
+                ]}
+              />
+            )}
+
+            {tab === "agenda" && (
+              <ModulePlaceholder
+                title="Agenda"
+                description="Vue calendrier centralisée."
+                points={[
+                  "Publications programmées du blog",
+                  "Rendez-vous et échéances de mission",
+                  "Synchronisation Google Agenda une fois la connexion établie",
+                ]}
+              />
+            )}
+
+            {tab === "fichiers" && (
+              <ModulePlaceholder
+                title="Fichiers"
+                description="Bibliothèque des documents et visuels."
+                points={[
+                  "Images de couverture et pièces jointes déjà stockées",
+                  "Recherche et réutilisation dans l'éditeur",
+                  "Connexion Drive optionnelle",
+                ]}
+              />
+            )}
 
             {tab === "stats" && (
               <div className="mt-6 rounded-2xl border border-border bg-card p-4 sm:p-6">
@@ -1317,6 +1446,6 @@ function AdminPage() {
           </>
         )}
       </div>
-    </section>
+    </AdminShell>
   );
 }

@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_actions: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          kind: string
+          payload: Json
+          resolved_at: string | null
+          sensitive: boolean
+          status: string
+          target_id: string | null
+          target_type: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          kind?: string
+          payload?: Json
+          resolved_at?: string | null
+          sensitive?: boolean
+          status?: string
+          target_id?: string | null
+          target_type?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          kind?: string
+          payload?: Json
+          resolved_at?: string | null
+          sensitive?: boolean
+          status?: string
+          target_id?: string | null
+          target_type?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       articles: {
         Row: {
           ai_disclosure: Json

@@ -16,8 +16,9 @@ import { SITE_URL } from "@/routes/articles/$slug";
 import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/articles/")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    topic: typeof search.topic === "string" ? search.topic : "",
+  validateSearch: (search: Record<string, unknown>): { topic?: string } => ({
+    topic:
+      typeof search.topic === "string" && search.topic ? search.topic : undefined,
   }),
   head: () => ({
     meta: [
@@ -114,10 +115,10 @@ function ArticlesPage() {
                 <button
                   key={t.key || "all"}
                   type="button"
-                  aria-pressed={topic === t.key}
+                  aria-pressed={(topic ?? "") === t.key}
                   onClick={() => navigate({ search: { topic: t.key }, replace: true })}
                   className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
-                    topic === t.key
+                    (topic ?? "") === t.key
                       ? "border-primary bg-primary/10 font-medium text-primary"
                       : "border-input text-muted-foreground hover:border-primary/40"
                   }`}
