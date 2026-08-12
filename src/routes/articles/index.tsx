@@ -16,8 +16,9 @@ import { SITE_URL } from "@/routes/articles/$slug";
 import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/articles/")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    topic: typeof search.topic === "string" ? search.topic : "",
+  validateSearch: (search: Record<string, unknown>): { topic?: string } => ({
+    topic:
+      typeof search.topic === "string" && search.topic ? search.topic : undefined,
   }),
   head: () => ({
     meta: [
