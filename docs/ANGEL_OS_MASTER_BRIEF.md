@@ -1,5 +1,7 @@
 # Angel OS / Angel Control Center — Brief maître
 
+Version documentaire : 2026-08-12 — 82 sections.
+
 Ce document rassemble le cahier des charges durable du projet. Les sections 1 à 38 reprennent les briefs initiaux fournis par Angel ; les sections 39 à 82 ajoutent les règles OAuth grand public, d’automatisation, de publication et d’indépendance vis-à-vis de Lovable.
 
 ## Règles d’interprétation
@@ -1872,4 +1874,3 @@ demande
 → « Publié ✓ ».
 
 L’utilisateur ne doit normalement ni ouvrir Lovable, ni consommer un crédit, ni cliquer manuellement sur Publish.
-
