@@ -1,19 +1,77 @@
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { getRequest } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { IntegrationReadiness, IntegrationStatus } from "./system.server";
+import type { IntegrationReadiness, IntegrationStatus, ConnectionState } from "./system.server";
 
-export type { IntegrationReadiness, IntegrationStatus };
+export type { IntegrationReadiness, IntegrationStatus, ConnectionState };
+
+async function assertAdmin(context: { supabase: { from: (t: string) => any }; userId: string }) {
+  const { data } = await context.supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", context.userId)
+    .eq("role", "admin")
+    .maybeSingle();
+  if (!data) throw new Error("Accès réservé à l'administrateur.");
+}
 
 export const integrationReadiness = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<IntegrationReadiness[]> => {
-    const { data } = await context.supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", context.userId)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!data) throw new Error("Accès réservé à l'administrateur.");
+    await assertAdmin(context);
     const { readIntegrations } = await import("./system.server");
-    return readIntegrations();
+    const services = readIntegrations();
+
+    const { listConnections } = await import("./oauth/oauth.server");
+    let connections: Awaited<ReturnType<typeof listConnections>> = [];
+    try {
+      connections = await listConnections(context.userId);
+    } catch (error) {
+      console.error("[integrations] lecture des connexions impossible", error);
+    }
+
+    return services.map((service) => {
+      if (!service.provider) return service;
+      const row = connections.find((c) => c.provider === service.provider);
+      const connection: ConnectionState = !row
+        ? "not_connected"
+        : row.status === "reconnect_required"
+          ? "reconnect_required"
+          : "connected";
+      return {
+        ...service,
+        connection,
+        accountLabel: row?.accountLabel ?? null,
+        lastSyncAt: row?.lastSyncAt ?? null,
+        scopes: row?.scopes ?? [],
+      };
+    });
+  });
+
+const providerInput = z.object({ provider: z.string().min(1).max(30) });
+
+/** Returns the provider consent URL. The browser only ever sees this URL, never a token. */
+export const startOAuthConnection = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => providerInput.parse(data))
+  .handler(async ({ context, data }): Promise<{ url: string }> => {
+    await assertAdmin(context);
+    const { isProviderId } = await import("./oauth/providers");
+    if (!isProviderId(data.provider)) throw new Error("Fournisseur inconnu.");
+    const { buildAuthorizeUrl } = await import("./oauth/oauth.server");
+    const origin = new URL(getRequest().url).origin;
+    return { url: buildAuthorizeUrl(data.provider, origin, context.userId) };
+  });
+
+export const disconnectOAuthConnection = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => providerInput.parse(data))
+  .handler(async ({ context, data }): Promise<{ ok: true }> => {
+    await assertAdmin(context);
+    const { isProviderId } = await import("./oauth/providers");
+    if (!isProviderId(data.provider)) throw new Error("Fournisseur inconnu.");
+    const { deleteConnection } = await import("./oauth/oauth.server");
+    await deleteConnection(context.userId, data.provider);
+    return { ok: true };
   });

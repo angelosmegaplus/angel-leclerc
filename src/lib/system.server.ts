@@ -1,4 +1,8 @@
+import type { ProviderId } from "./oauth/providers";
+
 export type IntegrationStatus = "ready" | "server_setup";
+
+export type ConnectionState = "connected" | "reconnect_required" | "not_connected";
 
 export type IntegrationReadiness = {
   key: string;
@@ -9,6 +13,14 @@ export type IntegrationReadiness = {
   missing: string[];
   connectPath?: string;
   reconnectPath?: string;
+  /** OAuth provider handled by Angel OS, when applicable. */
+  provider?: ProviderId;
+  /** Real account state, filled by the server function. */
+  connection?: ConnectionState;
+  accountLabel?: string | null;
+  lastSyncAt?: string | null;
+  scopes?: string[];
+  note?: string;
 };
 
 type Definition = Omit<IntegrationReadiness, "status" | "missing"> & {
@@ -18,6 +30,7 @@ type Definition = Omit<IntegrationReadiness, "status" | "missing"> & {
 const DEFINITIONS: Definition[] = [
   {
     key: "google",
+    provider: "google",
     name: "Google Workspace",
     category: "Bureautique & mail",
     description:
@@ -28,6 +41,7 @@ const DEFINITIONS: Definition[] = [
   },
   {
     key: "microsoft",
+    provider: "microsoft",
     name: "Microsoft 365",
     category: "Bureautique & mail",
     description: "Outlook, Calendrier et OneDrive comme alternative à Google.",
@@ -37,6 +51,7 @@ const DEFINITIONS: Definition[] = [
   },
   {
     key: "meta",
+    provider: "meta",
     name: "Facebook / Instagram",
     category: "Réseaux sociaux",
     description: "Publication et statistiques des pages via Meta.",
@@ -46,6 +61,7 @@ const DEFINITIONS: Definition[] = [
   },
   {
     key: "linkedin",
+    provider: "linkedin",
     name: "LinkedIn",
     category: "Réseaux sociaux",
     description: "Publication sur la page entreprise et suivi des posts.",
@@ -54,6 +70,7 @@ const DEFINITIONS: Definition[] = [
   },
   {
     key: "x",
+    provider: "x",
     name: "X",
     category: "Réseaux sociaux",
     description: "Diffusion des brèves et fils d'actualité.",
@@ -62,6 +79,7 @@ const DEFINITIONS: Definition[] = [
   },
   {
     key: "youtube",
+    provider: "youtube",
     name: "YouTube",
     category: "Réseaux sociaux",
     description: "Mise en ligne des reportages vidéo (via le compte Google).",
@@ -70,6 +88,7 @@ const DEFINITIONS: Definition[] = [
   },
   {
     key: "github",
+    provider: "github",
     name: "GitHub",
     category: "Développement",
     description: "Synchronisation du code du site et suivi des évolutions.",
@@ -80,8 +99,10 @@ const DEFINITIONS: Definition[] = [
     key: "angel-ai",
     name: "ChatGPT / Angel AI",
     category: "Intelligence artificielle",
-    description: "Assistant éditorial, suggestions de chapô, SEO et thèmes.",
-    env: ["OPENAI_API_KEY"],
+    description:
+      "File d'actions, messages et automatisations locales d'Angel OS. Fonctionne sans fournisseur IA externe.",
+    env: [],
+    note: "Les analyses ChatGPT externes nécessitent OPENAI_API_KEY, mais Angel OS reste pleinement utilisable sans.",
   },
   {
     key: "site",
@@ -106,6 +127,7 @@ const DEFINITIONS: Definition[] = [
   },
   {
     key: "canva",
+    provider: "canva",
     name: "Canva",
     category: "Création visuelle",
     description: "Visuels et gabarits de la marque.",
@@ -114,6 +136,7 @@ const DEFINITIONS: Definition[] = [
   },
   {
     key: "adobe",
+    provider: "adobe",
     name: "Adobe Express / Creative Cloud",
     category: "Création visuelle",
     description: "Retouches et exports haute qualité.",
