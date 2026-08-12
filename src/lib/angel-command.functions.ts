@@ -188,27 +188,34 @@ export const runAngelCommand = createServerFn({ method: "POST" })
           autoExecuted: true,
           actionId: null,
         };
-      } else if (/prépare.*(?:article|brouillon)|(?:article|brouillon)\s*:/i.test(command)) {
-        const title = requestedTitle(command, "Nouveau brouillon");
-        const slug = `${slugify(title) || "brouillon"}-${Date.now().toString(36)}`;
+      } else if (/(?:prépare|prepare|crée|cree|rédige|redige).*(?:article|brouillon)|(?:article|brouillon)\s*:/i.test(command)) {
+        const requested = requestedTitle(command, "Nouveau brouillon");
+        const { generateArticleDraft } = await import("./article-ai.server");
+        const generated = await generateArticleDraft(requested);
+        const finalTitle = generated?.title || requested;
+        const slug = `${slugify(finalTitle) || "brouillon"}-${Date.now().toString(36)}`;
         const { data: article, error } = await db
           .from("articles")
           .insert({
-            title,
+            title: finalTitle,
             slug,
             category: "Article",
-            excerpt: null,
-            content: "",
+            excerpt: generated?.excerpt || null,
+            content: generated?.content || "",
+            sources: generated?.sources ?? [],
+            topics: generated?.topics ?? [],
+            cover_url: generated?.coverUrl ?? null,
+            cover_meta: generated?.coverMeta ?? {},
             published: false,
             published_at: null,
             author_id: context.userId,
             ai_disclosure: {
               personal: false,
-              chatgpt: false,
-              otherAi: true,
-              otherAiName: "Angel AI",
+              chatgpt: Boolean(generated),
+              otherAi: false,
+              otherAiName: "",
               images: false,
-              imagesTool: "",
+              imagesTool: generated?.coverUrl ? "Wikimedia Commons" : "",
             },
           })
           .select("id")
@@ -216,15 +223,23 @@ export const runAngelCommand = createServerFn({ method: "POST" })
         if (error) throw error;
         await db.from("activity_log").insert({
           source: "ai",
-          action: "create_draft",
+          action: generated ? "create_researched_draft" : "create_draft",
           entity_type: "articles",
           entity_id: article.id,
-          details: { title, command_id: message.id },
+          details: {
+            title: finalTitle,
+            command_id: message.id,
+            generated: Boolean(generated),
+            source_count: generated?.sources.length ?? 0,
+            image_source: generated?.coverMeta?.source ?? null,
+          },
         });
         result = {
-          response: `Brouillon créé automatiquement : « ${title} ». Rien n'a été publié.`,
-          status: "completed",
-          source: "local",
+          response: generated
+            ? `Brouillon complet créé automatiquement : « ${finalTitle} » — texte, ${generated.sources.length} source(s), catégories${generated.coverUrl ? " et image Wikimedia créditée" : ""}. Rien n'a été publié : vous pouvez relire et modifier avant publication.`
+            : `Brouillon créé : « ${finalTitle} », mais la génération IA complète n'est pas disponible sur ce déploiement (OPENAI_API_KEY absente ou appel impossible). Le brouillon reste non publié et modifiable.`,
+          status: generated ? "completed" : "partial",
+          source: generated ? "openai" : "local",
           autoExecuted: true,
           actionId: null,
         };
