@@ -1258,6 +1258,7 @@ function AdminPage() {
                           featured: a.featured,
                           attachments: getAttachments(a),
                           sources: getSources(a),
+                          topics: getTopics(a),
                           ai: getAiDisclosure(a),
                         })
                       }
