@@ -86,7 +86,6 @@ import { AutomationPanel } from "@/components/admin/AutomationPanel";
 import { InstallPrompt } from "@/components/admin/InstallPrompt";
 import { ProjectsPanel } from "@/components/admin/ProjectsPanel";
 import { StudioPanel } from "@/components/admin/StudioPanel";
-import { APP_SUBTITLE } from "@/config/navigation";
 import { AgendaPanel } from "@/components/admin/AgendaPanel";
 import { FilesPanel } from "@/components/admin/FilesPanel";
 import { ActivityPanel } from "@/components/admin/ActivityPanel";
@@ -459,7 +458,6 @@ function AdminPage() {
         setDraft(null);
       }}
       title={draft ? (draft.id ? "Modifier l'article" : "Nouvel article") : currentLabel}
-      subtitle={APP_SUBTITLE}
       actions={
         <>
           <Button

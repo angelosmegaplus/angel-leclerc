@@ -15,7 +15,6 @@ export function AdminShell({
   active,
   onSelect,
   title,
-  subtitle,
   actions,
   children,
 }: {
@@ -23,7 +22,6 @@ export function AdminShell({
   active: string;
   onSelect: (key: string) => void;
   title: string;
-  subtitle?: string;
   actions?: ReactNode;
   children: ReactNode;
 }) {
@@ -101,8 +99,7 @@ export function AdminShell({
     <div className="flex items-center gap-3">
       <img src="/angel-os/logo.png" alt="" className="h-11 w-11 shrink-0 object-contain" />
       <div className="min-w-0">
-        <p className="font-display text-lg font-bold text-white">Angel OS</p>
-        <p className="mt-0.5 truncate text-[11px] text-white/45">{subtitle}</p>
+        <p className="font-display text-xl font-bold tracking-tight text-white">Angel OS</p>
       </div>
     </div>
   );
