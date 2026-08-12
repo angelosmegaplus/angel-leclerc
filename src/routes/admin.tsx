@@ -31,7 +31,7 @@ import {
   FolderOpen,
   Plug,
   Sparkles,
-  Mic,
+  Mic2,
   Activity,
   Search,
 } from "lucide-react";
