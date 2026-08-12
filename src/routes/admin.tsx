@@ -196,16 +196,7 @@ function AdminPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
-  const [tab, setTab] = useState<
-    | "articles"
-    | "messages"
-    | "boite-mail"
-    | "abonnes"
-    | "stats"
-    | "contenus"
-    | "avis"
-    | "boutique"
-  >("articles");
+  const [tab, setTab] = useState<AdminTab>("dashboard");
   const sendNewsletter = useServerFn(sendNewsletterNow);
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
 
