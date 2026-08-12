@@ -58,6 +58,9 @@ async function counts(db: Db) {
     db.from("articles").select("published, scheduled_at").limit(300),
     db.from("ai_actions").select("status").eq("status", "pending").limit(300),
   ]);
+  for (const result of [applications, projects, tasks, articles, actions]) {
+    if (result.error) throw result.error;
+  }
   const apps = (applications.data ?? []) as Array<Record<string, unknown>>;
   const due = apps.filter((row) => {
     const date = typeof row.follow_up_at === "string" ? row.follow_up_at : "";

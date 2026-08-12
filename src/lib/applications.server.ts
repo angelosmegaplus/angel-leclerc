@@ -234,7 +234,7 @@ export async function syncApplicationsForUser(
     "/messages",
     new URLSearchParams({
       q: "in:sent (subject:candidature OR subject:alternance)",
-      maxResults: "60",
+      maxResults: "30",
     }),
   );
   const messages = await Promise.all(
@@ -246,24 +246,30 @@ export async function syncApplicationsForUser(
   });
 
   const candidates: ImportedApplication[] = [];
-  for (const message of originals) {
-    const subject = header(message, "Subject");
-    const email = emailOf(header(message, "To"));
-    const sentAt = isoDate(message);
-    const reply = await threadReply(token, message.threadId, profile.emailAddress).catch(
-      () => null,
+  for (let offset = 0; offset < originals.length; offset += 8) {
+    const batch = originals.slice(offset, offset + 8);
+    const replies = await Promise.all(
+      batch.map((message) =>
+        threadReply(token, message.threadId, profile.emailAddress).catch(() => null),
+      ),
     );
-    const company = companyOf(subject, email);
-    candidates.push({
-      company,
-      city: cityOf(`${subject} ${company} ${email ?? ""}`),
-      position: "Alternance BTS Communication",
-      email,
-      sent_at: sentAt,
-      follow_up_at: reply ? null : followUpDate(sentAt),
-      response: reply?.summary ?? null,
-      status: reply?.rejected ? "refusee" : "envoyee",
-      notes: `Synchronisé automatiquement depuis Gmail. Objet : ${subject}`,
+    batch.forEach((message, index) => {
+      const subject = header(message, "Subject");
+      const email = emailOf(header(message, "To"));
+      const sentAt = isoDate(message);
+      const reply = replies[index];
+      const company = companyOf(subject, email);
+      candidates.push({
+        company,
+        city: cityOf(`${subject} ${company} ${email ?? ""}`),
+        position: "Alternance BTS Communication",
+        email,
+        sent_at: sentAt,
+        follow_up_at: reply ? null : followUpDate(sentAt),
+        response: reply?.summary ?? null,
+        status: reply?.rejected ? "refusee" : "envoyee",
+        notes: `Synchronisé automatiquement depuis Gmail. Objet : ${subject}`,
+      });
     });
   }
 
