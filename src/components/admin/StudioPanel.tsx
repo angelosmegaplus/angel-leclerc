@@ -43,7 +43,7 @@ function tagList(row: Row) {
   );
 }
 
-function StudioCapture() {
+function StudioCapture({ onGo }: { onGo: (view: View) => void }) {
   const [last, setLast] = useState<{ url: string; name: string } | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -190,7 +190,7 @@ export function StudioPanel() {
         ))}
       </div>
 
-      {view === "studio" && <StudioCapture />}
+      {view === "studio" && <StudioCapture onGo={setView} />}
 
       {view === "reportages" && (
         <CrudModule
