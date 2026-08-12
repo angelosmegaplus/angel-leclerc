@@ -481,7 +481,76 @@ function AdminPage() {
               </div>
             ))}
           </dl>
-        </header>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <AdminCard title="Derniers articles" description="Vos publications les plus récemment modifiées.">
+              {articles.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Aucun article pour l'instant.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {articles.slice(0, 5).map((a) => (
+                    <li key={a.id} className="flex items-center justify-between gap-3 rounded-lg border border-border/70 bg-background px-3 py-2">
+                      <span className="min-w-0 truncate text-sm text-foreground">{a.title}</span>
+                      <span className="shrink-0 text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
+                        {getArticleStatus(a)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4 min-h-10"
+                onClick={() => setTab("articles")}
+              >
+                Ouvrir les articles
+              </Button>
+            </AdminCard>
+
+            <AdminCard title="Derniers messages" description="Demandes reçues via le site.">
+              {messages.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Aucun message reçu.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {messages.slice(0, 5).map((m) => (
+                    <li key={m.id} className="rounded-lg border border-border/70 bg-background px-3 py-2">
+                      <p className="truncate text-sm font-medium text-foreground">{m.full_name}</p>
+                      <p className="truncate text-xs text-muted-foreground">{m.project_type}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4 min-h-10"
+                onClick={() => setTab("messages")}
+              >
+                Ouvrir la messagerie
+              </Button>
+            </AdminCard>
+          </div>
+
+          <AdminCard
+            title="Services externes"
+            description="Seules les vraies données sont affichées ; un service non branché reste marqué comme tel."
+          >
+            <div className="grid gap-2 sm:grid-cols-3">
+              {[
+                ["Boutique Stripe / Printful", "Connecté"],
+                ["Statistiques du site", "Connecté"],
+                ["Boîte mail Google", "Service non connecté"],
+              ].map(([name, status]) => (
+                <div key={name} className="rounded-lg border border-border/70 bg-background px-3 py-2.5">
+                  <p className="text-sm font-medium text-foreground">{name}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{status}</p>
+                </div>
+              ))}
+            </div>
+          </AdminCard>
+          </div>
+        )}
 
         {draft ? (
           <form
