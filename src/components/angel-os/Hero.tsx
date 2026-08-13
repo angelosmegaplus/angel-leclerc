@@ -15,8 +15,8 @@ export function Hero() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-red-500/25 bg-red-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[.2em] text-red-300"><Sparkles size={13}/> Open source · Core v0.1</div>
             <h1 className="mt-6 font-display text-5xl font-bold tracking-[-.05em] sm:text-7xl lg:text-8xl">Angel <span className="text-red-500">OS</span></h1>
-            <p className="mt-5 max-w-2xl text-xl font-medium text-white/85 sm:text-2xl">Un noyau commun pour construire plusieurs systèmes sans recommencer de zéro.</p>
-            <p className="mt-5 max-w-2xl text-base leading-relaxed text-white/55 sm:text-lg">Angel OS reprend la logique de l'écosystème Linux : un socle léger et indépendant, puis des distributions et interfaces construites au-dessus. Angel OS IA est ma première distribution personnelle.</p>
+            <p className="mt-5 max-w-2xl text-xl font-medium text-white/85 sm:text-2xl">Le système que j'utilise pour piloter mon site et mes automatisations simplement par instruction.</p>
+            <p className="mt-5 max-w-2xl text-base leading-relaxed text-white/55 sm:text-lg">Depuis ChatGPT ou directement depuis mon espace administrateur, je donne un ordre : Angel OS et ses agents/outils se chargent ensuite de l'exécuter.</p>
             <a href="https://github.com/angelosmegaplus/angel-leclerc/tree/main/angel-os" target="_blank" rel="noopener noreferrer" className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:-translate-y-0.5"><Github size={17}/> Voir le Core sur GitHub</a>
           </div>
           <div className="rounded-[2rem] border border-white/10 bg-black/80 p-6 shadow-2xl transition duration-300 hover:-translate-y-1 hover:border-red-500/25">
