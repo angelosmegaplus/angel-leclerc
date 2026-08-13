@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -134,6 +135,9 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const isAngelOSPage = useRouterState({
+    select: (state) => state.location.pathname === "/angel-os-ia",
+  });
 
   useEffect(() => {
     void bootAngelOS().catch((error) => {
@@ -146,16 +150,21 @@ function RootComponent() {
       <ThemeSync />
       <PageViewTracker />
       <PwaRegistrar />
-      <div className="flex min-h-screen flex-col">
-        <ApprenticeshipBanner />
-        <Header />
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <main className="flex-1">
+      {isAngelOSPage ? (
+        <main className="min-h-screen">
           <Outlet />
         </main>
-        <Footer />
-      </div>
-      <CartDrawer />
+      ) : (
+        <div className="flex min-h-screen flex-col">
+          <ApprenticeshipBanner />
+          <Header />
+          <main className="flex-1">
+            <Outlet />
+          </main>
+          <Footer />
+        </div>
+      )}
+      {!isAngelOSPage && <CartDrawer />}
       <Toaster position="top-center" />
     </QueryClientProvider>
   );
