@@ -420,6 +420,40 @@ const projects: Project[] = [
     icon: Briefcase,
   },
   {
+    title: "Angel OS — centre de contrôle numérique",
+    context:
+      "Conception d'un espace d'administration central pour piloter mon site, mes contenus et mon activité depuis une interface unique.",
+    missions: [
+      "Conception de l'interface mobile et de l'expérience d'installation en application",
+      "Centralisation du CMS, des projets, candidatures, formulaires et statistiques",
+      "Création d'outils d'assistance éditoriale et de suivi des automatisations",
+      "Organisation des connexions aux services externes avec des états réellement vérifiables",
+    ],
+    tools: "React · TanStack Start · Supabase · GitHub · Lovable · Vercel",
+    results:
+      "Un centre de contrôle évolutif, directement intégré à angel-leclerc.fr, qui rassemble des fonctions auparavant dispersées.",
+    href: "https://www.angel-leclerc.fr/admin",
+    linkLabel: "Découvrir Angel OS",
+    icon: Brain,
+  },
+  {
+    title: "Blog et espace éditorial",
+    context:
+      "Création et développement du blog d'Angel Leclerc Communication pour publier des analyses, articles et retours d'expérience.",
+    missions: [
+      "Conception des pages d'articles et de la navigation éditoriale",
+      "Mise en place des catégories, commentaires, favoris et statistiques",
+      "Ajout d'indications transparentes sur l'utilisation éventuelle d'outils d'intelligence artificielle",
+      "Optimisation de la lecture sur mobile et du partage des publications",
+    ],
+    tools: "Rédaction web · CMS · React · Supabase · Canva · outils d'IA",
+    results:
+      "Un espace de publication personnel relié au site professionnel et administrable depuis Angel OS.",
+    href: "https://www.angel-leclerc.fr/articles",
+    linkLabel: "Voir le blog",
+    icon: BookOpen,
+  },
+  {
     title: "Projet d'émission jeunesse — Radio Bocage",
     context:
       "Service civique auprès de la Ligue de l'enseignement 03, au sein d'une radio associative.",
@@ -1045,9 +1079,13 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
     title: "Sites internet et publication",
     icon: PenLine,
     tools: [
-      { name: "Lovable", domain: "lovable.dev", use: "Création et amélioration de sites internet." },
+      { name: "Lovable", domain: "lovable.dev", use: "Synchronisation, publication et services serveur de projets web." },
       { name: "Figma", domain: "figma.com", use: "Maquettes de sites et organisation d'interfaces." },
-      { name: "Squarespace", domain: "squarespace.com", use: "Gestion de domaine et hébergement du site." },
+      { name: "Squarespace Domains", domain: "squarespace.com", use: "Enregistrement et gestion du nom de domaine." },
+      { name: "Vercel", domain: "vercel.com", use: "Déploiement et hébergement de l'application web." },
+      { name: "GitHub", domain: "github.com", use: "Gestion du code source, historique et publication des évolutions." },
+      { name: "Supabase", domain: "supabase.com", use: "Base de données, authentification et stockage applicatif." },
+      { name: "React et TanStack", domain: "tanstack.com", use: "Développement de l'interface et des fonctions du site." },
       { name: "Webnode", domain: "webnode.com", use: "Création rapide de sites vitrines et blogs." },
       { name: "Wix", domain: "wix.com", use: "Sites vitrines, boutiques et portfolios avec éditeur visuel." },
       { name: "Google Sites", domain: "sites.google.com", use: "Sites simples et pages collaboratives intégrées à Google Workspace." },
@@ -1058,7 +1096,7 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
     icon: ClipboardList,
     tools: [
       { name: "Microsoft Office", domain: "microsoft.com", use: "Rédaction, présentations, tableaux de suivi et travail collaboratif." },
-      { name: "Google Workspace", domain: "workspace.google.com", use: "Rédaction, présentations, tableaux de suivi et travail collaboratif." },
+      { name: "Google Workspace", domain: "workspace.google.com", use: "Messagerie professionnelle, rédaction, présentations et travail collaboratif." },
     ],
   },
   {
