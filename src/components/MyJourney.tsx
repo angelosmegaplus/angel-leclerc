@@ -432,8 +432,8 @@ const projects: Project[] = [
     tools: "React · TanStack Start · Supabase · GitHub · Lovable · Vercel",
     results:
       "Un centre de contrôle évolutif, directement intégré à angel-leclerc.fr, qui rassemble des fonctions auparavant dispersées.",
-    href: "https://www.angel-leclerc.fr/admin",
-    linkLabel: "Découvrir Angel OS",
+    href: "/angel-os-ia",
+    linkLabel: "Découvrir Angel OS IA",
     icon: Brain,
   },
   {
