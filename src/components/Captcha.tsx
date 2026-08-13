@@ -1,7 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { Loader2, RefreshCw, ShieldCheck } from "lucide-react";
-import { getCaptchaChallenge } from "@/lib/captcha.functions";
+import { useEffect, useRef } from "react";
+import { ShieldCheck } from "lucide-react";
 
 export type CaptchaValue = { token: string; answer: string };
 
@@ -11,56 +9,81 @@ type Props = {
   error?: string | undefined;
 };
 
-/** Vérification anti-robot légère : un petit calcul validé côté serveur. */
-export function Captcha({ value, onChange, error }: Props) {
-  const load = useServerFn(getCaptchaChallenge);
-  const [question, setQuestion] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+const SITE_KEY = "6LdQwYMtAAAAAPrqj0Z_p5xtaSn-dHchUbucDlwa";
+const SCRIPT_ID = "google-recaptcha-script";
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    try {
-      const challenge = await load({});
-      setQuestion(challenge.question);
-      onChange({ token: challenge.token, answer: "" });
-    } catch {
-      setQuestion(null);
-    } finally {
-      setLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+declare global {
+  interface Window {
+    grecaptcha?: {
+      render: (
+        container: HTMLElement,
+        parameters: {
+          sitekey: string;
+          callback: (token: string) => void;
+          "expired-callback": () => void;
+          "error-callback": () => void;
+        },
+      ) => number;
+      reset: (widgetId?: number) => void;
+    };
+  }
+}
+
+/** Google reCAPTCHA, validé côté serveur avant toute action protégée. */
+export function Captcha({ onChange, error }: Props) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const widgetIdRef = useRef<number | null>(null);
 
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    let cancelled = false;
+
+    const renderWidget = () => {
+      if (cancelled || !containerRef.current || !window.grecaptcha || widgetIdRef.current !== null) return;
+      widgetIdRef.current = window.grecaptcha.render(containerRef.current, {
+        sitekey: SITE_KEY,
+        callback: (token) => onChange({ token, answer: "verified" }),
+        "expired-callback": () => onChange({ token: "", answer: "" }),
+        "error-callback": () => onChange({ token: "", answer: "" }),
+      });
+    };
+
+    const existing = document.getElementById(SCRIPT_ID) as HTMLScriptElement | null;
+    if (window.grecaptcha) {
+      renderWidget();
+    } else if (existing) {
+      existing.addEventListener("load", renderWidget, { once: true });
+    } else {
+      const script = document.createElement("script");
+      script.id = SCRIPT_ID;
+      script.src = "https://www.google.com/recaptcha/api.js?render=explicit";
+      script.async = true;
+      script.defer = true;
+      script.addEventListener("load", renderWidget, { once: true });
+      document.head.appendChild(script);
+    }
+
+    onChange({ token: "", answer: "" });
+
+    return () => {
+      cancelled = true;
+      if (existing) existing.removeEventListener("load", renderWidget);
+      if (widgetIdRef.current !== null && window.grecaptcha) {
+        try {
+          window.grecaptcha.reset(widgetIdRef.current);
+        } catch {
+          // Le widget peut déjà avoir été retiré du DOM.
+        }
+      }
+      widgetIdRef.current = null;
+    };
+  }, [onChange]);
 
   return (
     <div className="rounded-xl border border-border bg-muted/30 p-4">
-      <p className="flex items-center gap-2 text-xs font-semibold text-foreground">
+      <p className="mb-3 flex items-center gap-2 text-xs font-semibold text-foreground">
         <ShieldCheck className="h-4 w-4 text-primary" /> Vérification anti-robot
       </p>
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <span className="inline-flex h-10 min-w-[92px] items-center justify-center rounded-md border border-border bg-background px-3 font-mono text-sm text-foreground">
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : question ? `${question} = ?` : "—"}
-        </span>
-        <input
-          type="text"
-          inputMode="numeric"
-          autoComplete="off"
-          aria-label="Résultat du calcul anti-robot"
-          value={value.answer}
-          onChange={(e) => onChange({ ...value, answer: e.target.value })}
-          className="h-10 w-24 rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none focus:border-primary"
-        />
-        <button
-          type="button"
-          onClick={() => void refresh()}
-          className="inline-flex h-10 items-center gap-1.5 rounded-md px-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <RefreshCw className="h-3.5 w-3.5" /> Autre calcul
-        </button>
-      </div>
+      <div ref={containerRef} className="min-h-[78px] overflow-hidden" />
       {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
     </div>
   );
