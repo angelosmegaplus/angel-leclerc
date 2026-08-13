@@ -34,8 +34,8 @@ export default defineConfig({
         manifestFilename: "manifest.webmanifest",
         includeAssets: ["favicon.png", "icons/apple-touch-icon.png"],
         manifest: {
-          name: "Angel OS — Angel Control Center",
-          short_name: "Angel OS",
+          name: "Angel OS IA — Angel Control Center",
+          short_name: "Angel OS IA",
           description:
             "Centre de contrôle personnel, professionnel et journalistique d'Angel Leclerc.",
           lang: "fr",
