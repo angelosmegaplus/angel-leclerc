@@ -91,7 +91,7 @@ function LandingPage() {
                 <img
                   src={logo}
                   alt="Logo Angel Leclerc Communication"
-                  className="h-28 w-28 object-contain md:h-32 md:w-32"
+                  className="dark-logo-surface h-28 w-28 object-contain md:h-32 md:w-32"
                   width={128}
                   height={128}
                 />
