@@ -427,9 +427,10 @@ const projects: Project[] = [
       "Conception de l'interface mobile et de l'expérience d'installation en application",
       "Centralisation du CMS, des projets, candidatures, formulaires et statistiques",
       "Création d'outils d'assistance éditoriale et de suivi des automatisations",
+      "Pilotage de la programmation assistée avec ChatGPT et Codex, du brief jusqu'aux tests",
       "Organisation des connexions aux services externes avec des états réellement vérifiables",
     ],
-    tools: "React · TanStack Start · Supabase · GitHub · Lovable · Vercel",
+    tools: "ChatGPT · Codex · React · TanStack Start · Supabase · GitHub · Lovable · Vercel",
     results:
       "Un centre de contrôle évolutif, directement intégré à angel-leclerc.fr, qui rassemble des fonctions auparavant dispersées.",
     href: "/angel-os-ia",
