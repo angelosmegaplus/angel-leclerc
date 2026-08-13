@@ -9,6 +9,7 @@ import { isArticleCommand, runArticleCommand } from "@/lib/article-command.funct
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { AdminCard } from "./AdminShell";
+import { DailyCockpit } from "./DailyCockpit";
 
 type Message = {
   id: string;
@@ -69,7 +70,7 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
     mutation.mutate(value);
   };
 
-  return (
+  const commandCard = (
     <AdminCard
       className="border-primary/30 bg-gradient-to-br from-primary/8 via-card to-card"
       title="Demander à Angel AI"
@@ -175,5 +176,14 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
         </div>
       )}
     </AdminCard>
+  );
+
+  if (!compact) return commandCard;
+
+  return (
+    <div className="space-y-5">
+      <DailyCockpit />
+      {commandCard}
+    </div>
   );
 }
