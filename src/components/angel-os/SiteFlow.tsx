@@ -20,7 +20,12 @@ export function SiteFlow() {
                   {"logo" in item && item.logo ? (
                     <img src={item.logo} alt={item.alt} className="h-12 w-12 shrink-0 rounded-xl object-cover" loading="lazy" />
                   ) : (
-                    <Logo domain={item.domain} alt={item.alt} size={48} link={false} />
+                    <Logo
+                      domain={"domain" in item ? item.domain : "angel-leclerc.fr"}
+                      alt={item.alt}
+                      size={48}
+                      link={false}
+                    />
                   )}
                   <div className="min-w-0">
                     <p className="font-mono text-[10px] uppercase tracking-[.18em] text-red-400">étape {String(index + 1).padStart(2, "0")}</p>
