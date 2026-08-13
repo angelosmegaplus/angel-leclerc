@@ -1,31 +1,54 @@
-/** Validation Google reCAPTCHA côté serveur. */
+/** Anti-robot local : petit calcul signé côté serveur. */
 
-type RecaptchaResponse = {
-  success?: boolean;
-  hostname?: string;
-};
+const TTL_MS = 15 * 60 * 1000;
 
-function recaptchaSecret(): string {
-  const value = process.env["RECAPTCHA_SECRET_KEY"];
-  if (!value) throw new Error("Vérification anti-robot indisponible.");
-  return value;
+function localSecret(): string {
+  // Utilise un secret Vercel s'il existe, sinon un fallback local afin que le CAPTCHA
+  // reste immédiatement fonctionnel sans configuration externe.
+  return process.env["CAPTCHA_SECRET"] || "angel-leclerc-local-captcha-v1";
 }
 
-export async function verifyRecaptchaToken(token: string): Promise<boolean> {
-  const responseToken = token.trim();
-  if (!responseToken) return false;
+async function sign(payload: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(localSecret()),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload));
+  return Array.from(new Uint8Array(sig))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
 
-  const body = new URLSearchParams();
-  body.set("secret", recaptchaSecret());
-  body.set("response", responseToken);
+export type Challenge = { question: string; token: string };
 
-  const response = await fetch("https://www.google.com/recaptcha/api/siteverify", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body,
-  });
+export async function createChallenge(): Promise<Challenge> {
+  const a = 1 + Math.floor(Math.random() * 9);
+  const b = 1 + Math.floor(Math.random() * 9);
+  const plus = Math.random() > 0.4 || b > a;
+  const answer = plus ? a + b : a - b;
+  const question = plus ? `${a} + ${b}` : `${a} - ${b}`;
+  const expiry = Date.now() + TTL_MS;
+  const signature = await sign(`${expiry}.${answer}`);
+  return { question, token: `${expiry}.${signature}` };
+}
 
-  if (!response.ok) return false;
-  const result = (await response.json()) as RecaptchaResponse;
-  return result.success === true;
+export async function verifyChallenge(token: string, answer: string): Promise<boolean> {
+  const [rawExpiry, signature] = token.split(".");
+  const expiry = Number(rawExpiry);
+  if (!signature || !Number.isFinite(expiry) || expiry < Date.now()) return false;
+
+  const parsed = Number(answer.trim());
+  if (!Number.isInteger(parsed)) return false;
+
+  const expected = await sign(`${expiry}.${parsed}`);
+  if (expected.length !== signature.length) return false;
+
+  let diff = 0;
+  for (let i = 0; i < expected.length; i += 1) {
+    diff |= expected.charCodeAt(i) ^ signature.charCodeAt(i);
+  }
+  return diff === 0;
 }
