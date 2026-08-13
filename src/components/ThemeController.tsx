@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Monitor, Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import {
   applyTheme,
   readPreference,
@@ -46,39 +46,24 @@ export function ThemeSync() {
   return null;
 }
 
-const OPTIONS: Array<{ value: ThemePreference; label: string; icon: typeof Sun }> = [
-  { value: "system", label: "Système", icon: Monitor },
-  { value: "light", label: "Clair", icon: Sun },
-  { value: "dark", label: "Sombre", icon: Moon },
-];
-
 export function ThemeToggle({ className = "" }: { className?: string }) {
   const { preference, setPreference: choose } = useThemePreference();
+  const systemDark =
+    typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const isDark = preference === "dark" || (preference === "system" && systemDark);
+  const next: ThemePreference = isDark ? "light" : "dark";
+  const label = isDark ? "Passer en mode clair" : "Passer en mode sombre";
+  const Icon = isDark ? Sun : Moon;
 
   return (
-    <div
-      role="group"
-      aria-label="Apparence"
-      className={`inline-flex items-center gap-0.5 rounded-full border border-white/15 bg-white/5 p-0.5 ${className}`}
+    <button
+      type="button"
+      onClick={() => choose(next)}
+      title={label}
+      aria-label={label}
+      className={`inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/70 text-foreground transition-colors hover:bg-muted ${className}`}
     >
-      {OPTIONS.map(({ value, label, icon: Icon }) => {
-        const active = preference === value;
-        return (
-          <button
-            key={value}
-            type="button"
-            aria-pressed={active}
-            title={label}
-            onClick={() => choose(value)}
-            className={`inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
-              active ? "bg-white/20 text-white" : "text-white/55 hover:text-white"
-            }`}
-          >
-            <Icon className="h-4 w-4" aria-hidden="true" />
-            <span className="sr-only">{label}</span>
-          </button>
-        );
-      })}
-    </div>
+      <Icon className="h-5 w-5" aria-hidden="true" />
+    </button>
   );
 }
