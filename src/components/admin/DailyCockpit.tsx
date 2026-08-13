@@ -37,6 +37,15 @@ type ContactRequest = {
   created_at: string;
 };
 
+type HourlyMailReport = {
+  id: number;
+  generated_at: string;
+  summary: string;
+  counts: Record<string, number> | null;
+  items: Array<{ subject?: string; from?: string; category?: string; summary?: string }> | null;
+  recommendations: Array<{ title?: string; detail?: string; action?: string }> | null;
+};
+
 function sameDay(value: string | undefined, day: string) {
   return Boolean(value && value.slice(0, 10) === day);
 }
@@ -81,6 +90,20 @@ export function DailyCockpit() {
       if (error) throw error;
       return (data ?? []) as unknown as ContactRequest[];
     },
+  });
+
+  const { data: hourlyReports = [] } = useQuery({
+    queryKey: ["hourly-mail-reports"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("hourly_mail_reports")
+        .select("id, generated_at, summary, counts, items, recommendations")
+        .order("generated_at", { ascending: false })
+        .limit(6);
+      if (error) throw error;
+      return (data ?? []) as unknown as HourlyMailReport[];
+    },
+    refetchInterval: 5 * 60 * 1000,
   });
 
   const syncMutation = useMutation({
@@ -135,9 +158,53 @@ export function DailyCockpit() {
     .filter((row) => Boolean(str(row, "response")))
     .slice(0, 4);
   const pending = actions.filter((action) => action.status === "pending").slice(0, 4);
+  const latestReport = hourlyReports[0];
 
   return (
     <div className="space-y-4">
+      {latestReport && (
+        <AdminCard
+          className="border-primary/30 bg-gradient-to-br from-primary/10 via-card to-card"
+          title="Rapport mail horaire"
+          description={`Dernière analyse : ${new Date(latestReport.generated_at).toLocaleString("fr-FR")}`}
+        >
+          <p className="text-sm leading-relaxed text-foreground">{latestReport.summary}</p>
+
+          {latestReport.items && latestReport.items.length > 0 && (
+            <ul className="mt-4 space-y-2">
+              {latestReport.items.slice(0, 5).map((item, index) => (
+                <li key={`${item.subject ?? "mail"}-${index}`} className="rounded-xl border border-border/70 bg-background p-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-medium text-foreground">{item.subject || "Sans objet"}</span>
+                    {item.category && (
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                        {item.category}
+                      </span>
+                    )}
+                  </div>
+                  {item.from && <p className="mt-1 text-xs text-muted-foreground">De : {item.from}</p>}
+                  {item.summary && <p className="mt-1 text-sm text-muted-foreground">{item.summary}</p>}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {latestReport.recommendations && latestReport.recommendations.length > 0 && (
+            <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">Mes conseils</p>
+              <ul className="mt-2 space-y-2">
+                {latestReport.recommendations.slice(0, 5).map((recommendation, index) => (
+                  <li key={`${recommendation.title ?? "conseil"}-${index}`} className="text-sm text-foreground">
+                    <span className="font-medium">{recommendation.title || "À faire"}</span>
+                    {recommendation.detail ? ` — ${recommendation.detail}` : ""}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </AdminCard>
+      )}
+
       <AdminCard className="border-primary/30 bg-gradient-to-br from-primary/10 via-card to-card">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -187,10 +254,7 @@ export function DailyCockpit() {
       </AdminCard>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <AdminCard
-          title="Candidatures à surveiller"
-          description="Réponses détectées et relances qui demandent votre attention."
-        >
+        <AdminCard title="Candidatures à surveiller" description="Réponses détectées et relances qui demandent votre attention.">
           {recentReplies.length === 0 && stats.followUps === 0 ? (
             <p className="text-sm text-muted-foreground">Rien d'urgent côté candidatures pour le moment.</p>
           ) : (
@@ -202,29 +266,18 @@ export function DailyCockpit() {
                     <div className="min-w-0">
                       <p className="font-medium text-foreground">{str(row, "company") || "Entreprise"}</p>
                       <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{str(row, "response")}</p>
-                      <p className="mt-1 text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
-                        {str(row, "status") || "réponse reçue"}
-                      </p>
+                      <p className="mt-1 text-[10px] uppercase tracking-[0.1em] text-muted-foreground">{str(row, "status") || "réponse reçue"}</p>
                     </div>
                   </div>
                 </li>
               ))}
-              {stats.followUps > 0 && (
-                <li className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-foreground">
-                  {stats.followUps} relance{stats.followUps > 1 ? "s" : ""} à traiter.
-                </li>
-              )}
+              {stats.followUps > 0 && <li className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-foreground">{stats.followUps} relance{stats.followUps > 1 ? "s" : ""} à traiter.</li>}
             </ul>
           )}
-          <Button asChild variant="outline" size="sm" className="mt-4 min-h-10">
-            <a href="/admin?tab=candidatures">Voir les candidatures</a>
-          </Button>
+          <Button asChild variant="outline" size="sm" className="mt-4 min-h-10"><a href="/admin?tab=candidatures">Voir les candidatures</a></Button>
         </AdminCard>
 
-        <AdminCard
-          title="Décisions à prendre"
-          description="Vous validez ou refusez ici ; l'historique reste tracé."
-        >
+        <AdminCard title="Décisions à prendre" description="Vous validez ou refusez ici ; l'historique reste tracé.">
           {pending.length === 0 ? (
             <p className="text-sm text-muted-foreground">Aucune décision en attente.</p>
           ) : (
@@ -232,36 +285,16 @@ export function DailyCockpit() {
               {pending.map((action) => (
                 <li key={action.id} className="rounded-xl border border-border/70 bg-background p-3">
                   <p className="font-medium text-foreground">{action.title}</p>
-                  {action.description && (
-                    <p className="mt-1 text-sm text-muted-foreground">{action.description}</p>
-                  )}
+                  {action.description && <p className="mt-1 text-sm text-muted-foreground">{action.description}</p>}
                   <div className="mt-3 flex gap-2">
-                    <Button
-                      size="sm"
-                      className="min-h-9"
-                      disabled={resolve.isPending || action.sensitive}
-                      title={action.sensitive ? "Action sensible : ouvrir la file complète pour confirmer." : undefined}
-                      onClick={() => resolve.mutate({ id: action.id, status: "approved" })}
-                    >
-                      <Check className="mr-1.5 h-4 w-4" /> Valider
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="min-h-9"
-                      disabled={resolve.isPending}
-                      onClick={() => resolve.mutate({ id: action.id, status: "rejected" })}
-                    >
-                      <X className="mr-1.5 h-4 w-4" /> Refuser
-                    </Button>
+                    <Button size="sm" className="min-h-9" disabled={resolve.isPending || action.sensitive} title={action.sensitive ? "Action sensible : ouvrir la file complète pour confirmer." : undefined} onClick={() => resolve.mutate({ id: action.id, status: "approved" })}><Check className="mr-1.5 h-4 w-4" /> Valider</Button>
+                    <Button size="sm" variant="outline" className="min-h-9" disabled={resolve.isPending} onClick={() => resolve.mutate({ id: action.id, status: "rejected" })}><X className="mr-1.5 h-4 w-4" /> Refuser</Button>
                   </div>
                 </li>
               ))}
             </ul>
           )}
-          <Button asChild variant="outline" size="sm" className="mt-4 min-h-10">
-            <a href="/admin?tab=angel-ai">Ouvrir Angel AI</a>
-          </Button>
+          <Button asChild variant="outline" size="sm" className="mt-4 min-h-10"><a href="/admin?tab=angel-ai">Ouvrir Angel AI</a></Button>
         </AdminCard>
       </div>
     </div>
