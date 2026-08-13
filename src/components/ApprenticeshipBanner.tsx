@@ -43,7 +43,6 @@ export function ApprenticeshipBanner() {
           <span className="hidden sm:inline text-muted-foreground">
             · communication majoritaire (ex. 60 % com / 40 % vente)
           </span>
-          <span aria-hidden="true">→</span>
         </Link>
 
         <button
