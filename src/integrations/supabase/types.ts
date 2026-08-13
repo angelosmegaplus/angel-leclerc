@@ -820,31 +820,94 @@ export type Database = {
       }
       page_views: {
         Row: {
+          browser: string | null
+          city: string | null
           country: string | null
           created_at: string
           device: string | null
+          event_name: string | null
+          event_type: string
           id: string
+          language: string | null
+          metadata: Json
+          os: string | null
           path: string
           referrer: string | null
+          referrer_host: string | null
+          screen_height: number | null
+          screen_width: number | null
           session_id: string | null
+          source: string | null
+          title: string | null
+          user_id: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+          viewport_height: number | null
+          viewport_width: number | null
+          visitor_id: string | null
         }
         Insert: {
+          browser?: string | null
+          city?: string | null
           country?: string | null
           created_at?: string
           device?: string | null
+          event_name?: string | null
+          event_type?: string
           id?: string
+          language?: string | null
+          metadata?: Json
+          os?: string | null
           path: string
           referrer?: string | null
+          referrer_host?: string | null
+          screen_height?: number | null
+          screen_width?: number | null
           session_id?: string | null
+          source?: string | null
+          title?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          viewport_height?: number | null
+          viewport_width?: number | null
+          visitor_id?: string | null
         }
         Update: {
+          browser?: string | null
+          city?: string | null
           country?: string | null
           created_at?: string
           device?: string | null
+          event_name?: string | null
+          event_type?: string
           id?: string
+          language?: string | null
+          metadata?: Json
+          os?: string | null
           path?: string
           referrer?: string | null
+          referrer_host?: string | null
+          screen_height?: number | null
+          screen_width?: number | null
           session_id?: string | null
+          source?: string | null
+          title?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          viewport_height?: number | null
+          viewport_width?: number | null
+          visitor_id?: string | null
         }
         Relationships: []
       }
