@@ -1,8 +1,10 @@
 import { Facebook, Linkedin, Link2, Check } from "lucide-react";
 import { useState } from "react";
 
+const PUBLIC_SITE_URL = "https://www.angel-leclerc.fr";
+
 interface ShareArticleProps {
-  url: string;
+  slug: string;
   title: string;
   className?: string;
 }
@@ -23,9 +25,11 @@ function WhatsAppIcon({ className }: { className?: string }) {
   );
 }
 
-export function ShareArticle({ url, title, className = "" }: ShareArticleProps) {
+export function ShareArticle({ slug, title, className = "" }: ShareArticleProps) {
   const [copied, setCopied] = useState(false);
-  const u = encodeURIComponent(url);
+  const cleanSlug = slug.replace(/^\/+|\/+$/g, "");
+  const publicUrl = `${PUBLIC_SITE_URL}/articles/${encodeURIComponent(cleanSlug)}`;
+  const u = encodeURIComponent(publicUrl);
   const t = encodeURIComponent(title);
 
   const links = [
@@ -53,7 +57,7 @@ export function ShareArticle({ url, title, className = "" }: ShareArticleProps) 
 
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(publicUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
