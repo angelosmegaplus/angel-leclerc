@@ -9,45 +9,81 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as PolitiqueCookiesRouteImport } from './routes/politique-cookies'
-import { Route as PolitiqueConfidentialiteRouteImport } from './routes/politique-confidentialite'
-import { Route as ParcoursRouteImport } from './routes/parcours'
-import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
-import { Route as EntrepriseRouteImport } from './routes/entreprise'
-import { Route as DesabonnementRouteImport } from './routes/desabonnement'
-import { Route as ContactRouteImport } from './routes/contact'
-import { Route as ConfirmationAbonnementRouteImport } from './routes/confirmation-abonnement'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as BoutiqueIndexRouteImport } from './routes/boutique/index'
-import { Route as ArticlesIndexRouteImport } from './routes/articles/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ConfirmationAbonnementRouteImport } from './routes/confirmation-abonnement'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as DesabonnementRouteImport } from './routes/desabonnement'
+import { Route as EntrepriseRouteImport } from './routes/entreprise'
+import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
+import { Route as ParcoursRouteImport } from './routes/parcours'
+import { Route as PolitiqueConfidentialiteRouteImport } from './routes/politique-confidentialite'
+import { Route as PolitiqueCookiesRouteImport } from './routes/politique-cookies'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ActualitesIndexRouteImport } from './routes/actualites/index'
-import { Route as CommuniquesReponseArticleChniTombolaPatrimoineRouteImport } from './routes/communiques/reponse-article-chni-tombola-patrimoine'
-import { Route as BoutiqueSuiviRouteImport } from './routes/boutique/suivi'
-import { Route as BoutiqueMerciRouteImport } from './routes/boutique/merci'
-import { Route as BoutiqueCommandeRouteImport } from './routes/boutique/commande'
-import { Route as BoutiqueHandleRouteImport } from './routes/boutique/$handle'
-import { Route as ArticlesReponseArticleChniTombolaPatrimoineRouteImport } from './routes/articles/reponse-article-chni-tombola-patrimoine'
-import { Route as ArticlesSlugRouteImport } from './routes/articles/$slug'
 import { Route as ActualitesSlugRouteImport } from './routes/actualites/$slug'
-import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
-import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
-import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
-import { Route as ApiPublicPrintfulWebhookRouteImport } from './routes/api/public/printful/webhook'
-import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ArticlesIndexRouteImport } from './routes/articles/index'
+import { Route as ArticlesSlugRouteImport } from './routes/articles/$slug'
+import { Route as ArticlesReponseArticleChniTombolaPatrimoineRouteImport } from './routes/articles/reponse-article-chni-tombola-patrimoine'
+import { Route as BoutiqueIndexRouteImport } from './routes/boutique/index'
+import { Route as BoutiqueHandleRouteImport } from './routes/boutique/$handle'
+import { Route as BoutiqueCommandeRouteImport } from './routes/boutique/commande'
+import { Route as BoutiqueMerciRouteImport } from './routes/boutique/merci'
+import { Route as BoutiqueSuiviRouteImport } from './routes/boutique/suivi'
+import { Route as CommuniquesReponseArticleChniTombolaPatrimoineRouteImport } from './routes/communiques/reponse-article-chni-tombola-patrimoine'
+import { Route as ApiPublicContactRouteImport } from './routes/api/public/contact'
 import { Route as ApiPublicHooksNewsletterRouteImport } from './routes/api/public/hooks/newsletter'
+import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicPrintfulWebhookRouteImport } from './routes/api/public/printful/webhook'
+import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as ApiPublicOauthProviderCallbackRouteImport } from './routes/api/public/oauth/$provider/callback'
 
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PolitiqueCookiesRoute = PolitiqueCookiesRouteImport.update({
-  id: '/politique-cookies',
-  path: '/politique-cookies',
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfirmationAbonnementRoute = ConfirmationAbonnementRouteImport.update({
+  id: '/confirmation-abonnement',
+  path: '/confirmation-abonnement',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DesabonnementRoute = DesabonnementRouteImport.update({
+  id: '/desabonnement',
+  path: '/desabonnement',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EntrepriseRoute = EntrepriseRouteImport.update({
+  id: '/entreprise',
+  path: '/entreprise',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MentionsLegalesRoute = MentionsLegalesRouteImport.update({
+  id: '/mentions-legales',
+  path: '/mentions-legales',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ParcoursRoute = ParcoursRouteImport.update({
+  id: '/parcours',
+  path: '/parcours',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PolitiqueConfidentialiteRoute =
@@ -56,59 +92,14 @@ const PolitiqueConfidentialiteRoute =
     path: '/politique-confidentialite',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ParcoursRoute = ParcoursRouteImport.update({
-  id: '/parcours',
-  path: '/parcours',
+const PolitiqueCookiesRoute = PolitiqueCookiesRouteImport.update({
+  id: '/politique-cookies',
+  path: '/politique-cookies',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MentionsLegalesRoute = MentionsLegalesRouteImport.update({
-  id: '/mentions-legales',
-  path: '/mentions-legales',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EntrepriseRoute = EntrepriseRouteImport.update({
-  id: '/entreprise',
-  path: '/entreprise',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DesabonnementRoute = DesabonnementRouteImport.update({
-  id: '/desabonnement',
-  path: '/desabonnement',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ContactRoute = ContactRouteImport.update({
-  id: '/contact',
-  path: '/contact',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConfirmationAbonnementRoute = ConfirmationAbonnementRouteImport.update({
-  id: '/confirmation-abonnement',
-  path: '/confirmation-abonnement',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BoutiqueIndexRoute = BoutiqueIndexRouteImport.update({
-  id: '/boutique/',
-  path: '/boutique/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ArticlesIndexRoute = ArticlesIndexRouteImport.update({
-  id: '/articles/',
-  path: '/articles/',
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ActualitesIndexRoute = ActualitesIndexRouteImport.update({
@@ -116,30 +107,19 @@ const ActualitesIndexRoute = ActualitesIndexRouteImport.update({
   path: '/actualites/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CommuniquesReponseArticleChniTombolaPatrimoineRoute =
-  CommuniquesReponseArticleChniTombolaPatrimoineRouteImport.update({
-    id: '/communiques/reponse-article-chni-tombola-patrimoine',
-    path: '/communiques/reponse-article-chni-tombola-patrimoine',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const BoutiqueSuiviRoute = BoutiqueSuiviRouteImport.update({
-  id: '/boutique/suivi',
-  path: '/boutique/suivi',
+const ActualitesSlugRoute = ActualitesSlugRouteImport.update({
+  id: '/actualites/$slug',
+  path: '/actualites/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BoutiqueMerciRoute = BoutiqueMerciRouteImport.update({
-  id: '/boutique/merci',
-  path: '/boutique/merci',
+const ArticlesIndexRoute = ArticlesIndexRouteImport.update({
+  id: '/articles/',
+  path: '/articles/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BoutiqueCommandeRoute = BoutiqueCommandeRouteImport.update({
-  id: '/boutique/commande',
-  path: '/boutique/commande',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BoutiqueHandleRoute = BoutiqueHandleRouteImport.update({
-  id: '/boutique/$handle',
-  path: '/boutique/$handle',
+const ArticlesSlugRoute = ArticlesSlugRouteImport.update({
+  id: '/articles/$slug',
+  path: '/articles/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ArticlesReponseArticleChniTombolaPatrimoineRoute =
@@ -148,36 +128,46 @@ const ArticlesReponseArticleChniTombolaPatrimoineRoute =
     path: '/articles/reponse-article-chni-tombola-patrimoine',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ArticlesSlugRoute = ArticlesSlugRouteImport.update({
-  id: '/articles/$slug',
-  path: '/articles/$slug',
+const BoutiqueIndexRoute = BoutiqueIndexRouteImport.update({
+  id: '/boutique/',
+  path: '/boutique/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ActualitesSlugRoute = ActualitesSlugRouteImport.update({
-  id: '/actualites/$slug',
-  path: '/actualites/$slug',
+const BoutiqueHandleRoute = BoutiqueHandleRouteImport.update({
+  id: '/boutique/$handle',
+  path: '/boutique/$handle',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LovableEmailTransactionalPreviewRoute =
-  LovableEmailTransactionalPreviewRouteImport.update({
-    id: '/lovable/email/transactional/preview',
-    path: '/lovable/email/transactional/preview',
+const BoutiqueCommandeRoute = BoutiqueCommandeRouteImport.update({
+  id: '/boutique/commande',
+  path: '/boutique/commande',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BoutiqueMerciRoute = BoutiqueMerciRouteImport.update({
+  id: '/boutique/merci',
+  path: '/boutique/merci',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BoutiqueSuiviRoute = BoutiqueSuiviRouteImport.update({
+  id: '/boutique/suivi',
+  path: '/boutique/suivi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommuniquesReponseArticleChniTombolaPatrimoineRoute =
+  CommuniquesReponseArticleChniTombolaPatrimoineRouteImport.update({
+    id: '/communiques/reponse-article-chni-tombola-patrimoine',
+    path: '/communiques/reponse-article-chni-tombola-patrimoine',
     getParentRoute: () => rootRouteImport,
   } as any)
-const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
-  id: '/lovable/email/auth/webhook',
-  path: '/lovable/email/auth/webhook',
+const ApiPublicContactRoute = ApiPublicContactRouteImport.update({
+  id: '/api/public/contact',
+  path: '/api/public/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
-  id: '/lovable/email/auth/preview',
-  path: '/lovable/email/auth/preview',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicPrintfulWebhookRoute =
-  ApiPublicPrintfulWebhookRouteImport.update({
-    id: '/api/public/printful/webhook',
-    path: '/api/public/printful/webhook',
+const ApiPublicHooksNewsletterRoute =
+  ApiPublicHooksNewsletterRouteImport.update({
+    id: '/api/public/hooks/newsletter',
+    path: '/api/public/hooks/newsletter',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicPaymentsWebhookRoute =
@@ -186,10 +176,26 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicHooksNewsletterRoute =
-  ApiPublicHooksNewsletterRouteImport.update({
-    id: '/api/public/hooks/newsletter',
-    path: '/api/public/hooks/newsletter',
+const ApiPublicPrintfulWebhookRoute =
+  ApiPublicPrintfulWebhookRouteImport.update({
+    id: '/api/public/printful/webhook',
+    path: '/api/public/printful/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
+  id: '/lovable/email/auth/preview',
+  path: '/lovable/email/auth/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
+  id: '/lovable/email/auth/webhook',
+  path: '/lovable/email/auth/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicOauthProviderCallbackRoute =
@@ -223,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/actualites/': typeof ActualitesIndexRoute
   '/articles/': typeof ArticlesIndexRoute
   '/boutique/': typeof BoutiqueIndexRoute
+  '/api/public/contact': typeof ApiPublicContactRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/printful/webhook': typeof ApiPublicPrintfulWebhookRoute
@@ -255,6 +262,7 @@ export interface FileRoutesByTo {
   '/actualites': typeof ActualitesIndexRoute
   '/articles': typeof ArticlesIndexRoute
   '/boutique': typeof BoutiqueIndexRoute
+  '/api/public/contact': typeof ApiPublicContactRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/printful/webhook': typeof ApiPublicPrintfulWebhookRoute
@@ -288,6 +296,7 @@ export interface FileRoutesById {
   '/actualites/': typeof ActualitesIndexRoute
   '/articles/': typeof ArticlesIndexRoute
   '/boutique/': typeof BoutiqueIndexRoute
+  '/api/public/contact': typeof ApiPublicContactRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/printful/webhook': typeof ApiPublicPrintfulWebhookRoute
@@ -322,6 +331,7 @@ export interface FileRouteTypes {
     | '/actualites/'
     | '/articles/'
     | '/boutique/'
+    | '/api/public/contact'
     | '/api/public/hooks/newsletter'
     | '/api/public/payments/webhook'
     | '/api/public/printful/webhook'
@@ -354,6 +364,7 @@ export interface FileRouteTypes {
     | '/actualites'
     | '/articles'
     | '/boutique'
+    | '/api/public/contact'
     | '/api/public/hooks/newsletter'
     | '/api/public/payments/webhook'
     | '/api/public/printful/webhook'
@@ -386,6 +397,7 @@ export interface FileRouteTypes {
     | '/actualites/'
     | '/articles/'
     | '/boutique/'
+    | '/api/public/contact'
     | '/api/public/hooks/newsletter'
     | '/api/public/payments/webhook'
     | '/api/public/printful/webhook'
@@ -419,6 +431,7 @@ export interface RootRouteChildren {
   ActualitesIndexRoute: typeof ActualitesIndexRoute
   ArticlesIndexRoute: typeof ArticlesIndexRoute
   BoutiqueIndexRoute: typeof BoutiqueIndexRoute
+  ApiPublicContactRoute: typeof ApiPublicContactRoute
   ApiPublicHooksNewsletterRoute: typeof ApiPublicHooksNewsletterRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicPrintfulWebhookRoute: typeof ApiPublicPrintfulWebhookRoute
@@ -430,74 +443,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/politique-cookies': {
-      id: '/politique-cookies'
-      path: '/politique-cookies'
-      fullPath: '/politique-cookies'
-      preLoaderRoute: typeof PolitiqueCookiesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/politique-confidentialite': {
-      id: '/politique-confidentialite'
-      path: '/politique-confidentialite'
-      fullPath: '/politique-confidentialite'
-      preLoaderRoute: typeof PolitiqueConfidentialiteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/parcours': {
-      id: '/parcours'
-      path: '/parcours'
-      fullPath: '/parcours'
-      preLoaderRoute: typeof ParcoursRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mentions-legales': {
-      id: '/mentions-legales'
-      path: '/mentions-legales'
-      fullPath: '/mentions-legales'
-      preLoaderRoute: typeof MentionsLegalesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/entreprise': {
-      id: '/entreprise'
-      path: '/entreprise'
-      fullPath: '/entreprise'
-      preLoaderRoute: typeof EntrepriseRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/desabonnement': {
-      id: '/desabonnement'
-      path: '/desabonnement'
-      fullPath: '/desabonnement'
-      preLoaderRoute: typeof DesabonnementRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/contact': {
-      id: '/contact'
-      path: '/contact'
-      fullPath: '/contact'
-      preLoaderRoute: typeof ContactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/confirmation-abonnement': {
-      id: '/confirmation-abonnement'
-      path: '/confirmation-abonnement'
-      fullPath: '/confirmation-abonnement'
-      preLoaderRoute: typeof ConfirmationAbonnementRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -507,25 +457,74 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/boutique/': {
-      id: '/boutique/'
-      path: '/boutique'
-      fullPath: '/boutique/'
-      preLoaderRoute: typeof BoutiqueIndexRouteImport
+    '/confirmation-abonnement': {
+      id: '/confirmation-abonnement'
+      path: '/confirmation-abonnement'
+      fullPath: '/confirmation-abonnement'
+      preLoaderRoute: typeof ConfirmationAbonnementRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/articles/': {
-      id: '/articles/'
-      path: '/articles'
-      fullPath: '/articles/'
-      preLoaderRoute: typeof ArticlesIndexRouteImport
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/desabonnement': {
+      id: '/desabonnement'
+      path: '/desabonnement'
+      fullPath: '/desabonnement'
+      preLoaderRoute: typeof DesabonnementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/entreprise': {
+      id: '/entreprise'
+      path: '/entreprise'
+      fullPath: '/entreprise'
+      preLoaderRoute: typeof EntrepriseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mentions-legales': {
+      id: '/mentions-legales'
+      path: '/mentions-legales'
+      fullPath: '/mentions-legales'
+      preLoaderRoute: typeof MentionsLegalesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parcours': {
+      id: '/parcours'
+      path: '/parcours'
+      fullPath: '/parcours'
+      preLoaderRoute: typeof ParcoursRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/politique-confidentialite': {
+      id: '/politique-confidentialite'
+      path: '/politique-confidentialite'
+      fullPath: '/politique-confidentialite'
+      preLoaderRoute: typeof PolitiqueConfidentialiteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/politique-cookies': {
+      id: '/politique-cookies'
+      path: '/politique-cookies'
+      fullPath: '/politique-cookies'
+      preLoaderRoute: typeof PolitiqueCookiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/actualites/': {
@@ -535,46 +534,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ActualitesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/communiques/reponse-article-chni-tombola-patrimoine': {
-      id: '/communiques/reponse-article-chni-tombola-patrimoine'
-      path: '/communiques/reponse-article-chni-tombola-patrimoine'
-      fullPath: '/communiques/reponse-article-chni-tombola-patrimoine'
-      preLoaderRoute: typeof CommuniquesReponseArticleChniTombolaPatrimoineRouteImport
+    '/actualites/$slug': {
+      id: '/actualites/$slug'
+      path: '/actualites/$slug'
+      fullPath: '/actualites/$slug'
+      preLoaderRoute: typeof ActualitesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/boutique/suivi': {
-      id: '/boutique/suivi'
-      path: '/boutique/suivi'
-      fullPath: '/boutique/suivi'
-      preLoaderRoute: typeof BoutiqueSuiviRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/boutique/merci': {
-      id: '/boutique/merci'
-      path: '/boutique/merci'
-      fullPath: '/boutique/merci'
-      preLoaderRoute: typeof BoutiqueMerciRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/boutique/commande': {
-      id: '/boutique/commande'
-      path: '/boutique/commande'
-      fullPath: '/boutique/commande'
-      preLoaderRoute: typeof BoutiqueCommandeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/boutique/$handle': {
-      id: '/boutique/$handle'
-      path: '/boutique/$handle'
-      fullPath: '/boutique/$handle'
-      preLoaderRoute: typeof BoutiqueHandleRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/articles/reponse-article-chni-tombola-patrimoine': {
-      id: '/articles/reponse-article-chni-tombola-patrimoine'
-      path: '/articles/reponse-article-chni-tombola-patrimoine'
-      fullPath: '/articles/reponse-article-chni-tombola-patrimoine'
-      preLoaderRoute: typeof ArticlesReponseArticleChniTombolaPatrimoineRouteImport
+    '/articles/': {
+      id: '/articles/'
+      path: '/articles'
+      fullPath: '/articles/'
+      preLoaderRoute: typeof ArticlesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/articles/$slug': {
@@ -584,39 +555,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArticlesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/actualites/$slug': {
-      id: '/actualites/$slug'
-      path: '/actualites/$slug'
-      fullPath: '/actualites/$slug'
-      preLoaderRoute: typeof ActualitesSlugRouteImport
+    '/articles/reponse-article-chni-tombola-patrimoine': {
+      id: '/articles/reponse-article-chni-tombola-patrimoine'
+      path: '/articles/reponse-article-chni-tombola-patrimoine'
+      fullPath: '/articles/reponse-article-chni-tombola-patrimoine'
+      preLoaderRoute: typeof ArticlesReponseArticleChniTombolaPatrimoineRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/lovable/email/transactional/preview': {
-      id: '/lovable/email/transactional/preview'
-      path: '/lovable/email/transactional/preview'
-      fullPath: '/lovable/email/transactional/preview'
-      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+    '/boutique/': {
+      id: '/boutique/'
+      path: '/boutique'
+      fullPath: '/boutique/'
+      preLoaderRoute: typeof BoutiqueIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/lovable/email/auth/webhook': {
-      id: '/lovable/email/auth/webhook'
-      path: '/lovable/email/auth/webhook'
-      fullPath: '/lovable/email/auth/webhook'
-      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
+    '/boutique/$handle': {
+      id: '/boutique/$handle'
+      path: '/boutique/$handle'
+      fullPath: '/boutique/$handle'
+      preLoaderRoute: typeof BoutiqueHandleRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/lovable/email/auth/preview': {
-      id: '/lovable/email/auth/preview'
-      path: '/lovable/email/auth/preview'
-      fullPath: '/lovable/email/auth/preview'
-      preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
+    '/boutique/commande': {
+      id: '/boutique/commande'
+      path: '/boutique/commande'
+      fullPath: '/boutique/commande'
+      preLoaderRoute: typeof BoutiqueCommandeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/printful/webhook': {
-      id: '/api/public/printful/webhook'
-      path: '/api/public/printful/webhook'
-      fullPath: '/api/public/printful/webhook'
-      preLoaderRoute: typeof ApiPublicPrintfulWebhookRouteImport
+    '/boutique/merci': {
+      id: '/boutique/merci'
+      path: '/boutique/merci'
+      fullPath: '/boutique/merci'
+      preLoaderRoute: typeof BoutiqueMerciRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/boutique/suivi': {
+      id: '/boutique/suivi'
+      path: '/boutique/suivi'
+      fullPath: '/boutique/suivi'
+      preLoaderRoute: typeof BoutiqueSuiviRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/communiques/reponse-article-chni-tombola-patrimoine': {
+      id: '/communiques/reponse-article-chni-tombola-patrimoine'
+      path: '/communiques/reponse-article-chni-tombola-patrimoine'
+      fullPath: '/communiques/reponse-article-chni-tombola-patrimoine'
+      preLoaderRoute: typeof CommuniquesReponseArticleChniTombolaPatrimoineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/contact': {
+      id: '/api/public/contact'
+      path: '/api/public/contact'
+      fullPath: '/api/public/contact'
+      preLoaderRoute: typeof ApiPublicContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/newsletter': {
+      id: '/api/public/hooks/newsletter'
+      path: '/api/public/hooks/newsletter'
+      fullPath: '/api/public/hooks/newsletter'
+      preLoaderRoute: typeof ApiPublicHooksNewsletterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/payments/webhook': {
@@ -626,11 +625,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/hooks/newsletter': {
-      id: '/api/public/hooks/newsletter'
-      path: '/api/public/hooks/newsletter'
-      fullPath: '/api/public/hooks/newsletter'
-      preLoaderRoute: typeof ApiPublicHooksNewsletterRouteImport
+    '/api/public/printful/webhook': {
+      id: '/api/public/printful/webhook'
+      path: '/api/public/printful/webhook'
+      fullPath: '/api/public/printful/webhook'
+      preLoaderRoute: typeof ApiPublicPrintfulWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/auth/preview': {
+      id: '/lovable/email/auth/preview'
+      path: '/lovable/email/auth/preview'
+      fullPath: '/lovable/email/auth/preview'
+      preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/auth/webhook': {
+      id: '/lovable/email/auth/webhook'
+      path: '/lovable/email/auth/webhook'
+      fullPath: '/lovable/email/auth/webhook'
+      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/oauth/$provider/callback': {
@@ -669,6 +689,7 @@ const rootRouteChildren: RootRouteChildren = {
   ActualitesIndexRoute: ActualitesIndexRoute,
   ArticlesIndexRoute: ArticlesIndexRoute,
   BoutiqueIndexRoute: BoutiqueIndexRoute,
+  ApiPublicContactRoute: ApiPublicContactRoute,
   ApiPublicHooksNewsletterRoute: ApiPublicHooksNewsletterRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicPrintfulWebhookRoute: ApiPublicPrintfulWebhookRoute,
