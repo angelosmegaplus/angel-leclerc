@@ -28,6 +28,11 @@ function corsHeaders(request: Request): HeadersInit {
 export const Route = createFileRoute("/api/public/contact")({
   server: {
     handlers: {
+      GET: async ({ request }) =>
+        Response.json(
+          { ok: true, service: "lovable-contact" },
+          { headers: corsHeaders(request) },
+        ),
       OPTIONS: async ({ request }) =>
         new Response(null, { status: 204, headers: corsHeaders(request) }),
       POST: async ({ request }) => {
