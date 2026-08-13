@@ -40,7 +40,7 @@ export function InstallPrompt() {
     <div className="mb-4 flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 p-3">
       <Download className="h-5 w-5 shrink-0 text-primary" />
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-foreground">Installer Angel OS</p>
+        <p className="text-sm font-medium text-foreground">Installer Angel OS IA</p>
         <p className="text-xs text-muted-foreground">
           Ajoutez le centre de contrôle à votre écran d'accueil Android.
         </p>
