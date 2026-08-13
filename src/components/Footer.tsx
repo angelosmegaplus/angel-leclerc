@@ -124,7 +124,7 @@ export function Footer() {
                 <span className="relative inline-flex h-7 w-7 items-center justify-center rounded-full border border-primary/20 bg-primary/5 shadow-inner transition-all duration-300 group-hover:scale-110 group-hover:border-primary/60 group-hover:shadow-primary/20">
                   <span className="absolute inset-0 rounded-full bg-primary/10 opacity-60 animate-pulse motion-reduce:animate-none" />
                   <img
-                    src="/favicon.png"
+                    src="/angel-os/logo.png"
                     alt="Logo Angel OS"
                     className="relative h-5 w-5 object-contain transition-transform duration-500 group-hover:rotate-6 group-hover:scale-110"
                   />
