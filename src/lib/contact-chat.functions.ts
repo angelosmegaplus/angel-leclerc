@@ -8,7 +8,7 @@ const TRACK_LABELS = {
   autre: "Autre demande",
 } as const;
 
-const schema = z.object({
+export const conversationalContactSchema = z.object({
   track: z.enum(["projet", "alternance", "autre"]),
   answers: z
     .array(
@@ -35,7 +35,7 @@ const schema = z.object({
   website: z.string().max(0).optional().or(z.literal("")),
 });
 
-export type ConversationalContactInput = z.infer<typeof schema>;
+export type ConversationalContactInput = z.infer<typeof conversationalContactSchema>;
 
 function buildDescription(data: ConversationalContactInput): string {
   return [
@@ -89,9 +89,7 @@ async function sendIndependentFallback(
   }
 }
 
-export const submitConversationalContact = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => schema.parse(data))
-  .handler(async ({ data }) => {
+export async function processConversationalContact(data: ConversationalContactInput) {
     if (data.website && data.website.length > 0) return { ok: true as const };
 
     const { verifyChallenge } = await import("./captcha.server");
@@ -201,4 +199,8 @@ export const submitConversationalContact = createServerFn({ method: "POST" })
     // sans dépendre de Lovable Cloud ni d'une clé Supabase administrateur.
     await sendIndependentFallback(data, projectType, description);
     return { ok: true as const };
-  });
+}
+
+export const submitConversationalContact = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => conversationalContactSchema.parse(data))
+  .handler(async ({ data }) => processConversationalContact(data));
