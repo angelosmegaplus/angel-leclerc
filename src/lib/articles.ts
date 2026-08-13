@@ -32,6 +32,8 @@ export async function fetchArticleBySlug(slug: string): Promise<Article | null> 
   const deleted = await fetchDeletedGitArticleSlugs();
   if (deleted.has(slug)) return null;
   try {
+    const databaseArticle = (await base.fetchAllArticles()).find((article) => article.slug === slug);
+    if (databaseArticle) return databaseArticle;
     return await base.fetchArticleBySlug(slug);
   } catch {
     return legacyGitArticles.find((article) => article.slug === slug) ?? null;
