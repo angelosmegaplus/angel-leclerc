@@ -1,4 +1,4 @@
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, Moon } from "lucide-react";
 
 export function ApprenticeshipBanner() {
   return (
@@ -13,6 +13,10 @@ export function ApprenticeshipBanner() {
         </span>
         <span className="hidden sm:inline text-muted-foreground">
           · communication majoritaire (ex. 60 % com / 40 % vente)
+        </span>
+        <span className="hidden dark:inline-flex items-center gap-1 rounded-full border border-border/80 bg-background/50 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground" aria-label="Mode sombre activé">
+          <Moon size={10} aria-hidden="true" />
+          Mode sombre
         </span>
         <span aria-hidden="true">→</span>
       </div>
