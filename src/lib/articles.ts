@@ -6,66 +6,226 @@ import { macronPhilippeArticle } from "@/content/macronPhilippeArticle";
 export type Article = Database["public"]["Tables"]["articles"]["Row"];
 export type ArticleAttachment = { name: string; url: string; size?: number };
 export type ArticleSource = { label: string; url: string };
-export type AiDisclosure = { personal: boolean; chatgpt: boolean; otherAi: boolean; otherAiName: string; images: boolean; imagesTool: string };
+export type AiDisclosure = {
+  personal: boolean;
+  chatgpt: boolean;
+  otherAi: boolean;
+  otherAiName: string;
+  images: boolean;
+  imagesTool: string;
+};
 
-export const emptyAiDisclosure: AiDisclosure = { personal: false, chatgpt: false, otherAi: false, otherAiName: "", images: false, imagesTool: "" };
-const gitPublicArticles = [macronPhilippeArticle as unknown as Article, horrorArticle as unknown as Article];
+export const emptyAiDisclosure: AiDisclosure = {
+  personal: false,
+  chatgpt: false,
+  otherAi: false,
+  otherAiName: "",
+  images: false,
+  imagesTool: "",
+};
 
+const gitPublicArticles = [
+  macronPhilippeArticle as unknown as Article,
+  horrorArticle as unknown as Article,
+];
+
+/**
+ * Le CMS gagne toujours si un article Supabase possède le même slug qu'un article GitHub.
+ * Cela permet d'importer/modifier un article GitHub depuis /admin puis de laisser la version
+ * enregistrée dans le CMS prendre immédiatement le relais, sans doublon public.
+ */
 function mergeGitPublicArticles(databaseArticles: Article[]): Article[] {
-  const gitSlugs = new Set(gitPublicArticles.map((article) => article.slug));
-  return [...gitPublicArticles, ...databaseArticles.filter((article) => !gitSlugs.has(article.slug))].sort((a, b) => new Date(b.published_at ?? b.created_at).getTime() - new Date(a.published_at ?? a.created_at).getTime());
+  const databaseSlugs = new Set(databaseArticles.map((article) => article.slug));
+  return [
+    ...databaseArticles,
+    ...gitPublicArticles.filter((article) => !databaseSlugs.has(article.slug)),
+  ].sort(
+    (a, b) =>
+      new Date(b.published_at ?? b.created_at).getTime() -
+      new Date(a.published_at ?? a.created_at).getTime(),
+  );
+}
+
+/**
+ * Dans l'admin, les articles GitHub sont exposés comme des modèles éditables sans identifiant
+ * Supabase réel. Les valeurs 0/NaN sont volontairement falsy : l'éditeur les traite comme de
+ * nouveaux articles au premier enregistrement, ce qui crée alors une vraie ligne CMS.
+ */
+function gitArticlesForAdmin(): Article[] {
+  return gitPublicArticles.map((article, index) => ({
+    ...article,
+    id: (index === 0 ? 0 : Number.NaN) as unknown as string,
+  }));
 }
 
 export function getAiDisclosure(article: { ai_disclosure?: unknown }): AiDisclosure {
   const raw = article.ai_disclosure;
   if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return emptyAiDisclosure;
   const r = raw as Record<string, unknown>;
-  return { personal: r.personal === true, chatgpt: r.chatgpt === true, otherAi: r.otherAi === true, otherAiName: typeof r.otherAiName === "string" ? r.otherAiName : "", images: r.images === true, imagesTool: typeof r.imagesTool === "string" ? r.imagesTool : "" };
+  return {
+    personal: r.personal === true,
+    chatgpt: r.chatgpt === true,
+    otherAi: r.otherAi === true,
+    otherAiName: typeof r.otherAiName === "string" ? r.otherAiName : "",
+    images: r.images === true,
+    imagesTool: typeof r.imagesTool === "string" ? r.imagesTool : "",
+  };
 }
 
-export function hasAiDisclosure(d: AiDisclosure): boolean { return d.personal || d.chatgpt || d.otherAi || d.images; }
-export function getSources(article: { sources?: unknown }): ArticleSource[] { const raw = article.sources; if (!Array.isArray(raw)) return []; return raw.filter((s): s is ArticleSource => typeof s === "object" && s !== null && typeof (s as ArticleSource).label === "string" && (s as ArticleSource).label.trim().length > 0); }
-export function getAttachments(article: Article): ArticleAttachment[] { const raw = article.attachments; if (!Array.isArray(raw)) return []; return raw.filter((a): a is ArticleAttachment => typeof a === "object" && a !== null && "url" in a && "name" in a); }
+export function hasAiDisclosure(d: AiDisclosure): boolean {
+  return d.personal || d.chatgpt || d.otherAi || d.images;
+}
+
+export function getSources(article: { sources?: unknown }): ArticleSource[] {
+  const raw = article.sources;
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(
+    (s): s is ArticleSource =>
+      typeof s === "object" &&
+      s !== null &&
+      typeof (s as ArticleSource).label === "string" &&
+      (s as ArticleSource).label.trim().length > 0,
+  );
+}
+
+export function getAttachments(article: Article): ArticleAttachment[] {
+  const raw = article.attachments;
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(
+    (a): a is ArticleAttachment =>
+      typeof a === "object" && a !== null && "url" in a && "name" in a,
+  );
+}
 
 export const ARTICLE_CATEGORIES = ["Article", "Annonce", "Presse", "Coulisses", "Projet"] as const;
-export const ARTICLE_TOPICS = ["Politique", "Société", "Emploi & formation", "Entreprise & économie", "Communication & médias", "International & géopolitique", "Religion", "Scoutisme", "Technologie & numérique", "Culture & idées"] as const;
+export const ARTICLE_TOPICS = [
+  "Politique",
+  "Société",
+  "Emploi & formation",
+  "Entreprise & économie",
+  "Communication & médias",
+  "International & géopolitique",
+  "Religion",
+  "Scoutisme",
+  "Technologie & numérique",
+  "Culture & idées",
+] as const;
 export type ArticleTopic = (typeof ARTICLE_TOPICS)[number];
-export function getTopics(article: { topics?: unknown }): string[] { const raw = article.topics; if (!Array.isArray(raw)) return []; return raw.filter((t): t is string => typeof t === "string" && t.trim().length > 0); }
-function visibleNow(query: any) { return query.or(`scheduled_at.is.null,scheduled_at.lte.${new Date().toISOString()}`); }
+
+export function getTopics(article: { topics?: unknown }): string[] {
+  const raw = article.topics;
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((t): t is string => typeof t === "string" && t.trim().length > 0);
+}
+
+function visibleNow(query: any) {
+  return query.or(`scheduled_at.is.null,scheduled_at.lte.${new Date().toISOString()}`);
+}
 
 export type ArticleStatus = "brouillon" | "programme" | "publie";
-export function getArticleStatus(article: { published: boolean; scheduled_at: string | null }): ArticleStatus { if (!article.published) return "brouillon"; if (article.scheduled_at && new Date(article.scheduled_at) > new Date()) return "programme"; return "publie"; }
-export function formatDateTime(value: string | null): string { if (!value) return ""; return new Date(value).toLocaleString("fr-FR", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }); }
+export function getArticleStatus(article: {
+  published: boolean;
+  scheduled_at: string | null;
+}): ArticleStatus {
+  if (!article.published) return "brouillon";
+  if (article.scheduled_at && new Date(article.scheduled_at) > new Date()) return "programme";
+  return "publie";
+}
+
+export function formatDateTime(value: string | null): string {
+  if (!value) return "";
+  return new Date(value).toLocaleString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 export async function fetchLatestArticles(limit = 3): Promise<Article[]> {
   try {
-    const { data, error } = await visibleNow(supabase.from("articles").select("*").eq("published", true).eq("is_private", false)).order("featured", { ascending: false }).order("published_at", { ascending: false }).limit(limit);
+    const { data, error } = await visibleNow(
+      supabase.from("articles").select("*").eq("published", true).eq("is_private", false),
+    )
+      .order("featured", { ascending: false })
+      .order("published_at", { ascending: false })
+      .limit(limit);
     if (error) throw error;
     return mergeGitPublicArticles(data ?? []).slice(0, limit);
-  } catch { return mergeGitPublicArticles([]).slice(0, limit); }
+  } catch {
+    return mergeGitPublicArticles([]).slice(0, limit);
+  }
 }
 
-export function slugify(input: string): string { return input.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/['’]/g, " ").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80); }
-export function formatDate(value: string | null): string { if (!value) return ""; return new Date(value).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }); }
+export function slugify(input: string): string {
+  return input
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/['’]/g, " ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
+export function formatDate(value: string | null): string {
+  if (!value) return "";
+  return new Date(value).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
 
 export async function fetchPublishedArticles(): Promise<Article[]> {
   try {
-    const { data, error } = await visibleNow(supabase.from("articles").select("*").eq("published", true).eq("is_private", false)).order("featured", { ascending: false }).order("published_at", { ascending: false });
+    const { data, error } = await visibleNow(
+      supabase.from("articles").select("*").eq("published", true).eq("is_private", false),
+    )
+      .order("featured", { ascending: false })
+      .order("published_at", { ascending: false });
     if (error) throw error;
     return mergeGitPublicArticles(data ?? []);
-  } catch { return mergeGitPublicArticles([]); }
+  } catch {
+    return mergeGitPublicArticles([]);
+  }
 }
 
 export async function fetchArticleBySlug(slug: string): Promise<Article | null> {
-  const gitArticle = gitPublicArticles.find((article) => article.slug === slug);
-  if (gitArticle) return gitArticle;
-  const { data, error } = await supabase.from("articles").select("*").eq("slug", slug).maybeSingle();
-  if (error) throw error;
-  return data;
+  try {
+    const { data, error } = await supabase
+      .from("articles")
+      .select("*")
+      .eq("slug", slug)
+      .maybeSingle();
+    if (error) throw error;
+    if (data) return data;
+  } catch {
+    // Si Supabase est momentanément indisponible, l'article GitHub reste lisible.
+  }
+  return gitPublicArticles.find((article) => article.slug === slug) ?? null;
 }
 
 export async function fetchAllArticles(): Promise<Article[]> {
-  const { data, error } = await supabase.from("articles").select("*").order("updated_at", { ascending: false });
-  if (error) throw error;
-  return data ?? [];
+  try {
+    const { data, error } = await supabase
+      .from("articles")
+      .select("*")
+      .order("updated_at", { ascending: false });
+    if (error) throw error;
+
+    const databaseArticles = data ?? [];
+    const databaseSlugs = new Set(databaseArticles.map((article) => article.slug));
+    return [
+      ...databaseArticles,
+      ...gitArticlesForAdmin().filter((article) => !databaseSlugs.has(article.slug)),
+    ].sort(
+      (a, b) =>
+        new Date(b.updated_at ?? b.created_at).getTime() -
+        new Date(a.updated_at ?? a.created_at).getTime(),
+    );
+  } catch {
+    return gitArticlesForAdmin();
+  }
 }
