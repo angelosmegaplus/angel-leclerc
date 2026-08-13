@@ -22,48 +22,16 @@ import { PageViewTracker } from "../components/PageViewTracker";
 import { CartDrawer } from "../components/CartDrawer";
 import { PwaRegistrar } from "../components/PwaRegistrar";
 import { ThemeSync } from "../components/ThemeController";
+import { AngelOSCardStyle } from "../components/AngelOSCardStyle";
 import { THEME_INIT_SCRIPT } from "../lib/theme";
 
-function NotFoundComponent() {
-  return <NotFound404 />;
-}
+function NotFoundComponent() { return <NotFound404 />; }
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
-  useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
-
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          Cette page n'a pas pu charger
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Une erreur s'est produite de notre côté. Vous pouvez réessayer ou revenir à l'accueil.
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Réessayer
-          </button>
-          <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            Retour à l'accueil
-          </a>
-        </div>
-      </div>
-    </div>
-  );
+  useEffect(() => { reportLovableError(error, { boundary: "tanstack_root_error_component" }); }, [error]);
+  return <div className="flex min-h-screen items-center justify-center bg-background px-4"><div className="max-w-md text-center"><h1 className="text-xl font-semibold tracking-tight text-foreground">Cette page n'a pas pu charger</h1><p className="mt-2 text-sm text-muted-foreground">Une erreur s'est produite de notre côté. Vous pouvez réessayer ou revenir à l'accueil.</p><div className="mt-6 flex flex-wrap justify-center gap-2"><button onClick={() => { router.invalidate(); reset(); }} className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">Réessayer</button><a href="/" className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent">Retour à l'accueil</a></div></div></div>;
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
@@ -77,11 +45,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "mobile-web-app-capable", content: "yes" },
       { title: "Angel Leclerc Communication | Gestion de projet, conseil et rédaction" },
-      {
-        name: "description",
-        content:
-          "Gestion de projets de communication, conseil stratégique, rédaction éditoriale et journalistique pour professionnels, associations et porteurs de projets.",
-      },
+      { name: "description", content: "Gestion de projets de communication, conseil stratégique, rédaction éditoriale et journalistique pour professionnels, associations et porteurs de projets." },
       { name: "author", content: "Angel Leclerc Communication" },
       { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1" },
       { name: "googlebot", content: "index, follow, max-image-preview:large, max-snippet:-1" },
@@ -106,10 +70,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap",
-      },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" },
     ],
   }),
   shellComponent: RootShell,
@@ -119,53 +80,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
-  return (
-    <html lang="fr" suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
+  return <html lang="fr" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} /><HeadContent /></head><body>{children}<Scripts /></body></html>;
 }
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const isAngelOSPage = useRouterState({
-    select: (state) => state.location.pathname === "/angel-os-ia",
-  });
+  const isAngelOSPage = useRouterState({ select: (state) => state.location.pathname === "/angel-os-ia" });
+  useEffect(() => { void bootAngelOS().catch((error) => { console.warn("Angel OS passive runtime unavailable", error); }); }, []);
 
-  useEffect(() => {
-    void bootAngelOS().catch((error) => {
-      console.warn("Angel OS passive runtime unavailable", error);
-    });
-  }, []);
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeSync />
-      <PageViewTracker />
-      <PwaRegistrar />
-      {isAngelOSPage ? (
-        <main className="min-h-screen">
-          <Outlet />
-        </main>
-      ) : (
-        <div className="flex min-h-screen flex-col">
-          <ApprenticeshipBanner />
-          <Header />
-          <main className="flex-1">
-            <Outlet />
-          </main>
-          <Footer />
-        </div>
-      )}
-      {!isAngelOSPage && <CartDrawer />}
-      <Toaster position="top-center" />
-    </QueryClientProvider>
-  );
+  return <QueryClientProvider client={queryClient}><ThemeSync /><AngelOSCardStyle /><PageViewTracker /><PwaRegistrar />{isAngelOSPage ? <main className="min-h-screen"><Outlet /></main> : <div className="flex min-h-screen flex-col"><ApprenticeshipBanner /><Header /><main className="flex-1"><Outlet /></main><Footer /></div>}{!isAngelOSPage && <CartDrawer />}<Toaster position="top-center" /></QueryClientProvider>;
 }
