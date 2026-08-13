@@ -1,19 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 
-export const getCaptchaChallenge = createServerFn({ method: "GET" }).handler(async () => {
-  const { createChallenge } = await import("./captcha.server");
-  return createChallenge();
-});
-
-/** Vérification serveur du calcul anti-robot (connexion à l'espace personnel). */
+/** Vérification serveur Google reCAPTCHA. */
 export const verifyCaptchaAnswer = createServerFn({ method: "POST" })
-  .inputValidator((input: { token: string; answer: string }) => ({
-    token: String(input?.token ?? "").slice(0, 300),
-    answer: String(input?.answer ?? "").slice(0, 20),
+  .inputValidator((input: { token: string; answer?: string }) => ({
+    token: String(input?.token ?? "").slice(0, 4096),
   }))
   .handler(async ({ data }) => {
-    const { verifyChallenge } = await import("./captcha.server");
-    const ok = await verifyChallenge(data.token, data.answer);
-    if (!ok) throw new Error("Vérification anti-robot incorrecte ou expirée.");
+    const { verifyRecaptchaToken } = await import("./captcha.server");
+    const ok = await verifyRecaptchaToken(data.token);
+    if (!ok) throw new Error("Vérification anti-robot échouée ou expirée. Merci de réessayer.");
     return { ok: true as const };
   });
