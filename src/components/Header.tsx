@@ -22,7 +22,7 @@ export function Header() {
           <img
             src={logo}
             alt="Logo Angel Leclerc Communication"
-            className="h-9 w-9 rounded-md object-cover"
+            className="dark-logo-surface h-9 w-9 rounded-md object-cover"
             width={36}
             height={36}
           />
