@@ -1,4 +1,4 @@
-import { Linkedin, Instagram, Facebook } from "lucide-react";
+import { Linkedin, Instagram, Facebook, Settings } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 const navLinks = [
@@ -118,19 +118,28 @@ export function Footer() {
                 href="https://github.com/angelosmegaplus/angel-leclerc/tree/main/angel-os"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative mt-2 inline-flex items-center gap-2.5 overflow-hidden rounded-full border border-primary/30 bg-background/80 px-3.5 py-2 text-sm font-medium text-muted-foreground shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/70 hover:text-foreground hover:shadow-lg hover:shadow-primary/10"
+                aria-label="Voir le code source d'Angel OS"
+                className="group relative mt-3 inline-flex items-center gap-3 overflow-hidden rounded-2xl border border-white/10 bg-black px-3.5 py-2.5 text-sm font-medium text-white shadow-lg shadow-black/20 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10"
               >
-                <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-primary/10 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-                <span className="relative inline-flex h-7 w-7 items-center justify-center rounded-full border border-primary/20 bg-primary/5 shadow-inner transition-all duration-300 group-hover:scale-110 group-hover:border-primary/60 group-hover:shadow-primary/20">
-                  <span className="absolute inset-0 rounded-full bg-primary/10 opacity-60 animate-pulse motion-reduce:animate-none" />
+                <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                <span className="relative inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm transition-transform duration-300 group-hover:scale-105">
                   <img
                     src="/angel-os/logo.png"
-                    alt="Logo Angel OS"
-                    className="relative h-5 w-5 object-contain transition-transform duration-500 group-hover:rotate-6 group-hover:scale-110"
+                    alt=""
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 </span>
-                <span className="relative">
-                  Propulsé par <span className="font-semibold text-foreground transition-colors group-hover:text-primary">Angel OS</span>
+                <span className="relative leading-tight">
+                  <span className="block text-[10px] font-medium uppercase tracking-[0.18em] text-white/50">
+                    Propulsé par
+                  </span>
+                  <span className="mt-0.5 inline-flex items-center gap-1.5 font-semibold tracking-tight text-white">
+                    Angel OS
+                    <Settings
+                      aria-hidden
+                      className="h-3.5 w-3.5 animate-spin text-primary motion-reduce:animate-none [animation-duration:5s] group-hover:[animation-duration:1.5s]"
+                    />
+                  </span>
                 </span>
               </a>
             </div>
