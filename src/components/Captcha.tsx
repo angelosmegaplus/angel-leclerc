@@ -9,9 +9,7 @@ type Props = {
   error?: string | undefined;
 };
 
-const TTL_MS = 15 * 60 * 1000;
-
-/** Vérification anti-robot locale, dans le style Lovable : petit calcul simple. */
+/** Vérification anti-robot 100 % locale : petit calcul simple, sans clé ni service externe. */
 export function Captcha({ value, onChange, error }: Props) {
   const [question, setQuestion] = useState("—");
 
@@ -21,10 +19,9 @@ export function Captcha({ value, onChange, error }: Props) {
     const plus = Math.random() > 0.35 || b > a;
     const expected = plus ? a + b : a - b;
     const nextQuestion = plus ? `${a} + ${b}` : `${a} - ${b}`;
-    const expiry = Date.now() + TTL_MS;
 
     setQuestion(nextQuestion);
-    onChange({ token: `${expiry}.${expected}`, answer: "" });
+    onChange({ token: String(expected), answer: "" });
   }, [onChange]);
 
   useEffect(() => {
