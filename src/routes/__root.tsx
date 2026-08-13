@@ -13,7 +13,6 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
-import { ApprenticeshipBanner } from "../components/ApprenticeshipBanner";
 import { Toaster } from "../components/ui/sonner";
 import { NotFound404 } from "../components/NotFound404";
 import { PageViewTracker } from "../components/PageViewTracker";
@@ -95,25 +94,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "Gestion de projets de communication, conseil stratégique, rédaction éditoriale et journalistique pour professionnels, associations et porteurs de projets." },
       { name: "twitter:description", content: "Gestion de projets de communication, conseil stratégique, rédaction éditoriale et journalistique pour professionnels, associations et porteurs de projets." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d458ad7c-4ac2-4fac-82a0-d9564bf48140/id-preview-95572016--5bca9ec4-6763-4641-aa6d-439dc0e8bfc8.lovable.app-1784314332053.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d458ad7c-4fac-82a0-d9564bf48140/id-preview-95572016--5bca9ec4-6763-4641-aa6d-439dc0e8bfc8.lovable.app-1784314332053.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d458ad7c-4ac2-4fac-82a0-d9564bf48140/id-preview-95572016--5bca9ec4-6763-4641-aa6d-439dc0e8bfc8.lovable.app-1784314332053.png" },
     ],
     links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
+      { rel: "stylesheet", href: appCss },
       { rel: "icon", href: "/favicon.png", type: "image/png" },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
-      {
-        rel: "preconnect",
-        href: "https://fonts.googleapis.com",
-      },
-      {
-        rel: "preconnect",
-        href: "https://fonts.gstatic.com",
-        crossOrigin: "anonymous",
-      },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap",
@@ -150,7 +139,6 @@ function RootComponent() {
       <PageViewTracker />
       <PwaRegistrar />
       <div className="flex min-h-screen flex-col">
-        <ApprenticeshipBanner />
         <Header />
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <main className="flex-1">
