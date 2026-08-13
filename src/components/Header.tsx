@@ -3,6 +3,7 @@ import { Menu, X, Linkedin, Instagram, Facebook } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import logo from "@/assets/logo.svg";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeController";
 
 const navLinks = [
   { href: "/", label: "Accueil" },
@@ -44,105 +45,41 @@ export function Header() {
             </Link>
           ))}
           <div className="flex items-center gap-4">
-            <a
-              href="https://www.linkedin.com/company/angel-leclerc-communication/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="LinkedIn Angel Leclerc Communication"
-            >
-              <Linkedin size={20} />
-            </a>
-            <a
-              href="https://www.instagram.com/angelof_com?igsh=MWpqMjc3Mm03MHJpYg=="
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Instagram Angel Leclerc Communication"
-            >
-              <Instagram size={20} />
-            </a>
-            <a
-              href="https://www.facebook.com/share/1LFGicX7qF/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Facebook Angel Leclerc Communication"
-            >
-              <Facebook size={20} />
-            </a>
+            <a href="https://www.linkedin.com/company/angel-leclerc-communication/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="LinkedIn Angel Leclerc Communication"><Linkedin size={20} /></a>
+            <a href="https://www.instagram.com/angelof_com?igsh=MWpqMjc3Mm03MHJpYg==" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Instagram Angel Leclerc Communication"><Instagram size={20} /></a>
+            <a href="https://www.facebook.com/share/1LFGicX7qF/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Facebook Angel Leclerc Communication"><Facebook size={20} /></a>
           </div>
-          <Button
-            asChild
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
-          >
+          <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
             <Link to="/contact">Parler de votre projet</Link>
           </Button>
         </nav>
 
-        <button
-          className="md:hidden inline-flex h-11 w-11 items-center justify-center text-foreground"
-          type="button"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label={mobileOpen ? "Fermer le menu" : "Ouvrir le menu"}
-          aria-expanded={mobileOpen}
-        >
-          {mobileOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        <div className="md:hidden flex items-center gap-1">
+          <ThemeToggle className="[&>button]:text-foreground [&>button]:hover:text-foreground [&>button[aria-pressed='true']]:bg-muted [&>button[aria-pressed='true']]:text-foreground border-border bg-transparent" />
+          <button
+            className="inline-flex h-11 w-11 items-center justify-center text-foreground"
+            type="button"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label={mobileOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            aria-expanded={mobileOpen}
+          >
+            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {mobileOpen && (
         <div className="md:hidden border-t border-border bg-background">
           <nav className="container-tight flex flex-col gap-4 py-6">
             {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                to={link.href}
-                activeOptions={{ exact: link.href === "/" }}
-                activeProps={{ className: "text-primary font-medium" }}
-                onClick={() => setMobileOpen(false)}
-                className="text-base py-2 text-foreground hover:text-primary transition-colors"
-              >
-                {link.label}
-              </Link>
+              <Link key={link.href} to={link.href} activeOptions={{ exact: link.href === "/" }} activeProps={{ className: "text-primary font-medium" }} onClick={() => setMobileOpen(false)} className="text-base py-2 text-foreground hover:text-primary transition-colors">{link.label}</Link>
             ))}
             <div className="grid grid-cols-3 gap-3 py-2">
-              <a
-                href="https://www.linkedin.com/company/angel-leclerc-communication/"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center justify-center gap-2 rounded-lg border border-border py-2 text-foreground hover:text-primary transition-colors"
-                aria-label="LinkedIn Angel Leclerc Communication"
-              >
-                <Linkedin size={18} />
-              </a>
-              <a
-                href="https://www.instagram.com/angelof_com?igsh=MWpqMjc3Mm03MHJpYg=="
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center justify-center gap-2 rounded-lg border border-border py-2 text-foreground hover:text-primary transition-colors"
-                aria-label="Instagram Angel Leclerc Communication"
-              >
-                <Instagram size={18} />
-              </a>
-              <a
-                href="https://www.facebook.com/share/1LFGicX7qF/"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center justify-center gap-2 rounded-lg border border-border py-2 text-foreground hover:text-primary transition-colors"
-                aria-label="Facebook Angel Leclerc Communication"
-              >
-                <Facebook size={18} />
-              </a>
+              <a href="https://www.linkedin.com/company/angel-leclerc-communication/" target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-2 rounded-lg border border-border py-2 text-foreground hover:text-primary transition-colors" aria-label="LinkedIn Angel Leclerc Communication"><Linkedin size={18} /></a>
+              <a href="https://www.instagram.com/angelof_com?igsh=MWpqMjc3Mm03MHJpYg==" target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-2 rounded-lg border border-border py-2 text-foreground hover:text-primary transition-colors" aria-label="Instagram Angel Leclerc Communication"><Instagram size={18} /></a>
+              <a href="https://www.facebook.com/share/1LFGicX7qF/" target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-2 rounded-lg border border-border py-2 text-foreground hover:text-primary transition-colors" aria-label="Facebook Angel Leclerc Communication"><Facebook size={18} /></a>
             </div>
-            <Button
-              asChild
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-              onClick={() => setMobileOpen(false)}
-            >
+            <Button asChild className="w-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => setMobileOpen(false)}>
               <Link to="/contact">Parler de votre projet</Link>
             </Button>
           </nav>
