@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { horrorArticle } from "@/content/horrorArticle";
+import { macronPhilippeArticle } from "@/content/macronPhilippeArticle";
 
 export type Article = Database["public"]["Tables"]["articles"]["Row"];
 export type ArticleAttachment = { name: string; url: string; size?: number };
@@ -8,7 +9,7 @@ export type ArticleSource = { label: string; url: string };
 export type AiDisclosure = { personal: boolean; chatgpt: boolean; otherAi: boolean; otherAiName: string; images: boolean; imagesTool: string };
 
 export const emptyAiDisclosure: AiDisclosure = { personal: false, chatgpt: false, otherAi: false, otherAiName: "", images: false, imagesTool: "" };
-const gitPublicArticles = [horrorArticle as unknown as Article];
+const gitPublicArticles = [macronPhilippeArticle as unknown as Article, horrorArticle as unknown as Article];
 
 function mergeGitPublicArticles(databaseArticles: Article[]): Article[] {
   const gitSlugs = new Set(gitPublicArticles.map((article) => article.slug));
