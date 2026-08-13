@@ -110,10 +110,23 @@ export function Footer() {
             Siège social : 25 Grande Rue, 03110 Broût-Vernet, France
           </p>
           <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-
-            <p>
-              © {new Date().getFullYear()} Angel Leclerc Communication. Tous droits réservés.
-            </p>
+            <div>
+              <p>
+                © {new Date().getFullYear()} Angel Leclerc Communication. Tous droits réservés.
+              </p>
+              <p className="mt-1 text-[11px] text-muted-foreground/70">
+                Propulsé par{" "}
+                <a
+                  href="https://github.com/angelosmegaplus/angel-leclerc/tree/main/angel-os"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline-offset-4 transition-colors hover:text-foreground hover:underline"
+                >
+                  Angel OS
+                </a>
+                .
+              </p>
+            </div>
             <p className="flex flex-wrap gap-x-2 gap-y-1">
               <Link
                 to="/mentions-legales"
