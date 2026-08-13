@@ -1,0 +1,23 @@
+export const horrorArticlePart1 = `
+<div style="border:1px solid var(--border);border-radius:18px;padding:22px;background:linear-gradient(135deg,color-mix(in oklab,var(--primary) 12%,var(--card)),var(--card));margin-bottom:28px">
+<p style="margin:0;font-size:.78rem;text-transform:uppercase;letter-spacing:.14em;color:var(--primary);font-weight:800">Classement · critique · avis spectateurs</p>
+<h2 style="margin:10px 0 8px;font-size:1.55rem;line-height:1.2">Une bonne note ne veut pas forcément dire « le film qui fait le plus peur ».</h2>
+<p style="margin:0;color:var(--muted-foreground)">AlloCiné mélange dans le genre horreur des films très différents : thriller psychologique, slasher, possession, science-fiction, body horror… J’ai donc croisé la <strong>note spectateurs</strong>, le <strong>nombre de votes</strong>, la place du film dans l’histoire du genre et surtout ce que les commentaires reviennent dire encore et encore.</p>
+</div>
+<p><strong>Important :</strong> les notes et volumes de votes indiqués ici sont ceux observés sur AlloCiné le 13 août 2026. Ils peuvent évidemment évoluer.</p>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:24px 0"><div style="padding:14px;border-radius:14px;background:var(--muted);border:1px solid var(--border)"><strong style="font-size:1.35rem;color:var(--primary)">4,4/5</strong><br><span style="font-size:.82rem;color:var(--muted-foreground)">sommet du classement</span></div><div style="padding:14px;border-radius:14px;background:var(--muted);border:1px solid var(--border)"><strong style="font-size:1.35rem;color:var(--primary)">77 000+</strong><br><span style="font-size:.82rem;color:var(--muted-foreground)">votes pour Hannibal</span></div><div style="padding:14px;border-radius:14px;background:var(--muted);border:1px solid var(--border)"><strong style="font-size:1.35rem;color:var(--primary)">61 000+</strong><br><span style="font-size:.82rem;color:var(--muted-foreground)">votes pour Shining</span></div></div>
+<h2>1. Le Silence des agneaux — 4,4/5</h2>
+<p>AlloCiné le place en tête de son classement horreur spectateurs, et ce n’est pas simplement parce qu’Hannibal Lecter est devenu une icône. Le film fonctionne encore parce qu’il ne cherche presque jamais le petit sursaut facile. Il met surtout le spectateur dans une position inconfortable : on écoute un homme terrifiant parce qu’il est aussi le seul capable d’aider l’enquête.</p>
+<p><strong>Ce qui revient dans les avis :</strong> la tension, le duel entre Jodie Foster et Anthony Hopkins, l’intelligence du scénario et une ambiance qui reste malsaine sans avoir besoin d’empiler le gore.</p>
+<div style="border-left:4px solid var(--primary);padding:10px 14px;background:var(--muted);border-radius:0 12px 12px 0"><strong>Verdict :</strong> probablement le meilleur film de cette liste si vous voulez un vrai film avant de vouloir « un film d’horreur ».</div>
+<h2>2. Alien, le huitième passager — 4,4/5</h2>
+<p><em>Alien</em> est un film de science-fiction qui se comporte comme un film de maison hantée, sauf que la maison est un vaisseau. Ridley Scott cache longtemps sa créature, ce qui est beaucoup plus efficace que de la montrer toutes les trente secondes.</p>
+<p><strong>Ce qui revient dans les avis :</strong> l’atmosphère, le design du Xénomorphe, les décors et des effets qui tiennent encore très bien. Certains trouvent le rythme lent ; d’autres y voient justement sa force.</p>
+<div style="border-left:4px solid var(--primary);padding:10px 14px;background:var(--muted);border-radius:0 12px 12px 0"><strong>Verdict :</strong> le meilleur choix pour de la tension et une créature culte.</div>
+<h2>3. Psychose — 4,4/5</h2>
+<p>Le piège avec <em>Psychose</em>, c’est de le regarder en 2026 en attendant la violence d’un film moderne. Hitchcock joue surtout avec ce que le spectateur croit être le film, puis change les règles. La mise en scène, le montage et la musique font presque tout le travail.</p>
+<p><strong>Ce qui revient dans les avis :</strong> Anthony Perkins, l’ambiance du motel, la musique et l’influence gigantesque du film. Les avis plus froids soulignent qu’il faut accepter son âge.</p>
+<h2>4. Shining — 4,3/5</h2>
+<p>Il y a des films qui vieillissent parce qu’on voit leurs ficelles. <em>Shining</em>, lui, reste bizarre. Les couloirs de l’Overlook sont trop propres, trop grands, trop silencieux. Jack Nicholson donne très vite l’impression que quelque chose ne tourne pas rond.</p>
+<p><strong>Ce qui revient dans les avis :</strong> le malaise, Nicholson, les images iconiques et la maîtrise de Kubrick. Le principal reproche porte sur la longueur.</p>
+`;
