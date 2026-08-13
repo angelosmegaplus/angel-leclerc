@@ -26,12 +26,21 @@ const TOPIC_HINTS: Record<string, string[]> = {
   "International & géopolitique": ["international", "europe", "guerre", "géopolitique"],
   Religion: ["église", "paroisse", "religion", "foi", "orgue"],
   Scoutisme: ["scout", "scoutisme", "camp", "unité"],
-  "Technologie & numérique": ["numérique", "ia", "intelligence artificielle", "site web", "logiciel"],
+  "Technologie & numérique": [
+    "numérique",
+    "ia",
+    "intelligence artificielle",
+    "site web",
+    "logiciel",
+  ],
   "Culture & idées": ["culture", "patrimoine", "livre", "musique", "histoire"],
 };
 
 function plainText(html: string) {
-  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  return html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /** Suggestions locales, non destructives : rien n'est appliqué sans clic « Valider ». */
@@ -61,9 +70,7 @@ function buildSuggestions(d: SuggestionTarget): Suggestion[] {
   }
 
   const suggestedTopics = ARTICLE_TOPICS.filter(
-    (t) =>
-      !d.topics.includes(t) &&
-      (TOPIC_HINTS[t] ?? []).some((k) => haystack.includes(k)),
+    (t) => !d.topics.includes(t) && (TOPIC_HINTS[t] ?? []).some((k) => haystack.includes(k)),
   );
   if (suggestedTopics.length) {
     out.push({
@@ -116,20 +123,15 @@ export function AiSuggestions({
         <Sparkles className="h-4 w-4 text-primary" /> Suggestions Angel AI
       </p>
       <p className="text-[11px] text-muted-foreground">
-        Analyse locale du brouillon. Aucune suggestion n'est appliquée sans votre
-        validation ; la publication reste toujours explicite.
+        Analyse locale du brouillon. Aucune suggestion n'est appliquée sans votre validation ; la
+        publication reste toujours explicite.
       </p>
       {suggestions.length === 0 ? (
-        <p className="pt-1 text-sm text-muted-foreground">
-          Rien à signaler pour l'instant.
-        </p>
+        <p className="pt-1 text-sm text-muted-foreground">Rien à signaler pour l'instant.</p>
       ) : (
         <ul className="space-y-2 pt-1">
           {suggestions.map((s) => (
-            <li
-              key={s.id}
-              className="rounded-lg border border-border/70 bg-card p-3"
-            >
+            <li key={s.id} className="rounded-lg border border-border/70 bg-card p-3">
               <p className="text-sm font-medium text-foreground">{s.label}</p>
               <p className="mt-1 text-xs text-muted-foreground">{s.detail}</p>
               <div className="mt-2 flex flex-wrap gap-2">

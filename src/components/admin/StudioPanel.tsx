@@ -54,20 +54,14 @@ function StudioCapture({ onGo }: { onGo: (view: View) => void }) {
         description="Enregistrez un son ou une vidéo directement depuis le navigateur, puis reliez le fichier à un reportage ou une interview."
       >
         <div className="space-y-4">
-          <StudioRecorder
-            mode="audio"
-            onSaved={(url, name) => setLast({ url, name })}
-          />
-          <StudioRecorder
-            mode="video"
-            onSaved={(url, name) => setLast({ url, name })}
-          />
+          <StudioRecorder mode="audio" onSaved={(url, name) => setLast({ url, name })} />
+          <StudioRecorder mode="video" onSaved={(url, name) => setLast({ url, name })} />
 
           <div className="rounded-lg border border-dashed border-border p-4">
             <p className="text-sm font-medium text-foreground">Kit terrain</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Importer photo, vidéo, audio ou document, prendre une note de terrain,
-              ajouter une source et préparer une interview.
+              Importer photo, vidéo, audio ou document, prendre une note de terrain, ajouter une
+              source et préparer une interview.
             </p>
             <label
               className="mt-3 block text-sm font-medium text-foreground"
@@ -92,9 +86,7 @@ function StudioCapture({ onGo }: { onGo: (view: View) => void }) {
                     setLast({ url, name: file.name });
                   }
                   toast.success(
-                    files.length > 1
-                      ? `${files.length} fichiers importés.`
-                      : "Fichier importé.",
+                    files.length > 1 ? `${files.length} fichiers importés.` : "Fichier importé.",
                   );
                 } catch (err) {
                   toast.error(err instanceof Error ? err.message : "Import impossible");
@@ -131,9 +123,9 @@ function StudioCapture({ onGo }: { onGo: (view: View) => void }) {
               </Button>
             </div>
             <p className="mt-3 text-xs text-muted-foreground">
-              Les fichiers restent dans le stockage du site : rien n'est envoyé
-              automatiquement à un service externe. L'envoi vers Drive sera proposé
-              lorsque le compte Google sera connecté.
+              Les fichiers restent dans le stockage du site : rien n'est envoyé automatiquement à un
+              service externe. L'envoi vers Drive sera proposé lorsque le compte Google sera
+              connecté.
             </p>
           </div>
 

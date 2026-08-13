@@ -144,7 +144,13 @@ export interface PrintfulShippingRate {
  * panier donnés. Sert à afficher le coût exact avant paiement.
  */
 export async function getPrintfulShippingRates(input: {
-  recipient: { address1?: string | null; city?: string | null; country_code: string; state_code?: string | null; zip: string };
+  recipient: {
+    address1?: string | null;
+    city?: string | null;
+    country_code: string;
+    state_code?: string | null;
+    zip: string;
+  };
   items: PrintfulLine[];
   currency?: string;
 }): Promise<{ ok: true; rates: PrintfulShippingRate[] } | { ok: false; error: string }> {
@@ -180,7 +186,8 @@ export async function getPrintfulShippingRates(input: {
         maxDays: r.maxDeliveryDays != null ? Number(r.maxDeliveryDays) : null,
       }))
     : [];
-  if (rates.length === 0) return { ok: false, error: "Aucun tarif disponible pour cette destination" };
+  if (rates.length === 0)
+    return { ok: false, error: "Aucun tarif disponible pour cette destination" };
   return { ok: true, rates };
 }
 
@@ -188,9 +195,7 @@ export async function getPrintfulShippingRates(input: {
 export async function findPrintfulOrderByExternalId(
   externalId: string,
 ): Promise<{ ok: true; id: string; status: string } | { ok: false; error: string }> {
-  const response = await printfulRequest(
-    `/orders/@${encodeURIComponent(externalId)}`,
-  );
+  const response = await printfulRequest(`/orders/@${encodeURIComponent(externalId)}`);
   if (!response.ok) return response;
   return {
     ok: true,
@@ -201,7 +206,8 @@ export async function findPrintfulOrderByExternalId(
 
 /** Liste les boutiques Printful accessibles avec le jeton configuré. */
 export async function listPrintfulStores(): Promise<
-  { ok: true; stores: Array<{ id: number; name: string; type: string }> } | { ok: false; error: string }
+  | { ok: true; stores: Array<{ id: number; name: string; type: string }> }
+  | { ok: false; error: string }
 > {
   const response = await printfulRequest("/stores");
   if (!response.ok) return response;
@@ -420,9 +426,8 @@ export async function listPrintfulSyncProducts(): Promise<
           syncProduct.thumbnail_url ??
           null,
         printFileUrl:
-          (Array.isArray(v.files)
-            ? v.files.find((f: any) => f.type !== "preview")?.url
-            : null) ?? null,
+          (Array.isArray(v.files) ? v.files.find((f: any) => f.type !== "preview")?.url : null) ??
+          null,
       });
     }
 

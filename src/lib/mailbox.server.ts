@@ -111,7 +111,9 @@ async function getTransport(userId: string): Promise<Transport> {
   if (native) return native;
   const fallback = lovableTransport();
   if (fallback) return fallback;
-  throw new Error("Aucune connexion Google Mail active. Connectez ou reconnectez Google depuis Angel OS → Connexions.");
+  throw new Error(
+    "Aucune connexion Google Mail active. Connectez ou reconnectez Google depuis Angel OS → Connexions.",
+  );
 }
 
 export async function getStatus(userId: string): Promise<MailboxStatus> {
@@ -119,9 +121,21 @@ export async function getStatus(userId: string): Promise<MailboxStatus> {
   if (native) {
     try {
       const profile = await native.request("/users/me/profile");
-      return { connected: true, missing: [], address: profile.emailAddress ?? null, provider: "google", reconnectRequired: false };
+      return {
+        connected: true,
+        missing: [],
+        address: profile.emailAddress ?? null,
+        provider: "google",
+        reconnectRequired: false,
+      };
     } catch (error) {
-      return { connected: false, missing: [error instanceof Error ? error.message : "Connexion Google à vérifier"], address: null, provider: "google", reconnectRequired: true };
+      return {
+        connected: false,
+        missing: [error instanceof Error ? error.message : "Connexion Google à vérifier"],
+        address: null,
+        provider: "google",
+        reconnectRequired: true,
+      };
     }
   }
 
@@ -129,9 +143,21 @@ export async function getStatus(userId: string): Promise<MailboxStatus> {
   if (fallback) {
     try {
       const profile = await fallback.request("/users/me/profile");
-      return { connected: true, missing: [], address: profile.emailAddress ?? null, provider: "lovable-google", reconnectRequired: false };
+      return {
+        connected: true,
+        missing: [],
+        address: profile.emailAddress ?? null,
+        provider: "lovable-google",
+        reconnectRequired: false,
+      };
     } catch (error) {
-      return { connected: false, missing: [error instanceof Error ? error.message : "Connecteur Gmail Lovable à vérifier"], address: null, provider: "lovable-google", reconnectRequired: true };
+      return {
+        connected: false,
+        missing: [error instanceof Error ? error.message : "Connecteur Gmail Lovable à vérifier"],
+        address: null,
+        provider: "lovable-google",
+        reconnectRequired: true,
+      };
     }
   }
 
@@ -205,7 +231,11 @@ function toSummary(message: any): MailSummary {
   };
 }
 
-export async function listMail(userId: string, folder: MailFolder, search: string): Promise<MailSummary[]> {
+export async function listMail(
+  userId: string,
+  folder: MailFolder,
+  search: string,
+): Promise<MailSummary[]> {
   const mail = await getTransport(userId);
   const list = await mail.request("/users/me/messages", {
     query: {
@@ -216,7 +246,11 @@ export async function listMail(userId: string, folder: MailFolder, search: strin
   });
   const ids: Array<{ id: string }> = list.messages ?? [];
   const details = await Promise.all(
-    ids.map((m) => mail.request(`/users/me/messages/${m.id}`, { query: { format: "metadata" } }).catch(() => null)),
+    ids.map((m) =>
+      mail
+        .request(`/users/me/messages/${m.id}`, { query: { format: "metadata" } })
+        .catch(() => null),
+    ),
   );
   return details.filter(Boolean).map(toSummary);
 }
@@ -252,7 +286,9 @@ export async function actOnMail(userId: string, id: string, action: MailAction):
 function encodeRaw(input: string): string {
   const bytes = new TextEncoder().encode(input);
   let bin = "";
-  bytes.forEach((b) => { bin += String.fromCharCode(b); });
+  bytes.forEach((b) => {
+    bin += String.fromCharCode(b);
+  });
   return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
@@ -271,6 +307,8 @@ export async function sendMail(
   ].join("\r\n");
   await mail.request("/users/me/messages/send", {
     method: "POST",
-    body: input.threadId ? { raw: encodeRaw(mime), threadId: input.threadId } : { raw: encodeRaw(mime) },
+    body: input.threadId
+      ? { raw: encodeRaw(mime), threadId: input.threadId }
+      : { raw: encodeRaw(mime) },
   });
 }

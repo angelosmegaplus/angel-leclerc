@@ -35,18 +35,9 @@ import { FeedbackBlock } from "@/components/FeedbackBlock";
 import heroImage from "@/assets/hero-illustration.jpg";
 import revolutInvoiceImage from "@/assets/revolut-invoice-example.jpg";
 
-const brandLogo = (domain: string) =>
-  `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+const brandLogo = (domain: string) => `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
 
-function BrandTag({
-  name,
-  domain,
-  href,
-}: {
-  name: string;
-  domain: string;
-  href?: string;
-}) {
+function BrandTag({ name, domain, href }: { name: string; domain: string; href?: string }) {
   const content = (
     <span className="inline-flex items-center gap-1.5 align-middle rounded-md border border-border bg-background px-1.5 py-0.5 text-foreground">
       <img
@@ -73,8 +64,7 @@ export const Route = createFileRoute("/entreprise")({
   head: () => ({
     meta: [
       {
-        title:
-          "Services de communication | Angel Leclerc Communication",
+        title: "Services de communication | Angel Leclerc Communication",
       },
       {
         name: "description",
@@ -83,8 +73,7 @@ export const Route = createFileRoute("/entreprise")({
       },
       {
         property: "og:title",
-        content:
-          "Services de communication | Angel Leclerc Communication",
+        content: "Services de communication | Angel Leclerc Communication",
       },
       {
         property: "og:description",
@@ -147,8 +136,7 @@ const mainServices = [
   {
     icon: Compass,
     title: "Gestion de projet",
-    intro:
-      "Organisation et suivi de votre projet de la conception à la mise en œuvre.",
+    intro: "Organisation et suivi de votre projet de la conception à la mise en œuvre.",
     items: [
       "Cadrage, planning et jalons",
       "Coordination des étapes et intervenants",
@@ -159,8 +147,7 @@ const mainServices = [
   {
     icon: Layers,
     title: "Conseil en communication",
-    intro:
-      "Analyse des besoins et définition d'une stratégie adaptée au projet.",
+    intro: "Analyse des besoins et définition d'une stratégie adaptée au projet.",
     items: [
       "Analyse du contexte, des publics et des objectifs",
       "Positionnement et messages clés",
@@ -171,8 +158,7 @@ const mainServices = [
   {
     icon: FileText,
     title: "Rédaction et contenus éditoriaux",
-    intro:
-      "Rédaction de textes professionnels, journalistiques ou numériques.",
+    intro: "Rédaction de textes professionnels, journalistiques ou numériques.",
     items: [
       "Articles, portraits, interviews",
       "Enquêtes et recherches",
@@ -210,8 +196,8 @@ const extraServices = [
     hint: (
       <>
         Sites vitrines ou simples via{" "}
-        <BrandTag name="Lovable" domain="lovable.dev" href="https://lovable.dev/" />{" "}
-        ou <BrandTag name="Webnode" domain="webnode.com" href="https://www.webnode.com/" />.
+        <BrandTag name="Lovable" domain="lovable.dev" href="https://lovable.dev/" /> ou{" "}
+        <BrandTag name="Webnode" domain="webnode.com" href="https://www.webnode.com/" />.
       </>
     ),
   },
@@ -222,12 +208,9 @@ const extraServices = [
     hint: (
       <>
         Création, gestion ou accompagnement de comptes et pages.{" "}
-        <BrandTag name="Instagram" domain="instagram.com" href="https://www.instagram.com/" />
-        ,{" "}
-        <BrandTag name="Facebook" domain="facebook.com" href="https://www.facebook.com/" />
-        ,{" "}
-        <BrandTag name="TikTok" domain="tiktok.com" href="https://www.tiktok.com/" />
-        …
+        <BrandTag name="Instagram" domain="instagram.com" href="https://www.instagram.com/" />,{" "}
+        <BrandTag name="Facebook" domain="facebook.com" href="https://www.facebook.com/" />,{" "}
+        <BrandTag name="TikTok" domain="tiktok.com" href="https://www.tiktok.com/" />…
       </>
     ),
   },
@@ -315,13 +298,12 @@ function Hero() {
             <span className="text-primary">pour vos idées.</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
-            J'accompagne professionnels, associations et porteurs de projets dans
-            l'organisation, la stratégie et la rédaction de leurs contenus.
+            J'accompagne professionnels, associations et porteurs de projets dans l'organisation, la
+            stratégie et la rédaction de leurs contenus.
           </p>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
-            Ce site est à la fois professionnel — présentation de mes services —
-            et personnel : il me sert aussi de CV en ligne, avec mon parcours,
-            mes formations et mes engagements.
+            Ce site est à la fois professionnel — présentation de mes services — et personnel : il
+            me sert aussi de CV en ligne, avec mon parcours, mes formations et mes engagements.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button
@@ -398,9 +380,8 @@ function Intro() {
             Une direction claire pour vos projets.
           </h2>
           <p className="mt-5 text-muted-foreground leading-relaxed">
-            Une communication efficace demande organisation, messages clairs et bons
-            partenaires. Je structure les étapes et coordonne les solutions pour faire
-            avancer votre projet.
+            Une communication efficace demande organisation, messages clairs et bons partenaires. Je
+            structure les étapes et coordonne les solutions pour faire avancer votre projet.
           </p>
         </AnimatedSection>
 
@@ -486,15 +467,10 @@ function Services() {
                   </span>
                   {s.title}
                 </h3>
-                <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-                  {s.intro}
-                </p>
+                <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{s.intro}</p>
                 <ul className="mt-5 space-y-2">
                   {s.items.map((item) => (
-                    <li
-                      key={item}
-                      className="flex items-start gap-2 text-sm text-foreground"
-                    >
+                    <li key={item} className="flex items-start gap-2 text-sm text-foreground">
                       <Check size={16} className="mt-0.5 shrink-0 text-primary" />
                       <span>{item}</span>
                     </li>
@@ -529,9 +505,7 @@ function Services() {
                   <h4 className="mt-4 font-display text-lg font-semibold text-foreground">
                     {step.title}
                   </h4>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    {step.text}
-                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{step.text}</p>
                 </li>
               </AnimatedSection>
             ))}
@@ -559,14 +533,10 @@ function Services() {
                       <Icon size={16} className="text-primary" />
                     </div>
                     <div className="flex flex-col gap-1">
-                      <span className="text-sm font-medium text-foreground">
-                        {e.label}
-                      </span>
+                      <span className="text-sm font-medium text-foreground">{e.label}</span>
                       <span className="text-xs text-primary">{e.price}</span>
                       {e.hint && (
-                        <span className="mt-1 text-xs text-muted-foreground">
-                          {e.hint}
-                        </span>
+                        <span className="mt-1 text-xs text-muted-foreground">{e.hint}</span>
                       )}
                     </div>
                   </li>
@@ -574,9 +544,8 @@ function Services() {
               })}
             </ul>
             <p className="mt-6 text-[11px] italic text-muted-foreground/80">
-              Toutes les prestations sont réalisées sur devis. Les montants
-              affichés sont uniquement des tarifs indicatifs permettant de donner
-              un ordre de prix.
+              Toutes les prestations sont réalisées sur devis. Les montants affichés sont uniquement
+              des tarifs indicatifs permettant de donner un ordre de prix.
             </p>
           </div>
         </AnimatedSection>
@@ -596,16 +565,16 @@ function About() {
             </h2>
             <div className="mt-6 space-y-4 text-muted-foreground leading-relaxed">
               <p>
-                J'accompagne les projets pour leur donner une direction claire, une
-                organisation efficace et les bons interlocuteurs.
+                J'accompagne les projets pour leur donner une direction claire, une organisation
+                efficace et les bons interlocuteurs.
               </p>
               <p>
-                Mon cœur de métier est la gestion de projets de communication :
-                préparation, organisation et suivi.
+                Mon cœur de métier est la gestion de projets de communication : préparation,
+                organisation et suivi.
               </p>
               <p>
-                J'interviens aussi en conseil et en rédaction, et réalise ponctuellement
-                des supports visuels, audio ou vidéo.
+                J'interviens aussi en conseil et en rédaction, et réalise ponctuellement des
+                supports visuels, audio ou vidéo.
               </p>
             </div>
           </AnimatedSection>
@@ -617,18 +586,17 @@ function About() {
               </h3>
               <div className="mt-4 space-y-4 text-sm leading-relaxed text-muted-foreground">
                 <p>
-                  20 ans, passionné par la communication, l'information et les projets
-                  qui ont du sens. J'ai appris à écouter, expliquer, organiser et
-                  coordonner à travers l'accueil, le tourisme, l'associatif et le scoutisme.
+                  20 ans, passionné par la communication, l'information et les projets qui ont du
+                  sens. J'ai appris à écouter, expliquer, organiser et coordonner à travers
+                  l'accueil, le tourisme, l'associatif et le scoutisme.
                 </p>
                 <p>
-                  <span className="font-medium text-foreground">Langues :</span>{" "}
-                  français (langue maternelle), anglais (bases), latin (maîtrise),
-                  grec (notions).
+                  <span className="font-medium text-foreground">Langues :</span> français (langue
+                  maternelle), anglais (bases), latin (maîtrise), grec (notions).
                 </p>
                 <p>
-                  <span className="font-medium text-foreground">Passions :</span>{" "}
-                  scoutisme, orgue, maquettisme, montage vidéo et identité sonore.
+                  <span className="font-medium text-foreground">Passions :</span> scoutisme, orgue,
+                  maquettisme, montage vidéo et identité sonore.
                 </p>
               </div>
             </div>
@@ -641,39 +609,58 @@ function About() {
               <div className="inline-flex rounded-xl bg-muted p-3">
                 <Wand2 size={20} className="text-primary" />
               </div>
-              <h3 className="font-display text-xl font-semibold text-foreground">
-                Mes outils
-              </h3>
+              <h3 className="font-display text-xl font-semibold text-foreground">Mes outils</h3>
             </div>
             <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
               <p>
                 Je travaille sur{" "}
-                <BrandTag name="Canva Pro" domain="canva.com" href="https://www.canva.com/" />
-                {" "}pour les visuels, affiches, présentations et supports numériques.
+                <BrandTag name="Canva Pro" domain="canva.com" href="https://www.canva.com/" /> pour
+                les visuels, affiches, présentations et supports numériques.
               </p>
               <p>
                 J'utilise aussi l'IA ({" "}
-                <BrandTag name="ChatGPT" domain="chatgpt.com" href="https://chatgpt.com/" />
-                ,{" "}
-                <BrandTag name="Gemini" domain="gemini.google.com" href="https://gemini.google.com/" />
-                ,{" "}
-                <BrandTag name="Claude" domain="claude.ai" href="https://claude.ai/" />
-                ) pour rechercher des sources et certains contenus. Ce n'est jamais un outil de création directe : le travail final est toujours rédigé ou adapté à ma main.
+                <BrandTag name="ChatGPT" domain="chatgpt.com" href="https://chatgpt.com/" />,{" "}
+                <BrandTag
+                  name="Gemini"
+                  domain="gemini.google.com"
+                  href="https://gemini.google.com/"
+                />
+                , <BrandTag name="Claude" domain="claude.ai" href="https://claude.ai/" />) pour
+                rechercher des sources et certains contenus. Ce n'est jamais un outil de création
+                directe : le travail final est toujours rédigé ou adapté à ma main.
               </p>
               <p>
                 Pour le montage audio, j'utilise{" "}
                 <BrandTag name="Mixpad" domain="nch.com.au" href="https://www.nch.com.au/mixpad/" />
                 . J'explore aussi les applications du{" "}
-                <BrandTag name="Play Store" domain="play.google.com" href="https://play.google.com/" />{" "}
-                et <BrandTag name="Windows" domain="microsoft.com" href="https://www.microsoft.com/windows" />, pour garder une veille active.
+                <BrandTag
+                  name="Play Store"
+                  domain="play.google.com"
+                  href="https://play.google.com/"
+                />{" "}
+                et{" "}
+                <BrandTag
+                  name="Windows"
+                  domain="microsoft.com"
+                  href="https://www.microsoft.com/windows"
+                />
+                , pour garder une veille active.
               </p>
               <p>
                 Ma bureautique et mes e-mails passent par{" "}
-                <BrandTag name="Google Workspace" domain="workspace.google.com" href="https://workspace.google.com/" />
+                <BrandTag
+                  name="Google Workspace"
+                  domain="workspace.google.com"
+                  href="https://workspace.google.com/"
+                />
                 , et le domaine{" "}
-                <span className="font-medium text-foreground">angel-leclerc.fr</span>{" "}
-                est enregistré chez{" "}
-                <BrandTag name="Squarespace" domain="squarespace.com" href="https://www.squarespace.com/" />
+                <span className="font-medium text-foreground">angel-leclerc.fr</span> est enregistré
+                chez{" "}
+                <BrandTag
+                  name="Squarespace"
+                  domain="squarespace.com"
+                  href="https://www.squarespace.com/"
+                />
                 .
               </p>
             </div>
@@ -704,12 +691,15 @@ function About() {
                 Fonctionnement clair
               </h3>
               <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
-                <p>
-                  Paiement en deux fois : un acompte avant la mission, le solde à la fin.
-                </p>
+                <p>Paiement en deux fois : un acompte avant la mission, le solde à la fin.</p>
                 <p>
                   Montants et modalités confirmés sur le devis. Paiements via{" "}
-                  <BrandTag name="Revolut Business" domain="revolut.com" href="https://www.revolut.com/business/" />.
+                  <BrandTag
+                    name="Revolut Business"
+                    domain="revolut.com"
+                    href="https://www.revolut.com/business/"
+                  />
+                  .
                 </p>
               </div>
             </div>
@@ -724,11 +714,12 @@ function About() {
                   En cas d'insatisfaction, je recherche des corrections ou une solution adaptée.
                 </p>
                 <p>
-                  Si la prestation ne correspond pas à ce qui était convenu, un remboursement
-                  total ou partiel peut être effectué.
+                  Si la prestation ne correspond pas à ce qui était convenu, un remboursement total
+                  ou partiel peut être effectué.
                 </p>
                 <p className="text-xs italic">
-                  Les prestations de conseil et de communication sont soumises à une obligation de moyens.
+                  Les prestations de conseil et de communication sont soumises à une obligation de
+                  moyens.
                 </p>
               </div>
             </div>
@@ -798,8 +789,8 @@ function ContactSection() {
             Me contacter
           </h2>
           <p className="mt-4 text-muted-foreground leading-relaxed">
-            Décrivez votre besoin, même flou. Je reviens vers vous rapidement pour
-            clarifier et proposer une suite.
+            Décrivez votre besoin, même flou. Je reviens vers vous rapidement pour clarifier et
+            proposer une suite.
           </p>
         </AnimatedSection>
 
@@ -860,17 +851,12 @@ function ContactSection() {
 
         <AnimatedSection delay={0.2} className="mt-10">
           <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
-            <h3 className="font-display text-lg font-semibold text-foreground">
-              Réalisations
-            </h3>
+            <h3 className="font-display text-lg font-semibold text-foreground">Réalisations</h3>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              Gestion de projet, conseil, rédaction, identités visuelles, affiches et
-              supports numériques. Une sélection est disponible sur demande.
+              Gestion de projet, conseil, rédaction, identités visuelles, affiches et supports
+              numériques. Une sélection est disponible sur demande.
             </p>
-            <Button
-              asChild
-              className="mt-5 bg-primary text-primary-foreground hover:bg-accent"
-            >
+            <Button asChild className="mt-5 bg-primary text-primary-foreground hover:bg-accent">
               <a href="/contact">
                 Demander mon portfolio
                 <ArrowRight size={16} className="ml-2" />
@@ -891,7 +877,11 @@ function ContactSection() {
             </div>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
               Facturation via{" "}
-              <BrandTag name="Revolut Business" domain="revolut.com" href="https://www.revolut.com/business/" />
+              <BrandTag
+                name="Revolut Business"
+                domain="revolut.com"
+                href="https://www.revolut.com/business/"
+              />
               , lien de paiement sécurisé. Acompte avant la mission, solde à la fin.
             </p>
             <PaymentLogos />

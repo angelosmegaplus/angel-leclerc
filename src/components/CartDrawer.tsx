@@ -92,9 +92,7 @@ export function CartDrawer() {
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-foreground">
-                      {item.name}
-                    </p>
+                    <p className="truncate text-sm font-semibold text-foreground">{item.name}</p>
                     <p className="mt-1 text-sm text-primary">
                       {formatPrice(item.priceCents, item.currency)}
                     </p>
@@ -169,8 +167,7 @@ export function CartDrawer() {
                 <Lock className="mr-2 h-4 w-4" /> Passer au paiement
               </Button>
               <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
-                Paiement sécurisé par Stripe · Impression et expédition assurées par
-                Printful.
+                Paiement sécurisé par Stripe · Impression et expédition assurées par Printful.
               </p>
             </div>
           </>

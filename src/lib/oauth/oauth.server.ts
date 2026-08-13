@@ -1,4 +1,11 @@
-import { createCipheriv, createDecipheriv, createHmac, randomBytes, createHash, timingSafeEqual } from "node:crypto";
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHmac,
+  randomBytes,
+  createHash,
+  timingSafeEqual,
+} from "node:crypto";
 import { PROVIDERS, type ProviderConfig, type ProviderId } from "./providers";
 
 export type TokenPayload = {
@@ -37,7 +44,11 @@ export function encryptTokens(payload: TokenPayload): string {
 
 export function decryptTokens(stored: string): TokenPayload {
   const buf = Buffer.from(stored, "base64");
-  const decipher = createDecipheriv("aes-256-gcm", keyFrom("OAUTH_TOKEN_SECRET"), buf.subarray(0, 12));
+  const decipher = createDecipheriv(
+    "aes-256-gcm",
+    keyFrom("OAUTH_TOKEN_SECRET"),
+    buf.subarray(0, 12),
+  );
   decipher.setAuthTag(buf.subarray(12, 28));
   const out = Buffer.concat([decipher.update(buf.subarray(28)), decipher.final()]).toString("utf8");
   return JSON.parse(out) as TokenPayload;
@@ -60,7 +71,11 @@ function sealState(payload: StatePayload): string {
 
 function openState(sealed: string): StatePayload {
   const buf = Buffer.from(sealed, "base64url");
-  const decipher = createDecipheriv("aes-256-gcm", keyFrom("OAUTH_STATE_SECRET"), buf.subarray(0, 12));
+  const decipher = createDecipheriv(
+    "aes-256-gcm",
+    keyFrom("OAUTH_STATE_SECRET"),
+    buf.subarray(0, 12),
+  );
   decipher.setAuthTag(buf.subarray(12, 28));
   const out = Buffer.concat([decipher.update(buf.subarray(28)), decipher.final()]).toString("utf8");
   return JSON.parse(out) as StatePayload;
@@ -68,14 +83,18 @@ function openState(sealed: string): StatePayload {
 
 export function signState(payload: StatePayload): string {
   const body = sealState(payload);
-  const sig = createHmac("sha256", process.env["OAUTH_STATE_SECRET"] ?? "").update(body).digest("base64url");
+  const sig = createHmac("sha256", process.env["OAUTH_STATE_SECRET"] ?? "")
+    .update(body)
+    .digest("base64url");
   return `${body}.${sig}`;
 }
 
 export function verifyState(state: string): StatePayload | null {
   const [body, sig] = state.split(".");
   if (!body || !sig) return null;
-  const expected = createHmac("sha256", process.env["OAUTH_STATE_SECRET"] ?? "").update(body).digest("base64url");
+  const expected = createHmac("sha256", process.env["OAUTH_STATE_SECRET"] ?? "")
+    .update(body)
+    .digest("base64url");
   const a = Buffer.from(sig);
   const b = Buffer.from(expected);
   if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
@@ -128,7 +147,10 @@ export function buildAuthorizeUrl(provider: ProviderId, origin: string, userId: 
   url.searchParams.set("state", state);
   for (const [k, v] of Object.entries(config.extraAuthParams ?? {})) url.searchParams.set(k, v);
   if (verifier) {
-    url.searchParams.set("code_challenge", createHash("sha256").update(verifier).digest("base64url"));
+    url.searchParams.set(
+      "code_challenge",
+      createHash("sha256").update(verifier).digest("base64url"),
+    );
     url.searchParams.set("code_challenge_method", "S256");
   }
   return url.toString();

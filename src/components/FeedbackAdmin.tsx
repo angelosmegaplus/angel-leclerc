@@ -112,7 +112,11 @@ export function FeedbackAdmin() {
   }, [rows]);
 
   const visible = rows.filter((r) =>
-    filter === "comments" ? Boolean(r.comment) : filter === "support" ? r.support_amount_cents : true,
+    filter === "comments"
+      ? Boolean(r.comment)
+      : filter === "support"
+        ? r.support_amount_cents
+        : true,
   );
 
   const amountKeys = form ? centsList(form.amounts) : [];
@@ -259,8 +263,8 @@ export function FeedbackAdmin() {
         <div className="mt-6">
           <p className="text-sm font-semibold text-foreground">Liens de paiement Revolut</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Créez un lien de paiement Revolut pour chaque montant, puis collez-le ici. Le lien
-            « montant libre » permet au visiteur de saisir la somme de son choix.
+            Créez un lien de paiement Revolut pour chaque montant, puis collez-le ici. Le lien «
+            montant libre » permet au visiteur de saisir la somme de son choix.
           </p>
           <div className="mt-3 space-y-3">
             {[...amountKeys.map(String), "custom"].map((key) => (
@@ -367,7 +371,10 @@ export function FeedbackAdmin() {
               )}
               {r.email && (
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Contact : <a href={`mailto:${r.email}`} className="underline">{r.email}</a>
+                  Contact :{" "}
+                  <a href={`mailto:${r.email}`} className="underline">
+                    {r.email}
+                  </a>
                 </p>
               )}
 

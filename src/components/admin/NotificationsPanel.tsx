@@ -1,15 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import {
-  Bell,
-  BellOff,
-  BellRing,
-  Check,
-  Loader2,
-  RefreshCw,
-  Smartphone,
-} from "lucide-react";
+import { Bell, BellOff, BellRing, Check, Loader2, RefreshCw, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 import { AdminCard } from "./AdminShell";
 import { Button } from "@/components/ui/button";
@@ -191,7 +183,11 @@ export function NotificationsPanel() {
               <BellRing className="h-3.5 w-3.5" /> Autorisées
             </span>
           ) : (
-            <Button className="min-h-11" onClick={enableNotifications} disabled={permission === "unsupported"}>
+            <Button
+              className="min-h-11"
+              onClick={enableNotifications}
+              disabled={permission === "unsupported"}
+            >
               <Bell className="mr-2 h-4 w-4" /> Activer les notifications
             </Button>
           )}

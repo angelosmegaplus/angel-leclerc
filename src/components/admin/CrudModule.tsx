@@ -34,8 +34,7 @@ function toFormValues(fields: Field[], row: Row): Record<string, unknown> {
   for (const f of fields) {
     const v = row[f.name];
     if (f.type === "tags") out[f.name] = tagsOf(row, f.name);
-    else if (f.type === "datetime" && typeof v === "string")
-      out[f.name] = v.slice(0, 16);
+    else if (f.type === "datetime" && typeof v === "string") out[f.name] = v.slice(0, 16);
     else out[f.name] = v ?? "";
   }
   return out;
@@ -46,8 +45,7 @@ function toPayload(fields: Field[], values: Record<string, unknown>) {
   for (const f of fields) {
     const v = values[f.name];
     if (f.type === "tags") out[f.name] = Array.isArray(v) ? v : [];
-    else if (f.type === "number")
-      out[f.name] = v === "" || v == null ? null : Number(v);
+    else if (f.type === "number") out[f.name] = v === "" || v == null ? null : Number(v);
     else if (typeof v === "string") out[f.name] = v.trim() === "" ? null : v.trim();
     else out[f.name] = v ?? null;
   }
@@ -81,9 +79,7 @@ export function CrudModule({
 }) {
   const qc = useQueryClient();
   const [editing, setEditing] = useState<Row | "new" | null>(null);
-  const [values, setValues] = useState<Record<string, unknown>>(() =>
-    emptyValues(fields),
-  );
+  const [values, setValues] = useState<Record<string, unknown>>(() => emptyValues(fields));
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<string>("Tous");
 
@@ -102,10 +98,7 @@ export function CrudModule({
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
     let list = rows;
-    if (q)
-      list = list.filter((r) =>
-        fields.some((f) => str(r, f.name).toLowerCase().includes(q)),
-      );
+    if (q) list = list.filter((r) => fields.some((f) => str(r, f.name).toLowerCase().includes(q)));
     const active = filters?.find((f) => f.label === filter);
     if (active) list = list.filter(active.test);
     return list;
@@ -118,7 +111,9 @@ export function CrudModule({
       (r) =>
         r.id !== currentId &&
         duplicateKeys.some((k) => {
-          const a = String(values[k] ?? "").trim().toLowerCase();
+          const a = String(values[k] ?? "")
+            .trim()
+            .toLowerCase();
           return a.length > 1 && str(r, k).toLowerCase() === a;
         }),
     );
@@ -139,8 +134,7 @@ export function CrudModule({
       qc.invalidateQueries({ queryKey: ["angel", "activity_log"] });
       setEditing(null);
     },
-    onError: (e) =>
-      toast.error(e instanceof Error ? e.message : "Enregistrement impossible"),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Enregistrement impossible"),
   });
 
   const remove = useMutation({
@@ -162,9 +156,7 @@ export function CrudModule({
 
   if (editing) {
     return (
-      <AdminCard
-        title={editing === "new" ? `Nouveau — ${title}` : `Modifier — ${title}`}
-      >
+      <AdminCard title={editing === "new" ? `Nouveau — ${title}` : `Modifier — ${title}`}>
         {duplicates.length > 0 && (
           <div
             role="alert"
@@ -207,17 +199,13 @@ export function CrudModule({
                       rows={4}
                       required={f.required}
                       value={String(v ?? "")}
-                      onChange={(e) =>
-                        setValues({ ...values, [f.name]: e.target.value })
-                      }
+                      onChange={(e) => setValues({ ...values, [f.name]: e.target.value })}
                     />
                   ) : f.type === "select" ? (
                     <select
                       id={id}
                       value={String(v ?? "")}
-                      onChange={(e) =>
-                        setValues({ ...values, [f.name]: e.target.value })
-                      }
+                      onChange={(e) => setValues({ ...values, [f.name]: e.target.value })}
                       className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
                     >
                       {f.options?.map((o) => (
@@ -253,14 +241,10 @@ export function CrudModule({
                             : f.type
                       }
                       value={String(v ?? "")}
-                      onChange={(e) =>
-                        setValues({ ...values, [f.name]: e.target.value })
-                      }
+                      onChange={(e) => setValues({ ...values, [f.name]: e.target.value })}
                     />
                   )}
-                  {f.help && (
-                    <p className="text-[11px] text-muted-foreground">{f.help}</p>
-                  )}
+                  {f.help && <p className="text-[11px] text-muted-foreground">{f.help}</p>}
                 </div>
               );
             })}
@@ -333,10 +317,7 @@ export function CrudModule({
       ) : (
         <ul className="space-y-2">
           {visible.map((row) => (
-            <li
-              key={row.id}
-              className="rounded-xl border border-border bg-card p-4"
-            >
+            <li key={row.id} className="rounded-xl border border-border bg-card p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-foreground">
@@ -376,8 +357,7 @@ export function CrudModule({
                     className="min-h-11 min-w-11"
                     aria-label="Supprimer"
                     onClick={() => {
-                      if (confirm(`Supprimer « ${str(row, titleField)} » ?`))
-                        remove.mutate(row);
+                      if (confirm(`Supprimer « ${str(row, titleField)} » ?`)) remove.mutate(row);
                     }}
                   >
                     <Trash2 className="h-4 w-4 text-destructive" />

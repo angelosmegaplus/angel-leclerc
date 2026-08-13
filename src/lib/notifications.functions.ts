@@ -30,11 +30,13 @@ export const pushStatus = createServerFn({ method: "GET" })
 
 export const savePushSubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { endpoint: string; p256dh: string; auth: string; userAgent?: string }) => {
-    if (!input?.endpoint?.startsWith("https://")) throw new Error("Abonnement push invalide.");
-    if (!input.p256dh || !input.auth) throw new Error("Clés d'abonnement manquantes.");
-    return input;
-  })
+  .inputValidator(
+    (input: { endpoint: string; p256dh: string; auth: string; userAgent?: string }) => {
+      if (!input?.endpoint?.startsWith("https://")) throw new Error("Abonnement push invalide.");
+      if (!input.p256dh || !input.auth) throw new Error("Clés d'abonnement manquantes.");
+      return input;
+    },
+  )
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { error } = await context.supabase.from("push_subscriptions").upsert(

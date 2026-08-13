@@ -65,18 +65,13 @@ function UnsubscribePage() {
         )}
         {state === "error" && (
           <>
-            <h1 className="font-display text-2xl font-bold text-foreground">
-              Lien invalide
-            </h1>
+            <h1 className="font-display text-2xl font-bold text-foreground">Lien invalide</h1>
             <p className="mt-3 text-sm text-muted-foreground">
               Ce lien de désabonnement n'est plus valide.
             </p>
           </>
         )}
-        <Link
-          to="/articles"
-          className="mt-6 inline-flex text-sm text-primary hover:underline"
-        >
+        <Link to="/articles" className="mt-6 inline-flex text-sm text-primary hover:underline">
           Retour au blog
         </Link>
       </div>

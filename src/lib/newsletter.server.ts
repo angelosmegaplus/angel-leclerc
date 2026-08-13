@@ -29,8 +29,7 @@ export async function sendWeeklyNewsletter(): Promise<{
     .limit(1)
     .maybeSingle();
 
-  const since =
-    lastRun?.sent_at ?? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const since = lastRun?.sent_at ?? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const now = new Date().toISOString();
 
   const { data: rows } = await supabaseAdmin

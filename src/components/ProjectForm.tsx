@@ -126,8 +126,7 @@ export function ProjectForm({ defaultProjectType = "" }: { defaultProjectType?: 
   const validate = (): boolean => {
     const e: Partial<Record<keyof FormState, string>> = {};
     if (!state.fullName.trim()) e.fullName = "Votre nom est requis.";
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(state.email.trim()))
-      e.email = "E-mail invalide.";
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(state.email.trim())) e.email = "E-mail invalide.";
     if (!state.projectType) e.projectType = "Sélectionnez un type de projet.";
     if (state.description.trim().length < 10)
       e.description = "Détaillez un peu plus votre besoin (10 caractères min).";
@@ -197,18 +196,11 @@ export function ProjectForm({ defaultProjectType = "" }: { defaultProjectType?: 
         <div className="mx-auto inline-flex rounded-full bg-primary/10 p-3">
           <CheckCircle2 size={28} className="text-primary" />
         </div>
-        <h3 className="mt-4 font-display text-2xl font-bold text-foreground">
-          Demande envoyée
-        </h3>
+        <h3 className="mt-4 font-display text-2xl font-bold text-foreground">Demande envoyée</h3>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
           Je reviendrai vers vous rapidement. Un e-mail de confirmation vient de vous être envoyé.
         </p>
-        <Button
-          type="button"
-          variant="outline"
-          className="mt-6"
-          onClick={() => setSuccess(false)}
-        >
+        <Button type="button" variant="outline" className="mt-6" onClick={() => setSuccess(false)}>
           Nouvelle demande
         </Button>
       </div>
@@ -398,9 +390,7 @@ export function ProjectForm({ defaultProjectType = "" }: { defaultProjectType?: 
               J'accepte que mes informations soient utilisées pour répondre à ma demande.
             </span>
           </label>
-          {errors.consent && (
-            <p className="mt-1 text-xs text-destructive">{errors.consent}</p>
-          )}
+          {errors.consent && <p className="mt-1 text-xs text-destructive">{errors.consent}</p>}
         </div>
 
         {/* Honeypot: hidden from real users */}

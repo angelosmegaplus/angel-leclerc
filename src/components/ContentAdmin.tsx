@@ -100,8 +100,7 @@ function parseVideos(value: string) {
 }
 
 function extraLabels(section: ContentSection) {
-  if (section === "projet")
-    return { label: "Outils utilisés", value: "Résultats obtenus" };
+  if (section === "projet") return { label: "Outils utilisés", value: "Résultats obtenus" };
   if (section === "service_extra") return { label: "", value: "Tarif indicatif" };
   return { label: "Information complémentaire (intitulé)", value: "Information complémentaire" };
 }
@@ -118,10 +117,7 @@ export function ContentAdmin() {
   });
 
   const sectionItems = useMemo(
-    () =>
-      items
-        .filter((i) => i.section === section)
-        .sort((a, b) => a.sort_order - b.sort_order),
+    () => items.filter((i) => i.section === section).sort((a, b) => a.sort_order - b.sort_order),
     [items, section],
   );
 
@@ -151,10 +147,7 @@ export function ContentAdmin() {
         published: d.published,
       };
       if (d.id) {
-        const { error } = await supabase
-          .from("content_items")
-          .update(payload)
-          .eq("id", d.id);
+        const { error } = await supabase.from("content_items").update(payload).eq("id", d.id);
         if (error) throw error;
       } else {
         const { error } = await supabase.from("content_items").insert(payload);
@@ -237,9 +230,7 @@ export function ContentAdmin() {
               id="c-section"
               className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
               value={draft.section}
-              onChange={(e) =>
-                setDraft({ ...draft, section: e.target.value as ContentSection })
-              }
+              onChange={(e) => setDraft({ ...draft, section: e.target.value as ContentSection })}
             >
               {CONTENT_SECTIONS.map((s) => (
                 <option key={s.value} value={s.value}>
@@ -453,14 +444,7 @@ export function ContentAdmin() {
         </select>
         <Button
           size="sm"
-          onClick={() =>
-            setDraft(
-              emptyDraft(
-                section,
-                (sectionItems.at(-1)?.sort_order ?? 0) + 10,
-              ),
-            )
-          }
+          onClick={() => setDraft(emptyDraft(section, (sectionItems.at(-1)?.sort_order ?? 0) + 10))}
         >
           <Plus className="mr-2 h-4 w-4" /> Ajouter
         </Button>
@@ -522,11 +506,7 @@ export function ContentAdmin() {
                     })
                   }
                 >
-                  {item.published ? (
-                    <Eye className="h-4 w-4" />
-                  ) : (
-                    <EyeOff className="h-4 w-4" />
-                  )}
+                  {item.published ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                 </Button>
                 <Button
                   size="icon"
@@ -541,8 +521,7 @@ export function ContentAdmin() {
                   variant="ghost"
                   aria-label="Supprimer"
                   onClick={() => {
-                    if (confirm(`Supprimer « ${item.title} » ?`))
-                      deleteMutation.mutate(item.id);
+                    if (confirm(`Supprimer « ${item.title} » ?`)) deleteMutation.mutate(item.id);
                   }}
                 >
                   <Trash2 className="h-4 w-4 text-destructive" />

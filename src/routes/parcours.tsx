@@ -63,11 +63,10 @@ function ParcoursPage() {
                 Échangeons sur votre besoin
               </h2>
               <p className="mt-4 text-muted-foreground leading-relaxed">
-                Vous recherchez un alternant capable de rédiger, de créer des
-                supports, de participer à vos projets de communication et de
-                comprendre les besoins du public&nbsp;? Je recherche une
-                opportunité principalement à Sarlat-la-Canéda ou dans ses
-                environs accessibles en scooter.
+                Vous recherchez un alternant capable de rédiger, de créer des supports, de
+                participer à vos projets de communication et de comprendre les besoins du
+                public&nbsp;? Je recherche une opportunité principalement à Sarlat-la-Canéda ou dans
+                ses environs accessibles en scooter.
               </p>
             </div>
 
@@ -99,7 +98,9 @@ function ParcoursPage() {
                     <Linkedin size={20} />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">LinkedIn</p>
+                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                      LinkedIn
+                    </p>
                     <p className="mt-1 text-sm font-medium text-foreground">Angel Leclerc</p>
                   </div>
                 </a>
@@ -112,7 +113,9 @@ function ParcoursPage() {
                     <Download size={20} />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-primary">CV en PDF</p>
+                    <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+                      CV en PDF
+                    </p>
                     <p className="mt-1 text-sm font-medium text-foreground">Télécharger mon CV</p>
                   </div>
                 </a>

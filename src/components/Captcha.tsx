@@ -38,7 +38,8 @@ export function Captcha({ onChange, error }: Props) {
     let cancelled = false;
 
     const renderWidget = () => {
-      if (cancelled || !containerRef.current || !window.grecaptcha || widgetIdRef.current !== null) return;
+      if (cancelled || !containerRef.current || !window.grecaptcha || widgetIdRef.current !== null)
+        return;
       widgetIdRef.current = window.grecaptcha.render(containerRef.current, {
         sitekey: SITE_KEY,
         callback: (token) => onChange({ token, answer: "verified" }),

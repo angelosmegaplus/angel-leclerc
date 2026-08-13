@@ -1,9 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 
-export const Route = createFileRoute(
-  "/articles/reponse-article-chni-tombola-patrimoine",
-)({
+export const Route = createFileRoute("/articles/reponse-article-chni-tombola-patrimoine")({
   head: () => ({
     meta: [
       { title: "Article – Réponse à l'article du Ch'ni sur la Tombola Patrimoine" },
@@ -69,13 +67,11 @@ function ArticleReponseChniPage() {
   return (
     <article className="bg-background py-14 md:py-20">
       <div className="mx-auto w-full max-w-[850px] px-5 sm:px-6">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
-          Article
-        </p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">Article</p>
 
         <h1 className="mt-4 font-display text-2xl font-bold leading-snug tracking-tight text-foreground sm:text-3xl md:text-4xl">
-          Réponse d'Angel Leclerc Communication à l'article publié par Le Ch'ni
-          concernant la Tombola Patrimoine
+          Réponse d'Angel Leclerc Communication à l'article publié par Le Ch'ni concernant la
+          Tombola Patrimoine
         </h1>
 
         <p className="mt-4 text-sm text-muted-foreground">Publié le 1er août 2026</p>

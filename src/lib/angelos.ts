@@ -42,10 +42,7 @@ const anyDb = supabase as unknown as {
   from: (t: string) => any;
 };
 
-export async function listRows(
-  table: AngelTable,
-  orderBy = "created_at",
-): Promise<Row[]> {
+export async function listRows(table: AngelTable, orderBy = "created_at"): Promise<Row[]> {
   const { data, error } = await anyDb
     .from(table)
     .select("*")
@@ -128,11 +125,7 @@ export const PROJECT_STATUSES = [
   S("archive", "Archivé"),
 ];
 
-export const PRIORITIES = [
-  S("basse", "Basse"),
-  S("normale", "Normale"),
-  S("haute", "Haute"),
-];
+export const PRIORITIES = [S("basse", "Basse"), S("normale", "Normale"), S("haute", "Haute")];
 
 export const APPLICATION_STATUSES = [
   S("a_envoyer", "À envoyer"),

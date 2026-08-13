@@ -39,11 +39,19 @@ export async function buildRealNotifications(db: Db): Promise<Candidate[]> {
     await Promise.all([
       db.from("project_tasks").select("id,title,due_date,status").neq("status", "done").limit(100),
       db.from("applications").select("id,company,position,follow_up_at,status").limit(100),
-      db.from("contact_requests").select("id,full_name,created_at,is_read").eq("is_read", false).limit(50),
+      db
+        .from("contact_requests")
+        .select("id,full_name,created_at,is_read")
+        .eq("is_read", false)
+        .limit(50),
       db.from("ai_actions").select("id,title,status,resolved_at").eq("status", "done").limit(50),
       db.from("oauth_connections").select("provider,status,expires_at").limit(50),
       db.from("interviews").select("id,subject,scheduled_at").limit(100),
-      db.from("articles").select("id,title,slug,published,published_at").eq("published", true).limit(20),
+      db
+        .from("articles")
+        .select("id,title,slug,published,published_at")
+        .eq("published", true)
+        .limit(20),
     ]);
 
   for (const t of tasks.data ?? []) {
@@ -62,7 +70,9 @@ export async function buildRealNotifications(db: Db): Promise<Candidate[]> {
 
   for (const a of applications.data ?? []) {
     if (!a.follow_up_at) continue;
-    const at = new Date(a.follow_up_at.length <= 10 ? `${a.follow_up_at}T12:00:00` : a.follow_up_at);
+    const at = new Date(
+      a.follow_up_at.length <= 10 ? `${a.follow_up_at}T12:00:00` : a.follow_up_at,
+    );
     if (at.getTime() <= now.getTime() && a.status !== "accepted" && a.status !== "refused") {
       out.push({
         dedupe_key: `application_followup:${a.id}:${a.follow_up_at}`,

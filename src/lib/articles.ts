@@ -35,8 +35,7 @@ export const emptyAiDisclosure: AiDisclosure = {
 
 export function getAiDisclosure(article: { ai_disclosure?: unknown }): AiDisclosure {
   const raw = article.ai_disclosure;
-  if (typeof raw !== "object" || raw === null || Array.isArray(raw))
-    return emptyAiDisclosure;
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return emptyAiDisclosure;
   const r = raw as Record<string, unknown>;
   return {
     personal: r.personal === true,
@@ -68,18 +67,11 @@ export function getAttachments(article: Article): ArticleAttachment[] {
   const raw = article.attachments;
   if (!Array.isArray(raw)) return [];
   return raw.filter(
-    (a): a is ArticleAttachment =>
-      typeof a === "object" && a !== null && "url" in a && "name" in a,
+    (a): a is ArticleAttachment => typeof a === "object" && a !== null && "url" in a && "name" in a,
   );
 }
 
-export const ARTICLE_CATEGORIES = [
-  "Article",
-  "Annonce",
-  "Presse",
-  "Coulisses",
-  "Projet",
-] as const;
+export const ARTICLE_CATEGORIES = ["Article", "Annonce", "Presse", "Coulisses", "Projet"] as const;
 
 /** Catégories thématiques globales (multiples, optionnelles). */
 export const ARTICLE_TOPICS = [
@@ -100,9 +92,7 @@ export type ArticleTopic = (typeof ARTICLE_TOPICS)[number];
 export function getTopics(article: { topics?: unknown }): string[] {
   const raw = article.topics;
   if (!Array.isArray(raw)) return [];
-  return raw.filter(
-    (t): t is string => typeof t === "string" && t.trim().length > 0,
-  );
+  return raw.filter((t): t is string => typeof t === "string" && t.trim().length > 0);
 }
 
 function visibleNow(query: any) {
@@ -117,8 +107,7 @@ export function getArticleStatus(article: {
   scheduled_at: string | null;
 }): ArticleStatus {
   if (!article.published) return "brouillon";
-  if (article.scheduled_at && new Date(article.scheduled_at) > new Date())
-    return "programme";
+  if (article.scheduled_at && new Date(article.scheduled_at) > new Date()) return "programme";
   return "publie";
 }
 

@@ -12,7 +12,6 @@ export type AssistantReply = {
   suggestions?: string[];
 };
 
-
 export const DEFAULT_SUGGESTIONS = [
   "Quels services propose Angel ?",
   "Voir son parcours",
@@ -46,8 +45,18 @@ const INTENTS: Intent[] = [
   {
     id: "services",
     keywords: [
-      "service", "services", "prestation", "prestations", "offre", "offres",
-      "que fait", "que propose", "propose", "activite", "metier", "faire pour moi",
+      "service",
+      "services",
+      "prestation",
+      "prestations",
+      "offre",
+      "offres",
+      "que fait",
+      "que propose",
+      "propose",
+      "activite",
+      "metier",
+      "faire pour moi",
     ],
     reply: {
       text: "Trois activités principales : la gestion de projet (organisation, suivi, coordination des prestataires), le conseil en communication (analyse, objectifs, choix des supports et des messages) et la rédaction éditoriale (textes professionnels, institutionnels, journalistiques et web). En complément : affiche ou flyer, identité visuelle simple, recherche de prestataires et production audio/vidéo sur le terrain.",
@@ -66,7 +75,17 @@ const INTENTS: Intent[] = [
   },
   {
     id: "methode",
-    keywords: ["methode", "deroule", "deroulement", "etape", "etapes", "process", "comment ca marche", "delai", "delais"],
+    keywords: [
+      "methode",
+      "deroule",
+      "deroulement",
+      "etape",
+      "etapes",
+      "process",
+      "comment ca marche",
+      "delai",
+      "delais",
+    ],
     reply: {
       text: "Une mission se déroule en quatre étapes : premier échange pour comprendre le besoin, proposition écrite et chiffrée, réalisation et coordination, puis livraison et suivi. Les délais dépendent du projet et sont précisés dans la proposition.",
       links: [{ label: "La méthode en détail", to: "/entreprise#methode" }, CONTACT_LINK],
@@ -76,18 +95,43 @@ const INTENTS: Intent[] = [
   {
     id: "parcours",
     keywords: [
-      "parcours", "cv", "experience", "experiences", "formation", "diplome", "diplomes",
-      "etude", "etudes", "competence", "competences", "profil", "qui est", "biographie",
+      "parcours",
+      "cv",
+      "experience",
+      "experiences",
+      "formation",
+      "diplome",
+      "diplomes",
+      "etude",
+      "etudes",
+      "competence",
+      "competences",
+      "profil",
+      "qui est",
+      "biographie",
     ],
     reply: {
       text: "Le parcours complet d'Angel est publié sur le site : expériences professionnelles, formations et diplômes, certifications, engagements associatifs et compétences. La page fait office de CV en ligne.",
       links: [{ label: "Voir le parcours / CV", to: "/parcours" }],
-      suggestions: ["Il cherche une alternance ?", "Découvrir ses réalisations", "Quels services propose Angel ?"],
+      suggestions: [
+        "Il cherche une alternance ?",
+        "Découvrir ses réalisations",
+        "Quels services propose Angel ?",
+      ],
     },
   },
   {
     id: "alternance",
-    keywords: ["alternance", "apprenti", "apprentissage", "bts", "stage", "recrut", "embauche", "ecole"],
+    keywords: [
+      "alternance",
+      "apprenti",
+      "apprentissage",
+      "bts",
+      "stage",
+      "recrut",
+      "embauche",
+      "ecole",
+    ],
     reply: {
       text: "Angel recherche une alternance en BTS Communication pour la rentrée 2026, avec les écoles IBSAC (Brive-la-Gaillarde) et Talis (Périgueux). Mission majoritairement communication, avec des activités complémentaires possibles (par exemple 60 % communication / 40 % vente). Les détails et la zone de mobilité sont sur la page Parcours.",
       links: [{ label: "Voir la recherche d'alternance", to: "/parcours" }, CONTACT_LINK],
@@ -96,16 +140,40 @@ const INTENTS: Intent[] = [
   },
   {
     id: "realisations",
-    keywords: ["realisation", "realisations", "projet realise", "projets", "portfolio", "reference", "references", "exemple", "exemples", "travaux"],
+    keywords: [
+      "realisation",
+      "realisations",
+      "projet realise",
+      "projets",
+      "portfolio",
+      "reference",
+      "references",
+      "exemple",
+      "exemples",
+      "travaux",
+    ],
     reply: {
       text: "Les projets et réalisations sélectionnés sont présentés sur la page Parcours, et les articles publiés se trouvent dans le blog du site.",
-      links: [{ label: "Réalisations", to: "/parcours" }, { label: "Blog", to: "/articles" }],
+      links: [
+        { label: "Réalisations", to: "/parcours" },
+        { label: "Blog", to: "/articles" },
+      ],
       suggestions: ["Quels services propose Angel ?", "Le contacter"],
     },
   },
   {
     id: "blog",
-    keywords: ["blog", "article", "articles", "actualite", "actualites", "publication", "substack", "newsletter", "abonner"],
+    keywords: [
+      "blog",
+      "article",
+      "articles",
+      "actualite",
+      "actualites",
+      "publication",
+      "substack",
+      "newsletter",
+      "abonner",
+    ],
     reply: {
       text: "Les articles et réflexions sont publiés dans le blog du site, et une partie est également reprise sur Substack.",
       links: [
@@ -117,7 +185,19 @@ const INTENTS: Intent[] = [
   },
   {
     id: "contact",
-    keywords: ["contact", "contacter", "joindre", "email", "mail", "ecrire", "rendez", "rdv", "parler", "discuter", "adresse"],
+    keywords: [
+      "contact",
+      "contacter",
+      "joindre",
+      "email",
+      "mail",
+      "ecrire",
+      "rendez",
+      "rdv",
+      "parler",
+      "discuter",
+      "adresse",
+    ],
     reply: {
       text: `Le plus simple est le formulaire de contact du site : vous décrivez votre besoin, avec pièce jointe possible. Le récapitulatif parvient directement à Angel.`,
       links: [CONTACT_LINK],
@@ -130,7 +210,11 @@ const INTENTS: Intent[] = [
     reply: {
       text: "Angel Leclerc Communication est présent sur LinkedIn, Instagram et Facebook. Les liens sont disponibles en bas de chaque page du site.",
       links: [
-        { label: "LinkedIn", to: "https://www.linkedin.com/company/angel-leclerc-communication/", external: true },
+        {
+          label: "LinkedIn",
+          to: "https://www.linkedin.com/company/angel-leclerc-communication/",
+          external: true,
+        },
         { label: "Instagram", to: "https://www.instagram.com/angelof_com", external: true },
       ],
       suggestions: ["Le contacter", "Quels services propose Angel ?"],
@@ -138,7 +222,17 @@ const INTENTS: Intent[] = [
   },
   {
     id: "paiement",
-    keywords: ["paiement", "payer", "revolut", "acompte", "reglement", "tva", "siret", "siren", "facture"],
+    keywords: [
+      "paiement",
+      "payer",
+      "revolut",
+      "acompte",
+      "reglement",
+      "tva",
+      "siret",
+      "siren",
+      "facture",
+    ],
     reply: {
       text: "Les paiements sont traités via Revolut Business : facture et lien de paiement sécurisé, acompte avant la mission et solde après validation. Angel Leclerc est entrepreneur individuel, TVA non applicable (article 293 B du CGI).",
       links: [{ label: "Mentions légales", to: "/mentions-legales" }, CONTACT_LINK],
@@ -146,7 +240,17 @@ const INTENTS: Intent[] = [
   },
   {
     id: "boutique",
-    keywords: ["boutique", "acheter", "produit", "produits", "commande", "tshirt", "t shirt", "goodies", "panier"],
+    keywords: [
+      "boutique",
+      "acheter",
+      "produit",
+      "produits",
+      "commande",
+      "tshirt",
+      "t shirt",
+      "goodies",
+      "panier",
+    ],
     reply: {
       text: "Une petite boutique existe sur le site, accessible depuis le pied de page.",
       links: [{ label: "Accéder à la boutique", to: "/boutique" }],
@@ -183,17 +287,45 @@ const NEED_KEYWORDS: { words: string[]; service: string; anchor: string }[] = [
     anchor: "/entreprise#services",
   },
   {
-    words: ["texte", "redaction", "redige", "article", "communique", "interview", "reportage", "web", "site", "newsletter"],
+    words: [
+      "texte",
+      "redaction",
+      "redige",
+      "article",
+      "communique",
+      "interview",
+      "reportage",
+      "web",
+      "site",
+      "newsletter",
+    ],
     service: "la rédaction et les contenus éditoriaux",
     anchor: "/entreprise#services",
   },
   {
-    words: ["strategie", "conseil", "visibilite", "notoriete", "audience", "cible", "plan de com", "reseaux sociaux"],
+    words: [
+      "strategie",
+      "conseil",
+      "visibilite",
+      "notoriete",
+      "audience",
+      "cible",
+      "plan de com",
+      "reseaux sociaux",
+    ],
     service: "le conseil en communication",
     anchor: "/entreprise#services",
   },
   {
-    words: ["evenement", "festival", "organisation", "coordination", "prestataire", "planning", "projet"],
+    words: [
+      "evenement",
+      "festival",
+      "organisation",
+      "coordination",
+      "prestataire",
+      "planning",
+      "projet",
+    ],
     service: "la gestion de projet",
     anchor: "/entreprise#services",
   },
@@ -206,9 +338,25 @@ const NEED_KEYWORDS: { words: string[]; service: string; anchor: string }[] = [
 
 /** Signaux d'urgence ou de sérieux justifiant de proposer le téléphone. */
 const URGENT_KEYWORDS = [
-  "urgent", "urgence", "rapidement", "vite", "aujourd hui", "demain", "delai court",
-  "appeler", "telephone", "tel", "appel", "joindre par telephone", "parler de vive voix",
-  "devis rapide", "mairie", "entreprise", "association", "collectivite", "commande",
+  "urgent",
+  "urgence",
+  "rapidement",
+  "vite",
+  "aujourd hui",
+  "demain",
+  "delai court",
+  "appeler",
+  "telephone",
+  "tel",
+  "appel",
+  "joindre par telephone",
+  "parler de vive voix",
+  "devis rapide",
+  "mairie",
+  "entreprise",
+  "association",
+  "collectivite",
+  "commande",
 ];
 
 function score(text: string, keywords: string[]) {
@@ -261,7 +409,10 @@ export function answer(input: string): AssistantReply {
       return {
         ...reply,
         text: `${reply.text} Si votre demande est urgente, la page Contact permet d'afficher les coordonnées directes après une courte vérification.`,
-        links: [...(reply.links ?? []), { label: "Afficher les coordonnées directes", to: "/contact" }],
+        links: [
+          ...(reply.links ?? []),
+          { label: "Afficher les coordonnées directes", to: "/contact" },
+        ],
       };
     }
     return reply;

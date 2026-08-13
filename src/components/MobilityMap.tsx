@@ -12,8 +12,16 @@ type Place = {
 const PLACES: Place[] = [
   { name: "Sarlat-la-Canéda", coords: SARLAT, note: "Zone prioritaire", primary: true },
   { name: "Souillac", coords: [44.8943, 1.4773], note: "Possible si l'offre est intéressante" },
-  { name: "Périgueux", coords: [45.184, 0.7211], note: "Envisageable si offre très intéressante (déménagement)" },
-  { name: "Brive-la-Gaillarde", coords: [45.1589, 1.5333], note: "Envisageable si offre très intéressante (déménagement)" },
+  {
+    name: "Périgueux",
+    coords: [45.184, 0.7211],
+    note: "Envisageable si offre très intéressante (déménagement)",
+  },
+  {
+    name: "Brive-la-Gaillarde",
+    coords: [45.1589, 1.5333],
+    note: "Envisageable si offre très intéressante (déménagement)",
+  },
 ];
 
 export default function MobilityMap() {
@@ -69,10 +77,7 @@ export default function MobilityMap() {
       }
 
       setReady(true);
-      map.fitBounds(
-        L.latLngBounds(PLACES.map((p) => p.coords)).pad(0.15),
-        { padding: [10, 10] },
-      );
+      map.fitBounds(L.latLngBounds(PLACES.map((p) => p.coords)).pad(0.15), { padding: [10, 10] });
     })();
 
     return () => {

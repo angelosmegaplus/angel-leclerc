@@ -1,11 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import {
-  SELECT_COLUMNS,
-  statsInputSchema,
-  trackSchema,
-} from "./analytics.schemas";
+import { SELECT_COLUMNS, statsInputSchema, trackSchema } from "./analytics.schemas";
 import {
   buildSiteStats,
   parseUserAgent,
@@ -160,7 +156,9 @@ export const getRealtimeActivity = createServerFn({ method: "GET" })
         at: r.created_at,
         type: r.event_type ?? "pageview",
         path: r.path,
-        label: String((r.metadata as Record<string, unknown> | null)?.["label"] ?? r.event_name ?? ""),
+        label: String(
+          (r.metadata as Record<string, unknown> | null)?.["label"] ?? r.event_name ?? "",
+        ),
         visitor: (r.visitor_id ?? r.session_id ?? "????").slice(0, 4),
       })),
     };

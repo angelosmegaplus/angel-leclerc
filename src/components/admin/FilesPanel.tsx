@@ -77,8 +77,7 @@ export function FilesPanel() {
     const q = query.trim().toLowerCase();
     if (!q) return data;
     return data.filter(
-      (f) =>
-        f.name.toLowerCase().includes(q) || f.origin.toLowerCase().includes(q),
+      (f) => f.name.toLowerCase().includes(q) || f.origin.toLowerCase().includes(q),
     );
   }, [data, query]);
 
@@ -111,8 +110,7 @@ export function FilesPanel() {
       ) : (
         <ul className="grid gap-2 sm:grid-cols-2">
           {visible.map((f) => {
-            const Icon =
-              f.type === "image" ? ImageIcon : f.type === "audio" ? Music : FileText;
+            const Icon = f.type === "image" ? ImageIcon : f.type === "audio" ? Music : FileText;
             return (
               <li
                 key={f.id}

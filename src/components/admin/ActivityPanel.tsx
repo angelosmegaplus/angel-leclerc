@@ -65,19 +65,12 @@ export function ActivityPanel() {
         <AdminCard title="Notifications" description="Alertes internes d'Angel OS.">
           <ul className="space-y-2">
             {notifications.map((n) => (
-              <li
-                key={n.id}
-                className="flex items-start gap-3 rounded-lg border border-border p-3"
-              >
+              <li key={n.id} className="flex items-start gap-3 rounded-lg border border-border p-3">
                 <Bell className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div className="min-w-0">
                   <p className="font-medium text-foreground">{n.title}</p>
-                  {n.content && (
-                    <p className="text-sm text-muted-foreground">{n.content}</p>
-                  )}
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {when(n.created_at)}
-                  </p>
+                  {n.content && <p className="text-sm text-muted-foreground">{n.content}</p>}
+                  <p className="mt-1 text-xs text-muted-foreground">{when(n.created_at)}</p>
                 </div>
               </li>
             ))}
@@ -100,10 +93,7 @@ export function ActivityPanel() {
         ) : (
           <ul className="space-y-2">
             {entries.map((e) => (
-              <li
-                key={e.id}
-                className="flex items-start gap-3 rounded-lg border border-border p-3"
-              >
+              <li key={e.id} className="flex items-start gap-3 rounded-lg border border-border p-3">
                 <Activity className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-foreground">
@@ -111,9 +101,7 @@ export function ActivityPanel() {
                     {ENTITY_LABELS[e.entity_type] ?? e.entity_type}
                   </p>
                   {e.details?.title && (
-                    <p className="truncate text-sm text-muted-foreground">
-                      {e.details.title}
-                    </p>
+                    <p className="truncate text-sm text-muted-foreground">{e.details.title}</p>
                   )}
                   <p className="mt-1 text-xs text-muted-foreground">
                     {when(e.created_at)} · {e.source === "ai" ? "Angel AI" : "Vous"}

@@ -81,9 +81,7 @@ function AuthPage() {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Une erreur est survenue.";
       setError(
-        message.includes("Invalid login credentials")
-          ? "Identifiants incorrects."
-          : message,
+        message.includes("Invalid login credentials") ? "Identifiants incorrects." : message,
       );
       setCaptchaKey((k) => k + 1);
     } finally {
@@ -104,7 +102,10 @@ function AuthPage() {
           Connectez-vous pour rédiger, publier et gérer les actualités du site.
         </p>
 
-        <form onSubmit={onSubmit} className="mt-8 space-y-4 rounded-xl border border-border bg-card p-6">
+        <form
+          onSubmit={onSubmit}
+          className="mt-8 space-y-4 rounded-xl border border-border bg-card p-6"
+        >
           <div className="space-y-2">
             <Label htmlFor="email">E-mail</Label>
             <Input
@@ -153,9 +154,7 @@ function AuthPage() {
             }}
             className="w-full text-center text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
           >
-            {mode === "signin"
-              ? "Première connexion ? Créer mon compte"
-              : "J'ai déjà un compte"}
+            {mode === "signin" ? "Première connexion ? Créer mon compte" : "J'ai déjà un compte"}
           </button>
         </form>
       </div>

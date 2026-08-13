@@ -7,7 +7,12 @@ import { formatPrice } from "@/lib/shop";
 type StepKey = "preparation" | "shipped" | "delivered";
 
 const STEPS: Array<{ key: StepKey; label: string; hint: string; icon: typeof Package }> = [
-  { key: "preparation", label: "En préparation", hint: "Impression et contrôle qualité", icon: Package },
+  {
+    key: "preparation",
+    label: "En préparation",
+    hint: "Impression et contrôle qualité",
+    icon: Package,
+  },
   { key: "shipped", label: "Expédiée", hint: "Colis confié au transporteur", icon: Truck },
   { key: "delivered", label: "Livrée", hint: "Colis remis à destination", icon: Home },
 ];
@@ -15,7 +20,11 @@ const STEPS: Array<{ key: StepKey; label: string; hint: string; icon: typeof Pac
 function currentStep(status: string, printfulStatus: string | null): number {
   if (printfulStatus === "package_returned") return 1;
   if (status === "delivered") return 2;
-  if (status === "shipped" || printfulStatus === "fulfilled" || printfulStatus === "package_shipped") {
+  if (
+    status === "shipped" ||
+    printfulStatus === "fulfilled" ||
+    printfulStatus === "package_shipped"
+  ) {
     return 1;
   }
   return 0;
@@ -51,8 +60,8 @@ export function OrderTracker({ sessionId }: { sessionId: string }) {
   if (!data || "error" in data) {
     return (
       <div className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">
-        Le suivi de cette commande n'est pas encore disponible. Il apparaît quelques
-        instants après la validation du paiement.
+        Le suivi de cette commande n'est pas encore disponible. Il apparaît quelques instants après
+        la validation du paiement.
       </div>
     );
   }
@@ -63,9 +72,7 @@ export function OrderTracker({ sessionId }: { sessionId: string }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-5 text-left sm:p-6">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="font-display text-lg font-bold text-foreground">
-          Statut de votre commande
-        </h2>
+        <h2 className="font-display text-lg font-bold text-foreground">Statut de votre commande</h2>
         <span className="text-xs text-muted-foreground">
           Commande du {formatDateTime(data.createdAt)}
         </span>
@@ -73,8 +80,8 @@ export function OrderTracker({ sessionId }: { sessionId: string }) {
 
       {canceled ? (
         <p className="mt-4 rounded-xl border border-border bg-background p-4 text-sm text-foreground">
-          Cette commande a été {data.status === "refunded" ? "remboursée" : "annulée"}. Un
-          e-mail vous a été envoyé avec le détail.
+          Cette commande a été {data.status === "refunded" ? "remboursée" : "annulée"}. Un e-mail
+          vous a été envoyé avec le détail.
         </p>
       ) : (
         <ol className="mt-5 space-y-4">
@@ -101,9 +108,7 @@ export function OrderTracker({ sessionId }: { sessionId: string }) {
                     )}
                   </span>
                   {index < STEPS.length - 1 && (
-                    <span
-                      className={`mt-1 h-6 w-px ${done ? "bg-primary/50" : "bg-border"}`}
-                    />
+                    <span className={`mt-1 h-6 w-px ${done ? "bg-primary/50" : "bg-border"}`} />
                   )}
                 </div>
                 <div className="pb-1">
@@ -183,8 +188,8 @@ export function OrderTracker({ sessionId }: { sessionId: string }) {
       )}
 
       <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
-        Cette page se met à jour automatiquement. Les créations numériques (logos,
-        visuels) ne sont pas expédiées : elles vous sont envoyées par e-mail.
+        Cette page se met à jour automatiquement. Les créations numériques (logos, visuels) ne sont
+        pas expédiées : elles vous sont envoyées par e-mail.
       </p>
     </div>
   );

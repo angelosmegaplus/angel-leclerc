@@ -43,8 +43,8 @@ function SuiviPage() {
         Suivre ma commande
       </h1>
       <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-        Renseignez la référence reçue par e-mail après votre paiement pour voir où en est
-        votre commande.
+        Renseignez la référence reçue par e-mail après votre paiement pour voir où en est votre
+        commande.
       </p>
 
       <form

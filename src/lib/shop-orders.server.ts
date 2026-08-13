@@ -40,10 +40,7 @@ export const PRINTFUL_STATUS_LABEL: Record<string, string> = {
   package_returned: "Colis retourné",
 };
 
-export function appendEvent(
-  existing: unknown,
-  event: OrderEvent,
-): OrderEvent[] {
+export function appendEvent(existing: unknown, event: OrderEvent): OrderEvent[] {
   const list = Array.isArray(existing) ? (existing as OrderEvent[]) : [];
   return [...list, event].slice(-50);
 }

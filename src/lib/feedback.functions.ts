@@ -144,8 +144,7 @@ export const startSupport = createServerFn({ method: "POST" })
     }
     const links = linksOf(row);
     // Le montant est choisi directement sur la page de paiement Revolut.
-    const url =
-      (data.amountCents ? links[String(data.amountCents)] : undefined) ?? links["custom"];
+    const url = (data.amountCents ? links[String(data.amountCents)] : undefined) ?? links["custom"];
     if (!url) throw new Error("Aucun lien de paiement n'est configuré pour ce montant.");
 
     await supabaseAdmin

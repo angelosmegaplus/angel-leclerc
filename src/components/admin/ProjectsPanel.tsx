@@ -1,11 +1,6 @@
 import { useState } from "react";
 import { CrudModule } from "./CrudModule";
-import {
-  alcProjectFields,
-  taskFields,
-  str,
-  type Row,
-} from "@/lib/angelos";
+import { alcProjectFields, taskFields, str, type Row } from "@/lib/angelos";
 
 const VIEWS = [
   { key: "projects", label: "Missions" },

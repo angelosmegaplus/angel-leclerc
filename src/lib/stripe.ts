@@ -7,9 +7,7 @@ const clientToken = import.meta.env.VITE_PAYMENTS_CLIENT_TOKEN as string | undef
 function paymentsEnvironment(): StripeEnv {
   if (clientToken?.startsWith("pk_test_")) return "sandbox";
   if (clientToken?.startsWith("pk_live_")) return "live";
-  throw new Error(
-    "Les paiements ne sont pas encore configurés pour cette version du site.",
-  );
+  throw new Error("Les paiements ne sont pas encore configurés pour cette version du site.");
 }
 
 let stripePromise: Promise<Stripe | null> | null = null;

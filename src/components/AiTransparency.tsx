@@ -36,9 +36,7 @@ export function AiTransparency({
   }
 
   return (
-    <aside
-      className={`rounded-xl border border-border/70 bg-muted/40 px-4 py-3 ${className}`}
-    >
+    <aside className={`rounded-xl border border-border/70 bg-muted/40 px-4 py-3 ${className}`}>
       <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> Transparence éditoriale
       </p>

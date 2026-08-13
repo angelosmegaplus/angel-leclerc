@@ -52,8 +52,7 @@ export function FeedbackBlock({
   const commentRef = useRef<HTMLTextAreaElement>(null);
 
   const settings = data?.settings;
-  const question =
-    settings?.questions?.[contentType] ?? DEFAULT_QUESTIONS[contentType];
+  const question = settings?.questions?.[contentType] ?? DEFAULT_QUESTIONS[contentType];
 
   useEffect(() => {
     if (open && step === "rate") {
@@ -243,8 +242,8 @@ export function FeedbackBlock({
                 Envoyer mon avis
               </Button>
               <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
-                Votre avis peut être enregistré afin d'améliorer le site. La contribution
-                financière est entièrement facultative et ne donne droit à aucun avantage fiscal.
+                Votre avis peut être enregistré afin d'améliorer le site. La contribution financière
+                est entièrement facultative et ne donne droit à aucun avantage fiscal.
               </p>
             </div>
           )}

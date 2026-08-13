@@ -10,8 +10,7 @@ function playXpChime() {
   const Ctx =
     typeof window !== "undefined"
       ? (window.AudioContext ??
-        (window as unknown as { webkitAudioContext?: typeof AudioContext })
-          .webkitAudioContext)
+        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)
       : undefined;
   if (!Ctx) return false;
   const ctx = new Ctx();
@@ -83,8 +82,8 @@ export function NotFound404() {
           Cette page n'existe pas
         </h2>
         <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
-          L'adresse saisie est peut-être incorrecte, ou la page a été déplacée.
-          Revenez à l'accueil pour reprendre la navigation.
+          L'adresse saisie est peut-être incorrecte, ou la page a été déplacée. Revenez à l'accueil
+          pour reprendre la navigation.
         </p>
 
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">

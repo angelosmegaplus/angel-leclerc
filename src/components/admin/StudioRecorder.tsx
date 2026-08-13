@@ -72,9 +72,7 @@ export function StudioRecorder({
   const start = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia(
-        mode === "audio"
-          ? { audio: true }
-          : { audio: true, video: { facingMode: facing } },
+        mode === "audio" ? { audio: true } : { audio: true, video: { facingMode: facing } },
       );
       streamRef.current = stream;
       if (mode === "video" && previewRef.current) {
@@ -126,8 +124,8 @@ export function StudioRecorder({
   if (!supported) {
     return (
       <p className="rounded-lg border border-border bg-background p-4 text-sm text-muted-foreground">
-        L'enregistrement {mode === "audio" ? "audio" : "vidéo"} n'est pas pris en
-        charge par ce navigateur. Utilisez l'import de fichier ci-dessous.
+        L'enregistrement {mode === "audio" ? "audio" : "vidéo"} n'est pas pris en charge par ce
+        navigateur. Utilisez l'import de fichier ci-dessous.
       </p>
     );
   }
@@ -151,9 +149,7 @@ export function StudioRecorder({
           {mode === "audio" ? <Mic className="h-4 w-4" /> : <Camera className="h-4 w-4" />}
           {mode === "audio" ? "Enregistrer un son" : "Filmer une séquence"}
         </p>
-        <span className="font-mono text-sm tabular-nums text-muted-foreground">
-          {fmt(seconds)}
-        </span>
+        <span className="font-mono text-sm tabular-nums text-muted-foreground">{fmt(seconds)}</span>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -170,11 +166,7 @@ export function StudioRecorder({
             >
               <Pause className="mr-2 h-4 w-4" /> {paused ? "Reprendre" : "Pause"}
             </Button>
-            <Button
-              variant="outline"
-              className="min-h-11 flex-1 sm:flex-none"
-              onClick={stop}
-            >
+            <Button variant="outline" className="min-h-11 flex-1 sm:flex-none" onClick={stop}>
               <Square className="mr-2 h-4 w-4" /> Arrêter
             </Button>
           </>
@@ -221,9 +213,7 @@ export function StudioRecorder({
                   onSaved(link, filename);
                   toast.success("Média enregistré dans le stockage du site.");
                 } catch (e) {
-                  toast.error(
-                    e instanceof Error ? e.message : "Envoi impossible",
-                  );
+                  toast.error(e instanceof Error ? e.message : "Envoi impossible");
                 } finally {
                   setUploading(false);
                 }

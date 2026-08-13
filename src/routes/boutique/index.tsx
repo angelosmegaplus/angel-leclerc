@@ -73,8 +73,8 @@ function BoutiquePage() {
           ALC!
         </p>
         <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-          Objets imprimés à la demande, fabriqués et expédiés par notre partenaire
-          d'impression. Paiement sécurisé par carte, Apple Pay ou Google Pay.
+          Objets imprimés à la demande, fabriqués et expédiés par notre partenaire d'impression.
+          Paiement sécurisé par carte, Apple Pay ou Google Pay.
         </p>
         <Link
           to="/boutique/suivi"

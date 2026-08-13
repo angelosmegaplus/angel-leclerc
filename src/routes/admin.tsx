@@ -73,11 +73,7 @@ import { sendNewsletterNow } from "@/lib/subscribers.functions";
 import { AdminStats } from "@/components/AdminStats";
 import { ContentAdmin } from "@/components/ContentAdmin";
 import { FeedbackAdmin } from "@/components/FeedbackAdmin";
-import {
-  AdminShell,
-  AdminCard,
-  type AdminNavItem,
-} from "@/components/admin/AdminShell";
+import { AdminShell, AdminCard, type AdminNavItem } from "@/components/admin/AdminShell";
 import { AiActionsPanel } from "@/components/admin/AiActionsPanel";
 import { AiSuggestions } from "@/components/admin/AiSuggestions";
 import { ConnectionsPanel } from "@/components/admin/ConnectionsPanel";
@@ -138,7 +134,6 @@ type Draft = {
   topics: string[];
   ai: AiDisclosure;
 };
-
 
 const emptyDraft: Draft = {
   id: null,
@@ -292,9 +287,7 @@ function AdminPage() {
     mutationFn: async (d: Draft) => {
       const slug = d.slug ? slugify(d.slug) : slugify(d.title);
       const scheduledIso =
-        d.status === "programme" && d.scheduled_at
-          ? new Date(d.scheduled_at).toISOString()
-          : null;
+        d.status === "programme" && d.scheduled_at ? new Date(d.scheduled_at).toISOString() : null;
       const isPublished = d.status !== "brouillon";
       const payload = {
         title: d.title.trim(),
@@ -339,17 +332,11 @@ function AdminPage() {
             .is("published_at", null);
         }
         if (!isPublished) {
-          await supabase
-            .from("articles")
-            .update({ published_at: null })
-            .eq("id", d.id);
+          await supabase.from("articles").update({ published_at: null }).eq("id", d.id);
         }
       } else {
         if (d.featured) {
-          await supabase
-            .from("articles")
-            .update({ featured: false })
-            .eq("featured", true);
+          await supabase.from("articles").update({ featured: false }).eq("featured", true);
         }
         const { error } = await supabase.from("articles").insert(payload);
         if (error) throw error;
@@ -386,10 +373,7 @@ function AdminPage() {
     },
   });
 
-  const previewSlug = useMemo(
-    () => (draft ? slugify(draft.slug || draft.title) : ""),
-    [draft],
-  );
+  const previewSlug = useMemo(() => (draft ? slugify(draft.slug || draft.title) : ""), [draft]);
 
   if (loading) {
     return (
@@ -403,9 +387,7 @@ function AdminPage() {
     return (
       <section className="bg-background py-20">
         <div className="mx-auto max-w-md px-5 text-center">
-          <h1 className="font-display text-2xl font-bold text-foreground">
-            Accès non autorisé
-          </h1>
+          <h1 className="font-display text-2xl font-bold text-foreground">Accès non autorisé</h1>
           <p className="mt-3 text-sm text-muted-foreground">
             Ce compte n'a pas les droits de publication.
           </p>
@@ -425,17 +407,55 @@ function AdminPage() {
   }
 
   const navItems: AdminNavItem[] = [
-    { key: "dashboard", label: "Vue d'ensemble", icon: LayoutDashboard, group: "Essentiel", primary: true },
-    { key: "angel-ai", label: "Demander à l'IA", icon: Sparkles, group: "Essentiel", primary: true },
-    { key: "candidatures", label: "Candidatures", icon: Briefcase, group: "Essentiel", primary: true },
-    { key: "messages", label: "Messages", icon: Mail, badge: unreadCount, group: "Essentiel", primary: true },
-    { key: "articles", label: "Articles", icon: FileText, badge: articles.length, group: "Essentiel", primary: true },
+    {
+      key: "dashboard",
+      label: "Vue d'ensemble",
+      icon: LayoutDashboard,
+      group: "Essentiel",
+      primary: true,
+    },
+    {
+      key: "angel-ai",
+      label: "Demander à l'IA",
+      icon: Sparkles,
+      group: "Essentiel",
+      primary: true,
+    },
+    {
+      key: "candidatures",
+      label: "Candidatures",
+      icon: Briefcase,
+      group: "Essentiel",
+      primary: true,
+    },
+    {
+      key: "messages",
+      label: "Messages",
+      icon: Mail,
+      badge: unreadCount,
+      group: "Essentiel",
+      primary: true,
+    },
+    {
+      key: "articles",
+      label: "Articles",
+      icon: FileText,
+      badge: articles.length,
+      group: "Essentiel",
+      primary: true,
+    },
     { key: "agenda", label: "Agenda", icon: CalendarDays, group: "Essentiel", primary: true },
     { key: "connexions", label: "Connexions", icon: Plug, group: "Essentiel", primary: true },
     { key: "contenus", label: "Parcours & services", icon: LayoutList, group: "Publication" },
     { key: "avis", label: "Avis et soutiens", icon: Star, group: "Publication" },
     { key: "boite-mail", label: "Boîte mail", icon: Inbox, group: "Relations" },
-    { key: "abonnes", label: "Abonnés", icon: Users, badge: subscribers.length, group: "Relations" },
+    {
+      key: "abonnes",
+      label: "Abonnés",
+      icon: Users,
+      badge: subscribers.length,
+      group: "Relations",
+    },
     { key: "boutique", label: "Boutique", icon: ShoppingBag, group: "Activité" },
     { key: "stats", label: "Statistiques", icon: BarChart3, group: "Activité" },
     { key: "projets", label: "Projets", icon: FolderKanban, group: "Modules" },
@@ -446,8 +466,7 @@ function AdminPage() {
     { key: "automatisation", label: "Automatisation", icon: Gauge, group: "Système" },
   ];
 
-  const currentLabel =
-    navItems.find((i) => i.key === tab)?.label ?? "Angel OS";
+  const currentLabel = navItems.find((i) => i.key === tab)?.label ?? "Angel OS";
 
   return (
     <AdminShell
@@ -515,106 +534,126 @@ function AdminPage() {
         <InstallPrompt />
         {tab === "dashboard" && !draft && (
           <div className="space-y-5">
-          <AngelCommandCenter compact />
-          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {(
-              [
-                ["Nouvel article", () => { setTab("articles"); setDraft({ ...emptyDraft }); }],
-                ["Nouveau projet", () => setTab("projets")],
-                ["Nouvelle candidature", () => setTab("candidatures")],
-                ["Studio", () => setTab("studio")],
-                ["Agenda", () => setTab("agenda")],
-              ] as const
-            ).map(([label, action]) => (
-              <Button
-                key={label}
-                variant="outline"
-                size="sm"
-                className="min-h-10 shrink-0"
-                onClick={action}
-              >
-                {label}
-              </Button>
-            ))}
-          </div>
-          <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {(
-              [
-                ["Articles", articles.length, FileText],
-                ["Messages non lus", unreadCount, Mail],
-                ["Abonnés", subscribers.length, Users],
-                ["Publiés", articles.filter((a) => getArticleStatus(a) === "publie").length, Eye],
-              ] as const
-            ).map(([label, value, Icon]) => (
-              <div
-                key={label}
-                className="rounded-xl border border-border/70 bg-background px-3 py-2.5"
-              >
-                <dt className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
-                  <Icon className="h-3.5 w-3.5" /> {label}
-                </dt>
-                <dd className="mt-0.5 font-display text-xl font-bold tabular-nums text-foreground">
-                  {value}
-                </dd>
-              </div>
-            ))}
-          </dl>
+            <AngelCommandCenter compact />
+            <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {(
+                [
+                  [
+                    "Nouvel article",
+                    () => {
+                      setTab("articles");
+                      setDraft({ ...emptyDraft });
+                    },
+                  ],
+                  ["Nouveau projet", () => setTab("projets")],
+                  ["Nouvelle candidature", () => setTab("candidatures")],
+                  ["Studio", () => setTab("studio")],
+                  ["Agenda", () => setTab("agenda")],
+                ] as const
+              ).map(([label, action]) => (
+                <Button
+                  key={label}
+                  variant="outline"
+                  size="sm"
+                  className="min-h-10 shrink-0"
+                  onClick={action}
+                >
+                  {label}
+                </Button>
+              ))}
+            </div>
+            <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {(
+                [
+                  ["Articles", articles.length, FileText],
+                  ["Messages non lus", unreadCount, Mail],
+                  ["Abonnés", subscribers.length, Users],
+                  ["Publiés", articles.filter((a) => getArticleStatus(a) === "publie").length, Eye],
+                ] as const
+              ).map(([label, value, Icon]) => (
+                <div
+                  key={label}
+                  className="rounded-xl border border-border/70 bg-background px-3 py-2.5"
+                >
+                  <dt className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+                    <Icon className="h-3.5 w-3.5" /> {label}
+                  </dt>
+                  <dd className="mt-0.5 font-display text-xl font-bold tabular-nums text-foreground">
+                    {value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
 
-          <div className="grid gap-4 lg:grid-cols-2">
-            <AdminCard title="Derniers articles" description="Vos publications les plus récemment modifiées.">
-              {articles.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Aucun article pour l'instant.</p>
-              ) : (
-                <ul className="space-y-2">
-                  {articles.slice(0, 5).map((a) => (
-                    <li key={a.id} className="flex items-center justify-between gap-3 rounded-lg border border-border/70 bg-background px-3 py-2">
-                      <span className="min-w-0 truncate text-sm text-foreground">{a.title}</span>
-                      <span className="shrink-0 text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
-                        {getArticleStatus(a)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <Button
-                variant="outline"
-                size="sm"
-                className="mt-4 min-h-10"
-                onClick={() => setTab("articles")}
+            <div className="grid gap-4 lg:grid-cols-2">
+              <AdminCard
+                title="Derniers articles"
+                description="Vos publications les plus récemment modifiées."
               >
-                Ouvrir les articles
+                {articles.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Aucun article pour l'instant.</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {articles.slice(0, 5).map((a) => (
+                      <li
+                        key={a.id}
+                        className="flex items-center justify-between gap-3 rounded-lg border border-border/70 bg-background px-3 py-2"
+                      >
+                        <span className="min-w-0 truncate text-sm text-foreground">{a.title}</span>
+                        <span className="shrink-0 text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
+                          {getArticleStatus(a)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-4 min-h-10"
+                  onClick={() => setTab("articles")}
+                >
+                  Ouvrir les articles
+                </Button>
+              </AdminCard>
+
+              <AdminCard title="Derniers messages" description="Demandes reçues via le site.">
+                {messages.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Aucun message reçu.</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {messages.slice(0, 5).map((m) => (
+                      <li
+                        key={m.id}
+                        className="rounded-lg border border-border/70 bg-background px-3 py-2"
+                      >
+                        <p className="truncate text-sm font-medium text-foreground">
+                          {m.full_name}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">{m.project_type}</p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-4 min-h-10"
+                  onClick={() => setTab("messages")}
+                >
+                  Ouvrir la messagerie
+                </Button>
+              </AdminCard>
+            </div>
+
+            <AdminCard
+              title="Connexions réelles"
+              description="Aucun service n'est déclaré connecté sans preuve serveur."
+            >
+              <Button variant="outline" className="min-h-11" onClick={() => setTab("connexions")}>
+                <Plug className="mr-2 h-4 w-4" /> Vérifier les connexions
               </Button>
             </AdminCard>
-
-            <AdminCard title="Derniers messages" description="Demandes reçues via le site.">
-              {messages.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Aucun message reçu.</p>
-              ) : (
-                <ul className="space-y-2">
-                  {messages.slice(0, 5).map((m) => (
-                    <li key={m.id} className="rounded-lg border border-border/70 bg-background px-3 py-2">
-                      <p className="truncate text-sm font-medium text-foreground">{m.full_name}</p>
-                      <p className="truncate text-xs text-muted-foreground">{m.project_type}</p>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <Button
-                variant="outline"
-                size="sm"
-                className="mt-4 min-h-10"
-                onClick={() => setTab("messages")}
-              >
-                Ouvrir la messagerie
-              </Button>
-            </AdminCard>
-          </div>
-
-          <AdminCard title="Connexions réelles" description="Aucun service n'est déclaré connecté sans preuve serveur.">
-            <Button variant="outline" className="min-h-11" onClick={() => setTab("connexions")}>
-              <Plug className="mr-2 h-4 w-4" /> Vérifier les connexions
-            </Button>
-          </AdminCard>
           </div>
         )}
 
@@ -701,9 +740,7 @@ function AdminPage() {
                   value={draft.slug}
                   onChange={(e) => setDraft({ ...draft, slug: e.target.value })}
                 />
-                <p className="text-[11px] text-muted-foreground">
-                  /articles/{previewSlug || "…"}
-                </p>
+                <p className="text-[11px] text-muted-foreground">/articles/{previewSlug || "…"}</p>
               </div>
             </div>
 
@@ -729,9 +766,7 @@ function AdminPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="cover-upload">
-                …ou importer une image de couverture
-              </Label>
+              <Label htmlFor="cover-upload">…ou importer une image de couverture</Label>
               <input
                 id="cover-upload"
                 type="file"
@@ -747,9 +782,7 @@ function AdminPage() {
                     setDraft((d) => (d ? { ...d, cover_url: url } : d));
                     toast.success("Couverture importée");
                   } catch (err) {
-                    toast.error(
-                      err instanceof Error ? err.message : "Échec de l'import",
-                    );
+                    toast.error(err instanceof Error ? err.message : "Échec de l'import");
                   } finally {
                     setUploadingCover(false);
                   }
@@ -773,9 +806,7 @@ function AdminPage() {
                       type="button"
                       size="sm"
                       variant="outline"
-                      onClick={() =>
-                        document.getElementById("cover-upload")?.click()
-                      }
+                      onClick={() => document.getElementById("cover-upload")?.click()}
                     >
                       Remplacer
                     </Button>
@@ -799,8 +830,8 @@ function AdminPage() {
                 onChange={(html) => setDraft({ ...draft, content: html })}
               />
               <p className="text-[11px] text-muted-foreground">
-                Gras, italique, titres, listes, liens et images : utilisez la barre
-                d'outils ci-dessus.
+                Gras, italique, titres, listes, liens et images : utilisez la barre d'outils
+                ci-dessus.
               </p>
             </div>
 
@@ -849,9 +880,7 @@ function AdminPage() {
                     );
                     toast.success("Fichier(s) ajouté(s)");
                   } catch (err) {
-                    toast.error(
-                      err instanceof Error ? err.message : "Échec de l'import",
-                    );
+                    toast.error(err instanceof Error ? err.message : "Échec de l'import");
                   } finally {
                     setUploadingFile(false);
                   }
@@ -990,8 +1019,7 @@ function AdminPage() {
                     setDraft({ ...draft, ai: { ...draft.ai, chatgpt: e.target.checked } })
                   }
                 />
-                ChatGPT utilisé pour reformuler certains passages et améliorer la
-                lisibilité
+                ChatGPT utilisé pour reformuler certains passages et améliorer la lisibilité
               </label>
               <label className="flex items-start gap-2 text-sm text-foreground">
                 <input
@@ -1045,10 +1073,7 @@ function AdminPage() {
                     ["programme", "Publication différée (à une date et heure)"],
                   ] as const
                 ).map(([value, label]) => (
-                  <label
-                    key={value}
-                    className="flex items-center gap-2 text-sm text-foreground"
-                  >
+                  <label key={value} className="flex items-center gap-2 text-sm text-foreground">
                     <input
                       type="radio"
                       name="status"
@@ -1058,9 +1083,7 @@ function AdminPage() {
                           ...draft,
                           status: value,
                           scheduled_at:
-                            value === "programme"
-                              ? draft.scheduled_at || defaultSchedule()
-                              : "",
+                            value === "programme" ? draft.scheduled_at || defaultSchedule() : "",
                         })
                       }
                       className="h-4 w-4 accent-[var(--color-primary)]"
@@ -1086,9 +1109,7 @@ function AdminPage() {
                     required
                     value={draft.scheduled_at}
                     min={toLocalInput(new Date().toISOString())}
-                    onChange={(e) =>
-                      setDraft({ ...draft, scheduled_at: e.target.value })
-                    }
+                    onChange={(e) => setDraft({ ...draft, scheduled_at: e.target.value })}
                     className="max-w-xs"
                   />
                   <p className="text-[11px] text-muted-foreground">
@@ -1100,9 +1121,7 @@ function AdminPage() {
                 <input
                   type="checkbox"
                   checked={draft.is_private}
-                  onChange={(e) =>
-                    setDraft({ ...draft, is_private: e.target.checked })
-                  }
+                  onChange={(e) => setDraft({ ...draft, is_private: e.target.checked })}
                   className="h-4 w-4 accent-[var(--color-primary)]"
                 />
                 <Lock className="h-3.5 w-3.5 text-muted-foreground" />
@@ -1136,7 +1155,12 @@ function AdminPage() {
                 {save.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Valider et enregistrer
               </Button>
-              <Button type="button" variant="outline" className="min-h-11" onClick={() => setDraft(null)}>
+              <Button
+                type="button"
+                variant="outline"
+                className="min-h-11"
+                onClick={() => setDraft(null)}
+              >
                 Annuler
               </Button>
             </div>
@@ -1230,18 +1254,11 @@ function AdminPage() {
                   </p>
                 )}
                 {messages.map((m) => (
-                  <details
-                    key={m.id}
-                    className="rounded-lg border border-border bg-card p-4"
-                  >
+                  <details key={m.id} className="rounded-lg border border-border bg-card p-4">
                     <summary className="cursor-pointer list-none">
                       <span className="flex flex-wrap items-center gap-2">
-                        {!m.is_read && (
-                          <span className="h-2 w-2 rounded-full bg-primary" />
-                        )}
-                        <span className="font-medium text-foreground">
-                          {m.full_name}
-                        </span>
+                        {!m.is_read && <span className="h-2 w-2 rounded-full bg-primary" />}
+                        <span className="font-medium text-foreground">{m.full_name}</span>
                         <span className="text-xs text-muted-foreground">
                           {m.project_type} · {formatDate(m.created_at)}
                         </span>
@@ -1290,10 +1307,7 @@ function AdminPage() {
                           variant="ghost"
                           onClick={async () => {
                             if (!confirm("Supprimer ce message ?")) return;
-                            await supabase
-                              .from("contact_requests")
-                              .delete()
-                              .eq("id", m.id);
+                            await supabase.from("contact_requests").delete().eq("id", m.id);
                             queryClient.invalidateQueries({
                               queryKey: ["admin-contact-requests"],
                             });
@@ -1311,20 +1325,17 @@ function AdminPage() {
             {tab === "abonnes" && (
               <div className="mt-8 space-y-4">
                 <div className="rounded-xl border border-border bg-card p-4">
-                  <p className="text-sm font-semibold text-foreground">
-                    Lettre hebdomadaire
-                  </p>
+                  <p className="text-sm font-semibold text-foreground">Lettre hebdomadaire</p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Envoi automatique chaque dimanche soir aux abonnés confirmés,
-                    uniquement s'il y a de nouveaux articles depuis le dernier envoi.
+                    Envoi automatique chaque dimanche soir aux abonnés confirmés, uniquement s'il y
+                    a de nouveaux articles depuis le dernier envoi.
                   </p>
                   <Button
                     size="sm"
                     className="mt-3"
                     disabled={sendingNewsletter}
                     onClick={async () => {
-                      if (!confirm("Envoyer la lettre maintenant aux abonnés confirmés ?"))
-                        return;
+                      if (!confirm("Envoyer la lettre maintenant aux abonnés confirmés ?")) return;
                       setSendingNewsletter(true);
                       try {
                         const res = await sendNewsletter({ data: undefined });
@@ -1335,9 +1346,7 @@ function AdminPage() {
                         );
                         queryClient.invalidateQueries({ queryKey: ["admin-subscribers"] });
                       } catch (err) {
-                        toast.error(
-                          err instanceof Error ? err.message : "Envoi impossible",
-                        );
+                        toast.error(err instanceof Error ? err.message : "Envoi impossible");
                       } finally {
                         setSendingNewsletter(false);
                       }
@@ -1353,9 +1362,7 @@ function AdminPage() {
                 </div>
 
                 {subscribers.length === 0 && (
-                  <p className="text-sm text-muted-foreground">
-                    Aucun abonné pour le moment.
-                  </p>
+                  <p className="text-sm text-muted-foreground">Aucun abonné pour le moment.</p>
                 )}
                 {subscribers.map((s) => (
                   <div
@@ -1374,11 +1381,7 @@ function AdminPage() {
                               : "bg-amber-100 text-amber-700"
                         }`}
                       >
-                        {!s.active
-                          ? "désabonné"
-                          : s.confirmed_at
-                            ? "confirmé"
-                            : "en attente"}
+                        {!s.active ? "désabonné" : s.confirmed_at ? "confirmé" : "en attente"}
                       </span>
                     </span>
                     <span className="flex items-center gap-2">
@@ -1408,10 +1411,7 @@ function AdminPage() {
                         variant="ghost"
                         onClick={async () => {
                           if (!confirm(`Supprimer ${s.email} ?`)) return;
-                          await supabase
-                            .from("blog_subscribers")
-                            .delete()
-                            .eq("id", s.id);
+                          await supabase.from("blog_subscribers").delete().eq("id", s.id);
                           queryClient.invalidateQueries({
                             queryKey: ["admin-subscribers"],
                           });
@@ -1426,85 +1426,82 @@ function AdminPage() {
             )}
 
             {tab === "articles" && (
-            <>
-            <Button className="mt-8" onClick={() => setDraft({ ...emptyDraft })}>
-              <Plus className="mr-2 h-4 w-4" /> Nouvel article
-            </Button>
+              <>
+                <Button className="mt-8" onClick={() => setDraft({ ...emptyDraft })}>
+                  <Plus className="mr-2 h-4 w-4" /> Nouvel article
+                </Button>
 
-            <div className="mt-8 space-y-3">
-              {isLoading && (
-                <p className="text-sm text-muted-foreground">Chargement…</p>
-              )}
-              {!isLoading && articles.length === 0 && (
-                <p className="text-sm text-muted-foreground">
-                  Aucun article pour le moment. Cliquez sur « Nouvel article ».
-                </p>
-              )}
-              {articles.map((a: Article) => (
-                <div
-                  key={a.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card p-4"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate font-medium text-foreground">{a.title}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {a.category} ·{" "}
-                      {getArticleStatus(a) === "brouillon" && "brouillon"}
-                      {getArticleStatus(a) === "programme" &&
-                        `programmé pour le ${formatDateTime(a.scheduled_at)}`}
-                      {getArticleStatus(a) === "publie" &&
-                        `publié ${formatDate(a.published_at ?? a.created_at)}`}
-                      {a.is_private && " · privé"}
-                      {a.featured && " · à la une"}
+                <div className="mt-8 space-y-3">
+                  {isLoading && <p className="text-sm text-muted-foreground">Chargement…</p>}
+                  {!isLoading && articles.length === 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      Aucun article pour le moment. Cliquez sur « Nouvel article ».
                     </p>
-                  </div>
-                  <div className="flex gap-2">
-                    {getArticleStatus(a) === "publie" && (
-                      <Button asChild size="sm" variant="ghost">
-                        <a href={`/articles/${a.slug}`} target="_blank" rel="noreferrer">
-                          <Eye className="h-4 w-4" />
-                        </a>
-                      </Button>
-                    )}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() =>
-                        setDraft({
-                          id: a.id,
-                          title: a.title,
-                          slug: a.slug,
-                          category: a.category,
-                          excerpt: a.excerpt ?? "",
-                          content: a.content,
-                          cover_url: a.cover_url ?? "",
-                          status: getArticleStatus(a),
-                          scheduled_at: toLocalInput(a.scheduled_at),
-                          is_private: a.is_private,
-                          featured: a.featured,
-                          attachments: getAttachments(a),
-                          sources: getSources(a),
-                          topics: getTopics(a),
-                          ai: getAiDisclosure(a),
-                        })
-                      }
+                  )}
+                  {articles.map((a: Article) => (
+                    <div
+                      key={a.id}
+                      className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card p-4"
                     >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        if (confirm(`Supprimer « ${a.title} » ?`)) remove.mutate(a.id);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
+                      <div className="min-w-0">
+                        <p className="truncate font-medium text-foreground">{a.title}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {a.category} · {getArticleStatus(a) === "brouillon" && "brouillon"}
+                          {getArticleStatus(a) === "programme" &&
+                            `programmé pour le ${formatDateTime(a.scheduled_at)}`}
+                          {getArticleStatus(a) === "publie" &&
+                            `publié ${formatDate(a.published_at ?? a.created_at)}`}
+                          {a.is_private && " · privé"}
+                          {a.featured && " · à la une"}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        {getArticleStatus(a) === "publie" && (
+                          <Button asChild size="sm" variant="ghost">
+                            <a href={`/articles/${a.slug}`} target="_blank" rel="noreferrer">
+                              <Eye className="h-4 w-4" />
+                            </a>
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            setDraft({
+                              id: a.id,
+                              title: a.title,
+                              slug: a.slug,
+                              category: a.category,
+                              excerpt: a.excerpt ?? "",
+                              content: a.content,
+                              cover_url: a.cover_url ?? "",
+                              status: getArticleStatus(a),
+                              scheduled_at: toLocalInput(a.scheduled_at),
+                              is_private: a.is_private,
+                              featured: a.featured,
+                              attachments: getAttachments(a),
+                              sources: getSources(a),
+                              topics: getTopics(a),
+                              ai: getAiDisclosure(a),
+                            })
+                          }
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            if (confirm(`Supprimer « ${a.title} » ?`)) remove.mutate(a.id);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            </>
+              </>
             )}
           </>
         )}

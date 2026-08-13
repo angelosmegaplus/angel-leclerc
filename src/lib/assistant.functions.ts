@@ -70,9 +70,8 @@ export const askAssistant = createServerFn({ method: "POST" })
     }
     if (!checkAssistantRate(ip)) return { text: null, source: "fallback" };
 
-    const { ASSISTANT_SYSTEM_PROMPT, CONTACT_ASSISTANT_ADDENDUM } = await import(
-      "./assistant-context"
-    );
+    const { ASSISTANT_SYSTEM_PROMPT, CONTACT_ASSISTANT_ADDENDUM } =
+      await import("./assistant-context");
     const messages = [
       {
         role: "system",

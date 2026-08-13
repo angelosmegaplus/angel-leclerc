@@ -16,20 +16,11 @@ const anyDb = supabase as unknown as { from: (t: string) => any };
 
 async function loadAgenda(): Promise<Entry[]> {
   const [articles, projects, tasks, applications, interviews] = await Promise.all([
-    supabase
-      .from("articles")
-      .select("id,title,scheduled_at")
-      .not("scheduled_at", "is", null),
+    supabase.from("articles").select("id,title,scheduled_at").not("scheduled_at", "is", null),
     anyDb.from("projects").select("id,title,due_date,client_name").not("due_date", "is", null),
     anyDb.from("project_tasks").select("id,title,due_date").not("due_date", "is", null),
-    anyDb
-      .from("applications")
-      .select("id,company,follow_up_at")
-      .not("follow_up_at", "is", null),
-    anyDb
-      .from("interviews")
-      .select("id,title,person,scheduled_at")
-      .not("scheduled_at", "is", null),
+    anyDb.from("applications").select("id,company,follow_up_at").not("follow_up_at", "is", null),
+    anyDb.from("interviews").select("id,title,person,scheduled_at").not("scheduled_at", "is", null),
   ]);
 
   const out: Entry[] = [];
@@ -50,7 +41,13 @@ async function loadAgenda(): Promise<Entry[]> {
       kind: "Projet",
     });
   for (const t of (tasks.data ?? []) as any[])
-    out.push({ id: `tsk-${t.id}`, date: t.due_date, label: t.title, detail: "Tâche", kind: "Tâche" });
+    out.push({
+      id: `tsk-${t.id}`,
+      date: t.due_date,
+      label: t.title,
+      detail: "Tâche",
+      kind: "Tâche",
+    });
   for (const c of (applications.data ?? []) as any[])
     out.push({
       id: `can-${c.id}`,
@@ -79,7 +76,10 @@ export function AgendaPanel() {
 
   const today = new Date().toISOString().slice(0, 10);
   const upcoming = data.filter((e) => e.date.slice(0, 10) >= today);
-  const past = data.filter((e) => e.date.slice(0, 10) < today).slice(-10).reverse();
+  const past = data
+    .filter((e) => e.date.slice(0, 10) < today)
+    .slice(-10)
+    .reverse();
 
   const list = (entries: Entry[]) => (
     <ul className="space-y-2">

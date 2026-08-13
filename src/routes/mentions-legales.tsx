@@ -38,22 +38,46 @@ function MentionsLegales() {
           Mentions légales
         </h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          Dernière mise à jour : {new Date().toLocaleDateString("fr-FR", { year: "numeric", month: "long" })}
+          Dernière mise à jour :{" "}
+          {new Date().toLocaleDateString("fr-FR", { year: "numeric", month: "long" })}
         </p>
 
         <div className="mt-10 space-y-10 text-sm leading-relaxed text-muted-foreground">
           <div>
             <h2 className="font-display text-xl font-semibold text-foreground">Éditeur du site</h2>
             <ul className="mt-4 space-y-1">
-              <li><span className="text-foreground">Nom commercial :</span> Angel Leclerc Communication</li>
-              <li><span className="text-foreground">Statut :</span> Entrepreneur individuel</li>
-              <li><span className="text-foreground">Responsable de la publication :</span> Angel Leclerc</li>
-              <li><span className="text-foreground">Siège social :</span> 25 Grande Rue, 03110 Broût-Vernet, France</li>
-              <li><span className="text-foreground">SIREN :</span> 106 487 192</li>
-              <li><span className="text-foreground">SIRET :</span> 106 487 192 00010</li>
-              <li><span className="text-foreground">Code APE :</span> 7021Z — Conseil en relations publiques et communication</li>
-              <li><span className="text-foreground">TVA :</span> non applicable, article 293 B du Code général des impôts</li>
-              <li><span className="text-foreground">Email :</span> contact@angel-leclerc.fr</li>
+              <li>
+                <span className="text-foreground">Nom commercial :</span> Angel Leclerc
+                Communication
+              </li>
+              <li>
+                <span className="text-foreground">Statut :</span> Entrepreneur individuel
+              </li>
+              <li>
+                <span className="text-foreground">Responsable de la publication :</span> Angel
+                Leclerc
+              </li>
+              <li>
+                <span className="text-foreground">Siège social :</span> 25 Grande Rue, 03110
+                Broût-Vernet, France
+              </li>
+              <li>
+                <span className="text-foreground">SIREN :</span> 106 487 192
+              </li>
+              <li>
+                <span className="text-foreground">SIRET :</span> 106 487 192 00010
+              </li>
+              <li>
+                <span className="text-foreground">Code APE :</span> 7021Z — Conseil en relations
+                publiques et communication
+              </li>
+              <li>
+                <span className="text-foreground">TVA :</span> non applicable, article 293 B du Code
+                général des impôts
+              </li>
+              <li>
+                <span className="text-foreground">Email :</span> contact@angel-leclerc.fr
+              </li>
               <li>
                 <span className="text-foreground">Téléphone :</span> communiqué sur demande via la
                 page Contact
@@ -70,10 +94,12 @@ function MentionsLegales() {
           </div>
 
           <div>
-            <h2 className="font-display text-xl font-semibold text-foreground">Propriété intellectuelle</h2>
+            <h2 className="font-display text-xl font-semibold text-foreground">
+              Propriété intellectuelle
+            </h2>
             <p className="mt-4">
-              L'ensemble des contenus présents sur ce site (textes, images, logo, illustrations, mise
-              en page, structure) sont, sauf mention contraire, la propriété exclusive d'Angel
+              L'ensemble des contenus présents sur ce site (textes, images, logo, illustrations,
+              mise en page, structure) sont, sauf mention contraire, la propriété exclusive d'Angel
               Leclerc. Toute reproduction, représentation, modification ou diffusion, totale ou
               partielle, sans autorisation écrite préalable est interdite et constituerait une
               contrefaçon au sens des articles L.335-2 et suivants du Code de la propriété
@@ -84,10 +110,10 @@ function MentionsLegales() {
           <div>
             <h2 className="font-display text-xl font-semibold text-foreground">Responsabilité</h2>
             <p className="mt-4">
-              Les informations diffusées sur ce site sont présentées à titre indicatif. Angel Leclerc
-              Communication s'efforce d'assurer leur exactitude et leur mise à jour, mais ne peut
-              garantir l'absence d'erreurs ou d'omissions. L'utilisateur reste seul responsable de
-              l'usage qu'il fait des informations présentées.
+              Les informations diffusées sur ce site sont présentées à titre indicatif. Angel
+              Leclerc Communication s'efforce d'assurer leur exactitude et leur mise à jour, mais ne
+              peut garantir l'absence d'erreurs ou d'omissions. L'utilisateur reste seul responsable
+              de l'usage qu'il fait des informations présentées.
             </p>
           </div>
 

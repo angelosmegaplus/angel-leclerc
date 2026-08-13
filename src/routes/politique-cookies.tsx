@@ -47,10 +47,10 @@ function CookiePolicyPage() {
             Politique des cookies
           </h1>
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-            Ce site n'utilise aucun traceur soumis à consentement : ni publicité, ni
-            profilage, ni outil d'analyse tiers. Seuls des stockages strictement
-            nécessaires au fonctionnement et une mesure d'audience interne et anonyme
-            sont utilisés. Aucun bandeau de consentement n'est donc nécessaire.
+            Ce site n'utilise aucun traceur soumis à consentement : ni publicité, ni profilage, ni
+            outil d'analyse tiers. Seuls des stockages strictement nécessaires au fonctionnement et
+            une mesure d'audience interne et anonyme sont utilisés. Aucun bandeau de consentement
+            n'est donc nécessaire.
           </p>
 
           <div className="mt-8 space-y-4">
@@ -69,22 +69,20 @@ function CookiePolicyPage() {
             Prestataires et contenus tiers
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Hébergement et base de données : Lovable (Union européenne).
-            Envoi d'e-mails transactionnels : Resend. Boutique et paiements :
-            Stripe et Printful, uniquement si vous passez commande. Médias intégrés
-            (vidéos) : chargés en mode sans cookie (youtube-nocookie). Aucune régie publicitaire ni pixel
-            marketing n'est utilisé aujourd'hui&nbsp;; cette page sera mise à jour si
-            cela venait à changer.
+            Hébergement et base de données : Lovable (Union européenne). Envoi d'e-mails
+            transactionnels : Resend. Boutique et paiements : Stripe et Printful, uniquement si vous
+            passez commande. Médias intégrés (vidéos) : chargés en mode sans cookie
+            (youtube-nocookie). Aucune régie publicitaire ni pixel marketing n'est utilisé
+            aujourd'hui&nbsp;; cette page sera mise à jour si cela venait à changer.
           </p>
 
           <h2 className="mt-8 font-display text-xl font-bold text-foreground">
             Sécurité et adresses IP
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Lors de l'envoi d'un message ou d'une vérification anti-robot, l'adresse IP
-            peut être traitée pour limiter les abus et le spam. Elle n'est jamais
-            utilisée à des fins commerciales et n'est conservée que le temps nécessaire
-            au traitement de la demande.
+            Lors de l'envoi d'un message ou d'une vérification anti-robot, l'adresse IP peut être
+            traitée pour limiter les abus et le spam. Elle n'est jamais utilisée à des fins
+            commerciales et n'est conservée que le temps nécessaire au traitement de la demande.
           </p>
         </div>
       </section>

@@ -2,11 +2,7 @@
 
 export type EmbedResult = { html: string; label: string };
 
-const iframe = (
-  src: string,
-  title: string,
-  opts: { ratio?: boolean; height?: number } = {},
-) => {
+const iframe = (src: string, title: string, opts: { ratio?: boolean; height?: number } = {}) => {
   const allow =
     "accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture";
   if (opts.ratio) {
@@ -41,9 +37,7 @@ export function buildEmbedHtml(input: string): EmbedResult | null {
 
   // Spotify (titre, album, playlist, artiste, podcast, épisode)
   if (host.endsWith("spotify.com")) {
-    const m = path.match(
-      /\/(track|album|playlist|artist|show|episode)\/([A-Za-z0-9]+)/,
-    );
+    const m = path.match(/\/(track|album|playlist|artist|show|episode)\/([A-Za-z0-9]+)/);
     if (m) {
       const compact = m[1] === "track" || m[1] === "episode";
       return {
@@ -62,11 +56,9 @@ export function buildEmbedHtml(input: string): EmbedResult | null {
     const m = path.match(/\/(track|album|playlist|episode|show)\/(\d+)/);
     if (m) {
       return {
-        html: iframe(
-          `https://widget.deezer.com/widget/auto/${m[1]}/${m[2]}`,
-          "Lecteur Deezer",
-          { height: m[1] === "track" ? 150 : 300 },
-        ),
+        html: iframe(`https://widget.deezer.com/widget/auto/${m[1]}/${m[2]}`, "Lecteur Deezer", {
+          height: m[1] === "track" ? 150 : 300,
+        }),
         label: "Deezer",
       };
     }
@@ -88,11 +80,9 @@ export function buildEmbedHtml(input: string): EmbedResult | null {
   if (host.endsWith("music.apple.com") || host.endsWith("podcasts.apple.com")) {
     const embedHost = host.replace(/^(music|podcasts)\./, "embed.$1.");
     return {
-      html: iframe(
-        `https://${embedHost}${path}${url.search}`,
-        "Lecteur Apple",
-        { height: host.startsWith("podcasts") ? 175 : 320 },
-      ),
+      html: iframe(`https://${embedHost}${path}${url.search}`, "Lecteur Apple", {
+        height: host.startsWith("podcasts") ? 175 : 320,
+      }),
       label: "Apple",
     };
   }
@@ -115,11 +105,9 @@ export function buildEmbedHtml(input: string): EmbedResult | null {
     const m = raw.match(/(?:dailymotion\.com\/video\/|dai\.ly\/)([A-Za-z0-9]+)/);
     if (m) {
       return {
-        html: iframe(
-          `https://www.dailymotion.com/embed/video/${m[1]}`,
-          "Vidéo Dailymotion",
-          { ratio: true },
-        ),
+        html: iframe(`https://www.dailymotion.com/embed/video/${m[1]}`, "Vidéo Dailymotion", {
+          ratio: true,
+        }),
         label: "Dailymotion",
       };
     }
@@ -130,11 +118,9 @@ export function buildEmbedHtml(input: string): EmbedResult | null {
     const m = path.match(/\/([\w-]+)/);
     if (m) {
       return {
-        html: iframe(
-          `https://player.ausha.co/index.html?podcastId=${m[1]}`,
-          "Lecteur Ausha",
-          { height: 220 },
-        ),
+        html: iframe(`https://player.ausha.co/index.html?podcastId=${m[1]}`, "Lecteur Ausha", {
+          height: 220,
+        }),
         label: "Ausha",
       };
     }

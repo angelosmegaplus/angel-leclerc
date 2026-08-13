@@ -28,9 +28,7 @@ export const useCartStore = create<CartStore>()(
         if (existing) {
           set({
             items: get().items.map((i) =>
-              i.slug === product.slug
-                ? { ...i, quantity: Math.min(20, i.quantity + quantity) }
-                : i,
+              i.slug === product.slug ? { ...i, quantity: Math.min(20, i.quantity + quantity) } : i,
             ),
           });
           return;

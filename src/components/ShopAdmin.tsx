@@ -24,10 +24,7 @@ import {
   type PrintfulDiagnostics,
   type PrintfulSyncReport,
 } from "@/lib/shop.functions";
-import {
-  getPrintfulCatalogStatus,
-  syncPrintfulCatalog,
-} from "@/lib/shop.functions";
+import { getPrintfulCatalogStatus, syncPrintfulCatalog } from "@/lib/shop.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPrice } from "@/lib/shop";
 
@@ -136,9 +133,7 @@ function ShopAdminInner() {
         });
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Synchronisation impossible",
-      );
+      toast.error(error instanceof Error ? error.message : "Synchronisation impossible");
     } finally {
       setCatalogSyncing(false);
     }
@@ -241,9 +236,7 @@ function ShopAdminInner() {
       price_cents: priceCents,
       description: form.description.trim(),
       image_url: form.image_url.trim() || null,
-      printful_variant_id: form.printful_variant_id
-        ? Number(form.printful_variant_id)
-        : null,
+      printful_variant_id: form.printful_variant_id ? Number(form.printful_variant_id) : null,
       printful_sync_variant_id: form.printful_sync_variant_id
         ? Number(form.printful_sync_variant_id)
         : null,
@@ -325,9 +318,7 @@ function ShopAdminInner() {
     <div className="mt-8 space-y-10">
       <section className="rounded-xl border border-border bg-card p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-display text-lg font-bold text-foreground">
-            Catalogue Printful
-          </h2>
+          <h2 className="font-display text-lg font-bold text-foreground">Catalogue Printful</h2>
           <Button
             size="sm"
             onClick={runProductSync}
@@ -360,9 +351,7 @@ function ShopAdminInner() {
                   <dt className="text-[11px] uppercase tracking-wide text-muted-foreground">
                     {stat.label}
                   </dt>
-                  <dd className="mt-1 text-sm font-semibold text-foreground">
-                    {stat.value}
-                  </dd>
+                  <dd className="mt-1 text-sm font-semibold text-foreground">{stat.value}</dd>
                 </div>
               ))}
             </dl>
@@ -375,8 +364,8 @@ function ShopAdminInner() {
             {!catalog.storeAllowed && (
               <p className="mt-2 text-xs text-muted-foreground">
                 Synchronisation désactivée : seule une boutique API Printful dédiée à
-                angel-leclerc.fr peut alimenter le catalogue. Les boutiques Squarespace,
-                Shopify et « Personal orders » sont ignorées.
+                angel-leclerc.fr peut alimenter le catalogue. Les boutiques Squarespace, Shopify et
+                « Personal orders » sont ignorées.
               </p>
             )}
             {catalog.storeAllowed && catalog.apiProductCount === 0 && (
@@ -455,7 +444,10 @@ function ShopAdminInner() {
             <DiagRow
               ok={Boolean(diagnostics.webhookUrl)}
               label="Webhook Printful"
-              detail={diagnostics.webhookUrl ?? "Non enregistré — cliquez sur « Activer le suivi Printful »"}
+              detail={
+                diagnostics.webhookUrl ??
+                "Non enregistré — cliquez sur « Activer le suivi Printful »"
+              }
             />
             {diagnostics.variants.map((v) => (
               <DiagRow
@@ -482,9 +474,7 @@ function ShopAdminInner() {
             <Button
               size="sm"
               variant="outline"
-              onClick={() =>
-                queryClient.invalidateQueries({ queryKey: ["admin-shop-orders"] })
-              }
+              onClick={() => queryClient.invalidateQueries({ queryKey: ["admin-shop-orders"] })}
             >
               <RefreshCw className="mr-2 h-4 w-4" /> Actualiser
             </Button>
@@ -503,19 +493,13 @@ function ShopAdminInner() {
             <Loader2 className="animate-spin" size={16} /> Chargement…
           </p>
         ) : orders.length === 0 ? (
-          <p className="mt-4 text-sm text-muted-foreground">
-            Aucune commande pour le moment.
-          </p>
+          <p className="mt-4 text-sm text-muted-foreground">Aucune commande pour le moment.</p>
         ) : (
           <div className="mt-4 space-y-3">
             {(orders as any[]).map((order) => {
-              const remaining =
-                (order.amount_cents ?? 0) - (order.refunded_amount_cents ?? 0);
+              const remaining = (order.amount_cents ?? 0) - (order.refunded_amount_cents ?? 0);
               return (
-                <div
-                  key={order.id}
-                  className="rounded-xl border border-border bg-card p-4 text-sm"
-                >
+                <div key={order.id} className="rounded-xl border border-border bg-card p-4 text-sm">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="font-semibold text-foreground">
                       {order.customer_name || "Client"} ·{" "}
@@ -526,8 +510,7 @@ function ShopAdminInner() {
                     </span>
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {order.customer_email} ·{" "}
-                    {new Date(order.created_at).toLocaleString("fr-FR")} ·{" "}
+                    {order.customer_email} · {new Date(order.created_at).toLocaleString("fr-FR")} ·{" "}
                     {order.environment === "live" ? "réel" : "test"}
                   </p>
                   <ul className="mt-2 space-y-0.5 text-xs text-muted-foreground">
@@ -646,25 +629,19 @@ function ShopAdminInner() {
               className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
               placeholder="ID variante Printful (ex. 1320)"
               value={form.printful_variant_id}
-              onChange={(e) =>
-                setForm({ ...form, printful_variant_id: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, printful_variant_id: e.target.value })}
             />
             <input
               className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
               placeholder="ID produit synchronisé Printful (facultatif)"
               value={form.printful_sync_variant_id}
-              onChange={(e) =>
-                setForm({ ...form, printful_sync_variant_id: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, printful_sync_variant_id: e.target.value })}
             />
             <input
               className="rounded-lg border border-border bg-background px-3 py-2 text-sm sm:col-span-2"
               placeholder="URL du fichier d'impression (visuel PNG haute résolution)"
               value={form.printful_print_file_url}
-              onChange={(e) =>
-                setForm({ ...form, printful_print_file_url: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, printful_print_file_url: e.target.value })}
             />
             <input
               className="rounded-lg border border-border bg-background px-3 py-2 text-sm sm:col-span-2"

@@ -36,9 +36,7 @@ async function fulfillSession(session: any, env: StripeEnv) {
 
   const { data: products } = await supabaseAdmin
     .from("shop_products")
-    .select(
-      "slug, name, printful_variant_id, printful_sync_variant_id, printful_print_file_url",
-    )
+    .select("slug, name, printful_variant_id, printful_sync_variant_id, printful_print_file_url")
     .in(
       "slug",
       requested.map((i) => i.s),
@@ -53,9 +51,7 @@ async function fulfillSession(session: any, env: StripeEnv) {
   }));
 
   const shipping =
-    (full as any).collected_information?.shipping_details ??
-    (full as any).shipping_details ??
-    null;
+    (full as any).collected_information?.shipping_details ?? (full as any).shipping_details ?? null;
   const customerName = full.customer_details?.name ?? shipping?.name ?? null;
   const customerEmail = full.customer_details?.email ?? null;
 
@@ -64,8 +60,7 @@ async function fulfillSession(session: any, env: StripeEnv) {
     .upsert(
       {
         stripe_session_id: full.id,
-        stripe_payment_intent:
-          typeof full.payment_intent === "string" ? full.payment_intent : null,
+        stripe_payment_intent: typeof full.payment_intent === "string" ? full.payment_intent : null,
         environment: env,
         customer_email: customerEmail,
         customer_name: customerName,
@@ -248,8 +243,7 @@ async function fulfillSession(session: any, env: StripeEnv) {
 
 async function handleRefund(charge: any, env: StripeEnv) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const paymentIntent =
-    typeof charge.payment_intent === "string" ? charge.payment_intent : null;
+  const paymentIntent = typeof charge.payment_intent === "string" ? charge.payment_intent : null;
   if (!paymentIntent) return;
 
   const { data: order } = await supabaseAdmin

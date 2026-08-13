@@ -133,7 +133,11 @@ export function classifySource(input: {
   if (!host) return "direct";
   if (input.currentHost && host === input.currentHost.replace(/^www\./, "")) return "direct";
   if (/google|bing|duckduckgo|qwant|ecosia|yahoo|yandex|brave/.test(host)) return "recherche";
-  if (/facebook|instagram|linkedin|twitter|x\.com|threads|tiktok|youtube|reddit|substack|whatsapp|t\.co/.test(host))
+  if (
+    /facebook|instagram|linkedin|twitter|x\.com|threads|tiktok|youtube|reddit|substack|whatsapp|t\.co/.test(
+      host,
+    )
+  )
     return `social:${host}`;
   return `referral:${host}`;
 }
@@ -334,7 +338,9 @@ export function buildSiteStats(input: {
         start: first.created_at,
         durationSeconds: Math.max(
           0,
-          Math.round((new Date(last.created_at).getTime() - new Date(first.created_at).getTime()) / 1000),
+          Math.round(
+            (new Date(last.created_at).getTime() - new Date(first.created_at).getTime()) / 1000,
+          ),
         ),
         pages: pvs.map((p) => ({ path: p.path, at: p.created_at })),
         clicks: sorted.filter((e) => e.event_type === "click").length,

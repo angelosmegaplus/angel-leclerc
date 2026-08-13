@@ -72,13 +72,15 @@ export function toPublicSettings(row: SettingsRow): PublicFeedbackSettings {
 
 /** Supprime balises, scripts et caractères de contrôle d'un commentaire visiteur. */
 export function sanitizeComment(input: string): string {
-  return input
-    .replace(/<[^>]*>/g, " ")
-    // eslint-disable-next-line no-control-regex
-    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, "")
-    .replace(/[ \t]{2,}/g, " ")
-    .trim()
-    .slice(0, 1000);
+  return (
+    input
+      .replace(/<[^>]*>/g, " ")
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, "")
+      .replace(/[ \t]{2,}/g, " ")
+      .trim()
+      .slice(0, 1000)
+  );
 }
 
 /** Empreinte anonyme et non réversible du visiteur (IP + navigateur). */

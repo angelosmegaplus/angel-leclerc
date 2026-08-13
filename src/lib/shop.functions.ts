@@ -1,11 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import {
-  type StripeEnv,
-  createStripeClient,
-  getStripeErrorMessage,
-} from "@/lib/stripe.server";
+import { type StripeEnv, createStripeClient, getStripeErrorMessage } from "@/lib/stripe.server";
 import type { ShopCatalog, ShopProduct, ShopVariant } from "@/lib/shop";
 import { SHIPPING_CENTS } from "@/lib/shop";
 
@@ -113,14 +109,19 @@ export const getShopCatalog = createServerFn({ method: "GET" }).handler(
       };
     }
 
-    const rows = (data ?? []) as Array<ProductRow & { active: boolean; printful_synced_at: string | null }>;
+    const rows = (data ?? []) as Array<
+      ProductRow & { active: boolean; printful_synced_at: string | null }
+    >;
     const lastSyncedAt =
       rows
         .map((r) => r.printful_synced_at)
         .filter((v): v is string => Boolean(v))
         .sort()
         .pop() ?? null;
-    const products = rows.filter((r) => r.active).filter(isSellable).map(toProduct);
+    const products = rows
+      .filter((r) => r.active)
+      .filter(isSellable)
+      .map(toProduct);
 
     if (products.length > 0) {
       return { products, reason: "none", message: null, lastSyncedAt };
@@ -164,7 +165,21 @@ export const getShopProduct = createServerFn({ method: "GET" })
 type CheckoutResult = { clientSecret: string } | { error: string };
 
 const ALLOWED_COUNTRIES = [
-  "FR", "BE", "LU", "CH", "DE", "ES", "IT", "NL", "PT", "AT", "IE", "DK", "SE", "FI", "PL",
+  "FR",
+  "BE",
+  "LU",
+  "CH",
+  "DE",
+  "ES",
+  "IT",
+  "NL",
+  "PT",
+  "AT",
+  "IE",
+  "DK",
+  "SE",
+  "FI",
+  "PL",
 ] as const;
 
 export interface ShippingQuote {
@@ -201,10 +216,7 @@ function validateDestination(d: Destination): Destination {
  */
 export const estimateShippingRates = createServerFn({ method: "POST" })
   .inputValidator(
-    (data: {
-      items: Array<{ slug: string; quantity: number }>;
-      destination: Destination;
-    }) => {
+    (data: { items: Array<{ slug: string; quantity: number }>; destination: Destination }) => {
       if (!Array.isArray(data.items) || data.items.length === 0) throw new Error("Panier vide");
       for (const item of data.items) {
         if (!/^[a-z0-9-]{1,80}$/.test(item.slug)) throw new Error("Référence invalide");
@@ -314,9 +326,10 @@ export const createShopCheckout = createServerFn({ method: "POST" })
           source: "boutique-alc",
           destination: `${data.destination.country} ${data.destination.postalCode}`,
           shipping_source: shipping.estimated ? "forfait" : "printful",
-          items: JSON.stringify(
-            data.items.map((i) => ({ s: i.slug, q: i.quantity })),
-          ).slice(0, 480),
+          items: JSON.stringify(data.items.map((i) => ({ s: i.slug, q: i.quantity }))).slice(
+            0,
+            480,
+          ),
         },
       };
 
@@ -442,8 +455,7 @@ export const refundShopOrder = createServerFn({ method: "POST" })
       });
 
       const now = new Date().toISOString();
-      const total =
-        ((order as any).refunded_amount_cents ?? 0) + (refund.amount ?? 0);
+      const total = ((order as any).refunded_amount_cents ?? 0) + (refund.amount ?? 0);
       const partial = total < ((order as any).amount_cents ?? 0);
 
       let events = appendEvent((order as any).events, {
@@ -460,9 +472,7 @@ export const refundShopOrder = createServerFn({ method: "POST" })
           : { error_message: cancel.error };
         events = appendEvent(events, {
           at: now,
-          label: cancel.ok
-            ? "Production annulée chez Printful"
-            : "Annulation Printful impossible",
+          label: cancel.ok ? "Production annulée chez Printful" : "Annulation Printful impossible",
           detail: cancel.ok ? undefined : cancel.error,
         });
       }
@@ -495,9 +505,8 @@ export const syncPrintfulOrder = createServerFn({ method: "POST" })
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { getPrintfulOrder } = await import("@/lib/printful.server");
-    const { appendEvent, orderPatchFromPrintful, PRINTFUL_STATUS_LABEL } = await import(
-      "@/lib/shop-orders.server"
-    );
+    const { appendEvent, orderPatchFromPrintful, PRINTFUL_STATUS_LABEL } =
+      await import("@/lib/shop-orders.server");
 
     const { data: order } = await supabaseAdmin
       .from("shop_orders")
@@ -521,8 +530,7 @@ export const syncPrintfulOrder = createServerFn({ method: "POST" })
           ? {
               events: appendEvent((order as any).events, {
                 at: new Date().toISOString(),
-                label:
-                  PRINTFUL_STATUS_LABEL[state.order.status] ?? state.order.status,
+                label: PRINTFUL_STATUS_LABEL[state.order.status] ?? state.order.status,
               }),
             }
           : {}),
@@ -557,7 +565,13 @@ export interface PrintfulDiagnostics {
   stores: Array<{ id: number; name: string; type: string }>;
   webhookUrl: string | null;
   webhookTypes: string[];
-  variants: Array<{ slug: string; name: string; variantId: number | null; valid: boolean; detail: string }>;
+  variants: Array<{
+    slug: string;
+    name: string;
+    variantId: number | null;
+    valid: boolean;
+    detail: string;
+  }>;
   errors: string[];
 }
 
@@ -566,9 +580,8 @@ export const checkPrintfulSetup = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<PrintfulDiagnostics> => {
     await assertAdmin(context);
-    const { listPrintfulStores, checkPrintfulVariant, getPrintfulWebhook } = await import(
-      "@/lib/printful.server"
-    );
+    const { listPrintfulStores, checkPrintfulVariant, getPrintfulWebhook } =
+      await import("@/lib/printful.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const errors: string[] = [];
@@ -583,8 +596,7 @@ export const checkPrintfulSetup = createServerFn({ method: "POST" })
     } else {
       errors.push("Jeton API Printful absent");
     }
-    const storeName =
-      stores.find((s) => String(s.id) === storeId)?.name ?? (storeId ? null : null);
+    const storeName = stores.find((s) => String(s.id) === storeId)?.name ?? (storeId ? null : null);
     if (storeId && stores.length > 0 && !storeName) {
       errors.push(`La boutique ${storeId} n'est pas accessible avec ce jeton`);
     }
@@ -716,13 +728,11 @@ export const trackShopOrder = createServerFn({ method: "POST" })
  */
 export const syncPendingPrintfulOrders = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(
-    async ({ context }): Promise<{ checked: number; updated: number; error?: string }> => {
-      await assertAdmin(context);
-      const { syncOpenPrintfulOrders } = await import("@/lib/shop-sync.server");
-      return syncOpenPrintfulOrders();
-    },
-  );
+  .handler(async ({ context }): Promise<{ checked: number; updated: number; error?: string }> => {
+    await assertAdmin(context);
+    const { syncOpenPrintfulOrders } = await import("@/lib/shop-sync.server");
+    return syncOpenPrintfulOrders();
+  });
 
 /* ------------------------- Catalogue Printful ------------------------- */
 

@@ -1,6 +1,10 @@
 /** Synchronisation périodique des commandes Printful — serveur uniquement. */
 import { getPrintfulOrder } from "@/lib/printful.server";
-import { appendEvent, orderPatchFromPrintful, PRINTFUL_STATUS_LABEL } from "@/lib/shop-orders.server";
+import {
+  appendEvent,
+  orderPatchFromPrintful,
+  PRINTFUL_STATUS_LABEL,
+} from "@/lib/shop-orders.server";
 
 /** Statuts Printful terminaux : plus rien à rafraîchir. */
 const TERMINAL = new Set(["fulfilled", "canceled", "failed", "package_returned"]);
@@ -19,9 +23,7 @@ export async function syncOpenPrintfulOrders(): Promise<{
     .limit(40);
   if (error) return { checked: 0, updated: 0, error: error.message };
 
-  const open = (data ?? []).filter(
-    (o: any) => !TERMINAL.has(String(o.printful_status ?? "")),
-  );
+  const open = (data ?? []).filter((o: any) => !TERMINAL.has(String(o.printful_status ?? "")));
 
   let updated = 0;
   for (const order of open) {

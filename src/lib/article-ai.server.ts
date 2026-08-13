@@ -34,7 +34,8 @@ const ALLOWED_TOPICS = [
 function extractResponseText(json: unknown): string | null {
   if (!json || typeof json !== "object") return null;
   const root = json as Record<string, unknown>;
-  if (typeof root.output_text === "string" && root.output_text.trim()) return root.output_text.trim();
+  if (typeof root.output_text === "string" && root.output_text.trim())
+    return root.output_text.trim();
   if (!Array.isArray(root.output)) return null;
   for (const item of root.output) {
     if (!item || typeof item !== "object") continue;
@@ -68,7 +69,9 @@ function parseJsonObject(text: string) {
   }
 }
 
-async function researchAndWrite(subject: string): Promise<Omit<GeneratedArticleDraft, "coverUrl" | "coverMeta"> | null> {
+async function researchAndWrite(
+  subject: string,
+): Promise<Omit<GeneratedArticleDraft, "coverUrl" | "coverMeta"> | null> {
   const key = process.env["OPENAI_API_KEY"];
   if (!key) return null;
 
@@ -91,8 +94,7 @@ async function researchAndWrite(subject: string): Promise<Omit<GeneratedArticleD
             content: [
               {
                 type: "input_text",
-                text:
-                  "Tu es le moteur de recherche et de rédaction d'Angel OS. Rédige en français un brouillon journalistique factuel, lisible et vérifiable. Utilise le web pour vérifier les faits récents. N'invente jamais une source, une citation ou une URL. Retourne UNIQUEMENT un objet JSON valide avec les clés title, excerpt, content, sources, topics. content doit contenir le corps de l'article en HTML simple (<p>, <h2>, <strong>, <em>) sans section Sources. sources est un tableau d'objets {label,url} avec uniquement des pages réellement consultées. topics est un tableau limité aux catégories autorisées fournies par l'utilisateur. Le brouillon ne doit jamais être présenté comme publié.",
+                text: "Tu es le moteur de recherche et de rédaction d'Angel OS. Rédige en français un brouillon journalistique factuel, lisible et vérifiable. Utilise le web pour vérifier les faits récents. N'invente jamais une source, une citation ou une URL. Retourne UNIQUEMENT un objet JSON valide avec les clés title, excerpt, content, sources, topics. content doit contenir le corps de l'article en HTML simple (<p>, <h2>, <strong>, <em>) sans section Sources. sources est un tableau d'objets {label,url} avec uniquement des pages réellement consultées. topics est un tableau limité aux catégories autorisées fournies par l'utilisateur. Le brouillon ne doit jamais être présenté comme publié.",
               },
             ],
           },
@@ -118,12 +120,16 @@ async function researchAndWrite(subject: string): Promise<Omit<GeneratedArticleD
     const parsed = parseJsonObject(text);
     if (!parsed) return null;
 
-    const title = typeof parsed.title === "string" ? parsed.title.trim().slice(0, 180) : subject.slice(0, 180);
+    const title =
+      typeof parsed.title === "string" ? parsed.title.trim().slice(0, 180) : subject.slice(0, 180);
     const excerpt = typeof parsed.excerpt === "string" ? parsed.excerpt.trim().slice(0, 600) : "";
     const content = typeof parsed.content === "string" ? parsed.content.trim() : "";
     const rawSources = Array.isArray(parsed.sources) ? parsed.sources : [];
     const sources: ArticleSource[] = rawSources
-      .filter((item): item is Record<string, unknown> => !!item && typeof item === "object" && !Array.isArray(item))
+      .filter(
+        (item): item is Record<string, unknown> =>
+          !!item && typeof item === "object" && !Array.isArray(item),
+      )
       .map((item) => ({
         label: typeof item.label === "string" ? item.label.trim().slice(0, 220) : "Source",
         url: typeof item.url === "string" ? item.url.trim() : "",
@@ -146,12 +152,18 @@ async function researchAndWrite(subject: string): Promise<Omit<GeneratedArticleD
 }
 
 function stripHtml(value: string) {
-  return value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  return value
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function cleanMetadata(value: unknown) {
   if (typeof value !== "string") return "";
-  return stripHtml(value).replace(/&quot;/g, '"').replace(/&amp;/g, "&").trim();
+  return stripHtml(value)
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, "&")
+    .trim();
 }
 
 async function findCommonsImage(subject: string): Promise<{ url: string; meta: CoverMeta } | null> {
@@ -173,15 +185,25 @@ async function findCommonsImage(subject: string): Promise<{ url: string; meta: C
     });
     if (!response.ok) return null;
     const json = (await response.json()) as {
-      query?: { pages?: Record<string, { title?: string; imageinfo?: Array<Record<string, unknown>> }> };
+      query?: {
+        pages?: Record<string, { title?: string; imageinfo?: Array<Record<string, unknown>> }>;
+      };
     };
     const pages = Object.values(json.query?.pages ?? {});
     for (const page of pages) {
       const info = page.imageinfo?.[0];
       if (!info) continue;
-      const url = typeof info.thumburl === "string" ? info.thumburl : typeof info.url === "string" ? info.url : "";
+      const url =
+        typeof info.thumburl === "string"
+          ? info.thumburl
+          : typeof info.url === "string"
+            ? info.url
+            : "";
       if (!url) continue;
-      const ext = info.extmetadata && typeof info.extmetadata === "object" ? (info.extmetadata as Record<string, { value?: unknown }>) : {};
+      const ext =
+        info.extmetadata && typeof info.extmetadata === "object"
+          ? (info.extmetadata as Record<string, { value?: unknown }>)
+          : {};
       const license = cleanMetadata(ext.LicenseShortName?.value ?? ext.License?.value);
       const artist = cleanMetadata(ext.Artist?.value ?? ext.Credit?.value) || "Auteur non précisé";
       const description = cleanMetadata(ext.ImageDescription?.value) || subject;

@@ -43,7 +43,10 @@ async function loadCartRows(items: Array<{ slug: string; quantity: number }>) {
     .select(
       "slug, name, description, price_cents, currency, image_url, printful_variant_id, printful_sync_variant_id",
     )
-    .in("slug", items.map((i) => i.slug))
+    .in(
+      "slug",
+      items.map((i) => i.slug),
+    )
     .eq("active", true);
   if (error) throw new Error("Catalogue indisponible");
   return new Map((data ?? []).map((r: any) => [r.slug as string, r]));
@@ -120,4 +123,3 @@ export async function quoteShipping(
     return fallback;
   }
 }
-

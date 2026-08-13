@@ -159,7 +159,10 @@ export function PageViewTracker() {
       const href = el.getAttribute("href") ?? "";
       let safeHref = "";
       try {
-        safeHref = href ? new URL(href, window.location.origin).origin + new URL(href, window.location.origin).pathname : "";
+        safeHref = href
+          ? new URL(href, window.location.origin).origin +
+            new URL(href, window.location.origin).pathname
+          : "";
       } catch {
         safeHref = "";
       }

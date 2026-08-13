@@ -184,9 +184,7 @@ export function RichTextEditor({ value, onChange }: Props) {
       toast.error("Aucun lien reconnu");
       return;
     }
-    const heading = title.trim()
-      ? `<h3>${title.trim().replace(/[<>]/g, "")}</h3>`
-      : "";
+    const heading = title.trim() ? `<h3>${title.trim().replace(/[<>]/g, "")}</h3>` : "";
     const grid = parts.length > 1 ? " is-grid" : "";
     insertHtml(
       `<section class="embed-section${grid}">${heading}${parts.join("")}</section><p><br/></p>`,
@@ -247,20 +245,45 @@ export function RichTextEditor({ value, onChange }: Props) {
           <Underline className="h-4 w-4" />
         </button>
         <span className="mx-1 h-5 w-px bg-border" />
-        <button type="button" className={btn} title="Titre" onClick={() => cmd("formatBlock", "<h2>")}>
+        <button
+          type="button"
+          className={btn}
+          title="Titre"
+          onClick={() => cmd("formatBlock", "<h2>")}
+        >
           <Heading2 className="h-4 w-4" />
         </button>
-        <button type="button" className={btn} title="Sous-titre" onClick={() => cmd("formatBlock", "<h3>")}>
+        <button
+          type="button"
+          className={btn}
+          title="Sous-titre"
+          onClick={() => cmd("formatBlock", "<h3>")}
+        >
           <Heading3 className="h-4 w-4" />
         </button>
-        <button type="button" className={btn} title="Citation" onClick={() => cmd("formatBlock", "<blockquote>")}>
+        <button
+          type="button"
+          className={btn}
+          title="Citation"
+          onClick={() => cmd("formatBlock", "<blockquote>")}
+        >
           <Quote className="h-4 w-4" />
         </button>
         <span className="mx-1 h-5 w-px bg-border" />
-        <button type="button" className={btn} title="Liste à puces" onClick={() => cmd("insertUnorderedList")}>
+        <button
+          type="button"
+          className={btn}
+          title="Liste à puces"
+          onClick={() => cmd("insertUnorderedList")}
+        >
           <List className="h-4 w-4" />
         </button>
-        <button type="button" className={btn} title="Liste numérotée" onClick={() => cmd("insertOrderedList")}>
+        <button
+          type="button"
+          className={btn}
+          title="Liste numérotée"
+          onClick={() => cmd("insertOrderedList")}
+        >
           <ListOrdered className="h-4 w-4" />
         </button>
         <span className="mx-1 h-5 w-px bg-border" />
@@ -282,7 +305,11 @@ export function RichTextEditor({ value, onChange }: Props) {
           onClick={() => fileRef.current?.click()}
           disabled={uploading !== null}
         >
-          {uploading === "image" ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
+          {uploading === "image" ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <ImagePlus className="h-4 w-4" />
+          )}
         </button>
         <button
           type="button"
@@ -291,7 +318,11 @@ export function RichTextEditor({ value, onChange }: Props) {
           onClick={() => videoRef.current?.click()}
           disabled={uploading !== null}
         >
-          {uploading === "video" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Film className="h-4 w-4" />}
+          {uploading === "video" ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Film className="h-4 w-4" />
+          )}
         </button>
         <button
           type="button"
@@ -300,7 +331,11 @@ export function RichTextEditor({ value, onChange }: Props) {
           onClick={() => audioRef.current?.click()}
           disabled={uploading !== null}
         >
-          {uploading === "audio" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Music2 className="h-4 w-4" />}
+          {uploading === "audio" ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Music2 className="h-4 w-4" />
+          )}
         </button>
         <button
           type="button"
@@ -333,7 +368,12 @@ export function RichTextEditor({ value, onChange }: Props) {
         <button type="button" className={btn} title="Rétablir" onClick={() => cmd("redo")}>
           <Redo2 className="h-4 w-4" />
         </button>
-        <button type="button" className={btn} title="Effacer la mise en forme" onClick={() => cmd("removeFormat")}>
+        <button
+          type="button"
+          className={btn}
+          title="Effacer la mise en forme"
+          onClick={() => cmd("removeFormat")}
+        >
           <Eraser className="h-4 w-4" />
         </button>
         <span className="mx-1 h-5 w-px bg-border" />
@@ -344,9 +384,7 @@ export function RichTextEditor({ value, onChange }: Props) {
           onClick={() => setPreview((v) => !v)}
         >
           {preview ? <Pencil className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          <span className="ml-1.5 text-xs font-medium">
-            {preview ? "Éditer" : "Aperçu"}
-          </span>
+          <span className="ml-1.5 text-xs font-medium">{preview ? "Éditer" : "Aperçu"}</span>
         </button>
         <input
           ref={fileRef}

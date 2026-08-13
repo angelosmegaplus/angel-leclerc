@@ -11,7 +11,10 @@ export const Route = createFileRoute("/politique-confidentialite")({
           "Politique de confidentialité du site angel-leclerc.fr : données collectées, finalités, durée de conservation et droits RGPD.",
       },
       { name: "robots", content: "index,follow" },
-      { property: "og:title", content: "Politique de confidentialité | Angel Leclerc Communication" },
+      {
+        property: "og:title",
+        content: "Politique de confidentialité | Angel Leclerc Communication",
+      },
       {
         property: "og:description",
         content: "Comment vos données personnelles sont collectées, utilisées et protégées.",
@@ -38,21 +41,26 @@ function Privacy() {
           Politique de confidentialité
         </h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          Dernière mise à jour : {new Date().toLocaleDateString("fr-FR", { year: "numeric", month: "long" })}
+          Dernière mise à jour :{" "}
+          {new Date().toLocaleDateString("fr-FR", { year: "numeric", month: "long" })}
         </p>
 
         <div className="mt-10 space-y-10 text-sm leading-relaxed text-muted-foreground">
           <div>
-            <h2 className="font-display text-xl font-semibold text-foreground">Responsable du traitement</h2>
+            <h2 className="font-display text-xl font-semibold text-foreground">
+              Responsable du traitement
+            </h2>
             <p className="mt-4">
-              Le responsable du traitement des données personnelles collectées via ce site est
-              Angel Leclerc, entrepreneur individuel — Angel Leclerc Communication, 25 Grande Rue,
-              03110 Broût-Vernet, France. Contact : contact@angel-leclerc.fr.
+              Le responsable du traitement des données personnelles collectées via ce site est Angel
+              Leclerc, entrepreneur individuel — Angel Leclerc Communication, 25 Grande Rue, 03110
+              Broût-Vernet, France. Contact : contact@angel-leclerc.fr.
             </p>
           </div>
 
           <div>
-            <h2 className="font-display text-xl font-semibold text-foreground">Données collectées</h2>
+            <h2 className="font-display text-xl font-semibold text-foreground">
+              Données collectées
+            </h2>
             <p className="mt-4">
               Ce site ne comporte pas de formulaire de contact. Aucune donnée personnelle n'est
               collectée automatiquement par une inscription en ligne. Des données peuvent être
@@ -67,17 +75,21 @@ function Privacy() {
           </div>
 
           <div>
-            <h2 className="font-display text-xl font-semibold text-foreground">Finalités et base légale</h2>
+            <h2 className="font-display text-xl font-semibold text-foreground">
+              Finalités et base légale
+            </h2>
             <p className="mt-4">
-              Les données transmises sont utilisées uniquement pour répondre à vos demandes,
-              établir des devis, exécuter les prestations convenues et respecter les obligations
-              légales et comptables. La base légale du traitement est l'exécution de mesures
-              précontractuelles ou du contrat, ainsi que le respect d'obligations légales.
+              Les données transmises sont utilisées uniquement pour répondre à vos demandes, établir
+              des devis, exécuter les prestations convenues et respecter les obligations légales et
+              comptables. La base légale du traitement est l'exécution de mesures précontractuelles
+              ou du contrat, ainsi que le respect d'obligations légales.
             </p>
           </div>
 
           <div>
-            <h2 className="font-display text-xl font-semibold text-foreground">Durée de conservation</h2>
+            <h2 className="font-display text-xl font-semibold text-foreground">
+              Durée de conservation
+            </h2>
             <p className="mt-4">
               Les échanges commerciaux sont conservés le temps nécessaire au suivi de la relation
               client. Les documents comptables et pièces justificatives sont conservés pendant la

@@ -1,5 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { appendEvent, PRINTFUL_STATUS_LABEL, internalStatusFromPrintful } from "@/lib/shop-orders.server";
+import {
+  appendEvent,
+  PRINTFUL_STATUS_LABEL,
+  internalStatusFromPrintful,
+} from "@/lib/shop-orders.server";
 
 function timingSafeEqual(a: string, b: string) {
   if (a.length !== b.length) return false;

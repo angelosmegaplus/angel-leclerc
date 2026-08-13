@@ -72,10 +72,7 @@ export function Header() {
               <Facebook size={20} />
             </a>
           </div>
-          <Button
-            asChild
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
-          >
+          <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
             <Link to="/contact">Parler de votre projet</Link>
           </Button>
         </nav>

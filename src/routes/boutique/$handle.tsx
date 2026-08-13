@@ -50,9 +50,7 @@ function ProductPage() {
   if (!product) {
     return (
       <div className="container-tight py-24 text-center">
-        <p className="font-display text-xl font-bold text-foreground">
-          Produit introuvable
-        </p>
+        <p className="font-display text-xl font-bold text-foreground">Produit introuvable</p>
         <Button asChild variant="outline" className="mt-6">
           <Link to="/boutique">Retour à la boutique ALC!</Link>
         </Button>
@@ -80,11 +78,7 @@ function ProductPage() {
       <div className="mt-8 grid gap-10 lg:grid-cols-2">
         <div className="aspect-square overflow-hidden rounded-2xl border border-border bg-muted">
           {gallery[0] ? (
-            <img
-              src={gallery[0]}
-              alt={product.name}
-              className="h-full w-full object-cover"
-            />
+            <img src={gallery[0]} alt={product.name} className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center">
               <ShoppingBag size={32} className="text-muted-foreground" />
@@ -147,9 +141,7 @@ function ProductPage() {
               min={1}
               max={20}
               value={quantity}
-              onChange={(e) =>
-                setQuantity(Math.min(20, Math.max(1, Number(e.target.value) || 1)))
-              }
+              onChange={(e) => setQuantity(Math.min(20, Math.max(1, Number(e.target.value) || 1)))}
               className="w-20 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
             />
           </div>
@@ -163,8 +155,7 @@ function ProductPage() {
           </Button>
 
           <p className="mt-4 inline-flex items-center gap-2 text-xs text-muted-foreground">
-            <Truck size={14} /> Impression à la demande · expédition sous 5 à 10 jours
-            ouvrés.
+            <Truck size={14} /> Impression à la demande · expédition sous 5 à 10 jours ouvrés.
           </p>
 
           {product.description && (

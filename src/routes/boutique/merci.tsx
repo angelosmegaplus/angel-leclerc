@@ -68,8 +68,8 @@ function MerciPage() {
               ? `Paiement de ${formatPrice(data.amountCents)} confirmé. `
               : ""}
             Un e-mail de confirmation vous a été envoyé
-            {data && !("error" in data) && data.email ? ` à ${data.email}` : ""}. Votre
-            commande part en production.
+            {data && !("error" in data) && data.email ? ` à ${data.email}` : ""}. Votre commande
+            part en production.
           </p>
         </>
       ) : (
@@ -78,8 +78,8 @@ function MerciPage() {
             Paiement en attente
           </h1>
           <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
-            Nous n'avons pas encore reçu la confirmation de votre paiement. Vous recevrez
-            un e-mail dès qu'il sera validé.
+            Nous n'avons pas encore reçu la confirmation de votre paiement. Vous recevrez un e-mail
+            dès qu'il sera validé.
           </p>
         </>
       )}

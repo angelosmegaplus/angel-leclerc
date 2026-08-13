@@ -111,9 +111,7 @@ function ArticlePage() {
   if (!article) {
     return (
       <div className="container-tight py-20 text-center">
-        <h1 className="font-display text-2xl font-bold text-foreground">
-          Article introuvable
-        </h1>
+        <h1 className="font-display text-2xl font-bold text-foreground">Article introuvable</h1>
         <Link
           to="/articles"
           className="mt-6 inline-flex items-center text-sm text-primary hover:underline"

@@ -17,8 +17,7 @@ import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/articles/")({
   validateSearch: (search: Record<string, unknown>): { topic?: string } => ({
-    topic:
-      typeof search.topic === "string" && search.topic ? search.topic : undefined,
+    topic: typeof search.topic === "string" && search.topic ? search.topic : undefined,
   }),
   head: () => ({
     meta: [
@@ -88,9 +87,7 @@ function ArticlesPage() {
   return (
     <section className="bg-background py-14 md:py-20">
       <div className="container-tight">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
-          Blog
-        </p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">Blog</p>
         <h1 className="mt-3 font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl md:text-4xl">
           Mes articles
         </h1>
@@ -109,7 +106,11 @@ function ArticlesPage() {
         </div>
 
         {usedTopics.length > 0 && (
-          <div className="mt-5 flex flex-wrap gap-2" role="group" aria-label="Filtrer par catégorie">
+          <div
+            className="mt-5 flex flex-wrap gap-2"
+            role="group"
+            aria-label="Filtrer par catégorie"
+          >
             {[{ key: "", label: "Tous" }, ...usedTopics.map((t) => ({ key: t, label: t }))].map(
               (t) => (
                 <button
@@ -133,9 +134,7 @@ function ArticlesPage() {
         <div className="mt-8 grid gap-5 sm:grid-cols-2">
           {isLoading && <p className="text-sm text-muted-foreground">Chargement…</p>}
           {!isLoading && articles.length === 0 && (
-            <p className="text-sm text-muted-foreground">
-              Aucune publication pour le moment.
-            </p>
+            <p className="text-sm text-muted-foreground">Aucune publication pour le moment.</p>
           )}
           {!isLoading && articles.length > 0 && filtered.length === 0 && (
             <p className="text-sm text-muted-foreground">
@@ -147,41 +146,37 @@ function ArticlesPage() {
               key={a.id}
               className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/50"
             >
-            <Link
-              to="/articles/$slug"
-              params={{ slug: a.slug }}
-              className="flex flex-1 flex-col"
-            >
-              {a.cover_url && (
-                <img
-                  src={a.cover_url}
-                  alt={a.title}
-                  loading="lazy"
-                  className="h-44 w-full object-cover"
-                />
-              )}
-              <div className="flex flex-1 flex-col p-5">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-                  {a.category}
-                </span>
-                <h2 className="mt-2 font-display text-lg font-bold leading-snug text-foreground">
-                  {a.title}
-                </h2>
-                <TopicBadges topics={getTopics(a)} className="mt-2" />
-                {a.excerpt && (
-                  <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
-                    {a.excerpt}
-                  </p>
+              <Link to="/articles/$slug" params={{ slug: a.slug }} className="flex flex-1 flex-col">
+                {a.cover_url && (
+                  <img
+                    src={a.cover_url}
+                    alt={a.title}
+                    loading="lazy"
+                    className="h-44 w-full object-cover"
+                  />
                 )}
-                <div className="mt-4 flex items-center justify-between border-t border-border pt-3 text-xs text-muted-foreground">
-                  <span>{formatDate(a.published_at ?? a.created_at)}</span>
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <div className="flex flex-1 flex-col p-5">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+                    {a.category}
+                  </span>
+                  <h2 className="mt-2 font-display text-lg font-bold leading-snug text-foreground">
+                    {a.title}
+                  </h2>
+                  <TopicBadges topics={getTopics(a)} className="mt-2" />
+                  {a.excerpt && (
+                    <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+                      {a.excerpt}
+                    </p>
+                  )}
+                  <div className="mt-4 flex items-center justify-between border-t border-border pt-3 text-xs text-muted-foreground">
+                    <span>{formatDate(a.published_at ?? a.created_at)}</span>
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </div>
                 </div>
+              </Link>
+              <div className="flex flex-wrap items-center gap-3 border-t border-border px-5 py-3">
+                <ShareArticle url={`${SITE_URL}/articles/${a.slug}`} title={a.title} />
               </div>
-            </Link>
-            <div className="flex flex-wrap items-center gap-3 border-t border-border px-5 py-3">
-              <ShareArticle url={`${SITE_URL}/articles/${a.slug}`} title={a.title} />
-            </div>
             </div>
           ))}
         </div>

@@ -10,10 +10,8 @@ const DESCRIPTION =
 
 export const Route = createFileRoute("/contact")({
   validateSearch: (search: Record<string, unknown>): { parcours?: Track } => {
-    const raw = typeof search['parcours'] === "string" ? (search['parcours'] as string) : "";
-    return raw === "projet" || raw === "alternance" || raw === "autre"
-      ? { parcours: raw }
-      : {};
+    const raw = typeof search["parcours"] === "string" ? (search["parcours"] as string) : "";
+    return raw === "projet" || raw === "alternance" || raw === "autre" ? { parcours: raw } : {};
   },
   head: () => ({
     meta: [
@@ -58,9 +56,9 @@ function ContactPage() {
               Me contacter
             </h1>
             <p className="mt-4 leading-relaxed text-muted-foreground">
-              Pas de long formulaire&nbsp;: une conversation. L'assistant répond d'abord à
-              vos questions à partir du contenu public du site, puis prépare avec vous un
-              récapitulatif envoyé directement à Angel.
+              Pas de long formulaire&nbsp;: une conversation. L'assistant répond d'abord à vos
+              questions à partir du contenu public du site, puis prépare avec vous un récapitulatif
+              envoyé directement à Angel.
             </p>
           </AnimatedSection>
 
@@ -106,15 +104,7 @@ function ContactPage() {
   );
 }
 
-function SocialLink({
-  href,
-  icon,
-  label,
-}: {
-  href: string;
-  icon: React.ReactNode;
-  label: string;
-}) {
+function SocialLink({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
   return (
     <a
       href={href}

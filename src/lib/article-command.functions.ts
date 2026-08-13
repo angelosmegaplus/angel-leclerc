@@ -48,7 +48,9 @@ function requestedTitle(command: string) {
 }
 
 export function isArticleCommand(command: string) {
-  return /(?:prépare|prepare|crée|cree|rédige|redige|écris|ecris).*(?:article|brouillon)|(?:article|brouillon)\s*:/i.test(command);
+  return /(?:prépare|prepare|crée|cree|rédige|redige|écris|ecris).*(?:article|brouillon)|(?:article|brouillon)\s*:/i.test(
+    command,
+  );
 }
 
 export const runArticleCommand = createServerFn({ method: "POST" })
@@ -207,7 +209,11 @@ export const runArticleCommand = createServerFn({ method: "POST" })
       const detail = error instanceof Error ? error.message : "Erreur inconnue";
       await db
         .from("ai_messages")
-        .update({ response: detail, status: "failed", context: { error: detail, kind: "article_generation" } })
+        .update({
+          response: detail,
+          status: "failed",
+          context: { error: detail, kind: "article_generation" },
+        })
         .eq("id", message.id);
       await db.from("activity_log").insert({
         source: "ai",

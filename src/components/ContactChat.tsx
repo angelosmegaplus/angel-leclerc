@@ -375,12 +375,10 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
       push({ role: "user", text: question, aside: true });
       setThinking(true);
 
-      const history = messages
-        .slice(-6)
-        .map((m) => ({
-          role: m.role === "bot" ? ("assistant" as const) : ("user" as const),
-          content: m.text.slice(0, 1500),
-        }));
+      const history = messages.slice(-6).map((m) => ({
+        role: m.role === "bot" ? ("assistant" as const) : ("user" as const),
+        content: m.text.slice(0, 1500),
+      }));
 
       let text: string | null = null;
       try {
@@ -570,9 +568,9 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
           Récapitulatif transmis à Angel
         </h2>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          Il vient de partir avec vos coordonnées, et un accusé de réception a été envoyé
-          à {contact.email}. Angel lit personnellement chaque message et vous répondra
-          dès qu'il aura pu en prendre connaissance.
+          Il vient de partir avec vos coordonnées, et un accusé de réception a été envoyé à{" "}
+          {contact.email}. Angel lit personnellement chaque message et vous répondra dès qu'il aura
+          pu en prendre connaissance.
         </p>
         <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
           <Button asChild variant="outline">
@@ -621,11 +619,7 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
 
       {/* Transcription */}
       {messages.length > 0 && (
-        <div
-          className="mb-5 space-y-2.5"
-          aria-live="polite"
-          aria-label="Conversation en cours"
-        >
+        <div className="mb-5 space-y-2.5" aria-live="polite" aria-label="Conversation en cours">
           {messages.map((m) => (
             <Bubble key={m.id} msg={m} />
           ))}
@@ -657,8 +651,8 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
                 Que souhaitez-vous faire&nbsp;?
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
-                Posez d'abord votre question si vous en avez une : j'y réponds à partir du
-                contenu du site. Sinon, choisissez une entrée.
+                Posez d'abord votre question si vous en avez une : j'y réponds à partir du contenu
+                du site. Sinon, choisissez une entrée.
               </p>
               <div className="mt-5 grid gap-2.5">
                 {(Object.keys(TRACKS) as Track[]).map((t) => (
@@ -738,9 +732,7 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
                 {current.kind === "multi" && (
                   <div className="grid gap-2 sm:grid-cols-2">
                     {current.options?.map((opt) => {
-                      const selected = (answers[current.id] ?? "")
-                        .split(", ")
-                        .filter(Boolean);
+                      const selected = (answers[current.id] ?? "").split(", ").filter(Boolean);
                       const active = selected.includes(opt);
                       return (
                         <button
@@ -808,9 +800,7 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
                         type="text"
                         autoFocus
                         value={contact.name}
-                        onChange={(e) =>
-                          setContact((c) => ({ ...c, name: e.target.value }))
-                        }
+                        onChange={(e) => setContact((c) => ({ ...c, name: e.target.value }))}
                         className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary"
                       />
                     </label>
@@ -821,9 +811,7 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
                       <input
                         type="email"
                         value={contact.email}
-                        onChange={(e) =>
-                          setContact((c) => ({ ...c, email: e.target.value }))
-                        }
+                        onChange={(e) => setContact((c) => ({ ...c, email: e.target.value }))}
                         className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary"
                       />
                     </label>
@@ -834,9 +822,7 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
                       <input
                         type="tel"
                         value={contact.phone}
-                        onChange={(e) =>
-                          setContact((c) => ({ ...c, phone: e.target.value }))
-                        }
+                        onChange={(e) => setContact((c) => ({ ...c, phone: e.target.value }))}
                         className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary"
                       />
                     </label>
@@ -850,9 +836,7 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
                             key={opt}
                             type="button"
                             aria-pressed={contact.preference === opt}
-                            onClick={() =>
-                              setContact((c) => ({ ...c, preference: opt }))
-                            }
+                            onClick={() => setContact((c) => ({ ...c, preference: opt }))}
                             className={`rounded-full border px-4 py-2 text-sm transition-colors ${
                               contact.preference === opt
                                 ? "border-primary bg-primary/10 text-foreground"
@@ -869,15 +853,11 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
                       <input
                         type="checkbox"
                         checked={contact.callback}
-                        onChange={(e) =>
-                          setContact((c) => ({ ...c, callback: e.target.checked }))
-                        }
+                        onChange={(e) => setContact((c) => ({ ...c, callback: e.target.checked }))}
                         className="mt-0.5 h-4 w-4 accent-[var(--color-primary)]"
                       />
                       <span>
-                        <span className="block text-foreground">
-                          Je souhaite être rappelé·e
-                        </span>
+                        <span className="block text-foreground">Je souhaite être rappelé·e</span>
                         <span className="block text-xs text-muted-foreground">
                           Facultatif — vous pouvez indiquer un moment qui vous arrange.
                         </span>
@@ -941,18 +921,14 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
                           Confirmez-vous qu'il s'agit d'une demande urgente&nbsp;?
                         </p>
                         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                          Après confirmation, les moyens de contact directs s'afficheront
-                          ici, avec des boutons pour les copier.
+                          Après confirmation, les moyens de contact directs s'afficheront ici, avec
+                          des boutons pour les copier.
                         </p>
                         <div className="mt-3 flex flex-wrap gap-2">
                           <Button size="sm" onClick={() => setUrgentConfirmed(true)}>
                             Oui, c'est urgent
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setUrgent(false)}
-                          >
+                          <Button size="sm" variant="ghost" onClick={() => setUrgent(false)}>
                             Non, annuler
                           </Button>
                         </div>
@@ -1050,9 +1026,7 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
                     className="flex w-full items-start justify-between gap-3 bg-background px-4 py-3 text-left transition-colors hover:bg-muted"
                   >
                     <span className="min-w-0">
-                      <span className="block text-xs text-muted-foreground">
-                        Vos coordonnées
-                      </span>
+                      <span className="block text-xs text-muted-foreground">Vos coordonnées</span>
                       <span className="mt-0.5 block text-sm text-foreground">
                         {contact.name} — {contact.email}
                         {contact.phone ? ` — ${contact.phone}` : ""}
@@ -1072,8 +1046,8 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
                   className="mt-0.5 h-4 w-4 accent-[var(--color-primary)]"
                 />
                 <span>
-                  J'accepte qu'Angel Leclerc utilise ces informations pour me répondre.
-                  Aucune donnée n'est cédée à des tiers (
+                  J'accepte qu'Angel Leclerc utilise ces informations pour me répondre. Aucune
+                  donnée n'est cédée à des tiers (
                   <Link
                     to="/politique-confidentialite"
                     className="underline underline-offset-2 hover:text-foreground"
@@ -1115,7 +1089,10 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
 
       {/* Question libre, toujours disponible */}
       <div className="mt-6 border-t border-border pt-4">
-        <label htmlFor="alc-ask" className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+        <label
+          htmlFor="alc-ask"
+          className="flex items-center gap-2 text-xs font-medium text-muted-foreground"
+        >
           <MessageCircleQuestion size={14} className="text-primary" aria-hidden />
           Une question&nbsp;? Posez-la, j'y réponds puis nous reprenons.
         </label>
@@ -1150,8 +1127,8 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
         </div>
         <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-relaxed text-muted-foreground">
           <Info size={12} className="mt-0.5 shrink-0" aria-hidden />
-          Les réponses sont générées à partir des informations publiques du site et peuvent
-          contenir des erreurs ou des interprétations.
+          Les réponses sont générées à partir des informations publiques du site et peuvent contenir
+          des erreurs ou des interprétations.
         </p>
       </div>
     </div>
@@ -1181,4 +1158,3 @@ function Bubble({ msg }: { msg: Msg }) {
     </motion.div>
   );
 }
-

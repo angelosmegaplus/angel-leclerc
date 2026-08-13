@@ -22,7 +22,10 @@ function decodeEntities(input: string): string {
 }
 
 function stripCdata(s: string): string {
-  return s.replace(/^\s*<!\[CDATA\[/, "").replace(/\]\]>\s*$/, "").trim();
+  return s
+    .replace(/^\s*<!\[CDATA\[/, "")
+    .replace(/\]\]>\s*$/, "")
+    .trim();
 }
 
 export const getBlogPosts = createServerFn({ method: "GET" }).handler(
@@ -47,14 +50,9 @@ export const getBlogPosts = createServerFn({ method: "GET" }).handler(
         const rawDesc = pick("description");
         const enclosure = block.match(/<enclosure[^>]*url="([^"]+)"/);
         const media = block.match(/<media:content[^>]*url="([^"]+)"/);
-        const contentEncoded = block.match(
-          /<content:encoded[^>]*>([\s\S]*?)<\/content:encoded>/
-        );
-        const inlineImg = (contentEncoded?.[1] ?? rawDesc).match(
-          /<img[^>]+src="([^"]+)"/
-        );
-        const image =
-          enclosure?.[1] ?? media?.[1] ?? inlineImg?.[1] ?? null;
+        const contentEncoded = block.match(/<content:encoded[^>]*>([\s\S]*?)<\/content:encoded>/);
+        const inlineImg = (contentEncoded?.[1] ?? rawDesc).match(/<img[^>]+src="([^"]+)"/);
+        const image = enclosure?.[1] ?? media?.[1] ?? inlineImg?.[1] ?? null;
         const description = rawDesc
           .replace(/<[^>]+>/g, " ")
           .replace(/\s+/g, " ")
@@ -68,5 +66,5 @@ export const getBlogPosts = createServerFn({ method: "GET" }).handler(
     } catch {
       return [];
     }
-  }
+  },
 );

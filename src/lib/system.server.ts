@@ -33,8 +33,7 @@ const DEFINITIONS: Definition[] = [
     provider: "google",
     name: "Google Workspace",
     category: "Bureautique & mail",
-    description:
-      "Gmail contact@angel-leclerc.fr, Agenda et Drive directement dans Angel OS.",
+    description: "Gmail contact@angel-leclerc.fr, Agenda et Drive directement dans Angel OS.",
     env: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
     connectPath: "/api/oauth/google/start",
     reconnectPath: "/api/oauth/google/start?prompt=consent",

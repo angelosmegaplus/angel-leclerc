@@ -22,8 +22,8 @@ export function BlogSubscribe() {
           <CheckCircle2 className="h-4 w-4 text-primary" /> Vérifiez votre boîte mail
         </p>
         <p className="mt-2 text-muted-foreground">
-          Un e-mail vient de vous être envoyé : cliquez sur le lien de confirmation pour
-          recevoir la lettre hebdomadaire, chaque dimanche soir.
+          Un e-mail vient de vous être envoyé : cliquez sur le lien de confirmation pour recevoir la
+          lettre hebdomadaire, chaque dimanche soir.
         </p>
       </div>
     );
@@ -49,9 +49,7 @@ export function BlogSubscribe() {
           setStatus("done");
         } catch (err) {
           setStatus("idle");
-          setError(
-            err instanceof Error ? err.message : "Inscription impossible pour le moment.",
-          );
+          setError(err instanceof Error ? err.message : "Inscription impossible pour le moment.");
         }
       }}
     >
@@ -59,7 +57,8 @@ export function BlogSubscribe() {
         <Mail className="h-4 w-4 text-primary" /> Recevoir les nouveaux articles
       </p>
       <p className="mt-1 text-xs text-muted-foreground">
-        Une lettre par semaine, le dimanche soir, avec les articles publiés. Désinscription en un clic.
+        Une lettre par semaine, le dimanche soir, avec les articles publiés. Désinscription en un
+        clic.
       </p>
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
         <Input

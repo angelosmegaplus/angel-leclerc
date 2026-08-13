@@ -25,7 +25,6 @@ import {
   BookOpen,
   Tent,
   Archive,
-
   Video,
   Music,
   FileText,
@@ -40,13 +39,7 @@ import { Logo } from "@/components/Logo";
 import { YouTubeEmbed } from "@/components/YouTubeEmbed";
 import photo from "@/assets/angel-leclerc.png.asset.json";
 import talisLogo from "@/assets/talis-logo.png";
-import {
-  contentQuery,
-  iconFor,
-  toStringList,
-  toVideoList,
-  type ContentItem,
-} from "@/lib/content";
+import { contentQuery, iconFor, toStringList, toVideoList, type ContentItem } from "@/lib/content";
 
 function SectionHeader({
   eyebrow,
@@ -71,19 +64,15 @@ function SectionHeader({
         {title}
       </h2>
       {intro && (
-        <p className="mt-3 text-[0.95rem] leading-relaxed text-muted-foreground md:mt-4 md:text-base">{intro}</p>
+        <p className="mt-3 text-[0.95rem] leading-relaxed text-muted-foreground md:mt-4 md:text-base">
+          {intro}
+        </p>
       )}
     </div>
   );
 }
 
-function Card({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
+function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
     <div
       className={
@@ -117,12 +106,10 @@ function IntroSection() {
               Étudiant en communication — recherche d'alternance à Sarlat
             </p>
             <p className="mt-4 max-w-xl text-[0.95rem] leading-relaxed text-muted-foreground md:mt-6 md:text-base">
-              Je recherche une entreprise pour préparer un BTS Communication en
-              alternance à partir de septembre 2026. Création de contenus,
-              rédaction, communication numérique, accueil du public et gestion
-              de projets&nbsp;: je souhaite mettre mes compétences au service
-              d'une structure située à Sarlat-la-Canéda ou dans ses environs
-              accessibles en scooter.
+              Je recherche une entreprise pour préparer un BTS Communication en alternance à partir
+              de septembre 2026. Création de contenus, rédaction, communication numérique, accueil
+              du public et gestion de projets&nbsp;: je souhaite mettre mes compétences au service
+              d'une structure située à Sarlat-la-Canéda ou dans ses environs accessibles en scooter.
             </p>
             <div className="mt-6 grid grid-cols-1 gap-2.5 sm:flex sm:flex-wrap sm:gap-3 md:mt-8">
               <a
@@ -180,8 +167,17 @@ function AlternanceSection() {
     { icon: Calendar, label: "Début", value: "Septembre 2026" },
     { icon: MapPin, label: "Zone principale", value: "Sarlat-la-Canéda et communes proches" },
     { icon: Bike, label: "Mobilité", value: "Scooter — trajets quotidiens autour de Sarlat" },
-    { icon: Building2, label: "Secteurs privilégiés", value: "Tourisme, culture, médias, collectivités, associations, commerce et services" },
-    { icon: ClipboardList, label: "Missions recherchées", value: "Réseaux sociaux, rédaction, création graphique, communication digitale, événementiel, accueil et gestion de projet" },
+    {
+      icon: Building2,
+      label: "Secteurs privilégiés",
+      value: "Tourisme, culture, médias, collectivités, associations, commerce et services",
+    },
+    {
+      icon: ClipboardList,
+      label: "Missions recherchées",
+      value:
+        "Réseaux sociaux, rédaction, création graphique, communication digitale, événementiel, accueil et gestion de projet",
+    },
   ];
 
   return (
@@ -235,9 +231,9 @@ function AlternanceSection() {
             </div>
             <p className="px-5 py-4 text-xs leading-relaxed text-muted-foreground">
               Je privilégie une alternance à Sarlat ou dans un rayon d'environ 10&nbsp;km,
-              accessible en scooter au quotidien. Je peux toutefois envisager une opportunité
-              plus éloignée si elle est réellement cohérente avec mon projet, avec possibilité
-              de déménagement.
+              accessible en scooter au quotidien. Je peux toutefois envisager une opportunité plus
+              éloignée si elle est réellement cohérente avec mon projet, avec possibilité de
+              déménagement.
             </p>
           </div>
 
@@ -270,14 +266,12 @@ function AlternanceSection() {
             </div>
 
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Mon projet d'études&nbsp;: intégrer un BTS Communication en
-              alternance, puis poursuivre vers une formation spécialisée en
-              information-communication ou en journalisme. Je prépare ce BTS
-              avec l'école{" "}
-              <strong className="text-foreground">Talis de Périgueux</strong>{" "}
-              à partir de septembre 2026. Le BTS
-              Communication est un diplôme d'État Bac+2 (niveau 5, RNCP 37198)
-              préparé en 24 mois, dont environ{" "}
+              Mon projet d'études&nbsp;: intégrer un BTS Communication en alternance, puis
+              poursuivre vers une formation spécialisée en information-communication ou en
+              journalisme. Je prépare ce BTS avec l'école{" "}
+              <strong className="text-foreground">Talis de Périgueux</strong> à partir de septembre
+              2026. Le BTS Communication est un diplôme d'État Bac+2 (niveau 5, RNCP 37198) préparé
+              en 24 mois, dont environ{" "}
               <strong className="text-foreground">65 % du temps en entreprise</strong>.
             </p>
 
@@ -350,25 +344,21 @@ function AlternanceSection() {
             </div>
 
             <p className="mt-5 text-xs italic text-muted-foreground">
-              Source : documents officiels de l'école Talis — campus Périgueux.
-              Le calendrier détaillé jour par jour est disponible dans le PDF
-              « Calendrier ».
+              Source : documents officiels de l'école Talis — campus Périgueux. Le calendrier
+              détaillé jour par jour est disponible dans le PDF « Calendrier ».
             </p>
 
             <p className="mt-6 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               En vidéo
             </p>
             <div className="mt-3">
-              <YouTubeEmbed
-                id="Bz5m7zzdYzs"
-                title="Présentation du BTS Communication"
-              />
+              <YouTubeEmbed id="Bz5m7zzdYzs" title="Présentation du BTS Communication" />
             </div>
           </div>
 
           <p className="mt-8 text-center text-sm italic text-muted-foreground">
-            Je privilégie une entreprise située à Sarlat ou dans un secteur
-            raisonnablement accessible en scooter.
+            Je privilégie une entreprise située à Sarlat ou dans un secteur raisonnablement
+            accessible en scooter.
           </p>
         </div>
       </section>
@@ -405,8 +395,7 @@ const projects: Project[] = [
   },
   {
     title: "Angel Leclerc Communication",
-    context:
-      "Création de mon activité de communication en tant qu'entrepreneur individuel.",
+    context: "Création de mon activité de communication en tant qu'entrepreneur individuel.",
     missions: [
       "Construction de l'identité visuelle et de la ligne éditoriale",
       "Conception et mise en ligne du site internet",
@@ -443,8 +432,7 @@ const projects: Project[] = [
       "Documents de présentation et supports numériques",
     ],
     tools: "Canva · Figma · Adobe",
-    results:
-      "Des supports homogènes et réutilisables, adaptés à chaque public et à chaque format.",
+    results: "Des supports homogènes et réutilisables, adaptés à chaque public et à chaque format.",
     icon: Palette,
   },
 ];
@@ -481,13 +469,9 @@ export function RealisationsSection() {
                   <div className="inline-flex rounded-xl bg-primary/10 p-3 text-primary">
                     <p.icon size={22} />
                   </div>
-                  <h3 className="font-display text-lg font-semibold text-foreground">
-                    {p.title}
-                  </h3>
+                  <h3 className="font-display text-lg font-semibold text-foreground">{p.title}</h3>
                 </div>
-                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                  {p.context}
-                </p>
+                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{p.context}</p>
 
                 {p.missions.length > 0 && (
                   <>
@@ -608,9 +592,7 @@ export function SkillsSection() {
                   <div className="inline-flex rounded-xl bg-primary/10 p-3 text-primary">
                     <s.icon size={20} />
                   </div>
-                  <h3 className="font-display text-lg font-semibold text-foreground">
-                    {s.title}
-                  </h3>
+                  <h3 className="font-display text-lg font-semibold text-foreground">{s.title}</h3>
                 </div>
                 <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
                   {s.items.map((it) => (
@@ -733,9 +715,7 @@ function ExperiencesSection() {
                         {exp.period}
                       </span>
                     </div>
-                    <p className="text-sm font-medium text-foreground/80">
-                      {exp.org}
-                    </p>
+                    <p className="text-sm font-medium text-foreground/80">{exp.org}</p>
                     <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
                       {exp.missions.map((m) => (
                         <li key={m} className="flex items-start gap-2">
@@ -778,7 +758,11 @@ function FormationSection() {
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                     <span className="inline-flex h-[64px] w-[120px] shrink-0 items-center justify-center rounded-xl border border-border bg-background p-2">
                       {item.logo_domain ? (
-                        <Logo domain={item.logo_domain} alt={item.subtitle ?? item.title} size={52} />
+                        <Logo
+                          domain={item.logo_domain}
+                          alt={item.subtitle ?? item.title}
+                          size={52}
+                        />
                       ) : (
                         <img
                           src="/logos/mfr.asso.fr.svg"
@@ -803,9 +787,7 @@ function FormationSection() {
                         )}
                       </div>
                       {item.subtitle && (
-                        <p className="text-sm font-medium text-foreground/80">
-                          {item.subtitle}
-                        </p>
+                        <p className="text-sm font-medium text-foreground/80">{item.subtitle}</p>
                       )}
                       {item.description && (
                         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
@@ -924,13 +906,9 @@ function CertificationsSection() {
                   </div>
                 )}
                 <div>
-                  <p className="font-display text-base font-semibold text-foreground">
-                    {c.name}
-                  </p>
+                  <p className="font-display text-base font-semibold text-foreground">{c.name}</p>
                   <p className="text-sm text-muted-foreground">{c.org}</p>
-                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-                    {c.detail}
-                  </p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{c.detail}</p>
                 </div>
               </Card>
             ))}
@@ -973,8 +951,7 @@ const engagements: {
   {
     title: "Bénévole",
     org: "Amis de Renard Noir",
-    description:
-      "Pédagogie, formations et transmission auprès des jeunes bénévoles.",
+    description: "Pédagogie, formations et transmission auprès des jeunes bénévoles.",
     icon: BookOpen,
   },
 ];
@@ -1008,13 +985,9 @@ function EngagementsSection() {
                     <h3 className="font-display text-base font-semibold text-foreground">
                       {e.title}
                     </h3>
-                    <p className="text-sm font-medium text-foreground/80">
-                      {e.org}
-                    </p>
+                    <p className="text-sm font-medium text-foreground/80">{e.org}</p>
                     {e.period && (
-                      <p className="text-xs uppercase tracking-widest text-primary">
-                        {e.period}
-                      </p>
+                      <p className="text-xs uppercase tracking-widest text-primary">{e.period}</p>
                     )}
                   </div>
                 </div>
@@ -1037,69 +1010,177 @@ const toolCategories: { title: string; icon: LucideIcon; tools: Tool[] }[] = [
     title: "Création graphique",
     icon: Palette,
     tools: [
-      { name: "Canva Pro", domain: "canva.com", use: "Création de carrousels, affiches, identités visuelles et supports imprimés." },
-      { name: "Adobe", domain: "adobe.com", use: "Retouches ponctuelles et exports pour supports print." },
+      {
+        name: "Canva Pro",
+        domain: "canva.com",
+        use: "Création de carrousels, affiches, identités visuelles et supports imprimés.",
+      },
+      {
+        name: "Adobe",
+        domain: "adobe.com",
+        use: "Retouches ponctuelles et exports pour supports print.",
+      },
     ],
   },
   {
     title: "Sites internet et publication",
     icon: PenLine,
     tools: [
-      { name: "Lovable", domain: "lovable.dev", use: "Création et amélioration de sites internet." },
-      { name: "Figma", domain: "figma.com", use: "Maquettes de sites et organisation d'interfaces." },
-      { name: "Squarespace", domain: "squarespace.com", use: "Gestion de domaine et hébergement du site." },
-      { name: "Webnode", domain: "webnode.com", use: "Création rapide de sites vitrines et blogs." },
-      { name: "Wix", domain: "wix.com", use: "Sites vitrines, boutiques et portfolios avec éditeur visuel." },
-      { name: "Google Sites", domain: "sites.google.com", use: "Sites simples et pages collaboratives intégrées à Google Workspace." },
+      {
+        name: "Lovable",
+        domain: "lovable.dev",
+        use: "Création et amélioration de sites internet.",
+      },
+      {
+        name: "Figma",
+        domain: "figma.com",
+        use: "Maquettes de sites et organisation d'interfaces.",
+      },
+      {
+        name: "Squarespace",
+        domain: "squarespace.com",
+        use: "Gestion de domaine et hébergement du site.",
+      },
+      {
+        name: "Webnode",
+        domain: "webnode.com",
+        use: "Création rapide de sites vitrines et blogs.",
+      },
+      {
+        name: "Wix",
+        domain: "wix.com",
+        use: "Sites vitrines, boutiques et portfolios avec éditeur visuel.",
+      },
+      {
+        name: "Google Sites",
+        domain: "sites.google.com",
+        use: "Sites simples et pages collaboratives intégrées à Google Workspace.",
+      },
     ],
   },
   {
     title: "Bureautique et collaboration",
     icon: ClipboardList,
     tools: [
-      { name: "Microsoft Office", domain: "microsoft.com", use: "Rédaction, présentations, tableaux de suivi et travail collaboratif." },
-      { name: "Google Workspace", domain: "workspace.google.com", use: "Rédaction, présentations, tableaux de suivi et travail collaboratif." },
+      {
+        name: "Microsoft Office",
+        domain: "microsoft.com",
+        use: "Rédaction, présentations, tableaux de suivi et travail collaboratif.",
+      },
+      {
+        name: "Google Workspace",
+        domain: "workspace.google.com",
+        use: "Rédaction, présentations, tableaux de suivi et travail collaboratif.",
+      },
     ],
   },
   {
     title: "Communication et réseaux sociaux",
     icon: Users,
     tools: [
-      { name: "Meta Business Suite", domain: "business.facebook.com", use: "Programmation des publications, modération et suivi des performances." },
-      { name: "TikTok", domain: "tiktok.com", use: "Formats courts, tendances et contenus vidéo verticaux." },
-      { name: "LinkedIn", domain: "linkedin.com", use: "Publications professionnelles et mise en réseau." },
-      { name: "YouTube", domain: "youtube.com", use: "Création de chaînes, shorts et playlists vidéo." },
-      { name: "Substack", domain: "substack.com", use: "Publication de mes articles et newsletters." },
-      { name: "Brevo", domain: "brevo.com", use: "Campagnes e-mailing, newsletters et gestion de contacts." },
+      {
+        name: "Meta Business Suite",
+        domain: "business.facebook.com",
+        use: "Programmation des publications, modération et suivi des performances.",
+      },
+      {
+        name: "TikTok",
+        domain: "tiktok.com",
+        use: "Formats courts, tendances et contenus vidéo verticaux.",
+      },
+      {
+        name: "LinkedIn",
+        domain: "linkedin.com",
+        use: "Publications professionnelles et mise en réseau.",
+      },
+      {
+        name: "YouTube",
+        domain: "youtube.com",
+        use: "Création de chaînes, shorts et playlists vidéo.",
+      },
+      {
+        name: "Substack",
+        domain: "substack.com",
+        use: "Publication de mes articles et newsletters.",
+      },
+      {
+        name: "Brevo",
+        domain: "brevo.com",
+        use: "Campagnes e-mailing, newsletters et gestion de contacts.",
+      },
     ],
   },
   {
     title: "Audio et vidéo",
     icon: Video,
     tools: [
-      { name: "MixPad", domain: "nch.com.au", use: "Montage audio, podcasts, jingles et identités sonores." },
-      { name: "CapCut", domain: "capcut.com", use: "Montage vidéo pour contenus courts et réseaux sociaux." },
+      {
+        name: "MixPad",
+        domain: "nch.com.au",
+        use: "Montage audio, podcasts, jingles et identités sonores.",
+      },
+      {
+        name: "CapCut",
+        domain: "capcut.com",
+        use: "Montage vidéo pour contenus courts et réseaux sociaux.",
+      },
     ],
   },
   {
     title: "Tourisme et gestion",
     icon: Landmark,
     tools: [
-      { name: "Avizi", domain: "avizi.fr", use: "Gestion de vente et de billetterie en office de tourisme." },
-      { name: "Koesio", domain: "koesio.com", use: "Outils de gestion utilisés en office de tourisme." },
-      { name: "HelloAsso", domain: "helloasso.com", use: "Billetterie, adhésions et paiements en ligne pour les associations." },
-      { name: "Moka", domain: "mokatourisme.fr", use: "Logiciel de gestion intégré et ERP dédié au tourisme." },
-      { name: "Apidae", domain: "apidae-tourisme.com", use: "Système d'information touristique pour la collecte, la diffusion et l'enrichissement des données." },
+      {
+        name: "Avizi",
+        domain: "avizi.fr",
+        use: "Gestion de vente et de billetterie en office de tourisme.",
+      },
+      {
+        name: "Koesio",
+        domain: "koesio.com",
+        use: "Outils de gestion utilisés en office de tourisme.",
+      },
+      {
+        name: "HelloAsso",
+        domain: "helloasso.com",
+        use: "Billetterie, adhésions et paiements en ligne pour les associations.",
+      },
+      {
+        name: "Moka",
+        domain: "mokatourisme.fr",
+        use: "Logiciel de gestion intégré et ERP dédié au tourisme.",
+      },
+      {
+        name: "Apidae",
+        domain: "apidae-tourisme.com",
+        use: "Système d'information touristique pour la collecte, la diffusion et l'enrichissement des données.",
+      },
     ],
   },
   {
     title: "Intelligence artificielle",
     icon: Sparkles,
     tools: [
-      { name: "ChatGPT", domain: "chatgpt.com", use: "Recherche structurée, idéation, rédaction assistée et prototypage, avec vérification humaine systématique." },
-      { name: "Gemini", domain: "gemini.google.com", use: "Recherche rapide et synthèse de sources, toujours revérifiées avant utilisation." },
-      { name: "Claude", domain: "claude.ai", use: "Rédaction assistée, reformulation et analyse de documents, avec relecture humaine." },
-      { name: "NotebookLM", domain: "notebooklm.google.com", use: "Organisation de sources et synthèse de documents pour préparer un contenu." },
+      {
+        name: "ChatGPT",
+        domain: "chatgpt.com",
+        use: "Recherche structurée, idéation, rédaction assistée et prototypage, avec vérification humaine systématique.",
+      },
+      {
+        name: "Gemini",
+        domain: "gemini.google.com",
+        use: "Recherche rapide et synthèse de sources, toujours revérifiées avant utilisation.",
+      },
+      {
+        name: "Claude",
+        domain: "claude.ai",
+        use: "Rédaction assistée, reformulation et analyse de documents, avec relecture humaine.",
+      },
+      {
+        name: "NotebookLM",
+        domain: "notebooklm.google.com",
+        use: "Organisation de sources et synthèse de documents pour préparer un contenu.",
+      },
     ],
   },
 ];
@@ -1139,9 +1220,7 @@ function ToolsSection() {
                         </div>
                       )}
                       <div>
-                        <p className="text-sm font-semibold text-foreground">
-                          {t.name}
-                        </p>
+                        <p className="text-sm font-semibold text-foreground">{t.name}</p>
                         <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
                           {t.use}
                         </p>

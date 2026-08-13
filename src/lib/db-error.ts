@@ -14,14 +14,12 @@ export function describeDbError(err: unknown): string {
     error_description?: string;
   };
 
-  const raw =
-    e.message || e.error_description || (typeof err === "string" ? err : "") || "";
+  const raw = e.message || e.error_description || (typeof err === "string" ? err : "") || "";
   const code = e.code ? String(e.code) : "";
 
   let explanation = "";
   if (raw.includes("duplicate key") || code === "23505") {
-    explanation =
-      "Un article utilise déjà ce lien (slug). Changez le titre ou le slug.";
+    explanation = "Un article utilise déjà ce lien (slug). Changez le titre ou le slug.";
   } else if (code === "42501" || raw.toLowerCase().includes("row-level security")) {
     explanation =
       "Vous n'avez pas les droits pour cette action (compte non administrateur ou session expirée). Déconnectez-vous puis reconnectez-vous.";

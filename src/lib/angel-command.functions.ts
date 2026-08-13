@@ -188,7 +188,11 @@ export const runAngelCommand = createServerFn({ method: "POST" })
           autoExecuted: true,
           actionId: null,
         };
-      } else if (/(?:prépare|prepare|crée|cree|rédige|redige).*(?:article|brouillon)|(?:article|brouillon)\s*:/i.test(command)) {
+      } else if (
+        /(?:prépare|prepare|crée|cree|rédige|redige).*(?:article|brouillon)|(?:article|brouillon)\s*:/i.test(
+          command,
+        )
+      ) {
         const requested = requestedTitle(command, "Nouveau brouillon");
         const { generateArticleDraft } = await import("./article-ai.server");
         const generated = await generateArticleDraft(requested);

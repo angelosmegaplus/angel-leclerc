@@ -109,9 +109,9 @@ export function RevealContact({ compact = false }: { compact?: boolean }) {
             Ces coordonnées sont réservées aux demandes importantes
           </p>
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Pour une demande courante, le parcours de contact de cette page prépare un
-            récapitulatif complet, qui reste le moyen le plus efficace. Les coordonnées
-            directes sont destinées aux sujets urgents ou nécessitant un échange direct.
+            Pour une demande courante, le parcours de contact de cette page prépare un récapitulatif
+            complet, qui reste le moyen le plus efficace. Les coordonnées directes sont destinées
+            aux sujets urgents ou nécessitant un échange direct.
           </p>
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
             <Button variant="outline" size="sm" onClick={close}>
@@ -127,8 +127,8 @@ export function RevealContact({ compact = false }: { compact?: boolean }) {
       {step === "check" && (
         <div className="space-y-3">
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Dernière étape : une courte vérification anti-robot. Les délais de réponse
-            restent identiques à ceux du parcours de contact.
+            Dernière étape : une courte vérification anti-robot. Les délais de réponse restent
+            identiques à ceux du parcours de contact.
           </p>
           <Captcha value={captcha} onChange={setCaptcha} {...(error ? { error } : {})} />
           <input
@@ -180,7 +180,11 @@ export function RevealContact({ compact = false }: { compact?: boolean }) {
               <p className="mt-1 break-all text-sm text-foreground">{data.email}</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 <Button size="sm" variant="outline" onClick={() => void copy(data.email, "email")}>
-                  {copied === "email" ? <Check size={14} aria-hidden /> : <Copy size={14} aria-hidden />}
+                  {copied === "email" ? (
+                    <Check size={14} aria-hidden />
+                  ) : (
+                    <Copy size={14} aria-hidden />
+                  )}
                   Copier
                 </Button>
                 <Button asChild size="sm" variant="ghost">
@@ -195,7 +199,11 @@ export function RevealContact({ compact = false }: { compact?: boolean }) {
               <p className="mt-1 text-sm text-foreground">{data.phone}</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 <Button size="sm" variant="outline" onClick={() => void copy(data.phone, "phone")}>
-                  {copied === "phone" ? <Check size={14} aria-hidden /> : <Copy size={14} aria-hidden />}
+                  {copied === "phone" ? (
+                    <Check size={14} aria-hidden />
+                  ) : (
+                    <Copy size={14} aria-hidden />
+                  )}
                   Copier
                 </Button>
                 <Button asChild size="sm" variant="ghost">
@@ -205,8 +213,8 @@ export function RevealContact({ compact = false }: { compact?: boolean }) {
             </div>
           </div>
           <p className="text-[11px] leading-relaxed text-muted-foreground">
-            Ces coordonnées seront masquées automatiquement au bout de quelques minutes
-            ou au changement de page. Les réponses ne sont pas immédiates.
+            Ces coordonnées seront masquées automatiquement au bout de quelques minutes ou au
+            changement de page. Les réponses ne sont pas immédiates.
           </p>
         </div>
       )}

@@ -51,8 +51,18 @@ export default defineConfig({
           icons: [
             { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
             { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
-            { src: "/icons/maskable-192.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
-            { src: "/icons/maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+            {
+              src: "/icons/maskable-192.png",
+              sizes: "192x192",
+              type: "image/png",
+              purpose: "maskable",
+            },
+            {
+              src: "/icons/maskable-512.png",
+              sizes: "512x512",
+              type: "image/png",
+              purpose: "maskable",
+            },
           ],
           shortcuts: [
             { name: "Tableau de bord", short_name: "Dashboard", url: "/admin?tab=dashboard" },
@@ -64,12 +74,7 @@ export default defineConfig({
         workbox: {
           globPatterns: ["**/*.{js,css,woff2,svg,png,ico}"],
           navigateFallback: "/offline.html",
-          navigateFallbackDenylist: [
-            /^\/admin/,
-            /^\/api\//,
-            /^\/~oauth/,
-            /^\/lovable\//,
-          ],
+          navigateFallbackDenylist: [/^\/admin/, /^\/api\//, /^\/~oauth/, /^\/lovable\//],
           cleanupOutdatedCaches: true,
           clientsClaim: true,
           skipWaiting: true,
@@ -115,8 +120,14 @@ export default defineConfig({
     // React Email's htmlparser2 needs entities v4.5.0; pin every import path to the hoisted copy.
     resolve: {
       alias: {
-        "entities/lib/decode.js": path.resolve(process.cwd(), "node_modules/entities/lib/decode.js"),
-        "entities/lib/encode.js": path.resolve(process.cwd(), "node_modules/entities/lib/encode.js"),
+        "entities/lib/decode.js": path.resolve(
+          process.cwd(),
+          "node_modules/entities/lib/decode.js",
+        ),
+        "entities/lib/encode.js": path.resolve(
+          process.cwd(),
+          "node_modules/entities/lib/encode.js",
+        ),
         entities: path.resolve(process.cwd(), "node_modules/entities"),
       },
     },

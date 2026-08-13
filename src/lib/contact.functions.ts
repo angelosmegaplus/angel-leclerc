@@ -155,8 +155,8 @@ export const submitProjectRequest = createServerFn({ method: "POST" })
     });
 
     const notificationResult = await sendTemplateEmail(
-      'contact-notification',
-      'contact@angel-leclerc.fr',
+      "contact-notification",
+      "contact@angel-leclerc.fr",
       {
         templateData: {
           fullName: data.fullName,
@@ -176,22 +176,18 @@ export const submitProjectRequest = createServerFn({ method: "POST" })
       },
     );
     if (!notificationResult.sent) {
-      console.warn('[contact] notification suppressed for recipient');
+      console.warn("[contact] notification suppressed for recipient");
     }
 
-    const confirmationResult = await sendTemplateEmail(
-      'contact-confirmation',
-      data.email,
-      {
-        templateData: {
-          firstName: data.fullName.split(' ')[0],
-          subject: data.projectType,
-        },
-        idempotencyKey: `contact-confirmation-${inserted!.id}`,
+    const confirmationResult = await sendTemplateEmail("contact-confirmation", data.email, {
+      templateData: {
+        firstName: data.fullName.split(" ")[0],
+        subject: data.projectType,
       },
-    );
+      idempotencyKey: `contact-confirmation-${inserted!.id}`,
+    });
     if (!confirmationResult.sent) {
-      console.warn('[contact] confirmation suppressed for', data.email);
+      console.warn("[contact] confirmation suppressed for", data.email);
     }
 
     return { ok: true as const };

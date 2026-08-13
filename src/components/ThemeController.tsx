@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Monitor, Moon, Sun } from "lucide-react";
-import {
-  applyTheme,
-  readPreference,
-  setPreference,
-  type ThemePreference,
-} from "@/lib/theme";
+import { applyTheme, readPreference, setPreference, type ThemePreference } from "@/lib/theme";
 
 /** Suit automatiquement le thème du système et réagit en direct à ses changements. */
 export function useThemePreference() {

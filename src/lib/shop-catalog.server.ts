@@ -42,11 +42,7 @@ function pickVariant(item: PrintfulCatalogItem) {
   const usable = item.variants.filter((v) => v.priceCents > 0);
   const available = usable.filter((v) => v.available);
   const pool = available.length > 0 ? available : usable;
-  return (
-    pool.slice().sort((a, b) => a.priceCents - b.priceCents)[0] ??
-    item.variants[0] ??
-    null
-  );
+  return pool.slice().sort((a, b) => a.priceCents - b.priceCents)[0] ?? item.variants[0] ?? null;
 }
 
 export async function syncPrintfulCatalogToDb(options: {
@@ -149,9 +145,7 @@ export async function syncPrintfulCatalogToDb(options: {
       variants: item.variants,
       sizes: uniq(item.variants.filter((v) => v.available).map((v) => v.size)),
       colors: uniq(item.variants.filter((v) => v.available).map((v) => v.color)),
-      availability: item.variants.some((v) => v.available)
-        ? "in_stock"
-        : "out_of_stock",
+      availability: item.variants.some((v) => v.available) ? "in_stock" : "out_of_stock",
       active: sellable,
     };
 

@@ -105,11 +105,7 @@ export function Logo({
     : `inline-flex shrink-0 items-center justify-center border border-border bg-background ${rounded ? "rounded-xl" : ""}`;
 
   const box = (
-    <span
-      className={boxCls}
-      style={{ width: size, height: size }}
-      aria-hidden={true}
-    >
+    <span className={boxCls} style={{ width: size, height: size }} aria-hidden={true}>
       {!failed && src ? (
         <img
           src={src}
@@ -129,7 +125,12 @@ export function Logo({
             const img = e.currentTarget;
             const isLocal = src.startsWith("/logos/");
             const isSvg = /\.svg($|\?)/i.test(src) || src.includes("simpleicons.org");
-            if (!isLocal && !isSvg && img.naturalWidth > 0 && img.naturalWidth < MIN_ACCEPTABLE_PX) {
+            if (
+              !isLocal &&
+              !isSvg &&
+              img.naturalWidth > 0 &&
+              img.naturalWidth < MIN_ACCEPTABLE_PX
+            ) {
               if (idx < chain.length - 1) setIdx(idx + 1);
             }
           }}
@@ -140,7 +141,10 @@ export function Logo({
         />
       ) : (
         <span className="text-[10px] font-semibold text-foreground">
-          {alt.replace(/^Logo\s+/i, "").charAt(0).toUpperCase()}
+          {alt
+            .replace(/^Logo\s+/i, "")
+            .charAt(0)
+            .toUpperCase()}
         </span>
       )}
     </span>

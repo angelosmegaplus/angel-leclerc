@@ -56,8 +56,8 @@ function ConfirmPage() {
               Votre inscription est confirmée
             </h1>
             <p className="mt-3 text-sm text-muted-foreground">
-              Vous recevrez chaque dimanche soir un résumé des articles publiés dans la
-              semaine. Aucun envoi s'il n'y a pas de nouvel article.
+              Vous recevrez chaque dimanche soir un résumé des articles publiés dans la semaine.
+              Aucun envoi s'il n'y a pas de nouvel article.
             </p>
             <Link
               to="/articles"

@@ -111,17 +111,17 @@ export function MailboxAdmin() {
           <Mail className="h-5 w-5 text-primary" /> Boîte mail — connexion requise
         </h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          L'interface et la couche d'intégration Gmail sont opérationnelles, mais la
-          connexion « Angel's Gmail » n'est pas reliée à ce projet. Aucun message
-          n'est affiché et rien n'est simulé.
+          L'interface et la couche d'intégration Gmail sont opérationnelles, mais la connexion «
+          Angel's Gmail » n'est pas reliée à ce projet. Aucun message n'est affiché et rien n'est
+          simulé.
         </p>
         <div className="mt-4 rounded-lg border border-border bg-background p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-foreground">
             Ce qui bloque aujourd'hui
           </p>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            La connexion Gmail existe dans l'espace de travail, mais le propriétaire
-            du projet n'y a pas accès : elle ne peut donc pas être reliée ici.
+            La connexion Gmail existe dans l'espace de travail, mais le propriétaire du projet n'y a
+            pas accès : elle ne peut donc pas être reliée ici.
           </p>
         </div>
         <div className="mt-3 rounded-lg border border-border bg-background p-4">
@@ -130,12 +130,10 @@ export function MailboxAdmin() {
           </p>
           <ol className="mt-1.5 list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
             <li>
-              Dans les réglages des connecteurs, partager la connexion « Angel's Gmail »
-              avec le propriétaire du projet.
+              Dans les réglages des connecteurs, partager la connexion « Angel's Gmail » avec le
+              propriétaire du projet.
             </li>
-            <li>
-              Vérifier que le compte autorisé est bien contact@angel-leclerc.fr.
-            </li>
+            <li>Vérifier que le compte autorisé est bien contact@angel-leclerc.fr.</li>
             <li>
               Autoriser les portées : lecture (gmail.readonly), envoi (gmail.send) et
               modification/classement (gmail.modify).

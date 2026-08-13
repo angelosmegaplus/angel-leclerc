@@ -50,7 +50,8 @@ function ServiceCard({
 }) {
   const state = statusOf(service);
   const configured = service.status === "ready";
-  const connected = service.connection === "connected" || service.connection === "reconnect_required";
+  const connected =
+    service.connection === "connected" || service.connection === "reconnect_required";
 
   return (
     <li className="flex flex-col rounded-xl border border-border bg-background p-4">

@@ -25,11 +25,7 @@ export interface ShopProduct {
 }
 
 /** Raison pour laquelle la boutique n'affiche aucun produit. */
-export type ShopEmptyReason =
-  | "none"
-  | "no-products"
-  | "not-published"
-  | "db-error";
+export type ShopEmptyReason = "none" | "no-products" | "not-published" | "db-error";
 
 export interface ShopCatalog {
   products: ShopProduct[];

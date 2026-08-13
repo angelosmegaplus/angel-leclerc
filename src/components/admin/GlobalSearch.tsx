@@ -128,10 +128,7 @@ export function GlobalSearch({
     const q = query.trim().toLowerCase();
     if (q.length < 2) return [];
     return data
-      .filter(
-        (h) =>
-          h.label.toLowerCase().includes(q) || h.detail.toLowerCase().includes(q),
-      )
+      .filter((h) => h.label.toLowerCase().includes(q) || h.detail.toLowerCase().includes(q))
       .slice(0, 30);
   }, [data, query]);
 
@@ -176,9 +173,7 @@ export function GlobalSearch({
             </p>
           )}
           {!isLoading && query.trim().length < 2 && (
-            <p className="p-4 text-sm text-muted-foreground">
-              Saisissez au moins deux caractères.
-            </p>
+            <p className="p-4 text-sm text-muted-foreground">Saisissez au moins deux caractères.</p>
           )}
           {!isLoading && query.trim().length >= 2 && hits.length === 0 && (
             <p className="p-4 text-sm text-muted-foreground">Aucun résultat.</p>

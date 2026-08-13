@@ -60,19 +60,17 @@ export const mailboxAct = createServerFn({ method: "POST" })
 
 export const mailboxSend = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
-    (input: { to: string; subject: string; body: string; threadId?: string }) => {
-      const to = input.to?.trim() ?? "";
-      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) throw new Error("Adresse invalide.");
-      if (!input.body?.trim()) throw new Error("Message vide.");
-      return {
-        to,
-        subject: (input.subject ?? "").trim().slice(0, 200),
-        body: input.body.trim().slice(0, 20000),
-        threadId: input.threadId,
-      };
-    },
-  )
+  .inputValidator((input: { to: string; subject: string; body: string; threadId?: string }) => {
+    const to = input.to?.trim() ?? "";
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) throw new Error("Adresse invalide.");
+    if (!input.body?.trim()) throw new Error("Message vide.");
+    return {
+      to,
+      subject: (input.subject ?? "").trim().slice(0, 200),
+      body: input.body.trim().slice(0, 20000),
+      threadId: input.threadId,
+    };
+  })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { sendMail } = await import("./mailbox.server");

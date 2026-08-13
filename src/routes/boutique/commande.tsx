@@ -67,9 +67,7 @@ function CheckoutPage() {
   if (items.length === 0) {
     return (
       <div className="container-tight py-24 text-center">
-        <p className="font-display text-xl font-bold text-foreground">
-          Votre panier est vide
-        </p>
+        <p className="font-display text-xl font-bold text-foreground">Votre panier est vide</p>
         <Button asChild variant="outline" className="mt-6">
           <Link to="/boutique">Retour à la boutique</Link>
         </Button>
@@ -117,8 +115,8 @@ function CheckoutPage() {
         Paiement sécurisé
       </h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Indiquez votre destination : les frais de livraison et la TVA sont calculés
-        avant paiement. Vos informations bancaires sont traitées par Stripe.
+        Indiquez votre destination : les frais de livraison et la TVA sont calculés avant paiement.
+        Vos informations bancaires sont traitées par Stripe.
       </p>
 
       {!confirmed ? (

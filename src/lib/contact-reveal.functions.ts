@@ -21,7 +21,9 @@ export const revealDirectContact = createServerFn({ method: "POST" })
     const ip = getRequestIP({ xForwardedFor: true }) ?? null;
     if (!allowReveal(ip)) {
       console.warn("[reveal] rate limited");
-      throw new Error("Trop de demandes. Merci de réessayer plus tard ou d'utiliser la page Contact.");
+      throw new Error(
+        "Trop de demandes. Merci de réessayer plus tard ou d'utiliser la page Contact.",
+      );
     }
 
     const { verifyChallenge } = await import("./captcha.server");
