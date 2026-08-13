@@ -639,7 +639,7 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
         </div>
       )}
 
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="sync">
         <motion.div
           key={track ? `${track}-${index}` : "start"}
           initial={{ opacity: 0, y: 8 }}
@@ -720,7 +720,7 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
                             setAnswer(current.id, opt);
                             setError(null);
                             recordAnswer(current, opt, index);
-                            setTimeout(() => setIndex((i) => i + 1), 120);
+                            setIndex((i) => i + 1);
                           }}
                           className={`rounded-xl border px-4 py-3 text-left text-sm transition-colors ${
                             active
@@ -1181,4 +1181,3 @@ function Bubble({ msg }: { msg: Msg }) {
     </motion.div>
   );
 }
-
