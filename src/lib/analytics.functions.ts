@@ -17,6 +17,79 @@ import {
 
 export type { SiteStats };
 
+type AnalyticsInsert = Record<string, unknown>;
+
+function getPublicSupabaseConfig() {
+  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const key = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !key) {
+    throw new Error("Configuration Supabase publique indisponible pour le suivi analytics.");
+  }
+  return { url: url.replace(/\/$/, ""), key };
+}
+
+async function insertAnalyticsRow(row: AnalyticsInsert) {
+  const { url, key } = getPublicSupabaseConfig();
+  const headers: Record<string, string> = {
+    apikey: key,
+    "Content-Type": "application/json",
+    Prefer: "return=minimal",
+  };
+  if (!key.startsWith("sb_publishable_") && !key.startsWith("sb_secret_")) {
+    headers.Authorization = `Bearer ${key}`;
+  }
+
+  const response = await fetch(`${url}/rest/v1/page_views`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(row),
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new Error(`Échec du suivi analytics (${response.status})${detail ? ` : ${detail.slice(0, 300)}` : ""}`);
+  }
+}
+
+function analyticsRowFromInput(data: ReturnType<typeof trackSchema.parse>, eventType?: string) {
+  const ua = getRequestHeader("user-agent") ?? "";
+  const { browser, os } = parseUserAgent(ua);
+  const rawMeta = data.metadata ?? {};
+  const metadata: Record<string, string | number | boolean> = {};
+  for (const [k, v] of Object.entries(rawMeta).slice(0, 12)) {
+    metadata[k.slice(0, 32)] = typeof v === "string" ? v.slice(0, 200) : v;
+  }
+
+  return {
+    path: data.path.slice(0, 300),
+    referrer: data.referrer ? data.referrer.slice(0, 500) : null,
+    referrer_host: data.referrerHost || null,
+    device: data.device ?? null,
+    country: getRequestHeader("cf-ipcountry") ?? getRequestHeader("x-vercel-ip-country") ?? null,
+    city: getRequestHeader("cf-ipcity") ?? getRequestHeader("x-vercel-ip-city") ?? null,
+    session_id: data.sessionId || null,
+    visitor_id: data.visitorId || null,
+    event_type: eventType ?? data.eventType,
+    event_name: data.eventName ?? null,
+    title: data.title ?? null,
+    source: data.source ?? null,
+    utm_source: data.utmSource ?? null,
+    utm_medium: data.utmMedium ?? null,
+    utm_campaign: data.utmCampaign ?? null,
+    utm_term: data.utmTerm ?? null,
+    utm_content: data.utmContent ?? null,
+    browser,
+    os,
+    language: data.language ?? null,
+    screen_width: data.screenWidth ?? null,
+    screen_height: data.screenHeight ?? null,
+    viewport_width: data.viewportWidth ?? null,
+    viewport_height: data.viewportHeight ?? null,
+    metadata,
+    user_id: null,
+  };
+}
+
 export const trackEvent = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => trackSchema.parse(data))
   .handler(async ({ data }) => {
@@ -24,40 +97,7 @@ export const trackEvent = createServerFn({ method: "POST" })
     if (/bot|crawler|spider|preview|headless|lighthouse/i.test(ua)) {
       return { ok: true as const };
     }
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { browser, os } = parseUserAgent(ua);
-    const rawMeta = data.metadata ?? {};
-    const metadata: Record<string, string | number | boolean> = {};
-    for (const [k, v] of Object.entries(rawMeta).slice(0, 12)) {
-      metadata[k.slice(0, 32)] = typeof v === "string" ? v.slice(0, 200) : v;
-    }
-    await supabaseAdmin.from("page_views").insert({
-      path: data.path.slice(0, 300),
-      referrer: data.referrer ? data.referrer.slice(0, 500) : null,
-      referrer_host: data.referrerHost || null,
-      device: data.device ?? null,
-      country: getRequestHeader("cf-ipcountry") ?? null,
-      city: getRequestHeader("cf-ipcity") ?? getRequestHeader("x-vercel-ip-city") ?? null,
-      session_id: data.sessionId || null,
-      visitor_id: data.visitorId || null,
-      event_type: data.eventType,
-      event_name: data.eventName ?? null,
-      title: data.title ?? null,
-      source: data.source ?? null,
-      utm_source: data.utmSource ?? null,
-      utm_medium: data.utmMedium ?? null,
-      utm_campaign: data.utmCampaign ?? null,
-      utm_term: data.utmTerm ?? null,
-      utm_content: data.utmContent ?? null,
-      browser,
-      os,
-      language: data.language ?? null,
-      screen_width: data.screenWidth ?? null,
-      screen_height: data.screenHeight ?? null,
-      viewport_width: data.viewportWidth ?? null,
-      viewport_height: data.viewportHeight ?? null,
-      metadata,
-    });
+    await insertAnalyticsRow(analyticsRowFromInput(data));
     return { ok: true as const };
   });
 
@@ -67,18 +107,7 @@ export const trackPageView = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const ua = getRequestHeader("user-agent") ?? "";
     if (/bot|crawler|spider|preview|headless|lighthouse/i.test(ua)) return { ok: true as const };
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { browser, os } = parseUserAgent(ua);
-    await supabaseAdmin.from("page_views").insert({
-      path: data.path.slice(0, 300),
-      referrer: data.referrer ? data.referrer.slice(0, 500) : null,
-      device: data.device ?? null,
-      country: getRequestHeader("cf-ipcountry") ?? null,
-      session_id: data.sessionId || null,
-      event_type: "pageview",
-      browser,
-      os,
-    });
+    await insertAnalyticsRow(analyticsRowFromInput(data, "pageview"));
     return { ok: true as const };
   });
 
