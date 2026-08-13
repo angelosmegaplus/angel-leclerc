@@ -22,6 +22,7 @@ import {
   removePushSubscription,
   savePushSubscription,
 } from "@/lib/notifications.functions";
+import { playRetroSound } from "@/lib/retro-sounds";
 
 const KINDS: { key: string; label: string; help: string }[] = [
   { key: "task", label: "Tâches en retard", help: "Échéance dépassée dans Projets." },
@@ -87,6 +88,7 @@ export function NotificationsPanel() {
   const syncMutation = useMutation({
     mutationFn: () => sync(),
     onSuccess: (r) => {
+      playRetroSound(r.created > 0 ? "notify" : "success");
       qc.invalidateQueries({ queryKey: ["notifications"] });
       toast.success(
         r.created > 0
@@ -94,7 +96,10 @@ export function NotificationsPanel() {
           : "Aucun nouvel évènement à signaler.",
       );
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => {
+      playRetroSound("error");
+      toast.error(e.message);
+    },
   });
 
   // Vérification des évènements réels à l'ouverture du centre de notifications.
@@ -122,12 +127,14 @@ export function NotificationsPanel() {
 
   async function enableNotifications() {
     if (typeof Notification === "undefined") {
+      playRetroSound("error");
       toast.error("Ce navigateur ne gère pas les notifications web.");
       return;
     }
     const result = await Notification.requestPermission();
     setPermission(result);
     if (result !== "granted") {
+      playRetroSound("error");
       toast.error("Permission refusée : vous pouvez la réactiver dans les réglages du navigateur.");
       return;
     }
@@ -142,6 +149,7 @@ export function NotificationsPanel() {
     } else {
       new Notification("Notifications Angel OS activées");
     }
+    playRetroSound("success");
 
     const key = push?.publicKey;
     if (!key || !reg?.pushManager) {
@@ -163,9 +171,11 @@ export function NotificationsPanel() {
         },
       });
       setSubscribed(true);
+      playRetroSound("notify");
       qc.invalidateQueries({ queryKey: ["push-status"] });
       toast.success("Notifications push activées sur cet appareil.");
     } catch {
+      playRetroSound("error");
       toast.error("Abonnement push refusé par le navigateur. Notifications locales conservées.");
     }
   }
@@ -178,6 +188,7 @@ export function NotificationsPanel() {
       await sub.unsubscribe().catch(() => undefined);
     }
     setSubscribed(false);
+    playRetroSound("click");
     qc.invalidateQueries({ queryKey: ["push-status"] });
     toast.success("Cet appareil ne recevra plus de push.");
   }
