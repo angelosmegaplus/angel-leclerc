@@ -3,7 +3,6 @@ import { Menu, X, Linkedin, Instagram, Facebook } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import logo from "@/assets/logo.svg";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/ThemeController";
 
 const navLinks = [
   { href: "/", label: "Accueil" },
@@ -54,18 +53,15 @@ export function Header() {
           </Button>
         </nav>
 
-        <div className="md:hidden flex items-center gap-1">
-          <ThemeToggle className="[&>button]:text-foreground [&>button]:hover:text-foreground [&>button[aria-pressed='true']]:bg-muted [&>button[aria-pressed='true']]:text-foreground border-border bg-transparent" />
-          <button
-            className="inline-flex h-11 w-11 items-center justify-center text-foreground"
-            type="button"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label={mobileOpen ? "Fermer le menu" : "Ouvrir le menu"}
-            aria-expanded={mobileOpen}
-          >
-            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
+        <button
+          className="md:hidden inline-flex h-11 w-11 items-center justify-center text-foreground"
+          type="button"
+          onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label={mobileOpen ? "Fermer le menu" : "Ouvrir le menu"}
+          aria-expanded={mobileOpen}
+        >
+          {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
 
       {mobileOpen && (
