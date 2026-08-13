@@ -234,7 +234,7 @@ export function DailyCockpit() {
         </div>
 
         <dl className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
-          {[
+          {([
             ["Envoyées aujourd'hui", stats.sentToday, MailCheck],
             ["Réponses", stats.replies, Inbox],
             ["Relances dues", stats.followUps, RotateCcw],
@@ -242,7 +242,7 @@ export function DailyCockpit() {
             ["Acceptées", stats.accepted, Check],
             ["Messages non lus", stats.unread, Inbox],
             ["Actions tracées", stats.todayActivity, Clock3],
-          ].map(([label, value, Icon]) => (
+          ] as const).map(([label, value, Icon]) => (
             <div key={String(label)} className="rounded-xl border border-border/70 bg-background px-3 py-2.5">
               <dt className="flex items-center gap-1.5 text-[10px] font-medium leading-tight text-muted-foreground">
                 <Icon className="h-3.5 w-3.5 shrink-0" /> {label}

@@ -125,6 +125,42 @@ export type Database = {
         }
         Relationships: []
       }
+      hourly_mail_reports: {
+        Row: {
+          counts: Json
+          generated_at: string
+          id: number
+          items: Json
+          period_end: string | null
+          period_start: string | null
+          recommendations: Json
+          source: string
+          summary: string
+        }
+        Insert: {
+          counts?: Json
+          generated_at?: string
+          id: number
+          items?: Json
+          period_end?: string | null
+          period_start?: string | null
+          recommendations?: Json
+          source?: string
+          summary: string
+        }
+        Update: {
+          counts?: Json
+          generated_at?: string
+          id?: number
+          items?: Json
+          period_end?: string | null
+          period_start?: string | null
+          recommendations?: Json
+          source?: string
+          summary?: string
+        }
+        Relationships: []
+      }
       applications: {
         Row: {
           city: string | null
