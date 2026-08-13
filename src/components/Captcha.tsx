@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { Loader2, RefreshCw, ShieldCheck } from "lucide-react";
-import { getCaptchaChallenge } from "@/lib/captcha.functions";
+import { RefreshCw, ShieldCheck } from "lucide-react";
 
 export type CaptchaValue = { token: string; answer: string };
 
@@ -11,29 +9,26 @@ type Props = {
   error?: string | undefined;
 };
 
-/** Vérification anti-robot locale : petit calcul généré et validé côté serveur. */
-export function Captcha({ value, onChange, error }: Props) {
-  const load = useServerFn(getCaptchaChallenge);
-  const [question, setQuestion] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+const TTL_MS = 15 * 60 * 1000;
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    try {
-      const challenge = await load({});
-      setQuestion(challenge.question);
-      onChange({ token: challenge.token, answer: "" });
-    } catch {
-      setQuestion(null);
-      onChange({ token: "", answer: "" });
-    } finally {
-      setLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+/** Vérification anti-robot locale, dans le style Lovable : petit calcul simple. */
+export function Captcha({ value, onChange, error }: Props) {
+  const [question, setQuestion] = useState("—");
+
+  const refresh = useCallback(() => {
+    const a = 1 + Math.floor(Math.random() * 9);
+    const b = 1 + Math.floor(Math.random() * 9);
+    const plus = Math.random() > 0.35 || b > a;
+    const expected = plus ? a + b : a - b;
+    const nextQuestion = plus ? `${a} + ${b}` : `${a} - ${b}`;
+    const expiry = Date.now() + TTL_MS;
+
+    setQuestion(nextQuestion);
+    onChange({ token: `${expiry}.${expected}`, answer: "" });
+  }, [onChange]);
 
   useEffect(() => {
-    void refresh();
+    refresh();
   }, [refresh]);
 
   return (
@@ -43,7 +38,7 @@ export function Captcha({ value, onChange, error }: Props) {
       </p>
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <span className="inline-flex h-10 min-w-[92px] items-center justify-center rounded-md border border-border bg-background px-3 font-mono text-sm text-foreground">
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : question ? `${question} = ?` : "—"}
+          {question} = ?
         </span>
         <input
           type="text"
@@ -56,7 +51,7 @@ export function Captcha({ value, onChange, error }: Props) {
         />
         <button
           type="button"
-          onClick={() => void refresh()}
+          onClick={refresh}
           className="inline-flex h-10 items-center gap-1.5 rounded-md px-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
           <RefreshCw className="h-3.5 w-3.5" /> Autre calcul
