@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
 import { Volume2 } from "lucide-react";
 
 export function BootIntro({ done }: { done: () => void }) {
@@ -22,7 +21,7 @@ export function BootIntro({ done }: { done: () => void }) {
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black">
-      <video ref={ref} src="/angel-os/intro.mp4" autoPlay playsInline preload="auto" onEnded={done} className="h-full w-full object-contain" />
+      <video ref={ref} src="/angel-os/intro.mp4" autoPlay playsInline preload="metadata" onEnded={done} className="h-full w-full object-contain" />
       {blocked && (
         <button type="button" onClick={() => {
           if (ref.current) {
@@ -35,7 +34,6 @@ export function BootIntro({ done }: { done: () => void }) {
           <Volume2 size={17} /> Activer le son
         </button>
       )}
-      <motion.div aria-hidden className="pointer-events-none absolute inset-x-0 h-px bg-red-500/60" animate={{ top: ["15%", "85%", "15%"] }} transition={{ duration: 4, repeat: Infinity, ease: "linear" }} />
     </div>
   );
 }
