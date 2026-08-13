@@ -106,7 +106,6 @@ export const Route = createFileRoute("/articles/$slug")({
 function ArticlePage() {
   const article = Route.useLoaderData();
   const { slug } = Route.useParams();
-  const shareUrl = `${SITE_URL}/articles/${slug}`;
 
   if (!article) {
     return (
@@ -153,7 +152,7 @@ function ArticlePage() {
         )}
 
         {!article.is_private && (
-          <ShareArticle url={shareUrl} title={article.title} className="mt-6" />
+          <ShareArticle slug={slug} title={article.title} className="mt-6" />
         )}
 
         {article.cover_url && (
@@ -234,7 +233,7 @@ function ArticlePage() {
 
         {!article.is_private && (
           <div className="mt-12 border-t border-border pt-6">
-            <ShareArticle url={shareUrl} title={article.title} />
+            <ShareArticle slug={slug} title={article.title} />
           </div>
         )}
 
