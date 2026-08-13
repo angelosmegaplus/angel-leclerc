@@ -1,39 +1,17 @@
-import { useEffect, useMemo, useRef } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import { Briefcase, CheckCircle2, Clock3, Loader2, RefreshCw } from "lucide-react";
-import { toast } from "sonner";
-import { syncGoogleApplications } from "@/lib/applications.functions";
+import { useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Briefcase, RefreshCw } from "lucide-react";
 import { applicationFields, listRows, str } from "@/lib/angelos";
 import { Button } from "@/components/ui/button";
 import { AdminCard } from "./AdminShell";
 import { CrudModule } from "./CrudModule";
 
 export function ApplicationsPanel() {
-  const sync = useServerFn(syncGoogleApplications);
   const queryClient = useQueryClient();
-  const autoStarted = useRef(false);
-  const { data: rows = [] } = useQuery({
+  const { data: rows = [], isFetching } = useQuery({
     queryKey: ["angel", "applications"],
     queryFn: () => listRows("applications"),
   });
-
-  const mutation = useMutation({
-    mutationFn: () => sync(),
-    onSuccess: (result) => {
-      if (result.status === "completed") toast.success(result.message);
-      else if (result.status === "partial") toast.warning(result.message);
-      void queryClient.invalidateQueries({ queryKey: ["angel", "applications"] });
-      void queryClient.invalidateQueries({ queryKey: ["integration-readiness"] });
-    },
-    onError: (error: Error) => toast.error(error.message),
-  });
-
-  useEffect(() => {
-    if (autoStarted.current) return;
-    autoStarted.current = true;
-    mutation.mutate();
-  }, [mutation]);
 
   const stats = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
@@ -57,35 +35,22 @@ export function ApplicationsPanel() {
           <div>
             <div className="flex items-center gap-2">
               <Briefcase className="h-5 w-5 text-primary" />
-              <p className="font-display font-bold text-foreground">Suivi assisté par Angel AI</p>
+              <p className="font-display font-bold text-foreground">Suivi des candidatures</p>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              À l'ouverture, Angel OS vérifie Gmail via la connexion Google officielle, importe les
-              envois sans doublon et détecte les réponses explicites. Aucun email n'est envoyé.
+              ChatGPT surveille les nouveaux e-mails chaque heure, consigne le bilan dans Angel OS
+              et met à jour les réponses explicites liées aux candidatures. Aucun e-mail n'est
+              envoyé automatiquement : vous gardez la décision finale.
             </p>
-            {mutation.data && (
-              <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-                {mutation.data.status === "completed" ? (
-                  <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-                ) : (
-                  <Clock3 className="h-3.5 w-3.5 text-amber-600" />
-                )}
-                {mutation.data.message}
-              </p>
-            )}
           </div>
           <Button
             variant="outline"
             className="min-h-11 shrink-0"
-            disabled={mutation.isPending}
-            onClick={() => mutation.mutate()}
+            disabled={isFetching}
+            onClick={() => void queryClient.invalidateQueries({ queryKey: ["angel", "applications"] })}
           >
-            {mutation.isPending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="mr-2 h-4 w-4" />
-            )}
-            Vérifier Gmail
+            <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+            Actualiser la liste
           </Button>
         </div>
       </AdminCard>
