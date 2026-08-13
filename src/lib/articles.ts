@@ -10,10 +10,15 @@ import {
   mergeLegacyGitArticles,
 } from "@/lib/legacy-git-articles";
 
+function withoutDeleted(articles: Article[], deleted: Set<string>): Article[] {
+  return articles.filter((article) => !deleted.has(article.slug));
+}
+
 export async function fetchLatestArticles(limit = 3): Promise<Article[]> {
   const deleted = await fetchDeletedGitArticleSlugs();
   try {
-    return mergeLegacyGitArticles(await base.fetchLatestArticles(limit), deleted).slice(0, limit);
+    const visible = withoutDeleted(await base.fetchLatestArticles(Math.max(limit, 10)), deleted);
+    return mergeLegacyGitArticles(visible, deleted).slice(0, limit);
   } catch {
     return mergeLegacyGitArticles([], deleted).slice(0, limit);
   }
@@ -22,7 +27,8 @@ export async function fetchLatestArticles(limit = 3): Promise<Article[]> {
 export async function fetchPublishedArticles(): Promise<Article[]> {
   const deleted = await fetchDeletedGitArticleSlugs();
   try {
-    return mergeLegacyGitArticles(await base.fetchPublishedArticles(), deleted);
+    const visible = withoutDeleted(await base.fetchPublishedArticles(), deleted);
+    return mergeLegacyGitArticles(visible, deleted);
   } catch {
     return mergeLegacyGitArticles([], deleted);
   }
@@ -42,6 +48,5 @@ export async function fetchArticleBySlug(slug: string): Promise<Article | null> 
 
 export async function fetchAllArticles(): Promise<Article[]> {
   const deleted = await fetchDeletedGitArticleSlugs();
-  const articles = await base.fetchAllArticles();
-  return articles.filter((article) => !deleted.has(article.slug));
+  return withoutDeleted(await base.fetchAllArticles(), deleted);
 }
