@@ -17,6 +17,7 @@ import {
   Radio,
   Smartphone,
   Sparkles,
+  TerminalSquare,
   Workflow,
   Volume2,
 } from "lucide-react";
@@ -49,6 +50,7 @@ const modules = [
 ];
 
 const stack = [
+  ["ChatGPT + Codex", "Conception, programmation assistée, diagnostic et évolution continue"],
   ["React + TanStack Start", "Interface et application web"],
   ["Supabase", "Authentification, base de données et stockage"],
   ["GitHub", "Code source, historique et déploiements"],
@@ -119,11 +121,6 @@ function AngelOsShowcase() {
             <Volume2 size={17} /> Activer le son
           </button>
         )}
-        {booting && (
-          <button type="button" onClick={() => setBooting(false)} className="absolute right-4 top-4 rounded-full border border-white/15 bg-black/55 px-4 py-2 text-xs text-white/70 backdrop-blur">
-            Passer
-          </button>
-        )}
       </motion.div>
 
       <motion.div
@@ -162,6 +159,11 @@ function AngelOsShowcase() {
                 Un centre de contrôle numérique conçu pour réunir activité professionnelle,
                 publication, projets, candidatures et assistance intelligente dans une seule
                 application.
+              </p>
+              <p className="mt-4 max-w-2xl border-l-2 border-[#e88b60] pl-4 text-sm leading-relaxed text-white/55 sm:text-base">
+                Imaginé et piloté par Angel Leclerc avec ChatGPT, Codex et des chaînes
+                d'automatisation&nbsp;: l'intelligence artificielle participe à la conception,
+                programme des évolutions, analyse les erreurs et accélère les tâches répétitives.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <div className="rounded-2xl border border-white/10 bg-white/[.055] px-5 py-4 backdrop-blur">
@@ -243,6 +245,49 @@ function AngelOsShowcase() {
                 <p className="mt-3 text-sm leading-relaxed text-white/55">{item.text}</p>
               </motion.article>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-5 pb-20 sm:px-8 lg:px-12">
+        <div className="mx-auto max-w-6xl overflow-hidden rounded-[2rem] border border-[#e88b60]/25 bg-[linear-gradient(135deg,rgba(232,139,96,.13),rgba(88,101,242,.07))] p-7 sm:p-10">
+          <div className="grid gap-10 lg:grid-cols-[.8fr_1.2fr] lg:items-center">
+            <div>
+              <div className="inline-flex rounded-2xl bg-[#e88b60]/15 p-4 text-[#f3a47e]">
+                <TerminalSquare size={30} />
+              </div>
+              <p className="mt-6 text-xs font-semibold uppercase tracking-[.22em] text-[#e88b60]">Compétence centrale</p>
+              <h2 className="mt-4 font-display text-3xl font-bold sm:text-5xl">L'IA comme atelier de production</h2>
+              <p className="mt-5 leading-relaxed text-white/60">
+                Angel ne se contente pas de demander un texte à une IA. Il structure les objectifs,
+                rédige des briefs complexes, dirige les itérations, contrôle les résultats et fait
+                travailler ensemble ChatGPT, Codex, le code et les services connectés.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {[
+                ["Prompt engineering", "Transformer une intention floue en cahier des charges exploitable."],
+                ["Programmation assistée", "Faire construire, corriger et tester des fonctions complètes avec Codex."],
+                ["Automatisation", "Relier des étapes répétitives tout en conservant les validations sensibles."],
+                ["Contrôle critique", "Vérifier les intégrations réelles, détecter les simulations et corriger les erreurs."],
+                ["Production éditoriale", "Rechercher, structurer, reformuler et publier avec une transparence sur l'usage de l'IA."],
+                ["Orchestration d'outils", "Faire collaborer GitHub, Supabase, Lovable, Vercel et les services officiels."],
+              ].map(([title, text], index) => (
+                <motion.button
+                  type="button"
+                  onClick={() => notify(title)}
+                  key={title}
+                  initial={{ opacity: 0, y: 14 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * .06 }}
+                  className="rounded-2xl border border-white/10 bg-[#0d131e]/80 p-5 text-left transition hover:-translate-y-1 hover:border-[#e88b60]/45 active:scale-[.98]"
+                >
+                  <p className="font-semibold text-white">{title}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-white/50">{text}</p>
+                </motion.button>
+              ))}
+            </div>
           </div>
         </div>
       </section>
