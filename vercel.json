@@ -2,6 +2,10 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
+      "source": "/_serverFn/:path*",
+      "destination": "https://angel-leclerc.lovable.app/_serverFn/:path*"
+    },
+    {
       "source": "/__server",
       "destination": "https://angel-leclerc.lovable.app/__server"
     },

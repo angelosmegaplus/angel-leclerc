@@ -7,7 +7,8 @@ exécutées par le déploiement Lovable existant.
 Vercel transmet côté serveur les routes suivantes, sans redirection visible et
 sans exposer de secret au navigateur :
 
-- `/__server` : fonctions serveur TanStack utilisées par Angel OS ;
+- `/_serverFn/*` : fonctions serveur TanStack utilisées par Angel OS ;
+- `/__server` : ancien point d'entrée TanStack conservé par compatibilité ;
 - `/~oauth/*` : démarrage et retours OAuth ;
 - `/api/public/*` : formulaires et webhooks publics ;
 - `/lovable/*` : routes de compatibilité Lovable.
