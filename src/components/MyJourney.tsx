@@ -485,7 +485,7 @@ const projects: Project[] = [
 
 export function RealisationsSection() {
   const { data } = useQuery(contentQuery("projet"));
-  const list: Project[] =
+  const source: Project[] =
     data && data.length
       ? data.map((i: ContentItem) => ({
           title: i.title,
@@ -498,6 +498,23 @@ export function RealisationsSection() {
           icon: iconFor(i.icon, PenLine),
         }))
       : projects;
+  const featuredTitles = new Set([
+    "Angel OS — centre de contrôle numérique",
+    "Blog et espace éditorial",
+  ]);
+  const featured = projects.filter((project) => featuredTitles.has(project.title));
+  const remaining = source.filter((project) => !featuredTitles.has(project.title));
+  const companyIndex = remaining.findIndex(
+    (project) => project.title === "Angel Leclerc Communication",
+  );
+  const list: Project[] =
+    companyIndex >= 0
+      ? [
+          ...remaining.slice(0, companyIndex + 1),
+          ...featured,
+          ...remaining.slice(companyIndex + 1),
+        ]
+      : [...featured, ...remaining];
   return (
     <AnimatedSection>
       <section id="realisations" className="section-padding bg-background scroll-mt-24">
