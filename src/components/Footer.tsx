@@ -115,10 +115,8 @@ export function Footer() {
                 © {new Date().getFullYear()} Angel Leclerc Communication. Tous droits réservés.
               </p>
               <a
-                href="https://github.com/angelosmegaplus/angel-leclerc/tree/main/angel-os"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Voir le code source d'Angel OS"
+                href="/angel-os-ia"
+                aria-label="Découvrir Angel OS"
                 className="group relative mt-3 inline-flex items-center gap-3 overflow-hidden rounded-2xl border border-white/10 bg-black px-3.5 py-2.5 text-sm font-medium text-white shadow-lg shadow-black/20 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10"
               >
                 <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
