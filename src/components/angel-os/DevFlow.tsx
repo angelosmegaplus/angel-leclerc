@@ -1,5 +1,3 @@
-import { Logo } from "@/components/Logo";
-
 const steps = [
   ["01", "Idée / besoin", "Une évolution est décrite en langage naturel.", "/angel-os/logo.png", "idea -> brief"],
   ["02", "ChatGPT / Codex", "L'IA aide à analyser, écrire ou modifier le code et à vérifier la cohérence.", "/logos/chatgpt.com.svg", "brief -> code.change"],
