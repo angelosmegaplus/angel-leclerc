@@ -204,6 +204,15 @@
   }
 }
 
+/* Le contenu public reste sélectionnable/copier-collable sur mobile et desktop. */
+main article,
+main article *,
+.article-content,
+.article-content * {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 .article-content {
   color: var(--color-foreground);
 }
