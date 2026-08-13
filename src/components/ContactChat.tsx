@@ -18,7 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { RevealContact } from "@/components/RevealContact";
 import { Captcha, type CaptchaValue } from "@/components/Captcha";
-import { submitConversationalContact } from "@/lib/contact-chat.functions";
+import type { ConversationalContactInput } from "@/lib/contact-chat.functions";
 import { askAssistant } from "@/lib/assistant.functions";
 import { answer as localAnswer } from "@/lib/assistant-engine";
 
@@ -298,7 +298,6 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
   const headingRef = useRef<HTMLParagraphElement>(null);
   const transcriptEndRef = useRef<HTMLDivElement>(null);
 
-  const submit = useServerFn(submitConversationalContact);
   const askServer = useServerFn(askAssistant);
 
   const steps = track ? TRACKS[track].steps : [];
@@ -526,8 +525,7 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
 
     setSending(true);
     try {
-      await submit({
-        data: {
+      const submission: ConversationalContactInput = {
           track,
           answers: payload,
           name: contact.name.trim(),
@@ -543,8 +541,23 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
           captchaToken: captcha.token,
           captchaAnswer: captcha.answer.trim(),
           website: honey,
+      };
+      const response = await fetch(
+        "https://angel-leclerc.lovable.app/api/public/contact",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(submission),
         },
-      });
+      );
+      const result = (await response.json().catch(() => null)) as
+        | { ok?: boolean; error?: string }
+        | null;
+      if (!response.ok || !result?.ok) {
+        throw new Error(
+          result?.error || "La demande n'a pas pu être transmise. Merci de réessayer.",
+        );
+      }
       setSent(true);
       try {
         sessionStorage.removeItem(STORAGE_KEY);
