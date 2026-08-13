@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
@@ -17,7 +18,9 @@ import {
   Smartphone,
   Sparkles,
   Workflow,
+  Volume2,
 } from "lucide-react";
+import { playRetroSound } from "@/lib/retro-sounds";
 
 export const Route = createFileRoute("/angel-os-ia")({
   head: () => ({
@@ -55,8 +58,81 @@ const stack = [
 ];
 
 function AngelOsShowcase() {
+  const [booting, setBooting] = useState(true);
+  const [soundBlocked, setSoundBlocked] = useState(false);
+  const [notice, setNotice] = useState("Système prêt");
+  const introRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    const video = introRef.current;
+    if (!video) return;
+    video.muted = false;
+    video.volume = 1;
+    void video.play().catch(() => {
+      video.muted = true;
+      setSoundBlocked(true);
+      void video.play().catch(() => undefined);
+    });
+    const collapse = window.setTimeout(() => setBooting(false), 6500);
+    return () => window.clearTimeout(collapse);
+  }, []);
+
+  const enableSound = () => {
+    const video = introRef.current;
+    if (video) {
+      video.muted = false;
+      video.volume = 1;
+      void video.play().catch(() => undefined);
+    }
+    setSoundBlocked(false);
+    playRetroSound("success");
+  };
+
+  const notify = (label: string) => {
+    setNotice(`${label} · aperçu activé`);
+    playRetroSound("notify");
+  };
+
   return (
     <main className="min-h-screen overflow-hidden bg-[#080b12] text-white">
+      <motion.div
+        initial={false}
+        animate={booting
+          ? { inset: 0, borderRadius: 0, opacity: 1 }
+          : { inset: "1rem 1rem auto auto", width: 210, height: 118, borderRadius: 22, opacity: 0 }}
+        transition={{ duration: .9, ease: [0.22, 1, 0.36, 1] }}
+        onAnimationComplete={() => { if (!booting) setSoundBlocked(false); }}
+        className="fixed z-[100] overflow-hidden bg-black shadow-2xl shadow-black/70"
+        style={booting ? undefined : { pointerEvents: "none" }}
+      >
+        <video
+          ref={introRef}
+          src="/angel-os/intro.mp4"
+          autoPlay
+          playsInline
+          preload="auto"
+          onEnded={() => setBooting(false)}
+          className="h-full w-full object-contain"
+        />
+        {booting && soundBlocked && (
+          <button type="button" onClick={enableSound} className="absolute bottom-8 left-1/2 inline-flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/20 bg-black/70 px-5 py-3 text-sm font-semibold text-white backdrop-blur">
+            <Volume2 size={17} /> Activer le son
+          </button>
+        )}
+        {booting && (
+          <button type="button" onClick={() => setBooting(false)} className="absolute right-4 top-4 rounded-full border border-white/15 bg-black/55 px-4 py-2 text-xs text-white/70 backdrop-blur">
+            Passer
+          </button>
+        )}
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: -18 }}
+        animate={{ opacity: booting ? 0 : 1, y: booting ? -18 : 0 }}
+        className="fixed right-4 top-4 z-50 rounded-full border border-[#e88b60]/30 bg-[#111722]/90 px-4 py-2 text-xs font-medium text-[#f3a47e] shadow-xl backdrop-blur"
+      >
+        {notice}
+      </motion.div>
       <section className="relative isolate min-h-[92vh] overflow-hidden px-5 pb-16 pt-8 sm:px-8 lg:px-12">
         <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_20%_15%,rgba(232,139,96,.2),transparent_28%),radial-gradient(circle_at_80%_30%,rgba(88,101,242,.16),transparent_30%),linear-gradient(180deg,#0d111c_0%,#080b12_70%)]" />
         <motion.div
@@ -111,16 +187,9 @@ function AngelOsShowcase() {
             >
               <div className="absolute -inset-5 -z-10 rounded-[2.5rem] bg-[#e88b60]/10 blur-3xl" />
               <div className="overflow-hidden rounded-[2rem] border border-white/15 bg-black shadow-2xl shadow-black/50">
-                <video
-                  src="/angel-os/intro.mp4"
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  controls
-                  preload="metadata"
-                  className="aspect-video w-full object-cover"
-                />
+                <div className="flex aspect-video items-center justify-center bg-[radial-gradient(circle,rgba(232,139,96,.16),transparent_60%)]">
+                  <img src="/angel-os/logo.png" alt="Logo Angel OS IA" className="h-40 w-40 rounded-[2rem] object-cover shadow-2xl" />
+                </div>
               </div>
               <p className="mt-3 text-center text-xs text-white/40">Générique d'ouverture d'Angel OS IA</p>
             </motion.div>
@@ -135,10 +204,10 @@ function AngelOsShowcase() {
           transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
         >
           {[...modules, ...modules].map(({ label, icon: Icon }, index) => (
-            <div key={`${label}-${index}`} className="flex min-w-44 items-center gap-3 rounded-2xl border border-white/10 bg-[#101622] px-5 py-4">
+            <button type="button" onClick={() => notify(label)} key={`${label}-${index}`} className="flex min-w-44 items-center gap-3 rounded-2xl border border-white/10 bg-[#101622] px-5 py-4 text-left transition duration-150 hover:-translate-y-1 hover:border-[#e88b60]/50 active:scale-95">
               <Icon size={19} className="text-[#e88b60]" />
               <span className="font-medium text-white/80">{label}</span>
-            </div>
+            </button>
           ))}
         </motion.div>
       </section>
