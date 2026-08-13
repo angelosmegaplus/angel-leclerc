@@ -94,20 +94,22 @@ export const getSiteStats = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!adminRole) throw new Error("Accès refusé.");
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const since = new Date(Date.now() - data.days * 24 * 3600 * 1000).toISOString();
 
     const [views, articles, subscribers, messages] = await Promise.all([
-      supabaseAdmin
+      context.supabase
         .from("page_views")
         .select(SELECT_COLUMNS)
         .gte("created_at", since)
         .order("created_at", { ascending: false })
         .limit(50000),
-      supabaseAdmin.from("articles").select("id, title, slug, published, is_private, created_at"),
-      supabaseAdmin.from("blog_subscribers").select("id, active, created_at"),
-      supabaseAdmin.from("contact_requests").select("id, is_read, created_at"),
+      context.supabase.from("articles").select("id, title, slug, published, is_private, created_at"),
+      context.supabase.from("blog_subscribers").select("id, active, created_at"),
+      context.supabase.from("contact_requests").select("id, is_read, created_at"),
     ]);
+
+    const firstError = views.error ?? articles.error ?? subscribers.error ?? messages.error;
+    if (firstError) throw firstError;
 
     return buildSiteStats({
       views: (views.data ?? []) as unknown as ViewRow[],
@@ -130,14 +132,14 @@ export const getRealtimeActivity = createServerFn({ method: "GET" })
       .maybeSingle();
     if (!adminRole) throw new Error("Accès refusé.");
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const since = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-    const { data } = await supabaseAdmin
+    const { data, error } = await context.supabase
       .from("page_views")
       .select(SELECT_COLUMNS)
       .gte("created_at", since)
       .order("created_at", { ascending: false })
       .limit(500);
+    if (error) throw error;
 
     const rows = (data ?? []) as unknown as ViewRow[];
     const sessions = new Set(rows.map((r) => r.session_id).filter(Boolean) as string[]);
@@ -178,15 +180,16 @@ export const exportAnalyticsCsv = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!adminRole) throw new Error("Accès refusé.");
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { matchesFilters } = await import("./analytics.server-utils");
     const since = new Date(Date.now() - data.days * 24 * 3600 * 1000).toISOString();
-    const { data: rows } = await supabaseAdmin
+    const { data: rows, error } = await context.supabase
       .from("page_views")
       .select(SELECT_COLUMNS)
       .gte("created_at", since)
       .order("created_at", { ascending: false })
       .limit(20000);
+    if (error) throw error;
+
     const filtered = ((rows ?? []) as unknown as ViewRow[]).filter((r) =>
       matchesFilters(r, (data.filters ?? {}) as AnalyticsFilters),
     );
