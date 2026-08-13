@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
+import { ApprenticeshipBanner } from "../components/ApprenticeshipBanner";
 import { Toaster } from "../components/ui/sonner";
 import { NotFound404 } from "../components/NotFound404";
 import { PageViewTracker } from "../components/PageViewTracker";
@@ -139,6 +140,7 @@ function RootComponent() {
       <PageViewTracker />
       <PwaRegistrar />
       <div className="flex min-h-screen flex-col">
+        <ApprenticeshipBanner />
         <Header />
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <main className="flex-1">
