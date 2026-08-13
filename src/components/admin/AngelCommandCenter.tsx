@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Bot, CheckCircle2, Clock3, Loader2, Mail, Send, ShieldAlert } from "lucide-react";
+import { Bot, Check, CheckCircle2, Clock3, Loader2, Mail, Send, ShieldAlert, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { runAngelCommand } from "@/lib/angel-command.functions";
@@ -25,6 +25,17 @@ type HourlyMailReport = {
   summary: string;
   items: Array<{ subject?: string; from?: string; category?: string; summary?: string }> | null;
   recommendations: Array<{ title?: string; detail?: string; action?: string }> | null;
+};
+
+type AiAction = {
+  id: string;
+  kind: string;
+  title: string;
+  description: string | null;
+  status: string;
+  sensitive: boolean;
+  payload: Record<string, unknown> | null;
+  created_at: string;
 };
 
 const EXAMPLES = [
@@ -53,6 +64,21 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
     refetchInterval: 5 * 60 * 1000,
   });
 
+  const { data: actions = [] } = useQuery({
+    queryKey: ["ai-actions"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ai_actions")
+        .select("id, kind, title, description, status, sensitive, payload, created_at")
+        .in("status", ["pending", "awaiting_operator"])
+        .order("created_at", { ascending: false })
+        .limit(12);
+      if (error) throw error;
+      return (data ?? []) as unknown as AiAction[];
+    },
+    refetchInterval: 60_000,
+  });
+
   const { data: messages = [] } = useQuery({
     queryKey: ["angel-ai-messages"],
     queryFn: async () => {
@@ -64,6 +90,30 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
       if (error) throw error;
       return (data ?? []) as unknown as Message[];
     },
+  });
+
+  const actionDecision = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: "awaiting_operator" | "rejected" }) => {
+      const { error } = await supabase
+        .from("ai_actions")
+        .update({
+          status,
+          resolved_at: status === "rejected" ? new Date().toISOString() : null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id)
+        .eq("status", "pending");
+      if (error) throw error;
+    },
+    onSuccess: (_, variables) => {
+      toast.success(
+        variables.status === "awaiting_operator"
+          ? "Validé : ajouté à la file Angel AI."
+          : "Proposition refusée.",
+      );
+      void queryClient.invalidateQueries({ queryKey: ["ai-actions"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
   });
 
   const mutation = useMutation({
@@ -91,12 +141,14 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
   };
 
   const latestReport = reports[0];
+  const pendingActions = actions.filter((action) => action.status === "pending");
+  const queuedActions = actions.filter((action) => action.status === "awaiting_operator");
 
   return (
     <AdminCard
       className="border-primary/30 bg-gradient-to-br from-primary/8 via-card to-card"
       title="Demander à Angel AI"
-      description="Votre cockpit : bilan automatique, conseils et commandes. Rien n'est envoyé à votre place sans décision explicite."
+      description="Votre cockpit : bilan automatique, propositions à valider et commandes. Une proposition validée rejoint la file IA puis est exécutée au passage horaire suivant."
     >
       {latestReport && (
         <div className="mb-5 rounded-2xl border border-primary/25 bg-primary/5 p-4">
@@ -138,6 +190,50 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
                     <span className="font-medium">{item.title || "À faire"}</span>
                     {item.detail ? ` — ${item.detail}` : ""}
                   </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
+      {(pendingActions.length > 0 || queuedActions.length > 0) && (
+        <div className="mb-5 space-y-3">
+          {pendingActions.length > 0 && (
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-primary">Propositions à valider</p>
+              <ul className="mt-2 space-y-2">
+                {pendingActions.slice(0, compact ? 4 : 8).map((action) => (
+                  <li key={action.id} className="rounded-xl border border-border bg-background p-3">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground">{action.title}</p>
+                        {action.description && <p className="mt-1 text-sm text-muted-foreground">{action.description}</p>}
+                        {action.sensitive && <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-destructive">Action externe — votre clic vaut validation explicite</p>}
+                      </div>
+                      <div className="flex shrink-0 gap-2">
+                        <Button size="sm" className="min-h-9" disabled={actionDecision.isPending} onClick={() => actionDecision.mutate({ id: action.id, status: "awaiting_operator" })}>
+                          <Check className="mr-1.5 h-4 w-4" /> Valider
+                        </Button>
+                        <Button size="sm" variant="outline" className="min-h-9" disabled={actionDecision.isPending} onClick={() => actionDecision.mutate({ id: action.id, status: "rejected" })}>
+                          <X className="mr-1.5 h-4 w-4" /> Refuser
+                        </Button>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {queuedActions.length > 0 && (
+            <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
+              <p className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <Clock3 className="h-4 w-4 text-amber-600" /> File Angel AI
+              </p>
+              <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+                {queuedActions.slice(0, 5).map((action) => (
+                  <li key={action.id}>• {action.title} — validé, en attente du prochain passage.</li>
                 ))}
               </ul>
             </div>
