@@ -62,10 +62,53 @@ function MentionsLegales() {
           </div>
 
           <div>
-            <h2 className="font-display text-xl font-semibold text-foreground">Hébergement</h2>
+            <h2 className="font-display text-xl font-semibold text-foreground">
+              Domaine, hébergement et messagerie
+            </h2>
             <p className="mt-4">
-              Ce site est hébergé par Lovable (services d'hébergement fournis via Cloudflare, Inc.),
-              accessible depuis <span className="text-foreground">https://lovable.dev</span>.
+              Les différents services ne remplissent pas le même rôle&nbsp;:
+            </p>
+            <ul className="mt-3 space-y-2">
+              <li>
+                <span className="text-foreground">Nom de domaine et zone DNS :</span>{" "}
+                angel-leclerc.fr est enregistré et administré auprès de Squarespace Domains.
+              </li>
+              <li>
+                <span className="text-foreground">Site public :</span> l'application est déployée
+                sur une infrastructure web Vercel et dispose également d'une version publiée et de
+                services serveur gérés par Lovable.
+              </li>
+              <li>
+                <span className="text-foreground">Messagerie professionnelle :</span> les adresses
+                en @angel-leclerc.fr sont exploitées avec Google Workspace. Google Workspace ne
+                possède pas le domaine et n'héberge pas les pages du site.
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h2 className="font-display text-xl font-semibold text-foreground">
+              Services techniques utilisés
+            </h2>
+            <p className="mt-4">
+              Le site repose notamment sur les services suivants, selon les fonctionnalités
+              consultées&nbsp;:
+            </p>
+            <ul className="mt-3 space-y-2">
+              <li><span className="text-foreground">GitHub :</span> gestion et conservation du code source.</li>
+              <li><span className="text-foreground">Vercel :</span> déploiement de l'application web sur le domaine principal.</li>
+              <li><span className="text-foreground">Lovable :</span> synchronisation, publication complémentaire et services serveur associés.</li>
+              <li><span className="text-foreground">Supabase :</span> base de données, authentification et stockage sécurisé de certaines données.</li>
+              <li><span className="text-foreground">Google Workspace :</span> réception et gestion de la messagerie professionnelle.</li>
+              <li><span className="text-foreground">Cloudflare :</span> infrastructure réseau utilisée par certains services d'hébergement et de diffusion.</li>
+            </ul>
+            <p className="mt-4">
+              Cette liste décrit les prestataires techniques importants. Elle ne signifie pas que
+              chacun reçoit systématiquement des données personnelles lors d'une simple visite.
+              Les traitements et leurs finalités sont détaillés dans la{" "}
+              <Link to="/politique-confidentialite" className="text-foreground underline underline-offset-2">
+                politique de confidentialité
+              </Link>.
             </p>
           </div>
 
