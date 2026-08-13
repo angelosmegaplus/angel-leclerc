@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { bootAngelOS } from "../lib/angel-os-runtime";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { ApprenticeshipBanner } from "../components/ApprenticeshipBanner";
@@ -133,6 +134,12 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    void bootAngelOS().catch((error) => {
+      console.warn("Angel OS passive runtime unavailable", error);
+    });
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
