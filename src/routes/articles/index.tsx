@@ -12,7 +12,6 @@ import {
 import { TopicBadges } from "@/components/TopicBadges";
 import { BlogSubscribe } from "@/components/BlogSubscribe";
 import { ShareArticle } from "@/components/ShareArticle";
-import { SITE_URL } from "@/routes/articles/$slug";
 import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/articles/")({
@@ -180,7 +179,7 @@ function ArticlesPage() {
               </div>
             </Link>
             <div className="flex flex-wrap items-center gap-3 border-t border-border px-5 py-3">
-              <ShareArticle url={`${SITE_URL}/articles/${a.slug}`} title={a.title} />
+              <ShareArticle slug={a.slug} title={a.title} />
             </div>
             </div>
           ))}
