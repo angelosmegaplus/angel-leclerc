@@ -97,7 +97,9 @@ export function AdminShell({
 
   const brand = (
     <div className="flex items-center gap-3">
-      <img src="/angel-os/logo.png" alt="" className="h-11 w-11 shrink-0 object-contain" />
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-black/10">
+        <img src="/angel-os/logo.png" alt="" className="h-full w-full object-contain" />
+      </span>
       <div className="min-w-0">
         <p className="font-display text-xl font-bold tracking-tight text-white">Angel OS</p>
       </div>
