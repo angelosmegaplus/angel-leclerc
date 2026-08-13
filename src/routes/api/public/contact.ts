@@ -4,6 +4,8 @@ import {
   processConversationalContact,
 } from "@/lib/contact-chat.functions";
 
+// Ce point d'entrée s'exécute sur Lovable afin de réutiliser ses services serveur configurés.
+
 const ALLOWED_ORIGINS = new Set([
   "https://angel-leclerc.fr",
   "https://www.angel-leclerc.fr",
