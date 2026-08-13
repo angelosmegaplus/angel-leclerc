@@ -200,6 +200,9 @@
 }
 
 /* Contenu riche des articles (éditeur + lecture) */
+.article-content {
+  color: var(--color-foreground);
+}
 .article-content > * + * {
   margin-top: 1.1em;
 }
@@ -288,6 +291,31 @@
   border-radius: 0.75rem;
   margin: 1.25rem 0;
   overflow: hidden;
+}
+
+/* Dark mode: older rich-text content may contain hard-coded black/gray inline colors. */
+.dark .article-content p,
+.dark .article-content li,
+.dark .article-content div,
+.dark .article-content span,
+.dark .article-content strong,
+.dark .article-content em {
+  color: var(--color-foreground);
+}
+
+.dark .article-content [style*="color: rgb(0, 0, 0)"],
+.dark .article-content [style*="color:#000"],
+.dark .article-content [style*="color: #000"],
+.dark .article-content [style*="color:#181716"],
+.dark .article-content [style*="color: #181716"] {
+  color: var(--color-foreground) !important;
+}
+
+/* Logos/images explicitly marked as dark-logo stay readable on dark surfaces. */
+.dark .dark-logo-surface {
+  background: #fff;
+  border-radius: 0.75rem;
+  padding: 0.35rem;
 }
 
 /* Bloc dédié : uniquement des vidéos / intégrations externes */
