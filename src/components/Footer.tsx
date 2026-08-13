@@ -118,13 +118,19 @@ export function Footer() {
                 href="https://github.com/angelosmegaplus/angel-leclerc/tree/main/angel-os"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-2 inline-flex items-center gap-2 rounded-full border border-border/80 bg-background/70 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:text-foreground hover:shadow-md"
+                className="group relative mt-2 inline-flex items-center gap-2.5 overflow-hidden rounded-full border border-primary/30 bg-background/80 px-3.5 py-2 text-sm font-medium text-muted-foreground shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/70 hover:text-foreground hover:shadow-lg hover:shadow-primary/10"
               >
-                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
-                  OS
+                <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-primary/10 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                <span className="relative inline-flex h-7 w-7 items-center justify-center rounded-full border border-primary/20 bg-primary/5 shadow-inner transition-all duration-300 group-hover:scale-110 group-hover:border-primary/60 group-hover:shadow-primary/20">
+                  <span className="absolute inset-0 rounded-full bg-primary/10 opacity-60 animate-pulse motion-reduce:animate-none" />
+                  <img
+                    src="/favicon.png"
+                    alt="Logo Angel OS"
+                    className="relative h-5 w-5 object-contain transition-transform duration-500 group-hover:rotate-6 group-hover:scale-110"
+                  />
                 </span>
-                <span>
-                  Propulsé par <span className="font-semibold text-foreground">Angel OS</span>
+                <span className="relative">
+                  Propulsé par <span className="font-semibold text-foreground transition-colors group-hover:text-primary">Angel OS</span>
                 </span>
               </a>
             </div>
