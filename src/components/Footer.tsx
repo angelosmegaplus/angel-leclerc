@@ -114,18 +114,19 @@ export function Footer() {
               <p>
                 © {new Date().getFullYear()} Angel Leclerc Communication. Tous droits réservés.
               </p>
-              <p className="mt-1 text-[11px] text-muted-foreground/70">
-                Propulsé par{" "}
-                <a
-                  href="https://github.com/angelosmegaplus/angel-leclerc/tree/main/angel-os"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline-offset-4 transition-colors hover:text-foreground hover:underline"
-                >
-                  Angel OS
-                </a>
-                .
-              </p>
+              <a
+                href="https://github.com/angelosmegaplus/angel-leclerc/tree/main/angel-os"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex items-center gap-2 rounded-full border border-border/80 bg-background/70 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:text-foreground hover:shadow-md"
+              >
+                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
+                  OS
+                </span>
+                <span>
+                  Propulsé par <span className="font-semibold text-foreground">Angel OS</span>
+                </span>
+              </a>
             </div>
             <p className="flex flex-wrap gap-x-2 gap-y-1">
               <Link
