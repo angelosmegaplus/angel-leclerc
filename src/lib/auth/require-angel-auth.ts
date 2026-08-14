@@ -1,9 +1,9 @@
 import { createMiddleware } from '@tanstack/react-start';
 import { getRequest } from '@tanstack/react-start/server';
 import { createClient, type JwtPayload, type SupabaseClient } from '@supabase/supabase-js';
-import { AngelOSAdapterRegistry } from '../../../angel-os/core/adapter-registry';
-import { identityServerAdapter, type AngelIdentityClient, type AngelIdentityUser } from '../../../angel-os/adapters/identity.server';
 import type { Database } from '@/integrations/supabase/types';
+
+type AngelIdentityUser = { id: string; email: string; role: string };
 
 export type HybridAuthContext = {
   authProvider: 'angel-identity' | 'supabase';
@@ -14,9 +14,6 @@ export type HybridAuthContext = {
   supabase: SupabaseClient<Database> | null;
 };
 
-const adapters = new AngelOSAdapterRegistry();
-adapters.register(identityServerAdapter);
-
 export const requireAngelAuth = createMiddleware({ type: 'function' }).server(async ({ next }) => {
   const request = getRequest();
   const header = request.headers.get('authorization') ?? '';
@@ -26,7 +23,15 @@ export const requireAngelAuth = createMiddleware({ type: 'function' }).server(as
 
   if (process.env.ANGEL_IDENTITY_URL && token.split('.').length !== 3) {
     try {
-      const identity = await adapters.connect<AngelIdentityClient>('angel.identity.native');
+      const [{ AngelOSAdapterRegistry }, { identityServerAdapter }] = await Promise.all([
+        import('../../../angel-os/core/adapter-registry'),
+        import('../../../angel-os/adapters/identity.server'),
+      ]);
+      const adapters = new AngelOSAdapterRegistry();
+      adapters.register(identityServerAdapter);
+      const identity = await adapters.connect<{
+        session(value: string): Promise<{ user: AngelIdentityUser; expiresAt: string } | null>;
+      }>('angel.identity.native');
       const session = await identity.session(token);
       if (session?.user) {
         authContext = {
