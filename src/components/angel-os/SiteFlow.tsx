@@ -1,48 +1,48 @@
-import { Bot, Clock3, Cpu, GitBranch, ServerCog, Workflow } from "lucide-react";
+import { Cpu, GitBranch, ServerCog, Workflow } from "lucide-react";
 import { Logo } from "@/components/Logo";
 
 const steps = [
   {
-    eyebrow: "01", title: "L’IA comprend la demande",
-    simple: "Une instruction est analysée pour déterminer ce qu’il faut faire et quel contexte utiliser.",
-    technical: "Entrée → résolution du contexte → interprétation de l’intention → création d’une action exploitable. L’IA prépare la décision ; les capacités réellement disponibles restent déterminées par les outils et connecteurs accessibles.",
-    code: "prompt.received → context.resolve → intent.parse → task.create",
-    tools: [{ label: "ChatGPT", domain: "chatgpt.com" }, { label: "Angel OS IA", logo: "/angel-os/logo.png" }, { label: "Raisonnement IA", icon: Bot }],
+    eyebrow: "01", title: "Le noyau démarre",
+    simple: "Angel OS initialise les composants nécessaires et prépare l’environnement commun.",
+    technical: "Le Core charge les interfaces communes, initialise l’état partagé et prépare les mécanismes d’orchestration qui seront utilisés par les modules et adaptateurs.",
+    code: "core.boot → interfaces.load → state.init",
+    tools: [{ label: "Angel OS Core", logo: "/angel-os/logo.png" }, { label: "Core", icon: Cpu }],
   },
   {
-    eyebrow: "02", title: "Les tâches s’organisent",
-    simple: "Angel OS IA ajoute les automatisations et les tâches planifiées nécessaires aux opérations récurrentes.",
-    technical: "La distribution charge ses règles opérationnelles au-dessus du Core. Les tâches planifiées déclenchent les traitements prévus ; l’orchestration dirige ensuite l’action vers les modules ou interfaces concernés.",
-    code: "distribution.load → scheduler.tick → automation.run → core.dispatch",
-    tools: [{ label: "Angel OS IA", logo: "/angel-os/logo.png" }, { label: "Tâches planifiées", icon: Clock3 }, { label: "Automatisations", icon: Workflow }],
+    eyebrow: "02", title: "Les modules se déclarent",
+    simple: "Chaque capacité peut être organisée comme un module distinct au lieu d’être mélangée au reste du système.",
+    technical: "Le registre de modules centralise les capacités disponibles et permet de limiter le couplage entre les composants. Une fonction peut évoluer sans imposer la même logique à tout le noyau.",
+    code: "module.registry → capability.register → dependency.resolve",
+    tools: [{ label: "Module Registry", icon: Cpu }, { label: "Modules", icon: ServerCog }],
   },
   {
-    eyebrow: "03", title: "Le noyau orchestre",
-    simple: "Angel OS fait circuler les actions entre les composants sans dépendre d’une application précise.",
-    technical: "Le Core fournit les primitives génériques d’orchestration : registre de modules, bus d’événements, adaptateurs, état partagé et interfaces communes. Cette couche reste distincte de la distribution IA.",
-    code: "core.boot → event.bus → module.registry → adapter.dispatch → state.sync",
-    tools: [{ label: "Angel OS Core", logo: "/angel-os/logo.png" }, { label: "Event Bus", icon: Workflow }, { label: "Module Registry", icon: Cpu }, { label: "Adapters", icon: ServerCog }],
+    eyebrow: "03", title: "Les événements circulent",
+    simple: "Les composants échangent des actions et des résultats sans devoir être directement reliés entre eux.",
+    technical: "Le bus d’événements sert de mécanisme de circulation interne. Il transmet les signaux entre modules et réduit les dépendances directes dans l’architecture.",
+    code: "event.emit → event.bus → subscriber.handle",
+    tools: [{ label: "Event Bus", icon: Workflow }, { label: "Événements", icon: Workflow }],
   },
   {
-    eyebrow: "04", title: "Les connecteurs exécutent",
-    simple: "Les services réellement connectés permettent d’agir sur les systèmes externes autorisés.",
-    technical: "Les adaptateurs/connecteurs constituent la frontière avec les services externes. Une capacité n’est considérée comme active que lorsqu’une intégration réelle et autorisée existe ; aucun connecteur purement visuel n’est présenté comme opérationnel.",
+    eyebrow: "04", title: "Les adaptateurs font le lien",
+    simple: "Angel OS peut utiliser des interfaces dédiées pour dialoguer avec les services réellement connectés.",
+    technical: "Les adaptateurs constituent la frontière entre le Core et les fournisseurs externes. Ils normalisent les échanges et évitent d’intégrer directement la logique propre à un service dans le noyau.",
     code: "core.dispatch → adapter.select → provider.request → result.normalize",
-    tools: [{ label: "Connecteurs", icon: ServerCog }, { label: "GitHub", domain: "github.com" }],
+    tools: [{ label: "Adapters", icon: ServerCog }, { label: "GitHub", domain: "github.com" }],
   },
   {
-    eyebrow: "05", title: "Le site utilise le résultat",
-    simple: "angel-leclerc.fr est l’application web qui exploite certaines capacités d’Angel OS IA.",
-    technical: "L’application est distincte du Core et de la distribution. Son interface actuelle repose notamment sur React et TanStack Router ; elle consomme les fonctions disponibles sans devenir elle-même Angel OS.",
-    code: "app.request → distribution.service → core.service → app.render",
-    tools: [{ label: "angel-leclerc.fr", logo: "/angel-os/logo.png" }, { label: "React", domain: "react.dev" }, { label: "TanStack", domain: "tanstack.com" }],
+    eyebrow: "05", title: "Le code reste traçable",
+    simple: "Le noyau et ses composants sont versionnés pour garder un historique clair des changements.",
+    technical: "GitHub constitue la source de vérité du code du projet. Les changements sont versionnés avec Git et peuvent être contrôlés avant intégration et déploiement.",
+    code: "git.diff → commit.write → history.trace",
+    tools: [{ label: "GitHub", domain: "github.com" }, { label: "Git", icon: GitBranch }],
   },
   {
-    eyebrow: "06", title: "Le code part en production",
-    simple: "GitHub conserve le code, les contrôles techniques vérifient la version, puis Vercel construit et déploie le site.",
-    technical: "GitHub est la source de vérité du code. La chaîne de livraison vérifie la version avant build ; Vercel prend ensuite en charge le build et le déploiement de l’application web lorsque la plateforme autorise le déploiement.",
-    code: "git.commit → CI.check → build → Vercel.deploy → production",
-    tools: [{ label: "GitHub", domain: "github.com" }, { label: "Git", icon: GitBranch }, { label: "CI / Build", icon: ServerCog }, { label: "Vercel", domain: "vercel.com" }],
+    eyebrow: "06", title: "La livraison est contrôlée",
+    simple: "Les vérifications techniques précèdent le build et le déploiement de l’application qui utilise le système.",
+    technical: "La chaîne CI/build contrôle la version destinée à la production. Vercel intervient ensuite pour construire et déployer l’application web lorsque le déploiement est autorisé par la plateforme.",
+    code: "CI.check → build → Vercel.deploy → production",
+    tools: [{ label: "CI / Build", icon: ServerCog }, { label: "Vercel", domain: "vercel.com" }],
   },
 ] as const;
 
@@ -50,9 +50,9 @@ export function SiteFlow() {
   return (
     <section id="site" className="border-y border-white/10 bg-white/[.02] px-5 py-16 sm:px-8 lg:px-12">
       <div className="mx-auto max-w-5xl">
-        <p className="text-xs font-semibold uppercase tracking-[.22em] text-red-400">Fonctionnement général</p>
-        <h2 className="mt-4 max-w-4xl font-display text-3xl font-bold sm:text-5xl">De la demande au déploiement</h2>
-        <p className="mt-4 max-w-3xl text-base leading-relaxed text-white/60">Lecture rapide : chaque bloc explique d’abord simplement son rôle. La partie « niveau technique » décrit juste dessous le fonctionnement réel avec davantage de précision.</p>
+        <p className="text-xs font-semibold uppercase tracking-[.22em] text-red-400">Angel OS Core</p>
+        <h2 className="mt-4 max-w-4xl font-display text-3xl font-bold sm:text-5xl">Comment fonctionne le noyau</h2>
+        <p className="mt-4 max-w-3xl text-base leading-relaxed text-white/60">Chaque bloc commence par une explication simple. Les détails techniques restent juste dessous pour montrer le fonctionnement réel sans alourdir la lecture principale.</p>
 
         <div className="mt-10 space-y-5">
           {steps.map((step, index) => (
@@ -79,11 +79,9 @@ export function SiteFlow() {
           ))}
         </div>
 
-        <div className="mt-8 grid gap-3 md:grid-cols-[1fr_auto_1fr_auto_1fr] md:items-center">
-          {["Angel OS|Noyau / architecture", "Angel OS IA|Distribution IA", "angel-leclerc.fr|Application web"].map((item, index) => {
-            const [name, role] = item.split("|");
-            return <div key={name} className="contents"><div className="rounded-2xl border border-red-500/15 bg-red-500/[.05] p-5 text-center"><p className="font-semibold text-white">{name}</p><p className="mt-1 text-xs text-white/40">{role}</p></div>{index < 2 && <span className="text-center font-mono text-red-400/60">→</span>}</div>;
-          })}
+        <div className="mt-8 rounded-2xl border border-white/10 bg-white/[.025] p-5">
+          <p className="text-xs font-semibold uppercase tracking-[.18em] text-white/35">Autour du noyau</p>
+          <p className="mt-2 text-sm leading-relaxed text-white/55"><strong className="text-white/75">Angel OS IA</strong> est une distribution qui ajoute IA et automatisations au-dessus d’Angel OS. <strong className="text-white/75">angel-leclerc.fr</strong> est une application web qui utilise certaines de ces capacités. Ces deux éléments sont secondaires sur cette page : le sujet principal reste le noyau Angel OS.</p>
         </div>
       </div>
     </section>
