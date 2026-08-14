@@ -1,7 +1,30 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Bot, Loader2, Search, Send, X } from "lucide-react";
+import {
+  Bell,
+  Bot,
+  BriefcaseBusiness,
+  CalendarDays,
+  FileText,
+  FolderOpen,
+  History,
+  Home,
+  Loader2,
+  Mail,
+  Newspaper,
+  Search,
+  Send,
+  Settings,
+  SlidersHorizontal,
+  Sparkles,
+  Star,
+  Store,
+  Users,
+  WandSparkles,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { runAngelCommand } from "@/lib/angel-command.functions";
@@ -12,26 +35,26 @@ import { Button } from "@/components/ui/button";
 const anyDb = supabase as unknown as { from: (t: string) => any };
 
 type Hit = { id: string; label: string; detail: string; group: string; tab: string };
-type Shortcut = { label: string; detail: string; tab: string; aliases: string };
+type Shortcut = { label: string; detail: string; tab: string; aliases: string; icon: LucideIcon; alert?: boolean };
 
-const SHORTCUTS: Shortcut[] = [
-  { label: "Accueil", detail: "Vue d'ensemble Angel OS", tab: "dashboard", aliases: "home tableau bord" },
-  { label: "Mail", detail: "Messages et boîte mail", tab: "boite-mail", aliases: "email gmail messages boite mail" },
-  { label: "Agenda", detail: "Rendez-vous et calendrier", tab: "agenda", aliases: "calendar calendrier rendez vous" },
-  { label: "Fichiers", detail: "Documents et fichiers", tab: "fichiers", aliases: "drive documents stockage" },
-  { label: "Blog", detail: "Articles et publications", tab: "articles", aliases: "actus actualites publication contenus" },
-  { label: "Studio", detail: "Création, audio et journalisme", tab: "studio", aliases: "radio micro creation reportage" },
-  { label: "Candidatures", detail: "Alternance et suivi des candidatures", tab: "candidatures", aliases: "emploi alternance recrutement" },
-  { label: "Communauté", detail: "Abonnés, avis et contacts", tab: "abonnes", aliases: "contacts avis soutiens abonnes communauté" },
-  { label: "Paramètres", detail: "Connexions, automatisations et système", tab: "connexions", aliases: "settings reglages notifications historique activité automatisation connexions" },
-  { label: "Notifications", detail: "Sous-section de Paramètres", tab: "notifications", aliases: "alertes" },
-  { label: "Historique", detail: "Sous-section de Paramètres", tab: "activite", aliases: "activité journal logs" },
-  { label: "Automatisations", detail: "Sous-section de Paramètres", tab: "automatisation", aliases: "taches planifiees cron" },
-  { label: "Avis", detail: "Sous-section de Communauté", tab: "avis", aliases: "soutiens commentaires" },
-  { label: "Services", detail: "Parcours et services publiés", tab: "contenus", aliases: "parcours contenu site" },
-  { label: "Boutique", detail: "Gestion de la boutique", tab: "boutique", aliases: "shop commandes" },
-  { label: "Statistiques", detail: "Mesures et audience", tab: "stats", aliases: "stats analytics" },
-  { label: "Projets", detail: "Gestion des projets", tab: "projets", aliases: "project" },
+const BASE_SHORTCUTS: Shortcut[] = [
+  { label: "Accueil", detail: "Vue d'ensemble Angel OS", tab: "dashboard", aliases: "home tableau bord", icon: Home },
+  { label: "Mail", detail: "Messages et boîte mail", tab: "boite-mail", aliases: "email gmail messages boite mail", icon: Mail },
+  { label: "Agenda", detail: "Rendez-vous et calendrier", tab: "agenda", aliases: "calendar calendrier rendez vous", icon: CalendarDays },
+  { label: "Fichiers", detail: "Documents et fichiers", tab: "fichiers", aliases: "drive documents stockage", icon: FolderOpen },
+  { label: "Blog", detail: "Articles et publications", tab: "articles", aliases: "actus actualites publication contenus", icon: Newspaper },
+  { label: "Studio", detail: "Création, audio et production", tab: "studio", aliases: "radio micro creation reportage", icon: WandSparkles },
+  { label: "Candidatures", detail: "Alternance et suivi des candidatures", tab: "candidatures", aliases: "emploi alternance recrutement", icon: BriefcaseBusiness },
+  { label: "Communauté", detail: "Abonnés, avis et contacts", tab: "abonnes", aliases: "contacts avis soutiens abonnes communauté", icon: Users },
+  { label: "Paramètres", detail: "Connexions, automatisations et système", tab: "connexions", aliases: "settings reglages notifications historique activité automatisation connexions", icon: Settings },
+  { label: "Notifications", detail: "Alertes Angel OS", tab: "notifications", aliases: "alertes", icon: Bell },
+  { label: "Historique", detail: "Journal d'activité", tab: "activite", aliases: "activité journal logs", icon: History },
+  { label: "Automatisations", detail: "Tâches et exécutions planifiées", tab: "automatisation", aliases: "taches planifiees cron", icon: SlidersHorizontal },
+  { label: "Avis", detail: "Avis et soutiens", tab: "avis", aliases: "soutiens commentaires", icon: Star },
+  { label: "Services", detail: "Parcours et services publiés", tab: "contenus", aliases: "parcours contenu site", icon: FileText },
+  { label: "Boutique", detail: "Gestion de la boutique", tab: "boutique", aliases: "shop commandes", icon: Store },
+  { label: "Statistiques", detail: "Mesures et audience", tab: "stats", aliases: "stats analytics", icon: Sparkles },
+  { label: "Projets", detail: "Gestion des projets", tab: "projets", aliases: "project", icon: BriefcaseBusiness },
 ];
 
 const SOURCES: {
@@ -68,12 +91,18 @@ async function loadIndex(): Promise<Hit[]> {
   return results.flat();
 }
 
+async function loadNotificationCount(): Promise<number> {
+  const { data } = await anyDb.from("notifications").select("id").order("created_at", { ascending: false }).limit(20);
+  return Array.isArray(data) ? data.length : 0;
+}
+
 export function GlobalSearch({ open, onClose, onNavigate }: { open: boolean; onClose: () => void; onNavigate: (tab: string) => void }) {
   const [query, setQuery] = useState("");
   const execute = useServerFn(runAngelCommand);
   const executeArticle = useServerFn(runArticleCommand);
   const queryClient = useQueryClient();
   const { data = [], isLoading } = useQuery({ queryKey: ["angel", "search-index"], queryFn: loadIndex, enabled: open });
+  const { data: notificationCount = 0 } = useQuery({ queryKey: ["angel", "search-notifications"], queryFn: loadNotificationCount, enabled: open, staleTime: 60_000 });
 
   useEffect(() => {
     if (!open) return;
@@ -90,9 +119,10 @@ export function GlobalSearch({ open, onClose, onNavigate }: { open: boolean; onC
     return data.filter((h) => `${h.label} ${h.detail} ${h.group}`.toLocaleLowerCase("fr").includes(q)).slice(0, 20);
   }, [data, q]);
   const shortcuts = useMemo(() => {
-    if (q.length < 2) return SHORTCUTS.slice(0, 9);
-    return SHORTCUTS.filter((s) => `${s.label} ${s.detail} ${s.aliases}`.toLocaleLowerCase("fr").includes(q)).slice(0, 8);
-  }, [q]);
+    const enriched = BASE_SHORTCUTS.map((s) => ({ ...s, alert: notificationCount > 0 && (s.tab === "connexions" || s.tab === "notifications") }));
+    if (q.length < 2) return enriched.slice(0, 9);
+    return enriched.filter((s) => `${s.label} ${s.detail} ${s.aliases}`.toLocaleLowerCase("fr").includes(q)).slice(0, 8);
+  }, [q, notificationCount]);
 
   const ai = useMutation({
     mutationFn: (value: string) => isArticleCommand(value) ? executeArticle({ data: { command: value } }) : execute({ data: { command: value } }),
@@ -124,12 +154,21 @@ export function GlobalSearch({ open, onClose, onNavigate }: { open: boolean; onC
             <section className="mb-4">
               <p className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Applications</p>
               <div className="grid gap-2 sm:grid-cols-2">
-                {shortcuts.map((s) => (
-                  <button key={`${s.tab}-${s.label}`} type="button" className="rounded-2xl bg-muted/60 px-4 py-3 text-left hover:bg-muted" onClick={() => { onNavigate(s.tab); onClose(); }}>
-                    <span className="block text-sm font-semibold text-foreground">{s.label}</span>
-                    <span className="mt-0.5 block text-xs text-muted-foreground">{s.detail}</span>
-                  </button>
-                ))}
+                {shortcuts.map((s) => {
+                  const Icon = s.icon;
+                  return (
+                    <button key={`${s.tab}-${s.label}`} type="button" className="group flex items-center gap-3 rounded-2xl bg-muted/60 px-3.5 py-3 text-left transition-colors hover:bg-muted" onClick={() => { onNavigate(s.tab); onClose(); }}>
+                      <span className="relative grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-background text-primary shadow-sm">
+                        <Icon className="h-5 w-5" />
+                        {s.alert ? <span className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-red-600 text-white shadow"><Bell className="h-3 w-3" /></span> : null}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-semibold text-foreground">{s.label}</span>
+                        <span className="mt-0.5 block truncate text-xs text-muted-foreground">{s.detail}</span>
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </section>
           )}
