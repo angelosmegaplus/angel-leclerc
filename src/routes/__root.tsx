@@ -23,6 +23,7 @@ import { CartDrawer } from "../components/CartDrawer";
 import { PwaRegistrar } from "../components/PwaRegistrar";
 import { ThemeSync } from "../components/ThemeController";
 import { AngelOSCardStyle } from "../components/AngelOSCardStyle";
+import { MaintenanceGate } from "../components/MaintenanceGate";
 import { THEME_INIT_SCRIPT } from "../lib/theme";
 
 function NotFoundComponent() {
@@ -136,27 +137,29 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeSync />
-      <AngelOSCardStyle />
-      <PageViewTracker />
-      <PwaRegistrar />
-      {isAngelOSPage || isAdminPage ? (
-        <main className="min-h-screen">
-          <Outlet />
-        </main>
-      ) : (
-        <div className="flex min-h-screen flex-col">
-          <ApprenticeshipBanner />
-          <Header />
-          <main className="flex-1">
+      <MaintenanceGate bypass={isAdminPage}>
+        <ThemeSync />
+        <AngelOSCardStyle />
+        <PageViewTracker />
+        <PwaRegistrar />
+        {isAngelOSPage || isAdminPage ? (
+          <main className="min-h-screen">
             <Outlet />
           </main>
-          <Footer />
-        </div>
-      )}
-      {!isAngelOSPage && !isAdminPage && <CartDrawer />}
-      <Toaster position="top-center" />
-      <Analytics />
+        ) : (
+          <div className="flex min-h-screen flex-col">
+            <ApprenticeshipBanner />
+            <Header />
+            <main className="flex-1">
+              <Outlet />
+            </main>
+            <Footer />
+          </div>
+        )}
+        {!isAngelOSPage && !isAdminPage && <CartDrawer />}
+        <Toaster position="top-center" />
+        <Analytics />
+      </MaintenanceGate>
     </QueryClientProvider>
   );
 }
