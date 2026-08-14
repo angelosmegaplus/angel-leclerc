@@ -169,25 +169,49 @@ function StudioCapture({ onGo }: { onGo: (view: View) => void }) {
 
 export function StudioPanel() {
   const [view, setView] = useState<View>("studio");
+  const currentLabel = VIEWS.find((item) => item.key === view)?.label ?? "Studio";
 
   return (
     <div className="space-y-4">
-      <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {VIEWS.map((v) => (
-          <button
-            key={v.key}
-            type="button"
-            onClick={() => setView(v.key)}
-            aria-pressed={view === v.key}
-            className={`min-h-11 shrink-0 rounded-lg border px-4 text-sm font-medium ${
-              view === v.key
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-input text-muted-foreground"
-            }`}
+      <div className="sticky top-0 z-20 rounded-xl border border-border/80 bg-background/95 p-3 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/85">
+        <div className="flex items-center justify-between gap-3 sm:hidden">
+          <div className="min-w-0">
+            <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+              Section du Studio
+            </p>
+            <p className="truncate text-sm font-semibold text-foreground">{currentLabel}</p>
+          </div>
+          <select
+            aria-label="Changer de section du Studio"
+            value={view}
+            onChange={(e) => setView(e.target.value as View)}
+            className="h-10 min-w-[10.5rem] rounded-md border border-input bg-background px-3 text-sm font-medium text-foreground"
           >
-            {v.label}
-          </button>
-        ))}
+            {VIEWS.map((item) => (
+              <option key={item.key} value={item.key}>
+                {item.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="hidden gap-2 overflow-x-auto [scrollbar-width:none] sm:flex [&::-webkit-scrollbar]:hidden">
+          {VIEWS.map((v) => (
+            <button
+              key={v.key}
+              type="button"
+              onClick={() => setView(v.key)}
+              aria-pressed={view === v.key}
+              className={`min-h-11 shrink-0 rounded-lg border px-4 text-sm font-medium transition-colors ${
+                view === v.key
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-input bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              {v.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {view === "studio" && <StudioCapture onGo={setView} />}
