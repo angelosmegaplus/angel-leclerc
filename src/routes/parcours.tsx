@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Linkedin, Download, Mail, MapPin, Radio, Building2 } from "lucide-react";
+import { Linkedin, Download, Mail, MapPin, Building2 } from "lucide-react";
 import {
   MyJourney,
   SkillsSection,
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/parcours")({
       {
         name: "description",
         content:
-          "CV en ligne d'Angel Leclerc : expériences, formations, certifications, engagements associatifs et outils. Recherche urgente d'alternance BTS Communication pour septembre 2026, notamment en radio, médias et communication.",
+          "CV en ligne d'Angel Leclerc : expériences, formations, certifications, engagements associatifs et outils. Recherche urgente d'alternance BTS Communication pour septembre 2026, tous secteurs de la communication.",
       },
       { property: "og:title", content: "Mon parcours — Angel Leclerc | CV en ligne" },
       {
@@ -53,7 +53,7 @@ function ParcoursPage() {
               Étudiant en communication — recherche d'alternance BTS Communication
             </p>
             <p className="mt-4 max-w-2xl text-[0.95rem] leading-relaxed text-muted-foreground md:mt-6 md:text-base">
-              Je recherche une entreprise pour un BTS Communication en alternance à partir de septembre 2026. Je suis particulièrement intéressé par la radio, les médias, le journalisme, la création de contenu et la communication, tout en restant ouvert à toute opportunité sérieuse dans le domaine. Ma recherche est désormais élargie à Bordeaux, Périgueux, Bergerac, Brive-la-Gaillarde, Sarlat-la-Canéda et aux secteurs accessibles autour de ces villes.
+              Je recherche une entreprise pour un BTS Communication en alternance à partir de septembre 2026. Aujourd'hui, ma priorité est simple : trouver une structure prête à m'accueillir. Je suis ouvert à toute opportunité sérieuse dans la communication, quel que soit le secteur d'activité. Les médias, la radio ou la création de contenu m'intéressent, mais ne sont pas une condition. Ma recherche est élargie à Bordeaux, Périgueux, Bergerac, Brive-la-Gaillarde, Sarlat-la-Canéda et aux secteurs accessibles autour de ces villes.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <a
@@ -82,23 +82,23 @@ function ParcoursPage() {
                 <MapPin size={13} /> Alternance 2026
               </span>
               <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
-                Une recherche désormais multi-villes
+                Une recherche large et multi-villes
               </h2>
               <p className="mt-4 text-sm leading-relaxed text-muted-foreground md:text-base">
-                Je recherche une alternance pour septembre 2026 sur plusieurs bassins d'emploi. Les médias, la radio, le journalisme et la création de contenu sont mes priorités, mais je reste ouvert aux autres opportunités sérieuses en communication.
+                Je recherche une alternance pour septembre 2026 sur plusieurs bassins d'emploi et je reste ouvert à tous les secteurs dès lors que les missions relèvent réellement de la communication.
               </p>
             </div>
 
             <div className="mt-8 grid gap-3 sm:grid-cols-3">
               <div className="rounded-2xl border border-border bg-card p-4">
-                <Radio className="h-5 w-5 text-primary" />
+                <Building2 className="h-5 w-5 text-primary" />
                 <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Priorité</p>
-                <p className="mt-1 text-sm font-semibold text-foreground">Radio · médias · journalisme</p>
+                <p className="mt-1 text-sm font-semibold text-foreground">Trouver une alternance en communication</p>
               </div>
               <div className="rounded-2xl border border-border bg-card p-4">
                 <Building2 className="h-5 w-5 text-primary" />
-                <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Ouvert aussi à</p>
-                <p className="mt-1 text-sm font-semibold text-foreground">Communication au sens large</p>
+                <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Secteurs</p>
+                <p className="mt-1 text-sm font-semibold text-foreground">Ouvert à tout type de structure</p>
               </div>
               <div className="rounded-2xl border border-border bg-card p-4">
                 <MapPin className="h-5 w-5 text-primary" />
@@ -122,7 +122,7 @@ function ParcoursPage() {
                 <MobilityMap />
               </div>
               <p className="px-5 py-4 text-xs leading-relaxed text-muted-foreground">
-                Sarlat reste ma base actuelle. Je peux toutefois envisager une mobilité ou un déménagement si une opportunité cohérente se présente, notamment à Bordeaux, Périgueux, Bergerac ou Brive-la-Gaillarde.
+                Sarlat reste ma base actuelle. Je peux toutefois envisager une mobilité ou un déménagement si une opportunité sérieuse se présente, notamment à Bordeaux, Périgueux, Bergerac ou Brive-la-Gaillarde.
               </p>
             </div>
           </div>
@@ -160,7 +160,7 @@ function ParcoursPage() {
                 Échangeons sur votre besoin
               </h2>
               <p className="mt-4 text-muted-foreground leading-relaxed">
-                Vous recherchez un alternant capable de rédiger, de créer des supports, de participer à vos projets de communication et de comprendre les besoins du public&nbsp;? Je recherche actuellement une alternance pour septembre 2026 sur Bordeaux, Périgueux, Bergerac, Brive-la-Gaillarde, Sarlat-la-Canéda et les secteurs accessibles autour de ces villes. Les médias et la radio m'attirent particulièrement, mais je reste ouvert à toute opportunité sérieuse en communication.
+                Vous recherchez un alternant capable de rédiger, de créer des supports, de participer à vos projets de communication et de comprendre les besoins du public&nbsp;? Je recherche actuellement une alternance pour septembre 2026 sur Bordeaux, Périgueux, Bergerac, Brive-la-Gaillarde, Sarlat-la-Canéda et les secteurs accessibles autour de ces villes. Je suis ouvert à toute opportunité sérieuse dans la communication, quel que soit le secteur d'activité.
               </p>
             </div>
 
