@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { render } from '@react-email/render'
+import { spawn } from 'node:child_process'
 import { TEMPLATES } from './registry'
 
 const SITE_NAME = 'Angel Leclerc Communication'
@@ -21,18 +22,18 @@ function cleanHeader(value: string): string {
 }
 
 async function sendWithLocalMta(message: string): Promise<void> {
-  const processHandle = Bun.spawn([SENDMAIL_PATH, '-t', '-i'], {
-    stdin: 'pipe',
-    stdout: 'pipe',
-    stderr: 'pipe',
+  await new Promise<void>((resolve, reject) => {
+    const child = spawn(SENDMAIL_PATH, ['-t', '-i'], { stdio: ['pipe', 'ignore', 'pipe'] })
+    let stderr = ''
+    child.stderr?.setEncoding('utf8')
+    child.stderr?.on('data', (chunk: string) => { stderr += chunk })
+    child.on('error', reject)
+    child.on('close', (code) => {
+      if (code === 0) resolve()
+      else reject(new Error(`Angel Mail: sendmail a échoué (${code ?? 'inconnu'})${stderr ? `: ${stderr.trim()}` : ''}`))
+    })
+    child.stdin?.end(message)
   })
-  processHandle.stdin.write(message)
-  processHandle.stdin.end()
-  const exitCode = await processHandle.exited
-  if (exitCode !== 0) {
-    const errorText = await new Response(processHandle.stderr).text()
-    throw new Error(`Angel Mail: sendmail a échoué (${exitCode})${errorText ? `: ${errorText.trim()}` : ''}`)
-  }
 }
 
 export async function sendTemplateEmail(
