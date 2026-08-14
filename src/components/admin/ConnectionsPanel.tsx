@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { AdminCard } from "./AdminShell";
+import { DomainsPanel } from "./DomainsPanel";
 import { Button } from "@/components/ui/button";
 import {
   disconnectOAuthConnection,
@@ -149,6 +150,8 @@ export function ConnectionsPanel() {
 
   return (
     <div className="space-y-5">
+      <DomainsPanel />
+
       <AdminCard className="border-l-4 border-l-[#0078d7]">
         <div className="flex gap-3">
           <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#1684df]" />
