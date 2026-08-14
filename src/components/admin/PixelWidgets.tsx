@@ -47,6 +47,12 @@ function formatUpdate(value: string) {
   return new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit" }).format(date);
 }
 
+function sourceLabel(source: "live" | "cache" | "fallback") {
+  if (source === "live") return "données météo en direct";
+  if (source === "cache") return "dernière météo enregistrée";
+  return "prévision de secours";
+}
+
 export function PixelWidgets() {
   const getWeather = useServerFn(getAdminWeather);
   const weather = useQuery({
@@ -55,6 +61,7 @@ export function PixelWidgets() {
     staleTime: 30 * 60 * 1000,
     refetchInterval: 60 * 60 * 1000,
     refetchOnWindowFocus: true,
+    retry: 1,
   });
   const [now, setNow] = useState(() => new Date());
 
@@ -118,18 +125,10 @@ export function PixelWidgets() {
                 <p className="mt-1 text-sm text-[#75677e]">Mini {weather.data.low}° · maxi {weather.data.high}°</p>
               </div>
               <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs font-medium text-[#66566f]">
-                {weather.data.precipitation !== null ? (
-                  <span className="flex items-center gap-1.5"><Umbrella className="h-3.5 w-3.5" />{weather.data.precipitation} mm</span>
-                ) : null}
-                {weather.data.uvIndex !== null ? (
-                  <span className="flex items-center gap-1.5"><Sun className="h-3.5 w-3.5" />UV {weather.data.uvIndex}</span>
-                ) : null}
-                {weather.data.humidity > 0 ? (
-                  <span className="flex items-center gap-1.5"><Droplets className="h-3.5 w-3.5" />{weather.data.humidity}%</span>
-                ) : null}
-                {weather.data.windSpeed > 0 ? (
-                  <span className="flex items-center gap-1.5"><Wind className="h-3.5 w-3.5" />{weather.data.windSpeed} km/h</span>
-                ) : null}
+                {weather.data.precipitation !== null ? <span className="flex items-center gap-1.5"><Umbrella className="h-3.5 w-3.5" />{weather.data.precipitation} mm</span> : null}
+                {weather.data.uvIndex !== null ? <span className="flex items-center gap-1.5"><Sun className="h-3.5 w-3.5" />UV {weather.data.uvIndex}</span> : null}
+                {weather.data.humidity > 0 ? <span className="flex items-center gap-1.5"><Droplets className="h-3.5 w-3.5" />{weather.data.humidity}%</span> : null}
+                {weather.data.windSpeed > 0 ? <span className="flex items-center gap-1.5"><Wind className="h-3.5 w-3.5" />{weather.data.windSpeed} km/h</span> : null}
               </div>
             </div>
 
@@ -140,9 +139,7 @@ export function PixelWidgets() {
                     <p className="text-[11px] font-semibold text-[#66566f]">{slot.time}</p>
                     <WeatherIcon code={slot.weatherCode} className="mx-auto mt-2 h-5 w-5 stroke-[1.6] text-[#554263]" />
                     <p className="mt-1 text-sm font-semibold text-[#2a1d38]">{slot.temperature === null ? "—" : `${slot.temperature}°`}</p>
-                    {slot.precipitationProbability !== null ? (
-                      <p className="mt-0.5 text-[10px] text-[#75677e]">{slot.precipitationProbability}% pluie</p>
-                    ) : null}
+                    {slot.precipitationProbability !== null ? <p className="mt-0.5 text-[10px] text-[#75677e]">{slot.precipitationProbability}% pluie</p> : null}
                   </div>
                 ))}
               </div>
@@ -150,7 +147,7 @@ export function PixelWidgets() {
 
             <div className="mt-4 flex items-center justify-between gap-3 text-[10px] font-medium text-[#7d7086]">
               <span>Mis à jour {formatUpdate(weather.data.fetchedAt)}</span>
-              <span className="text-right">{weather.data.source === "fallback" ? "prévision de secours vérifiée" : "données météo en direct"}</span>
+              <span className="text-right">{sourceLabel(weather.data.source)}</span>
             </div>
           </div>
         )}
