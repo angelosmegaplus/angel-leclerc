@@ -7,6 +7,7 @@ import type { Database } from "@/integrations/supabase/types";
 const CommandSchema = z.object({ command: z.string().trim().min(2).max(2_000) });
 
 type Db = SupabaseClient<Database>;
+type ChatHistory = Array<{ role: "user" | "assistant"; content: string }>;
 
 export type AngelCommandResult = {
   response: string;
@@ -82,11 +83,39 @@ async function counts(db: Db) {
   };
 }
 
-async function openAiAnswer(command: string, context: Awaited<ReturnType<typeof counts>>) {
+async function recentConversation(db: Db, excludeId: string): Promise<ChatHistory> {
+  const { data, error } = await db
+    .from("ai_messages")
+    .select("id, content, response, status, created_at")
+    .neq("id", excludeId)
+    .order("created_at", { ascending: false })
+    .limit(8);
+  if (error) {
+    console.error("[angel-ai] historique indisponible", error);
+    return [];
+  }
+  return ((data ?? []) as Array<Record<string, unknown>>)
+    .reverse()
+    .flatMap((row) => {
+      const out: ChatHistory = [];
+      const content = typeof row.content === "string" ? row.content.trim() : "";
+      const response = typeof row.response === "string" ? row.response.trim() : "";
+      if (content) out.push({ role: "user", content: content.slice(0, 2_000) });
+      if (response) out.push({ role: "assistant", content: response.slice(0, 3_000) });
+      return out;
+    })
+    .slice(-12);
+}
+
+async function openAiAnswer(
+  command: string,
+  context: Awaited<ReturnType<typeof counts>>,
+  history: ChatHistory,
+) {
   const key = process.env["OPENAI_API_KEY"];
   if (!key) return null;
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 22_000);
+  const timeout = setTimeout(() => controller.abort(), 25_000);
   try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -95,16 +124,17 @@ async function openAiAnswer(command: string, context: Awaited<ReturnType<typeof 
       body: JSON.stringify({
         model: process.env["OPENAI_MODEL"] || "gpt-4o-mini",
         temperature: 0.35,
-        max_tokens: 900,
+        max_tokens: 1_200,
         messages: [
           {
             role: "system",
             content:
-              "Tu es Angel AI, l'assistant principal de l'espace administrateur privé Angel OS. Tu dois réellement répondre à la question de l'utilisateur avec les capacités du modèle externe, et utiliser l'état JSON de l'administration quand il est pertinent. Tu peux répondre à des questions générales, analyser, expliquer, rédiger et raisonner : ne te limite pas à réciter le JSON. Si une information dépend de données absentes ou d'une actualité non fournie, dis-le clairement. N'affirme jamais qu'une action a été exécutée si elle ne l'a pas été. Les emails, publications, paiements, suppressions et autres actions externes ou irréversibles nécessitent une validation finale.",
+              "Tu es Angel AI, l'assistant principal de l'espace administrateur privé Angel OS. La conversation est continue : utilise les échanges précédents, comprends les pronoms et les références comme « ça », « lui », « continue », « développe », sans obliger l'administrateur à répéter le contexte. Réponds concrètement et avec suffisamment de détail. Utilise l'état JSON de l'administration quand il est pertinent, mais tu peux aussi expliquer, analyser, rédiger et raisonner au-delà de ce JSON. Si une information dépend de données absentes ou d'une actualité non fournie, dis-le. N'affirme jamais qu'une action a été exécutée si elle ne l'a pas été. Les emails, publications, paiements, suppressions et autres actions externes ou irréversibles nécessitent une validation finale.",
           },
+          ...history,
           {
             role: "user",
-            content: `Demande de l'administrateur : ${command}\n\nContexte interne disponible : ${JSON.stringify(context)}`,
+            content: `Demande actuelle : ${command}\n\nContexte interne actuel : ${JSON.stringify(context)}`,
           },
         ],
       }),
@@ -270,8 +300,8 @@ export const runAngelCommand = createServerFn({ method: "POST" })
             actionId: action.id,
           };
         } else {
-          // Toute vraie question passe d'abord par le modèle externe. Le moteur local ne sert plus de faux chatbot.
-          const generated = await openAiAnswer(command, state);
+          const history = await recentConversation(db, message.id);
+          const generated = await openAiAnswer(command, state, history);
           if (generated) {
             result = {
               response: generated,
@@ -304,6 +334,7 @@ export const runAngelCommand = createServerFn({ method: "POST" })
             source: result.source,
             auto_executed: result.autoExecuted,
             action_id: result.actionId,
+            conversation: true,
           },
         })
         .eq("id", message.id);
