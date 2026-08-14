@@ -16,7 +16,7 @@ Distributions (Angel OS IA, future variants)
 Adapters / apps / websites / desktop / embedded clients
 ```
 
-Angel OS is **not** the current website and does not replace it. The current site may consume Angel OS later through optional adapters, but the Core must remain independently usable.
+Angel OS is **not** the current website and does not replace it. `angel-leclerc.fr` is a distinct web application that now consumes the `Angel OS IA` distribution through the `angel-leclerc.fr.web` adapter. The Core remains independently reusable and has no dependency on the website.
 
 ## Principles
 
@@ -33,7 +33,7 @@ Angel OS is **not** the current website and does not replace it. The current sit
 
 `v0.1` establishes the reusable foundation: module registry, event bus, configuration, capability contracts and platform adapters.
 
-The first distribution is `Angel OS IA`, which adds AI-oriented modules above the base Core.
+The first distribution is `Angel OS IA`, which adds AI and automation capabilities above the base Core. `angel-leclerc.fr` boots that distribution as an application consumer and exposes a safe runtime status endpoint at `/api/angel-os/status`.
 
 ## License
 
