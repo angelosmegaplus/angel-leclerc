@@ -5,7 +5,7 @@ type HybridAuthContext = {
   userId: string;
   authProvider?: 'angel-identity' | 'supabase';
   role?: string | null;
-  supabase?: { from: (table: string) => any };
+  supabase?: { from: (table: string) => any } | null;
 };
 
 type RoleDocument = {
