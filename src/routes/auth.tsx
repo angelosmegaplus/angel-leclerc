@@ -9,9 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Captcha, type CaptchaValue } from "@/components/Captcha";
 import { verifyCaptchaAnswer } from "@/lib/captcha.functions";
-import { verifyAdminPinCode } from "@/lib/admin-pin.functions";
 
 const PIN_SESSION_KEY = "angel-os-admin-pin-ok";
+const ADMIN_PIN = "2005";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -34,7 +34,6 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const { session, loading } = useAuth();
-  const verifyPin = useServerFn(verifyAdminPinCode);
   const [pinUnlocked, setPinUnlocked] = useState(false);
   const [pin, setPin] = useState("");
   const [pinBusy, setPinBusy] = useState(false);
@@ -63,14 +62,18 @@ function AuthPage() {
     e.preventDefault();
     setPinBusy(true);
     setPinError(null);
+
     try {
-      await verifyPin({ data: { pin } });
+      await new Promise((resolve) => window.setTimeout(resolve, 180));
+      if (pin !== ADMIN_PIN) {
+        setPinError("Code PIN incorrect.");
+        setPin("");
+        return;
+      }
+
       sessionStorage.setItem(PIN_SESSION_KEY, "1");
       setPinUnlocked(true);
       if (session) navigate({ to: "/admin" });
-    } catch (err) {
-      setPinError(err instanceof Error ? err.message : "Code PIN incorrect.");
-      setPin("");
     } finally {
       setPinBusy(false);
     }
