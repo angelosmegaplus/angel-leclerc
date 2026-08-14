@@ -45,7 +45,7 @@ const DEFINITIONS: Definition[] = [
     name: "Microsoft 365",
     category: "Bureautique & mail",
     description: "Outlook, Calendrier et OneDrive comme alternative à Google.",
-    env: ["MS_CLIENT_ID", "MS_CLIENT_SECRET", "MS_TENANT_ID"],
+    env: ["MS_CLIENT_ID", "MS_CLIENT_SECRET"],
     connectPath: "/api/oauth/microsoft/start",
     reconnectPath: "/api/oauth/microsoft/start?prompt=consent",
   },
