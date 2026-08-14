@@ -1,8 +1,11 @@
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { ExternalLink, Newspaper, RefreshCw } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { ExternalLink, FilePenLine, Loader2, Newspaper, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 import type { NewsCategory, NewsPayload } from "@/lib/news.functions";
+import { runArticleCommand } from "@/lib/article-command.functions";
 
 const FILTERS: Array<{ key: NewsCategory; label: string }> = [
   { key: "une", label: "À la une" },
@@ -28,6 +31,25 @@ function formatNewsDate(value: string | null) {
 
 export function NewsPanel() {
   const [filter, setFilter] = useState<NewsCategory>("une");
+  const queryClient = useQueryClient();
+  const executeArticle = useServerFn(runArticleCommand);
+  const prepareArticle = useMutation({
+    mutationFn: (item: NewsPayload["items"][number]) =>
+      executeArticle({
+        data: {
+          command: `Prépare un article depuis la veille Angel OS IA sur : ${item.title}. Source de départ à vérifier et citer : ${item.source} — ${item.url}`,
+        },
+      }),
+    onSuccess: (result) => {
+      if (result.articleId) {
+        void queryClient.invalidateQueries({ queryKey: ["admin-articles"] });
+        toast.success("Article complet préparé. Relisez-le puis validez sa publication.");
+      } else {
+        toast.info(result.response);
+      }
+    },
+    onError: (error) => toast.error(error instanceof Error ? error.message : "La préparation a échoué."),
+  });
   const query = useQuery({
     queryKey: ["admin-news"],
     queryFn: async () => {
@@ -119,16 +141,14 @@ export function NewsPanel() {
       ) : (
         <div className="mt-4 grid min-w-0 gap-2 lg:grid-cols-2">
           {visible.map((item, index) => (
-            <a
+            <article
               key={item.id}
-              href={item.url}
-              target="_blank"
-              rel="noreferrer"
-              className={`group flex min-h-24 min-w-0 items-start gap-3 rounded-[1.5rem] p-4 transition-transform active:scale-[0.99] ${
+              className={`group flex min-h-24 min-w-0 flex-col gap-3 rounded-[1.5rem] p-4 ${
                 index % 3 === 0 ? "bg-[#e8def8]" : index % 3 === 1 ? "bg-[#d3e3fd]" : "bg-[#f0f4f9]"
               }`}
             >
-              <span className="min-w-0 flex-1">
+              <a href={item.url} target="_blank" rel="noreferrer" className="flex min-w-0 items-start gap-3">
+                <span className="min-w-0 flex-1">
                 <span className="line-clamp-3 block break-words text-sm font-semibold leading-snug text-[#202124] sm:line-clamp-2">
                   {item.title}
                 </span>
@@ -136,9 +156,23 @@ export function NewsPanel() {
                   <span className="min-w-0 truncate">{item.source}</span>
                   {item.publishedAt ? <span className="shrink-0">{formatNewsDate(item.publishedAt)}</span> : null}
                 </span>
-              </span>
-              <ExternalLink className="h-4 w-4 shrink-0 text-[#5f6368] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-            </a>
+                </span>
+                <ExternalLink className="h-4 w-4 shrink-0 text-[#5f6368] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </a>
+              <button
+                type="button"
+                onClick={() => prepareArticle.mutate(item)}
+                disabled={prepareArticle.isPending}
+                className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full bg-white/75 px-4 text-xs font-semibold text-[#0b57d0] shadow-sm transition-transform active:scale-[0.98] disabled:opacity-50"
+              >
+                {prepareArticle.isPending && prepareArticle.variables?.id === item.id ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <FilePenLine className="h-4 w-4" />
+                )}
+                Préparer l’article complet
+              </button>
+            </article>
           ))}
         </div>
       )}

@@ -13,6 +13,7 @@ export type ArticleCommandResult = {
   source: "openai" | "local";
   autoExecuted: boolean;
   actionId: string | null;
+  articleId: string | null;
 };
 
 async function assertAdmin(context: { supabase: Db; userId: string }) {
@@ -131,6 +132,7 @@ export const runArticleCommand = createServerFn({ method: "POST" })
           source: "local",
           autoExecuted: false,
           actionId: action.id,
+          articleId: null,
         };
       }
 
@@ -154,8 +156,8 @@ export const runArticleCommand = createServerFn({ method: "POST" })
           ai_disclosure: {
             personal: false,
             chatgpt: true,
-            otherAi: false,
-            otherAiName: "",
+            otherAi: true,
+            otherAiName: "Veille Angel OS IA",
             images: false,
             imagesTool: generated.coverUrl ? "Wikimedia Commons" : "",
           },
@@ -202,6 +204,7 @@ export const runArticleCommand = createServerFn({ method: "POST" })
         source: "openai",
         autoExecuted: true,
         actionId: null,
+        articleId: article.id,
       };
     } catch (error) {
       const detail = error instanceof Error ? error.message : "Erreur inconnue";
