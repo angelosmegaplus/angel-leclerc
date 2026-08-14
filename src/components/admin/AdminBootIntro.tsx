@@ -1,10 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Volume2, VolumeX, X } from "lucide-react";
+import { Volume2 } from "lucide-react";
 
-/** Dernière présence dans Angel OS (ms). L'intro rejoue après 20 min d'absence. */
+/** Dernière présence dans Angel OS (ms). L'intro navigateur rejoue après 20 min d'absence. */
 const LAST_SEEN_KEY = "angel-os-last-seen";
-/** Préférence explicite de coupure du son ("1" = muet). */
-const MUTE_PREF_KEY = "angel-os-intro-muted";
 const IDLE_MS = 20 * 60 * 1000;
 
 function markPresence() {
@@ -15,27 +13,34 @@ function markPresence() {
   }
 }
 
+function isStandaloneApp() {
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (window.navigator as Navigator & { standalone?: boolean }).standalone === true
+  );
+}
+
 export function AdminBootIntro() {
   const [visible, setVisible] = useState(false);
-  const [muted, setMuted] = useState(false);
+  const [soundBlocked, setSoundBlocked] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  // Décide de jouer l'intro, puis entretient l'horodatage de présence.
   useEffect(() => {
     let last = 0;
-    let prefMuted = false;
     try {
       last = Number(window.localStorage.getItem(LAST_SEEN_KEY) ?? 0);
-      prefMuted = window.localStorage.getItem(MUTE_PREF_KEY) === "1";
     } catch {
       /* stockage indisponible */
     }
-    setMuted(prefMuted);
-    markPresence();
 
+    const standalone = isStandaloneApp();
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const shouldPlay = !reduced && Date.now() - last > IDLE_MS;
+
+    // En application installée, le générique est systématique à chaque lancement.
+    // Dans le navigateur, on conserve le comportement discret historique.
+    const shouldPlay = standalone || (!reduced && Date.now() - last > IDLE_MS);
     if (shouldPlay) setVisible(true);
+    markPresence();
 
     const beat = window.setInterval(markPresence, 60_000);
     const onHide = () => markPresence();
@@ -51,114 +56,91 @@ export function AdminBootIntro() {
     };
   }, []);
 
-  // Son actif par défaut : si le navigateur bloque, on réactive à la première interaction.
   useEffect(() => {
     if (!visible) return;
     const video = videoRef.current;
     if (!video) return;
 
     let cancelled = false;
-    const tryLoud = async () => {
-      if (cancelled || muted) return;
+    const playWithSound = async () => {
+      if (cancelled) return;
       video.muted = false;
       video.volume = 1;
       try {
         await video.play();
+        setSoundBlocked(false);
       } catch {
-        // Autoplay sonore refusé : on démarre en silence et on rétablit au 1er geste.
-        video.muted = true;
-        try {
-          await video.play();
-        } catch {
-          /* lecture impossible */
-        }
+        // Certains moteurs mobiles exigent un geste utilisateur pour autoriser l'audio.
+        // On reste sur l'écran d'introduction : aucune possibilité de passer le générique.
+        setSoundBlocked(true);
       }
     };
-    void tryLoud();
 
-    const unlock = () => {
-      if (cancelled || muted) return;
-      video.muted = false;
-      video.volume = 1;
-      void video.play().catch(() => {});
-    };
-    const opts = { once: true, capture: true } as const;
-    window.addEventListener("pointerdown", unlock, opts);
-    window.addEventListener("keydown", unlock, opts);
-    window.addEventListener("touchstart", unlock, opts);
+    void playWithSound();
     return () => {
       cancelled = true;
-      window.removeEventListener("pointerdown", unlock, true);
-      window.removeEventListener("keydown", unlock, true);
-      window.removeEventListener("touchstart", unlock, true);
     };
-  }, [visible, muted]);
-
-  useEffect(() => {
-    if (!visible) return;
-    const timeout = window.setTimeout(() => setVisible(false), 12_000);
-    return () => window.clearTimeout(timeout);
   }, [visible]);
 
-  const close = () => {
+  const finish = () => {
     markPresence();
     setVisible(false);
   };
 
-  const toggleMute = () => {
-    setMuted((value) => {
-      const next = !value;
-      try {
-        window.localStorage.setItem(MUTE_PREF_KEY, next ? "1" : "0");
-      } catch {
-        /* stockage indisponible */
-      }
-      const video = videoRef.current;
-      if (video) {
-        video.muted = next;
-        if (!next) video.volume = 1;
-      }
-      return next;
-    });
+  const unlockSound = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = false;
+    video.volume = 1;
+    void video.play().then(() => setSoundBlocked(false)).catch(() => undefined);
   };
 
   if (!visible) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex animate-in fade-in items-center justify-center bg-black duration-500">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-black">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-35"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(34,211,238,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,.08) 1px,transparent 1px)",
+          backgroundSize: "32px 32px",
+          maskImage: "radial-gradient(circle at center, black, transparent 82%)",
+        }}
+      />
+
       <video
         ref={videoRef}
         autoPlay
         playsInline
-        muted={muted}
+        preload="auto"
+        muted={false}
         poster="/angel-os/logo.png"
-        onEnded={close}
-        onError={close}
-        className="h-full w-full object-contain"
+        onEnded={finish}
+        onError={finish}
+        className="relative z-10 h-full w-full object-contain"
       >
         <source src="/angel-os/intro.mp4" type="video/mp4" />
       </video>
-      <div
-        className="absolute right-4 flex gap-2"
-        style={{ top: "calc(1rem + env(safe-area-inset-top))" }}
-      >
+
+      {soundBlocked && (
         <button
           type="button"
-          onClick={toggleMute}
-          aria-label={muted ? "Activer le son" : "Couper le son"}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white backdrop-blur"
+          onClick={unlockSound}
+          className="absolute inset-0 z-20 flex cursor-pointer flex-col items-center justify-center gap-4 bg-black/92 text-white"
         >
-          {muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+          <span className="flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-400/30 bg-cyan-400/10 shadow-[0_0_45px_rgba(34,211,238,.18)]">
+            <Volume2 className="h-7 w-7 text-cyan-300" />
+          </span>
+          <span className="font-mono text-sm font-semibold uppercase tracking-[0.2em] text-cyan-100">
+            Toucher pour démarrer Angel OS avec le son
+          </span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">
+            boot.audio.permission_required
+          </span>
         </button>
-        <button
-          type="button"
-          onClick={close}
-          aria-label="Passer l'introduction"
-          className="inline-flex h-11 items-center gap-2 rounded-full border border-white/20 bg-black/60 px-4 text-sm font-medium text-white backdrop-blur"
-        >
-          <X className="h-4 w-4" /> Passer
-        </button>
-      </div>
+      )}
     </div>
   );
 }
