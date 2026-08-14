@@ -93,6 +93,7 @@ import { GlobalSearch } from "@/components/admin/GlobalSearch";
 import { AdminBootIntro } from "@/components/admin/AdminBootIntro";
 import { AngelCommandCenter } from "@/components/admin/AngelCommandCenter";
 import { ApplicationsPanel } from "@/components/admin/ApplicationsPanel";
+import { AdminAutomationSummary } from "@/components/admin/AdminAutomationSummary";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -558,6 +559,8 @@ function AdminPage() {
               </div>
             ))}
           </dl>
+
+          <AdminAutomationSummary />
 
           <div className="grid gap-4 lg:grid-cols-2">
             <AdminCard title="Derniers articles" description="Vos publications les plus récemment modifiées.">
@@ -1193,6 +1196,7 @@ function AdminPage() {
 
             {tab === "stats" && (
               <div className="mt-6 rounded-2xl border border-border bg-card p-4 sm:p-6">
+                <AdminAutomationSummary mode="stats" />
                 <AdminStats />
               </div>
             )}
@@ -1217,12 +1221,14 @@ function AdminPage() {
 
             {tab === "boite-mail" && (
               <div className="mt-6 rounded-2xl border border-border bg-card p-4 sm:p-6">
+                <AdminAutomationSummary mode="mail" />
                 <MailboxAdmin />
               </div>
             )}
 
             {tab === "messages" && (
               <div className="mt-8 space-y-3">
+                <AdminAutomationSummary mode="messages" />
                 {messages.length === 0 && (
                   <p className="text-sm text-muted-foreground">
                     Aucun message reçu pour le moment.
@@ -1426,6 +1432,7 @@ function AdminPage() {
 
             {tab === "articles" && (
             <>
+            <div className="mt-8"><AdminAutomationSummary mode="publications" /></div>
             <Button className="mt-8" onClick={() => setDraft({ ...emptyDraft })}>
               <Plus className="mr-2 h-4 w-4" /> Nouvel article
             </Button>

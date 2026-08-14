@@ -48,8 +48,16 @@ async function buildAutomaticPressReview(news: NewsPayload): Promise<GeneratedAr
     ),
     "<h2>Comment lire cette veille ?</h2><p>Cette sélection est un point de départ, pas un remplacement du travail des rédactions. Les titres peuvent évoluer, simplifier un sujet ou refléter un angle éditorial particulier. Il est recommandé de comparer plusieurs médias, de vérifier la date et de consulter directement les articles d’origine avant de partager une affirmation.</p>",
   ].join("");
-  const cover = await findArticleCover("journalisme presse actualité France");
-  if (!cover) return null;
+  const cover = (await findArticleCover("journalisme presse actualité France")) ?? {
+    url: "https://www.angel-leclerc.fr/angel-os/logo.png",
+    meta: {
+      source: "Angel OS",
+      pageUrl: "https://www.angel-leclerc.fr/angel-os-ia",
+      credit: "Angel Leclerc — Angel OS",
+      license: "Identité visuelle Angel OS",
+      alt: "Logo Angel OS",
+    },
+  };
   return {
     title: `La veille Angel OS du ${dayLabel} : les actualités à retenir`,
     excerpt: "Politique, médias, IA, Dordogne et emploi : la sélection quotidienne automatiquement compilée par la veille Angel OS.",

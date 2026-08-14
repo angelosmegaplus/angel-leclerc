@@ -15,7 +15,7 @@ type Entry = {
 const anyDb = supabase as unknown as { from: (t: string) => any };
 
 async function loadAgenda(): Promise<Entry[]> {
-  const [articles, projects, tasks, applications, interviews] = await Promise.all([
+  const [articles, projects, tasks, applications, interviews, googleCache] = await Promise.all([
     supabase
       .from("articles")
       .select("id,title,scheduled_at")
@@ -30,6 +30,7 @@ async function loadAgenda(): Promise<Entry[]> {
       .from("interviews")
       .select("id,title,person,scheduled_at")
       .not("scheduled_at", "is", null),
+    anyDb.from("angel_os_cache").select("payload").eq("key", "google_calendar_dashboard").maybeSingle(),
   ]);
 
   const out: Entry[] = [];
@@ -67,6 +68,16 @@ async function loadAgenda(): Promise<Entry[]> {
       detail: i.person ? `Interview · ${i.person}` : "Interview",
       kind: "Studio",
     });
+  for (const event of ((googleCache.data?.payload?.events ?? []) as any[])) {
+    if (!event.start || !event.title) continue;
+    out.push({
+      id: `google-${event.id ?? event.url ?? event.start}`,
+      date: event.start,
+      label: event.title,
+      detail: [event.location, event.advice ? `Conseil : ${event.advice}` : ""].filter(Boolean).join(" · ") || "Google Agenda",
+      kind: "Google",
+    });
+  }
 
   return out.sort((a, b) => a.date.localeCompare(b.date));
 }

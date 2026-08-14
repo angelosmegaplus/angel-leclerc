@@ -5,6 +5,7 @@ import { applicationFields, listRows, str } from "@/lib/angelos";
 import { Button } from "@/components/ui/button";
 import { AdminCard } from "./AdminShell";
 import { CrudModule } from "./CrudModule";
+import { AdminAutomationSummary } from "./AdminAutomationSummary";
 
 export function ApplicationsPanel() {
   const queryClient = useQueryClient();
@@ -30,6 +31,7 @@ export function ApplicationsPanel() {
 
   return (
     <div className="space-y-4">
+      <AdminAutomationSummary mode="applications" />
       <AdminCard className="border-primary/25 bg-primary/5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
