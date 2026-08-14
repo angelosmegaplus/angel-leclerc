@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Volume2 } from "lucide-react";
+import { Loader2, Volume2 } from "lucide-react";
 import { isStandalone } from "@/lib/pwa";
 
 const BOOT_KEY = "angel-os:boot-played-this-session";
@@ -21,98 +21,147 @@ function markPlayedThisSession() {
 }
 
 export function AdminBootIntro() {
-  const [visible, setVisible] = useState(false);
+  // L'overlay existe dès le premier rendu afin que l'interface admin ne puisse
+  // jamais apparaître une fraction de seconde avant le générique.
+  const [visible, setVisible] = useState(true);
+  const [shouldPlay, setShouldPlay] = useState(true);
+  const [videoReady, setVideoReady] = useState(false);
   const [soundBlocked, setSoundBlocked] = useState(false);
+  const [leaving, setLeaving] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     // Intro uniquement dans l'app installée, une seule fois pendant la session PWA.
-    // Les navigations internes et remontages React ne la rejouent plus.
-    if (!isStandalone() || hasPlayedThisSession()) return;
+    // Le test est fait après que l'écran noir de boot soit déjà en place.
+    if (!isStandalone() || hasPlayedThisSession()) {
+      setShouldPlay(false);
+      setVisible(false);
+      return;
+    }
+
     markPlayedThisSession();
-    setVisible(true);
+    setShouldPlay(true);
   }, []);
 
   useEffect(() => {
-    if (!visible) return;
+    if (!visible || !shouldPlay) return;
     const video = videoRef.current;
     if (!video) return;
 
     let cancelled = false;
-    const playWithSound = async () => {
+
+    const start = async () => {
       if (cancelled) return;
       video.currentTime = 0;
-      video.muted = false;
       video.volume = 1;
+      video.muted = false;
+
       try {
         await video.play();
-        setSoundBlocked(false);
+        if (!cancelled) setSoundBlocked(false);
       } catch {
-        setSoundBlocked(true);
+        // L'intro doit démarrer immédiatement même si Android/Chrome refuse
+        // l'autoplay sonore. On lance alors la vidéo sans son au lieu de bloquer.
+        video.muted = true;
+        try {
+          await video.play();
+          if (!cancelled) setSoundBlocked(true);
+        } catch {
+          if (!cancelled) finish();
+        }
       }
     };
 
-    void playWithSound();
+    void start();
     return () => {
       cancelled = true;
     };
-  }, [visible]);
+  }, [visible, shouldPlay]);
 
-  const finish = () => setVisible(false);
+  const finish = () => {
+    setLeaving(true);
+    window.setTimeout(() => setVisible(false), 420);
+  };
 
   const unlockSound = () => {
     const video = videoRef.current;
     if (!video) return;
     video.muted = false;
     video.volume = 1;
-    video.currentTime = 0;
     void video.play().then(() => setSoundBlocked(false)).catch(() => undefined);
   };
 
   if (!visible) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-black">
+    <div
+      className={`fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-black transition-opacity duration-500 ${
+        leaving ? "opacity-0" : "opacity-100"
+      }`}
+      aria-label="Démarrage d'Angel OS"
+    >
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-35"
+        className="pointer-events-none absolute inset-0 opacity-40"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(34,211,238,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,.08) 1px,transparent 1px)",
-          backgroundSize: "32px 32px",
-          maskImage: "radial-gradient(circle at center, black, transparent 82%)",
+            "radial-gradient(circle at 50% 50%, rgba(34,211,238,.10), transparent 45%),linear-gradient(rgba(34,211,238,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,.06) 1px,transparent 1px)",
+          backgroundSize: "100% 100%,32px 32px,32px 32px",
+          maskImage: "radial-gradient(circle at center, black, transparent 84%)",
         }}
       />
 
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        preload="auto"
-        muted={false}
-        poster="/angel-os/logo.png"
-        onEnded={finish}
-        onError={finish}
-        className="relative z-10 h-full w-full object-contain"
-      >
-        <source src="/angel-os/intro.mp4" type="video/mp4" />
-      </video>
+      <div className="pointer-events-none absolute inset-0 z-20 bg-[linear-gradient(transparent_0%,rgba(34,211,238,.025)_50%,transparent_100%)] bg-[length:100%_7px] opacity-50" />
 
-      {soundBlocked && (
+      {shouldPlay && (
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          preload="auto"
+          muted={false}
+          poster="/angel-os/logo.png"
+          onLoadedData={() => setVideoReady(true)}
+          onCanPlay={() => setVideoReady(true)}
+          onPlaying={() => setVideoReady(true)}
+          onEnded={finish}
+          onError={finish}
+          className={`relative z-10 h-full w-full object-contain transition-all duration-700 ${
+            videoReady ? "scale-100 opacity-100 blur-0" : "scale-[1.015] opacity-0 blur-sm"
+          }`}
+        >
+          <source src="/angel-os/intro.mp4" type="video/mp4" />
+        </video>
+      )}
+
+      {shouldPlay && !videoReady && (
+        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black">
+          <div className="relative flex h-20 w-20 items-center justify-center">
+            <div className="absolute inset-0 animate-ping rounded-full border border-cyan-300/10" />
+            <div className="absolute inset-2 rounded-full border border-cyan-300/15 shadow-[0_0_45px_rgba(34,211,238,.12)]" />
+            <Loader2 className="h-5 w-5 animate-spin text-cyan-200/90" />
+          </div>
+          <div className="mt-5 font-mono text-[11px] font-medium uppercase tracking-[0.28em] text-cyan-100/70">
+            Angel OS
+          </div>
+          <div className="mt-2 font-mono text-[9px] uppercase tracking-[0.18em] text-white/30">
+            Initialisation du système
+          </div>
+          <div className="mt-5 h-px w-28 overflow-hidden bg-white/10">
+            <div className="h-full w-1/2 animate-[pulse_1s_ease-in-out_infinite] bg-cyan-200/60" />
+          </div>
+        </div>
+      )}
+
+      {soundBlocked && videoReady && (
         <button
           type="button"
           onClick={unlockSound}
-          className="absolute inset-0 z-20 flex cursor-pointer flex-col items-center justify-center gap-4 bg-black/92 text-white"
+          className="absolute bottom-5 right-5 z-40 flex items-center gap-2 rounded-full border border-white/10 bg-black/55 px-3 py-2 text-white/70 backdrop-blur-md transition hover:bg-black/75 hover:text-white"
+          aria-label="Activer le son du générique"
         >
-          <span className="flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-400/30 bg-cyan-400/10 shadow-[0_0_45px_rgba(34,211,238,.18)]">
-            <Volume2 className="h-7 w-7 text-cyan-300" />
-          </span>
-          <span className="font-mono text-sm font-semibold uppercase tracking-[0.2em] text-cyan-100">
-            Toucher pour démarrer Angel OS avec le son
-          </span>
-          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">
-            boot.audio.permission_required
-          </span>
+          <Volume2 className="h-4 w-4 text-cyan-200" />
+          <span className="font-mono text-[9px] uppercase tracking-[0.14em]">Activer le son</span>
         </button>
       )}
     </div>
