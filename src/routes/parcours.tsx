@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Linkedin, Download, Mail } from "lucide-react";
+import { Linkedin, Download, Mail, MapPin, Radio, Building2 } from "lucide-react";
 import {
   MyJourney,
   SkillsSection,
   PassionsSection,
   RealisationsSection,
 } from "@/components/MyJourney";
+import MobilityMap from "@/components/MobilityMap";
 import { LatestArticles } from "@/components/LatestArticles";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { FeedbackBlock } from "@/components/FeedbackBlock";
@@ -73,8 +74,63 @@ function ParcoursPage() {
         </div>
       </section>
 
+      <AnimatedSection>
+        <section id="alternance" className="section-padding bg-muted/40 scroll-mt-24">
+          <div className="container-tight">
+            <div className="mx-auto max-w-2xl text-center">
+              <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-primary">
+                <MapPin size={13} /> Alternance 2026
+              </span>
+              <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
+                Une recherche désormais multi-villes
+              </h2>
+              <p className="mt-4 text-sm leading-relaxed text-muted-foreground md:text-base">
+                Je recherche une alternance pour septembre 2026 sur plusieurs bassins d'emploi. Les médias, la radio, le journalisme et la création de contenu sont mes priorités, mais je reste ouvert aux autres opportunités sérieuses en communication.
+              </p>
+            </div>
+
+            <div className="mt-8 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-border bg-card p-4">
+                <Radio className="h-5 w-5 text-primary" />
+                <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Priorité</p>
+                <p className="mt-1 text-sm font-semibold text-foreground">Radio · médias · journalisme</p>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-4">
+                <Building2 className="h-5 w-5 text-primary" />
+                <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Ouvert aussi à</p>
+                <p className="mt-1 text-sm font-semibold text-foreground">Communication au sens large</p>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-4">
+                <MapPin className="h-5 w-5 text-primary" />
+                <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Zones</p>
+                <p className="mt-1 text-sm font-semibold text-foreground">5 villes principales</p>
+              </div>
+            </div>
+
+            <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-card">
+              <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-primary">Carte de recherche</p>
+                  <p className="mt-1 text-sm text-muted-foreground">Bordeaux · Périgueux · Bergerac · Brive · Sarlat</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground">
+                  <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-primary" /> Base actuelle</span>
+                  <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-foreground/80" /> Zones de recherche</span>
+                </div>
+              </div>
+              <div className="border-t border-border">
+                <MobilityMap />
+              </div>
+              <p className="px-5 py-4 text-xs leading-relaxed text-muted-foreground">
+                Sarlat reste ma base actuelle. Je peux toutefois envisager une mobilité ou un déménagement si une opportunité cohérente se présente, notamment à Bordeaux, Périgueux, Bergerac ou Brive-la-Gaillarde.
+              </p>
+            </div>
+          </div>
+        </section>
+      </AnimatedSection>
+
       <div className="legacy-journey">
-        <style>{`.legacy-journey > section:first-child { display: none; }`}</style>
+        <style>{`.legacy-journey > section:nth-child(-n+2) { display: none; }`}</style>
         <MyJourney />
       </div>
       <RealisationsSection />
