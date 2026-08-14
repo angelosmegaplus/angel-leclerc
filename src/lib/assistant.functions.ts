@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { angelAi, type AiMessage } from "./ai-gateway.server";
+import type { AiMessage } from "./ai-gateway.server";
+import { resilientAngelAi } from "./ai-resilient.server";
 
 const AskSchema = z.object({
   question: z.string().trim().min(2).max(1_000),
@@ -25,7 +26,7 @@ export const askAssistant = createServerFn({ method: "POST" })
       ...(data.history ?? []).slice(-12),
       { role: "user", content: data.question },
     ];
-    const result = await angelAi({
+    const result = await resilientAngelAi({
       messages,
       priority: "interactive",
       maxTokens: data.mode === "contact" ? 700 : 600,
