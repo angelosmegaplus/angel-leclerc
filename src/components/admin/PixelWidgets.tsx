@@ -133,9 +133,24 @@ export function PixelWidgets() {
               </div>
             </div>
 
-            <div className="mt-4 flex items-center justify-between text-[10px] font-medium text-[#7d7086]">
+            {weather.data.hourly?.length ? (
+              <div className="mt-5 grid grid-cols-3 gap-2 sm:grid-cols-6">
+                {weather.data.hourly.map((slot) => (
+                  <div key={slot.time} className="rounded-[1.25rem] bg-white/45 px-2 py-3 text-center">
+                    <p className="text-[11px] font-semibold text-[#66566f]">{slot.time}</p>
+                    <WeatherIcon code={slot.weatherCode} className="mx-auto mt-2 h-5 w-5 stroke-[1.6] text-[#554263]" />
+                    <p className="mt-1 text-sm font-semibold text-[#2a1d38]">{slot.temperature === null ? "—" : `${slot.temperature}°`}</p>
+                    {slot.precipitationProbability !== null ? (
+                      <p className="mt-0.5 text-[10px] text-[#75677e]">{slot.precipitationProbability}% pluie</p>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
+            <div className="mt-4 flex items-center justify-between gap-3 text-[10px] font-medium text-[#7d7086]">
               <span>Mis à jour {formatUpdate(weather.data.fetchedAt)}</span>
-              <span>{weather.data.source === "fallback" ? "prévision de secours vérifiée" : "données météo en direct"}</span>
+              <span className="text-right">{weather.data.source === "fallback" ? "prévision de secours vérifiée" : "données météo en direct"}</span>
             </div>
           </div>
         )}
