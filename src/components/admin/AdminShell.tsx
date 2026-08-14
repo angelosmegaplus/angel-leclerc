@@ -1,9 +1,7 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
-  Activity,
   ChevronDown,
   ChevronUp,
-  Command,
   Menu,
   Search,
   X,
@@ -19,13 +17,7 @@ export type AdminNavItem = {
   primary?: boolean;
 };
 
-function detectStandalone() {
-  if (typeof window === "undefined") return false;
-  return (
-    window.matchMedia("(display-mode: standalone)").matches ||
-    (window.navigator as Navigator & { standalone?: boolean }).standalone === true
-  );
-}
+const ACCENT = "#0078d7";
 
 export function AdminShell({
   items,
@@ -44,25 +36,19 @@ export function AdminShell({
 }) {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [standalone, setStandalone] = useState(false);
   const [query, setQuery] = useState("");
   const searchRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    setStandalone(detectStandalone());
-  }, []);
-
-  useEffect(() => {
-    if (!standalone) return;
     const root = document.documentElement;
     const hadDark = root.classList.contains("dark");
     root.classList.add("dark");
-    root.dataset.angelOsApp = "standalone";
+    root.dataset.angelOsUi = "metro";
     return () => {
-      delete root.dataset.angelOsApp;
+      delete root.dataset.angelOsUi;
       if (!hadDark) root.classList.remove("dark");
     };
-  }, [standalone]);
+  }, []);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -75,8 +61,8 @@ export function AdminShell({
     const onKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
-        if (window.innerWidth < 1024) setOpen(true);
-        window.setTimeout(() => searchRef.current?.focus(), 40);
+        setOpen(true);
+        window.setTimeout(() => searchRef.current?.focus(), 50);
       }
     };
     window.addEventListener("keydown", onKeyDown);
@@ -84,241 +70,208 @@ export function AdminShell({
   }, []);
 
   const normalizedQuery = query.trim().toLocaleLowerCase("fr");
-  const visibleItems = normalizedQuery
-    ? items.filter((item) => `${item.label} ${item.group}`.toLocaleLowerCase("fr").includes(normalizedQuery))
-    : expanded
-      ? items
-      : items.filter((item) => item.primary || item.key === active);
+  const visibleItems = useMemo(() => {
+    if (normalizedQuery) {
+      return items.filter((item) =>
+        `${item.label} ${item.group}`.toLocaleLowerCase("fr").includes(normalizedQuery),
+      );
+    }
+    if (expanded) return items;
+    return items.filter((item) => item.primary || item.key === active);
+  }, [active, expanded, items, normalizedQuery]);
 
-  const groups = visibleItems.reduce<Record<string, AdminNavItem[]>>((acc, item) => {
-    (acc[item.group] ??= []).push(item);
-    return acc;
-  }, {});
+  const groups = useMemo(
+    () =>
+      visibleItems.reduce<Record<string, AdminNavItem[]>>((acc, item) => {
+        (acc[item.group] ??= []).push(item);
+        return acc;
+      }, {}),
+    [visibleItems],
+  );
+
+  const select = (key: string) => {
+    onSelect(key);
+    setOpen(false);
+    setQuery("");
+  };
 
   const searchBox = (
-    <div className="relative mb-5 px-1">
-      <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
+    <label className="relative block">
+      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/60" />
       <input
         ref={searchRef}
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        placeholder="Rechercher un module…"
+        placeholder="rechercher"
         aria-label="Rechercher dans Angel OS"
-        className={`h-10 w-full rounded-xl border pl-10 pr-12 text-[13px] outline-none transition-all placeholder:text-white/30 focus:ring-2 ${
-          standalone
-            ? "border-white/10 bg-white/[0.045] text-white focus:border-cyan-300/35 focus:ring-cyan-300/10"
-            : "border-white/10 bg-white/[0.06] text-white focus:border-white/25 focus:ring-white/10"
-        }`}
+        className="h-11 w-full border border-white/35 bg-black pl-10 pr-3 text-sm font-light text-white outline-none transition-colors placeholder:text-white/45 focus:border-white"
       />
-      <span className="pointer-events-none absolute right-3 top-1/2 inline-flex -translate-y-1/2 items-center gap-0.5 rounded-md border border-white/10 bg-black/20 px-1.5 py-0.5 font-mono text-[9px] text-white/35">
-        <Command className="h-2.5 w-2.5" />K
-      </span>
+    </label>
+  );
+
+  const appList = (
+    <div className="space-y-7">
+      {Object.entries(groups).map(([group, list]) => (
+        <section key={group}>
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
+            {group}
+          </p>
+          <div className="grid grid-cols-2 gap-1.5">
+            {list.map(({ key, label, icon: Icon, badge }) => {
+              const isActive = active === key;
+              return (
+                <button
+                  type="button"
+                  key={key}
+                  aria-current={isActive ? "page" : undefined}
+                  onClick={() => select(key)}
+                  className="group relative min-h-24 overflow-hidden p-3 text-left text-white transition-transform duration-150 active:scale-[0.97]"
+                  style={{ backgroundColor: isActive ? ACCENT : "#191919" }}
+                >
+                  <Icon className="h-7 w-7 stroke-[1.45]" />
+                  <span className="absolute inset-x-3 bottom-2.5 truncate text-[13px] font-normal leading-none">
+                    {label}
+                  </span>
+                  {badge ? (
+                    <span className="absolute right-2.5 top-2 text-xs font-semibold tabular-nums">
+                      {badge}
+                    </span>
+                  ) : null}
+                  <span className="pointer-events-none absolute inset-0 border border-transparent transition-colors group-hover:border-white/25" />
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      ))}
+
+      {normalizedQuery && visibleItems.length === 0 ? (
+        <p className="border-l-4 border-white/30 py-2 pl-3 text-sm font-light text-white/60">
+          aucun résultat
+        </p>
+      ) : null}
     </div>
   );
 
-  const nav = (
+  const menuContents = (
     <>
+      <div className="mb-8 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55">Angel OS</p>
+          <p className="mt-1 text-2xl font-light text-white">applications</p>
+        </div>
+        <span className="h-3 w-3" style={{ backgroundColor: ACCENT }} aria-hidden />
+      </div>
       {searchBox}
-      <nav aria-label="Navigation Angel OS" className="space-y-5">
-        {Object.entries(groups).map(([group, list]) => (
-          <div key={group}>
-            <p className="px-3 pb-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-white/35">
-              {group}
-            </p>
-            <ul className="space-y-1">
-              {list.map(({ key, label, icon: Icon, badge }) => {
-                const isActive = active === key;
-                return (
-                  <li key={key}>
-                    <button
-                      type="button"
-                      aria-current={isActive ? "page" : undefined}
-                      onClick={() => {
-                        onSelect(key);
-                        setOpen(false);
-                        setQuery("");
-                      }}
-                      className={`group relative flex min-h-11 w-full items-center gap-3 overflow-hidden rounded-xl px-3 text-left text-sm font-medium transition-[background-color,border-color,color,transform,box-shadow] duration-150 active:scale-[0.985] ${
-                        isActive
-                          ? standalone
-                            ? "border border-cyan-300/20 bg-cyan-300/[0.085] text-white shadow-[inset_0_0_24px_rgba(34,211,238,.04),0_8px_28px_rgba(0,0,0,.16)]"
-                            : "border border-white/10 bg-white/12 text-white shadow-sm"
-                          : standalone
-                            ? "border border-transparent text-white/58 hover:border-white/10 hover:bg-white/[0.05] hover:text-white"
-                            : "border border-transparent text-white/62 hover:bg-white/8 hover:text-white"
-                      }`}
-                    >
-                      {standalone && isActive ? (
-                        <span aria-hidden className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-cyan-300 shadow-[0_0_10px_rgba(103,232,249,.75)]" />
-                      ) : null}
-                      <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg transition-colors ${isActive ? standalone ? "bg-cyan-300/10 text-cyan-200" : "bg-white/10 text-white" : "text-white/45 group-hover:text-white/80"}`}>
-                        <Icon className="h-4 w-4" />
-                      </span>
-                      <span className="min-w-0 flex-1 truncate">{label}</span>
-                      {badge ? (
-                        <span className={`rounded-full px-1.5 py-0.5 font-mono text-[10px] font-semibold tabular-nums ${standalone ? "bg-cyan-400/10 text-cyan-200" : "bg-white/15 text-white"}`}>
-                          {badge}
-                        </span>
-                      ) : null}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
-        {normalizedQuery && visibleItems.length === 0 ? (
-          <div className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-4 text-center text-xs text-white/45">
-            Aucun module trouvé.
-          </div>
-        ) : null}
-      </nav>
+      <div className="mt-7">{appList}</div>
       {!normalizedQuery ? (
         <button
           type="button"
           onClick={() => setExpanded((value) => !value)}
-          className={`mt-5 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border px-3 text-xs font-medium transition-all active:scale-[0.985] ${
-            standalone
-              ? "border-cyan-400/10 bg-cyan-400/[0.025] font-mono text-cyan-100/60 hover:border-cyan-400/25 hover:bg-cyan-400/[0.06] hover:text-cyan-100"
-              : "border-white/10 text-white/60 hover:bg-white/8 hover:text-white"
-          }`}
+          className="mt-7 inline-flex min-h-11 w-full items-center justify-center gap-2 border border-white/35 bg-black px-4 text-xs font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-white hover:text-black"
         >
           {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          {expanded ? "Modules essentiels" : "Tous les modules"}
+          {expanded ? "essentiels" : "toutes les apps"}
         </button>
       ) : null}
+      <div className="mt-8 border-t border-white/15 pt-4 text-[11px] uppercase tracking-[0.16em] text-white/35">
+        <span className="mr-2 inline-block h-2 w-2 bg-emerald-400" />online
+      </div>
     </>
   );
 
-  const brand = (
-    <div className="flex items-center gap-3">
-      <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl p-1.5 ${standalone ? "border border-cyan-300/15 bg-black shadow-[0_0_30px_rgba(34,211,238,.09)]" : "bg-white shadow-sm ring-1 ring-black/10"}`}>
-        <img src="/angel-os/logo.png" alt="" className="h-full w-full object-contain" />
-      </span>
-      <div className="min-w-0">
-        <p className="font-display text-lg font-bold tracking-tight text-white">Angel OS</p>
-        <div className="mt-0.5 flex items-center gap-1.5">
-          <span className={`h-1.5 w-1.5 rounded-full ${standalone ? "bg-emerald-400 shadow-[0_0_8px_rgba(74,222,128,.8)]" : "bg-emerald-400"}`} />
-          <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-white/38">system online</p>
-        </div>
-      </div>
-    </div>
-  );
-
-  const statusFooter = (
-    <div className="mt-auto pt-5">
-      <div className={`rounded-xl border px-3 py-3 ${standalone ? "border-white/[0.07] bg-white/[0.025]" : "border-white/10 bg-white/[0.035]"}`}>
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2 text-[11px] text-white/50">
-            <Activity className={`h-3.5 w-3.5 ${standalone ? "text-cyan-300/65" : "text-white/50"}`} />
-            <span className="truncate">Angel OS Runtime</span>
-          </div>
-          <span className="font-mono text-[9px] uppercase tracking-wider text-emerald-300/70">ready</span>
-        </div>
-      </div>
-    </div>
-  );
-
-  const sidebarContents = (
-    <>
-      <div className="px-2 pb-5">{brand}</div>
-      {nav}
-      {statusFooter}
-    </>
-  );
+  const currentItem = items.find((item) => item.key === active);
+  const CurrentIcon = currentItem?.icon;
 
   return (
     <div
-      className={`relative min-h-screen w-full overflow-x-hidden lg:flex ${
-        standalone ? "bg-[#030405] text-white" : "bg-background"
-      }`}
+      className="min-h-screen bg-black text-white lg:flex"
+      style={{ fontFamily: '"Segoe UI", "Segoe WP", system-ui, sans-serif' }}
     >
-      {standalone && (
-        <>
-          <div
-            aria-hidden
-            className="pointer-events-none fixed inset-0 z-0 opacity-35"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(34,211,238,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,.03) 1px,transparent 1px)",
-              backgroundSize: "32px 32px",
-              maskImage: "linear-gradient(to bottom, black 0%, rgba(0,0,0,.75) 65%, transparent 100%)",
-            }}
-          />
-          <div aria-hidden className="pointer-events-none fixed left-1/2 top-[-14rem] z-0 h-[30rem] w-[54rem] -translate-x-1/2 rounded-full bg-cyan-400/[0.05] blur-[120px]" />
-        </>
-      )}
-
-      <aside className={`sticky top-0 z-10 hidden h-screen w-[17rem] shrink-0 flex-col overflow-y-auto px-3 py-4 lg:flex ${standalone ? "border-r border-cyan-300/10 bg-black/82 backdrop-blur-2xl" : "bg-[#181716]"}`}>
-        {sidebarContents}
+      <aside className="sticky top-0 hidden h-screen w-[19rem] shrink-0 overflow-y-auto border-r border-white/10 bg-black px-5 py-7 lg:block">
+        {menuContents}
       </aside>
 
-      {open && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <button
-            type="button"
-            aria-label="Fermer le menu"
-            onClick={() => setOpen(false)}
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-          />
-          <div className={`absolute inset-y-0 left-0 flex w-[88%] max-w-sm flex-col overflow-y-auto px-3 py-4 shadow-2xl ${standalone ? "border-r border-cyan-300/10 bg-[#050607]/98" : "bg-[#181716]"}`}>
-            <div className="flex items-start justify-between px-2 pb-5">
-              {brand}
+      {open ? (
+        <div className="fixed inset-0 z-50 bg-black lg:hidden">
+          <div className="flex min-h-screen flex-col px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-[calc(1.25rem+env(safe-area-inset-top))]">
+            <div className="mb-5 flex justify-end">
               <button
                 type="button"
-                onClick={() => setOpen(false)}
                 aria-label="Fermer"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-white/70 transition hover:bg-white/10 hover:text-white"
+                onClick={() => setOpen(false)}
+                className="grid h-12 w-12 place-items-center text-white"
               >
-                <X className="h-5 w-5" />
+                <X className="h-7 w-7 stroke-[1.4]" />
               </button>
             </div>
-            {nav}
-            {statusFooter}
+            <div className="min-h-0 flex-1 overflow-y-auto">{menuContents}</div>
           </div>
         </div>
-      )}
+      ) : null}
 
-      <div className="relative z-[1] min-w-0 flex-1">
-        <header className={`sticky top-0 z-30 border-b backdrop-blur-2xl ${standalone ? "border-cyan-300/10 bg-black/68" : "border-border bg-background/88"}`}>
-          <div className="flex min-h-[64px] items-center gap-3 px-4 sm:px-6">
+      <div className="min-w-0 flex-1 bg-black">
+        <header className="sticky top-0 z-30 bg-black/95 px-5 pb-3 pt-[calc(1rem+env(safe-area-inset-top))] backdrop-blur sm:px-7 lg:px-10">
+          <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setOpen(true)}
-              aria-label="Ouvrir le menu"
-              className={`inline-flex h-11 w-11 items-center justify-center rounded-xl border transition active:scale-95 lg:hidden ${standalone ? "border-cyan-300/15 bg-cyan-300/[0.03] text-cyan-100 hover:bg-cyan-300/[0.07]" : "border-border text-foreground hover:bg-muted"}`}
+              aria-label="Ouvrir les applications"
+              className="grid h-12 w-12 shrink-0 place-items-center text-white lg:hidden"
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-7 w-7 stroke-[1.35]" />
             </button>
             <div className="min-w-0 flex-1">
-              {standalone && (
-                <p className="mb-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-cyan-300/38">
-                  angel.os / workspace
-                </p>
-              )}
-              <h1 className={`truncate font-display text-lg font-bold sm:text-xl ${standalone ? "text-white" : "text-foreground"}`}>
-                {title}
-              </h1>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/45">Angel OS</p>
+              <div className="mt-0.5 flex items-center gap-3">
+                {CurrentIcon ? <CurrentIcon className="hidden h-7 w-7 shrink-0 stroke-[1.35] text-white/70 sm:block" /> : null}
+                <h1 className="truncate text-[2rem] font-light leading-none tracking-[-0.025em] text-white sm:text-[2.7rem]">
+                  {title.toLocaleLowerCase("fr")}
+                </h1>
+              </div>
             </div>
             <button
               type="button"
               onClick={() => {
-                if (window.innerWidth < 1024) setOpen(true);
-                window.setTimeout(() => searchRef.current?.focus(), 40);
+                setOpen(true);
+                window.setTimeout(() => searchRef.current?.focus(), 50);
               }}
-              className={`hidden min-h-9 items-center gap-2 rounded-lg border px-3 text-xs transition sm:inline-flex lg:hidden ${standalone ? "border-white/10 bg-white/[0.035] text-white/45 hover:bg-white/[0.07] hover:text-white/70" : "border-border text-muted-foreground hover:bg-muted"}`}
-              aria-label="Rechercher un module"
+              aria-label="Rechercher"
+              className="grid h-12 w-12 shrink-0 place-items-center text-white lg:hidden"
             >
-              <Search className="h-3.5 w-3.5" /> Rechercher
+              <Search className="h-6 w-6 stroke-[1.35]" />
             </button>
             <div className="flex shrink-0 items-center gap-2">{actions}</div>
           </div>
-          {standalone && <div className="h-px w-full bg-gradient-to-r from-transparent via-cyan-300/20 to-transparent" />}
+          <div className="mt-4 h-1 w-16" style={{ backgroundColor: ACCENT }} />
         </header>
 
-        <main className={`mx-auto w-full max-w-[1600px] px-4 py-5 sm:px-6 sm:py-7 lg:px-8 ${standalone ? "[&_.bg-card]:bg-[#080a0c]/92 [&_.border-border]:border-white/10 [&_.bg-background]:bg-black/40 [&_.text-foreground]:text-white [&_.text-muted-foreground]:text-white/52 [&_.bg-muted]:bg-white/[0.05] [&_.rounded-2xl]:shadow-[0_16px_50px_rgba(0,0,0,.16)]" : ""}`}>
-          {children}
+        <main className="mx-auto w-full max-w-[1600px] px-5 pb-10 pt-4 sm:px-7 lg:px-10">
+          <div
+            key={active}
+            className="animate-in fade-in slide-in-from-right-3 duration-200 [&_.bg-card]:bg-[#111] [&_.bg-background]:bg-black [&_.bg-muted]:bg-[#1b1b1b] [&_.border-border]:border-white/15 [&_.text-foreground]:text-white [&_.text-muted-foreground]:text-white/55 [&_.rounded-xl]:rounded-none [&_.rounded-2xl]:rounded-none [&_.rounded-lg]:rounded-none [&_.shadow-sm]:shadow-none"
+          >
+            {children}
+          </div>
         </main>
+
+        <div className="fixed inset-x-0 bottom-0 z-20 flex h-[calc(3.4rem+env(safe-area-inset-bottom))] items-start justify-around border-t border-white/15 bg-black px-4 pt-2 lg:hidden">
+          <button type="button" onClick={() => setOpen(true)} className="grid h-10 w-14 place-items-center text-white" aria-label="Applications">
+            <Menu className="h-6 w-6 stroke-[1.3]" />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(true);
+              window.setTimeout(() => searchRef.current?.focus(), 50);
+            }}
+            className="grid h-10 w-14 place-items-center text-white"
+            aria-label="Rechercher"
+          >
+            <Search className="h-6 w-6 stroke-[1.3]" />
+          </button>
+          <span className="mt-4 h-2 w-2" style={{ backgroundColor: ACCENT }} aria-label="Système en ligne" />
+        </div>
       </div>
     </div>
   );
@@ -336,10 +289,10 @@ export function AdminCard({
   className?: string;
 }) {
   return (
-    <section className={`rounded-2xl border border-border bg-card p-4 transition-shadow duration-200 sm:p-6 ${className}`}>
-      {title && <h2 className="font-display text-base font-bold text-foreground">{title}</h2>}
-      {description && <p className="mt-1 max-w-3xl text-sm leading-relaxed text-muted-foreground">{description}</p>}
-      <div className={title || description ? "mt-4" : ""}>{children}</div>
+    <section className={`border border-white/15 bg-[#111] p-4 sm:p-6 ${className}`}>
+      {title ? <h2 className="text-xl font-light tracking-[-0.01em] text-white">{title.toLocaleLowerCase("fr")}</h2> : null}
+      {description ? <p className="mt-1 max-w-3xl text-sm font-light leading-relaxed text-white/55">{description}</p> : null}
+      <div className={title || description ? "mt-5" : ""}>{children}</div>
     </section>
   );
 }
@@ -355,16 +308,16 @@ export function ModulePlaceholder({
 }) {
   return (
     <AdminCard title={title} description={description}>
-      <ul className="space-y-2 text-sm text-muted-foreground">
-        {points.map((p) => (
-          <li key={p} className="flex gap-2">
-            <span aria-hidden className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60" />
-            {p}
+      <ul className="space-y-3 text-sm font-light text-white/60">
+        {points.map((point) => (
+          <li key={point} className="flex gap-3">
+            <span aria-hidden className="mt-1.5 h-3 w-1 shrink-0" style={{ backgroundColor: ACCENT }} />
+            {point}
           </li>
         ))}
       </ul>
-      <p className="mt-4 inline-flex rounded-full bg-muted px-3 py-1 text-[11px] font-medium text-muted-foreground">
-        Module en préparation — aucune donnée fictive affichée
+      <p className="mt-5 border-l-4 border-white/20 py-1 pl-3 text-xs font-light text-white/45">
+        module en préparation — aucune donnée fictive affichée
       </p>
     </AdminCard>
   );
