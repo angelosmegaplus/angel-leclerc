@@ -1,5 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 
+export type AdminWeatherHour = {
+  time: string;
+  temperature: number | null;
+  weatherCode: number;
+  precipitationProbability: number | null;
+};
+
 export type AdminWeather = {
   location: string;
   temperature: number;
@@ -14,6 +21,7 @@ export type AdminWeather = {
   sunrise: string;
   sunset: string;
   summary: string;
+  hourly: AdminWeatherHour[];
   source: "live" | "fallback";
   fetchedAt: string;
 };
@@ -32,6 +40,12 @@ const TODAY_FALLBACK: AdminWeather = {
   sunrise: "",
   sunset: "",
   summary: "Averses de pluie légères dans la journée",
+  hourly: [
+    { time: "Matin", temperature: null, weatherCode: 80, precipitationProbability: null },
+    { time: "Midi", temperature: null, weatherCode: 80, precipitationProbability: null },
+    { time: "Après-midi", temperature: null, weatherCode: 80, precipitationProbability: null },
+    { time: "Soir", temperature: null, weatherCode: 80, precipitationProbability: null },
+  ],
   source: "fallback",
   fetchedAt: new Date().toISOString(),
 };
@@ -45,6 +59,26 @@ function parisDateKey() {
   }).format(new Date());
 }
 
+function buildHourly(data: any): AdminWeatherHour[] {
+  const times: string[] = data.hourly?.time ?? [];
+  const temperatures: number[] = data.hourly?.temperature_2m ?? [];
+  const weatherCodes: number[] = data.hourly?.weather_code ?? [];
+  const rain: number[] = data.hourly?.precipitation_probability ?? [];
+  const preferredHours = new Set([6, 9, 12, 15, 18, 21]);
+
+  return times.flatMap((value, index) => {
+    const date = new Date(value);
+    const hour = Number(value.slice(11, 13));
+    if (!preferredHours.has(hour)) return [];
+    return [{
+      time: new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" }).format(date),
+      temperature: typeof temperatures[index] === "number" ? Math.round(temperatures[index]) : null,
+      weatherCode: Number(weatherCodes[index] ?? 0),
+      precipitationProbability: typeof rain[index] === "number" ? Math.round(rain[index]) : null,
+    }];
+  });
+}
+
 export const getAdminWeather = createServerFn({ method: "GET" }).handler(async (): Promise<AdminWeather> => {
   const url = new URL("https://api.open-meteo.com/v1/forecast");
   url.searchParams.set("latitude", "44.89");
@@ -52,6 +86,7 @@ export const getAdminWeather = createServerFn({ method: "GET" }).handler(async (
   url.searchParams.set("timezone", "Europe/Paris");
   url.searchParams.set("forecast_days", "1");
   url.searchParams.set("current", "temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m");
+  url.searchParams.set("hourly", "temperature_2m,weather_code,precipitation_probability");
   url.searchParams.set("daily", "temperature_2m_max,temperature_2m_min,precipitation_sum,uv_index_max,sunrise,sunset,weather_code");
 
   try {
@@ -77,11 +112,12 @@ export const getAdminWeather = createServerFn({ method: "GET" }).handler(async (
       sunrise: data.daily?.sunrise?.[0] ?? "",
       sunset: data.daily?.sunset?.[0] ?? "",
       summary: "Prévisions de la journée",
+      hourly: buildHourly(data),
       source: "live",
       fetchedAt: new Date().toISOString(),
     };
   } catch (error) {
-    // Fallback vérifié pour le vendredi 14 août 2026 : il évite un widget vide si le fournisseur live tombe.
+    // Secours vérifié pour le vendredi 14 août 2026 : 30°/16°, averses légères, 7,3 mm, UV 7.
     if (parisDateKey() === "2026-08-14") {
       return { ...TODAY_FALLBACK, fetchedAt: new Date().toISOString() };
     }
