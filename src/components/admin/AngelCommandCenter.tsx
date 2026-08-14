@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Bot, Check, CheckCircle2, Clock3, Loader2, Mail, Send, ShieldAlert, UserRound, X } from "lucide-react";
@@ -66,12 +66,20 @@ function SourceBadge({ message }: { message: Message }) {
 
 function Conversation({ messages, compact }: { messages: Message[]; compact: boolean }) {
   const ordered = useMemo(() => [...messages].reverse(), [messages]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!compact || !scrollRef.current) return;
+    scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [compact, ordered.length]);
+
   if (ordered.length === 0) return null;
   return (
     <div
+      ref={scrollRef}
       className={
         compact
-          ? "mb-3 max-h-[26rem] space-y-3 overflow-y-auto rounded-2xl border border-white/10 bg-black/25 p-3"
+          ? "min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-black/25 p-3"
           : "mb-5 max-h-[42rem] space-y-4 overflow-y-auto rounded-2xl border border-border bg-background/60 p-3 sm:p-4"
       }
     >
@@ -100,7 +108,7 @@ function Conversation({ messages, compact }: { messages: Message[]; compact: boo
             >
               <Bot className="h-4 w-4" />
             </span>
-            <div className={compact ? "max-w-[88%]" : "max-w-[88%]"}>
+            <div className="max-w-[88%]">
               <div
                 className={
                   compact
@@ -221,20 +229,26 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
   };
 
   const composer = (
-    <div className="space-y-2">
+    <div className={compact ? "shrink-0 border-t border-white/10 bg-[#090b0d] pt-3" : "space-y-2"}>
       <div className="relative">
         <Textarea
+          autoFocus={compact}
           value={command}
           onChange={(event) => setCommand(event.target.value)}
           onKeyDown={(event) => {
+            if (compact && event.key === "Enter" && !event.shiftKey) {
+              event.preventDefault();
+              submit();
+              return;
+            }
             if ((event.metaKey || event.ctrlKey) && event.key === "Enter") submit();
           }}
           rows={compact ? 1 : 3}
           maxLength={2_000}
-          placeholder="Écris naturellement : Angel AI garde le contexte de la conversation…"
+          placeholder={compact ? "Rechercher ou demander à Angel AI…" : "Écris naturellement : Angel AI garde le contexte de la conversation…"}
           className={
             compact
-              ? "min-h-12 resize-none rounded-2xl border-white/10 bg-black/30 py-3 pl-4 pr-14 text-sm text-white placeholder:text-white/30"
+              ? "min-h-12 max-h-28 resize-none rounded-2xl border-white/10 bg-black/30 py-3 pl-4 pr-14 text-sm text-white placeholder:text-white/35"
               : "min-h-20 resize-y rounded-2xl bg-background pr-14"
           }
         />
@@ -254,7 +268,7 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
         </Button>
       </div>
       {messages.length === 0 ? (
-        <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="mt-2 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {EXAMPLES.map((example) => (
             <button
               key={example}
@@ -276,15 +290,12 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
 
   if (compact) {
     return (
-      <section className="rounded-[1.75rem] border border-white/10 bg-[#090b0d] px-3 py-3 shadow-[0_18px_60px_rgba(0,0,0,.28)] sm:px-4 sm:py-4">
-        <div className="mb-3 flex items-center gap-2 px-1">
+      <section className="flex max-h-[min(68dvh,42rem)] min-h-0 flex-col overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#090b0d] px-3 py-3 shadow-[0_18px_60px_rgba(0,0,0,.28)] sm:px-4 sm:py-4">
+        <div className="mb-2 flex shrink-0 items-center gap-2 px-1">
           <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-300">
             <Bot className="h-4 w-4" />
           </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-white">Angel AI</p>
-            <p className="truncate text-[11px] text-white/40">Conversation continue · OpenAI pour les vraies questions</p>
-          </div>
+          <p className="min-w-0 flex-1 truncate text-sm font-semibold text-white">Angel AI</p>
         </div>
         <Conversation messages={messages} compact />
         {composer}
