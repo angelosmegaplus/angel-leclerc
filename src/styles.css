@@ -213,10 +213,16 @@ main article *,
   user-select: text;
 }
 
-/* Le formulaire Contact ne doit jamais afficher l'ancien fil conversationnel :
-   les questions disposent désormais de leur espace séparé sous le formulaire. */
-[aria-label="Conversation en cours"] {
+/* Le formulaire Contact est exclusivement un formulaire.
+   Toute conversation est affichée dans le fil séparé situé sous celui-ci. */
+[aria-label="Conversation en cours"],
+[aria-live="polite"][aria-label="Conversation en cours"] {
   display: none !important;
+  visibility: hidden !important;
+  max-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
 }
 
 .article-content {
