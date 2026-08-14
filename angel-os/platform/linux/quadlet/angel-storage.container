@@ -1,0 +1,19 @@
+[Unit]
+Description=Angel OS native storage service
+After=angel-network.service
+
+[Container]
+Image=localhost/angel-storage:latest
+ContainerName=angel-storage
+Network=angel-network.network
+EnvironmentFile=/etc/angel-os/angel-os.env
+Environment=ANGEL_STORAGE_PATH=/var/lib/angel-os/storage
+Volume=angel-storage.volume:/var/lib/angel-os/storage
+PublishPort=127.0.0.1:3300:3300
+
+[Service]
+Restart=always
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target
