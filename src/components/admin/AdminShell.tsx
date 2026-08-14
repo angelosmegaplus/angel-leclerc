@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Bell, Grid2X2, X, type LucideIcon } from "lucide-react";
 import { NewsPanel } from "@/components/admin/NewsPanel";
 import { PixelWidgets } from "@/components/admin/PixelWidgets";
-import { AdminAutomationSummary } from "@/components/admin/AdminAutomationSummary";
 
 export type AdminNavItem = {
   key: string;
@@ -25,11 +24,9 @@ const COMPACT_NAV: CompactDefinition[] = [
   { key: "mail", label: "Mail", source: "boite-mail", children: ["boite-mail", "messages"] },
   { key: "agenda", label: "Agenda", source: "agenda", children: ["agenda"] },
   { key: "fichiers", label: "Fichiers", source: "fichiers", children: ["fichiers"] },
-  { key: "studio", label: "Studio", source: "studio", children: ["studio", "projets", "articles", "contenus"] },
+  { key: "studio", label: "Studio", source: "studio", children: ["studio", "projets", "articles", "contenus", "boutique"] },
   { key: "candidatures", label: "Candidatures", source: "candidatures", children: ["candidatures"] },
-  { key: "communaute", label: "Communauté", source: "abonnes", children: ["abonnes", "avis"] },
-  { key: "boutique", label: "Boutique", source: "boutique", children: ["boutique"] },
-  { key: "stats", label: "Statistiques", source: "stats", children: ["stats"] },
+  { key: "communaute", label: "Communauté", source: "abonnes", children: ["abonnes", "avis", "stats"] },
   { key: "parametres", label: "Paramètres", source: "connexions", children: ["connexions", "notifications", "automatisation", "activite"] },
 ];
 
@@ -133,7 +130,7 @@ export function AdminShell({
   const mobileItems = compactItems.slice(0, 4);
 
   return (
-    <div className="min-h-[100dvh] w-full overflow-x-hidden bg-[#f8fafd] text-[#202124] lg:flex" style={{ fontFamily: '"Google Sans", "Roboto", "Inter", system-ui, sans-serif' }}>
+    <div className="min-h-[100dvh] w-full overflow-x-hidden bg-[#f8fafd] text-[#202124] lg:flex" style={{ fontFamily: '\"Google Sans\", \"Roboto\", \"Inter\", system-ui, sans-serif' }}>
       <aside className="sticky top-0 hidden h-[100dvh] w-[19rem] shrink-0 overflow-y-auto bg-[#f1f5f9] px-4 py-6 lg:block">{menuContents}</aside>
 
       {open ? (
@@ -161,9 +158,6 @@ export function AdminShell({
         </header>
 
         <main className="mx-auto w-full min-w-0 max-w-[1500px] px-3 pb-[calc(11rem+env(safe-area-inset-bottom))] pt-3 sm:px-7 sm:pb-28 lg:px-10">
-          <div className="[&_.whitespace-pre-line]:max-h-28 [&_.whitespace-pre-line]:overflow-hidden">
-            <AdminAutomationSummary mode="dashboard" />
-          </div>
           {isDashboard ? <div className="mb-5 space-y-5" data-admin-dashboard-glance><PixelWidgets /><NewsPanel /></div> : null}
           <div key={active} className="min-w-0 max-w-full animate-in fade-in zoom-in-[.985] duration-300 [&_.bg-card]:bg-white [&_.bg-background]:bg-white [&_.bg-muted]:bg-[#f0f4f9] [&_.border-border]:border-[#dfe3e7] [&_.text-foreground]:text-[#202124] [&_.text-muted-foreground]:text-[#5f6368] [&_.rounded-xl]:rounded-[1.5rem] [&_.rounded-2xl]:rounded-[2rem] [&_.rounded-lg]:rounded-[1.25rem] [&_.shadow-sm]:shadow-sm [&_img]:max-w-full [&_input]:max-w-full [&_textarea]:max-w-full [&_select]:max-w-full [&_.whitespace-pre-line]:max-h-28 [&_.whitespace-pre-line]:overflow-hidden">{children}</div>
         </main>
