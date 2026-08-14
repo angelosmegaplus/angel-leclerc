@@ -55,6 +55,23 @@ function succeed() {
   health.circuitOpenUntil = 0;
 }
 
+// Les anciennes réponses locales automatiques peuvent rester dans ai_messages.
+// Elles ne doivent jamais servir d'exemples conversationnels au modèle externe,
+// sinon OpenAI reproduit leur texte au lieu de répondre réellement à la question.
+function sanitizeMessages(messages: AiMessage[]): AiMessage[] {
+  const localBoilerplate = [
+    /^État réel\s*:/i,
+    /Demandez par exemple/i,
+    /moteur IA externe n['’]est pas disponible/i,
+    /moteur local/i,
+    /maintenance ChatGPT pourra reprendre/i,
+  ];
+  return messages.filter((message) => {
+    if (message.role !== "assistant") return true;
+    return !localBoilerplate.some((pattern) => pattern.test(message.content));
+  });
+}
+
 export async function angelAi(options: {
   messages: AiMessage[];
   priority?: AiPriority;
@@ -70,9 +87,10 @@ export async function angelAi(options: {
   if (!key) return fail("not_configured", now);
   if (health.circuitOpenUntil > now) return fail("circuit_open", now);
 
+  const messages = sanitizeMessages(options.messages);
   const priority = options.priority ?? "background";
   const maxTokens = Math.min(options.maxTokens ?? 500, priority === "interactive" ? 1200 : 800);
-  const estimated = estimate(options.messages, maxTokens);
+  const estimated = estimate(messages, maxTokens);
   const dailyLimit = numberEnv("ANGEL_AI_DAILY_TOKEN_BUDGET", 120_000);
   const hourlyLimit = numberEnv("ANGEL_AI_HOURLY_TOKEN_BUDGET", 30_000);
   const usedDay = usage.reduce((n, e) => n + e.estimatedTokens, 0);
@@ -85,7 +103,7 @@ export async function angelAi(options: {
     return fail("budget", now);
   }
 
-  const rawCache = options.cacheKey ?? options.messages.map((m) => `${m.role}:${m.content}`).join("\n");
+  const rawCache = options.cacheKey ?? messages.map((m) => `${m.role}:${m.content}`).join("\n");
   const cacheKey = hash(rawCache);
   const hit = cache.get(cacheKey);
   if (hit && hit.expires > now) {
@@ -96,15 +114,16 @@ export async function angelAi(options: {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), priority === "interactive" ? 25_000 : 20_000);
   try {
+    const model = process.env["OPENAI_MODEL"] || "gpt-4o-mini";
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       signal: controller.signal,
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
       body: JSON.stringify({
-        model: process.env["OPENAI_MODEL"] || "gpt-4o-mini",
+        model,
         temperature: options.temperature ?? 0.3,
         max_tokens: maxTokens,
-        messages: options.messages,
+        messages,
       }),
     });
     if (!response.ok) {
@@ -117,6 +136,7 @@ export async function angelAi(options: {
     usage.push({ at: now, estimatedTokens: json.usage?.total_tokens ?? estimated, priority });
     cache.set(cacheKey, { expires: now + (options.cacheTtlMs ?? (priority === "interactive" ? 60_000 : 15 * 60_000)), text });
     succeed();
+    console.info("[angel-ai-gateway] success", { model, priority, cached: false, filteredHistory: options.messages.length - messages.length });
     return { text, reason: "ok" as const, cached: false, fallbackRequired: false };
   } catch (error) {
     console.error("[angel-ai-gateway] failure", error);
