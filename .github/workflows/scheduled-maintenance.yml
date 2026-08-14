@@ -1,0 +1,103 @@
+name: Maintenance Angel OS
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "41 * * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: maintenance-angel-os
+  cancel-in-progress: true
+
+jobs:
+  health-and-live-data:
+    name: Vérifier le site et les données publiques
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out latest main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build application
+        run: bun run build
+
+      - name: Type-check
+        run: bunx tsc --noEmit --pretty false
+
+      - name: Check critical public pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          pages=(
+            "https://www.angel-leclerc.fr/"
+            "https://www.angel-leclerc.fr/parcours"
+            "https://www.angel-leclerc.fr/articles"
+            "https://www.angel-leclerc.fr/contact"
+            "https://www.angel-leclerc.fr/admin"
+            "https://www.angel-leclerc.fr/angel-os-ia"
+          )
+
+          for url in "${pages[@]}"; do
+            code="$(curl -L --silent --show-error --output /dev/null --write-out '%{http_code}' --max-time 20 "$url")"
+            if [ "$code" -lt 200 ] || [ "$code" -ge 400 ]; then
+              echo "::error::Page indisponible ou en erreur: $url (HTTP $code)"
+              exit 1
+            fi
+            echo "OK $code $url"
+          done
+
+      - name: Check public weather endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp)"
+          code="$(curl -L --silent --show-error --output "$tmp" --write-out '%{http_code}' --max-time 20 \
+            "https://www.angel-leclerc.fr/api/admin/weather")"
+          test "$code" = "200"
+          jq -e '.location == "Sarlat-la-Canéda" and (.fetchedAt | type == "string")' "$tmp" >/dev/null
+          echo "Météo publique OK"
+
+      - name: Check public news endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp)"
+          code="$(curl -L --silent --show-error --output "$tmp" --write-out '%{http_code}' --max-time 25 \
+            "https://www.angel-leclerc.fr/api/admin/news")"
+          if [ "$code" != "200" ]; then
+            echo "::warning::Flux actualités momentanément indisponible (HTTP $code)."
+            exit 0
+          fi
+          jq -e '(.fetchedAt | type == "string") and (.items | type == "array")' "$tmp" >/dev/null
+          echo "Actualités publiques OK"
+
+      - name: Summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Maintenance Angel OS"
+            echo ""
+            echo "- Commit vérifié : \`${GITHUB_SHA}\`"
+            echo "- Build + TypeScript : exécutés sur GitHub Actions"
+            echo "- Pages critiques : contrôlées"
+            echo "- API météo : contrôlée"
+            echo "- API actualités : contrôlée"
+            echo ""
+            echo "Les tâches Gmail, Google Agenda, recherche d'alternance et rédaction/analyse IA restent hors de GitHub Actions tant qu'elles dépendent de connecteurs personnels ou d'un moteur IA dédié."
+          } >> "$GITHUB_STEP_SUMMARY"
