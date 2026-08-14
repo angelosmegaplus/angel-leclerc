@@ -30,10 +30,7 @@ export const pushStatus = createServerFn({ method: "GET" })
       const items = await data.list(`push.subscriptions.${context.userId}`);
       return { ...readPushConfig(), subscriptions: items.length };
     }
-    const { count } = await context.supabase
-      .from("push_subscriptions")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", context.userId);
+    const { count } = await context.supabase.from("push_subscriptions").select("id", { count: "exact", head: true }).eq("user_id", context.userId);
     return { ...readPushConfig(), subscriptions: count ?? 0 };
   });
 
@@ -48,11 +45,7 @@ export const savePushSubscription = createServerFn({ method: "POST" })
     await assertAngelAdmin(context);
     const store = await nativeData();
     if (store) {
-      await store.set(`push.subscriptions.${context.userId}`, subscriptionKey(data.endpoint), {
-        ...data,
-        userAgent: data.userAgent?.slice(0, 300) ?? null,
-        updatedAt: new Date().toISOString(),
-      });
+      await store.set(`push.subscriptions.${context.userId}`, subscriptionKey(data.endpoint), { ...data, userAgent: data.userAgent?.slice(0, 300) ?? null, updatedAt: new Date().toISOString() });
       return { ok: true };
     }
     const { error } = await context.supabase.from("push_subscriptions").upsert(
@@ -83,6 +76,6 @@ export const refreshNotifications = createServerFn({ method: "POST" })
   .handler(async ({ context }): Promise<SyncReport> => {
     await assertAngelAdmin(context);
     const { syncNotifications } = await import("./notifications.server");
-    if (!context.supabase) return { ok: true, checked: 0, sent: 0, skipped: 0, reason: "native-storage-ready-provider-sync-pending" } as SyncReport;
+    if (!context.supabase) return { created: 0, kinds: [] };
     return syncNotifications(context.supabase);
   });
