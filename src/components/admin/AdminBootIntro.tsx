@@ -1,75 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { Volume2 } from "lucide-react";
 
-/** Dernière présence dans Angel OS (ms). */
-const LAST_SEEN_KEY = "angel-os-last-seen";
-/** Marqueur valable uniquement pour l'onglet / la session PWA courante. */
-const SESSION_BOOT_KEY = "angel-os-boot-played";
-const IDLE_MS = 20 * 60 * 1000;
-
-function markPresence() {
-  try {
-    window.localStorage.setItem(LAST_SEEN_KEY, String(Date.now()));
-  } catch {
-    /* stockage indisponible */
-  }
-}
-
-function hasBootPlayedThisSession() {
-  try {
-    return window.sessionStorage.getItem(SESSION_BOOT_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
-
-function markBootPlayedThisSession() {
-  try {
-    window.sessionStorage.setItem(SESSION_BOOT_KEY, "1");
-  } catch {
-    /* stockage indisponible */
-  }
-}
-
 export function AdminBootIntro() {
   const [visible, setVisible] = useState(false);
   const [soundBlocked, setSoundBlocked] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
-    let last = 0;
-    try {
-      last = Number(window.localStorage.getItem(LAST_SEEN_KEY) ?? 0);
-    } catch {
-      /* stockage indisponible */
-    }
-
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const alreadyPlayed = hasBootPlayedThisSession();
-    const returningAfterIdle = Date.now() - last > IDLE_MS;
-
-    // Une seule intro par vraie session de navigation / PWA.
-    // Elle peut rejouer lors d'une nouvelle session après une longue absence.
-    const shouldPlay = !alreadyPlayed && !reduced && returningAfterIdle;
-
-    if (shouldPlay) {
-      markBootPlayedThisSession();
-      setVisible(true);
-    }
-    markPresence();
-
-    const beat = window.setInterval(markPresence, 60_000);
-    const onHide = () => markPresence();
-    document.addEventListener("visibilitychange", onHide);
-    window.addEventListener("pagehide", onHide);
-    window.addEventListener("beforeunload", onHide);
-    return () => {
-      window.clearInterval(beat);
-      document.removeEventListener("visibilitychange", onHide);
-      window.removeEventListener("pagehide", onHide);
-      window.removeEventListener("beforeunload", onHide);
-      markPresence();
-    };
+    // Le composant est monté à chaque vraie ouverture/rechargement d'Angel OS.
+    // Les changements d'onglets internes restent dans la même page et ne rejouent donc pas l'intro.
+    setVisible(true);
   }, []);
 
   useEffect(() => {
@@ -80,14 +20,15 @@ export function AdminBootIntro() {
     let cancelled = false;
     const playWithSound = async () => {
       if (cancelled) return;
+      video.currentTime = 0;
       video.muted = false;
       video.volume = 1;
       try {
         await video.play();
         setSoundBlocked(false);
       } catch {
-        // Certains moteurs mobiles exigent un geste utilisateur pour autoriser l'audio.
-        // On reste sur l'écran d'introduction : aucune possibilité de passer le générique.
+        // Les navigateurs mobiles peuvent bloquer l'autoplay sonore.
+        // Dans ce cas, un geste utilisateur débloque immédiatement le générique.
         setSoundBlocked(true);
       }
     };
@@ -98,16 +39,14 @@ export function AdminBootIntro() {
     };
   }, [visible]);
 
-  const finish = () => {
-    markPresence();
-    setVisible(false);
-  };
+  const finish = () => setVisible(false);
 
   const unlockSound = () => {
     const video = videoRef.current;
     if (!video) return;
     video.muted = false;
     video.volume = 1;
+    video.currentTime = 0;
     void video.play().then(() => setSoundBlocked(false)).catch(() => undefined);
   };
 
