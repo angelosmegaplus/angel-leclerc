@@ -33,8 +33,10 @@ export function NewsPanel() {
   const query = useQuery({
     queryKey: ["admin-news"],
     queryFn: () => getNews(),
-    staleTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    staleTime: 55 * 60 * 1000,
+    refetchInterval: 60 * 60 * 1000,
+    refetchOnWindowFocus: true,
+    retry: 1,
   });
 
   const visible = useMemo(
@@ -52,7 +54,7 @@ export function NewsPanel() {
             </span>
             <div>
               <h2 className="text-xl font-semibold tracking-[-0.03em] text-[#202124]">Actualités</h2>
-              <p className="text-sm text-[#5f6368]">À la une et veille personnalisée.</p>
+              <p className="text-sm text-[#5f6368]">Veille web personnalisée · actualisation automatique chaque heure.</p>
             </div>
           </div>
         </div>
@@ -110,7 +112,7 @@ export function NewsPanel() {
         </div>
       ) : query.isError || visible.length === 0 ? (
         <div className="mt-4 rounded-[1.5rem] bg-[#f0f4f9] px-4 py-5 text-sm text-[#5f6368]">
-          Actualités momentanément indisponibles pour cette rubrique.
+          Actualités momentanément indisponibles pour cette rubrique. Le reste d’Angel OS reste utilisable.
         </div>
       ) : (
         <div className="mt-4 grid min-w-0 gap-2 lg:grid-cols-2">
@@ -140,7 +142,7 @@ export function NewsPanel() {
       )}
 
       {query.data?.fetchedAt ? (
-        <p className="mt-3 text-[10px] font-medium text-[#80868b]">Mis à jour {formatNewsDate(query.data.fetchedAt)}</p>
+        <p className="mt-3 text-[10px] font-medium text-[#80868b]">Mis à jour {formatNewsDate(query.data.fetchedAt)} · prochain rafraîchissement automatique sous 1 h</p>
       ) : null}
     </section>
   );
