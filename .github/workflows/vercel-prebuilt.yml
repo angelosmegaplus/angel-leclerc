@@ -1,21 +1,15 @@
-name: Deploy Vercel Prebuilt
+name: Publication Angel OS
 
 on:
   workflow_dispatch:
-    inputs:
-      environment:
-        description: "Environnement Vercel"
-        required: true
-        default: "production"
-        type: choice
-        options:
-          - production
+  schedule:
+    - cron: "17 * * * *"
 
 permissions:
   contents: read
 
 concurrency:
-  group: vercel-prebuilt-production
+  group: publication-angel-os-production
   cancel-in-progress: false
 
 env:
@@ -23,49 +17,105 @@ env:
   VERCEL_PROJECT_ID: prj_TZoiBkJM3z1knPE6Pc1V854CwrNe
 
 jobs:
-  deploy:
-    name: Build on GitHub and deploy prebuilt output
+  publish-latest-main:
+    name: Publier le dernier main si nécessaire
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     environment: production
 
     steps:
-      - name: Check out main
+      - name: Check out latest main
         uses: actions/checkout@v4
         with:
           ref: main
+          fetch-depth: 1
 
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.14
+      - name: Set current main SHA
+        id: current
+        shell: bash
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Verify Vercel token exists
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        shell: bash
         run: |
           if [ -z "$VERCEL_TOKEN" ]; then
-            echo "::error::Missing GitHub Actions secret VERCEL_TOKEN. Add a Vercel access token as repository or production-environment secret."
+            echo "::error::Missing GitHub Actions secret VERCEL_TOKEN."
             exit 1
           fi
 
+      - name: Check whether this main commit is already READY in production
+        id: production
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          CURRENT_SHA: ${{ steps.current.outputs.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          RESPONSE="$(curl --fail --silent --show-error \
+            -H "Authorization: Bearer $VERCEL_TOKEN" \
+            "https://api.vercel.com/v6/deployments?projectId=$VERCEL_PROJECT_ID&teamId=$VERCEL_ORG_ID&target=production&limit=100")"
+
+          MATCH="$(printf '%s' "$RESPONSE" | jq -r --arg sha "$CURRENT_SHA" '
+            [.deployments[]
+              | select(.state == "READY")
+              | select((.meta.githubCommitSha // "") == $sha)
+            ] | length
+          ')"
+
+          if [ "$MATCH" -gt 0 ]; then
+            echo "already_ready=true" >> "$GITHUB_OUTPUT"
+            echo "Le dernier main ($CURRENT_SHA) est déjà READY en production. Aucun nouveau déploiement."
+          else
+            echo "already_ready=false" >> "$GITHUB_OUTPUT"
+            echo "Le dernier main ($CURRENT_SHA) est encore en attente de publication."
+          fi
+
+      - name: Set up Bun
+        if: steps.production.outputs.already_ready != 'true'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
       - name: Install dependencies
+        if: steps.production.outputs.already_ready != 'true'
         run: bun install --frozen-lockfile
 
+      - name: Build application
+        if: steps.production.outputs.already_ready != 'true'
+        run: bun run build
+
       - name: Type-check
+        if: steps.production.outputs.already_ready != 'true'
         run: bunx tsc --noEmit --pretty false
 
       - name: Pull Vercel production configuration
+        if: steps.production.outputs.already_ready != 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: bunx vercel@latest pull --yes --environment=production --token="$VERCEL_TOKEN" --scope=angel-os2
 
       - name: Build Vercel output on GitHub Actions
+        if: steps.production.outputs.already_ready != 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: bunx vercel@latest build --prod --token="$VERCEL_TOKEN" --scope=angel-os2
 
-      - name: Deploy prebuilt output to production
+      - name: Deploy only the latest main to production
+        if: steps.production.outputs.already_ready != 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: bunx vercel@latest deploy --prebuilt --prod --token="$VERCEL_TOKEN" --scope=angel-os2
+        run: |
+          bunx vercel@latest deploy --prebuilt --prod --token="$VERCEL_TOKEN" --scope=angel-os2 \
+            --meta githubCommitSha="${{ steps.current.outputs.sha }}"
+
+      - name: Queue status
+        if: always()
+        shell: bash
+        run: |
+          if [ "${{ steps.production.outputs.already_ready }}" = "true" ]; then
+            echo "File de publication vide : production déjà synchronisée avec main."
+          else
+            echo "GitHub conserve toujours le dernier main comme version cible. En cas de blocage Vercel, le prochain passage horaire retentera uniquement cette version ou une version main plus récente."
+          fi
