@@ -1,0 +1,21 @@
+[Unit]
+Description=Angel OS native jobs scheduler
+Requires=angel-postgres.service angel-data.service angel-identity.service angel-storage.service
+After=angel-postgres.service angel-data.service angel-identity.service angel-storage.service
+
+[Container]
+Image=localhost/angel-jobs:latest
+ContainerName=angel-jobs
+Network=angel-network.network
+EnvironmentFile=/etc/angel-os/angel-os.env
+Environment=ANGEL_DATA_URL=http://angel-data:3100
+Environment=ANGEL_IDENTITY_URL=http://angel-identity:3200
+Environment=ANGEL_STORAGE_URL=http://angel-storage:3300
+PublishPort=127.0.0.1:3400:3400
+
+[Service]
+Restart=always
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target
