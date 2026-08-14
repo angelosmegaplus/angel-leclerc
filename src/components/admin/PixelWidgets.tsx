@@ -14,7 +14,6 @@ import {
   Sun,
   Wind,
   Umbrella,
-  ShieldSun,
 } from "lucide-react";
 import { getAdminWeather } from "@/lib/weather.functions";
 
@@ -123,7 +122,7 @@ export function PixelWidgets() {
                   <span className="flex items-center gap-1.5"><Umbrella className="h-3.5 w-3.5" />{weather.data.precipitation} mm</span>
                 ) : null}
                 {weather.data.uvIndex !== null ? (
-                  <span className="flex items-center gap-1.5"><ShieldSun className="h-3.5 w-3.5" />UV {weather.data.uvIndex}</span>
+                  <span className="flex items-center gap-1.5"><Sun className="h-3.5 w-3.5" />UV {weather.data.uvIndex}</span>
                 ) : null}
                 {weather.data.humidity > 0 ? (
                   <span className="flex items-center gap-1.5"><Droplets className="h-3.5 w-3.5" />{weather.data.humidity}%</span>
