@@ -32,7 +32,7 @@ export default defineConfig({
         filename: "sw.js",
         outDir: "dist/client",
         manifestFilename: "manifest.webmanifest",
-        includeAssets: ["favicon.png", "icons/apple-touch-icon.png"],
+        includeAssets: ["favicon.png", "icons/apple-touch-icon.png", "offline.html"],
         manifest: {
           name: "Angel OS IA — Angel Control Center",
           short_name: "Angel OS IA",
@@ -62,7 +62,10 @@ export default defineConfig({
           ],
         },
         workbox: {
+          // Le gestionnaire de notifications vit dans un fichier séparé, jamais mis en cache.
+          importScripts: ["/sw-push.js"],
           globPatterns: ["**/*.{js,css,woff2,svg,png,ico}"],
+          globIgnores: ["**/sw-push.js"],
           navigateFallback: "/offline.html",
           navigateFallbackDenylist: [
             /^\/admin/,
