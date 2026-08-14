@@ -2,11 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Facebook, Instagram, Linkedin, Mail, MessageCircle, ShieldCheck, Sparkles } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { ContactChat, type Track } from "@/components/ContactChat";
+import { ContactAssistantThread } from "@/components/ContactAssistantThread";
 import { LatestArticles } from "@/components/LatestArticles";
 
 const TITLE = "Contact — Angel Leclerc Communication";
 const DESCRIPTION =
-  "Contactez Angel Leclerc simplement : projet de communication, proposition d'alternance BTS Communication ou autre demande. L'assistant prépare un récapitulatif clair avant l'envoi.";
+  "Contactez Angel Leclerc simplement : projet de communication, proposition d'alternance BTS Communication ou autre demande. Le formulaire et l'assistant Angel OS IA sont séparés pour rester clairs.";
 
 export const Route = createFileRoute("/contact")({
   validateSearch: (search: Record<string, unknown>): { parcours?: Track } => {
@@ -59,18 +60,18 @@ function ContactPage() {
               <MessageCircle size={13} /> Contact direct
             </span>
             <h1 className="mt-5 font-display text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-              Un message simple, pas un formulaire administratif.
+              Un formulaire clair, et l’IA juste en dessous.
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
-              Projet, proposition d’alternance ou autre demande : choisissez votre sujet, répondez à quelques questions utiles et un récapitulatif propre est envoyé directement à Angel.
+              Pour transmettre une demande, utilisez le formulaire. Pour poser des questions avant ou après, discutez séparément avec Angel OS IA dans le fil dédié.
             </p>
           </AnimatedSection>
 
           <AnimatedSection delay={0.06} className="mx-auto mt-8 grid max-w-3xl gap-3 sm:grid-cols-3">
             {[
-              { icon: Sparkles, title: "Guidé", text: "Une question à la fois" },
-              { icon: ShieldCheck, title: "Clair", text: "Pas d'information inutile" },
-              { icon: Mail, title: "Direct", text: "Récapitulatif transmis" },
+              { icon: Sparkles, title: "Guidé", text: "Le formulaire reste simple" },
+              { icon: ShieldCheck, title: "Séparé", text: "Questions et envoi ne se mélangent plus" },
+              { icon: Mail, title: "Direct", text: "Récapitulatif transmis à Angel" },
             ].map(({ icon: Icon, title, text }) => (
               <div key={title} className="rounded-2xl border border-border/70 bg-card/85 p-4 text-left shadow-sm backdrop-blur">
                 <Icon className="h-5 w-5 text-primary" />
@@ -85,11 +86,22 @@ function ContactPage() {
       <section className="section-padding pt-10 md:pt-14">
         <div className="container-tight">
           <AnimatedSection delay={0.08}>
-            <div className="mx-auto max-w-3xl rounded-[2rem] border border-border bg-card p-2 shadow-[0_18px_60px_-30px_rgba(0,0,0,.28)] sm:p-4 md:rounded-[2.5rem] md:p-6">
-              <div className="rounded-[1.6rem] bg-muted/35 p-2 sm:p-3 md:rounded-[2rem]">
-                <ContactChat {...(parcours ? { initialTrack: parcours } : {})} />
+            <div className="mx-auto max-w-3xl">
+              <div className="mb-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Formulaire de contact</p>
+                <h2 className="mt-1 font-display text-2xl font-bold text-foreground">Transmettre une demande à Angel</h2>
+                <p className="mt-2 text-sm text-muted-foreground">Cette partie sert uniquement à préparer et envoyer votre demande.</p>
+              </div>
+              <div className="rounded-[2rem] border border-border bg-card p-2 shadow-[0_18px_60px_-30px_rgba(0,0,0,.28)] sm:p-4 md:rounded-[2.5rem] md:p-6">
+                <div className="rounded-[1.6rem] bg-muted/35 p-2 sm:p-3 md:rounded-[2rem]">
+                  <ContactChat {...(parcours ? { initialTrack: parcours } : {})} />
+                </div>
               </div>
             </div>
+          </AnimatedSection>
+
+          <AnimatedSection delay={0.14} className="mt-10 md:mt-14">
+            <ContactAssistantThread />
           </AnimatedSection>
 
           <AnimatedSection delay={0.2} className="mt-10">
