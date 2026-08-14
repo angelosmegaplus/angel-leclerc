@@ -103,13 +103,13 @@ export function ConnectionsPanel() {
         <div className="flex gap-3">
           <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#1684df]" />
           <div>
-            <p className="text-lg font-light text-white">connexion Google sécurisée</p>
-            <p className="mt-1 text-sm font-light leading-relaxed text-white/55">Angel OS utilise OAuth Google côté serveur. Tu n’as aucun jeton à copier : Google crée les jetons après autorisation, puis Angel OS les chiffre côté serveur.</p>
+            <p className="text-lg font-light text-white">connexion Gmail sécurisée</p>
+            <p className="mt-1 text-sm font-light leading-relaxed text-white/55">Angel OS utilise OAuth Google côté serveur uniquement pour Gmail. Google crée les jetons après autorisation puis Angel OS les chiffre côté serveur. Drive et Agenda ne sont pas activés par cette connexion.</p>
           </div>
         </div>
       </AdminCard>
 
-      <AdminCard title="Connexion rapide" description="Connecter Gmail, Drive et Agenda à Angel OS.">
+      <AdminCard title="Connexion rapide" description="Connecter Gmail à Angel OS.">
         <button
           type="button"
           disabled={isPending || googleBusy || !google || google.status !== "ready"}
@@ -118,12 +118,12 @@ export function ConnectionsPanel() {
         >
           <Logo domain="google.com" alt="Google" size={42} link={false} />
           <span className="min-w-0 flex-1">
-            <span className="block text-sm font-semibold text-white">{google?.connection === "connected" ? "Google connecté" : "Se connecter à Google"}</span>
-            <span className="mt-1 block text-xs leading-5 text-white/45">Gmail, Drive et Agenda.</span>
+            <span className="block text-sm font-semibold text-white">{google?.connection === "connected" ? "Gmail connecté" : "Se connecter à Gmail"}</span>
+            <span className="mt-1 block text-xs leading-5 text-white/45">Gmail uniquement.</span>
           </span>
           {googleBusy ? <Loader2 className="h-4 w-4 shrink-0 animate-spin text-blue-300" /> : null}
         </button>
-        {google && google.status !== "ready" ? <p className="mt-2 text-xs text-white/45">Le serveur n’a pas encore reçu toutes les variables OAuth nécessaires.</p> : null}
+        {google && google.status !== "ready" ? <p className="mt-2 text-xs text-white/45">Configuration OAuth Gmail incomplète côté serveur : {google.missing.join(", ")}.</p> : null}
       </AdminCard>
 
       {isPending ? <p className="flex items-center gap-2 text-sm text-white/55"><Loader2 className="h-4 w-4 animate-spin" /> vérification des services…</p> : null}
