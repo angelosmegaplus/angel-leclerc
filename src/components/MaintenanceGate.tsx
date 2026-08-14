@@ -48,10 +48,18 @@ export function MaintenanceGate({ children, bypass = false }: { children: ReactN
     <main className="fixed inset-0 z-[99999] flex min-h-screen items-center justify-center overflow-hidden bg-[#080808] px-6 text-white">
       <div className="absolute inset-0 opacity-40 [background-image:radial-gradient(circle_at_50%_-20%,rgba(255,255,255,0.16),transparent_45%)]" />
       <section className="relative mx-auto w-full max-w-xl text-center">
-        <div className="mx-auto mb-7 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/15 bg-white/5 shadow-2xl backdrop-blur">
-          <Wrench className="h-7 w-7 animate-[spin_5s_linear_infinite]" aria-hidden="true" />
+        <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-[1.75rem] border border-white/15 bg-white/5 p-3 shadow-2xl backdrop-blur">
+          <img
+            src="/icons/apple-touch-icon.png"
+            alt="Angel OS"
+            className="h-full w-full rounded-2xl object-contain"
+          />
         </div>
-        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.28em] text-white/45">Angel OS · maintenance automatique</p>
+        <div className="mx-auto mb-7 flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-white/55">
+          <Wrench className="h-3.5 w-3.5 animate-[spin_5s_linear_infinite]" aria-hidden="true" />
+          <span className="text-[10px] font-semibold uppercase tracking-[0.22em]">Maintenance automatique</span>
+        </div>
+        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.28em] text-white/45">Angel OS</p>
         <h1 className="font-[Manrope] text-3xl font-extrabold tracking-tight sm:text-5xl">Mise à jour en cours</h1>
         <p className="mx-auto mt-5 max-w-md text-sm leading-6 text-white/60 sm:text-base">
           Une nouvelle version de angel-leclerc.fr est en cours de déploiement. Le site reviendra automatiquement dès que la mise à jour sera terminée.
