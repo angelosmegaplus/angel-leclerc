@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Linkedin, Download, Mail } from "lucide-react";
 import {
@@ -32,9 +33,55 @@ export const Route = createFileRoute("/parcours")({
   component: ParcoursPage,
 });
 
+const CV_TEXT_REPLACEMENTS: Array<[string, string]> = [
+  [
+    "Étudiant en communication — recherche d'alternance à Sarlat",
+    "Étudiant en communication — recherche d'alternance BTS Communication",
+  ],
+  [
+    "d'une structure située à Sarlat-la-Canéda ou dans ses environs accessibles en scooter.",
+    "d'une structure située à Bordeaux, Périgueux, Bergerac, Brive-la-Gaillarde, Sarlat-la-Canéda ou dans les secteurs accessibles autour de ces villes. Je reste ouvert à toute opportunité sérieuse dans la communication, quel que soit le secteur d'activité.",
+  ],
+  [
+    "Ma recherche se concentre sur Sarlat-la-Canéda et les communes proches, accessibles quotidiennement en scooter.",
+    "Ma recherche est désormais élargie à Bordeaux, Périgueux, Bergerac, Brive-la-Gaillarde, Sarlat-la-Canéda et aux secteurs accessibles autour de ces villes.",
+  ],
+  [
+    "Sarlat-la-Canéda et communes proches",
+    "Bordeaux, Périgueux, Bergerac, Brive, Sarlat et alentours",
+  ],
+  [
+    "Scooter — trajets quotidiens autour de Sarlat",
+    "Mobilité étudiée selon l'opportunité — déménagement possible",
+  ],
+  [
+    "Je privilégie une alternance à Sarlat ou dans un rayon d'environ 10 km, accessible en scooter au quotidien. Je peux toutefois envisager une opportunité plus éloignée si elle est réellement cohérente avec mon projet, avec possibilité de déménagement.",
+    "Je recherche désormais sur plusieurs bassins d'emploi : Bordeaux, Périgueux, Bergerac, Brive-la-Gaillarde, Sarlat-la-Canéda et alentours. Je peux envisager un déménagement si une opportunité sérieuse se présente.",
+  ],
+  [
+    "Je privilégie une entreprise située à Sarlat ou dans un secteur raisonnablement accessible en scooter.",
+    "Je reste ouvert à toute entreprise proposant une alternance cohérente en communication dans les zones actuellement recherchées.",
+  ],
+];
+
 function ParcoursPage() {
+  useEffect(() => {
+    const root = document.querySelector<HTMLElement>("[data-cv-page]");
+    if (!root) return;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    let node = walker.nextNode();
+    while (node) {
+      let value = node.nodeValue ?? "";
+      for (const [before, after] of CV_TEXT_REPLACEMENTS) {
+        if (value.includes(before)) value = value.replace(before, after);
+      }
+      node.nodeValue = value;
+      node = walker.nextNode();
+    }
+  }, []);
+
   return (
-    <div className="pb-24 md:pb-0">
+    <div className="pb-24 md:pb-0" data-cv-page>
       <MyJourney />
       <RealisationsSection />
       <SkillsSection />
