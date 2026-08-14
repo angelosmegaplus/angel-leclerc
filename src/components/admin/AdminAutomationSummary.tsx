@@ -81,7 +81,7 @@ function simpleShortSummary(value: any, fallback: string) {
 
   if (!raw) return fallback;
 
-  const sentences = raw.match(/[^.!?]+[.!?]?/g)?.map((part) => part.trim()).filter(Boolean) ?? [raw];
+  const sentences = raw.match(/[^.!?]+[.!?]?/g)?.map((part: string) => part.trim()).filter(Boolean) ?? [raw];
   const firstTwo = sentences.slice(0, 2).join(" ");
   if (firstTwo.length <= 190) return firstTwo;
 
