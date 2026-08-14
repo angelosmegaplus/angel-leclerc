@@ -77,6 +77,13 @@ export function AdminShell({
   }, [items]);
 
   const activeGroup = compactItems.find((item) => item.children.includes(active))?.key ?? "dashboard";
+  const activeDefinition = COMPACT_NAV.find((definition) => definition.children.includes(active));
+  const sectionItems = useMemo(() => {
+    if (!activeDefinition || activeDefinition.children.length <= 1 || activeDefinition.key === "dashboard") return [];
+    return activeDefinition.children
+      .map((key) => items.find((item) => item.key === key))
+      .filter((item): item is AdminNavItem => Boolean(item));
+  }, [activeDefinition, items]);
   const notificationBadge = items.find((item) => item.key === "notifications")?.badge ?? 0;
 
   const selectCompact = (source: string) => {
@@ -163,6 +170,30 @@ export function AdminShell({
           </div>
           {actions ? <div className="mx-auto mt-3 flex max-w-[1500px] gap-2 overflow-x-auto pb-1 sm:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:shrink-0 [&_button]:rounded-xl [&_a]:rounded-xl [&_button]:border-white/10 [&_a]:border-white/10 [&_button]:bg-white/[.04] [&_a]:bg-white/[.04] [&_button]:text-white [&_a]:text-white [&_[aria-label='Recherche_globale']]:hidden">{actions}</div> : null}
         </header>
+
+        {sectionItems.length > 0 ? (
+          <nav aria-label={`Sections ${activeDefinition?.label ?? ""}`} className="sticky top-[calc(5.4rem+env(safe-area-inset-top))] z-20 border-b border-white/10 bg-[#050607]/92 px-3 py-2 backdrop-blur-xl sm:top-[calc(6.2rem+env(safe-area-inset-top))] sm:px-7 lg:px-10">
+            <div className="mx-auto flex max-w-[1500px] gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {sectionItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = item.key === active;
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => onSelect(item.key)}
+                    aria-current={isActive ? "page" : undefined}
+                    className={`flex min-h-10 shrink-0 items-center gap-2 rounded-xl border px-3 text-sm font-medium transition-colors ${isActive ? "border-red-500/30 bg-red-500/10 text-red-200" : "border-white/10 bg-white/[.035] text-white/55 hover:border-red-500/20 hover:bg-white/[.06] hover:text-white"}`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{item.label}</span>
+                    {(item.badge ?? 0) > 0 ? <span className="rounded-full bg-red-500/15 px-1.5 py-0.5 text-[10px] font-bold text-red-200">{item.badge}</span> : null}
+                  </button>
+                );
+              })}
+            </div>
+          </nav>
+        ) : null}
 
         <main className="mx-auto w-full min-w-0 max-w-[1500px] px-3 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4 sm:px-7 sm:pb-24 lg:px-10">
           {isDashboard ? (
