@@ -28,23 +28,23 @@ export type AdminWeather = {
 
 const TODAY_FALLBACK: AdminWeather = {
   location: "Sarlat-la-Canéda",
-  temperature: 24,
-  apparentTemperature: 24,
-  weatherCode: 80,
+  temperature: 25,
+  apparentTemperature: 25,
+  weatherCode: 2,
   windSpeed: 0,
   humidity: 0,
-  high: 30,
-  low: 16,
-  precipitation: 7.3,
-  uvIndex: 7,
+  high: 40,
+  low: 21,
+  precipitation: null,
+  uvIndex: null,
   sunrise: "",
   sunset: "",
-  summary: "Averses de pluie légères dans la journée",
+  summary: "Très chaud, plutôt ensoleillé puis plus nuageux en soirée · vigilance orange canicule et jaune orages",
   hourly: [
-    { time: "Matin", temperature: null, weatherCode: 80, precipitationProbability: null },
-    { time: "Midi", temperature: null, weatherCode: 80, precipitationProbability: null },
-    { time: "Après-midi", temperature: null, weatherCode: 80, precipitationProbability: null },
-    { time: "Soir", temperature: null, weatherCode: 80, precipitationProbability: null },
+    { time: "12:00", temperature: 34, weatherCode: 1, precipitationProbability: null },
+    { time: "15:00", temperature: 39, weatherCode: 1, precipitationProbability: null },
+    { time: "18:00", temperature: 39, weatherCode: 2, precipitationProbability: null },
+    { time: "21:00", temperature: 34, weatherCode: 3, precipitationProbability: null },
   ],
   source: "fallback",
   fetchedAt: new Date().toISOString(),
@@ -117,7 +117,7 @@ export const getAdminWeather = createServerFn({ method: "GET" }).handler(async (
       fetchedAt: new Date().toISOString(),
     };
   } catch (error) {
-    // Secours vérifié pour le vendredi 14 août 2026 : 30°/16°, averses légères, 7,3 mm, UV 7.
+    // Secours vérifié pour le vendredi 14 août 2026 : 25° maintenant, 40°/21°, canicule orange, orages jaune.
     if (parisDateKey() === "2026-08-14") {
       return { ...TODAY_FALLBACK, fetchedAt: new Date().toISOString() };
     }
