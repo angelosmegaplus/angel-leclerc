@@ -132,6 +132,15 @@ function ContactPage() {
       </section>
 
       <style>{`
+        .contact-form-clean [aria-label="Conversation en cours"] {
+          display: none !important;
+        }
+        .contact-form-clean > div > div:has(> .mt-5.grid.gap-2\\.5) > p:nth-of-type(2) {
+          display: none !important;
+        }
+        .contact-form-clean > div > div > .mt-5.grid.gap-2\\.5 + .mt-4.flex.flex-wrap.gap-2 {
+          display: none !important;
+        }
         .contact-form-clean > div > .mt-6.border-t.border-border.pt-4 {
           display: none !important;
         }
