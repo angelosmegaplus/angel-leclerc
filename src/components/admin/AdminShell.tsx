@@ -186,6 +186,7 @@ export function AdminShell({
   const currentItem = items.find((item) => item.key === active);
   const CurrentIcon = currentItem?.icon;
   const primaryItems = items.filter((item) => item.primary).slice(0, 4);
+  const isDashboard = active === "dashboard";
 
   return (
     <div
@@ -260,13 +261,17 @@ export function AdminShell({
         </header>
 
         <main className="mx-auto w-full min-w-0 max-w-[1500px] px-3 pb-[calc(6.5rem+env(safe-area-inset-bottom))] pt-3 sm:px-7 sm:pb-10 lg:px-10">
-          {active === "dashboard" ? <PixelWidgets /> : null}
+          {isDashboard ? (
+            <div className="mb-5 space-y-5" data-admin-dashboard-glance>
+              <PixelWidgets />
+              <NewsPanel />
+            </div>
+          ) : null}
           <div
             key={active}
             className="min-w-0 max-w-full animate-in fade-in zoom-in-[.985] duration-300 [&_.bg-card]:bg-white [&_.bg-background]:bg-white [&_.bg-muted]:bg-[#f0f4f9] [&_.border-border]:border-[#dfe3e7] [&_.text-foreground]:text-[#202124] [&_.text-muted-foreground]:text-[#5f6368] [&_.rounded-xl]:rounded-[1.5rem] [&_.rounded-2xl]:rounded-[2rem] [&_.rounded-lg]:rounded-[1.25rem] [&_.shadow-sm]:shadow-sm [&_img]:max-w-full [&_input]:max-w-full [&_textarea]:max-w-full [&_select]:max-w-full"
           >
             {children}
-            {active === "dashboard" ? <NewsPanel /> : null}
           </div>
         </main>
 
