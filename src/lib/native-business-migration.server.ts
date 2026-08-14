@@ -17,7 +17,7 @@ export type NativeBusinessMigrationReport = {
 
 export async function migrateApplicationsAndArticlesToAngelData(): Promise<NativeBusinessMigrationReport> {
   const data = await dataClient();
-  const db = supabaseAdmin();
+  const db = supabaseAdmin as any;
 
   const [applicationsResult, articlesResult] = await Promise.all([
     db.from("applications").select("*"),
@@ -27,35 +27,14 @@ export async function migrateApplicationsAndArticlesToAngelData(): Promise<Nativ
   if (applicationsResult.error) throw applicationsResult.error;
   if (articlesResult.error) throw articlesResult.error;
 
-  const applications = applicationsResult.data ?? [];
-  const articles = articlesResult.data ?? [];
+  const applications = (applicationsResult.data ?? []) as Array<Record<string, unknown> & { id: string }>;
+  const articles = (articlesResult.data ?? []) as Array<Record<string, unknown> & { id: string }>;
+  const migratedAt = new Date().toISOString();
 
-  await Promise.all(
-    applications.map((application) =>
-      data.set("business.applications", String(application.id), {
-        ...application,
-        migratedAt: new Date().toISOString(),
-        sourceProvider: "supabase",
-      }),
-    ),
-  );
+  await Promise.all(applications.map((application) => data.set("business.applications", String(application.id), { ...application, migratedAt, sourceProvider: "supabase" })));
+  await Promise.all(articles.map((article) => data.set("content.articles", String(article.id), { ...article, migratedAt, sourceProvider: "supabase" })));
 
-  await Promise.all(
-    articles.map((article) =>
-      data.set("content.articles", String(article.id), {
-        ...article,
-        migratedAt: new Date().toISOString(),
-        sourceProvider: "supabase",
-      }),
-    ),
-  );
-
-  const report: NativeBusinessMigrationReport = {
-    applications: applications.length,
-    articles: articles.length,
-    migratedAt: new Date().toISOString(),
-  };
-
+  const report: NativeBusinessMigrationReport = { applications: applications.length, articles: articles.length, migratedAt };
   await data.set("migration.status", "business-core", report);
   return report;
 }
