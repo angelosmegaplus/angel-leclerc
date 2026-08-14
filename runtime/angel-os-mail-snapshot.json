@@ -1,0 +1,30 @@
+{
+  "fetchedAt": "2026-08-14T23:01:13Z",
+  "caches": {
+    "gmail_dashboard": {
+      "fetchedAt": "2026-08-14T23:01:13Z",
+      "important": [],
+      "otherSummary": "Aucun nouveau message reçu depuis le précédent rapport horaire. Les messages non lus récents liés à l’emploi correspondent à d’anciennes newsletters HelloWork ou à des notifications GitHub déjà connues ; aucun nouveau refus, entretien, demande de CV, redirection professionnelle ou réponse de candidature n’a été détecté. Aucun message Gmail n’a été modifié, marqué comme lu, classé ou répondu.",
+      "counts": {
+        "new_since_last_run": 0,
+        "important": 0,
+        "employment_or_application": 0
+      }
+    }
+  },
+  "hourly_mail_report": {
+    "period_start": "2026-08-14T22:47:57Z",
+    "period_end": "2026-08-14T23:01:13Z",
+    "summary": "Aucun nouveau mail sur la période. Aucun nouveau refus, entretien, demande de CV, redirection ou message professionnel nécessitant une action n’a été détecté. Aucune action Gmail effectuée.",
+    "counts": {
+      "total": 0,
+      "important": 0,
+      "employment_or_application": 0
+    },
+    "items": [],
+    "recommendations": [
+      "La file ai_actions n’a pas pu être lue dans cette exécution : aucun accès authentifié direct à Supabase n’était disponible dans le runtime. Aucune action awaiting_operator n’a donc été exécutée ni modifiée ; réessayer au prochain cycle via le backend natif lorsqu’un accès serveur est disponible."
+    ],
+    "source": "chatgpt-hourly-direct"
+  }
+}
