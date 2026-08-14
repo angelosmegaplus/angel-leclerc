@@ -38,10 +38,10 @@ export function ApprenticeshipBanner() {
         >
           <GraduationCap size={14} className="shrink-0 text-primary" aria-hidden="true" />
           <span className="font-medium">
-            BTS Communication en alternance — je recherche une entreprise
+            Recherche urgente d’alternance BTS Communication — septembre 2026
           </span>
           <span className="hidden sm:inline text-muted-foreground">
-            · communication majoritaire (ex. 60 % com / 40 % vente)
+            · Bordeaux · Périgueux · Bergerac · Brive · Sarlat
           </span>
         </Link>
 
