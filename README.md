@@ -1,26 +1,27 @@
-# Mon Beau Site
+# Angel Leclerc Communication / Angel OS
 
-Crée moi mon site internet
+Site officiel et espace Angel OS de `angel-leclerc.fr`.
 
-This project was built with [Lovable](https://lovable.dev).
+## Source de vérité
 
-**Live app**: https://angel-leclerc.lovable.app
+- Dépôt principal : GitHub `angelosmegaplus/angel-leclerc`
+- Branche de production : `main`
+- Hébergement de production : Vercel
+- URL publique : https://www.angel-leclerc.fr
 
-## Build with Lovable
+Lovable n'est plus la voie normale de développement ou de publication. Il peut rester une référence historique ponctuelle pour comparer une interface, mais les modifications validées doivent être intégrées à ce dépôt puis publiées depuis `main`.
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/5bca9ec4-6763-4641-aa6d-439dc0e8bfc8).
+## Développement
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Prérequis : Node.js et npm.
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
+git clone https://github.com/angelosmegaplus/angel-leclerc.git
+cd angel-leclerc
 npm i
 npm run dev
 ```
+
+## Déploiement
+
+Les changements poussés sur `main` sont destinés à la production Vercel. Les secrets et variables d'environnement restent configurés côté hébergeur et ne doivent jamais être stockés dans le dépôt.
