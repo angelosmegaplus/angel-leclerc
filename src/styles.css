@@ -213,6 +213,12 @@ main article *,
   user-select: text;
 }
 
+/* Le formulaire Contact ne doit jamais afficher l'ancien fil conversationnel :
+   les questions disposent désormais de leur espace séparé sous le formulaire. */
+[aria-label="Conversation en cours"] {
+  display: none !important;
+}
+
 .article-content {
   color: var(--color-foreground);
 }
