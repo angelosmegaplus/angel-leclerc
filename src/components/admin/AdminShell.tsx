@@ -104,7 +104,7 @@ export function AdminShell({
         onChange={(event) => setQuery(event.target.value)}
         placeholder="rechercher"
         aria-label="Rechercher dans Angel OS"
-        className="h-11 w-full border border-white/35 bg-black pl-10 pr-3 text-sm font-light text-white outline-none transition-colors placeholder:text-white/45 focus:border-white"
+        className="h-11 w-full min-w-0 border border-white/35 bg-black pl-10 pr-3 text-sm font-light text-white outline-none transition-colors placeholder:text-white/45 focus:border-white"
       />
     </label>
   );
@@ -116,7 +116,7 @@ export function AdminShell({
           <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
             {group}
           </p>
-          <div className="grid grid-cols-2 gap-1.5">
+          <div className="grid grid-cols-1 gap-1.5 min-[360px]:grid-cols-2">
             {list.map(({ key, label, icon: Icon, badge }) => {
               const isActive = active === key;
               return (
@@ -125,7 +125,7 @@ export function AdminShell({
                   key={key}
                   aria-current={isActive ? "page" : undefined}
                   onClick={() => select(key)}
-                  className="group relative min-h-24 overflow-hidden p-3 text-left text-white transition-transform duration-150 active:scale-[0.97]"
+                  className="group relative min-h-24 min-w-0 overflow-hidden p-3 text-left text-white transition-transform duration-150 active:scale-[0.97]"
                   style={{ backgroundColor: isActive ? ACCENT : "#191919" }}
                 >
                   <Icon className="h-7 w-7 stroke-[1.45]" />
@@ -156,11 +156,11 @@ export function AdminShell({
   const menuContents = (
     <>
       <div className="mb-8 flex items-center justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55">Angel OS</p>
-          <p className="mt-1 text-2xl font-light text-white">applications</p>
+          <p className="mt-1 truncate text-2xl font-light text-white">applications</p>
         </div>
-        <span className="h-3 w-3" style={{ backgroundColor: ACCENT }} aria-hidden />
+        <span className="h-3 w-3 shrink-0" style={{ backgroundColor: ACCENT }} aria-hidden />
       </div>
       {searchBox}
       <div className="mt-7">{appList}</div>
@@ -185,17 +185,17 @@ export function AdminShell({
 
   return (
     <div
-      className="min-h-screen bg-black text-white lg:flex"
+      className="min-h-[100dvh] w-full overflow-x-hidden bg-black text-white lg:flex"
       style={{ fontFamily: '"Segoe UI", "Segoe WP", system-ui, sans-serif' }}
     >
-      <aside className="sticky top-0 hidden h-screen w-[19rem] shrink-0 overflow-y-auto border-r border-white/10 bg-black px-5 py-7 lg:block">
+      <aside className="sticky top-0 hidden h-[100dvh] w-[19rem] shrink-0 overflow-y-auto border-r border-white/10 bg-black px-5 py-7 lg:block">
         {menuContents}
       </aside>
 
       {open ? (
-        <div className="fixed inset-0 z-50 bg-black lg:hidden">
-          <div className="flex min-h-screen flex-col px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-[calc(1.25rem+env(safe-area-inset-top))]">
-            <div className="mb-5 flex justify-end">
+        <div className="fixed inset-0 z-50 h-[100dvh] overflow-hidden bg-black lg:hidden">
+          <div className="flex h-full min-h-0 flex-col px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-[calc(1rem+env(safe-area-inset-top))] sm:px-5">
+            <div className="mb-3 flex shrink-0 justify-end">
               <button
                 type="button"
                 aria-label="Fermer"
@@ -205,27 +205,27 @@ export function AdminShell({
                 <X className="h-7 w-7 stroke-[1.4]" />
               </button>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto">{menuContents}</div>
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-4">{menuContents}</div>
           </div>
         </div>
       ) : null}
 
       <div className="min-w-0 flex-1 bg-black">
-        <header className="sticky top-0 z-30 bg-black/95 px-5 pb-3 pt-[calc(1rem+env(safe-area-inset-top))] backdrop-blur sm:px-7 lg:px-10">
-          <div className="flex items-center gap-3">
+        <header className="sticky top-0 z-30 border-b border-white/5 bg-black/95 px-3 pb-3 pt-[calc(.75rem+env(safe-area-inset-top))] backdrop-blur sm:px-7 sm:pt-[calc(1rem+env(safe-area-inset-top))] lg:px-10">
+          <div className="flex min-w-0 items-center gap-1 sm:gap-3">
             <button
               type="button"
               onClick={() => setOpen(true)}
               aria-label="Ouvrir les applications"
-              className="grid h-12 w-12 shrink-0 place-items-center text-white lg:hidden"
+              className="grid h-11 w-11 shrink-0 place-items-center text-white sm:h-12 sm:w-12 lg:hidden"
             >
               <Menu className="h-7 w-7 stroke-[1.35]" />
             </button>
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/45">Angel OS</p>
-              <div className="mt-0.5 flex items-center gap-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/45 sm:text-[11px] sm:tracking-[0.22em]">Angel OS</p>
+              <div className="mt-0.5 flex min-w-0 items-center gap-3">
                 {CurrentIcon ? <CurrentIcon className="hidden h-7 w-7 shrink-0 stroke-[1.35] text-white/70 sm:block" /> : null}
-                <h1 className="truncate text-[2rem] font-light leading-none tracking-[-0.025em] text-white sm:text-[2.7rem]">
+                <h1 className="min-w-0 truncate text-[1.45rem] font-light leading-none tracking-[-0.025em] text-white min-[380px]:text-[1.7rem] sm:text-[2.7rem]">
                   {title.toLocaleLowerCase("fr")}
                 </h1>
               </div>
@@ -237,19 +237,26 @@ export function AdminShell({
                 window.setTimeout(() => searchRef.current?.focus(), 50);
               }}
               aria-label="Rechercher"
-              className="grid h-12 w-12 shrink-0 place-items-center text-white lg:hidden"
+              className="grid h-11 w-11 shrink-0 place-items-center text-white sm:h-12 sm:w-12 lg:hidden"
             >
               <Search className="h-6 w-6 stroke-[1.35]" />
             </button>
-            <div className="flex shrink-0 items-center gap-2">{actions}</div>
+            <div className="hidden shrink-0 items-center gap-2 sm:flex">{actions}</div>
           </div>
-          <div className="mt-4 h-1 w-16" style={{ backgroundColor: ACCENT }} />
+
+          {actions ? (
+            <div className="-mx-1 mt-3 flex max-w-full gap-2 overflow-x-auto px-1 pb-1 sm:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:shrink-0">
+              {actions}
+            </div>
+          ) : null}
+
+          <div className="mt-3 h-1 w-14 sm:mt-4 sm:w-16" style={{ backgroundColor: ACCENT }} />
         </header>
 
-        <main className="mx-auto w-full max-w-[1600px] px-5 pb-10 pt-4 sm:px-7 lg:px-10">
+        <main className="mx-auto w-full min-w-0 max-w-[1600px] px-3 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-4 sm:px-7 sm:pb-10 lg:px-10">
           <div
             key={active}
-            className="animate-in fade-in slide-in-from-right-3 duration-200 [&_.bg-card]:bg-[#111] [&_.bg-background]:bg-black [&_.bg-muted]:bg-[#1b1b1b] [&_.border-border]:border-white/15 [&_.text-foreground]:text-white [&_.text-muted-foreground]:text-white/55 [&_.rounded-xl]:rounded-none [&_.rounded-2xl]:rounded-none [&_.rounded-lg]:rounded-none [&_.shadow-sm]:shadow-none"
+            className="min-w-0 max-w-full animate-in fade-in slide-in-from-right-3 duration-200 [&_.bg-card]:bg-[#111] [&_.bg-background]:bg-black [&_.bg-muted]:bg-[#1b1b1b] [&_.border-border]:border-white/15 [&_.text-foreground]:text-white [&_.text-muted-foreground]:text-white/55 [&_.rounded-xl]:rounded-none [&_.rounded-2xl]:rounded-none [&_.rounded-lg]:rounded-none [&_.shadow-sm]:shadow-none [&_img]:max-w-full [&_input]:max-w-full [&_textarea]:max-w-full [&_select]:max-w-full"
           >
             {children}
           </div>
@@ -289,10 +296,10 @@ export function AdminCard({
   className?: string;
 }) {
   return (
-    <section className={`border border-white/15 bg-[#111] p-4 sm:p-6 ${className}`}>
-      {title ? <h2 className="text-xl font-light tracking-[-0.01em] text-white">{title.toLocaleLowerCase("fr")}</h2> : null}
-      {description ? <p className="mt-1 max-w-3xl text-sm font-light leading-relaxed text-white/55">{description}</p> : null}
-      <div className={title || description ? "mt-5" : ""}>{children}</div>
+    <section className={`min-w-0 max-w-full overflow-hidden border border-white/15 bg-[#111] p-3 sm:p-6 ${className}`}>
+      {title ? <h2 className="break-words text-xl font-light tracking-[-0.01em] text-white">{title.toLocaleLowerCase("fr")}</h2> : null}
+      {description ? <p className="mt-1 max-w-3xl break-words text-sm font-light leading-relaxed text-white/55">{description}</p> : null}
+      <div className={`min-w-0 max-w-full ${title || description ? "mt-5" : ""}`}>{children}</div>
     </section>
   );
 }
@@ -310,9 +317,9 @@ export function ModulePlaceholder({
     <AdminCard title={title} description={description}>
       <ul className="space-y-3 text-sm font-light text-white/60">
         {points.map((point) => (
-          <li key={point} className="flex gap-3">
+          <li key={point} className="flex min-w-0 gap-3">
             <span aria-hidden className="mt-1.5 h-3 w-1 shrink-0" style={{ backgroundColor: ACCENT }} />
-            {point}
+            <span className="min-w-0 break-words">{point}</span>
           </li>
         ))}
       </ul>
