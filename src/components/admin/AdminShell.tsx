@@ -3,6 +3,7 @@ import { Bell, Grid2X2, X, type LucideIcon } from "lucide-react";
 import { NewsPanel } from "@/components/admin/NewsPanel";
 import { PixelWidgets } from "@/components/admin/PixelWidgets";
 import { AngelCommandCenter } from "@/components/admin/AngelCommandCenter";
+import { AINotificationMonitor } from "@/components/admin/AINotificationMonitor";
 
 export type AdminNavItem = {
   key: string;
@@ -150,6 +151,7 @@ export function AdminShell({
 
   return (
     <div className="min-h-[100dvh] w-full overflow-x-hidden bg-[#050607] text-white lg:flex" style={{ fontFamily: '"Inter", system-ui, sans-serif' }}>
+      <AINotificationMonitor />
       <div aria-hidden className="pointer-events-none fixed inset-0 z-0 opacity-[.06] [background-image:linear-gradient(rgba(255,255,255,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.08)_1px,transparent_1px)] [background-size:36px_36px]" />
       <aside className="sticky top-0 z-10 hidden h-[100dvh] w-[19rem] shrink-0 overflow-y-auto border-r border-white/10 bg-[#090b0d]/95 px-4 py-6 backdrop-blur-xl lg:block">{menuContents}</aside>
 
