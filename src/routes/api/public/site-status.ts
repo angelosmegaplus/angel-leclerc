@@ -5,9 +5,6 @@ const headers = { "Cache-Control": "public, max-age=5, s-maxage=20, stale-while-
 
 type GithubCommitResponse = { sha?: string };
 
-// Le routeTree est généré par TanStack pendant le build. La chaîne doit rester un littéral brut
-// pour que le générateur puisse découvrir cette nouvelle route.
-// @ts-expect-error route ajoutée avant régénération de routeTree.gen.ts
 export const Route = createFileRoute("/api/public/site-status")({
   server: {
     handlers: {
