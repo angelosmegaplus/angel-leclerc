@@ -27,7 +27,8 @@ fi
 
 podman build -f "$PLATFORM/Containerfile" -t localhost/angel-leclerc:latest "$ROOT_DIR"
 podman build -f "$ROOT_DIR/angel-os/services/data/Containerfile" -t localhost/angel-data:latest "$ROOT_DIR"
+podman build -f "$PLATFORM/IdentityContainerfile" -t localhost/angel-identity:latest "$ROOT_DIR"
 systemctl --user daemon-reload
-systemctl --user enable --now angel-postgres.service angel-data.service angel-app.service angel-caddy.service angel-backup.timer
+systemctl --user enable --now angel-postgres.service angel-data.service angel-identity.service angel-app.service angel-caddy.service angel-backup.timer
 
-echo "Angel OS Linux est installé. Vérifier: systemctl --user status angel-app angel-data angel-postgres angel-caddy"
+echo "Angel OS Linux est installé. Vérifier: systemctl --user status angel-app angel-data angel-identity angel-postgres angel-caddy"
