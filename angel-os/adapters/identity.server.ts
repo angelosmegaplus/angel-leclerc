@@ -14,11 +14,12 @@ export const identityServerAdapter: AngelOSAdapter<AngelIdentityClient> = {
   id: 'angel.identity.native',
   capability: 'identity',
   connect() {
-    const baseUrl = process.env.ANGEL_IDENTITY_URL;
-    if (!baseUrl) throw new Error('ANGEL_IDENTITY_URL is required');
+    const configuredUrl = process.env.ANGEL_IDENTITY_URL;
+    if (!configuredUrl) throw new Error('ANGEL_IDENTITY_URL is required');
+    const baseUrl = configuredUrl.replace(/\/$/, '');
 
     async function request(path: string, init: RequestInit = {}) {
-      return fetch(`${baseUrl.replace(/\/$/, '')}${path}`, {
+      return fetch(`${baseUrl}${path}`, {
         ...init,
         headers: { 'content-type': 'application/json', ...(init.headers ?? {}) },
       });
