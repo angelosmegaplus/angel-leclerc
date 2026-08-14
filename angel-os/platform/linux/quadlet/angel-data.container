@@ -1,0 +1,18 @@
+[Unit]
+Description=Angel OS native data service
+Requires=angel-postgres.service
+After=angel-postgres.service
+
+[Container]
+Image=localhost/angel-data:latest
+ContainerName=angel-data
+Network=angel-network.network
+EnvironmentFile=/etc/angel-os/angel-os.env
+Environment=PORT=3100
+
+[Service]
+Restart=always
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target
