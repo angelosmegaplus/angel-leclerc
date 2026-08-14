@@ -101,7 +101,7 @@ function endpoint(url: string): string {
 }
 
 export function redirectUri(origin: string, provider: ProviderId): string {
-  return `${origin}/api/public/oauth/${provider}/callback`;
+  return `${origin}/oauth/${provider}/callback`;
 }
 
 /** Builds the provider authorization URL. Throws when credentials are missing. */
