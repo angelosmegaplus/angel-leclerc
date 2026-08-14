@@ -2,12 +2,14 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   ChevronDown,
   ChevronUp,
+  Grid2X2,
   Menu,
   Search,
   X,
   type LucideIcon,
 } from "lucide-react";
 import { NewsPanel } from "@/components/admin/NewsPanel";
+import { PixelWidgets } from "@/components/admin/PixelWidgets";
 
 export type AdminNavItem = {
   key: string;
@@ -18,7 +20,8 @@ export type AdminNavItem = {
   primary?: boolean;
 };
 
-const ACCENT = "#0078d7";
+const INK = "#1f1f1f";
+const PRIMARY = "#0b57d0";
 
 export function AdminShell({
   items,
@@ -43,11 +46,11 @@ export function AdminShell({
   useEffect(() => {
     const root = document.documentElement;
     const hadDark = root.classList.contains("dark");
-    root.classList.add("dark");
-    root.dataset.angelOsUi = "metro";
+    root.classList.remove("dark");
+    root.dataset.angelOsUi = "pixel";
     return () => {
       delete root.dataset.angelOsUi;
-      if (!hadDark) root.classList.remove("dark");
+      if (hadDark) root.classList.add("dark");
     };
   }, []);
 
@@ -63,7 +66,7 @@ export function AdminShell({
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
         setOpen(true);
-        window.setTimeout(() => searchRef.current?.focus(), 50);
+        window.setTimeout(() => searchRef.current?.focus(), 80);
       }
     };
     window.addEventListener("keydown", onKeyDown);
@@ -98,14 +101,14 @@ export function AdminShell({
 
   const searchBox = (
     <label className="relative block">
-      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/60" />
+      <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#5f6368]" />
       <input
         ref={searchRef}
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        placeholder="rechercher"
+        placeholder="Rechercher dans Angel OS"
         aria-label="Rechercher dans Angel OS"
-        className="h-11 w-full min-w-0 border border-white/35 bg-black pl-10 pr-3 text-sm font-light text-white outline-none transition-colors placeholder:text-white/45 focus:border-white"
+        className="h-14 w-full min-w-0 rounded-full border-0 bg-[#e9eef6] pl-12 pr-4 text-[15px] font-medium text-[#202124] outline-none ring-0 transition-shadow placeholder:text-[#6f7479] focus:shadow-[0_1px_2px_rgba(60,64,67,.2),0_2px_6px_rgba(60,64,67,.12)]"
       />
     </label>
   );
@@ -114,10 +117,8 @@ export function AdminShell({
     <div className="space-y-7">
       {Object.entries(groups).map(([group, list]) => (
         <section key={group}>
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
-            {group}
-          </p>
-          <div className="grid grid-cols-1 gap-1.5 min-[360px]:grid-cols-2">
+          <p className="mb-2 px-1 text-xs font-semibold tracking-wide text-[#5f6368]">{group}</p>
+          <div className="grid grid-cols-2 gap-2">
             {list.map(({ key, label, icon: Icon, badge }) => {
               const isActive = active === key;
               return (
@@ -126,19 +127,19 @@ export function AdminShell({
                   key={key}
                   aria-current={isActive ? "page" : undefined}
                   onClick={() => select(key)}
-                  className="group relative min-h-24 min-w-0 overflow-hidden p-3 text-left text-white transition-transform duration-150 active:scale-[0.97]"
-                  style={{ backgroundColor: isActive ? ACCENT : "#191919" }}
+                  className={`group relative min-h-24 min-w-0 overflow-hidden rounded-[1.65rem] p-4 text-left transition-all duration-200 active:scale-[0.97] ${
+                    isActive ? "bg-[#d3e3fd] text-[#0b3d91]" : "bg-white text-[#303134] hover:bg-[#f0f4f9]"
+                  }`}
                 >
-                  <Icon className="h-7 w-7 stroke-[1.45]" />
-                  <span className="absolute inset-x-3 bottom-2.5 truncate text-[13px] font-normal leading-none">
-                    {label}
+                  <span className={`grid h-10 w-10 place-items-center rounded-full ${isActive ? "bg-[#a8c7fa]" : "bg-[#edf2fa]"}`}>
+                    <Icon className="h-5 w-5 stroke-[1.8]" />
                   </span>
+                  <span className="absolute inset-x-4 bottom-3 truncate text-[13px] font-semibold">{label}</span>
                   {badge ? (
-                    <span className="absolute right-2.5 top-2 text-xs font-semibold tabular-nums">
+                    <span className="absolute right-3 top-3 grid min-h-6 min-w-6 place-items-center rounded-full bg-[#b3261e] px-1.5 text-[10px] font-bold text-white">
                       {badge}
                     </span>
                   ) : null}
-                  <span className="pointer-events-none absolute inset-0 border border-transparent transition-colors group-hover:border-white/25" />
                 </button>
               );
             })}
@@ -147,63 +148,65 @@ export function AdminShell({
       ))}
 
       {normalizedQuery && visibleItems.length === 0 ? (
-        <p className="border-l-4 border-white/30 py-2 pl-3 text-sm font-light text-white/60">
-          aucun résultat
-        </p>
+        <p className="rounded-[1.5rem] bg-white px-4 py-5 text-sm text-[#5f6368]">Aucun résultat.</p>
       ) : null}
     </div>
   );
 
   const menuContents = (
     <>
-      <div className="mb-8 flex items-center justify-between gap-3">
+      <div className="mb-6 flex items-center justify-between gap-3 px-1">
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55">Angel OS</p>
-          <p className="mt-1 truncate text-2xl font-light text-white">applications</p>
+          <p className="text-xs font-semibold text-[#5f6368]">Angel OS</p>
+          <p className="mt-0.5 truncate text-2xl font-semibold tracking-[-0.04em] text-[#202124]">Applications</p>
         </div>
-        <span className="h-3 w-3 shrink-0" style={{ backgroundColor: ACCENT }} aria-hidden />
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#d3e3fd] text-[#0b57d0]">
+          <Grid2X2 className="h-5 w-5" />
+        </span>
       </div>
       {searchBox}
-      <div className="mt-7">{appList}</div>
+      <div className="mt-6">{appList}</div>
       {!normalizedQuery ? (
         <button
           type="button"
           onClick={() => setExpanded((value) => !value)}
-          className="mt-7 inline-flex min-h-11 w-full items-center justify-center gap-2 border border-white/35 bg-black px-4 text-xs font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-white hover:text-black"
+          className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#d3e3fd] px-4 text-sm font-semibold text-[#0b57d0] transition-transform active:scale-[0.98]"
         >
           {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          {expanded ? "essentiels" : "toutes les apps"}
+          {expanded ? "Afficher les essentiels" : "Afficher toutes les apps"}
         </button>
       ) : null}
-      <div className="mt-8 border-t border-white/15 pt-4 text-[11px] uppercase tracking-[0.16em] text-white/35">
-        <span className="mr-2 inline-block h-2 w-2 bg-emerald-400" />online
+      <div className="mt-6 flex items-center gap-2 px-1 text-xs font-medium text-[#5f6368]">
+        <span className="h-2.5 w-2.5 rounded-full bg-[#34a853]" />
+        Angel OS en ligne
       </div>
     </>
   );
 
   const currentItem = items.find((item) => item.key === active);
   const CurrentIcon = currentItem?.icon;
+  const primaryItems = items.filter((item) => item.primary).slice(0, 4);
 
   return (
     <div
-      className="min-h-[100dvh] w-full overflow-x-hidden bg-black text-white lg:flex"
-      style={{ fontFamily: '"Segoe UI", "Segoe WP", system-ui, sans-serif' }}
+      className="min-h-[100dvh] w-full overflow-x-hidden bg-[#f8fafd] text-[#202124] lg:flex"
+      style={{ fontFamily: '"Google Sans", "Roboto", "Inter", system-ui, sans-serif' }}
     >
-      <aside className="sticky top-0 hidden h-[100dvh] w-[19rem] shrink-0 overflow-y-auto border-r border-white/10 bg-black px-5 py-7 lg:block">
+      <aside className="sticky top-0 hidden h-[100dvh] w-[20rem] shrink-0 overflow-y-auto bg-[#f1f5f9] px-5 py-6 lg:block">
         {menuContents}
       </aside>
 
       {open ? (
-        <div className="fixed inset-0 z-50 h-[100dvh] overflow-hidden bg-black lg:hidden">
-          <div className="flex h-full min-h-0 flex-col px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-[calc(1rem+env(safe-area-inset-top))] sm:px-5">
+        <div className="fixed inset-0 z-50 h-[100dvh] bg-[#f8fafd]/80 backdrop-blur-md lg:hidden">
+          <div className="ml-auto flex h-full w-full max-w-md flex-col rounded-l-[2rem] bg-[#f1f5f9] px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-[calc(1rem+env(safe-area-inset-top))] shadow-2xl sm:px-5">
             <div className="mb-3 flex shrink-0 justify-end">
               <button
                 type="button"
                 aria-label="Fermer"
                 onClick={() => setOpen(false)}
-                className="grid h-12 w-12 place-items-center text-white"
+                className="grid h-12 w-12 place-items-center rounded-full bg-white text-[#303134]"
               >
-                <X className="h-7 w-7 stroke-[1.4]" />
+                <X className="h-6 w-6" />
               </button>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-4">{menuContents}</div>
@@ -211,23 +214,27 @@ export function AdminShell({
         </div>
       ) : null}
 
-      <div className="min-w-0 flex-1 bg-black">
-        <header className="sticky top-0 z-30 border-b border-white/5 bg-black/95 px-3 pb-3 pt-[calc(.75rem+env(safe-area-inset-top))] backdrop-blur sm:px-7 sm:pt-[calc(1rem+env(safe-area-inset-top))] lg:px-10">
-          <div className="flex min-w-0 items-center gap-1 sm:gap-3">
+      <div className="min-w-0 flex-1">
+        <header className="sticky top-0 z-30 bg-[#f8fafd]/92 px-3 pb-3 pt-[calc(.75rem+env(safe-area-inset-top))] backdrop-blur-xl sm:px-7 lg:px-10">
+          <div className="mx-auto flex min-w-0 max-w-[1500px] items-center gap-2">
             <button
               type="button"
               onClick={() => setOpen(true)}
               aria-label="Ouvrir les applications"
-              className="grid h-11 w-11 shrink-0 place-items-center text-white sm:h-12 sm:w-12 lg:hidden"
+              className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#e9eef6] text-[#3c4043] lg:hidden"
             >
-              <Menu className="h-7 w-7 stroke-[1.35]" />
+              <Menu className="h-6 w-6" />
             </button>
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/45 sm:text-[11px] sm:tracking-[0.22em]">Angel OS</p>
-              <div className="mt-0.5 flex min-w-0 items-center gap-3">
-                {CurrentIcon ? <CurrentIcon className="hidden h-7 w-7 shrink-0 stroke-[1.35] text-white/70 sm:block" /> : null}
-                <h1 className="min-w-0 truncate text-[1.45rem] font-light leading-none tracking-[-0.025em] text-white min-[380px]:text-[1.7rem] sm:text-[2.7rem]">
-                  {title.toLocaleLowerCase("fr")}
+              <p className="text-xs font-semibold text-[#5f6368]">Angel OS</p>
+              <div className="mt-0.5 flex min-w-0 items-center gap-2">
+                {CurrentIcon ? (
+                  <span className="hidden h-10 w-10 shrink-0 place-items-center rounded-full bg-[#d3e3fd] text-[#0b57d0] sm:grid">
+                    <CurrentIcon className="h-5 w-5" />
+                  </span>
+                ) : null}
+                <h1 className="min-w-0 truncate text-[1.65rem] font-semibold leading-none tracking-[-0.05em] text-[#202124] sm:text-[2.2rem]">
+                  {title}
                 </h1>
               </div>
             </div>
@@ -235,52 +242,51 @@ export function AdminShell({
               type="button"
               onClick={() => {
                 setOpen(true);
-                window.setTimeout(() => searchRef.current?.focus(), 50);
+                window.setTimeout(() => searchRef.current?.focus(), 80);
               }}
               aria-label="Rechercher"
-              className="grid h-11 w-11 shrink-0 place-items-center text-white sm:h-12 sm:w-12 lg:hidden"
+              className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#e9eef6] text-[#3c4043] lg:hidden"
             >
-              <Search className="h-6 w-6 stroke-[1.35]" />
+              <Search className="h-5 w-5" />
             </button>
-            <div className="hidden shrink-0 items-center gap-2 sm:flex">{actions}</div>
+            <div className="hidden shrink-0 items-center gap-2 sm:flex [&_button]:rounded-full [&_a]:rounded-full">{actions}</div>
           </div>
 
           {actions ? (
-            <div className="-mx-1 mt-3 flex max-w-full gap-2 overflow-x-auto px-1 pb-1 sm:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:shrink-0">
+            <div className="mx-auto mt-3 flex max-w-[1500px] gap-2 overflow-x-auto pb-1 sm:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:shrink-0 [&_button]:rounded-full [&_a]:rounded-full">
               {actions}
             </div>
           ) : null}
-
-          <div className="mt-3 h-1 w-14 sm:mt-4 sm:w-16" style={{ backgroundColor: ACCENT }} />
         </header>
 
-        <main className="mx-auto w-full min-w-0 max-w-[1600px] px-3 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-4 sm:px-7 sm:pb-10 lg:px-10">
+        <main className="mx-auto w-full min-w-0 max-w-[1500px] px-3 pb-[calc(6.5rem+env(safe-area-inset-bottom))] pt-3 sm:px-7 sm:pb-10 lg:px-10">
+          {active === "dashboard" ? <PixelWidgets /> : null}
           <div
             key={active}
-            className="min-w-0 max-w-full animate-in fade-in slide-in-from-right-3 duration-200 [&_.bg-card]:bg-[#111] [&_.bg-background]:bg-black [&_.bg-muted]:bg-[#1b1b1b] [&_.border-border]:border-white/15 [&_.text-foreground]:text-white [&_.text-muted-foreground]:text-white/55 [&_.rounded-xl]:rounded-none [&_.rounded-2xl]:rounded-none [&_.rounded-lg]:rounded-none [&_.shadow-sm]:shadow-none [&_img]:max-w-full [&_input]:max-w-full [&_textarea]:max-w-full [&_select]:max-w-full"
+            className="min-w-0 max-w-full animate-in fade-in zoom-in-[.985] duration-300 [&_.bg-card]:bg-white [&_.bg-background]:bg-white [&_.bg-muted]:bg-[#f0f4f9] [&_.border-border]:border-[#dfe3e7] [&_.text-foreground]:text-[#202124] [&_.text-muted-foreground]:text-[#5f6368] [&_.rounded-xl]:rounded-[1.5rem] [&_.rounded-2xl]:rounded-[2rem] [&_.rounded-lg]:rounded-[1.25rem] [&_.shadow-sm]:shadow-sm [&_img]:max-w-full [&_input]:max-w-full [&_textarea]:max-w-full [&_select]:max-w-full"
           >
             {children}
             {active === "dashboard" ? <NewsPanel /> : null}
           </div>
         </main>
 
-        <div className="fixed inset-x-0 bottom-0 z-20 flex h-[calc(3.4rem+env(safe-area-inset-bottom))] items-start justify-around border-t border-white/15 bg-black px-4 pt-2 lg:hidden">
-          <button type="button" onClick={() => setOpen(true)} className="grid h-10 w-14 place-items-center text-white" aria-label="Applications">
-            <Menu className="h-6 w-6 stroke-[1.3]" />
+        <nav className="fixed inset-x-3 bottom-[calc(.6rem+env(safe-area-inset-bottom))] z-20 grid h-[4.8rem] grid-cols-5 items-center rounded-[2rem] bg-[#eef3fb]/95 px-2 shadow-[0_4px_24px_rgba(60,64,67,.18)] backdrop-blur-xl lg:hidden">
+          {primaryItems.map(({ key, label, icon: Icon }) => {
+            const isActive = active === key;
+            return (
+              <button key={key} type="button" onClick={() => select(key)} className="flex min-w-0 flex-col items-center justify-center gap-1 text-[10px] font-semibold text-[#5f6368]">
+                <span className={`grid h-8 min-w-14 place-items-center rounded-full px-3 transition-colors ${isActive ? "bg-[#d3e3fd] text-[#0b57d0]" : "text-[#5f6368]"}`}>
+                  <Icon className="h-5 w-5" />
+                </span>
+                <span className="max-w-full truncate">{label}</span>
+              </button>
+            );
+          })}
+          <button type="button" onClick={() => setOpen(true)} className="flex flex-col items-center justify-center gap-1 text-[10px] font-semibold text-[#5f6368]">
+            <span className="grid h-8 min-w-14 place-items-center rounded-full px-3"><Grid2X2 className="h-5 w-5" /></span>
+            <span>Apps</span>
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setOpen(true);
-              window.setTimeout(() => searchRef.current?.focus(), 50);
-            }}
-            className="grid h-10 w-14 place-items-center text-white"
-            aria-label="Rechercher"
-          >
-            <Search className="h-6 w-6 stroke-[1.3]" />
-          </button>
-          <span className="mt-4 h-2 w-2" style={{ backgroundColor: ACCENT }} aria-label="Système en ligne" />
-        </div>
+        </nav>
       </div>
     </div>
   );
@@ -298,9 +304,9 @@ export function AdminCard({
   className?: string;
 }) {
   return (
-    <section className={`min-w-0 max-w-full overflow-hidden border border-white/15 bg-[#111] p-3 sm:p-6 ${className}`}>
-      {title ? <h2 className="break-words text-xl font-light tracking-[-0.01em] text-white">{title.toLocaleLowerCase("fr")}</h2> : null}
-      {description ? <p className="mt-1 max-w-3xl break-words text-sm font-light leading-relaxed text-white/55">{description}</p> : null}
+    <section className={`min-w-0 max-w-full overflow-hidden rounded-[2rem] bg-white p-4 shadow-sm sm:p-6 ${className}`}>
+      {title ? <h2 className="break-words text-xl font-semibold tracking-[-0.03em] text-[#202124]">{title}</h2> : null}
+      {description ? <p className="mt-1 max-w-3xl break-words text-sm leading-relaxed text-[#5f6368]">{description}</p> : null}
       <div className={`min-w-0 max-w-full ${title || description ? "mt-5" : ""}`}>{children}</div>
     </section>
   );
@@ -317,16 +323,16 @@ export function ModulePlaceholder({
 }) {
   return (
     <AdminCard title={title} description={description}>
-      <ul className="space-y-3 text-sm font-light text-white/60">
+      <ul className="space-y-3 text-sm text-[#5f6368]">
         {points.map((point) => (
-          <li key={point} className="flex min-w-0 gap-3">
-            <span aria-hidden className="mt-1.5 h-3 w-1 shrink-0" style={{ backgroundColor: ACCENT }} />
+          <li key={point} className="flex min-w-0 gap-3 rounded-[1.25rem] bg-[#f6f8fc] p-3">
+            <span aria-hidden className="mt-1.5 h-3 w-1 shrink-0 rounded-full bg-[#0b57d0]" />
             <span className="min-w-0 break-words">{point}</span>
           </li>
         ))}
       </ul>
-      <p className="mt-5 border-l-4 border-white/20 py-1 pl-3 text-xs font-light text-white/45">
-        module en préparation — aucune donnée fictive affichée
+      <p className="mt-5 rounded-[1.25rem] bg-[#f0f4f9] px-4 py-3 text-xs text-[#5f6368]">
+        Module en préparation — aucune donnée fictive affichée.
       </p>
     </AdminCard>
   );
