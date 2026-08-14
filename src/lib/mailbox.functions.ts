@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAngelAuth } from "@/lib/auth/require-angel-auth";
+import { assertAngelAdmin } from "@/lib/auth/require-admin";
 import type {
   MailAction,
   MailDetail,
@@ -10,38 +11,28 @@ import type {
 
 export type { MailAction, MailFolder };
 
-async function assertAdmin(context: any) {
-  const { data, error } = await context.supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", context.userId)
-    .eq("role", "admin")
-    .maybeSingle();
-  if (error || !data) throw new Error("Accès réservé à l'administrateur.");
-}
-
 export const mailboxStatus = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAngelAuth])
   .handler(async ({ context }): Promise<MailboxStatus> => {
-    await assertAdmin(context);
+    await assertAngelAdmin(context);
     const { getStatus } = await import("./mailbox.server");
     return getStatus(context.userId);
   });
 
 export const mailboxList = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAngelAuth])
   .inputValidator((input: { folder: MailFolder; search: string }) => input)
   .handler(async ({ data, context }): Promise<MailSummary[]> => {
-    await assertAdmin(context);
+    await assertAngelAdmin(context);
     const { listMail } = await import("./mailbox.server");
     return listMail(context.userId, data.folder, data.search ?? "");
   });
 
 export const mailboxRead = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAngelAuth])
   .inputValidator((input: { id: string }) => input)
   .handler(async ({ data, context }): Promise<MailDetail> => {
-    await assertAdmin(context);
+    await assertAngelAdmin(context);
     const { readMail, actOnMail } = await import("./mailbox.server");
     const mail = await readMail(context.userId, data.id);
     if (mail.unread) await actOnMail(context.userId, data.id, "read").catch(() => undefined);
@@ -49,17 +40,17 @@ export const mailboxRead = createServerFn({ method: "POST" })
   });
 
 export const mailboxAct = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAngelAuth])
   .inputValidator((input: { id: string; action: MailAction }) => input)
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
+    await assertAngelAdmin(context);
     const { actOnMail } = await import("./mailbox.server");
     await actOnMail(context.userId, data.id, data.action);
     return { ok: true };
   });
 
 export const mailboxSend = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAngelAuth])
   .inputValidator(
     (input: { to: string; subject: string; body: string; threadId?: string }) => {
       const to = input.to?.trim() ?? "";
@@ -74,7 +65,7 @@ export const mailboxSend = createServerFn({ method: "POST" })
     },
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
+    await assertAngelAdmin(context);
     const { sendMail } = await import("./mailbox.server");
     await sendMail(context.userId, data);
     return { ok: true };
