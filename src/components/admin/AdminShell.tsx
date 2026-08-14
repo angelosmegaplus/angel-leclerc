@@ -25,11 +25,12 @@ const COMPACT_NAV: CompactDefinition[] = [
   { key: "mail", label: "Mail", source: "boite-mail", children: ["boite-mail", "messages"] },
   { key: "agenda", label: "Agenda", source: "agenda", children: ["agenda"] },
   { key: "fichiers", label: "Fichiers", source: "fichiers", children: ["fichiers"] },
-  { key: "blog", label: "Blog", source: "articles", children: ["articles", "contenus"] },
-  { key: "studio", label: "Studio", source: "studio", children: ["studio", "projets"] },
+  { key: "studio", label: "Studio", source: "studio", children: ["studio", "projets", "articles", "contenus"] },
   { key: "candidatures", label: "Candidatures", source: "candidatures", children: ["candidatures"] },
   { key: "communaute", label: "Communauté", source: "abonnes", children: ["abonnes", "avis"] },
-  { key: "parametres", label: "Paramètres", source: "connexions", children: ["connexions", "activite", "notifications", "automatisation", "stats", "boutique"] },
+  { key: "boutique", label: "Boutique", source: "boutique", children: ["boutique"] },
+  { key: "stats", label: "Statistiques", source: "stats", children: ["stats"] },
+  { key: "parametres", label: "Paramètres", source: "connexions", children: ["connexions", "notifications", "automatisation", "activite"] },
 ];
 
 export function AdminShell({
