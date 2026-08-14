@@ -1,24 +1,39 @@
 # Angel OS — plateforme Linux
 
-Cette arborescence fournit une cible d'hébergement autonome pour angel-leclerc.fr. L'objectif est que le site puisse fonctionner sur un serveur Linux standard sans dépendre de Vercel ou Lovable pour l'exécution.
+Cette plateforme permet d’exécuter angel-leclerc.fr sans dépendre de Vercel pour le runtime principal.
 
 ## Architecture
 
-Caddy reçoit le trafic HTTPS et le transmet à l'application Angel OS. L'application tourne dans un conteneur Podman rootless. PostgreSQL fournit la base de données locale. Les volumes restent persistants sur l'hôte. systemd/Quadlet démarre et surveille les services. Un timer systemd déclenche les sauvegardes PostgreSQL.
+- **angel-app** : application web TanStack/Nitro construite en cible Node Linux.
+- **angel-data** : service de données natif Angel OS, exécuté avec Bun et connecté à PostgreSQL.
+- **angel-postgres** : base PostgreSQL persistante.
+- **angel-caddy** : terminaison HTTPS et reverse proxy vers l’application.
+- **angel-storage** : volume persistant pour les fichiers et futurs services de stockage natifs.
+- **angel-backup** : sauvegarde PostgreSQL quotidienne gérée par systemd.
 
-Chaîne cible :
-
-internet → Caddy → Angel OS App → adaptateurs → PostgreSQL / stockage / fournisseurs optionnels
-
-Les fournisseurs externes restent interchangeables derrière les adaptateurs Angel OS. GitHub, Vercel, Google, Supabase ou d'autres services ne doivent jamais devenir des dépendances structurelles du noyau.
+Le service `angel-data` fournit une API interne authentifiée pour stocker des documents JSON par namespace/clé. L’application y accède via l’adaptateur `angel.data.native`. Supabase reste utilisable pendant la migration, mais n’est plus la seule cible architecturale.
 
 ## Installation
 
-1. Installer Podman et systemd sur Debian ou Ubuntu.
-2. Autoriser le compte de service rootless à écouter sur 80/443 (par exemple via `net.ipv4.ip_unprivileged_port_start=80`) ou placer Caddy système devant les conteneurs.
-3. Copier `env.example` vers `/etc/angel-os/angel-os.env` et renseigner les secrets.
-4. Copier `Caddyfile` vers `/etc/angel-os/Caddyfile`.
-5. Construire l'image avec `podman build -f angel-os/platform/linux/Containerfile -t localhost/angel-leclerc:latest .`.
-6. Exécuter `angel-os/platform/linux/scripts/install.sh` avec l'utilisateur de service.
+1. Installer Podman et systemd sur une distribution Linux compatible.
+2. Copier `env.example` vers `/etc/angel-os/angel-os.env` et remplacer tous les secrets, notamment `POSTGRES_PASSWORD` et `ANGEL_DATA_TOKEN`.
+3. Copier `Caddyfile` vers `/etc/angel-os/Caddyfile` et vérifier le domaine.
+4. Exécuter `scripts/install.sh` avec l’utilisateur qui exécutera les services rootless.
+5. Vérifier `angel-postgres`, `angel-data`, `angel-app` et `angel-caddy` avec `systemctl --user status`.
 
-Cette configuration est une base reproductible. Les migrations de données depuis Supabase/Lovable doivent être réalisées séparément et validées avant toute bascule DNS. Les adaptateurs permettent de conserver ces fournisseurs pendant la migration puis de les remplacer sans modifier le noyau.
+## Migration progressive
+
+La migration doit se faire fonction par fonction :
+
+1. écrire une fonction via l’adaptateur Angel Data ;
+2. conserver temporairement Supabase en lecture/fallback si nécessaire ;
+3. copier les données existantes ;
+4. comparer les résultats ;
+5. basculer la lecture vers Angel Data ;
+6. retirer la dépendance Supabase seulement lorsque la fonction est validée.
+
+L’authentification et le stockage de fichiers seront migrés dans des services séparés afin de ne pas mélanger identité, données applicatives et médias.
+
+## Sauvegardes
+
+`angel-backup.timer` déclenche une sauvegarde PostgreSQL quotidienne. Les sauvegardes doivent ensuite être répliquées vers une seconde machine ou un stockage chiffré externe pour qu’une panne matérielle du serveur principal ne soit pas un point de défaillance unique.
