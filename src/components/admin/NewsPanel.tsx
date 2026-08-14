@@ -14,6 +14,8 @@ const FILTERS: Array<{ key: NewsCategory; label: string }> = [
   { key: "emploi", label: "Emploi & alternance" },
 ];
 
+const NEWS_REFRESH_MS = 15 * 60 * 1000;
+
 function formatNewsDate(value: string | null) {
   if (!value) return "";
   const date = new Date(value);
@@ -31,13 +33,21 @@ export function NewsPanel() {
   const query = useQuery({
     queryKey: ["admin-news"],
     queryFn: async () => {
-      const response = await fetch("/api/admin/news", { headers: { Accept: "application/json" } });
+      // Change the URL every 15 minutes so an old CDN response cannot keep
+      // the admin homepage stuck on the same headlines for hours.
+      const refreshBucket = Math.floor(Date.now() / NEWS_REFRESH_MS);
+      const response = await fetch(`/api/admin/news?refresh=${refreshBucket}`, {
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
       if (!response.ok) throw new Error("Actualités indisponibles");
       return (await response.json()) as NewsPayload;
     },
-    staleTime: 55 * 60 * 1000,
-    refetchInterval: 60 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
+    refetchInterval: NEWS_REFRESH_MS,
+    refetchIntervalInBackground: true,
     refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
     retry: 1,
   });
 
@@ -56,7 +66,7 @@ export function NewsPanel() {
             </span>
             <div>
               <h2 className="text-xl font-semibold tracking-[-0.03em] text-[#202124]">Actualités</h2>
-              <p className="text-sm text-[#5f6368]">Veille web actualisée chaque heure · « À la une » classe en priorité ce qui correspond le mieux à vos centres d’intérêt.</p>
+              <p className="text-sm text-[#5f6368]">Veille web rafraîchie toutes les 15 minutes · « À la une » privilégie les sujets récents qui correspondent le mieux à vos centres d’intérêt.</p>
             </div>
           </div>
         </div>
@@ -144,7 +154,7 @@ export function NewsPanel() {
       )}
 
       {query.data?.fetchedAt ? (
-        <p className="mt-3 text-[10px] font-medium text-[#80868b]">Mis à jour {formatNewsDate(query.data.fetchedAt)} · prochain rafraîchissement automatique sous 1 h</p>
+        <p className="mt-3 text-[10px] font-medium text-[#80868b]">Mis à jour {formatNewsDate(query.data.fetchedAt)} · prochain rafraîchissement automatique sous 15 min</p>
       ) : null}
     </section>
   );
