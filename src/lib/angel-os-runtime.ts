@@ -25,10 +25,22 @@ const context: AngelOSContext = {
   }),
 };
 
+type RuntimeEvent = {
+  name: string;
+  at: string;
+  payload: unknown;
+};
+
 let started = false;
 let webConnection: Awaited<ReturnType<typeof angelLeclercWebAdapter.connect>> | null = null;
+const recentEvents: RuntimeEvent[] = [];
 
 for (const module of angelOSIA.modules) modules.register(module);
+
+function rememberEvent(name: string, payload: unknown) {
+  recentEvents.unshift({ name, at: new Date().toISOString(), payload });
+  if (recentEvents.length > 20) recentEvents.length = 20;
+}
 
 export async function bootAngelOS() {
   if (started) return;
@@ -36,7 +48,7 @@ export async function bootAngelOS() {
 
   webConnection = await angelLeclercWebAdapter.connect();
   await modules.startAll(context);
-  await events.emit("angel-os:boot", {
+  const bootPayload = {
     core: "Angel OS Core",
     coreVersion: context.version,
     distribution: angelOSIA.name,
@@ -44,7 +56,9 @@ export async function bootAngelOS() {
     application: webConnection.product,
     platform: context.platform,
     capabilities: [...context.capabilities],
-  });
+  };
+  rememberEvent("angel-os:boot", bootPayload);
+  await events.emit("angel-os:boot", bootPayload);
 
   if (typeof document !== "undefined") {
     document.documentElement.dataset.angelOsCore = context.version;
@@ -55,6 +69,15 @@ export async function bootAngelOS() {
         detail: getAngelOSStatus(),
       }),
     );
+  }
+}
+
+export async function emitAngelOSEvent<T>(name: string, payload: T): Promise<void> {
+  await bootAngelOS();
+  rememberEvent(name, payload);
+  await events.emit(name, payload);
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent(name, { detail: payload }));
   }
 }
 
@@ -83,6 +106,7 @@ export function getAngelOSStatus() {
       adminPath: "/admin" as const,
     },
     capabilities: [...context.capabilities],
+    recentEvents: recentEvents.map(({ name, at }) => ({ name, at })),
   };
 }
 
@@ -92,5 +116,6 @@ export const angelOS = {
   context,
   distribution: angelOSIA,
   adapter: angelLeclercWebAdapter,
+  emit: emitAngelOSEvent,
   getStatus: getAngelOSStatus,
 } as const;
