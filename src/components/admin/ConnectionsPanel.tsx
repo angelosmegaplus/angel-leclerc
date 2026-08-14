@@ -98,7 +98,7 @@ export function ConnectionsPanel() {
   const googleBusy = pendingProvider === "google";
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 pb-24 sm:pb-28">
       <AdminCard className="border-l-4 border-l-[#0078d7]">
         <div className="flex gap-3">
           <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#1684df]" />
