@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { searchNewsWithOpenAI } from "./ai-news-search.server";
 
 export type NewsCategory =
   | "une"
@@ -138,14 +139,21 @@ function ageHours(item: NewsItem) {
   return Math.max(0, (Date.now() - timestamp) / 3_600_000);
 }
 
+function normalizedTitle(value: string) {
+  return value.toLocaleLowerCase("fr").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\W+/g, " ").trim();
+}
+
 function dedupe(items: NewsItem[]) {
-  const seen = new Set<string>();
+  const seenTitles = new Set<string>();
+  const seenUrls = new Set<string>();
   return items
     .sort((a, b) => (b.publishedAt ?? "").localeCompare(a.publishedAt ?? ""))
     .filter((item) => {
-      const key = `${item.category}:${item.title.toLocaleLowerCase("fr").replace(/\W+/g, " ").trim()}`;
-      if (!key || seen.has(key)) return false;
-      seen.add(key);
+      const titleKey = normalizedTitle(item.title);
+      const urlKey = item.url.replace(/[?#].*$/, "");
+      if (!titleKey || seenTitles.has(titleKey) || seenUrls.has(urlKey)) return false;
+      seenTitles.add(titleKey);
+      seenUrls.add(urlKey);
       return true;
     });
 }
@@ -175,7 +183,7 @@ function buildPersonalizedHeadlines(items: NewsItem[]): NewsItem[] {
   const ranked = [...pool]
     .sort((a, b) => preferenceScore(b) - preferenceScore(a))
     .filter((item) => {
-      const key = item.title.toLocaleLowerCase("fr").replace(/\W+/g, " ").trim();
+      const key = normalizedTitle(item.title);
       if (!key || seenTitles.has(key)) return false;
       seenTitles.add(key);
       return true;
@@ -185,7 +193,6 @@ function buildPersonalizedHeadlines(items: NewsItem[]): NewsItem[] {
   const selectedIds = new Set<string>();
   const perCategory = new Map<NewsCategory, number>();
 
-  // Premier passage : diversité maximale, deux sujets par rubrique au plus.
   for (const item of ranked) {
     const count = perCategory.get(item.category) ?? 0;
     if (count >= 2) continue;
@@ -195,7 +202,6 @@ function buildPersonalizedHeadlines(items: NewsItem[]): NewsItem[] {
     if (selected.length >= 10) break;
   }
 
-  // Second passage : complète sans laisser un thème monopoliser la une.
   if (selected.length < 12) {
     for (const item of ranked) {
       if (selectedIds.has(item.id)) continue;
@@ -217,14 +223,21 @@ function finalize(items: NewsItem[]) {
   return [...headlines, ...topical];
 }
 
+async function loadCombinedNews() {
+  const [groups, aiItems] = await Promise.all([
+    Promise.all(FEEDS.map(loadFeed)),
+    searchNewsWithOpenAI().catch(() => []),
+  ]);
+  return finalize([...groups.flat(), ...aiItems]);
+}
+
 export const getAdminNews = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<NewsPayload> => {
     await assertAdmin(context);
 
     const cached = await readCache(context);
-    const groups = await Promise.all(FEEDS.map(loadFeed));
-    const liveItems = finalize(groups.flat());
+    const liveItems = await loadCombinedNews();
 
     if (liveItems.length === 0) {
       return cached ?? { items: [], fetchedAt: new Date().toISOString(), source: "cache" };
@@ -243,8 +256,7 @@ export const getAdminNews = createServerFn({ method: "GET" })
   });
 
 export async function fetchAdminNewsSnapshot(): Promise<NewsPayload> {
-  const groups = await Promise.all(FEEDS.map(loadFeed));
-  const items = finalize(groups.flat());
+  const items = await loadCombinedNews();
   if (items.length === 0) throw new Error("Actualités indisponibles");
   return { items, fetchedAt: new Date().toISOString(), source: "live" };
 }
