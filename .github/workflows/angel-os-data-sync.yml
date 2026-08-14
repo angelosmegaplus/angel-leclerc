@@ -1,0 +1,136 @@
+name: Synchronisation données Angel OS
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "runtime/angel-os-snapshot.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: angel-os-data-sync
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    env:
+      VERCEL_ORG_ID: team_V2zZ6Gj9Vt3ULjCO6ssDbqwM
+      VERCEL_PROJECT_ID: prj_TZoiBkJM3z1knPE6Pc1V854CwrNe
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Vérifier le jeton d’infrastructure
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        shell: bash
+        run: |
+          test -n "$VERCEL_TOKEN" || { echo "::error::VERCEL_TOKEN absent"; exit 1; }
+
+      - name: Charger les variables serveur de production
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        shell: bash
+        run: |
+          bunx vercel@latest pull --yes --environment=production --token="$VERCEL_TOKEN" --scope=angel-os2 >/dev/null
+          bunx vercel@latest env pull .env.production.local --yes --environment=production --token="$VERCEL_TOKEN" --scope=angel-os2 >/dev/null
+
+      - name: Synchroniser les caches Angel OS directement vers Supabase
+        shell: bash
+        run: |
+          set -a
+          source .env.production.local
+          set +a
+          node <<'NODE'
+          const fs = require('fs');
+          const snapshot = JSON.parse(fs.readFileSync('runtime/angel-os-snapshot.json', 'utf8'));
+          const base = process.env.SUPABASE_URL;
+          const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+          if (!base || !key) throw new Error('SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY absent');
+
+          const headers = {
+            'apikey': key,
+            'Content-Type': 'application/json',
+            'Prefer': 'resolution=merge-duplicates,return=minimal',
+          };
+          if (!key.startsWith('sb_secret_')) headers.Authorization = `Bearer ${key}`;
+
+          async function request(path, options = {}) {
+            const response = await fetch(`${base.replace(/\/$/, '')}/rest/v1/${path}`, {
+              ...options,
+              headers: { ...headers, ...(options.headers || {}) },
+            });
+            const text = await response.text();
+            if (!response.ok) throw new Error(`${path}: HTTP ${response.status} ${text.slice(0, 500)}`);
+            return text;
+          }
+
+          (async () => {
+            const now = snapshot.fetchedAt || new Date().toISOString();
+            const rows = Object.entries(snapshot.caches || {}).map(([cacheKey, payload]) => ({
+              key: cacheKey,
+              payload,
+              updated_at: now,
+            }));
+            if (!rows.length) throw new Error('Aucun cache à synchroniser');
+            await request('angel_os_cache?on_conflict=key', {
+              method: 'POST',
+              body: JSON.stringify(rows),
+            });
+            console.log(`Caches synchronisés: ${rows.map((r) => r.key).join(', ')}`);
+
+            if (snapshot.hourly_mail_report) {
+              try {
+                await request('hourly_mail_reports', {
+                  method: 'POST',
+                  headers: { Prefer: 'return=minimal' },
+                  body: JSON.stringify(snapshot.hourly_mail_report),
+                });
+                console.log('Rapport mail horaire inséré');
+              } catch (error) {
+                console.warn(`Rapport mail non inséré: ${error.message}`);
+              }
+            }
+          })().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Publier la revue quotidienne si elle n’existe pas encore
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -a
+          source .env.production.local
+          set +a
+          if [ -z "${NEWSLETTER_CRON_SECRET:-}" ]; then
+            echo "NEWSLETTER_CRON_SECRET absent : revue quotidienne non déclenchée"
+            exit 0
+          fi
+          curl --fail --silent --show-error --max-time 90 \
+            -X POST \
+            -H "x-cron-token: ${NEWSLETTER_CRON_SECRET}" \
+            -H "Content-Type: application/json" \
+            https://www.angel-leclerc.fr/api/public/hooks/daily-article
+
+      - name: Résumé
+        if: always()
+        run: |
+          echo "## Synchronisation Angel OS" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Source : runtime/angel-os-snapshot.json" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Voie : GitHub Actions → variables serveur de production → Supabase direct" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Lovable : non utilisé" >> "$GITHUB_STEP_SUMMARY"
