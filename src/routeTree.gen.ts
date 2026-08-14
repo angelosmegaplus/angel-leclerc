@@ -20,6 +20,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ConfirmationAbonnementRouteImport } from './routes/confirmation-abonnement'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AngelOsIaRouteImport } from './routes/angel-os-ia'
+import { Route as AdminActualitesRouteImport } from './routes/admin-actualites'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BoutiqueIndexRouteImport } from './routes/boutique/index'
@@ -96,6 +97,11 @@ const AuthRoute = AuthRouteImport.update({
 const AngelOsIaRoute = AngelOsIaRouteImport.update({
   id: '/angel-os-ia',
   path: '/angel-os-ia',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminActualitesRoute = AdminActualitesRouteImport.update({
+  id: '/admin-actualites',
+  path: '/admin-actualites',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -214,6 +220,7 @@ const ApiPublicOauthProviderCallbackRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/admin-actualites': typeof AdminActualitesRoute
   '/angel-os-ia': typeof AngelOsIaRoute
   '/auth': typeof AuthRoute
   '/confirmation-abonnement': typeof ConfirmationAbonnementRoute
@@ -248,6 +255,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/admin-actualites': typeof AdminActualitesRoute
   '/angel-os-ia': typeof AngelOsIaRoute
   '/auth': typeof AuthRoute
   '/confirmation-abonnement': typeof ConfirmationAbonnementRoute
@@ -283,6 +291,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/admin-actualites': typeof AdminActualitesRoute
   '/angel-os-ia': typeof AngelOsIaRoute
   '/auth': typeof AuthRoute
   '/confirmation-abonnement': typeof ConfirmationAbonnementRoute
@@ -319,6 +328,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/admin-actualites'
     | '/angel-os-ia'
     | '/auth'
     | '/confirmation-abonnement'
@@ -353,6 +363,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/admin-actualites'
     | '/angel-os-ia'
     | '/auth'
     | '/confirmation-abonnement'
@@ -387,6 +398,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/admin-actualites'
     | '/angel-os-ia'
     | '/auth'
     | '/confirmation-abonnement'
@@ -422,6 +434,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  AdminActualitesRoute: typeof AdminActualitesRoute
   AngelOsIaRoute: typeof AngelOsIaRoute
   AuthRoute: typeof AuthRoute
   ConfirmationAbonnementRoute: typeof ConfirmationAbonnementRoute
@@ -531,6 +544,13 @@ declare module '@tanstack/react-router' {
       path: '/angel-os-ia'
       fullPath: '/angel-os-ia'
       preLoaderRoute: typeof AngelOsIaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin-actualites': {
+      id: '/admin-actualites'
+      path: '/admin-actualites'
+      fullPath: '/admin-actualites'
+      preLoaderRoute: typeof AdminActualitesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -686,6 +706,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  AdminActualitesRoute: AdminActualitesRoute,
   AngelOsIaRoute: AngelOsIaRoute,
   AuthRoute: AuthRoute,
   ConfirmationAbonnementRoute: ConfirmationAbonnementRoute,
