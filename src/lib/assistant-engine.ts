@@ -12,7 +12,6 @@ export type AssistantReply = {
   suggestions?: string[];
 };
 
-
 export const DEFAULT_SUGGESTIONS = [
   "Quels services propose Angel ?",
   "Voir son parcours",
@@ -89,7 +88,7 @@ const INTENTS: Intent[] = [
     id: "alternance",
     keywords: ["alternance", "apprenti", "apprentissage", "bts", "stage", "recrut", "embauche", "ecole"],
     reply: {
-      text: "Angel recherche une alternance en BTS Communication pour la rentrée 2026, avec les écoles IBSAC (Brive-la-Gaillarde) et Talis (Périgueux). Mission majoritairement communication, avec des activités complémentaires possibles (par exemple 60 % communication / 40 % vente). Les détails et la zone de mobilité sont sur la page Parcours.",
+      text: "Angel recherche en urgence une alternance en BTS Communication pour septembre 2026. Sa recherche est ouverte à tout secteur dès lors que les missions sont réellement liées à la communication. Les zones principales sont Bordeaux, Périgueux, Bergerac, Brive-la-Gaillarde, Sarlat-la-Canéda et les alentours accessibles ; une mobilité ou un déménagement peut être envisagé pour une opportunité sérieuse.",
       links: [{ label: "Voir la recherche d'alternance", to: "/parcours" }, CONTACT_LINK],
       suggestions: ["Le contacter", "Voir son parcours"],
     },
@@ -223,7 +222,6 @@ export function answer(input: string): AssistantReply {
 
   const urgent = URGENT_KEYWORDS.some((k) => text.includes(k));
 
-  // 1) Besoin décrit par le visiteur → résumé + service adapté + contact
   const needs = NEED_KEYWORDS.filter((n) => n.words.some((w) => text.includes(w)));
   const looksLikeNeed =
     needs.length > 0 &&
@@ -244,7 +242,6 @@ export function answer(input: string): AssistantReply {
     };
   }
 
-  // 2) Intentions par mots-clés
   let best: Intent | null = null;
   let bestScore = 0;
   for (const intent of INTENTS) {
@@ -267,7 +264,6 @@ export function answer(input: string): AssistantReply {
     return reply;
   }
 
-  // 3) Repli élégant
   return {
     text: "Je n'ai pas trouvé cette information parmi les contenus publiés sur le site. Le mieux est de poser directement la question à Angel via le formulaire de contact : la réponse sera précise et personnalisée.",
     links: [CONTACT_LINK, { label: "Voir les services", to: "/entreprise#services" }],
