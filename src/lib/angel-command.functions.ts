@@ -3,6 +3,8 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import type { AiMessage } from "./ai-gateway.server";
+import { resilientAngelAi } from "./ai-resilient.server";
 
 const CommandSchema = z.object({ command: z.string().trim().min(2).max(2_000) });
 
@@ -47,6 +49,14 @@ function requestedTitle(command: string, fallback: string) {
     command.replace(/^(ajoute|crée|cree|prépare|prepare)\s+/i, "").trim() ||
     fallback
   ).slice(0, 180);
+}
+
+function isExplicitOperationalCommand(command: string) {
+  return /^(?:(?:s['’]il te plaît|stp|merci de|peux-tu|tu peux)\s+)?(?:envoie|envoyer|publie|publier|supprime|efface|paie|payer|rembourse|fusionne|merge|ajoute|crée|cree|corrige|modifie|déploie|deploie|programme)\b/i.test(command.trim());
+}
+
+function isSensitiveOperationalCommand(command: string) {
+  return /^(?:(?:s['’]il te plaît|stp|merci de|peux-tu|tu peux)\s+)?(?:envoie|envoyer|publie|publier|supprime|efface|paie|payer|rembourse|fusionne|merge)\b/i.test(command.trim());
 }
 
 async function counts(db: Db) {
@@ -112,45 +122,26 @@ async function openAiAnswer(
   context: Awaited<ReturnType<typeof counts>>,
   history: ChatHistory,
 ) {
-  const key = process.env["OPENAI_API_KEY"];
-  if (!key) return null;
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 25_000);
-  try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      signal: controller.signal,
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-      body: JSON.stringify({
-        model: process.env["OPENAI_MODEL"] || "gpt-4o-mini",
-        temperature: 0.35,
-        max_tokens: 1_200,
-        messages: [
-          {
-            role: "system",
-            content:
-              "Tu es Angel AI, l'assistant principal de l'espace administrateur privé Angel OS. La conversation est continue : utilise les échanges précédents, comprends les pronoms et les références comme « ça », « lui », « continue », « développe », sans obliger l'administrateur à répéter le contexte. Réponds concrètement et avec suffisamment de détail. Utilise l'état JSON de l'administration quand il est pertinent, mais tu peux aussi expliquer, analyser, rédiger et raisonner au-delà de ce JSON. Si une information dépend de données absentes ou d'une actualité non fournie, dis-le. N'affirme jamais qu'une action a été exécutée si elle ne l'a pas été. Les emails, publications, paiements, suppressions et autres actions externes ou irréversibles nécessitent une validation finale.",
-          },
-          ...history,
-          {
-            role: "user",
-            content: `Demande actuelle : ${command}\n\nContexte interne actuel : ${JSON.stringify(context)}`,
-          },
-        ],
-      }),
-    });
-    if (!response.ok) {
-      console.error("[angel-ai] appel OpenAI impossible", response.status, await response.text());
-      return null;
-    }
-    const json = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> };
-    return json.choices?.[0]?.message?.content?.trim() ?? null;
-  } catch (error) {
-    console.error("[angel-ai] erreur OpenAI", error);
-    return null;
-  } finally {
-    clearTimeout(timeout);
-  }
+  const messages: AiMessage[] = [
+    {
+      role: "system",
+      content:
+        "Tu es Angel AI, l'assistant principal de l'espace administrateur privé Angel OS. La conversation est continue : utilise les échanges précédents, comprends les pronoms et les références comme « ça », « lui », « continue », « développe », sans obliger l'administrateur à répéter le contexte. Réponds concrètement et avec suffisamment de détail. Utilise l'état JSON de l'administration quand il est pertinent, mais tu peux aussi expliquer, analyser, rédiger et raisonner au-delà de ce JSON. Une question reste une question même si elle contient des mots comme corriger, modifier, publier ou programmer : n'interprète pas ces mots comme une action à exécuter sauf si l'utilisateur formule clairement un ordre. Si une information dépend de données absentes ou d'une actualité non fournie, dis-le. N'affirme jamais qu'une action a été exécutée si elle ne l'a pas été. Les emails, publications, paiements, suppressions et autres actions externes ou irréversibles nécessitent une validation finale.",
+    },
+    ...history,
+    {
+      role: "user",
+      content: `Demande actuelle : ${command}\n\nContexte interne actuel : ${JSON.stringify(context)}`,
+    },
+  ];
+  const result = await resilientAngelAi({
+    messages,
+    priority: "interactive",
+    maxTokens: 1_200,
+    temperature: 0.35,
+    cacheTtlMs: 60_000,
+  });
+  return result.text?.trim() ?? null;
 }
 
 function candidatureAnswer(state: Awaited<ReturnType<typeof counts>>) {
@@ -191,7 +182,7 @@ export const runAngelCommand = createServerFn({ method: "POST" })
           autoExecuted: sync.status !== "not_connected",
           actionId: null,
         };
-      } else if (/(?:ajoute|crée|cree|note).*(?:tâche|tache)|(?:tâche|tache)\s*:/i.test(command)) {
+      } else if (/^(?:(?:s['’]il te plaît|stp|merci de|peux-tu|tu peux)\s+)?(?:ajoute|crée|cree|note).*(?:tâche|tache)|^(?:tâche|tache)\s*:/i.test(command)) {
         const title = requestedTitle(command, "Nouvelle tâche");
         const { data: task, error } = await db
           .from("project_tasks")
@@ -213,7 +204,7 @@ export const runAngelCommand = createServerFn({ method: "POST" })
           autoExecuted: true,
           actionId: null,
         };
-      } else if (/(?:prépare|prepare|crée|cree|rédige|redige).*(?:article|brouillon)|(?:article|brouillon)\s*:/i.test(command)) {
+      } else if (/^(?:(?:s['’]il te plaît|stp|merci de|peux-tu|tu peux)\s+)?(?:prépare|prepare|crée|cree|rédige|redige).*(?:article|brouillon)|^(?:article|brouillon)\s*:/i.test(command)) {
         const requested = requestedTitle(command, "Nouveau brouillon");
         const { generateArticleDraft } = await import("./article-ai.server");
         const generated = await generateArticleDraft(requested);
@@ -270,8 +261,8 @@ export const runAngelCommand = createServerFn({ method: "POST" })
         };
       } else {
         const state = await counts(db);
-        const sensitive = /\b(envoie|envoyer|publie|publier|supprime|efface|paie|payer|rembourse|fusionne|merge)\b/i.test(command);
-        const operational = sensitive || /\b(ajoute|crée|cree|corrige|modifie|déploie|deploie|programme)\b/i.test(command);
+        const operational = isExplicitOperationalCommand(command);
+        const sensitive = operational && isSensitiveOperationalCommand(command);
 
         if (operational) {
           const { data: action, error } = await db
@@ -315,7 +306,7 @@ export const runAngelCommand = createServerFn({ method: "POST" })
             result = {
               response:
                 localContext ??
-                "Le moteur IA externe n'est pas disponible actuellement. Angel OS conserve les actions locales, mais ne remplace plus une vraie réponse IA par une réponse automatique limitée. Vérifiez OPENAI_API_KEY ou la disponibilité du fournisseur IA sur le déploiement.",
+                "Le moteur IA externe n'est pas disponible actuellement. Angel OS conserve les actions locales, mais ne remplace plus une vraie réponse IA par une réponse automatique limitée. La maintenance ChatGPT pourra reprendre cette question si le fournisseur reste indisponible.",
               status: "partial",
               source: "local",
               autoExecuted: true,
