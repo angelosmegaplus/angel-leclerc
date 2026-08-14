@@ -20,7 +20,12 @@ export type NewsItem = {
   category: NewsCategory;
 };
 
-export type NewsPayload = { items: NewsItem[]; fetchedAt: string; source?: "live" | "cache" };
+export type NewsPayload = {
+  items: NewsItem[];
+  fetchedAt: string;
+  source?: "live" | "cache";
+  phase?: "openai" | "combined";
+};
 
 const NEWS_CACHE_KEY = "news_dashboard";
 const HEADLINE_FRESH_HOURS = 24;
@@ -223,12 +228,17 @@ function finalize(items: NewsItem[]) {
   return [...headlines, ...topical];
 }
 
+async function loadGoogleNews() {
+  const groups = await Promise.all(FEEDS.map(loadFeed));
+  return groups.flat();
+}
+
 async function loadCombinedNews() {
-  const [groups, aiItems] = await Promise.all([
-    Promise.all(FEEDS.map(loadFeed)),
+  const [aiItems, googleItems] = await Promise.all([
     searchNewsWithOpenAI().catch(() => []),
+    loadGoogleNews(),
   ]);
-  return finalize([...groups.flat(), ...aiItems]);
+  return finalize([...aiItems, ...googleItems]);
 }
 
 export const getAdminNews = createServerFn({ method: "GET" })
@@ -240,7 +250,7 @@ export const getAdminNews = createServerFn({ method: "GET" })
     const liveItems = await loadCombinedNews();
 
     if (liveItems.length === 0) {
-      return cached ?? { items: [], fetchedAt: new Date().toISOString(), source: "cache" };
+      return cached ?? { items: [], fetchedAt: new Date().toISOString(), source: "cache", phase: "combined" };
     }
 
     const liveCategories = new Set(liveItems.filter((item) => item.category !== "une").map((item) => item.category));
@@ -250,13 +260,20 @@ export const getAdminNews = createServerFn({ method: "GET" })
       items: merged,
       fetchedAt: new Date().toISOString(),
       source: "live",
+      phase: "combined",
     };
     await writeCache(context, payload);
     return payload;
   });
 
+export async function fetchAiNewsSnapshot(): Promise<NewsPayload> {
+  const aiItems = finalize(await searchNewsWithOpenAI().catch(() => []));
+  if (aiItems.length === 0) throw new Error("Recherche web OpenAI indisponible");
+  return { items: aiItems, fetchedAt: new Date().toISOString(), source: "live", phase: "openai" };
+}
+
 export async function fetchAdminNewsSnapshot(): Promise<NewsPayload> {
   const items = await loadCombinedNews();
   if (items.length === 0) throw new Error("Actualités indisponibles");
-  return { items, fetchedAt: new Date().toISOString(), source: "live" };
+  return { items, fetchedAt: new Date().toISOString(), source: "live", phase: "combined" };
 }
