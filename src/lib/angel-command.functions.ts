@@ -66,22 +66,16 @@ async function counts(db: Db) {
   const apps = (applications.data ?? []) as Array<Record<string, unknown>>;
   const due = apps.filter((row) => {
     const date = typeof row.follow_up_at === "string" ? row.follow_up_at : "";
-    return (
-      date &&
-      date <= new Date().toISOString().slice(0, 10) &&
-      !["refusee", "acceptee"].includes(String(row.status))
-    );
+    return date && date <= new Date().toISOString().slice(0, 10) && !["refusee", "acceptee"].includes(String(row.status));
   });
   return {
     applications: apps.length,
-    applicationsSent: apps.filter((row) => row.status === "envoyee" || row.status === "relance")
-      .length,
+    applicationsSent: apps.filter((row) => row.status === "envoyee" || row.status === "relance").length,
     applicationsRejected: apps.filter((row) => row.status === "refusee").length,
     followUpsDue: due.length,
-    recentApplications: apps.slice(0, 8),
+    recentApplications: apps.slice(0, 12),
     projects: (projects.data ?? []).length,
-    openTasks: (tasks.data ?? []).filter((row: Record<string, unknown>) => row.status !== "termine")
-      .length,
+    openTasks: (tasks.data ?? []).filter((row: Record<string, unknown>) => row.status !== "termine").length,
     articles: (articles.data ?? []).length,
     drafts: (articles.data ?? []).filter((row: Record<string, unknown>) => !row.published).length,
     pendingActions: (actions.data ?? []).length,
@@ -92,30 +86,37 @@ async function openAiAnswer(command: string, context: Awaited<ReturnType<typeof 
   const key = process.env["OPENAI_API_KEY"];
   if (!key) return null;
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 18_000);
+  const timeout = setTimeout(() => controller.abort(), 22_000);
   try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       signal: controller.signal,
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
-        temperature: 0.2,
-        max_tokens: 450,
+        model: process.env["OPENAI_MODEL"] || "gpt-4o-mini",
+        temperature: 0.35,
+        max_tokens: 900,
         messages: [
           {
             role: "system",
             content:
-              "Tu es Angel AI dans un espace administrateur privé. Réponds en français, brièvement, uniquement à partir des données JSON fournies. N'affirme jamais qu'une action a été exécutée. Les emails, publications, paiements, suppressions et actions externes nécessitent une validation finale.",
+              "Tu es Angel AI, l'assistant principal de l'espace administrateur privé Angel OS. Tu dois réellement répondre à la question de l'utilisateur avec les capacités du modèle externe, et utiliser l'état JSON de l'administration quand il est pertinent. Tu peux répondre à des questions générales, analyser, expliquer, rédiger et raisonner : ne te limite pas à réciter le JSON. Si une information dépend de données absentes ou d'une actualité non fournie, dis-le clairement. N'affirme jamais qu'une action a été exécutée si elle ne l'a pas été. Les emails, publications, paiements, suppressions et autres actions externes ou irréversibles nécessitent une validation finale.",
           },
-          { role: "user", content: `Commande: ${command}\nÉtat réel: ${JSON.stringify(context)}` },
+          {
+            role: "user",
+            content: `Demande de l'administrateur : ${command}\n\nContexte interne disponible : ${JSON.stringify(context)}`,
+          },
         ],
       }),
     });
-    if (!response.ok) return null;
+    if (!response.ok) {
+      console.error("[angel-ai] appel OpenAI impossible", response.status, await response.text());
+      return null;
+    }
     const json = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> };
     return json.choices?.[0]?.message?.content?.trim() ?? null;
-  } catch {
+  } catch (error) {
+    console.error("[angel-ai] erreur OpenAI", error);
     return null;
   } finally {
     clearTimeout(timeout);
@@ -124,7 +125,7 @@ async function openAiAnswer(command: string, context: Awaited<ReturnType<typeof 
 
 function candidatureAnswer(state: Awaited<ReturnType<typeof counts>>) {
   const recent = state.recentApplications
-    .slice(0, 5)
+    .slice(0, 6)
     .map((row) => `${row.company}${row.city ? ` (${row.city})` : ""} — ${row.status}`)
     .join("\n• ");
   return [
@@ -141,19 +142,13 @@ export const runAngelCommand = createServerFn({ method: "POST" })
     const db = context.supabase as Db;
     const { data: message, error: messageError } = await db
       .from("ai_messages")
-      .insert({
-        author: "angel",
-        content: data.command,
-        status: "running",
-        context: { source: "admin" },
-      })
+      .insert({ author: "angel", content: data.command, status: "running", context: { source: "admin" } })
       .select("id")
       .single();
     if (messageError) throw messageError;
 
     try {
       const command = data.command.trim();
-      const lower = command.toLowerCase();
       let result: AngelCommandResult;
 
       if (/synchronis\w*.*(?:gmail|candidature)|(?:gmail|candidature).*synchronis/i.test(command)) {
@@ -237,7 +232,7 @@ export const runAngelCommand = createServerFn({ method: "POST" })
         result = {
           response: generated
             ? `Brouillon complet créé automatiquement : « ${finalTitle} » — texte, ${generated.sources.length} source(s), catégories${generated.coverUrl ? " et image Wikimedia créditée" : ""}. Rien n'a été publié : vous pouvez relire et modifier avant publication.`
-            : `Brouillon créé : « ${finalTitle} », mais la génération IA complète n'est pas disponible sur ce déploiement (OPENAI_API_KEY absente ou appel impossible). Le brouillon reste non publié et modifiable.`,
+            : `Brouillon créé : « ${finalTitle} », mais le moteur IA externe n'est pas disponible sur ce déploiement. Le brouillon reste non publié et modifiable.`,
           status: generated ? "completed" : "partial",
           source: generated ? "openai" : "local",
           autoExecuted: true,
@@ -245,13 +240,9 @@ export const runAngelCommand = createServerFn({ method: "POST" })
         };
       } else {
         const state = await counts(db);
-        const sensitive =
-          /\b(envoie|envoyer|publie|publier|supprime|efface|paie|payer|rembourse|fusionne|merge)\b/i.test(
-            command,
-          );
-        const operational =
-          sensitive ||
-          /\b(ajoute|crée|cree|corrige|modifie|déploie|deploie|programme)\b/i.test(command);
+        const sensitive = /\b(envoie|envoyer|publie|publier|supprime|efface|paie|payer|rembourse|fusionne|merge)\b/i.test(command);
+        const operational = sensitive || /\b(ajoute|crée|cree|corrige|modifie|déploie|deploie|programme)\b/i.test(command);
+
         if (operational) {
           const { data: action, error } = await db
             .from("ai_actions")
@@ -278,25 +269,29 @@ export const runAngelCommand = createServerFn({ method: "POST" })
             autoExecuted: false,
             actionId: action.id,
           };
-        } else if (/candidature|alternance|relance/i.test(lower)) {
-          result = {
-            response: candidatureAnswer(state),
-            status: "completed",
-            source: "local",
-            autoExecuted: true,
-            actionId: null,
-          };
         } else {
+          // Toute vraie question passe d'abord par le modèle externe. Le moteur local ne sert plus de faux chatbot.
           const generated = await openAiAnswer(command, state);
-          result = {
-            response:
-              generated ??
-              `État réel : ${state.applications} candidature(s), ${state.openTasks} tâche(s) ouverte(s), ${state.projects} projet(s), ${state.articles} article(s), ${state.pendingActions} action(s) en attente. Demandez par exemple « analyse mes candidatures », « crée une tâche : … » ou « prépare un brouillon sur … ».`,
-            status: "completed",
-            source: generated ? "openai" : "local",
-            autoExecuted: true,
-            actionId: null,
-          };
+          if (generated) {
+            result = {
+              response: generated,
+              status: "completed",
+              source: "openai",
+              autoExecuted: true,
+              actionId: null,
+            };
+          } else {
+            const localContext = /candidature|alternance|relance/i.test(command) ? candidatureAnswer(state) : null;
+            result = {
+              response:
+                localContext ??
+                "Le moteur IA externe n'est pas disponible actuellement. Angel OS conserve les actions locales, mais ne remplace plus une vraie réponse IA par une réponse automatique limitée. Vérifiez OPENAI_API_KEY ou la disponibilité du fournisseur IA sur le déploiement.",
+              status: "partial",
+              source: "local",
+              autoExecuted: true,
+              actionId: null,
+            };
+          }
         }
       }
 
@@ -319,7 +314,7 @@ export const runAngelCommand = createServerFn({ method: "POST" })
         action: "command_completed",
         entity_type: "ai_messages",
         entity_id: message.id,
-        details: { status: result.status, action_id: result.actionId },
+        details: { status: result.status, action_id: result.actionId, source: result.source },
       });
       if (completionLogError) throw completionLogError;
       return result;
@@ -338,9 +333,7 @@ export const runAngelCommand = createServerFn({ method: "POST" })
       });
       if (failureStatusError || failureLogError) {
         const loggingError = failureStatusError ?? failureLogError;
-        throw new Error(
-          `${detail} Journalisation impossible : ${loggingError?.message ?? "erreur inconnue"}`,
-        );
+        throw new Error(`${detail} Journalisation impossible : ${loggingError?.message ?? "erreur inconnue"}`);
       }
       throw error;
     }
