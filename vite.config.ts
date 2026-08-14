@@ -10,17 +10,18 @@ import { VitePWA } from "vite-plugin-pwa";
 import path from "path";
 
 // Load all env vars into process.env for server-side code (server routes / server functions).
-// The @lovable.dev/vite-tanstack-config plugin already loads VITE_* vars into client code;
-// this separate call ensures non-VITE secrets (e.g., SUPABASE_SERVICE_ROLE_KEY, LOVABLE_API_KEY)
-// are available to server functions without leaking them into the client bundle.
 const mode = process.env.NODE_ENV || "development";
 const serverEnv = loadEnv(mode, process.cwd(), "");
 Object.assign(process.env, serverEnv);
 
+// Linux/self-hosted builds can set NITRO_PRESET=node-server. The existing hosted
+// pipeline keeps its current default when this variable is not defined.
+if (process.env.NITRO_PRESET) {
+  process.env.NITRO_PRESET = process.env.NITRO_PRESET;
+}
+
 export default defineConfig({
   tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
     server: { entry: "server" },
   },
   vite: {
@@ -36,8 +37,7 @@ export default defineConfig({
         manifest: {
           name: "Angel OS IA — Angel Control Center",
           short_name: "Angel OS IA",
-          description:
-            "Centre de contrôle personnel, professionnel et journalistique d'Angel Leclerc.",
+          description: "Centre de contrôle personnel, professionnel et journalistique d'Angel Leclerc.",
           lang: "fr",
           dir: "ltr",
           id: "/admin",
@@ -62,24 +62,17 @@ export default defineConfig({
           ],
         },
         workbox: {
-          // Le gestionnaire de notifications vit dans un fichier séparé, jamais mis en cache.
           importScripts: ["/sw-push.js"],
           globPatterns: ["**/*.{js,css,woff2,svg,png,ico}"],
           globIgnores: ["**/sw-push.js"],
           navigateFallback: "/offline.html",
-          navigateFallbackDenylist: [
-            /^\/admin/,
-            /^\/api\//,
-            /^\/~oauth/,
-            /^\/lovable\//,
-          ],
+          navigateFallbackDenylist: [/^\/admin/, /^\/api\//, /^\/~oauth/, /^\/lovable\//],
           cleanupOutdatedCaches: true,
           clientsClaim: true,
           skipWaiting: true,
           maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
           runtimeCaching: [
             {
-              // Contenu privé et appels authentifiés : jamais de cache.
               urlPattern: ({ url }: { url: URL }) =>
                 url.pathname.startsWith("/admin") ||
                 url.pathname.startsWith("/api/") ||
@@ -89,7 +82,6 @@ export default defineConfig({
               handler: "NetworkOnly",
             },
             {
-              // Pages publiques : toujours le réseau d'abord, jamais un vieux HTML.
               urlPattern: ({ request }: { request: Request }) => request.mode === "navigate",
               handler: "NetworkFirst",
               options: {
@@ -115,7 +107,6 @@ export default defineConfig({
         },
       }),
     ],
-    // React Email's htmlparser2 needs entities v4.5.0; pin every import path to the hoisted copy.
     resolve: {
       alias: {
         "entities/lib/decode.js": path.resolve(process.cwd(), "node_modules/entities/lib/decode.js"),
