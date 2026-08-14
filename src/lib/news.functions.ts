@@ -19,11 +19,12 @@ export type NewsItem = {
   category: NewsCategory;
 };
 
+type NewsPayload = { items: NewsItem[]; fetchedAt: string; source?: "live" | "cache" };
+
+const NEWS_CACHE_KEY = "news_dashboard";
+
 const FEEDS: Array<{ category: NewsCategory; query?: string; url?: string }> = [
-  {
-    category: "une",
-    url: "https://news.google.com/rss?hl=fr&gl=FR&ceid=FR:fr",
-  },
+  { category: "une", url: "https://news.google.com/rss?hl=fr&gl=FR&ceid=FR:fr" },
   { category: "politique", query: "politique France société" },
   { category: "medias", query: "radio médias France" },
   { category: "journalisme", query: "journalisme communication France" },
@@ -81,7 +82,7 @@ async function loadFeed(feed: (typeof FEEDS)[number]): Promise<NewsItem[]> {
   const timeout = setTimeout(() => controller.abort(), 6500);
   try {
     const response = await fetch(url, {
-      headers: { "User-Agent": "AngelOS-News/1.0" },
+      headers: { "User-Agent": "AngelOS-News/1.0", Accept: "application/rss+xml, application/xml, text/xml" },
       signal: controller.signal,
     });
     if (!response.ok) return [];
@@ -93,20 +94,56 @@ async function loadFeed(feed: (typeof FEEDS)[number]): Promise<NewsItem[]> {
   }
 }
 
+async function readCache(context: any): Promise<NewsPayload | null> {
+  const { data } = await context.supabase
+    .from("angel_os_cache")
+    .select("payload, updated_at")
+    .eq("key", NEWS_CACHE_KEY)
+    .maybeSingle();
+  if (!data?.payload) return null;
+  const payload = data.payload as NewsPayload;
+  return { ...payload, fetchedAt: payload.fetchedAt || data.updated_at, source: "cache" };
+}
+
+async function writeCache(context: any, payload: NewsPayload) {
+  await context.supabase
+    .from("angel_os_cache")
+    .upsert({ key: NEWS_CACHE_KEY, payload, updated_at: new Date().toISOString() }, { onConflict: "key" });
+}
+
+function dedupe(items: NewsItem[]) {
+  const seen = new Set<string>();
+  return items
+    .sort((a, b) => (b.publishedAt ?? "").localeCompare(a.publishedAt ?? ""))
+    .filter((item) => {
+      const key = `${item.category}:${item.title.toLocaleLowerCase("fr").replace(/\W+/g, " ").trim()}`;
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+}
+
 export const getAdminNews = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<{ items: NewsItem[]; fetchedAt: string }> => {
+  .handler(async ({ context }): Promise<NewsPayload> => {
     await assertAdmin(context);
+
+    const cached = await readCache(context);
     const groups = await Promise.all(FEEDS.map(loadFeed));
-    const seen = new Set<string>();
-    const items = groups
-      .flat()
-      .sort((a, b) => (b.publishedAt ?? "").localeCompare(a.publishedAt ?? ""))
-      .filter((item) => {
-        const key = item.title.toLocaleLowerCase("fr").replace(/\W+/g, " ").trim();
-        if (!key || seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-    return { items, fetchedAt: new Date().toISOString() };
+    const liveItems = dedupe(groups.flat());
+
+    if (liveItems.length === 0) {
+      return cached ?? { items: [], fetchedAt: new Date().toISOString(), source: "cache" };
+    }
+
+    const categories = new Set(liveItems.map((item) => item.category));
+    const cachedFill = (cached?.items ?? []).filter((item) => !categories.has(item.category));
+    const merged = dedupe([...liveItems, ...cachedFill]);
+    const payload: NewsPayload = {
+      items: merged,
+      fetchedAt: new Date().toISOString(),
+      source: "live",
+    };
+    await writeCache(context, payload);
+    return payload;
   });
