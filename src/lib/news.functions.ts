@@ -23,15 +23,33 @@ export type NewsPayload = { items: NewsItem[]; fetchedAt: string; source?: "live
 
 const NEWS_CACHE_KEY = "news_dashboard";
 
-const FEEDS: Array<{ category: NewsCategory; query?: string; url?: string }> = [
-  { category: "une", url: "https://news.google.com/rss?hl=fr&gl=FR&ceid=FR:fr" },
-  { category: "politique", query: "politique France société" },
-  { category: "medias", query: "radio médias France" },
-  { category: "journalisme", query: "journalisme communication France" },
-  { category: "ia", query: "intelligence artificielle technologie France" },
-  { category: "dordogne", query: "Sarlat Dordogne Périgord" },
-  { category: "emploi", query: "alternance communication emploi BTS communication" },
+const FEEDS: Array<{ category: Exclude<NewsCategory, "une">; query: string }> = [
+  { category: "politique", query: "politique France société gouvernement élections souveraineté social" },
+  { category: "medias", query: "radio médias France animateur radio podcast audiovisuel" },
+  { category: "journalisme", query: "journalisme communication édition presse France" },
+  { category: "ia", query: "intelligence artificielle technologie ChatGPT IA France web" },
+  { category: "dordogne", query: "Sarlat Dordogne Périgord Bergerac Périgueux actualité" },
+  { category: "emploi", query: "alternance communication emploi BTS communication radio média stage" },
 ];
+
+const PREFERENCE_WEIGHTS: Array<{ pattern: RegExp; weight: number }> = [
+  { pattern: /radio|animateur|antenne|podcast|audio|fm\b|audiovisuel/i, weight: 12 },
+  { pattern: /journalis|presse|média|media|édition|editeur|rédaction/i, weight: 10 },
+  { pattern: /communication|création|contenu|canva|marketing/i, weight: 8 },
+  { pattern: /sarlat|dordogne|périgord|périgueux|bergerac/i, weight: 9 },
+  { pattern: /alternance|apprentissage|bts|emploi|stage|recrut/i, weight: 9 },
+  { pattern: /intelligence artificielle|\bia\b|chatgpt|openai|technolog|numérique|web/i, weight: 7 },
+  { pattern: /politique|gouvernement|élection|assemblée|président|social|souverain/i, weight: 6 },
+];
+
+const CATEGORY_WEIGHT: Record<Exclude<NewsCategory, "une">, number> = {
+  medias: 12,
+  journalisme: 11,
+  dordogne: 10,
+  emploi: 10,
+  politique: 7,
+  ia: 7,
+};
 
 const decodeXml = (value: string) =>
   value
@@ -47,9 +65,9 @@ function tag(block: string, name: string): string {
   return match ? decodeXml(match[1].trim()) : "";
 }
 
-function parseFeed(xml: string, category: NewsCategory): NewsItem[] {
+function parseFeed(xml: string, category: Exclude<NewsCategory, "une">): NewsItem[] {
   const items = xml.match(/<item\b[\s\S]*?<\/item>/gi) ?? [];
-  return items.slice(0, 14).map((block, index) => {
+  return items.slice(0, 18).map((block, index) => {
     const title = tag(block, "title").replace(/\s+-\s+[^-]+$/, "").trim();
     const url = tag(block, "link");
     const source = tag(block, "source") || "Google News";
@@ -77,7 +95,7 @@ async function assertAdmin(context: { supabase: { from: (table: string) => any }
 }
 
 async function loadFeed(feed: (typeof FEEDS)[number]): Promise<NewsItem[]> {
-  const url = feed.url ?? `https://news.google.com/rss/search?q=${encodeURIComponent(feed.query ?? "")}&hl=fr&gl=FR&ceid=FR:fr`;
+  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(feed.query)}&hl=fr&gl=FR&ceid=FR:fr`;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 6500);
   try {
@@ -123,6 +141,49 @@ function dedupe(items: NewsItem[]) {
     });
 }
 
+function preferenceScore(item: NewsItem) {
+  const text = `${item.title} ${item.source}`;
+  let score = item.category === "une" ? 0 : CATEGORY_WEIGHT[item.category];
+  for (const rule of PREFERENCE_WEIGHTS) {
+    if (rule.pattern.test(text)) score += rule.weight;
+  }
+
+  if (item.publishedAt) {
+    const ageHours = Math.max(0, (Date.now() - new Date(item.publishedAt).getTime()) / 3_600_000);
+    score += Math.max(0, 12 - ageHours / 3);
+  }
+  return score;
+}
+
+function buildPersonalizedHeadlines(items: NewsItem[]): NewsItem[] {
+  const seenTitles = new Set<string>();
+  const ranked = [...items]
+    .sort((a, b) => preferenceScore(b) - preferenceScore(a))
+    .filter((item) => {
+      const key = item.title.toLocaleLowerCase("fr").replace(/\W+/g, " ").trim();
+      if (!key || seenTitles.has(key)) return false;
+      seenTitles.add(key);
+      return true;
+    });
+
+  const selected: NewsItem[] = [];
+  const perCategory = new Map<NewsCategory, number>();
+  for (const item of ranked) {
+    const count = perCategory.get(item.category) ?? 0;
+    if (count >= 3) continue;
+    selected.push({ ...item, id: `une-${item.id}`, category: "une" });
+    perCategory.set(item.category, count + 1);
+    if (selected.length >= 12) break;
+  }
+  return selected;
+}
+
+function finalize(items: NewsItem[]) {
+  const topical = dedupe(items.filter((item) => item.category !== "une"));
+  const headlines = buildPersonalizedHeadlines(topical);
+  return [...headlines, ...topical];
+}
+
 export const getAdminNews = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<NewsPayload> => {
@@ -130,15 +191,15 @@ export const getAdminNews = createServerFn({ method: "GET" })
 
     const cached = await readCache(context);
     const groups = await Promise.all(FEEDS.map(loadFeed));
-    const liveItems = dedupe(groups.flat());
+    const liveItems = finalize(groups.flat());
 
     if (liveItems.length === 0) {
       return cached ?? { items: [], fetchedAt: new Date().toISOString(), source: "cache" };
     }
 
-    const categories = new Set(liveItems.map((item) => item.category));
-    const cachedFill = (cached?.items ?? []).filter((item) => !categories.has(item.category));
-    const merged = dedupe([...liveItems, ...cachedFill]);
+    const liveCategories = new Set(liveItems.filter((item) => item.category !== "une").map((item) => item.category));
+    const cachedFill = (cached?.items ?? []).filter((item) => item.category !== "une" && !liveCategories.has(item.category));
+    const merged = finalize([...liveItems.filter((item) => item.category !== "une"), ...cachedFill]);
     const payload: NewsPayload = {
       items: merged,
       fetchedAt: new Date().toISOString(),
@@ -150,7 +211,7 @@ export const getAdminNews = createServerFn({ method: "GET" })
 
 export async function fetchAdminNewsSnapshot(): Promise<NewsPayload> {
   const groups = await Promise.all(FEEDS.map(loadFeed));
-  const items = dedupe(groups.flat());
+  const items = finalize(groups.flat());
   if (items.length === 0) throw new Error("Actualités indisponibles");
   return { items, fetchedAt: new Date().toISOString(), source: "live" };
 }
