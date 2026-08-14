@@ -31,3 +31,15 @@
 - Budget Lovable par défaut pour le développement courant : 0 crédit. Utiliser GitHub et la CI en priorité sans casser la synchronisation ou la production existante.
 - Une tâche destinée à la production n’est terminée qu’après déploiement et vérification du site réel. Une PR ou un merge seuls ne suffisent pas.
 - Automatiser les opérations techniques sûres et réversibles ; conserver une validation finale pour les actions externes, publiques, financières, destructrices ou irréversibles.
+
+## Cycle obligatoire de maintenance Angel OS
+
+- L’issue GitHub `#17` intitulée `Angel OS — Maintenance Control` est l’interrupteur officiel de maintenance du site.
+- Issue `#17` ouverte = maintenance forcée. Issue `#17` fermée = maintenance non forcée.
+- Toute tâche ou tout agent qui va réellement modifier le code, la configuration, une route publique, un composant, un asset, une intégration ou tout autre élément destiné à être publié doit OUVRIR l’issue `#17` juste avant la première modification effective.
+- Une simple lecture, veille, analyse, comparaison, diagnostic ou vérification sans changement ne doit PAS activer la maintenance.
+- Une fois la maintenance ouverte, la garder active pendant les modifications, les vérifications, le build, la CI et le déploiement Vercel.
+- Ne FERMER l’issue `#17` qu’après avoir confirmé que le dernier `main` attendu est bien déployé en production, que le déploiement est READY/success et que les pages concernées répondent correctement sur `angel-leclerc.fr`.
+- Si le déploiement échoue ou reste bloqué, laisser l’issue `#17` ouverte jusqu’à résolution ou jusqu’à décision explicite de revenir à une version stable.
+- Ne jamais fermer l’issue uniquement parce que le commit a été poussé sur GitHub.
+- `/system-status` conserve aussi la comparaison automatique entre le SHA de production et le dernier SHA de `main` : cette détection reste un filet de sécurité, mais elle ne remplace pas l’interrupteur `#17`.
