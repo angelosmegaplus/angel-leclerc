@@ -12,13 +12,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Choisissez votre entrée : découvrez Angel Leclerc Communication (services aux professionnels et associations) ou consultez mon parcours personnel et mon CV en ligne.",
+          "Choisissez votre entrée : découvrez Angel Leclerc Communication (services aux professionnels et associations) ou consultez mon parcours personnel et ma recherche urgente d'alternance BTS Communication pour septembre 2026.",
       },
       { property: "og:title", content: "Angel Leclerc — Entreprise & Parcours" },
       {
         property: "og:description",
         content:
-          "Deux entrées : Angel Leclerc Communication (services) ou mon parcours personnel (CV en ligne).",
+          "Angel Leclerc Communication, CV en ligne et recherche urgente d'alternance BTS Communication pour septembre 2026.",
       },
       { property: "og:url", content: "/" },
     ],
@@ -41,9 +41,9 @@ const choices = [
     icon: User,
     eyebrow: "Partie personnelle",
     title: "Mon parcours",
-    text: "Découvrez mon parcours, mes compétences, mes réalisations et ma recherche d'alternance en BTS Communication (Périgueux, Brive-la-Gaillarde et environs).",
+    text: "Découvrez mon parcours, mes compétences, mes réalisations et ma recherche urgente d'alternance en BTS Communication. Je suis ouvert à tout secteur proposant de vraies missions de communication, sur Bordeaux, Périgueux, Bergerac, Brive, Sarlat et alentours.",
     cta: "Voir mon parcours",
-    badge: "Recherche d'alternance — septembre 2026",
+    badge: "Recherche urgente d'alternance — septembre 2026",
   },
 ];
 
