@@ -1,0 +1,71 @@
+name: Deploy Vercel Prebuilt
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environnement Vercel"
+        required: true
+        default: "production"
+        type: choice
+        options:
+          - production
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vercel-prebuilt-production
+  cancel-in-progress: false
+
+env:
+  VERCEL_ORG_ID: team_V2zZ6Gj9Vt3ULjCO6ssDbqwM
+  VERCEL_PROJECT_ID: prj_TZoiBkJM3z1knPE6Pc1V854CwrNe
+
+jobs:
+  deploy:
+    name: Build on GitHub and deploy prebuilt output
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Verify Vercel token exists
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::error::Missing GitHub Actions secret VERCEL_TOKEN. Add a Vercel access token as repository or production-environment secret."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Type-check
+        run: bunx tsc --noEmit --pretty false
+
+      - name: Pull Vercel production configuration
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: bunx vercel@latest pull --yes --environment=production --token="$VERCEL_TOKEN" --scope=angel-os2
+
+      - name: Build Vercel output on GitHub Actions
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: bunx vercel@latest build --prod --token="$VERCEL_TOKEN" --scope=angel-os2
+
+      - name: Deploy prebuilt output to production
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: bunx vercel@latest deploy --prebuilt --prod --token="$VERCEL_TOKEN" --scope=angel-os2
