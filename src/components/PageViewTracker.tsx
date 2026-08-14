@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { trackEvent } from "@/lib/analytics.functions";
+import { emitAngelOSEvent } from "@/lib/angel-os-runtime";
 
 function deviceType(): "mobile" | "tablette" | "ordinateur" {
   const w = window.innerWidth;
@@ -133,6 +134,13 @@ export function PageViewTracker() {
       sessionId: sessionId(),
       ...acq,
     };
+
+    void emitAngelOSEvent("angel-os:web:navigation", {
+      path: pathname,
+      title: document.title.slice(0, 200),
+      device: base.device,
+      source: acq.source,
+    }).catch(() => {});
 
     const send = (payload: Record<string, unknown>) => {
       trackEvent({ data: { ...base, ...payload } as never }).catch(() => {});
