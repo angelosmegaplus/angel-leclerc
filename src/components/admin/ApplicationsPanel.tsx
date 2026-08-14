@@ -1,11 +1,42 @@
 import { useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Briefcase, RefreshCw } from "lucide-react";
+import {
+  Briefcase,
+  RefreshCw,
+  Radio,
+  MapPin,
+  Clock3,
+  Zap,
+  Building2,
+  GraduationCap,
+} from "lucide-react";
 import { applicationFields, listRows, str } from "@/lib/angelos";
 import { Button } from "@/components/ui/button";
 import { AdminCard } from "./AdminShell";
 import { CrudModule } from "./CrudModule";
 import { AdminAutomationSummary } from "./AdminAutomationSummary";
+
+const SEARCH_ZONES = [
+  "Bordeaux centre / secteurs bien desservis",
+  "Périgueux",
+  "Bergerac",
+  "Brive-la-Gaillarde",
+  "Sarlat-la-Canéda et alentours accessibles",
+];
+
+const SEARCH_PRIORITIES = [
+  "Radio & animation",
+  "Médias & journalisme local",
+  "Communication éditoriale",
+  "Création de contenus & réseaux sociaux",
+  "Communication digitale & événementiel culturel",
+];
+
+function daysUntil(date: string) {
+  const now = new Date();
+  const end = new Date(`${date}T23:59:59`);
+  return Math.max(0, Math.ceil((end.getTime() - now.getTime()) / 86_400_000));
+}
 
 export function ApplicationsPanel() {
   const queryClient = useQueryClient();
@@ -29,9 +60,122 @@ export function ApplicationsPanel() {
     };
   }, [rows]);
 
+  const urgentSearch = useMemo(() => {
+    const mediaRows = rows.filter((row) => {
+      const haystack = [
+        str(row, "company"),
+        str(row, "position"),
+        str(row, "city"),
+        str(row, "notes"),
+      ]
+        .join(" ")
+        .toLowerCase();
+      return /radio|média|media|journal|communication|contenu|social|réseaux|reseaux/.test(haystack);
+    });
+
+    return {
+      mediaCount: mediaRows.length,
+      activeMediaCount: mediaRows.filter(
+        (row) => !["refusee", "acceptee"].includes(str(row, "status")),
+      ).length,
+      deadlineDays: daysUntil("2026-09-15"),
+    };
+  }, [rows]);
+
   return (
     <div className="space-y-4">
       <AdminAutomationSummary mode="applications" />
+
+      <AdminCard className="overflow-hidden border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-card to-primary/5">
+        <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="max-w-3xl">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300">
+                  <Zap className="h-3.5 w-3.5" />
+                  Recherche urgente
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/70 px-2.5 py-1 text-xs text-muted-foreground">
+                  <Clock3 className="h-3.5 w-3.5" />
+                  Veille 4×/jour · 08:30 · 12:30 · 17:30 · 20:30
+                </span>
+              </div>
+              <div className="mt-3 flex items-center gap-2">
+                <Radio className="h-6 w-6 text-primary" />
+                <h2 className="font-display text-xl font-bold text-foreground">Alternance médias — rentrée 2026</h2>
+              </div>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                Priorité absolue aux offres de BTS Communication liées à la radio, aux médias,
+                au journalisme local et à la création de contenus. La recherche est élargie à
+                Bordeaux tout en conservant Périgueux, Bergerac, Brive et Sarlat. Les doublons
+                sont exclus à partir de l’historique des candidatures et Happy Radio reste sous
+                surveillance uniquement pour un nouveau développement ou une réponse.
+              </p>
+            </div>
+
+            <div className="grid min-w-56 grid-cols-2 gap-2">
+              <div className="rounded-xl border border-border bg-background/70 p-3">
+                <p className="text-[11px] font-medium text-muted-foreground">Pistes médias enregistrées</p>
+                <p className="mt-1 font-display text-2xl font-bold tabular-nums text-foreground">
+                  {urgentSearch.mediaCount}
+                </p>
+              </div>
+              <div className="rounded-xl border border-border bg-background/70 p-3">
+                <p className="text-[11px] font-medium text-muted-foreground">Encore actives</p>
+                <p className="mt-1 font-display text-2xl font-bold tabular-nums text-foreground">
+                  {urgentSearch.activeMediaCount}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-3 lg:grid-cols-3">
+            <div className="rounded-xl border border-border bg-background/60 p-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <MapPin className="h-4 w-4 text-primary" /> Zones ciblées
+              </div>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {SEARCH_ZONES.map((zone) => (
+                  <span key={zone} className="rounded-full border border-border bg-card px-2.5 py-1 text-xs text-muted-foreground">
+                    {zone}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-border bg-background/60 p-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <Radio className="h-4 w-4 text-primary" /> Priorités métiers
+              </div>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {SEARCH_PRIORITIES.map((priority) => (
+                  <span key={priority} className="rounded-full border border-border bg-card px-2.5 py-1 text-xs text-muted-foreground">
+                    {priority}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-border bg-background/60 p-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <GraduationCap className="h-4 w-4 text-primary" /> Stratégie rentrée
+              </div>
+              <div className="mt-3 space-y-2 text-xs leading-relaxed text-muted-foreground">
+                <p>
+                  <strong className="text-foreground">Bordeaux :</strong> privilégier centre et secteurs bien desservis, avec possibilité de transfert de dossier Talis si nécessaire.
+                </p>
+                <p>
+                  <strong className="text-foreground">Candidatures :</strong> une nouvelle candidature automatique maximum par passage, uniquement vers un contact professionnel public et vérifié.
+                </p>
+                <p>
+                  <strong className="text-foreground">Horizon veille :</strong> jusqu’au 15 septembre 2026 · {urgentSearch.deadlineDays} jour{urgentSearch.deadlineDays > 1 ? "s" : ""} restant{urgentSearch.deadlineDays > 1 ? "s" : ""}.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </AdminCard>
+
       <AdminCard className="border-primary/25 bg-primary/5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -40,9 +184,8 @@ export function ApplicationsPanel() {
               <p className="font-display font-bold text-foreground">Suivi des candidatures</p>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              ChatGPT surveille les nouveaux e-mails chaque heure, consigne le bilan dans Angel OS
-              et met à jour les réponses explicites liées aux candidatures. Aucun e-mail n'est
-              envoyé automatiquement : vous gardez la décision finale.
+              Angel OS centralise les candidatures, les réponses et les relances. La veille urgente
+              recherche en parallèle de nouvelles opportunités compatibles avec la rentrée 2026.
             </p>
           </div>
           <Button
