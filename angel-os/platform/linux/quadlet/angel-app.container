@@ -1,7 +1,7 @@
 [Unit]
 Description=Angel OS application server
-Requires=angel-postgres.service angel-data.service
-After=angel-postgres.service angel-data.service
+Requires=angel-postgres.service angel-data.service angel-identity.service
+After=angel-postgres.service angel-data.service angel-identity.service
 
 [Container]
 Image=localhost/angel-leclerc:latest
@@ -9,6 +9,7 @@ ContainerName=angel-app
 Network=angel-network.network
 EnvironmentFile=/etc/angel-os/angel-os.env
 Environment=ANGEL_DATA_URL=http://angel-data:3100
+Environment=ANGEL_IDENTITY_URL=http://angel-identity:3200
 Volume=angel-storage.volume:/var/lib/angel-os/storage
 PublishPort=127.0.0.1:3000:3000
 
