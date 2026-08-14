@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { ExternalLink, Newspaper, RefreshCw } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { getAdminNews, type NewsCategory } from "@/lib/news.functions";
@@ -53,16 +54,31 @@ export function NewsPanel() {
             À la une et veille personnalisée depuis le web.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => void query.refetch()}
-          disabled={query.isFetching}
-          className="grid h-10 w-10 shrink-0 place-items-center border border-white/20 text-white/70 transition-colors hover:border-white/40 hover:text-white disabled:opacity-40"
-          aria-label="Actualiser les actualités"
-        >
-          <RefreshCw className={`h-4 w-4 ${query.isFetching ? "animate-spin" : ""}`} />
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          <Link
+            to="/admin-actualites"
+            className="hidden min-h-10 items-center border border-white/20 px-3 text-xs font-medium text-white/65 transition-colors hover:border-white/40 hover:text-white sm:inline-flex"
+          >
+            Ouvrir la page
+          </Link>
+          <button
+            type="button"
+            onClick={() => void query.refetch()}
+            disabled={query.isFetching}
+            className="grid h-10 w-10 place-items-center border border-white/20 text-white/70 transition-colors hover:border-white/40 hover:text-white disabled:opacity-40"
+            aria-label="Actualiser les actualités"
+          >
+            <RefreshCw className={`h-4 w-4 ${query.isFetching ? "animate-spin" : ""}`} />
+          </button>
+        </div>
       </div>
+
+      <Link
+        to="/admin-actualites"
+        className="mt-3 inline-flex min-h-10 items-center border border-white/20 px-3 text-xs font-medium text-white/65 sm:hidden"
+      >
+        Ouvrir la page complète
+      </Link>
 
       <div className="-mx-1 mt-4 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {FILTERS.map((item) => {
