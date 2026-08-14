@@ -19,7 +19,7 @@ export type NewsItem = {
   category: NewsCategory;
 };
 
-type NewsPayload = { items: NewsItem[]; fetchedAt: string; source?: "live" | "cache" };
+export type NewsPayload = { items: NewsItem[]; fetchedAt: string; source?: "live" | "cache" };
 
 const NEWS_CACHE_KEY = "news_dashboard";
 
@@ -147,3 +147,10 @@ export const getAdminNews = createServerFn({ method: "GET" })
     await writeCache(context, payload);
     return payload;
   });
+
+export async function fetchAdminNewsSnapshot(): Promise<NewsPayload> {
+  const groups = await Promise.all(FEEDS.map(loadFeed));
+  const items = dedupe(groups.flat());
+  if (items.length === 0) throw new Error("Actualités indisponibles");
+  return { items, fetchedAt: new Date().toISOString(), source: "live" };
+}

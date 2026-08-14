@@ -53,6 +53,14 @@ const EMERGENCY_FALLBACK: AdminWeather = {
   fetchedAt: new Date().toISOString(),
 };
 
+export function getEmergencyWeather(): AdminWeather {
+  return {
+    ...EMERGENCY_FALLBACK,
+    hourly: EMERGENCY_FALLBACK.hourly.map((hour) => ({ ...hour })),
+    fetchedAt: new Date().toISOString(),
+  };
+}
+
 async function assertAdmin(context: { supabase: { from: (table: string) => any }; userId: string }) {
   const { data } = await context.supabase
     .from("user_roles")
@@ -117,38 +125,53 @@ export const getAdminWeather = createServerFn({ method: "GET" })
     url.searchParams.set("daily", "temperature_2m_max,temperature_2m_min,precipitation_sum,uv_index_max,sunrise,sunset,weather_code");
 
     try {
-      const response = await fetch(url, {
-        headers: { Accept: "application/json" },
-        signal: AbortSignal.timeout(6000),
-      });
-      if (!response.ok) throw new Error("Météo indisponible");
-
-      const data = (await response.json()) as any;
-      const code = Number(data.daily?.weather_code?.[0] ?? data.current?.weather_code ?? 0);
-      const payload: AdminWeather = {
-        location: "Sarlat-la-Canéda",
-        temperature: Math.round(data.current?.temperature_2m ?? data.daily?.temperature_2m_max?.[0] ?? 0),
-        apparentTemperature: Math.round(data.current?.apparent_temperature ?? data.current?.temperature_2m ?? 0),
-        weatherCode: code,
-        windSpeed: Math.round(data.current?.wind_speed_10m ?? 0),
-        humidity: Math.round(data.current?.relative_humidity_2m ?? 0),
-        high: Math.round(data.daily?.temperature_2m_max?.[0] ?? 0),
-        low: Math.round(data.daily?.temperature_2m_min?.[0] ?? 0),
-        precipitation: typeof data.daily?.precipitation_sum?.[0] === "number" ? data.daily.precipitation_sum[0] : null,
-        uvIndex: typeof data.daily?.uv_index_max?.[0] === "number" ? data.daily.uv_index_max[0] : null,
-        sunrise: data.daily?.sunrise?.[0] ?? "",
-        sunset: data.daily?.sunset?.[0] ?? "",
-        summary: "Prévisions de la journée",
-        hourly: buildHourly(data),
-        source: "live",
-        fetchedAt: new Date().toISOString(),
-      };
-
+      const payload = await fetchAdminWeatherSnapshot(url);
       await writeCache(context, payload);
       return payload;
     } catch {
       const cached = await readCache(context);
       if (cached) return cached;
-      return { ...EMERGENCY_FALLBACK, fetchedAt: new Date().toISOString() };
+      return getEmergencyWeather();
     }
   });
+
+export async function fetchAdminWeatherSnapshot(
+  weatherUrl = new URL("https://api.open-meteo.com/v1/forecast"),
+): Promise<AdminWeather> {
+  if (!weatherUrl.searchParams.has("latitude")) {
+    weatherUrl.searchParams.set("latitude", "44.89");
+    weatherUrl.searchParams.set("longitude", "1.22");
+    weatherUrl.searchParams.set("timezone", "Europe/Paris");
+    weatherUrl.searchParams.set("forecast_days", "1");
+    weatherUrl.searchParams.set("current", "temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m");
+    weatherUrl.searchParams.set("hourly", "temperature_2m,weather_code,precipitation_probability");
+    weatherUrl.searchParams.set("daily", "temperature_2m_max,temperature_2m_min,precipitation_sum,uv_index_max,sunrise,sunset,weather_code");
+  }
+
+  const response = await fetch(weatherUrl, {
+    headers: { Accept: "application/json" },
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!response.ok) throw new Error("Météo indisponible");
+
+  const data = (await response.json()) as any;
+  const code = Number(data.daily?.weather_code?.[0] ?? data.current?.weather_code ?? 0);
+  return {
+    location: "Sarlat-la-Canéda",
+    temperature: Math.round(data.current?.temperature_2m ?? data.daily?.temperature_2m_max?.[0] ?? 0),
+    apparentTemperature: Math.round(data.current?.apparent_temperature ?? data.current?.temperature_2m ?? 0),
+    weatherCode: code,
+    windSpeed: Math.round(data.current?.wind_speed_10m ?? 0),
+    humidity: Math.round(data.current?.relative_humidity_2m ?? 0),
+    high: Math.round(data.daily?.temperature_2m_max?.[0] ?? 0),
+    low: Math.round(data.daily?.temperature_2m_min?.[0] ?? 0),
+    precipitation: typeof data.daily?.precipitation_sum?.[0] === "number" ? data.daily.precipitation_sum[0] : null,
+    uvIndex: typeof data.daily?.uv_index_max?.[0] === "number" ? data.daily.uv_index_max[0] : null,
+    sunrise: data.daily?.sunrise?.[0] ?? "",
+    sunset: data.daily?.sunset?.[0] ?? "",
+    summary: "Prévisions de la journée",
+    hourly: buildHourly(data),
+    source: "live",
+    fetchedAt: new Date().toISOString(),
+  };
+}

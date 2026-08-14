@@ -1105,7 +1105,7 @@ function AdminPage() {
                   className="h-4 w-4 accent-[var(--color-primary)]"
                 />
                 <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-                Article privé (visible uniquement depuis cet espace)
+                Masquer du site public (conserver uniquement dans Angel OS)
               </label>
               <label className="flex items-center gap-2 text-sm text-foreground">
                 <input
@@ -1453,12 +1453,12 @@ function AdminPage() {
                         `programmé pour le ${formatDateTime(a.scheduled_at)}`}
                       {getArticleStatus(a) === "publie" &&
                         `publié ${formatDate(a.published_at ?? a.created_at)}`}
-                      {a.is_private && " · privé"}
+                      {a.is_private && " · masqué du public"}
                       {a.featured && " · à la une"}
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    {getArticleStatus(a) === "publie" && (
+                    {getArticleStatus(a) === "publie" && !a.is_private && (
                       <Button asChild size="sm" variant="ghost">
                         <a href={`/articles/${a.slug}`} target="_blank" rel="noreferrer">
                           <Eye className="h-4 w-4" />

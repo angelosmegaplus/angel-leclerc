@@ -2,8 +2,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ExternalLink, Newspaper, RefreshCw } from "lucide-react";
-import { useServerFn } from "@tanstack/react-start";
-import { getAdminNews, type NewsCategory } from "@/lib/news.functions";
+import type { NewsCategory, NewsPayload } from "@/lib/news.functions";
 
 const FILTERS: Array<{ key: NewsCategory; label: string }> = [
   { key: "une", label: "À la une" },
@@ -29,10 +28,13 @@ function formatNewsDate(value: string | null) {
 
 export function NewsPanel() {
   const [filter, setFilter] = useState<NewsCategory>("une");
-  const getNews = useServerFn(getAdminNews);
   const query = useQuery({
     queryKey: ["admin-news"],
-    queryFn: () => getNews(),
+    queryFn: async () => {
+      const response = await fetch("/api/admin/news", { headers: { Accept: "application/json" } });
+      if (!response.ok) throw new Error("Actualités indisponibles");
+      return (await response.json()) as NewsPayload;
+    },
     staleTime: 55 * 60 * 1000,
     refetchInterval: 60 * 60 * 1000,
     refetchOnWindowFocus: true,

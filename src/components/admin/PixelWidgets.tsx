@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import {
   CalendarDays,
   Cloud,
@@ -15,7 +14,7 @@ import {
   Wind,
   Umbrella,
 } from "lucide-react";
-import { getAdminWeather } from "@/lib/weather.functions";
+import type { AdminWeather } from "@/lib/weather.functions";
 
 function WeatherIcon({ code, className = "" }: { code: number; className?: string }) {
   if (code === 0) return <Sun className={className} />;
@@ -54,10 +53,13 @@ function sourceLabel(source: "live" | "cache" | "fallback") {
 }
 
 export function PixelWidgets() {
-  const getWeather = useServerFn(getAdminWeather);
   const weather = useQuery({
     queryKey: ["admin-weather-sarlat"],
-    queryFn: () => getWeather(),
+    queryFn: async () => {
+      const response = await fetch("/api/admin/weather", { headers: { Accept: "application/json" } });
+      if (!response.ok) throw new Error("Météo indisponible");
+      return (await response.json()) as AdminWeather;
+    },
     staleTime: 30 * 60 * 1000,
     refetchInterval: 60 * 60 * 1000,
     refetchOnWindowFocus: true,

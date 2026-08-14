@@ -147,7 +147,7 @@ function ArticlePage() {
 
         {article.is_private && (
           <p className="mt-3 inline-flex items-center gap-2 rounded-md border border-border bg-muted px-3 py-1.5 text-xs text-muted-foreground">
-            <Lock className="h-3.5 w-3.5" /> Article privé — non listé sur le site
+            <Lock className="h-3.5 w-3.5" /> Article masqué du site public
           </p>
         )}
 

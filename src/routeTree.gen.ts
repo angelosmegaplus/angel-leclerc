@@ -35,6 +35,8 @@ import { Route as ArticlesReponseArticleChniTombolaPatrimoineRouteImport } from 
 import { Route as ArticlesSlugRouteImport } from './routes/articles/$slug'
 import { Route as ActualitesSlugRouteImport } from './routes/actualites/$slug'
 import { Route as ApiPublicContactRouteImport } from './routes/api/public/contact'
+import { Route as ApiAdminWeatherRouteImport } from './routes/api/admin/weather'
+import { Route as ApiAdminNewsRouteImport } from './routes/api/admin/news'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
@@ -176,6 +178,16 @@ const ApiPublicContactRoute = ApiPublicContactRouteImport.update({
   path: '/api/public/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminWeatherRoute = ApiAdminWeatherRouteImport.update({
+  id: '/api/admin/weather',
+  path: '/api/admin/weather',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminNewsRoute = ApiAdminNewsRouteImport.update({
+  id: '/api/admin/news',
+  path: '/api/admin/news',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailTransactionalPreviewRoute =
   LovableEmailTransactionalPreviewRouteImport.update({
     id: '/lovable/email/transactional/preview',
@@ -243,6 +255,8 @@ export interface FileRoutesByFullPath {
   '/actualites/': typeof ActualitesIndexRoute
   '/articles/': typeof ArticlesIndexRoute
   '/boutique/': typeof BoutiqueIndexRoute
+  '/api/admin/news': typeof ApiAdminNewsRoute
+  '/api/admin/weather': typeof ApiAdminWeatherRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -278,6 +292,8 @@ export interface FileRoutesByTo {
   '/actualites': typeof ActualitesIndexRoute
   '/articles': typeof ArticlesIndexRoute
   '/boutique': typeof BoutiqueIndexRoute
+  '/api/admin/news': typeof ApiAdminNewsRoute
+  '/api/admin/weather': typeof ApiAdminWeatherRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -314,6 +330,8 @@ export interface FileRoutesById {
   '/actualites/': typeof ActualitesIndexRoute
   '/articles/': typeof ArticlesIndexRoute
   '/boutique/': typeof BoutiqueIndexRoute
+  '/api/admin/news': typeof ApiAdminNewsRoute
+  '/api/admin/weather': typeof ApiAdminWeatherRoute
   '/api/public/contact': typeof ApiPublicContactRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -351,6 +369,8 @@ export interface FileRouteTypes {
     | '/actualites/'
     | '/articles/'
     | '/boutique/'
+    | '/api/admin/news'
+    | '/api/admin/weather'
     | '/api/public/contact'
     | '/api/public/hooks/newsletter'
     | '/api/public/payments/webhook'
@@ -386,6 +406,8 @@ export interface FileRouteTypes {
     | '/actualites'
     | '/articles'
     | '/boutique'
+    | '/api/admin/news'
+    | '/api/admin/weather'
     | '/api/public/contact'
     | '/api/public/hooks/newsletter'
     | '/api/public/payments/webhook'
@@ -421,6 +443,8 @@ export interface FileRouteTypes {
     | '/actualites/'
     | '/articles/'
     | '/boutique/'
+    | '/api/admin/news'
+    | '/api/admin/weather'
     | '/api/public/contact'
     | '/api/public/hooks/newsletter'
     | '/api/public/payments/webhook'
@@ -457,6 +481,8 @@ export interface RootRouteChildren {
   ActualitesIndexRoute: typeof ActualitesIndexRoute
   ArticlesIndexRoute: typeof ArticlesIndexRoute
   BoutiqueIndexRoute: typeof BoutiqueIndexRoute
+  ApiAdminNewsRoute: typeof ApiAdminNewsRoute
+  ApiAdminWeatherRoute: typeof ApiAdminWeatherRoute
   ApiPublicContactRoute: typeof ApiPublicContactRoute
   ApiPublicHooksNewsletterRoute: typeof ApiPublicHooksNewsletterRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -651,6 +677,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicContactRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/weather': {
+      id: '/api/admin/weather'
+      path: '/api/admin/weather'
+      fullPath: '/api/admin/weather'
+      preLoaderRoute: typeof ApiAdminWeatherRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/news': {
+      id: '/api/admin/news'
+      path: '/api/admin/news'
+      fullPath: '/api/admin/news'
+      preLoaderRoute: typeof ApiAdminNewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/transactional/preview': {
       id: '/lovable/email/transactional/preview'
       path: '/lovable/email/transactional/preview'
@@ -731,6 +771,8 @@ const rootRouteChildren: RootRouteChildren = {
   ActualitesIndexRoute: ActualitesIndexRoute,
   ArticlesIndexRoute: ArticlesIndexRoute,
   BoutiqueIndexRoute: BoutiqueIndexRoute,
+  ApiAdminNewsRoute: ApiAdminNewsRoute,
+  ApiAdminWeatherRoute: ApiAdminWeatherRoute,
   ApiPublicContactRoute: ApiPublicContactRoute,
   ApiPublicHooksNewsletterRoute: ApiPublicHooksNewsletterRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
