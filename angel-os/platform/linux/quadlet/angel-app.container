@@ -1,0 +1,19 @@
+[Unit]
+Description=Angel OS application server
+Requires=angel-postgres.service
+After=angel-postgres.service
+
+[Container]
+Image=localhost/angel-leclerc:latest
+ContainerName=angel-app
+Network=angel-network.network
+EnvironmentFile=/etc/angel-os/angel-os.env
+Volume=angel-storage.volume:/var/lib/angel-os/storage
+PublishPort=127.0.0.1:3000:3000
+
+[Service]
+Restart=always
+TimeoutStartSec=180
+
+[Install]
+WantedBy=default.target
