@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Volume2 } from "lucide-react";
+import { isStandalone } from "@/lib/pwa";
 
 export function AdminBootIntro() {
   const [visible, setVisible] = useState(false);
@@ -7,9 +8,8 @@ export function AdminBootIntro() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
-    // Le composant est monté à chaque vraie ouverture/rechargement d'Angel OS.
-    // Les changements d'onglets internes restent dans la même page et ne rejouent donc pas l'intro.
-    setVisible(true);
+    // Le générique appartient à l'expérience application installée, pas à l'admin dans le navigateur.
+    setVisible(isStandalone());
   }, []);
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export function AdminBootIntro() {
         setSoundBlocked(false);
       } catch {
         // Les navigateurs mobiles peuvent bloquer l'autoplay sonore.
-        // Dans ce cas, un geste utilisateur débloque immédiatement le générique.
+        // Dans ce cas, un geste utilisateur débloque le générique sans permettre de le passer.
         setSoundBlocked(true);
       }
     };
