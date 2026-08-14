@@ -2,14 +2,35 @@ import { useEffect, useRef, useState } from "react";
 import { Volume2 } from "lucide-react";
 import { isStandalone } from "@/lib/pwa";
 
+const BOOT_KEY = "angel-os:boot-played-this-session";
+
+function hasPlayedThisSession() {
+  try {
+    return window.sessionStorage.getItem(BOOT_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markPlayedThisSession() {
+  try {
+    window.sessionStorage.setItem(BOOT_KEY, "1");
+  } catch {
+    /* stockage indisponible */
+  }
+}
+
 export function AdminBootIntro() {
   const [visible, setVisible] = useState(false);
   const [soundBlocked, setSoundBlocked] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
-    // Le générique appartient à l'expérience application installée, pas à l'admin dans le navigateur.
-    setVisible(isStandalone());
+    // Intro uniquement dans l'app installée, une seule fois pendant la session PWA.
+    // Les navigations internes et remontages React ne la rejouent plus.
+    if (!isStandalone() || hasPlayedThisSession()) return;
+    markPlayedThisSession();
+    setVisible(true);
   }, []);
 
   useEffect(() => {
@@ -27,8 +48,6 @@ export function AdminBootIntro() {
         await video.play();
         setSoundBlocked(false);
       } catch {
-        // Les navigateurs mobiles peuvent bloquer l'autoplay sonore.
-        // Dans ce cas, un geste utilisateur débloque le générique sans permettre de le passer.
         setSoundBlocked(true);
       }
     };
