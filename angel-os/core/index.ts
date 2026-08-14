@@ -3,3 +3,4 @@ export * from './types';
 export * from './event-bus';
 export * from './module-registry';
 export * from './config';
+export * from './request-queue';
