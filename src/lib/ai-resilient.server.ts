@@ -36,11 +36,11 @@ export async function resilientAngelAi(options: {
 
   return {
     ...result,
-    recoveryAction: result.text ? (attempt > 0 ? "retry" : "none") : "use_local",
+    recoveryAction: result.text ? (attempt > 0 ? "retry" : "none") : "wait",
     recoveryExplanation: result.text
       ? attempt > 0
-        ? `Récupération automatique réussie après ${attempt} nouvelle(s) tentative(s).`
-        : "Fonctionnement normal."
-      : "Le fournisseur reste indisponible : le module appelant doit utiliser son moteur local de secours.",
+        ? `Récupération OpenAI réussie après ${attempt} nouvelle(s) tentative(s).`
+        : "Fonctionnement OpenAI normal."
+      : "OpenAI reste indisponible : le module appelant doit différer la génération ou utiliser uniquement des données déterministes, sans simuler une IA locale.",
   };
 }
