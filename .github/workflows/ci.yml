@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   build:
-    name: Install, type-check and build
+    name: Install, build and type-check
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -33,8 +33,10 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Type-check
-        run: bunx tsc --noEmit --pretty false
-
+      # TanStack Router generates src/routeTree.gen.ts during the Vite build.
+      # Building first keeps CI in sync with newly added file-based routes before tsc runs.
       - name: Build production bundle
         run: bun run build
+
+      - name: Type-check
+        run: bunx tsc --noEmit --pretty false
