@@ -7,7 +7,6 @@ import {
   MapPin,
   Clock3,
   Zap,
-  Building2,
   GraduationCap,
 } from "lucide-react";
 import { applicationFields, listRows, str } from "@/lib/angelos";
@@ -97,19 +96,18 @@ export function ApplicationsPanel() {
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/70 px-2.5 py-1 text-xs text-muted-foreground">
                   <Clock3 className="h-3.5 w-3.5" />
-                  Veille 4×/jour · 08:30 · 12:30 · 17:30 · 20:30
+                  Jusqu’à 8 candidatures / passage · 4 passages/jour
                 </span>
               </div>
               <div className="mt-3 flex items-center gap-2">
                 <Radio className="h-6 w-6 text-primary" />
-                <h2 className="font-display text-xl font-bold text-foreground">Alternance médias — rentrée 2026</h2>
+                <h2 className="font-display text-xl font-bold text-foreground">Alternance communication — rentrée 2026</h2>
               </div>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                Priorité absolue aux offres de BTS Communication liées à la radio, aux médias,
-                au journalisme local et à la création de contenus. La recherche est élargie à
-                Bordeaux tout en conservant Périgueux, Bergerac, Brive et Sarlat. Les doublons
-                sont exclus à partir de l’historique des candidatures et Happy Radio reste sous
-                surveillance uniquement pour un nouveau développement ou une réponse.
+                Recherche accélérée sur tous les secteurs compatibles BTS Communication, avec priorité
+                aux radios, médias, journalisme local et création de contenus. Bordeaux, Périgueux,
+                Bergerac, Brive et Sarlat restent les zones principales. Les doublons sont vérifiés
+                dans Gmail et l’historique avant tout nouvel envoi.
               </p>
             </div>
 
@@ -165,7 +163,7 @@ export function ApplicationsPanel() {
                   <strong className="text-foreground">Bordeaux :</strong> privilégier centre et secteurs bien desservis, avec possibilité de transfert de dossier Talis si nécessaire.
                 </p>
                 <p>
-                  <strong className="text-foreground">Candidatures :</strong> une nouvelle candidature automatique maximum par passage, uniquement vers un contact professionnel public et vérifié.
+                  <strong className="text-foreground">Candidatures :</strong> jusqu’à huit envois automatiques par passage, uniquement vers des contacts professionnels vérifiés et sans doublon.
                 </p>
                 <p>
                   <strong className="text-foreground">Horizon veille :</strong> jusqu’au 15 septembre 2026 · {urgentSearch.deadlineDays} jour{urgentSearch.deadlineDays > 1 ? "s" : ""} restant{urgentSearch.deadlineDays > 1 ? "s" : ""}.
