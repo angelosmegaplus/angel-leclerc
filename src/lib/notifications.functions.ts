@@ -30,6 +30,7 @@ export const pushStatus = createServerFn({ method: "GET" })
       const items = await data.list(`push.subscriptions.${context.userId}`);
       return { ...readPushConfig(), subscriptions: items.length };
     }
+    if (!context.supabase) return { ...readPushConfig(), subscriptions: 0 };
     const { count } = await context.supabase.from("push_subscriptions").select("id", { count: "exact", head: true }).eq("user_id", context.userId);
     return { ...readPushConfig(), subscriptions: count ?? 0 };
   });
@@ -48,6 +49,7 @@ export const savePushSubscription = createServerFn({ method: "POST" })
       await store.set(`push.subscriptions.${context.userId}`, subscriptionKey(data.endpoint), { ...data, userAgent: data.userAgent?.slice(0, 300) ?? null, updatedAt: new Date().toISOString() });
       return { ok: true };
     }
+    if (!context.supabase) throw new Error("Aucun stockage d'abonnement push disponible.");
     const { error } = await context.supabase.from("push_subscriptions").upsert(
       { user_id: context.userId, endpoint: data.endpoint, p256dh: data.p256dh, auth: data.auth, user_agent: data.userAgent?.slice(0,300) ?? null, last_used_at: new Date().toISOString(), updated_at: new Date().toISOString() },
       { onConflict: "endpoint" },
@@ -66,6 +68,7 @@ export const removePushSubscription = createServerFn({ method: "POST" })
       await store.delete(`push.subscriptions.${context.userId}`, subscriptionKey(data.endpoint));
       return { ok: true };
     }
+    if (!context.supabase) return { ok: true };
     const { error } = await context.supabase.from("push_subscriptions").delete().eq("user_id", context.userId).eq("endpoint", data.endpoint);
     if (error) throw error;
     return { ok: true };
