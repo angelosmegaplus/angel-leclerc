@@ -4,27 +4,5 @@
     "deploymentEnabled": {
       "work/angel-os": false
     }
-  },
-  "rewrites": [
-    {
-      "source": "/_serverFn/:path*",
-      "destination": "https://angel-leclerc.lovable.app/_serverFn/:path*"
-    },
-    {
-      "source": "/__server",
-      "destination": "https://angel-leclerc.lovable.app/__server"
-    },
-    {
-      "source": "/~oauth/:path*",
-      "destination": "https://angel-leclerc.lovable.app/~oauth/:path*"
-    },
-    {
-      "source": "/api/public/:path*",
-      "destination": "https://angel-leclerc.lovable.app/api/public/:path*"
-    },
-    {
-      "source": "/lovable/:path*",
-      "destination": "https://angel-leclerc.lovable.app/lovable/:path*"
-    }
-  ]
+  }
 }

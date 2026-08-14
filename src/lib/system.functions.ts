@@ -1,25 +1,16 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getRequest } from "@tanstack/react-start/server";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAngelAuth } from "@/lib/auth/require-angel-auth";
+import { assertAngelAdmin } from "@/lib/auth/require-admin";
 import type { IntegrationReadiness, IntegrationStatus, ConnectionState } from "./system.server";
 
 export type { IntegrationReadiness, IntegrationStatus, ConnectionState };
 
-async function assertAdmin(context: { supabase: { from: (t: string) => any }; userId: string }) {
-  const { data } = await context.supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", context.userId)
-    .eq("role", "admin")
-    .maybeSingle();
-  if (!data) throw new Error("Accès réservé à l'administrateur.");
-}
-
 export const integrationReadiness = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAngelAuth])
   .handler(async ({ context }): Promise<IntegrationReadiness[]> => {
-    await assertAdmin(context);
+    await assertAngelAdmin(context);
     const { readIntegrations } = await import("./system.server");
     const services = readIntegrations();
 
@@ -51,12 +42,11 @@ export const integrationReadiness = createServerFn({ method: "GET" })
 
 const providerInput = z.object({ provider: z.string().min(1).max(30) });
 
-/** Returns the provider consent URL. The browser only ever sees this URL, never a token. */
 export const startOAuthConnection = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAngelAuth])
   .inputValidator((data: unknown) => providerInput.parse(data))
   .handler(async ({ context, data }): Promise<{ url: string }> => {
-    await assertAdmin(context);
+    await assertAngelAdmin(context);
     const { isProviderId } = await import("./oauth/providers");
     if (!isProviderId(data.provider)) throw new Error("Fournisseur inconnu.");
     const { buildAuthorizeUrl } = await import("./oauth/oauth.server");
@@ -65,10 +55,10 @@ export const startOAuthConnection = createServerFn({ method: "POST" })
   });
 
 export const disconnectOAuthConnection = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAngelAuth])
   .inputValidator((data: unknown) => providerInput.parse(data))
   .handler(async ({ context, data }): Promise<{ ok: true }> => {
-    await assertAdmin(context);
+    await assertAngelAdmin(context);
     const { isProviderId } = await import("./oauth/providers");
     if (!isProviderId(data.provider)) throw new Error("Fournisseur inconnu.");
     const { deleteConnection } = await import("./oauth/oauth.server");

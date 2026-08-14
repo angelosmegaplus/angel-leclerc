@@ -1,0 +1,22 @@
+[Unit]
+Description=Angel OS PostgreSQL
+After=network-online.target
+
+[Container]
+Image=docker.io/library/postgres:17-alpine
+ContainerName=angel-postgres
+Network=angel-network.network
+Volume=angel-postgres-data.volume:/var/lib/postgresql/data
+EnvironmentFile=/etc/angel-os/angel-os.env
+Environment=POSTGRES_DB=${POSTGRES_DB}
+Environment=POSTGRES_USER=${POSTGRES_USER}
+Environment=POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+HealthCmd=pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
+HealthInterval=30s
+
+[Service]
+Restart=always
+TimeoutStartSec=180
+
+[Install]
+WantedBy=default.target

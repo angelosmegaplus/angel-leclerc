@@ -1,18 +1,11 @@
 import * as React from 'react'
 import { render } from '@react-email/render'
-import { EmailAPIError, sendLovableEmail } from '@lovable.dev/email-js'
+import { spawn } from 'node:child_process'
 import { TEMPLATES } from './registry'
 
-// Server-only: reads LOVABLE_API_KEY. Never import from client components.
-
-// Configuration baked in at scaffold time
-const SITE_NAME = "Angel Leclerc Communication"
-// SENDER_DOMAIN is the verified sender subdomain FQDN (e.g., "notify.example.com").
-// It MUST match the subdomain delegated to Lovable's nameservers. NEVER use the root domain.
-const SENDER_DOMAIN = "notify.angel-leclerc.fr"
-// FROM_DOMAIN is the domain shown in the From: header (e.g., "example.com").
-// Can be the root domain when display_from_root is enabled — this is cosmetic only.
-const FROM_DOMAIN = "angel-leclerc.fr"
+const SITE_NAME = 'Angel Leclerc Communication'
+const FROM_ADDRESS = process.env.ANGEL_MAIL_FROM || 'noreply@angel-leclerc.fr'
+const SENDMAIL_PATH = process.env.ANGEL_SENDMAIL_PATH || '/usr/sbin/sendmail'
 
 export type SendTemplateEmailResult =
   | { sent: true }
@@ -20,73 +13,73 @@ export type SendTemplateEmailResult =
 
 export interface SendTemplateEmailOptions {
   templateData?: Record<string, any>
-  /** Dedupes retries of the same logical send; defaults to a random UUID (no dedupe). */
   idempotencyKey?: string
   replyTo?: string
 }
 
-/**
- * Renders a registered template and sends it through Lovable's managed email
- * API. Suppression, retries, and rate limits are enforced by Lovable
- * server-side. A suppressed recipient is an expected outcome
- * ({ sent: false }); any other failure throws — EmailAPIError exposes
- * .code and .status for branching.
- */
+function cleanHeader(value: string): string {
+  return value.replace(/[\r\n]+/g, ' ').trim()
+}
+
+async function sendWithLocalMta(message: string): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    const child = spawn(SENDMAIL_PATH, ['-t', '-i'], { stdio: ['pipe', 'ignore', 'pipe'] })
+    let stderr = ''
+    child.stderr?.setEncoding('utf8')
+    child.stderr?.on('data', (chunk: string) => { stderr += chunk })
+    child.on('error', reject)
+    child.on('close', (code) => {
+      if (code === 0) resolve()
+      else reject(new Error(`Angel Mail: sendmail a échoué (${code ?? 'inconnu'})${stderr ? `: ${stderr.trim()}` : ''}`))
+    })
+    child.stdin?.end(message)
+  })
+}
+
 export async function sendTemplateEmail(
   templateName: string,
   to: string,
   options: SendTemplateEmailOptions = {}
 ): Promise<SendTemplateEmailResult> {
-  const apiKey = process.env['LOVABLE_API_KEY']
-  if (!apiKey) {
-    throw new Error('LOVABLE_API_KEY is not configured')
-  }
-
   const template = TEMPLATES[templateName]
   if (!template) {
-    throw new Error(
-      `Template '${templateName}' not found. Available: ${Object.keys(TEMPLATES).join(', ')}`
-    )
+    throw new Error(`Template '${templateName}' introuvable. Disponibles : ${Object.keys(TEMPLATES).join(', ')}`)
   }
 
-  // Template-level `to` takes precedence — notification templates always
-  // send to their fixed address.
   const recipient = template.to || to
-  if (!recipient) {
-    throw new Error('Recipient is required (the template defines no fixed recipient)')
-  }
+  if (!recipient) throw new Error('Destinataire requis')
 
   const templateData = options.templateData ?? {}
   const element = React.createElement(template.component, templateData)
   const html = await render(element)
   const text = await render(element, { plainText: true })
-  const subject =
-    typeof template.subject === 'function'
-      ? template.subject(templateData)
-      : template.subject
+  const subject = typeof template.subject === 'function' ? template.subject(templateData) : template.subject
 
-  try {
-    await sendLovableEmail(
-      {
-        to: recipient,
-        from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
-        sender_domain: SENDER_DOMAIN,
-        subject,
-        html,
-        text,
-        purpose: 'transactional',
-        label: templateName,
-        idempotency_key: options.idempotencyKey || crypto.randomUUID(),
-        reply_to: options.replyTo,
-      },
-      { apiKey, sendUrl: process.env['LOVABLE_SEND_URL'] }
-    )
-  } catch (error) {
-    if (error instanceof EmailAPIError && error.code === 'recipient_suppressed') {
-      return { sent: false, reason: 'recipient_suppressed' }
-    }
-    throw error
-  }
+  const headers = [
+    `From: ${cleanHeader(SITE_NAME)} <${cleanHeader(FROM_ADDRESS)}>`,
+    `To: ${cleanHeader(recipient)}`,
+    `Subject: ${cleanHeader(subject)}`,
+    options.replyTo ? `Reply-To: ${cleanHeader(options.replyTo)}` : null,
+    `Message-ID: <${cleanHeader(options.idempotencyKey || crypto.randomUUID())}@angel-leclerc.fr>`,
+    'MIME-Version: 1.0',
+    'Content-Type: multipart/alternative; boundary="angel-os-mail-boundary"',
+    '',
+    '--angel-os-mail-boundary',
+    'Content-Type: text/plain; charset="UTF-8"',
+    'Content-Transfer-Encoding: 8bit',
+    '',
+    text,
+    '',
+    '--angel-os-mail-boundary',
+    'Content-Type: text/html; charset="UTF-8"',
+    'Content-Transfer-Encoding: 8bit',
+    '',
+    html,
+    '',
+    '--angel-os-mail-boundary--',
+    '',
+  ].filter((line): line is string => line !== null)
 
+  await sendWithLocalMta(headers.join('\r\n'))
   return { sent: true }
 }

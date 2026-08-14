@@ -21,8 +21,6 @@ function markPlayedThisSession() {
 }
 
 export function AdminBootIntro() {
-  // L'overlay existe dès le premier rendu afin que l'interface admin ne puisse
-  // jamais apparaître une fraction de seconde avant le générique.
   const [visible, setVisible] = useState(true);
   const [shouldPlay, setShouldPlay] = useState(true);
   const [videoReady, setVideoReady] = useState(false);
@@ -31,8 +29,6 @@ export function AdminBootIntro() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
-    // Intro uniquement dans l'app installée, une seule fois pendant la session PWA.
-    // Le test est fait après que l'écran noir de boot soit déjà en place.
     if (!isStandalone() || hasPlayedThisSession()) {
       setShouldPlay(false);
       setVisible(false);
@@ -60,8 +56,6 @@ export function AdminBootIntro() {
         await video.play();
         if (!cancelled) setSoundBlocked(false);
       } catch {
-        // L'intro doit démarrer immédiatement même si Android/Chrome refuse
-        // l'autoplay sonore. On lance alors la vidéo sans son au lieu de bloquer.
         video.muted = true;
         try {
           await video.play();

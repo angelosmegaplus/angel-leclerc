@@ -1,0 +1,7 @@
+[Unit]
+Description=Angel OS PostgreSQL backup
+After=angel-postgres.service
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/lib/angel-os/backup.sh

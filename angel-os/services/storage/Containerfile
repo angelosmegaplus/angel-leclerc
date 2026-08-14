@@ -1,0 +1,6 @@
+FROM oven/bun:1.2.20-alpine
+WORKDIR /app
+COPY angel-os/services/storage/server.ts ./server.ts
+ENV PORT=3300
+EXPOSE 3300
+CMD ["bun", "run", "server.ts"]

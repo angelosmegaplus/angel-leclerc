@@ -1,52 +1,66 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAngelAuth } from "@/lib/auth/require-angel-auth";
+import { assertAngelAdmin } from "@/lib/auth/require-admin";
+import { AngelOSAdapterRegistry } from "../../angel-os/core/adapter-registry";
 import type { PushConfig, SyncReport } from "./notifications.server";
 
 export type { PushConfig, SyncReport };
-
 export type PushStatus = PushConfig & { subscriptions: number };
 
-async function assertAdmin(context: { supabase: any; userId: string }) {
-  const { data } = await context.supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", context.userId)
-    .eq("role", "admin")
-    .maybeSingle();
-  if (!data) throw new Error("Accès réservé à l'administrateur.");
+type NativeDataClient = {
+  list: <T = unknown>(namespace: string) => Promise<Array<{ key: string; value: T }>>;
+  set: <T = unknown>(namespace: string, key: string, value: T) => Promise<unknown>;
+  delete: (namespace: string, key: string) => Promise<unknown>;
+};
+
+async function nativeData(): Promise<NativeDataClient | null> {
+  if (!process.env.ANGEL_DATA_TOKEN) return null;
+  try {
+    const { angelDataServerAdapter } = await import("../../angel-os/adapters/data.server");
+    const adapters = new AngelOSAdapterRegistry();
+    adapters.register(angelDataServerAdapter);
+    return await adapters.connect<NativeDataClient>("angel.data.native");
+  } catch {
+    return null;
+  }
+}
+
+function subscriptionKey(endpoint: string) {
+  return encodeURIComponent(endpoint).slice(0, 180);
 }
 
 export const pushStatus = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAngelAuth])
   .handler(async ({ context }): Promise<PushStatus> => {
-    await assertAdmin(context);
+    await assertAngelAdmin(context);
     const { readPushConfig } = await import("./notifications.server");
-    const { count } = await context.supabase
-      .from("push_subscriptions")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", context.userId);
+    const data = await nativeData();
+    if (data) {
+      const items = await data.list(`push.subscriptions.${context.userId}`);
+      return { ...readPushConfig(), subscriptions: items.length };
+    }
+    if (!context.supabase) return { ...readPushConfig(), subscriptions: 0 };
+    const { count } = await context.supabase.from("push_subscriptions").select("id", { count: "exact", head: true }).eq("user_id", context.userId);
     return { ...readPushConfig(), subscriptions: count ?? 0 };
   });
 
 export const savePushSubscription = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAngelAuth])
   .inputValidator((input: { endpoint: string; p256dh: string; auth: string; userAgent?: string }) => {
     if (!input?.endpoint?.startsWith("https://")) throw new Error("Abonnement push invalide.");
     if (!input.p256dh || !input.auth) throw new Error("Clés d'abonnement manquantes.");
     return input;
   })
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
+    await assertAngelAdmin(context);
+    const store = await nativeData();
+    if (store) {
+      await store.set(`push.subscriptions.${context.userId}`, subscriptionKey(data.endpoint), { ...data, userAgent: data.userAgent?.slice(0, 300) ?? null, updatedAt: new Date().toISOString() });
+      return { ok: true };
+    }
+    if (!context.supabase) throw new Error("Aucun stockage d'abonnement push disponible.");
     const { error } = await context.supabase.from("push_subscriptions").upsert(
-      {
-        user_id: context.userId,
-        endpoint: data.endpoint,
-        p256dh: data.p256dh,
-        auth: data.auth,
-        user_agent: data.userAgent?.slice(0, 300) ?? null,
-        last_used_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
+      { user_id: context.userId, endpoint: data.endpoint, p256dh: data.p256dh, auth: data.auth, user_agent: data.userAgent?.slice(0,300) ?? null, last_used_at: new Date().toISOString(), updated_at: new Date().toISOString() },
       { onConflict: "endpoint" },
     );
     if (error) throw error;
@@ -54,23 +68,44 @@ export const savePushSubscription = createServerFn({ method: "POST" })
   });
 
 export const removePushSubscription = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAngelAuth])
   .inputValidator((input: { endpoint: string }) => input)
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
-    const { error } = await context.supabase
-      .from("push_subscriptions")
-      .delete()
-      .eq("user_id", context.userId)
-      .eq("endpoint", data.endpoint);
+    await assertAngelAdmin(context);
+    const store = await nativeData();
+    if (store) {
+      await store.delete(`push.subscriptions.${context.userId}`, subscriptionKey(data.endpoint));
+      return { ok: true };
+    }
+    if (!context.supabase) return { ok: true };
+    const { error } = await context.supabase.from("push_subscriptions").delete().eq("user_id", context.userId).eq("endpoint", data.endpoint);
     if (error) throw error;
     return { ok: true };
   });
 
 export const refreshNotifications = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAngelAuth])
   .handler(async ({ context }): Promise<SyncReport> => {
-    await assertAdmin(context);
+    await assertAngelAdmin(context);
+
+    if (process.env.ANGEL_DATA_TOKEN) {
+      try {
+        const { syncNativeBusinessNotifications } = await import("./native-notifications.server");
+        const native = await syncNativeBusinessNotifications();
+        if (!context.supabase) return native;
+
+        const { syncNotifications } = await import("./notifications.server");
+        const legacy = await syncNotifications(context.supabase);
+        return {
+          created: native.created + legacy.created,
+          kinds: [...new Set([...native.kinds, ...legacy.kinds])],
+        };
+      } catch (error) {
+        console.error("[notifications] native sync failed, using compatibility provider", error);
+      }
+    }
+
+    if (!context.supabase) return { created: 0, kinds: [] };
     const { syncNotifications } = await import("./notifications.server");
     return syncNotifications(context.supabase);
   });

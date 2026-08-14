@@ -1,0 +1,118 @@
+name: Angel OS Linux self-host validation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - "angel-os/platform/linux/**"
+      - "angel-os/services/**"
+      - "angel-os/adapters/**"
+      - "src/lib/angelos-native*"
+      - "src/lib/articles-native*"
+      - "vite.config.ts"
+      - "package.json"
+      - "bun.lock"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: linux-selfhost-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  container:
+    name: Build Linux containers (amd64)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Angel OS application image
+        run: docker build -f angel-os/platform/linux/Containerfile -t angel-os-linux:test .
+      - name: Build Angel Data image
+        run: docker build -f angel-os/services/data/Containerfile -t angel-data:test .
+      - name: Build Angel Identity image
+        run: docker build -f angel-os/platform/linux/IdentityContainerfile -t angel-identity:test .
+      - name: Build Angel Storage image
+        run: docker build -f angel-os/services/storage/Containerfile -t angel-storage:test .
+      - name: Build Angel Jobs image
+        run: docker build -f angel-os/services/jobs/Containerfile -t angel-jobs:test .
+      - name: Inspect images
+        run: |
+          for image in angel-os-linux angel-data angel-identity angel-storage angel-jobs; do
+            docker image inspect "$image:test" --format '{{.Id}} {{.Size}}'
+          done
+
+  oracle-arm64:
+    name: Validate Oracle Ampere A1 (arm64)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enable ARM64 emulation
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build Angel OS application for linux/arm64
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: angel-os/platform/linux/Containerfile
+          platforms: linux/arm64
+          push: false
+          cache-from: type=gha,scope=angel-os-arm64
+          cache-to: type=gha,mode=max,scope=angel-os-arm64
+      - name: Build Angel Data for linux/arm64
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: angel-os/services/data/Containerfile
+          platforms: linux/arm64
+          push: false
+      - name: Build Angel Identity for linux/arm64
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: angel-os/platform/linux/IdentityContainerfile
+          platforms: linux/arm64
+          push: false
+      - name: Build Angel Storage for linux/arm64
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: angel-os/services/storage/Containerfile
+          platforms: linux/arm64
+          push: false
+      - name: Build Angel Jobs for linux/arm64
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: angel-os/services/jobs/Containerfile
+          platforms: linux/arm64
+          push: false
+
+  quadlet:
+    name: Validate Linux service files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check required files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s angel-os/platform/linux/Caddyfile
+          test -s angel-os/platform/linux/env.example
+          test -x angel-os/platform/linux/scripts/install.sh
+          test -x angel-os/platform/linux/scripts/backup.sh
+          for service in data identity storage jobs; do
+            test -s "angel-os/platform/linux/quadlet/angel-${service}.container"
+          done
+          test -s angel-os/services/data/server.ts
+          test -s angel-os/services/identity/server.ts
+          test -s angel-os/services/storage/server.ts
+          test -s angel-os/services/jobs/server.ts
+          for f in angel-os/platform/linux/quadlet/*; do test -s "$f"; done
+          for f in angel-os/platform/linux/systemd/*; do test -s "$f"; done

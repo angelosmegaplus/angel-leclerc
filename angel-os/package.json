@@ -5,7 +5,10 @@
   "type": "module",
   "exports": {
     ".": "./core/index.ts",
-    "./web": "./adapters/web.ts"
+    "./web": "./adapters/web.ts",
+    "./adapters": "./adapters/index.ts",
+    "./site": "./adapters/site.ts",
+    "./storage": "./adapters/browser-storage.ts"
   },
   "license": "GPL-2.0-only"
 }
