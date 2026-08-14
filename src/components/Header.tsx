@@ -51,9 +51,9 @@ export function Header() {
           <Link
             to="/auth"
             className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            aria-label="Se connecter à l'espace administrateur"
+            aria-label="Ouvrir l'espace administrateur"
           >
-            <LogIn className="h-3.5 w-3.5" /> Se connecter
+            <LogIn className="h-3.5 w-3.5" /> Espace admin
           </Link>
           <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
             <Link to="/contact">Parler de votre projet</Link>
@@ -82,7 +82,7 @@ export function Header() {
               onClick={() => setMobileOpen(false)}
               className="inline-flex items-center gap-2 py-2 text-sm text-muted-foreground hover:text-foreground"
             >
-              <LogIn className="h-4 w-4" /> Se connecter
+              <LogIn className="h-4 w-4" /> Espace admin
             </Link>
             <div className="grid grid-cols-3 gap-3 py-2">
               <a href="https://www.linkedin.com/company/angel-leclerc-communication/" target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-2 rounded-lg border border-border py-2 text-foreground hover:text-primary transition-colors" aria-label="LinkedIn Angel Leclerc Communication"><Linkedin size={18} /></a>
