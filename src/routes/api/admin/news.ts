@@ -1,21 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { fetchAdminNewsSnapshot } from "@/lib/news.functions";
+import { fetchAdminNewsSnapshot, fetchAiNewsSnapshot } from "@/lib/news.functions";
 
 const headers = {
-  "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=600",
+  "Cache-Control": "no-store, max-age=0",
   "Content-Type": "application/json; charset=utf-8",
 };
 
 export const Route = createFileRoute("/api/admin/news")({
   server: {
     handlers: {
-      GET: async () => {
+      GET: async ({ request }) => {
         try {
-          return Response.json(await fetchAdminNewsSnapshot(), { headers });
+          const url = new URL(request.url);
+          const phase = url.searchParams.get("phase");
+          const payload = phase === "ai" ? await fetchAiNewsSnapshot() : await fetchAdminNewsSnapshot();
+          return Response.json(payload, { headers });
         } catch (error) {
           console.error("[news-api] feeds unavailable", error);
           return Response.json(
-            { items: [], fetchedAt: new Date().toISOString(), source: "cache" },
+            { items: [], fetchedAt: new Date().toISOString(), source: "cache", phase: "combined" },
             { status: 503, headers },
           );
         }
