@@ -60,7 +60,13 @@ export async function fetchPublishedArticles(): Promise<Article[]> {
 export async function fetchArticleBySlug(slug: string): Promise<Article | null> {
   const local = staticPublicArticles.find((article) => article.slug === slug);
   if (local) return local;
-  const { data, error } = await supabase.from("articles").select("*").eq("slug", slug).maybeSingle();
+  const { data, error } = await supabase
+    .from("articles")
+    .select("*")
+    .eq("slug", slug)
+    .eq("published", true)
+    .eq("is_private", false)
+    .maybeSingle();
   if (error) throw error;
   return data;
 }
