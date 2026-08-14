@@ -140,6 +140,70 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
     mutation.mutate(value);
   };
 
+  if (compact) {
+    return (
+      <section className="rounded-[1.75rem] border border-white/10 bg-[#090b0d] px-3 py-3 shadow-[0_18px_60px_rgba(0,0,0,.28)] sm:px-4 sm:py-4">
+        <div className="flex items-center gap-2 px-1 pb-2">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-300">
+            <Bot className="h-4 w-4" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-white">Angel AI</p>
+            <p className="truncate text-[11px] text-white/40">Demander, continuer une discussion ou lancer une action</p>
+          </div>
+        </div>
+
+        <div className="relative">
+          <Textarea
+            value={command}
+            onChange={(event) => setCommand(event.target.value)}
+            onKeyDown={(event) => {
+              if ((event.metaKey || event.ctrlKey) && event.key === "Enter") submit();
+            }}
+            rows={1}
+            maxLength={2_000}
+            placeholder="Demander quelque chose à Angel AI…"
+            className="min-h-12 resize-none rounded-full border-white/10 bg-black/30 py-3 pl-4 pr-14 text-sm text-white placeholder:text-white/30"
+          />
+          <Button
+            type="button"
+            size="icon"
+            onClick={submit}
+            disabled={mutation.isPending || command.trim().length < 2}
+            aria-label="Envoyer à Angel AI"
+            className="absolute right-1.5 top-1/2 h-9 w-9 -translate-y-1/2 rounded-full bg-red-500 text-white hover:bg-red-500/90"
+          >
+            {mutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+          </Button>
+        </div>
+
+        {messages.length > 0 ? (
+          <div className="mt-2 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {messages.slice(0, 3).map((message) => (
+              <button
+                type="button"
+                key={message.id}
+                onClick={() => setCommand(message.content)}
+                className="min-w-[13rem] max-w-[19rem] shrink-0 rounded-2xl border border-white/10 bg-white/[.03] px-3 py-2 text-left transition hover:border-red-500/20 hover:bg-red-500/[.04]"
+              >
+                <p className="truncate text-xs font-medium text-white/80">{message.content}</p>
+                {message.response ? <p className="mt-1 line-clamp-1 text-[11px] text-white/35">{message.response}</p> : null}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-2 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {EXAMPLES.map((example) => (
+              <button key={example} type="button" onClick={() => setCommand(example)} className="shrink-0 rounded-full border border-white/10 bg-white/[.03] px-3 py-1.5 text-[11px] text-white/45 hover:text-white/75">
+                {example}
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
+    );
+  }
+
   const latestReport = reports[0];
   const pendingActions = actions.filter((action) => action.status === "pending");
   const queuedActions = actions.filter((action) => action.status === "awaiting_operator");
@@ -164,7 +228,7 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
 
           {latestReport.items && latestReport.items.length > 0 && (
             <ul className="mt-3 space-y-2">
-              {latestReport.items.slice(0, compact ? 4 : 8).map((item, index) => (
+              {latestReport.items.slice(0, 8).map((item, index) => (
                 <li key={`${item.subject ?? "mail"}-${index}`} className="rounded-xl border border-border/70 bg-background p-3">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-sm font-medium text-foreground">{item.subject || "Sans objet"}</span>
@@ -203,7 +267,7 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-primary">Propositions à valider</p>
               <ul className="mt-2 space-y-2">
-                {pendingActions.slice(0, compact ? 4 : 8).map((action) => (
+                {pendingActions.slice(0, 8).map((action) => (
                   <li key={action.id} className="rounded-xl border border-border bg-background p-3">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div className="min-w-0">
@@ -249,7 +313,7 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
             onKeyDown={(event) => {
               if ((event.metaKey || event.ctrlKey) && event.key === "Enter") submit();
             }}
-            rows={compact ? 3 : 4}
+            rows={4}
             maxLength={2_000}
             placeholder="Ex. Analyse mes réponses de candidatures et conseille-moi sur les prochaines étapes."
             className="min-h-24 resize-y bg-background pr-12"
