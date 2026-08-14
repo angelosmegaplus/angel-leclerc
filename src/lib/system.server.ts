@@ -13,9 +13,9 @@ export type IntegrationReadiness = {
   missing: string[];
   connectPath?: string;
   reconnectPath?: string;
-  /** OAuth provider handled by Angel OS, when applicable. */
+  /** OAuth provider handled directly by the Angel OS web app, when applicable. */
   provider?: ProviderId;
-  /** Real account state, filled by the server function. */
+  /** Real account state, filled by the server function for direct OAuth providers. */
   connection?: ConnectionState;
   accountLabel?: string | null;
   lastSyncAt?: string | null;
@@ -30,24 +30,23 @@ type Definition = Omit<IntegrationReadiness, "status" | "missing"> & {
 const DEFINITIONS: Definition[] = [
   {
     key: "google",
-    provider: "google",
     name: "Google Workspace",
     category: "Bureautique & mail",
     description:
-      "Gmail contact@angel-leclerc.fr, Agenda et Drive directement dans Angel OS.",
-    env: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
-    connectPath: "/api/oauth/google/start",
-    reconnectPath: "/api/oauth/google/start?prompt=consent",
+      "Gmail, Agenda et Drive sont alimentés par le connecteur géré d’Angel OS, sans identifiant OAuth à saisir dans ce site.",
+    env: [],
+    note:
+      "Connexion gérée hors de l’application web : aucun GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET ou jeton utilisateur n’est demandé dans l’interface Angel OS.",
   },
   {
     key: "microsoft",
-    provider: "microsoft",
     name: "Microsoft 365",
     category: "Bureautique & mail",
-    description: "Outlook, Calendrier et OneDrive comme alternative à Google.",
-    env: ["MS_CLIENT_ID", "MS_CLIENT_SECRET"],
-    connectPath: "/api/oauth/microsoft/start",
-    reconnectPath: "/api/oauth/microsoft/start?prompt=consent",
+    description:
+      "Outlook, Calendrier et OneDrive peuvent être alimentés par un connecteur géré, sans secret OAuth dans l’interface du site.",
+    env: [],
+    note:
+      "Connexion gérée hors de l’application web : aucun MS_CLIENT_ID, MS_CLIENT_SECRET ou jeton utilisateur n’est demandé dans Angel OS.",
   },
   {
     key: "meta",
