@@ -15,26 +15,23 @@ import {
 function StatusPill({ label, tone }: { label: string; tone: "ok" | "warn" | "idle" }) {
   const classes =
     tone === "ok"
-      ? "bg-primary/10 text-primary"
+      ? "bg-[#0078d7] text-white"
       : tone === "warn"
-        ? "bg-destructive/10 text-destructive"
-        : "bg-muted text-muted-foreground";
+        ? "bg-destructive text-white"
+        : "bg-[#222] text-white/55";
   return (
-    <span
-      className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] ${classes}`}
-    >
+    <span className={`shrink-0 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] ${classes}`}>
       {label}
     </span>
   );
 }
 
 function statusOf(service: IntegrationReadiness) {
-  if (service.status !== "ready") return { label: "Activation serveur", tone: "idle" as const };
-  if (!service.provider) return { label: "Prêt", tone: "ok" as const };
-  if (service.connection === "connected") return { label: "Connecté", tone: "ok" as const };
-  if (service.connection === "reconnect_required")
-    return { label: "Reconnexion requise", tone: "warn" as const };
-  return { label: "Non connecté", tone: "idle" as const };
+  if (service.status !== "ready") return { label: "activation serveur", tone: "idle" as const };
+  if (!service.provider) return { label: "prêt", tone: "ok" as const };
+  if (service.connection === "connected") return { label: "connecté", tone: "ok" as const };
+  if (service.connection === "reconnect_required") return { label: "reconnexion", tone: "warn" as const };
+  return { label: "non connecté", tone: "idle" as const };
 }
 
 function ServiceCard({
@@ -53,59 +50,63 @@ function ServiceCard({
   const connected = service.connection === "connected" || service.connection === "reconnect_required";
 
   return (
-    <li className="flex flex-col rounded-xl border border-border bg-background p-4">
-      <div className="flex items-start justify-between gap-2">
-        <p className="font-medium text-foreground">{service.name}</p>
+    <li className="flex flex-col border border-white/15 bg-black p-4">
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-lg font-light text-white">{service.name}</p>
         <StatusPill label={state.label} tone={state.tone} />
       </div>
-      <p className="mt-1 text-sm text-muted-foreground">{service.description}</p>
+      <p className="mt-2 text-sm font-light text-white/55">{service.description}</p>
 
-      {service.accountLabel && (
-        <p className="mt-2 text-xs text-foreground">Compte : {service.accountLabel}</p>
-      )}
-      {service.lastSyncAt && (
-        <p className="text-xs text-muted-foreground">
-          Dernière synchro : {new Date(service.lastSyncAt).toLocaleString("fr-FR")}
+      {service.provider ? (
+        <p className="mt-3 border-l-4 border-[#0078d7] py-1 pl-3 text-xs text-white/55">
+          connexion directe via l’API OAuth officielle du fournisseur
         </p>
-      )}
-      {service.note && <p className="mt-2 text-xs text-muted-foreground">{service.note}</p>}
-      {!configured && service.missing.length > 0 && (
-        <p className="mt-2 text-xs text-muted-foreground">
-          Activation à finaliser côté serveur : {service.missing.join(", ")}.
-        </p>
-      )}
+      ) : null}
 
-      {service.provider && (
-        <div className="mt-3 flex flex-wrap gap-2">
+      {service.accountLabel ? <p className="mt-3 text-xs text-white">compte : {service.accountLabel}</p> : null}
+      {service.lastSyncAt ? (
+        <p className="text-xs text-white/45">
+          dernière synchro : {new Date(service.lastSyncAt).toLocaleString("fr-FR")}
+        </p>
+      ) : null}
+      {service.note ? <p className="mt-2 text-xs text-white/45">{service.note}</p> : null}
+      {!configured && service.missing.length > 0 ? (
+        <p className="mt-2 text-xs text-white/45">
+          configuration serveur manquante : {service.missing.join(", ")}.
+        </p>
+      ) : null}
+
+      {service.provider ? (
+        <div className="mt-4 flex flex-wrap gap-2">
           {configured ? (
             <>
               <Button
                 size="sm"
-                className="min-h-11"
+                className="min-h-11 rounded-none bg-[#0078d7] px-4 text-white hover:bg-[#1684df]"
                 disabled={busy}
                 onClick={() => onConnect(service.provider!)}
               >
-                {connected ? "Reconnecter" : "Se connecter"}
+                {connected ? "reconnecter" : `se connecter à ${service.name}`}
               </Button>
-              {connected && (
+              {connected ? (
                 <Button
                   size="sm"
                   variant="outline"
-                  className="min-h-11"
+                  className="min-h-11 rounded-none border-white/35 bg-black px-4 text-white hover:bg-white hover:text-black"
                   disabled={busy}
                   onClick={() => onDisconnect(service.provider!)}
                 >
-                  Déconnecter
+                  déconnecter
                 </Button>
-              )}
+              ) : null}
             </>
           ) : (
-            <Button size="sm" variant="outline" className="min-h-11" disabled>
-              Activation serveur requise
+            <Button size="sm" variant="outline" className="min-h-11 rounded-none" disabled>
+              activation serveur requise
             </Button>
           )}
         </div>
-      )}
+      ) : null}
     </li>
   );
 }
@@ -134,7 +135,7 @@ export function ConnectionsPanel() {
   const disconnectMutation = useMutation({
     mutationFn: (provider: string) => disconnect({ data: { provider } }),
     onSuccess: () => {
-      toast.success("Compte déconnecté d'Angel OS.");
+      toast.success("Compte déconnecté d’Angel OS.");
       void queryClient.invalidateQueries({ queryKey: ["integration-readiness"] });
     },
     onError: (err: Error) => toast.error(err.message),
@@ -148,39 +149,35 @@ export function ConnectionsPanel() {
 
   return (
     <div className="space-y-5">
-      <AdminCard className="border-primary/30 bg-primary/5">
+      <AdminCard className="border-l-4 border-l-[#0078d7]">
         <div className="flex gap-3">
-          <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+          <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#1684df]" />
           <div>
-            <p className="font-medium text-foreground">Zéro gestion manuelle de jetons</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Chaque service se connecte depuis Angel OS. Les jetons sont chiffrés et stockés côté
-              serveur, renouvelés automatiquement lorsque le fournisseur le permet, et ne sont
-              jamais visibles dans le navigateur.
+            <p className="text-lg font-light text-white">connexions natives</p>
+            <p className="mt-1 text-sm font-light leading-relaxed text-white/55">
+              Angel OS parle directement aux API officielles Google, Microsoft et des autres fournisseurs.
+              Aucun proxy Lovable n’est utilisé pour Gmail ou Microsoft 365. Les jetons restent côté serveur,
+              sont chiffrés et renouvelés automatiquement lorsque le fournisseur l’autorise.
             </p>
           </div>
         </div>
       </AdminCard>
 
-      {isPending && (
-        <p className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> Vérification des services…
+      {isPending ? (
+        <p className="flex items-center gap-2 text-sm text-white/55">
+          <Loader2 className="h-4 w-4 animate-spin" /> vérification des services…
         </p>
-      )}
-      {error && (
-        <p className="text-sm text-destructive">
-          État des connexions indisponible : {(error as Error).message}
-        </p>
-      )}
+      ) : null}
+      {error ? <p className="text-sm text-destructive">état des connexions indisponible : {(error as Error).message}</p> : null}
 
       {Object.entries(groups).map(([category, services]) => (
         <AdminCard key={category} title={category}>
-          <ul className="grid gap-3 sm:grid-cols-2">
-            {services.map((s) => (
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {services.map((service) => (
               <ServiceCard
-                key={s.key}
-                service={s}
-                busy={pendingProvider === s.provider}
+                key={service.key}
+                service={service}
+                busy={pendingProvider === service.provider}
                 onConnect={(provider) => {
                   setPendingProvider(provider);
                   connectMutation.mutate(provider);
@@ -195,11 +192,10 @@ export function ConnectionsPanel() {
         </AdminCard>
       ))}
 
-      <p className="text-xs leading-relaxed text-muted-foreground">
-        Une première autorisation, une double authentification, une révocation ou de nouveaux
-        périmètres d'accès peuvent être imposés par le fournisseur. Ces étapes se gèrent depuis
-        Angel OS, jamais via Lovable. « Déconnecter » supprime les jetons stockés localement ;
-        pensez à révoquer aussi l'accès chez le fournisseur si nécessaire.
+      <p className="border-l-4 border-white/20 py-1 pl-3 text-xs font-light leading-relaxed text-white/45">
+        La première autorisation, la double authentification ou un changement de permissions peuvent toujours
+        être imposés par Google, Microsoft ou un autre fournisseur. Angel OS ne peut pas supprimer ces contrôles :
+        il les ouvre directement puis conserve la connexion tant qu’elle reste valide.
       </p>
     </div>
   );
