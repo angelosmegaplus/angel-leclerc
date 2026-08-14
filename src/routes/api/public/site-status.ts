@@ -9,7 +9,7 @@ export const Route = createFileRoute("/api/public/site-status")({
   server: {
     handlers: {
       GET: async () => {
-        const deployedSha = process.env.ANGEL_GIT_COMMIT_SHA?.trim() || process.env.VERCEL_GIT_COMMIT_SHA?.trim() || null;
+        const deployedSha = process.env.ANGEL_GIT_COMMIT_SHA?.trim() || null;
         if (!deployedSha) return Response.json({ maintenance: false, reason: "deployment-sha-unavailable", deployedSha: null, latestSha: null }, { headers });
         try {
           const response = await fetch(GITHUB_BRANCH_API, { headers: { Accept: "application/vnd.github+json", "User-Agent": "angel-os-site-status" } });
