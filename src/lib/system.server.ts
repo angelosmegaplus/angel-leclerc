@@ -30,23 +30,22 @@ type Definition = Omit<IntegrationReadiness, "status" | "missing"> & {
 const DEFINITIONS: Definition[] = [
   {
     key: "google",
+    provider: "google",
     name: "Google Workspace",
     category: "Bureautique & mail",
-    description:
-      "Gmail, Agenda et Drive sont alimentés par le connecteur géré d’Angel OS, sans identifiant OAuth à saisir dans ce site.",
-    env: [],
-    note:
-      "Connexion gérée hors de l’application web : aucun GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET ou jeton utilisateur n’est demandé dans l’interface Angel OS.",
+    description: "Gmail, Agenda et Drive directement dans Angel OS via OAuth Google.",
+    env: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "OAUTH_TOKEN_SECRET", "OAUTH_STATE_SECRET"],
+    connectPath: "/oauth/google/start",
+    reconnectPath: "/oauth/google/start?prompt=consent",
+    note: "Les jetons sont créés automatiquement par Google après autorisation puis chiffrés côté serveur.",
   },
   {
     key: "microsoft",
     name: "Microsoft 365",
     category: "Bureautique & mail",
-    description:
-      "Outlook, Calendrier et OneDrive peuvent être alimentés par un connecteur géré, sans secret OAuth dans l’interface du site.",
+    description: "Outlook, Calendrier et OneDrive restent disponibles via un connecteur géré tant que Microsoft OAuth n’est pas configuré.",
     env: [],
-    note:
-      "Connexion gérée hors de l’application web : aucun MS_CLIENT_ID, MS_CLIENT_SECRET ou jeton utilisateur n’est demandé dans Angel OS.",
+    note: "Aucun secret Microsoft n’est requis pour le moment.",
   },
   {
     key: "meta",
@@ -81,9 +80,9 @@ const DEFINITIONS: Definition[] = [
     provider: "youtube",
     name: "YouTube",
     category: "Réseaux sociaux",
-    description: "Mise en ligne des reportages vidéo (via le compte Google).",
-    env: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
-    connectPath: "/api/oauth/google/start?scope=youtube",
+    description: "Mise en ligne des reportages vidéo via le compte Google.",
+    env: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "OAUTH_TOKEN_SECRET", "OAUTH_STATE_SECRET"],
+    connectPath: "/oauth/youtube/start",
   },
   {
     key: "github",
@@ -98,10 +97,9 @@ const DEFINITIONS: Definition[] = [
     key: "angel-ai",
     name: "ChatGPT / Angel AI",
     category: "Intelligence artificielle",
-    description:
-      "File d'actions, messages et automatisations locales d'Angel OS. Fonctionne sans fournisseur IA externe.",
+    description: "File d'actions, messages et automatisations locales d'Angel OS.",
     env: [],
-    note: "Les analyses ChatGPT externes nécessitent OPENAI_API_KEY, mais Angel OS reste pleinement utilisable sans.",
+    note: "Le moteur conversationnel externe doit être configuré séparément du moteur local.",
   },
   {
     key: "site",
