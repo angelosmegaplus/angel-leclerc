@@ -38,18 +38,23 @@ jobs:
         shell: bash
         run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
-      - name: Verify Vercel token exists
+      - name: Check Vercel availability
+        id: vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         shell: bash
         run: |
           if [ -z "$VERCEL_TOKEN" ]; then
-            echo "::error::Missing GitHub Actions secret VERCEL_TOKEN."
-            exit 1
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "Vercel indisponible pour ce passage : VERCEL_TOKEN absent. Le dernier main reste en file de publication et sera retenté automatiquement au prochain passage horaire."
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            echo "Vercel disponible : vérification de la production."
           fi
 
       - name: Check whether this main commit is already READY in production
         id: production
+        if: steps.vercel.outputs.available == 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           CURRENT_SHA: ${{ steps.current.outputs.sha }}
@@ -76,37 +81,37 @@ jobs:
           fi
 
       - name: Set up Bun
-        if: steps.production.outputs.already_ready != 'true'
+        if: steps.vercel.outputs.available == 'true' && steps.production.outputs.already_ready != 'true'
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.14
 
       - name: Install dependencies
-        if: steps.production.outputs.already_ready != 'true'
+        if: steps.vercel.outputs.available == 'true' && steps.production.outputs.already_ready != 'true'
         run: bun install --frozen-lockfile
 
       - name: Build application
-        if: steps.production.outputs.already_ready != 'true'
+        if: steps.vercel.outputs.available == 'true' && steps.production.outputs.already_ready != 'true'
         run: bun run build
 
       - name: Type-check
-        if: steps.production.outputs.already_ready != 'true'
+        if: steps.vercel.outputs.available == 'true' && steps.production.outputs.already_ready != 'true'
         run: bunx tsc --noEmit --pretty false
 
       - name: Pull Vercel production configuration
-        if: steps.production.outputs.already_ready != 'true'
+        if: steps.vercel.outputs.available == 'true' && steps.production.outputs.already_ready != 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: bunx vercel@latest pull --yes --environment=production --token="$VERCEL_TOKEN" --scope=angel-os2
 
       - name: Build Vercel output on GitHub Actions
-        if: steps.production.outputs.already_ready != 'true'
+        if: steps.vercel.outputs.available == 'true' && steps.production.outputs.already_ready != 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: bunx vercel@latest build --prod --token="$VERCEL_TOKEN" --scope=angel-os2
 
       - name: Deploy only the latest main to production
-        if: steps.production.outputs.already_ready != 'true'
+        if: steps.vercel.outputs.available == 'true' && steps.production.outputs.already_ready != 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
@@ -117,8 +122,10 @@ jobs:
         if: always()
         shell: bash
         run: |
-          if [ "${{ steps.production.outputs.already_ready }}" = "true" ]; then
+          if [ "${{ steps.vercel.outputs.available }}" != "true" ]; then
+            echo "Publication différée : le dernier commit de main (${{ steps.current.outputs.sha }}) reste la cible. GitHub Actions retentera automatiquement à :17 de chaque heure et à chaque nouveau push sur main."
+          elif [ "${{ steps.production.outputs.already_ready }}" = "true" ]; then
             echo "File de publication vide : production déjà synchronisée avec main."
           else
-            echo "GitHub conserve toujours le dernier main comme version cible. En cas de blocage Vercel, le prochain passage horaire retentera uniquement cette version ou une version main plus récente."
+            echo "Le dernier main est la seule version cible. En cas de blocage de publication, le prochain passage horaire retentera cette version ou une version main plus récente."
           fi
