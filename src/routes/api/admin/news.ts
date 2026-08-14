@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { fetchAdminNewsSnapshot } from "@/lib/news.functions";
 
 const headers = {
-  "Cache-Control": "public, max-age=300, s-maxage=3600, stale-while-revalidate=21600",
+  "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=600",
   "Content-Type": "application/json; charset=utf-8",
 };
 
