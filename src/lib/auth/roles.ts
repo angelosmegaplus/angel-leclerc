@@ -8,7 +8,7 @@ type AuthContext = {
   userId: string;
   role?: string | null;
   authProvider?: 'angel-identity' | 'supabase';
-  supabase?: { from: (table: string) => any };
+  supabase?: { from: (table: string) => any } | null;
 };
 
 export async function resolveUserRole(context: AuthContext): Promise<string | null> {
