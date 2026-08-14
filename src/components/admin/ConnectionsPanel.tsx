@@ -29,7 +29,7 @@ function StatusPill({ label, tone }: { label: string; tone: "ok" | "warn" | "idl
 
 function statusOf(service: IntegrationReadiness) {
   if (service.status !== "ready") return { label: "activation serveur", tone: "idle" as const };
-  if (!service.provider) return { label: "prêt", tone: "ok" as const };
+  if (!service.provider) return { label: "géré", tone: "ok" as const };
   if (service.connection === "connected") return { label: "connecté", tone: "ok" as const };
   if (service.connection === "reconnect_required") return { label: "reconnexion", tone: "warn" as const };
   return { label: "non connecté", tone: "idle" as const };
@@ -62,7 +62,11 @@ function ServiceCard({
         <p className="mt-3 border-l-4 border-[#0078d7] py-1 pl-3 text-xs text-white/55">
           connexion directe via l’API OAuth officielle du fournisseur
         </p>
-      ) : null}
+      ) : (
+        <p className="mt-3 border-l-4 border-[#0078d7] py-1 pl-3 text-xs text-white/55">
+          connecteur géré automatiquement : rien à copier, aucun secret à saisir ici
+        </p>
+      )}
 
       {service.accountLabel ? <p className="mt-3 text-xs text-white">compte : {service.accountLabel}</p> : null}
       {service.lastSyncAt ? (
@@ -148,26 +152,20 @@ export function ConnectionsPanel() {
     return acc;
   }, {});
 
-  const quickProviders = [
-    { id: "google", label: "Google", domain: "google.com" },
-    { id: "microsoft", label: "Microsoft", domain: "microsoft.com" },
+  const managedProviders = [
+    {
+      id: "google",
+      label: "Google",
+      domain: "google.com",
+      description: "Gmail, Drive et Agenda via le connecteur géré d’Angel OS.",
+    },
+    {
+      id: "microsoft",
+      label: "Microsoft",
+      domain: "microsoft.com",
+      description: "Outlook, OneDrive et Agenda via connecteur géré.",
+    },
   ] as const;
-
-  function quickConnect(provider: "google" | "microsoft") {
-    const services = (data ?? []).filter((service) => service.provider === provider);
-    const ready = services.some((service) => service.status === "ready");
-    if (!ready) {
-      const missing = Array.from(new Set(services.flatMap((service) => service.missing))).filter(Boolean);
-      toast.error(
-        missing.length > 0
-          ? `Connexion ${provider === "google" ? "Google" : "Microsoft"} à configurer côté serveur : ${missing.join(", ")}.`
-          : `Connexion ${provider === "google" ? "Google" : "Microsoft"} non disponible pour le moment.`,
-      );
-      return;
-    }
-    setPendingProvider(provider);
-    connectMutation.mutate(provider);
-  }
 
   return (
     <div className="space-y-5">
@@ -175,43 +173,37 @@ export function ConnectionsPanel() {
         <div className="flex gap-3">
           <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#1684df]" />
           <div>
-            <p className="text-lg font-light text-white">connexions natives</p>
+            <p className="text-lg font-light text-white">connexions gérées</p>
             <p className="mt-1 text-sm font-light leading-relaxed text-white/55">
-              Angel OS parle directement aux API officielles Google, Microsoft et des autres fournisseurs.
-              Aucun proxy Lovable n’est utilisé pour Gmail ou Microsoft 365. Les jetons restent côté serveur,
-              sont chiffrés et renouvelés automatiquement lorsque le fournisseur l’autorise.
+              Google et Microsoft passent par les connecteurs d’orchestration d’Angel OS : aucun identifiant client,
+              secret OAuth ou jeton n’est à saisir dans cette page. Les autres fournisseurs peuvent garder une
+              connexion OAuth directe quand elle est réellement nécessaire.
             </p>
           </div>
         </div>
       </AdminCard>
 
-      <AdminCard title="Connexion rapide" description="Autoriser directement Google ou Microsoft pour les services compatibles.">
+      <AdminCard
+        title="Services principaux"
+        description="Les comptes principaux sont gérés en dehors du navigateur pour éviter les écrans de configuration technique."
+      >
         <div className="grid gap-3 sm:grid-cols-2">
-          {quickProviders.map((provider) => {
-            const services = (data ?? []).filter((service) => service.provider === provider.id);
-            const connected = services.some((service) => service.connection === "connected");
-            const busy = pendingProvider === provider.id;
-            return (
-              <button
-                key={provider.id}
-                type="button"
-                onClick={() => quickConnect(provider.id)}
-                disabled={busy || isPending}
-                className="flex min-h-20 items-center gap-4 rounded-2xl border border-white/10 bg-black/40 p-4 text-left transition hover:border-red-500/30 hover:bg-red-500/[.05] disabled:cursor-wait disabled:opacity-60"
-              >
-                <Logo domain={provider.domain} alt={provider.label} size={42} link={false} />
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-semibold text-white">
-                    {connected ? `${provider.label} connecté` : `Se connecter à ${provider.label}`}
-                  </span>
-                  <span className="mt-1 block text-xs leading-5 text-white/45">
-                    {provider.id === "google" ? "Gmail, Drive, Agenda et services Google." : "Outlook, OneDrive, Agenda et Microsoft 365."}
-                  </span>
+          {managedProviders.map((provider) => (
+            <div
+              key={provider.id}
+              className="flex min-h-20 items-center gap-4 rounded-2xl border border-white/10 bg-black/40 p-4"
+            >
+              <Logo domain={provider.domain} alt={provider.label} size={42} link={false} />
+              <span className="min-w-0 flex-1">
+                <span className="flex items-center gap-2 text-sm font-semibold text-white">
+                  {provider.label}
+                  <StatusPill label="géré" tone="ok" />
                 </span>
-                {busy ? <Loader2 className="h-4 w-4 shrink-0 animate-spin text-red-300" /> : null}
-              </button>
-            );
-          })}
+                <span className="mt-1 block text-xs leading-5 text-white/45">{provider.description}</span>
+                <span className="mt-1 block text-[11px] leading-5 text-white/35">Aucune clé à copier dans Angel OS.</span>
+              </span>
+            </div>
+          ))}
         </div>
       </AdminCard>
 
@@ -245,9 +237,9 @@ export function ConnectionsPanel() {
       ))}
 
       <p className="border-l-4 border-white/20 py-1 pl-3 text-xs font-light leading-relaxed text-white/45">
-        La première autorisation, la double authentification ou un changement de permissions peuvent toujours
-        être imposés par Google, Microsoft ou un autre fournisseur. Angel OS ne peut pas supprimer ces contrôles :
-        il les ouvre directement puis conserve la connexion tant qu’elle reste valide.
+        Les API privées Google et Microsoft exigent toujours une autorisation quelque part dans la chaîne. Angel OS
+        évite simplement de te faire gérer ces éléments techniques dans le site : l’autorisation est portée par le
+        connecteur géré, et l’interface ne manipule aucun secret utilisateur.
       </p>
     </div>
   );
