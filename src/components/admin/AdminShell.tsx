@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Bell, Grid2X2, X, type LucideIcon } from "lucide-react";
 import { NewsPanel } from "@/components/admin/NewsPanel";
 import { PixelWidgets } from "@/components/admin/PixelWidgets";
+import { AngelCommandCenter } from "@/components/admin/AngelCommandCenter";
 
 export type AdminNavItem = {
   key: string;
@@ -164,7 +165,13 @@ export function AdminShell({
         </header>
 
         <main className="mx-auto w-full min-w-0 max-w-[1500px] px-3 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4 sm:px-7 sm:pb-24 lg:px-10">
-          {isDashboard ? <div className="mb-5 space-y-5" data-admin-dashboard-glance><PixelWidgets /><NewsPanel /></div> : null}
+          {isDashboard ? (
+            <div className="mb-5 space-y-5" data-admin-dashboard-glance>
+              <AngelCommandCenter compact />
+              <PixelWidgets />
+              <NewsPanel />
+            </div>
+          ) : null}
           <div key={active} className="min-w-0 max-w-full animate-in fade-in zoom-in-[.985] duration-300 [&_.bg-card]:bg-[#090b0d] [&_.bg-background]:bg-[#050607] [&_.bg-muted]:bg-white/[.04] [&_.border-border]:border-white/10 [&_.text-foreground]:text-white [&_.text-muted-foreground]:text-white/45 [&_.rounded-xl]:rounded-[1.25rem] [&_.rounded-2xl]:rounded-[1.75rem] [&_.rounded-lg]:rounded-xl [&_.shadow-sm]:shadow-[0_18px_60px_rgba(0,0,0,.28)] [&_img]:max-w-full [&_input]:max-w-full [&_textarea]:max-w-full [&_select]:max-w-full [&_input]:border-white/10 [&_textarea]:border-white/10 [&_select]:border-white/10 [&_input]:bg-black/30 [&_textarea]:bg-black/30 [&_select]:bg-black/30 [&_input]:text-white [&_textarea]:text-white [&_select]:text-white">{children}</div>
         </main>
 
