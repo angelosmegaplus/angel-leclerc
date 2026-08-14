@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMemo, useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ExternalLink, Newspaper, RefreshCw } from "lucide-react";
 import type { NewsCategory, NewsPayload } from "@/lib/news.functions";
@@ -30,18 +30,43 @@ function formatNewsDate(value: string | null) {
 
 export function NewsPanel() {
   const [filter, setFilter] = useState<NewsCategory>("une");
+  const [isSupplementing, setIsSupplementing] = useState(false);
+  const queryClient = useQueryClient();
+  const refreshSequence = useRef(0);
+
+  const fetchPayload = async (phase: "ai" | "combined", refreshBucket: number) => {
+    const response = await fetch(`/api/admin/news?phase=${phase}&refresh=${refreshBucket}`, {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    });
+    if (!response.ok) throw new Error("Actualités indisponibles");
+    return (await response.json()) as NewsPayload;
+  };
+
   const query = useQuery({
     queryKey: ["admin-news"],
     queryFn: async () => {
-      // Change the URL every 15 minutes so an old CDN response cannot keep
-      // the admin homepage stuck on the same headlines for hours.
       const refreshBucket = Math.floor(Date.now() / NEWS_REFRESH_MS);
-      const response = await fetch(`/api/admin/news?refresh=${refreshBucket}`, {
-        headers: { Accept: "application/json" },
-        cache: "no-store",
-      });
-      if (!response.ok) throw new Error("Actualités indisponibles");
-      return (await response.json()) as NewsPayload;
+      const sequence = ++refreshSequence.current;
+
+      // Phase 1 : OpenAI cherche réellement le web et renvoie le premier fil.
+      const aiPayload = await fetchPayload("ai", refreshBucket);
+
+      // Phase 2 : Google News complète ensuite sans bloquer l'affichage OpenAI.
+      setIsSupplementing(true);
+      void fetchPayload("combined", refreshBucket)
+        .then((combined) => {
+          if (sequence !== refreshSequence.current) return;
+          queryClient.setQueryData<NewsPayload>(["admin-news"], combined);
+        })
+        .catch(() => {
+          // Le résultat OpenAI reste affiché si Google/RSS échoue.
+        })
+        .finally(() => {
+          if (sequence === refreshSequence.current) setIsSupplementing(false);
+        });
+
+      return aiPayload;
     },
     staleTime: 5 * 60 * 1000,
     refetchInterval: NEWS_REFRESH_MS,
@@ -66,7 +91,7 @@ export function NewsPanel() {
             </span>
             <div>
               <h2 className="text-xl font-semibold tracking-[-0.03em] text-[#202124]">Actualités</h2>
-              <p className="text-sm text-[#5f6368]">Veille web rafraîchie toutes les 15 minutes · « À la une » privilégie les sujets récents qui correspondent le mieux à vos centres d’intérêt.</p>
+              <p className="text-sm text-[#5f6368]">OpenAI cherche d’abord sur le web ; Google News complète ensuite le fil. Rafraîchissement automatique toutes les 15 minutes.</p>
             </div>
           </div>
         </div>
@@ -154,7 +179,9 @@ export function NewsPanel() {
       )}
 
       {query.data?.fetchedAt ? (
-        <p className="mt-3 text-[10px] font-medium text-[#80868b]">Mis à jour {formatNewsDate(query.data.fetchedAt)} · prochain rafraîchissement automatique sous 15 min</p>
+        <p className="mt-3 text-[10px] font-medium text-[#80868b]">
+          Mis à jour {formatNewsDate(query.data.fetchedAt)} · {isSupplementing || query.data.phase === "openai" ? "OpenAI terminé, Google News complète le fil…" : "OpenAI + Google News synchronisés"}
+        </p>
       ) : null}
     </section>
   );
