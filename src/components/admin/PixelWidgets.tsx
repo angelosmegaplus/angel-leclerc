@@ -13,6 +13,8 @@ import {
   RefreshCw,
   Sun,
   Wind,
+  Umbrella,
+  ShieldSun,
 } from "lucide-react";
 import { getAdminWeather } from "@/lib/weather.functions";
 
@@ -33,10 +35,17 @@ function weatherLabel(code: number) {
   if (code === 3) return "Couvert";
   if ([45, 48].includes(code)) return "Brouillard";
   if ([51, 53, 55, 56, 57].includes(code)) return "Bruine";
-  if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return "Pluie";
+  if ([61, 63, 65, 66, 67].includes(code)) return "Pluie";
+  if ([80, 81, 82].includes(code)) return "Averses";
   if ([71, 73, 75, 77, 85, 86].includes(code)) return "Neige";
   if ([95, 96, 99].includes(code)) return "Orage";
   return "Variable";
+}
+
+function formatUpdate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit" }).format(date);
 }
 
 export function PixelWidgets() {
@@ -44,8 +53,9 @@ export function PixelWidgets() {
   const weather = useQuery({
     queryKey: ["admin-weather-sarlat"],
     queryFn: () => getWeather(),
-    staleTime: 15 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    staleTime: 30 * 60 * 1000,
+    refetchInterval: 60 * 60 * 1000,
+    refetchOnWindowFocus: true,
   });
   const [now, setNow] = useState(() => new Date());
 
@@ -97,19 +107,36 @@ export function PixelWidgets() {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold text-[#66566f]">{weather.data.location}</p>
-                <p className="mt-1 text-sm text-[#75677e]">{weatherLabel(weather.data.weatherCode)}</p>
+                <p className="mt-1 text-lg font-semibold">{weatherLabel(weather.data.weatherCode)}</p>
+                <p className="mt-1 text-sm text-[#75677e]">{weather.data.summary}</p>
               </div>
-              <WeatherIcon code={weather.data.weatherCode} className="h-11 w-11 stroke-[1.4] text-[#554263]" />
+              <WeatherIcon code={weather.data.weatherCode} className="h-12 w-12 stroke-[1.4] text-[#554263]" />
             </div>
-            <div className="mt-4 flex items-end justify-between gap-4">
+
+            <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="text-5xl font-medium tracking-[-0.07em]">{weather.data.temperature}°</p>
-                <p className="mt-1 text-sm text-[#75677e]">{weather.data.low}° / {weather.data.high}° · ressenti {weather.data.apparentTemperature}°</p>
+                <p className="text-5xl font-medium tracking-[-0.07em]">{weather.data.high}°</p>
+                <p className="mt-1 text-sm text-[#75677e]">Mini {weather.data.low}° · maxi {weather.data.high}°</p>
               </div>
-              <div className="flex shrink-0 flex-col gap-2 text-xs font-medium text-[#66566f]">
-                <span className="flex items-center gap-1.5"><Droplets className="h-3.5 w-3.5" />{weather.data.humidity}%</span>
-                <span className="flex items-center gap-1.5"><Wind className="h-3.5 w-3.5" />{weather.data.windSpeed} km/h</span>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs font-medium text-[#66566f]">
+                {weather.data.precipitation !== null ? (
+                  <span className="flex items-center gap-1.5"><Umbrella className="h-3.5 w-3.5" />{weather.data.precipitation} mm</span>
+                ) : null}
+                {weather.data.uvIndex !== null ? (
+                  <span className="flex items-center gap-1.5"><ShieldSun className="h-3.5 w-3.5" />UV {weather.data.uvIndex}</span>
+                ) : null}
+                {weather.data.humidity > 0 ? (
+                  <span className="flex items-center gap-1.5"><Droplets className="h-3.5 w-3.5" />{weather.data.humidity}%</span>
+                ) : null}
+                {weather.data.windSpeed > 0 ? (
+                  <span className="flex items-center gap-1.5"><Wind className="h-3.5 w-3.5" />{weather.data.windSpeed} km/h</span>
+                ) : null}
               </div>
+            </div>
+
+            <div className="mt-4 flex items-center justify-between text-[10px] font-medium text-[#7d7086]">
+              <span>Mis à jour {formatUpdate(weather.data.fetchedAt)}</span>
+              <span>{weather.data.source === "fallback" ? "prévision de secours vérifiée" : "données météo en direct"}</span>
             </div>
           </div>
         )}
