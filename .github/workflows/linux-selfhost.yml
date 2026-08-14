@@ -1,0 +1,46 @@
+name: Angel OS Linux self-host validation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - "angel-os/platform/linux/**"
+      - "vite.config.ts"
+      - "package.json"
+      - "bun.lock"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: linux-selfhost-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  container:
+    name: Build Linux container
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Angel OS Linux image
+        run: docker build -f angel-os/platform/linux/Containerfile -t angel-os-linux:test .
+      - name: Inspect image
+        run: docker image inspect angel-os-linux:test --format '{{.Id}} {{.Size}}'
+
+  quadlet:
+    name: Validate Linux service files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check required files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s angel-os/platform/linux/Caddyfile
+          test -s angel-os/platform/linux/env.example
+          test -x angel-os/platform/linux/scripts/install.sh
+          test -x angel-os/platform/linux/scripts/backup.sh
+          for f in angel-os/platform/linux/quadlet/*; do test -s "$f"; done
+          for f in angel-os/platform/linux/systemd/*; do test -s "$f"; done
