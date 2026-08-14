@@ -47,6 +47,7 @@ export function AdminShell({
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -63,6 +64,18 @@ export function AdminShell({
     document.body.style.overflow = open ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [open]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setAiOpen(true);
+      }
+      if (event.key === "Escape" && aiOpen) setAiOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [aiOpen]);
 
   const compactItems = useMemo(() => {
     return COMPACT_NAV.map((definition) => {
@@ -89,11 +102,7 @@ export function AdminShell({
   const selectCompact = (source: string) => {
     onSelect(source);
     setOpen(false);
-  };
-
-  const openUniversalSearch = () => {
-    const button = document.querySelector<HTMLButtonElement>('[aria-label="Recherche globale"]');
-    if (button) button.click();
+    setAiOpen(false);
   };
 
   const appGrid = (
@@ -198,7 +207,6 @@ export function AdminShell({
         <main className="mx-auto w-full min-w-0 max-w-[1500px] px-3 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4 sm:px-7 sm:pb-24 lg:px-10">
           {isDashboard ? (
             <div className="mb-5 space-y-5" data-admin-dashboard-glance>
-              <AngelCommandCenter compact />
               <PixelWidgets />
               <NewsPanel />
             </div>
@@ -206,29 +214,41 @@ export function AdminShell({
           <div key={active} className="min-w-0 max-w-full animate-in fade-in zoom-in-[.985] duration-300 [&_.bg-card]:bg-[#090b0d] [&_.bg-background]:bg-[#050607] [&_.bg-muted]:bg-white/[.04] [&_.border-border]:border-white/10 [&_.text-foreground]:text-white [&_.text-muted-foreground]:text-white/45 [&_.rounded-xl]:rounded-[1.25rem] [&_.rounded-2xl]:rounded-[1.75rem] [&_.rounded-lg]:rounded-xl [&_.shadow-sm]:shadow-[0_18px_60px_rgba(0,0,0,.28)] [&_img]:max-w-full [&_input]:max-w-full [&_textarea]:max-w-full [&_select]:max-w-full [&_input]:border-white/10 [&_textarea]:border-white/10 [&_select]:border-white/10 [&_input]:bg-black/30 [&_textarea]:bg-black/30 [&_select]:bg-black/30 [&_input]:text-white [&_textarea]:text-white [&_select]:text-white">{children}</div>
         </main>
 
-        <div className="fixed bottom-[calc(.75rem+env(safe-area-inset-bottom))] left-1/2 z-30 flex h-16 w-[min(34rem,calc(100vw-2rem))] -translate-x-1/2 items-center rounded-full border border-white/10 bg-[#090b0d]/95 shadow-[0_12px_40px_rgba(0,0,0,.55)] backdrop-blur-xl lg:w-[min(38rem,calc(100vw-24rem))]">
-          <button type="button" onClick={openUniversalSearch} className="flex h-full min-w-0 flex-1 items-center px-5 text-left text-white/55">
-            <span className="min-w-0 flex-1 truncate text-sm font-medium sm:text-base">Rechercher ou demander à Angel AI…</span>
-            <span className="hidden rounded-lg border border-white/10 bg-white/[.04] px-2 py-1 font-mono text-[10px] text-white/35 sm:inline">Ctrl K</span>
-          </button>
-          <button
-            type="button"
-            aria-label="Notifications"
-            onClick={() => onSelect("notifications")}
-            className="relative mr-2 grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-300"
-          >
-            <Bell className="h-5 w-5" />
-            {notificationBadge > 0 ? <span className="absolute -right-0.5 -top-0.5 grid min-h-5 min-w-5 place-items-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">{notificationBadge}</span> : null}
-          </button>
-          <button
-            type="button"
-            aria-label="Ouvrir les applications"
-            onClick={() => setOpen(true)}
-            className="mr-2 grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white/60 lg:hidden"
-          >
-            <Grid2X2 className="h-5 w-5" />
-          </button>
-        </div>
+        {aiOpen ? (
+          <div className="fixed bottom-[calc(.75rem+env(safe-area-inset-bottom))] left-1/2 z-40 w-[min(34rem,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden rounded-[1.75rem] border border-red-500/20 bg-[#090b0d]/98 shadow-[0_20px_70px_rgba(0,0,0,.72)] backdrop-blur-xl lg:w-[min(38rem,calc(100vw-24rem))]">
+            <div className="flex items-center justify-between border-b border-white/10 px-4 py-2.5">
+              <p className="font-mono text-[10px] font-semibold uppercase tracking-[.16em] text-red-300">Recherche universelle · Angel AI</p>
+              <button type="button" aria-label="Fermer Angel AI" onClick={() => setAiOpen(false)} className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white/60 hover:text-white"><X className="h-4 w-4" /></button>
+            </div>
+            <div className="max-h-[min(68dvh,42rem)] overflow-y-auto p-2 sm:p-3">
+              <AngelCommandCenter compact />
+            </div>
+          </div>
+        ) : (
+          <div className="fixed bottom-[calc(.75rem+env(safe-area-inset-bottom))] left-1/2 z-30 flex h-16 w-[min(34rem,calc(100vw-2rem))] -translate-x-1/2 items-center rounded-full border border-white/10 bg-[#090b0d]/95 shadow-[0_12px_40px_rgba(0,0,0,.55)] backdrop-blur-xl lg:w-[min(38rem,calc(100vw-24rem))]">
+            <button type="button" onClick={() => setAiOpen(true)} className="flex h-full min-w-0 flex-1 items-center px-5 text-left text-white/55">
+              <span className="min-w-0 flex-1 truncate text-sm font-medium sm:text-base">Rechercher ou demander à Angel AI…</span>
+              <span className="hidden rounded-lg border border-white/10 bg-white/[.04] px-2 py-1 font-mono text-[10px] text-white/35 sm:inline">Ctrl K</span>
+            </button>
+            <button
+              type="button"
+              aria-label="Notifications"
+              onClick={() => onSelect("notifications")}
+              className="relative mr-2 grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-300"
+            >
+              <Bell className="h-5 w-5" />
+              {notificationBadge > 0 ? <span className="absolute -right-0.5 -top-0.5 grid min-h-5 min-w-5 place-items-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">{notificationBadge}</span> : null}
+            </button>
+            <button
+              type="button"
+              aria-label="Ouvrir les applications"
+              onClick={() => setOpen(true)}
+              className="mr-2 grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white/60 lg:hidden"
+            >
+              <Grid2X2 className="h-5 w-5" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
