@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { emitAngelOSEvent } from "@/lib/angel-os-runtime";
 import { runAngelCommand } from "@/lib/angel-command.functions";
 import { isArticleCommand, runArticleCommand } from "@/lib/article-command.functions";
 import { Input } from "@/components/ui/input";
@@ -124,9 +125,22 @@ export function GlobalSearch({ open, onClose, onNavigate }: { open: boolean; onC
     return enriched.filter((s) => `${s.label} ${s.detail} ${s.aliases}`.toLocaleLowerCase("fr").includes(q)).slice(0, 8);
   }, [q, notificationCount]);
 
+  const navigateThroughCore = (tab: string, label: string) => {
+    void emitAngelOSEvent("angel-os:admin:navigation", { tab, label }).catch(() => {});
+    onNavigate(tab);
+    onClose();
+  };
+
   const ai = useMutation({
     mutationFn: (value: string) => isArticleCommand(value) ? executeArticle({ data: { command: value } }) : execute({ data: { command: value } }),
-    onSuccess: () => {
+    onSuccess: (result) => {
+      void emitAngelOSEvent("angel-os:ai:command-completed", {
+        query: query.trim().slice(0, 500),
+        status: "status" in result ? result.status : "completed",
+        source: "source" in result ? result.source : "article-command",
+        autoExecuted: "autoExecuted" in result ? result.autoExecuted : true,
+        actionId: "actionId" in result ? result.actionId : null,
+      }).catch(() => {});
       toast.success("Demande envoyée à Angel AI");
       void queryClient.invalidateQueries({ queryKey: ["angel-ai-messages"] });
       void queryClient.invalidateQueries({ queryKey: ["ai-actions"] });
@@ -157,7 +171,7 @@ export function GlobalSearch({ open, onClose, onNavigate }: { open: boolean; onC
                 {shortcuts.map((s) => {
                   const Icon = s.icon;
                   return (
-                    <button key={`${s.tab}-${s.label}`} type="button" className="group flex items-center gap-3 rounded-2xl bg-muted/60 px-3.5 py-3 text-left transition-colors hover:bg-muted" onClick={() => { onNavigate(s.tab); onClose(); }}>
+                    <button key={`${s.tab}-${s.label}`} type="button" className="group flex items-center gap-3 rounded-2xl bg-muted/60 px-3.5 py-3 text-left transition-colors hover:bg-muted" onClick={() => navigateThroughCore(s.tab, s.label)}>
                       <span className="relative grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-background text-primary shadow-sm">
                         <Icon className="h-5 w-5" />
                         {s.alert ? <span className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-red-600 text-white shadow"><Bell className="h-3 w-3" /></span> : null}
@@ -178,7 +192,7 @@ export function GlobalSearch({ open, onClose, onNavigate }: { open: boolean; onC
               <p className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Résultats</p>
               <ul className="space-y-1">
                 {hits.map((h) => (
-                  <li key={h.id}><button type="button" className="flex min-h-12 w-full flex-col items-start rounded-xl px-3 py-2 text-left hover:bg-muted" onClick={() => { onNavigate(h.tab); onClose(); }}><span className="font-medium text-foreground">{h.label}</span><span className="text-xs text-muted-foreground">{h.group}{h.detail ? ` · ${h.detail}` : ""}</span></button></li>
+                  <li key={h.id}><button type="button" className="flex min-h-12 w-full flex-col items-start rounded-xl px-3 py-2 text-left hover:bg-muted" onClick={() => navigateThroughCore(h.tab, h.label)}><span className="font-medium text-foreground">{h.label}</span><span className="text-xs text-muted-foreground">{h.group}{h.detail ? ` · ${h.detail}` : ""}</span></button></li>
                 ))}
               </ul>
             </section>
