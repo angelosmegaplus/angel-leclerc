@@ -5,6 +5,7 @@ import { Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { AdminCard } from "./AdminShell";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/Logo";
 import {
   disconnectOAuthConnection,
   integrationReadiness,
@@ -147,6 +148,27 @@ export function ConnectionsPanel() {
     return acc;
   }, {});
 
+  const quickProviders = [
+    { id: "google", label: "Google", domain: "google.com" },
+    { id: "microsoft", label: "Microsoft", domain: "microsoft.com" },
+  ] as const;
+
+  function quickConnect(provider: "google" | "microsoft") {
+    const services = (data ?? []).filter((service) => service.provider === provider);
+    const ready = services.some((service) => service.status === "ready");
+    if (!ready) {
+      const missing = Array.from(new Set(services.flatMap((service) => service.missing))).filter(Boolean);
+      toast.error(
+        missing.length > 0
+          ? `Connexion ${provider === "google" ? "Google" : "Microsoft"} à configurer côté serveur : ${missing.join(", ")}.`
+          : `Connexion ${provider === "google" ? "Google" : "Microsoft"} non disponible pour le moment.`,
+      );
+      return;
+    }
+    setPendingProvider(provider);
+    connectMutation.mutate(provider);
+  }
+
   return (
     <div className="space-y-5">
       <AdminCard className="border-l-4 border-l-[#0078d7]">
@@ -160,6 +182,36 @@ export function ConnectionsPanel() {
               sont chiffrés et renouvelés automatiquement lorsque le fournisseur l’autorise.
             </p>
           </div>
+        </div>
+      </AdminCard>
+
+      <AdminCard title="Connexion rapide" description="Autoriser directement Google ou Microsoft pour les services compatibles.">
+        <div className="grid gap-3 sm:grid-cols-2">
+          {quickProviders.map((provider) => {
+            const services = (data ?? []).filter((service) => service.provider === provider.id);
+            const connected = services.some((service) => service.connection === "connected");
+            const busy = pendingProvider === provider.id;
+            return (
+              <button
+                key={provider.id}
+                type="button"
+                onClick={() => quickConnect(provider.id)}
+                disabled={busy || isPending}
+                className="flex min-h-20 items-center gap-4 rounded-2xl border border-white/10 bg-black/40 p-4 text-left transition hover:border-red-500/30 hover:bg-red-500/[.05] disabled:cursor-wait disabled:opacity-60"
+              >
+                <Logo domain={provider.domain} alt={provider.label} size={42} link={false} />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold text-white">
+                    {connected ? `${provider.label} connecté` : `Se connecter à ${provider.label}`}
+                  </span>
+                  <span className="mt-1 block text-xs leading-5 text-white/45">
+                    {provider.id === "google" ? "Gmail, Drive, Agenda et services Google." : "Outlook, OneDrive, Agenda et Microsoft 365."}
+                  </span>
+                </span>
+                {busy ? <Loader2 className="h-4 w-4 shrink-0 animate-spin text-red-300" /> : null}
+              </button>
+            );
+          })}
         </div>
       </AdminCard>
 
