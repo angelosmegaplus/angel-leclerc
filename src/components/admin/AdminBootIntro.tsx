@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Volume2 } from "lucide-react";
 
-/** Dernière présence dans Angel OS (ms). L'intro navigateur rejoue après 20 min d'absence. */
+/** Dernière présence dans Angel OS (ms). */
 const LAST_SEEN_KEY = "angel-os-last-seen";
+/** Marqueur valable uniquement pour l'onglet / la session PWA courante. */
+const SESSION_BOOT_KEY = "angel-os-boot-played";
 const IDLE_MS = 20 * 60 * 1000;
 
 function markPresence() {
@@ -13,11 +15,20 @@ function markPresence() {
   }
 }
 
-function isStandaloneApp() {
-  return (
-    window.matchMedia("(display-mode: standalone)").matches ||
-    (window.navigator as Navigator & { standalone?: boolean }).standalone === true
-  );
+function hasBootPlayedThisSession() {
+  try {
+    return window.sessionStorage.getItem(SESSION_BOOT_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markBootPlayedThisSession() {
+  try {
+    window.sessionStorage.setItem(SESSION_BOOT_KEY, "1");
+  } catch {
+    /* stockage indisponible */
+  }
 }
 
 export function AdminBootIntro() {
@@ -33,13 +44,18 @@ export function AdminBootIntro() {
       /* stockage indisponible */
     }
 
-    const standalone = isStandaloneApp();
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const alreadyPlayed = hasBootPlayedThisSession();
+    const returningAfterIdle = Date.now() - last > IDLE_MS;
 
-    // En application installée, le générique est systématique à chaque lancement.
-    // Dans le navigateur, on conserve le comportement discret historique.
-    const shouldPlay = standalone || (!reduced && Date.now() - last > IDLE_MS);
-    if (shouldPlay) setVisible(true);
+    // Une seule intro par vraie session de navigation / PWA.
+    // Elle peut rejouer lors d'une nouvelle session après une longue absence.
+    const shouldPlay = !alreadyPlayed && !reduced && returningAfterIdle;
+
+    if (shouldPlay) {
+      markBootPlayedThisSession();
+      setVisible(true);
+    }
     markPresence();
 
     const beat = window.setInterval(markPresence, 60_000);
