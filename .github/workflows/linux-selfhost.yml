@@ -7,7 +7,9 @@ on:
     paths:
       - "angel-os/platform/linux/**"
       - "angel-os/services/data/**"
+      - "angel-os/services/identity/**"
       - "angel-os/adapters/data.server.ts"
+      - "angel-os/adapters/identity.server.ts"
       - "vite.config.ts"
       - "package.json"
       - "bun.lock"
@@ -30,10 +32,13 @@ jobs:
         run: docker build -f angel-os/platform/linux/Containerfile -t angel-os-linux:test .
       - name: Build Angel Data image
         run: docker build -f angel-os/services/data/Containerfile -t angel-data:test .
+      - name: Build Angel Identity image
+        run: docker build -f angel-os/platform/linux/IdentityContainerfile -t angel-identity:test .
       - name: Inspect images
         run: |
           docker image inspect angel-os-linux:test --format '{{.Id}} {{.Size}}'
           docker image inspect angel-data:test --format '{{.Id}} {{.Size}}'
+          docker image inspect angel-identity:test --format '{{.Id}} {{.Size}}'
 
   quadlet:
     name: Validate Linux service files
@@ -49,6 +54,8 @@ jobs:
           test -x angel-os/platform/linux/scripts/install.sh
           test -x angel-os/platform/linux/scripts/backup.sh
           test -s angel-os/platform/linux/quadlet/angel-data.container
+          test -s angel-os/platform/linux/quadlet/angel-identity.container
           test -s angel-os/services/data/server.ts
+          test -s angel-os/services/identity/server.ts
           for f in angel-os/platform/linux/quadlet/*; do test -s "$f"; done
           for f in angel-os/platform/linux/systemd/*; do test -s "$f"; done
