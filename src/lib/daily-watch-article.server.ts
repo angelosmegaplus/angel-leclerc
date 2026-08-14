@@ -1,5 +1,6 @@
 import { generateArticleDraft } from "./article-ai.server";
 import { fetchAdminNewsSnapshot } from "./news.functions";
+import type { NewsPayload } from "./news.functions";
 
 const DISCLOSURE =
   "Cet article a été généré et publié automatiquement par la veille Angel OS IA à partir de sources publiques. Malgré la recherche et le recoupement, des erreurs ou imprécisions restent possibles : consultez les sources avant de réutiliser une information.";
@@ -12,6 +13,26 @@ function slugify(value: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "")
     .slice(0, 82);
+}
+
+async function fetchDailyNews(): Promise<NewsPayload> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 12_000);
+  try {
+    const response = await fetch("https://www.angel-leclerc.fr/api/admin/news", {
+      headers: { Accept: "application/json", "User-Agent": "AngelOS-Daily-Article/1.0" },
+      signal: controller.signal,
+    });
+    if (response.ok) {
+      const payload = (await response.json()) as NewsPayload;
+      if (payload.items.length > 0) return payload;
+    }
+  } catch (error) {
+    console.warn("[daily-watch-article] Vercel news collector unavailable", error);
+  } finally {
+    clearTimeout(timeout);
+  }
+  return fetchAdminNewsSnapshot();
 }
 
 /** Publie au maximum un article de veille par jour, uniquement si le résultat est complet et sourcé. */
@@ -28,7 +49,7 @@ export async function publishDailyWatchArticle() {
   if (existingError) throw existingError;
   if (existing) return { published: false, skipped: "already-published", article: existing };
 
-  const news = await fetchAdminNewsSnapshot();
+  const news = await fetchDailyNews();
   const candidate = news.items.find((item) => item.category === "une") ?? news.items[0];
   if (!candidate) throw new Error("Aucune actualité exploitable aujourd'hui.");
 
