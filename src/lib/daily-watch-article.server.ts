@@ -19,7 +19,7 @@ async function fetchDailyNews(): Promise<NewsPayload> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 12_000);
   try {
-    const response = await fetch("https://www.angel-leclerc.fr/api/admin/news", {
+    const response = await fetch("https://angel-leclerc.vercel.app/api/admin/news", {
       headers: { Accept: "application/json", "User-Agent": "AngelOS-Daily-Article/1.0" },
       signal: controller.signal,
     });
