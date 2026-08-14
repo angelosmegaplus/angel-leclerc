@@ -114,8 +114,11 @@ export function AdminShell({
     <>
       <div className="mb-5 flex items-center justify-between gap-3 px-1">
         <div className="min-w-0">
-          <p className="text-xs font-semibold text-[#5f6368]">Angel OS</p>
-          <p className="mt-0.5 truncate text-2xl font-semibold tracking-[-0.04em] text-[#202124]">Applications</p>
+          <div className="flex items-center gap-2">
+            <img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-7 w-7 rounded-lg object-contain" />
+            <p className="text-xs font-semibold text-[#5f6368]">Angel OS</p>
+          </div>
+          <p className="mt-1 truncate text-2xl font-semibold tracking-[-0.04em] text-[#202124]">Applications</p>
         </div>
         <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#d3e3fd] text-[#0b57d0]"><Grid2X2 className="h-5 w-5" /></span>
       </div>
@@ -127,10 +130,9 @@ export function AdminShell({
   const currentItem = items.find((item) => item.key === active);
   const CurrentIcon = currentItem?.icon;
   const isDashboard = active === "dashboard";
-  const mobileItems = compactItems.slice(0, 4);
 
   return (
-    <div className="min-h-[100dvh] w-full overflow-x-hidden bg-[#f8fafd] text-[#202124] lg:flex" style={{ fontFamily: '\"Google Sans\", \"Roboto\", \"Inter\", system-ui, sans-serif' }}>
+    <div className="min-h-[100dvh] w-full overflow-x-hidden bg-[#f8fafd] text-[#202124] lg:flex" style={{ fontFamily: '"Google Sans", "Roboto", "Inter", system-ui, sans-serif' }}>
       <aside className="sticky top-0 hidden h-[100dvh] w-[19rem] shrink-0 overflow-y-auto bg-[#f1f5f9] px-4 py-6 lg:block">{menuContents}</aside>
 
       {open ? (
@@ -146,8 +148,11 @@ export function AdminShell({
         <header className="sticky top-0 z-30 bg-[#f8fafd]/92 px-3 pb-3 pt-[calc(.75rem+env(safe-area-inset-top))] backdrop-blur-xl sm:px-7 lg:px-10">
           <div className="mx-auto flex min-w-0 max-w-[1500px] items-center gap-2">
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-[#5f6368]">Angel OS</p>
-              <div className="mt-0.5 flex min-w-0 items-center gap-2">
+              <div className="flex items-center gap-2">
+                <img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-7 w-7 rounded-lg object-contain" />
+                <p className="text-xs font-semibold text-[#5f6368]">Angel OS</p>
+              </div>
+              <div className="mt-1 flex min-w-0 items-center gap-2">
                 {CurrentIcon ? <span className="hidden h-10 w-10 shrink-0 place-items-center rounded-full bg-[#d3e3fd] text-[#0b57d0] sm:grid"><CurrentIcon className="h-5 w-5" /></span> : null}
                 <h1 className="min-w-0 truncate text-[1.65rem] font-semibold leading-none tracking-[-0.05em] text-[#202124] sm:text-[2.2rem]">{title}</h1>
               </div>
@@ -157,34 +162,34 @@ export function AdminShell({
           {actions ? <div className="mx-auto mt-3 flex max-w-[1500px] gap-2 overflow-x-auto pb-1 sm:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:shrink-0 [&_button]:rounded-full [&_a]:rounded-full [&_[aria-label='Recherche_globale']]:hidden">{actions}</div> : null}
         </header>
 
-        <main className="mx-auto w-full min-w-0 max-w-[1500px] px-3 pb-[calc(11rem+env(safe-area-inset-bottom))] pt-3 sm:px-7 sm:pb-28 lg:px-10">
+        <main className="mx-auto w-full min-w-0 max-w-[1500px] px-3 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-3 sm:px-7 sm:pb-24 lg:px-10">
           {isDashboard ? <div className="mb-5 space-y-5" data-admin-dashboard-glance><PixelWidgets /><NewsPanel /></div> : null}
           <div key={active} className="min-w-0 max-w-full animate-in fade-in zoom-in-[.985] duration-300 [&_.bg-card]:bg-white [&_.bg-background]:bg-white [&_.bg-muted]:bg-[#f0f4f9] [&_.border-border]:border-[#dfe3e7] [&_.text-foreground]:text-[#202124] [&_.text-muted-foreground]:text-[#5f6368] [&_.rounded-xl]:rounded-[1.5rem] [&_.rounded-2xl]:rounded-[2rem] [&_.rounded-lg]:rounded-[1.25rem] [&_.shadow-sm]:shadow-sm [&_img]:max-w-full [&_input]:max-w-full [&_textarea]:max-w-full [&_select]:max-w-full [&_.whitespace-pre-line]:max-h-28 [&_.whitespace-pre-line]:overflow-hidden">{children}</div>
         </main>
 
-        <div className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] left-1/2 z-30 flex h-14 w-[min(42rem,calc(100vw-2rem))] -translate-x-1/2 items-center rounded-full bg-white shadow-[0_5px_24px_rgba(60,64,67,.22)] ring-1 ring-black/5 lg:bottom-6 lg:w-[min(46rem,calc(100vw-22rem))]">
+        <div className="fixed bottom-[calc(.75rem+env(safe-area-inset-bottom))] left-1/2 z-30 flex h-16 w-[min(44rem,calc(100vw-1.5rem))] -translate-x-1/2 items-center rounded-full bg-white shadow-[0_6px_28px_rgba(60,64,67,.24)] ring-1 ring-black/5 lg:w-[min(46rem,calc(100vw-22rem))]">
           <button type="button" onClick={openUniversalSearch} className="flex h-full min-w-0 flex-1 items-center px-5 text-left text-[#5f6368]">
-            <span className="min-w-0 flex-1 truncate text-sm font-medium">Rechercher ou demander à Angel AI…</span>
+            <span className="min-w-0 flex-1 truncate text-sm font-medium sm:text-base">Rechercher ou demander à Angel AI…</span>
             <span className="hidden rounded-lg bg-[#f0f4f9] px-2 py-1 text-[11px] font-semibold sm:inline">Ctrl K</span>
           </button>
           <button
             type="button"
             aria-label="Notifications"
             onClick={() => onSelect("notifications")}
-            className="relative mr-2 grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#eef3fb] text-[#0b57d0]"
+            className="relative mr-2 grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#eef3fb] text-[#0b57d0]"
           >
             <Bell className="h-5 w-5" />
             {notificationBadge > 0 ? <span className="absolute -right-0.5 -top-0.5 grid min-h-5 min-w-5 place-items-center rounded-full bg-[#b3261e] px-1 text-[9px] font-bold text-white">{notificationBadge}</span> : null}
           </button>
+          <button
+            type="button"
+            aria-label="Ouvrir les applications"
+            onClick={() => setOpen(true)}
+            className="mr-2 grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#eef3fb] text-[#0b57d0] lg:hidden"
+          >
+            <Grid2X2 className="h-5 w-5" />
+          </button>
         </div>
-
-        <nav className="fixed inset-x-3 bottom-[calc(.6rem+env(safe-area-inset-bottom))] z-20 grid h-[4.8rem] grid-cols-5 items-center rounded-[2rem] bg-[#eef3fb]/95 px-2 shadow-[0_4px_24px_rgba(60,64,67,.18)] backdrop-blur-xl lg:hidden">
-          {mobileItems.map(({ key, label, source, icon: Icon }) => {
-            const isActive = activeGroup === key;
-            return <button key={key} type="button" onClick={() => selectCompact(source)} className="flex min-w-0 flex-col items-center justify-center gap-1 text-[10px] font-semibold text-[#5f6368]"><span className={`grid h-8 min-w-14 place-items-center rounded-full px-3 ${isActive ? "bg-[#d3e3fd] text-[#0b57d0]" : "text-[#5f6368]"}`}><Icon className="h-5 w-5" /></span><span className="max-w-full truncate">{label}</span></button>;
-          })}
-          <button type="button" onClick={() => setOpen(true)} className="flex flex-col items-center justify-center gap-1 text-[10px] font-semibold text-[#5f6368]"><span className="grid h-8 min-w-14 place-items-center rounded-full px-3"><Grid2X2 className="h-5 w-5" /></span><span>Apps</span></button>
-        </nav>
       </div>
     </div>
   );
