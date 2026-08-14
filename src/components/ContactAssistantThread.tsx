@@ -103,7 +103,6 @@ export function ContactAssistantThread() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Questions</p>
           <h2 id="contact-assistant-title" className="mt-1 font-display text-2xl font-bold text-foreground">Une question ? Écrivez ici.</h2>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Ce fil est séparé du formulaire et conserve le contexte de la discussion.</p>
         </div>
       </div>
 
