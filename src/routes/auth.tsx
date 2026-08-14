@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Captcha, type CaptchaValue } from "@/components/Captcha";
 import { verifyCaptchaAnswer } from "@/lib/captcha.functions";
+import { openAngelIdentitySession } from "@/lib/angel-identity-login.functions";
+import { setAngelIdentityToken } from "@/lib/angel-auth-client";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -49,6 +51,7 @@ function AuthPage() {
   const [captcha, setCaptcha] = useState<CaptchaValue>({ token: "", answer: "" });
   const [captchaKey, setCaptchaKey] = useState(0);
   const verifyCaptcha = useServerFn(verifyCaptchaAnswer);
+  const nativeLogin = useServerFn(openAngelIdentitySession);
 
   useEffect(() => {
     if (!loading && session) navigate({ to: "/admin" });
@@ -62,6 +65,7 @@ function AuthPage() {
     try {
       await verifyCaptcha({ data: { token: captcha.token, answer: captcha.answer } });
       if (mode === "signup") {
+        // Account creation stays on the compatibility provider during migration.
         const { error: err } = await supabase.auth.signUp({
           email: email.trim(),
           password,
@@ -71,6 +75,15 @@ function AuthPage() {
         setInfo("Compte créé. Vous pouvez maintenant vous connecter.");
         setMode("signin");
       } else {
+        // Angel Identity is the preferred provider on Linux/self-hosted installs.
+        const native = await nativeLogin({ data: { identifier: email.trim(), secret: password } });
+        if (native.ok) {
+          setAngelIdentityToken(native.token);
+          navigate({ to: "/admin" });
+          return;
+        }
+
+        // Compatibility fallback while Supabase-backed admin functions are being migrated.
         const { error: err } = await supabase.auth.signInWithPassword({
           email: email.trim(),
           password,
@@ -101,46 +114,25 @@ function AuthPage() {
           Espace personnel
         </h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          Connectez-vous pour rédiger, publier et gérer les actualités du site.
+          Angel Identity est utilisé en priorité ; l'ancien fournisseur reste disponible pendant la migration.
         </p>
 
         <form onSubmit={onSubmit} className="mt-8 space-y-4 rounded-xl border border-border bg-card p-6">
           <div className="space-y-2">
             <Label htmlFor="email">E-mail</Label>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            <Input id="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Mot de passe</Label>
-            <Input
-              id="password"
-              type="password"
-              autoComplete={mode === "signup" ? "new-password" : "current-password"}
-              required
-              minLength={8}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <Input id="password" type="password" autoComplete={mode === "signup" ? "new-password" : "current-password"} required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
-
           <Captcha key={captchaKey} value={captcha} onChange={setCaptcha} />
-
           {info && <p className="text-sm text-primary">{info}</p>}
 
           <Button type="submit" disabled={busy} className="w-full">
-            {busy ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <LogIn className="mr-2 h-4 w-4" />
-            )}
+            {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LogIn className="mr-2 h-4 w-4" />}
             {mode === "signup" ? "Créer mon compte" : "Me connecter"}
           </Button>
 
@@ -153,9 +145,7 @@ function AuthPage() {
             }}
             className="w-full text-center text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
           >
-            {mode === "signin"
-              ? "Première connexion ? Créer mon compte"
-              : "J'ai déjà un compte"}
+            {mode === "signin" ? "Première connexion ? Créer mon compte" : "J'ai déjà un compte"}
           </button>
         </form>
       </div>
