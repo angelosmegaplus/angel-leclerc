@@ -17,20 +17,6 @@ function clip(value: unknown, max = 1_200) {
   return value.replace(/\s+/g, " ").trim().slice(0, max);
 }
 
-function localSummary(snapshot: Record<string, any>) {
-  const applications = snapshot.applications ?? {};
-  const mail = snapshot.mail ?? {};
-  const agenda = snapshot.agenda ?? {};
-  const news = snapshot.news ?? {};
-  const parts = [
-    `${applications.active ?? 0} candidature${applications.active === 1 ? "" : "s"} active${applications.active === 1 ? "" : "s"}${applications.followUps ? `, dont ${applications.followUps} relance${applications.followUps === 1 ? "" : "s"} à traiter` : ""}.`,
-    mail.important ? `${mail.important} mail${mail.important === 1 ? "" : "s"} important${mail.important === 1 ? "" : "s"} à regarder.` : "Pas de mail important signalé.",
-    agenda.nextTitle ? `Prochain rendez-vous : ${agenda.nextTitle}${agenda.nextStart ? ` (${agenda.nextStart})` : ""}.` : "Aucun rendez-vous proche signalé.",
-    news.count ? `${news.count} actualité${news.count === 1 ? "" : "s"} disponible${news.count === 1 ? "" : "s"} dans la veille.` : "La veille actualités n’a rien de nouveau à signaler.",
-  ];
-  return parts.join(" ");
-}
-
 export const getAdminAiSummary = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<AdminAiSummaryResult> => {
@@ -104,26 +90,37 @@ export const getAdminAiSummary = createServerFn({ method: "GET" })
       previousCockpit: clip(existingCockpit.generalText ?? existingCockpit.summary, 700),
     };
 
-    const fallback = localSummary(snapshot);
     const ai = await resilientAngelAi({
       priority: "important",
-      maxTokens: 360,
+      maxTokens: 420,
       temperature: 0.2,
       cacheKey: `admin-summary:${JSON.stringify(snapshot)}`,
       cacheTtlMs: SUMMARY_TTL_MS,
       messages: [
         {
           role: "system",
-          content: "Tu es la couche de synthèse d’Angel OS. Résume uniquement les données JSON fournies. N’invente aucun fait, chiffre, mail, rendez-vous ou statut. Écris en français naturel, clair et très concis, 3 à 6 phrases maximum. Commence directement par l’information utile. Priorise ce qui nécessite une action, puis candidatures, mails, agenda et actualités. Si rien n’est urgent, dis-le simplement. Aucun markdown, aucune liste, aucun jargon technique.",
+          content: "Tu es la couche principale de synthèse OpenAI d’Angel OS. Résume uniquement les données JSON fournies. N’invente aucun fait, chiffre, mail, rendez-vous ou statut. Écris en français naturel, clair et très concis, 3 à 6 phrases maximum. Commence directement par l’information utile. Priorise ce qui nécessite une action, puis candidatures, mails, agenda et actualités. Si rien n’est urgent, dis-le simplement. Aucun markdown, aucune liste, aucun jargon technique.",
         },
         { role: "user", content: JSON.stringify(snapshot) },
       ],
     });
 
+    if (!ai.text) {
+      if (cachedPayload?.text && cachedPayload.source === "openai") {
+        return { ...cachedPayload, stale: true };
+      }
+      return {
+        text: "OpenAI est temporairement indisponible. Les données de l’administration restent accessibles, mais Angel OS ne génère pas de synthèse IA locale à sa place.",
+        generatedAt: new Date().toISOString(),
+        source: "local",
+        stale: true,
+      };
+    }
+
     const payload: AdminAiSummaryResult = {
-      text: (ai.text || fallback).slice(0, 1_800),
+      text: ai.text.slice(0, 1_800),
       generatedAt: new Date().toISOString(),
-      source: ai.text ? "openai" : "local",
+      source: "openai",
       stale: false,
     };
 
