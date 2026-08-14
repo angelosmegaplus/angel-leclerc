@@ -19,7 +19,7 @@ export function MaintenanceGate({ children, bypass = false }: { children: ReactN
 
     const checkStatus = async () => {
       try {
-        const response = await fetch("/api/public/site-status", {
+        const response = await fetch("/system-status", {
           cache: "no-store",
           headers: { Accept: "application/json" },
         });
