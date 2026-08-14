@@ -1,9 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ContactChat, type Track } from "@/components/ContactChat";
-import { ContactAssistantThread } from "@/components/ContactAssistantThread";
 
 const TITLE = "Contact — Angel Leclerc Communication";
-const DESCRIPTION = "Contactez Angel Leclerc via le formulaire de contact ou le chat de questions.";
+const DESCRIPTION = "Contactez Angel Leclerc via le formulaire de contact conversationnel.";
 
 export const Route = createFileRoute("/contact")({
   validateSearch: (search: Record<string, unknown>): { parcours?: Track } => {
@@ -36,10 +35,6 @@ function ContactPage() {
           <div className="contact-form-clean rounded-[2rem] border border-border bg-card p-3 shadow-sm sm:p-5">
             <ContactChat {...(parcours ? { initialTrack: parcours } : {})} />
           </div>
-        </div>
-
-        <div className="mx-auto mt-10 max-w-3xl">
-          <ContactAssistantThread />
         </div>
       </div>
 
