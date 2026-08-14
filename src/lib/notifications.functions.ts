@@ -2,18 +2,27 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireAngelAuth } from "@/lib/auth/require-angel-auth";
 import { assertAngelAdmin } from "@/lib/auth/require-admin";
 import { AngelOSAdapterRegistry } from "../../angel-os/core/adapter-registry";
-import { angelDataServerAdapter, type AngelDataClient } from "../../angel-os/adapters/data.server";
 import type { PushConfig, SyncReport } from "./notifications.server";
 
 export type { PushConfig, SyncReport };
 export type PushStatus = PushConfig & { subscriptions: number };
 
-const adapters = new AngelOSAdapterRegistry();
-adapters.register(angelDataServerAdapter);
+type NativeDataClient = {
+  list: <T = unknown>(namespace: string) => Promise<Array<{ key: string; value: T }>>;
+  set: <T = unknown>(namespace: string, key: string, value: T) => Promise<unknown>;
+  delete: (namespace: string, key: string) => Promise<unknown>;
+};
 
-async function nativeData() {
+async function nativeData(): Promise<NativeDataClient | null> {
   if (!process.env.ANGEL_DATA_TOKEN) return null;
-  try { return await adapters.connect<AngelDataClient>('angel.data.native'); } catch { return null; }
+  try {
+    const { angelDataServerAdapter } = await import("../../angel-os/adapters/data.server");
+    const adapters = new AngelOSAdapterRegistry();
+    adapters.register(angelDataServerAdapter);
+    return await adapters.connect<NativeDataClient>("angel.data.native");
+  } catch {
+    return null;
+  }
 }
 
 function subscriptionKey(endpoint: string) {
