@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { NewsPanel } from "@/components/admin/NewsPanel";
 import { PixelWidgets } from "@/components/admin/PixelWidgets";
+import { AdminAutomationSummary } from "@/components/admin/AdminAutomationSummary";
 
 export type AdminNavItem = {
   key: string;
@@ -261,6 +262,7 @@ export function AdminShell({
         </header>
 
         <main className="mx-auto w-full min-w-0 max-w-[1500px] px-3 pb-[calc(6.5rem+env(safe-area-inset-bottom))] pt-3 sm:px-7 sm:pb-10 lg:px-10">
+          <AdminAutomationSummary mode="dashboard" />
           {isDashboard ? (
             <div className="mb-5 space-y-5" data-admin-dashboard-glance>
               <PixelWidgets />
