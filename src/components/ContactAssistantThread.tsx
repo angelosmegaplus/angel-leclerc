@@ -17,7 +17,6 @@ type Message = {
   id: string;
   role: "user" | "assistant";
   text: string;
-  source?: "integrated-ai" | "local-fallback";
 };
 
 const uid = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -68,7 +67,6 @@ export function ContactAssistantThread() {
     }));
 
     let answerText: string | null = null;
-    let source: Message["source"] = "integrated-ai";
     try {
       const response = await askServer({
         data: {
@@ -82,16 +80,12 @@ export function ContactAssistantThread() {
       answerText = null;
     }
 
-    // Le moteur local est une roue de secours, pas le moteur conversationnel normal.
-    if (!answerText) {
-      answerText = localAnswer(question).text;
-      source = "local-fallback";
-    }
+    if (!answerText) answerText = localAnswer(question).text;
 
     setThinking(false);
     setMessages((current) => [
       ...current,
-      { id: uid(), role: "assistant", text: answerText || "Je n’ai pas pu répondre à cette question pour le moment.", source },
+      { id: uid(), role: "assistant", text: answerText || "Je n’ai pas pu répondre à cette question pour le moment." },
     ]);
   }
 
@@ -101,15 +95,15 @@ export function ContactAssistantThread() {
   }
 
   return (
-    <section aria-labelledby="contact-ai-title" className="mx-auto max-w-3xl rounded-[2rem] border border-border bg-card p-4 shadow-[0_18px_60px_-30px_rgba(0,0,0,.28)] sm:p-6">
+    <section aria-labelledby="contact-assistant-title" className="mx-auto max-w-3xl rounded-[2rem] border border-border bg-card p-4 shadow-[0_18px_60px_-30px_rgba(0,0,0,.28)] sm:p-6">
       <div className="flex items-start gap-3">
         <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
           <Sparkles className="h-5 w-5" />
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Assistant intégré</p>
-          <h2 id="contact-ai-title" className="mt-1 font-display text-2xl font-bold text-foreground">Une question ? Discutez avec Angel OS IA.</h2>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Ce fil est séparé du formulaire. L’intelligence artificielle intégrée répond en priorité et conserve le contexte de la discussion. Le moteur local ne prend le relais qu’en cas d’indisponibilité technique.</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Questions</p>
+          <h2 id="contact-assistant-title" className="mt-1 font-display text-2xl font-bold text-foreground">Une question ? Écrivez ici.</h2>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Ce fil est séparé du formulaire et conserve le contexte de la discussion.</p>
         </div>
       </div>
 
@@ -130,13 +124,12 @@ export function ContactAssistantThread() {
             {message.role === "assistant" ? <span className="mt-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"><Bot className="h-4 w-4" /></span> : null}
             <div className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${message.role === "user" ? "bg-primary text-primary-foreground" : "border border-border bg-card text-foreground"}`}>
               <p className="whitespace-pre-wrap">{message.text}</p>
-              {message.role === "assistant" && message.source === "local-fallback" ? <p className="mt-2 text-[10px] uppercase tracking-wider text-muted-foreground">Mode de secours local</p> : null}
             </div>
             {message.role === "user" ? <span className="mt-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground"><UserRound className="h-4 w-4" /></span> : null}
           </div>
         ))}
         {thinking ? (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Angel OS IA prépare la réponse…</div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Préparation de la réponse…</div>
         ) : null}
         <div ref={endRef} />
       </div>
