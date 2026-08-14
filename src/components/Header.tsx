@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, X, Linkedin, Instagram, Facebook } from "lucide-react";
+import { Menu, X, Linkedin, Instagram, Facebook, LogIn } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import logo from "@/assets/logo.svg";
 import { Button } from "@/components/ui/button";
@@ -48,6 +48,13 @@ export function Header() {
             <a href="https://www.instagram.com/angelof_com?igsh=MWpqMjc3Mm03MHJpYg==" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Instagram Angel Leclerc Communication"><Instagram size={20} /></a>
             <a href="https://www.facebook.com/share/1LFGicX7qF/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Facebook Angel Leclerc Communication"><Facebook size={20} /></a>
           </div>
+          <Link
+            to="/auth"
+            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            aria-label="Se connecter à l'espace administrateur"
+          >
+            <LogIn className="h-3.5 w-3.5" /> Se connecter
+          </Link>
           <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
             <Link to="/contact">Parler de votre projet</Link>
           </Button>
@@ -70,6 +77,13 @@ export function Header() {
             {navLinks.map((link) => (
               <Link key={link.href} to={link.href} activeOptions={{ exact: link.href === "/" }} activeProps={{ className: "text-primary font-medium" }} onClick={() => setMobileOpen(false)} className="text-base py-2 text-foreground hover:text-primary transition-colors">{link.label}</Link>
             ))}
+            <Link
+              to="/auth"
+              onClick={() => setMobileOpen(false)}
+              className="inline-flex items-center gap-2 py-2 text-sm text-muted-foreground hover:text-foreground"
+            >
+              <LogIn className="h-4 w-4" /> Se connecter
+            </Link>
             <div className="grid grid-cols-3 gap-3 py-2">
               <a href="https://www.linkedin.com/company/angel-leclerc-communication/" target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-2 rounded-lg border border-border py-2 text-foreground hover:text-primary transition-colors" aria-label="LinkedIn Angel Leclerc Communication"><Linkedin size={18} /></a>
               <a href="https://www.instagram.com/angelof_com?igsh=MWpqMjc3Mm03MHJpYg==" target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-2 rounded-lg border border-border py-2 text-foreground hover:text-primary transition-colors" aria-label="Instagram Angel Leclerc Communication"><Instagram size={18} /></a>
