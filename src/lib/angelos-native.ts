@@ -6,19 +6,14 @@ import {
   type AngelTable,
   type Row,
 } from "@/lib/angelos";
-import {
-  listAngelRows,
-  recordAngelActivity,
-  removeAngelRow,
-  saveAngelRow,
-} from "@/lib/angelos-native.functions";
+import { listAngelRows, recordAngelActivity, removeAngelRow, saveAngelRow } from "@/lib/angelos-native.functions";
 
 export type { AngelTable, Row } from "@/lib/angelos";
 export { str, tagsOf } from "@/lib/angelos";
 
 export async function listRows(table: AngelTable, orderBy = "created_at"): Promise<Row[]> {
   try {
-    return await listAngelRows({ data: { table, orderBy } });
+    return (await listAngelRows({ data: { table, orderBy } })) as Row[];
   } catch (error) {
     console.warn("[Angel OS] Angel Data indisponible, fallback CRUD Supabase", error);
     return legacyListRows(table, orderBy);
@@ -27,7 +22,7 @@ export async function listRows(table: AngelTable, orderBy = "created_at"): Promi
 
 export async function upsertRow(table: AngelTable, values: Record<string, unknown>, id?: string | null): Promise<Row> {
   try {
-    return await saveAngelRow({ data: { table, values, id: id ?? null } });
+    return (await saveAngelRow({ data: { table, values, id: id ?? null } })) as Row;
   } catch (error) {
     console.warn("[Angel OS] écriture Angel Data indisponible, fallback Supabase", error);
     return legacyUpsertRow(table, values, id);
