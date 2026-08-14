@@ -31,7 +31,8 @@ begin
           'Content-Type', 'application/json',
           'x-cron-token', (select decrypted_secret from vault.decrypted_secrets where name = 'angel_daily_article_cron' limit 1)
         ),
-        body := '{}'::jsonb
+        body := '{}'::jsonb,
+        timeout_milliseconds := 60000
       ) as request_id;
     $command$
   );
