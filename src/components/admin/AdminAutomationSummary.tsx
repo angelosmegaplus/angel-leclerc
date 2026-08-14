@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { CalendarDays, FileText, Inbox, Mail, TrendingUp, Sparkles } from "lucide-react";
+import { FileText, Inbox, Mail, TrendingUp, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 type CacheRow = { key: string; payload: Record<string, any>; updated_at: string };
@@ -33,13 +33,6 @@ async function loadApplications(): Promise<ApplicationRow[]> {
     .order("sent_at", { ascending: false });
   if (error) throw error;
   return (data ?? []) as ApplicationRow[];
-}
-
-function formatEventDate(value?: string) {
-  if (!value) return "Date non précisée";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat("fr-FR", { dateStyle: "full", timeStyle: "short" }).format(date);
 }
 
 function formatShortDate(value?: string | null) {
@@ -109,12 +102,10 @@ export function AdminAutomationSummary({ mode = "dashboard" }: { mode?: "dashboa
 
   if (isLoading || ((mode === "applications" || mode === "dashboard") && applicationsLoading)) return <p className="text-sm text-muted-foreground">Chargement du bilan Angel OS…</p>;
 
-  const calendar = data.google_calendar_dashboard?.payload;
   const gmail = data.gmail_dashboard?.payload;
   const cockpit = data.admin_cockpit_summary?.payload;
   const news = data.news_dashboard?.payload;
-  const next = calendar?.nextEvent;
-  const waiting = !calendar && !gmail && !cockpit && !news && applications.length === 0;
+  const waiting = !data.google_calendar_dashboard && !gmail && !cockpit && !news && applications.length === 0;
   if (waiting && mode !== "applications") return <p className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">Bilan général en attente du prochain passage de la veille existante.</p>;
 
   if (mode !== "dashboard") {
@@ -133,27 +124,29 @@ export function AdminAutomationSummary({ mode = "dashboard" }: { mode?: "dashboa
   const importantMail = gmail?.important?.length ?? cockpit?.gmail?.important ?? 0;
   const newsCount = Array.isArray(news?.items) ? news.items.length : 0;
 
+  const fallbackText = `Voici le bilan du moment. Angel OS suit actuellement ${applications.length} candidature${applications.length > 1 ? "s" : ""}, dont ${activeApplications} encore active${activeApplications > 1 ? "s" : ""}. ${importantMail > 0 ? `${importantMail} mail${importantMail > 1 ? "s" : ""} important${importantMail > 1 ? "s" : ""} ${importantMail > 1 ? "demandent" : "demande"} ton attention. ` : "Aucun mail important n’est signalé pour le moment. "}${newsCount > 0 ? `La veille actualité contient aussi ${newsCount} élément${newsCount > 1 ? "s" : ""} récent${newsCount > 1 ? "s" : ""}. ` : ""}Le prochain passage de la veille précisera les priorités à partir des dernières données disponibles.`;
+
+  const generalText =
+    (typeof cockpit?.generalText === "string" && cockpit.generalText.trim()) ||
+    (typeof cockpit?.summary === "string" && cockpit.summary.trim()) ||
+    fallbackText;
+
   return (
     <section className="mb-5 rounded-[2rem] border border-border bg-card p-4 shadow-sm sm:p-6">
       <div className="flex items-start gap-3">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#e8def8] text-[#594b66]"><Sparkles className="h-5 w-5" /></span>
-        <div><p className="font-semibold text-foreground">Bilan général Angel OS IA</p><p className="mt-1 text-sm text-muted-foreground">Synthèse transversale issue des tâches de veille existantes : agenda, Gmail, candidatures, actualités, messages, publications et statistiques.</p></div>
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold text-foreground">Bilan général Angel OS IA</p>
+          <p className="mt-3 whitespace-pre-line text-[15px] leading-7 text-foreground/90 sm:text-base">
+            {generalText}
+          </p>
+          {data.admin_cockpit_summary?.updated_at && (
+            <p className="mt-3 text-xs text-muted-foreground">
+              Mis à jour {new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short" }).format(new Date(data.admin_cockpit_summary.updated_at))}
+            </p>
+          )}
+        </div>
       </div>
-
-      <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-xl border border-border bg-muted/30 p-4"><p className="flex items-center gap-2 text-sm font-medium"><CalendarDays className="h-4 w-4 text-primary" />Agenda</p><p className="mt-2 text-sm text-muted-foreground">{next?.title ?? "Aucun rendez-vous remonté"}{next?.start ? ` · ${formatEventDate(next.start)}` : ""}</p></div>
-        <div className="rounded-xl border border-border bg-muted/30 p-4"><p className="flex items-center gap-2 text-sm font-medium"><Mail className="h-4 w-4 text-primary" />Gmail</p><p className="mt-2 text-sm text-muted-foreground"><strong>{importantMail}</strong> message(s) important(s). {readable(gmail?.summary ?? gmail?.otherSummary, "Aucun résumé mail récent.")}</p></div>
-        <div className="rounded-xl border border-border bg-muted/30 p-4"><p className="flex items-center gap-2 text-sm font-medium"><Inbox className="h-4 w-4 text-primary" />Candidatures</p><p className="mt-2 text-sm text-muted-foreground"><strong>{applications.length}</strong> suivie(s), dont <strong>{activeApplications}</strong> active(s).</p></div>
-        <div className="rounded-xl border border-border bg-muted/30 p-4"><p className="flex items-center gap-2 text-sm font-medium"><FileText className="h-4 w-4 text-primary" />Actualités</p><p className="mt-2 text-sm text-muted-foreground"><strong>{newsCount}</strong> actualité(s) dans la veille actuelle. {readable(cockpit?.news, "La veille détaillée reste disponible dans Actualités.")}</p></div>
-      </div>
-
-      <div className="mt-3 grid gap-3 md:grid-cols-3">
-        <div className="rounded-xl border border-border bg-muted/30 p-4"><p className="text-sm font-medium text-foreground">Messages</p><p className="mt-2 text-sm text-muted-foreground">{readable(cockpit?.messages)}</p></div>
-        <div className="rounded-xl border border-border bg-muted/30 p-4"><p className="text-sm font-medium text-foreground">Publications</p><p className="mt-2 text-sm text-muted-foreground">{readable(cockpit?.publications)}</p></div>
-        <div className="rounded-xl border border-border bg-muted/30 p-4"><p className="text-sm font-medium text-foreground">Statistiques</p><p className="mt-2 text-sm text-muted-foreground">{readable(cockpit?.stats)}</p></div>
-      </div>
-
-      <div className="mt-3 rounded-xl border border-primary/20 bg-primary/5 p-4"><p className="text-sm font-semibold text-foreground">Synthèse et priorités IA</p><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{cockpit?.summary ?? `Angel OS suit actuellement ${applications.length} candidature(s), ${importantMail} mail(s) important(s) et ${newsCount} actualité(s). Les prochaines priorités sont déterminées à partir des échéances agenda, relances de candidatures, messages importants, publications et signaux de la veille.`}</p></div>
     </section>
   );
 }
