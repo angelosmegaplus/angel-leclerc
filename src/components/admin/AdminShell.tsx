@@ -24,7 +24,7 @@ const COMPACT_NAV: CompactDefinition[] = [
   { key: "mail", label: "Mail", source: "boite-mail", children: ["boite-mail", "messages"] },
   { key: "agenda", label: "Agenda", source: "agenda", children: ["agenda"] },
   { key: "fichiers", label: "Fichiers", source: "fichiers", children: ["fichiers"] },
-  { key: "studio", label: "Studio", source: "studio", children: ["studio", "projets", "articles", "contenus", "boutique"] },
+  { key: "studio", label: "Studio", source: "articles", children: ["articles", "studio", "projets", "contenus", "boutique"] },
   { key: "candidatures", label: "Candidatures", source: "candidatures", children: ["candidatures"] },
   { key: "communaute", label: "Communauté", source: "abonnes", children: ["abonnes", "avis", "stats"] },
   { key: "parametres", label: "Paramètres", source: "connexions", children: ["connexions", "notifications", "automatisation", "activite"] },
