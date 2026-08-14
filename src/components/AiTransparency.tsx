@@ -23,7 +23,7 @@ export function AiTransparency({
     const name = disclosure.otherAiName.trim();
     lines.push(
       isAngelWatch
-        ? "Cet article a été préparé par la veille Angel OS IA à partir de sources publiques. Malgré la recherche et le recoupement, des erreurs ou imprécisions restent possibles : consultez les sources avant de réutiliser une information."
+        ? "Cet article a été généré et publié automatiquement par la veille Angel OS IA à partir de sources publiques. Malgré la recherche et le recoupement, des erreurs ou imprécisions restent possibles : consultez les sources avant de réutiliser une information."
         : name
         ? `${name} a été utilisé pour reformuler certains passages et améliorer la lisibilité.`
         : "Une autre intelligence artificielle a été utilisée pour reformuler certains passages et améliorer la lisibilité.",

@@ -43,6 +43,7 @@ import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/em
 import { Route as ApiPublicPrintfulWebhookRouteImport } from './routes/api/public/printful/webhook'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicHooksNewsletterRouteImport } from './routes/api/public/hooks/newsletter'
+import { Route as ApiPublicHooksDailyArticleRouteImport } from './routes/api/public/hooks/daily-article'
 import { Route as ApiPublicOauthProviderCallbackRouteImport } from './routes/api/public/oauth/$provider/callback'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -222,6 +223,12 @@ const ApiPublicHooksNewsletterRoute =
     path: '/api/public/hooks/newsletter',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksDailyArticleRoute =
+  ApiPublicHooksDailyArticleRouteImport.update({
+    id: '/api/public/hooks/daily-article',
+    path: '/api/public/hooks/daily-article',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicOauthProviderCallbackRoute =
   ApiPublicOauthProviderCallbackRouteImport.update({
     id: '/api/public/oauth/$provider/callback',
@@ -258,6 +265,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/news': typeof ApiAdminNewsRoute
   '/api/admin/weather': typeof ApiAdminWeatherRoute
   '/api/public/contact': typeof ApiPublicContactRoute
+  '/api/public/hooks/daily-article': typeof ApiPublicHooksDailyArticleRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/printful/webhook': typeof ApiPublicPrintfulWebhookRoute
@@ -295,6 +303,7 @@ export interface FileRoutesByTo {
   '/api/admin/news': typeof ApiAdminNewsRoute
   '/api/admin/weather': typeof ApiAdminWeatherRoute
   '/api/public/contact': typeof ApiPublicContactRoute
+  '/api/public/hooks/daily-article': typeof ApiPublicHooksDailyArticleRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/printful/webhook': typeof ApiPublicPrintfulWebhookRoute
@@ -333,6 +342,7 @@ export interface FileRoutesById {
   '/api/admin/news': typeof ApiAdminNewsRoute
   '/api/admin/weather': typeof ApiAdminWeatherRoute
   '/api/public/contact': typeof ApiPublicContactRoute
+  '/api/public/hooks/daily-article': typeof ApiPublicHooksDailyArticleRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/printful/webhook': typeof ApiPublicPrintfulWebhookRoute
@@ -372,6 +382,7 @@ export interface FileRouteTypes {
     | '/api/admin/news'
     | '/api/admin/weather'
     | '/api/public/contact'
+    | '/api/public/hooks/daily-article'
     | '/api/public/hooks/newsletter'
     | '/api/public/payments/webhook'
     | '/api/public/printful/webhook'
@@ -409,6 +420,7 @@ export interface FileRouteTypes {
     | '/api/admin/news'
     | '/api/admin/weather'
     | '/api/public/contact'
+    | '/api/public/hooks/daily-article'
     | '/api/public/hooks/newsletter'
     | '/api/public/payments/webhook'
     | '/api/public/printful/webhook'
@@ -446,6 +458,7 @@ export interface FileRouteTypes {
     | '/api/admin/news'
     | '/api/admin/weather'
     | '/api/public/contact'
+    | '/api/public/hooks/daily-article'
     | '/api/public/hooks/newsletter'
     | '/api/public/payments/webhook'
     | '/api/public/printful/webhook'
@@ -484,6 +497,7 @@ export interface RootRouteChildren {
   ApiAdminNewsRoute: typeof ApiAdminNewsRoute
   ApiAdminWeatherRoute: typeof ApiAdminWeatherRoute
   ApiPublicContactRoute: typeof ApiPublicContactRoute
+  ApiPublicHooksDailyArticleRoute: typeof ApiPublicHooksDailyArticleRoute
   ApiPublicHooksNewsletterRoute: typeof ApiPublicHooksNewsletterRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicPrintfulWebhookRoute: typeof ApiPublicPrintfulWebhookRoute
@@ -733,6 +747,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksNewsletterRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/daily-article': {
+      id: '/api/public/hooks/daily-article'
+      path: '/api/public/hooks/daily-article'
+      fullPath: '/api/public/hooks/daily-article'
+      preLoaderRoute: typeof ApiPublicHooksDailyArticleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/oauth/$provider/callback': {
       id: '/api/public/oauth/$provider/callback'
       path: '/api/public/oauth/$provider/callback'
@@ -774,6 +795,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminNewsRoute: ApiAdminNewsRoute,
   ApiAdminWeatherRoute: ApiAdminWeatherRoute,
   ApiPublicContactRoute: ApiPublicContactRoute,
+  ApiPublicHooksDailyArticleRoute: ApiPublicHooksDailyArticleRoute,
   ApiPublicHooksNewsletterRoute: ApiPublicHooksNewsletterRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicPrintfulWebhookRoute: ApiPublicPrintfulWebhookRoute,

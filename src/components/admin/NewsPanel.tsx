@@ -78,7 +78,7 @@ export function NewsPanel() {
             </span>
             <div>
               <h2 className="text-xl font-semibold tracking-[-0.03em] text-[#202124]">Actualités</h2>
-              <p className="text-sm text-[#5f6368]">Veille web personnalisée · actualisation automatique chaque heure.</p>
+              <p className="text-sm text-[#5f6368]">Veille web actualisée chaque heure · un article public généré automatiquement chaque jour.</p>
             </div>
           </div>
         </div>
