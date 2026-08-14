@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Button, Heading, Hr, Text } from '@react-email/components'
+import { Button, Heading, Hr, Section, Text } from '@react-email/components'
 import {
   EmailLayout,
   buttonStyle,
@@ -8,6 +8,7 @@ import {
   muted,
   secondaryButtonStyle,
   textStyle,
+  terracotta,
 } from './brand'
 
 interface ContactNotificationProps {
@@ -26,13 +27,13 @@ interface ContactNotificationProps {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <table width="100%" cellPadding={0} cellSpacing={0} role="presentation" style={{ borderBottom: '1px solid #f1efea' }}>
+    <table width="100%" cellPadding={0} cellSpacing={0} role="presentation" style={{ borderBottom: '1px solid #eceae5' }}>
       <tbody>
         <tr>
-          <td style={{ padding: '9px 12px 9px 0', color: muted, fontSize: 13, width: 160, verticalAlign: 'top' }}>
+          <td style={{ padding: '10px 12px 10px 0', color: muted, fontSize: 12, width: 150, verticalAlign: 'top' }}>
             {label}
           </td>
-          <td style={{ padding: '9px 0', color: ink, fontSize: 14, fontWeight: 500 }}>{value}</td>
+          <td style={{ padding: '10px 0', color: ink, fontSize: 14, fontWeight: 600 }}>{value}</td>
         </tr>
       </tbody>
     </table>
@@ -52,27 +53,28 @@ export const ContactNotificationEmail = ({
   attachmentName,
   signedUrl,
 }: ContactNotificationProps) => (
-  <EmailLayout preview={`Nouveau message — ${fullName} — ${projectType}`} tagline="Nouveau message reçu depuis le site">
-    <Heading style={headingStyle}>Nouvelle demande de projet</Heading>
+  <EmailLayout preview={`Nouveau message — ${fullName} — ${projectType}`} tagline="Nouveau message reçu depuis angel-leclerc.fr">
+    <Text style={{ ...textStyle, color: terracotta, fontSize: 12, fontWeight: 800, letterSpacing: '.12em', textTransform: 'uppercase', marginBottom: 10 }}>
+      Nouveau contact
+    </Text>
+    <Heading style={headingStyle}>{projectType}</Heading>
 
-    <Row label="Nom et prénom" value={fullName} />
-    <Row label="E-mail" value={email} />
-    <Row label="Téléphone" value={phone || '—'} />
-    <Row label="Structure" value={structure || '—'} />
-    <Row label="Sujet" value={projectType} />
-    <Row label="Budget approximatif" value={budget || '—'} />
-    <Row label="Date ou délai souhaité" value={deadline || '—'} />
-    <Row label="Envoyé le" value={sentAt} />
+    <Section style={{ backgroundColor: '#F7F5F2', borderRadius: 16, padding: '6px 16px', margin: '18px 0 22px 0' }}>
+      <Row label="Nom" value={fullName} />
+      <Row label="E-mail" value={email} />
+      <Row label="Téléphone" value={phone || '—'} />
+      <Row label="Structure" value={structure || '—'} />
+      <Row label="Budget" value={budget || '—'} />
+      <Row label="Échéance" value={deadline || '—'} />
+      <Row label="Reçu le" value={sentAt} />
+    </Section>
 
-    <Text style={{ ...textStyle, fontWeight: 600, margin: '22px 0 8px 0' }}>Message</Text>
+    <Text style={{ ...textStyle, fontWeight: 700, margin: '0 0 8px 0' }}>Récapitulatif</Text>
     <Text style={{ ...textStyle, whiteSpace: 'pre-wrap', margin: 0 }}>{description}</Text>
 
-    <Hr style={{ border: 'none', borderTop: '1px solid #eceae5', margin: '24px 0' }} />
+    <Hr style={{ border: 'none', borderTop: '1px solid #E8E5E1', margin: '26px 0' }} />
 
-    <Button
-      href={`mailto:${email}?subject=${encodeURIComponent(`Re : ${projectType}`)}`}
-      style={buttonStyle}
-    >
+    <Button href={`mailto:${email}?subject=${encodeURIComponent(`Re : ${projectType}`)}`} style={buttonStyle}>
       Répondre à {fullName.split(' ')[0]}
     </Button>
 
