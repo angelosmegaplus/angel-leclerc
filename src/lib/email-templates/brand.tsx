@@ -4,7 +4,6 @@ import {
   Container,
   Head,
   Html,
-  Img,
   Link,
   Preview,
   Section,
@@ -13,31 +12,31 @@ import {
 
 /** Identité graphique du site angel-leclerc.fr, appliquée à tous les e-mails. */
 export const SITE_URL = 'https://www.angel-leclerc.fr'
-export const LOGO_URL = `${SITE_URL}/logo.png`
 
-export const cream = '#F6F1E8'
-export const warmWhite = '#FFFDF9'
-export const ink = '#181716'
-export const muted = '#6b6b6b'
-export const line = '#eceae5'
+export const cream = '#F7F5F2'
+export const warmWhite = '#FFFFFF'
+export const ink = '#171717'
+export const muted = '#6F6F73'
+export const line = '#E8E5E1'
 export const terracotta = '#CE654B'
+export const navy = '#151922'
 export const fontBody = "'Inter','Helvetica Neue','Segoe UI',Arial,sans-serif"
 export const fontHead = "'Manrope','Helvetica Neue','Segoe UI',Arial,sans-serif"
 
 export const headingStyle: React.CSSProperties = {
   fontFamily: fontHead,
-  fontSize: 22,
-  lineHeight: 1.3,
-  fontWeight: 700,
+  fontSize: 25,
+  lineHeight: 1.24,
+  fontWeight: 750,
   color: ink,
   margin: '0 0 16px 0',
-  letterSpacing: '-0.01em',
+  letterSpacing: '-0.025em',
 }
 
 export const textStyle: React.CSSProperties = {
   fontFamily: fontBody,
   fontSize: 15,
-  lineHeight: 1.65,
+  lineHeight: 1.68,
   color: ink,
   margin: '0 0 14px 0',
 }
@@ -46,9 +45,9 @@ export const buttonStyle: React.CSSProperties = {
   backgroundColor: terracotta,
   color: '#ffffff',
   fontFamily: fontBody,
-  fontSize: 15,
-  fontWeight: 600,
-  borderRadius: 10,
+  fontSize: 14,
+  fontWeight: 700,
+  borderRadius: 999,
   padding: '13px 22px',
   textDecoration: 'none',
   display: 'inline-block',
@@ -64,19 +63,18 @@ export const secondaryButtonStyle: React.CSSProperties = {
 interface LayoutProps {
   preview: string
   children: React.ReactNode
-  /** Affiché sous le logo, en petit. */
   tagline?: string
   unsubscribeUrl?: string
 }
 
-/** Gabarit commun : en-tête avec logo, contenu aéré, pied de page. */
+/** Gabarit commun sans ancien logo bitmap : identité typographique actuelle et robuste dans tous les clients mail. */
 export const EmailLayout = ({ preview, children, tagline, unsubscribeUrl }: LayoutProps) => (
   <Html lang="fr" dir="ltr">
     <Head />
     <Preview>{preview}</Preview>
     <Body
       style={{
-        backgroundColor: '#ffffff',
+        backgroundColor: cream,
         fontFamily: fontBody,
         color: ink,
         margin: 0,
@@ -84,41 +82,41 @@ export const EmailLayout = ({ preview, children, tagline, unsubscribeUrl }: Layo
         WebkitTextSizeAdjust: '100%',
       }}
     >
-      <Section style={{ backgroundColor: cream, padding: '24px 12px' }}>
+      <Section style={{ backgroundColor: cream, padding: '28px 12px' }}>
         <Container
           style={{
             maxWidth: 600,
             width: '100%',
             backgroundColor: warmWhite,
-            borderRadius: 16,
+            borderRadius: 24,
             overflow: 'hidden',
             margin: '0 auto',
             border: `1px solid ${line}`,
+            boxShadow: '0 12px 40px rgba(22,24,29,.08)',
           }}
         >
-          <Section style={{ padding: '26px 28px 18px 28px', borderBottom: `3px solid ${terracotta}` }}>
+          <Section style={{ backgroundColor: navy, padding: '26px 30px 24px 30px' }}>
             <Link href={SITE_URL} style={{ textDecoration: 'none' }}>
-              <Img
-                src={LOGO_URL}
-                alt="Angel Leclerc Communication"
-                width="150"
-                height="auto"
-                style={{ display: 'block', maxWidth: 150, height: 'auto', border: 0 }}
-              />
+              <Text style={{ fontFamily: fontHead, fontSize: 22, lineHeight: 1.05, fontWeight: 800, color: '#FFFFFF', margin: 0, letterSpacing: '-0.03em' }}>
+                Angel Leclerc
+              </Text>
+              <Text style={{ fontFamily: fontBody, fontSize: 11, lineHeight: 1.4, fontWeight: 700, color: '#F1B8A9', margin: '6px 0 0 0', letterSpacing: '.13em', textTransform: 'uppercase' }}>
+                Communication
+              </Text>
             </Link>
             {tagline && (
-              <Text style={{ fontFamily: fontBody, fontSize: 13, color: muted, margin: '10px 0 0 0' }}>
+              <Text style={{ fontFamily: fontBody, fontSize: 13, color: '#C9CDD5', margin: '12px 0 0 0' }}>
                 {tagline}
               </Text>
             )}
           </Section>
 
-          <Section style={{ padding: '28px' }}>{children}</Section>
+          <Section style={{ padding: '32px 30px 28px 30px' }}>{children}</Section>
 
-          <Section style={{ padding: '20px 28px 24px 28px', backgroundColor: cream, textAlign: 'center' }}>
+          <Section style={{ padding: '20px 28px 24px 28px', backgroundColor: '#F3F1EE', textAlign: 'center' }}>
             <Text style={{ fontFamily: fontBody, fontSize: 12, lineHeight: 1.7, color: muted, margin: 0 }}>
-              Angel Leclerc Communication —{' '}
-              <Link href={SITE_URL} style={{ color: terracotta, textDecoration: 'none' }}>
+              Angel Leclerc Communication ·{' '}
+              <Link href={SITE_URL} style={{ color: terracotta, textDecoration: 'none', fontWeight: 700 }}>
                 angel-leclerc.fr
               </Link>
               <br />
@@ -126,10 +124,7 @@ export const EmailLayout = ({ preview, children, tagline, unsubscribeUrl }: Layo
                 Mentions légales
               </Link>
               {' · '}
-              <Link
-                href={`${SITE_URL}/politique-confidentialite`}
-                style={{ color: muted, textDecoration: 'underline' }}
-              >
+              <Link href={`${SITE_URL}/politique-confidentialite`} style={{ color: muted, textDecoration: 'underline' }}>
                 Confidentialité
               </Link>
               {' · '}
