@@ -75,7 +75,25 @@ export const refreshNotifications = createServerFn({ method: "POST" })
   .middleware([requireAngelAuth])
   .handler(async ({ context }): Promise<SyncReport> => {
     await assertAngelAdmin(context);
-    const { syncNotifications } = await import("./notifications.server");
+
+    if (process.env.ANGEL_DATA_TOKEN) {
+      try {
+        const { syncNativeBusinessNotifications } = await import("./native-notifications.server");
+        const native = await syncNativeBusinessNotifications();
+        if (!context.supabase) return native;
+
+        const { syncNotifications } = await import("./notifications.server");
+        const legacy = await syncNotifications(context.supabase);
+        return {
+          created: native.created + legacy.created,
+          kinds: [...new Set([...native.kinds, ...legacy.kinds])],
+        };
+      } catch (error) {
+        console.error("[notifications] native sync failed, using compatibility provider", error);
+      }
+    }
+
     if (!context.supabase) return { created: 0, kinds: [] };
+    const { syncNotifications } = await import("./notifications.server");
     return syncNotifications(context.supabase);
   });
