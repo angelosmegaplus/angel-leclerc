@@ -7,6 +7,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
+import { NewsPanel } from "@/components/admin/NewsPanel";
 
 export type AdminNavItem = {
   key: string;
@@ -259,6 +260,7 @@ export function AdminShell({
             className="min-w-0 max-w-full animate-in fade-in slide-in-from-right-3 duration-200 [&_.bg-card]:bg-[#111] [&_.bg-background]:bg-black [&_.bg-muted]:bg-[#1b1b1b] [&_.border-border]:border-white/15 [&_.text-foreground]:text-white [&_.text-muted-foreground]:text-white/55 [&_.rounded-xl]:rounded-none [&_.rounded-2xl]:rounded-none [&_.rounded-lg]:rounded-none [&_.shadow-sm]:shadow-none [&_img]:max-w-full [&_input]:max-w-full [&_textarea]:max-w-full [&_select]:max-w-full"
           >
             {children}
+            {active === "dashboard" ? <NewsPanel /> : null}
           </div>
         </main>
 
