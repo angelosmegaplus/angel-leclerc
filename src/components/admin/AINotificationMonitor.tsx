@@ -29,7 +29,6 @@ async function showSystemAlert(created: number, kinds: string[]) {
       icon: "/icons/icon-192.png",
       badge: "/icons/icon-192.png",
       tag: "angel-os-important",
-      renotify: true,
       data: { url: "/admin?tab=notifications" },
     }).catch(() => undefined);
     return;
