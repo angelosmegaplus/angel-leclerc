@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Wrench } from "lucide-react";
+import { Clock3, Wrench } from "lucide-react";
 
 type SiteStatus = {
   maintenance?: boolean;
@@ -64,10 +64,14 @@ export function MaintenanceGate({ children, bypass = false }: { children: ReactN
         <p className="mx-auto mt-5 max-w-md text-sm leading-6 text-white/60 sm:text-base">
           Une nouvelle version de angel-leclerc.fr est en cours de déploiement. Le site reviendra automatiquement dès que la mise à jour sera terminée.
         </p>
+        <div className="mx-auto mt-6 flex w-fit items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm text-white/70">
+          <Clock3 className="h-4 w-4" aria-hidden="true" />
+          <span><strong className="font-semibold text-white/90">Temps estimé :</strong> généralement 2 à 10 minutes</span>
+        </div>
         <div className="mx-auto mt-8 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-white/10">
           <div className="h-full w-1/2 animate-[maintenance-progress_1.4s_ease-in-out_infinite] rounded-full bg-white/80" />
         </div>
-        <p className="mt-5 text-xs text-white/35">Aucune action n’est nécessaire.</p>
+        <p className="mt-4 text-xs text-white/35">Cette estimation peut varier selon le déploiement. Vérification automatique toutes les 15 secondes.</p>
       </section>
       <style>{`
         @keyframes maintenance-progress {
