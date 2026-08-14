@@ -22,6 +22,8 @@ export type NewsItem = {
 export type NewsPayload = { items: NewsItem[]; fetchedAt: string; source?: "live" | "cache" };
 
 const NEWS_CACHE_KEY = "news_dashboard";
+const HEADLINE_FRESH_HOURS = 24;
+const HEADLINE_RECENT_HOURS = 6;
 
 const FEEDS: Array<{ category: Exclude<NewsCategory, "une">; query: string }> = [
   { category: "politique", query: "politique France société gouvernement élections souveraineté social" },
@@ -33,22 +35,22 @@ const FEEDS: Array<{ category: Exclude<NewsCategory, "une">; query: string }> = 
 ];
 
 const PREFERENCE_WEIGHTS: Array<{ pattern: RegExp; weight: number }> = [
-  { pattern: /radio|animateur|antenne|podcast|audio|fm\b|audiovisuel/i, weight: 12 },
-  { pattern: /journalis|presse|média|media|édition|editeur|rédaction/i, weight: 10 },
-  { pattern: /communication|création|contenu|canva|marketing/i, weight: 8 },
-  { pattern: /sarlat|dordogne|périgord|périgueux|bergerac/i, weight: 9 },
-  { pattern: /alternance|apprentissage|bts|emploi|stage|recrut/i, weight: 9 },
-  { pattern: /intelligence artificielle|\bia\b|chatgpt|openai|technolog|numérique|web/i, weight: 7 },
-  { pattern: /politique|gouvernement|élection|assemblée|président|social|souverain/i, weight: 6 },
+  { pattern: /radio|animateur|antenne|podcast|audio|fm\b|audiovisuel/i, weight: 9 },
+  { pattern: /journalis|presse|média|media|édition|editeur|rédaction/i, weight: 8 },
+  { pattern: /communication|création|contenu|canva|marketing/i, weight: 6 },
+  { pattern: /sarlat|dordogne|périgord|périgueux|bergerac/i, weight: 8 },
+  { pattern: /alternance|apprentissage|bts|emploi|stage|recrut/i, weight: 7 },
+  { pattern: /intelligence artificielle|\bia\b|chatgpt|openai|technolog|numérique|web/i, weight: 6 },
+  { pattern: /politique|gouvernement|élection|assemblée|président|social|souverain/i, weight: 5 },
 ];
 
 const CATEGORY_WEIGHT: Record<Exclude<NewsCategory, "une">, number> = {
-  medias: 12,
-  journalisme: 11,
-  dordogne: 10,
-  emploi: 10,
-  politique: 7,
-  ia: 7,
+  medias: 8,
+  journalisme: 8,
+  dordogne: 8,
+  emploi: 7,
+  politique: 6,
+  ia: 6,
 };
 
 const decodeXml = (value: string) =>
@@ -129,6 +131,13 @@ async function writeCache(context: any, payload: NewsPayload) {
     .upsert({ key: NEWS_CACHE_KEY, payload, updated_at: new Date().toISOString() }, { onConflict: "key" });
 }
 
+function ageHours(item: NewsItem) {
+  if (!item.publishedAt) return Number.POSITIVE_INFINITY;
+  const timestamp = new Date(item.publishedAt).getTime();
+  if (Number.isNaN(timestamp)) return Number.POSITIVE_INFINITY;
+  return Math.max(0, (Date.now() - timestamp) / 3_600_000);
+}
+
 function dedupe(items: NewsItem[]) {
   const seen = new Set<string>();
   return items
@@ -148,16 +157,22 @@ function preferenceScore(item: NewsItem) {
     if (rule.pattern.test(text)) score += rule.weight;
   }
 
-  if (item.publishedAt) {
-    const ageHours = Math.max(0, (Date.now() - new Date(item.publishedAt).getTime()) / 3_600_000);
-    score += Math.max(0, 12 - ageHours / 3);
-  }
+  const age = ageHours(item);
+  if (age <= 1) score += 45;
+  else if (age <= 3) score += 34;
+  else if (age <= HEADLINE_RECENT_HOURS) score += 25;
+  else if (age <= 12) score += 14;
+  else if (age <= HEADLINE_FRESH_HOURS) score += 6;
+  else score -= Math.min(30, (age - HEADLINE_FRESH_HOURS) / 2);
+
   return score;
 }
 
 function buildPersonalizedHeadlines(items: NewsItem[]): NewsItem[] {
   const seenTitles = new Set<string>();
-  const ranked = [...items]
+  const fresh = items.filter((item) => ageHours(item) <= HEADLINE_FRESH_HOURS);
+  const pool = fresh.length >= 6 ? fresh : items;
+  const ranked = [...pool]
     .sort((a, b) => preferenceScore(b) - preferenceScore(a))
     .filter((item) => {
       const key = item.title.toLocaleLowerCase("fr").replace(/\W+/g, " ").trim();
@@ -167,14 +182,32 @@ function buildPersonalizedHeadlines(items: NewsItem[]): NewsItem[] {
     });
 
   const selected: NewsItem[] = [];
+  const selectedIds = new Set<string>();
   const perCategory = new Map<NewsCategory, number>();
+
+  // Premier passage : diversité maximale, deux sujets par rubrique au plus.
   for (const item of ranked) {
     const count = perCategory.get(item.category) ?? 0;
-    if (count >= 3) continue;
+    if (count >= 2) continue;
     selected.push({ ...item, id: `une-${item.id}`, category: "une" });
+    selectedIds.add(item.id);
     perCategory.set(item.category, count + 1);
-    if (selected.length >= 12) break;
+    if (selected.length >= 10) break;
   }
+
+  // Second passage : complète sans laisser un thème monopoliser la une.
+  if (selected.length < 12) {
+    for (const item of ranked) {
+      if (selectedIds.has(item.id)) continue;
+      const count = perCategory.get(item.category) ?? 0;
+      if (count >= 3) continue;
+      selected.push({ ...item, id: `une-${item.id}`, category: "une" });
+      selectedIds.add(item.id);
+      perCategory.set(item.category, count + 1);
+      if (selected.length >= 12) break;
+    }
+  }
+
   return selected;
 }
 
