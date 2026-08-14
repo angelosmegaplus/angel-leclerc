@@ -5,14 +5,12 @@ import {
   Bell,
   Bot,
   BriefcaseBusiness,
-  CalendarDays,
   FileText,
   FolderOpen,
   History,
   Home,
   Loader2,
   Mail,
-  Newspaper,
   Search,
   Send,
   Settings,
@@ -38,16 +36,16 @@ const anyDb = supabase as unknown as { from: (t: string) => any };
 type Hit = { id: string; label: string; detail: string; group: string; tab: string };
 type Shortcut = { label: string; detail: string; tab: string; aliases: string; icon: LucideIcon; alert?: boolean };
 
+// La recherche universelle expose uniquement les vraies destinations de premier niveau.
+// Agenda reste intégré au tableau de bord et les articles passent tous par Studio.
 const BASE_SHORTCUTS: Shortcut[] = [
-  { label: "Accueil", detail: "Vue d'ensemble Angel OS", tab: "dashboard", aliases: "home tableau bord", icon: Home },
+  { label: "Accueil", detail: "Vue d'ensemble Angel OS", tab: "dashboard", aliases: "home tableau bord agenda calendrier rendez vous prochain rdv", icon: Home },
   { label: "Mail", detail: "Messages et boîte mail", tab: "boite-mail", aliases: "email gmail messages boite mail", icon: Mail },
-  { label: "Agenda", detail: "Rendez-vous et calendrier", tab: "agenda", aliases: "calendar calendrier rendez vous", icon: CalendarDays },
   { label: "Fichiers", detail: "Documents et fichiers", tab: "fichiers", aliases: "drive documents stockage", icon: FolderOpen },
-  { label: "Blog", detail: "Articles et publications", tab: "articles", aliases: "actus actualites publication contenus", icon: Newspaper },
-  { label: "Studio", detail: "Création, audio et production", tab: "studio", aliases: "radio micro creation reportage", icon: WandSparkles },
+  { label: "Studio", detail: "Articles, création, audio et production", tab: "studio", aliases: "article articles blog actu actualites publication contenus radio micro creation reportage agenda calendrier", icon: WandSparkles },
   { label: "Candidatures", detail: "Alternance et suivi des candidatures", tab: "candidatures", aliases: "emploi alternance recrutement", icon: BriefcaseBusiness },
   { label: "Communauté", detail: "Abonnés, avis et contacts", tab: "abonnes", aliases: "contacts avis soutiens abonnes communauté", icon: Users },
-  { label: "Paramètres", detail: "Connexions, automatisations et système", tab: "connexions", aliases: "settings reglages notifications historique activité automatisation connexions", icon: Settings },
+  { label: "Paramètres", detail: "Connexions et système", tab: "connexions", aliases: "settings reglages notifications connexions", icon: Settings },
   { label: "Notifications", detail: "Alertes Angel OS", tab: "notifications", aliases: "alertes", icon: Bell },
   { label: "Historique", detail: "Journal d'activité", tab: "activite", aliases: "activité journal logs", icon: History },
   { label: "Automatisations", detail: "Tâches et exécutions planifiées", tab: "automatisation", aliases: "taches planifiees cron", icon: SlidersHorizontal },
@@ -66,14 +64,14 @@ const SOURCES: {
   label: (r: any) => string;
   detail: (r: any) => string;
 }[] = [
-  { table: "articles", select: "id,title,category,slug", group: "Blog", tab: "articles", label: (r) => r.title, detail: (r) => r.category ?? "" },
+  { table: "articles", select: "id,title,category,slug", group: "Studio · Article", tab: "studio", label: (r) => r.title, detail: (r) => r.category ?? "" },
   { table: "projects", select: "id,title,client_name", group: "Projets", tab: "projets", label: (r) => r.title, detail: (r) => r.client_name ?? "" },
   { table: "applications", select: "id,company,position,city", group: "Candidatures", tab: "candidatures", label: (r) => r.company, detail: (r) => [r.position, r.city].filter(Boolean).join(" · ") },
-  { table: "contacts_sources", select: "id,last_name,first_name,organization", group: "Communauté", tab: "studio", label: (r) => [r.first_name, r.last_name].filter(Boolean).join(" "), detail: (r) => r.organization ?? "" },
-  { table: "reportages", select: "id,title,location", group: "Studio", tab: "studio", label: (r) => r.title, detail: (r) => r.location ?? "" },
-  { table: "interviews", select: "id,title,person", group: "Studio", tab: "studio", label: (r) => r.title, detail: (r) => r.person ?? "" },
-  { table: "investigations", select: "id,title,summary", group: "Studio", tab: "studio", label: (r) => r.title, detail: (r) => r.summary ?? "" },
-  { table: "press_review", select: "id,title,source", group: "Studio", tab: "studio", label: (r) => r.title, detail: (r) => r.source ?? "" },
+  { table: "contacts_sources", select: "id,last_name,first_name,organization", group: "Studio · Contact", tab: "studio", label: (r) => [r.first_name, r.last_name].filter(Boolean).join(" "), detail: (r) => r.organization ?? "" },
+  { table: "reportages", select: "id,title,location", group: "Studio · Reportage", tab: "studio", label: (r) => r.title, detail: (r) => r.location ?? "" },
+  { table: "interviews", select: "id,title,person", group: "Studio · Interview", tab: "studio", label: (r) => r.title, detail: (r) => r.person ?? "" },
+  { table: "investigations", select: "id,title,summary", group: "Studio · Enquête", tab: "studio", label: (r) => r.title, detail: (r) => r.summary ?? "" },
+  { table: "press_review", select: "id,title,source", group: "Studio · Revue de presse", tab: "studio", label: (r) => r.title, detail: (r) => r.source ?? "" },
 ];
 
 async function loadIndex(): Promise<Hit[]> {
@@ -97,6 +95,16 @@ async function loadNotificationCount(): Promise<number> {
   return Array.isArray(data) ? data.length : 0;
 }
 
+function dedupeHits(items: Hit[]) {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const key = `${item.tab}:${item.label.trim().toLocaleLowerCase("fr")}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 export function GlobalSearch({ open, onClose, onNavigate }: { open: boolean; onClose: () => void; onNavigate: (tab: string) => void }) {
   const [query, setQuery] = useState("");
   const execute = useServerFn(runAngelCommand);
@@ -117,12 +125,21 @@ export function GlobalSearch({ open, onClose, onNavigate }: { open: boolean; onC
   const q = query.trim().toLocaleLowerCase("fr");
   const hits = useMemo(() => {
     if (q.length < 2) return [];
-    return data.filter((h) => `${h.label} ${h.detail} ${h.group}`.toLocaleLowerCase("fr").includes(q)).slice(0, 20);
+    const filtered = data.filter((h) => `${h.label} ${h.detail} ${h.group}`.toLocaleLowerCase("fr").includes(q));
+    return dedupeHits(filtered).slice(0, 16);
   }, [data, q]);
+
   const shortcuts = useMemo(() => {
     const enriched = BASE_SHORTCUTS.map((s) => ({ ...s, alert: notificationCount > 0 && (s.tab === "connexions" || s.tab === "notifications") }));
-    if (q.length < 2) return enriched.slice(0, 9);
-    return enriched.filter((s) => `${s.label} ${s.detail} ${s.aliases}`.toLocaleLowerCase("fr").includes(q)).slice(0, 8);
+    const filtered = q.length < 2
+      ? enriched.slice(0, 8)
+      : enriched.filter((s) => `${s.label} ${s.detail} ${s.aliases}`.toLocaleLowerCase("fr").includes(q));
+    const seen = new Set<string>();
+    return filtered.filter((s) => {
+      if (seen.has(s.tab)) return false;
+      seen.add(s.tab);
+      return true;
+    }).slice(0, 8);
   }, [q, notificationCount]);
 
   const navigateThroughCore = (tab: string, label: string) => {
@@ -171,7 +188,7 @@ export function GlobalSearch({ open, onClose, onNavigate }: { open: boolean; onC
                 {shortcuts.map((s) => {
                   const Icon = s.icon;
                   return (
-                    <button key={`${s.tab}-${s.label}`} type="button" className="group flex items-center gap-3 rounded-2xl bg-muted/60 px-3.5 py-3 text-left transition-colors hover:bg-muted" onClick={() => navigateThroughCore(s.tab, s.label)}>
+                    <button key={s.tab} type="button" className="group flex items-center gap-3 rounded-2xl bg-muted/60 px-3.5 py-3 text-left transition-colors hover:bg-muted" onClick={() => navigateThroughCore(s.tab, s.label)}>
                       <span className="relative grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-background text-primary shadow-sm">
                         <Icon className="h-5 w-5" />
                         {s.alert ? <span className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-red-600 text-white shadow"><Bell className="h-3 w-3" /></span> : null}
