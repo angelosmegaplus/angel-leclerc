@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "runtime/angel-os-snapshot.json"
+      - "runtime/angel-os-mail-snapshot.json"
       - "runtime/angel-os-sync-trigger.txt"
   workflow_dispatch:
 
@@ -34,6 +35,19 @@ jobs:
         with:
           bun-version: 1.3.14
 
+      - name: Choisir le snapshot à synchroniser
+        shell: bash
+        run: |
+          SNAPSHOT_FILE="runtime/angel-os-snapshot.json"
+          if [ "${{ github.event_name }}" = "push" ] && [ -f "runtime/angel-os-mail-snapshot.json" ]; then
+            CHANGED_FILES="$(jq -r '[(.head_commit.added // []), (.head_commit.modified // [])] | add[]?' "$GITHUB_EVENT_PATH" 2>/dev/null || true)"
+            if printf '%s\n' "$CHANGED_FILES" | grep -Fxq "runtime/angel-os-mail-snapshot.json"; then
+              SNAPSHOT_FILE="runtime/angel-os-mail-snapshot.json"
+            fi
+          fi
+          echo "snapshot_file=$SNAPSHOT_FILE" >> "$GITHUB_ENV"
+          echo "Snapshot sélectionné : $SNAPSHOT_FILE"
+
       - name: Charger les variables serveur disponibles
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -56,7 +70,7 @@ jobs:
           set +a
           node <<'NODE'
           const fs = require('fs');
-          const snapshot = JSON.parse(fs.readFileSync('runtime/angel-os-snapshot.json', 'utf8'));
+          const snapshot = JSON.parse(fs.readFileSync(process.env.snapshot_file || 'runtime/angel-os-snapshot.json', 'utf8'));
           const base = process.env.SUPABASE_URL;
           const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
           const privileged = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -88,23 +102,21 @@ jobs:
             const rows = Object.entries(snapshot.caches || {}).map(([cacheKey, payload]) => ({
               key: cacheKey,
               payload,
-              updated_at: now,
+              updated_at: payload?.fetchedAt || now,
             }));
             if (!rows.length) {
               console.warn('Aucun cache à synchroniser.');
-              return;
-            }
-
-            try {
-              await request('angel_os_cache?on_conflict=key', {
-                method: 'POST',
-                body: JSON.stringify(rows),
-              });
-              console.log(`Caches synchronisés: ${rows.map((r) => r.key).join(', ')}`);
-            } catch (error) {
-              console.warn(`Écriture angel_os_cache bloquée (${privileged ? 'clé serveur' : 'clé publique'}): ${error.message}`);
-              console.warn('Les anciennes valeurs restent intactes.');
-              return;
+            } else {
+              try {
+                await request('angel_os_cache?on_conflict=key', {
+                  method: 'POST',
+                  body: JSON.stringify(rows),
+                });
+                console.log(`Caches synchronisés: ${rows.map((r) => r.key).join(', ')}`);
+              } catch (error) {
+                console.warn(`Écriture angel_os_cache bloquée (${privileged ? 'clé serveur' : 'clé publique'}): ${error.message}`);
+                console.warn('Les anciennes valeurs restent intactes.');
+              }
             }
 
             if (snapshot.hourly_mail_report) {
@@ -127,6 +139,7 @@ jobs:
 
       - name: Publier la revue quotidienne si elle n’existe pas encore
         continue-on-error: true
+        if: env.snapshot_file == 'runtime/angel-os-snapshot.json'
         shell: bash
         run: |
           if [ "$server_env" != ".env.production.local" ]; then
@@ -150,7 +163,7 @@ jobs:
         if: always()
         run: |
           echo "## Synchronisation Angel OS" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Source : runtime/angel-os-snapshot.json" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Source : ${snapshot_file:-runtime/angel-os-snapshot.json}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Voie : GitHub Actions → Supabase direct" >> "$GITHUB_STEP_SUMMARY"
           echo "- Lovable : non utilisé" >> "$GITHUB_STEP_SUMMARY"
           echo "- En cas de permission manquante, les anciennes données sont conservées et le blocage est journalisé sans faire échouer le workflow." >> "$GITHUB_STEP_SUMMARY"
