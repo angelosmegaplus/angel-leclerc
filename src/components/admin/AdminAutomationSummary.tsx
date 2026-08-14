@@ -1,7 +1,24 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarDays, FileText, Inbox, Mail, MessageSquare, Sparkles, TrendingUp, FolderKanban, Bell, Plug, Activity, ShoppingBag, Users, WandSparkles } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  Activity,
+  Bell,
+  CalendarDays,
+  FileText,
+  FolderKanban,
+  Inbox,
+  Mail,
+  MessageSquare,
+  Plug,
+  ShoppingBag,
+  Sparkles,
+  TrendingUp,
+  Users,
+  WandSparkles,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { getAdminAiSummary } from "@/lib/admin-ai-summary.functions";
 
 type CacheRow = { key: string; payload: Record<string, any>; updated_at: string };
 type ApplicationRow = {
@@ -67,10 +84,12 @@ function readable(value: any, fallback = "Rien de nouveau pour le moment.") {
   if (!value) return fallback;
   if (typeof value === "string") return value;
   if (typeof value.summary === "string") return value.summary;
-  return Object.entries(value)
-    .filter(([, item]) => ["string", "number", "boolean"].includes(typeof item))
-    .map(([key, item]) => `${key.replace(/_/g, " ")} : ${String(item)}`)
-    .join(" · ") || fallback;
+  return (
+    Object.entries(value)
+      .filter(([, item]) => ["string", "number", "boolean"].includes(typeof item))
+      .map(([key, item]) => `${key.replace(/_/g, " ")} : ${String(item)}`)
+      .join(" · ") || fallback
+  );
 }
 
 function simpleShortSummary(value: any, fallback: string) {
@@ -78,16 +97,12 @@ function simpleShortSummary(value: any, fallback: string) {
     .replace(/\s+/g, " ")
     .replace(/\s+([,.;:!?])/g, "$1")
     .trim();
-
   if (!raw) return fallback;
-
   const sentences = raw.match(/[^.!?]+[.!?]?/g)?.map((part: string) => part.trim()).filter(Boolean) ?? [raw];
   const firstTwo = sentences.slice(0, 2).join(" ");
   if (firstTwo.length <= 190) return firstTwo;
-
   const first = sentences[0] ?? raw;
   if (first.length <= 190) return first;
-
   const cut = first.slice(0, 187);
   const lastSpace = cut.lastIndexOf(" ");
   return `${cut.slice(0, lastSpace > 120 ? lastSpace : 187).trim()}…`;
@@ -120,17 +135,30 @@ function detectMode(title: string): SummaryMode {
 }
 
 function ApplicationsSummary({ applications }: { applications: ApplicationRow[] }) {
-  if (applications.length === 0) return <p className="mt-2 text-sm text-muted-foreground">Aucune candidature pour le moment.</p>;
+  if (applications.length === 0) {
+    return <p className="mt-2 text-sm text-muted-foreground">Aucune candidature pour le moment.</p>;
+  }
   const today = new Date().toISOString().slice(0, 10);
   const rejected = applications.filter((app) => app.status === "refusee");
   const active = applications.filter((app) => !["refusee", "acceptee", "acceptée"].includes(app.status ?? ""));
   const due = active.filter((app) => app.follow_up_at && app.follow_up_at <= today);
-  const future = active.filter((app) => app.follow_up_at && app.follow_up_at > today).sort((a, b) => (a.follow_up_at ?? "").localeCompare(b.follow_up_at ?? ""));
+  const future = active
+    .filter((app) => app.follow_up_at && app.follow_up_at > today)
+    .sort((a, b) => (a.follow_up_at ?? "").localeCompare(b.follow_up_at ?? ""));
   return (
     <div className="mt-3 grid gap-3 md:grid-cols-3">
-      <div className="rounded-lg border border-border bg-card p-3"><p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Passé</p><p className="mt-2 text-sm"><strong>{applications.length}</strong> candidature(s), dont <strong>{rejected.length}</strong> refus.</p></div>
-      <div className="rounded-lg border border-border bg-card p-3"><p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Maintenant</p><p className="mt-2 text-sm"><strong>{active.length}</strong> dossier(s) actif(s). {due.length > 0 ? `${due.length} relance(s) à faire.` : "Pas de relance urgente."}</p></div>
-      <div className="rounded-lg border border-border bg-card p-3"><p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Après</p><p className="mt-2 text-sm">{future.length > 0 ? `Prochaine relance : ${applicationLabel(future[0])}, le ${formatShortDate(future[0].follow_up_at)}.` : "Continuer les candidatures et les relances utiles."}</p></div>
+      <div className="rounded-lg border border-border bg-card p-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Passé</p>
+        <p className="mt-2 text-sm"><strong>{applications.length}</strong> candidature(s), dont <strong>{rejected.length}</strong> refus.</p>
+      </div>
+      <div className="rounded-lg border border-border bg-card p-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Maintenant</p>
+        <p className="mt-2 text-sm"><strong>{active.length}</strong> dossier(s) actif(s). {due.length > 0 ? `${due.length} relance(s) à faire.` : "Pas de relance urgente."}</p>
+      </div>
+      <div className="rounded-lg border border-border bg-card p-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Après</p>
+        <p className="mt-2 text-sm">{future.length > 0 ? `Prochaine relance : ${applicationLabel(future[0])}, le ${formatShortDate(future[0].follow_up_at)}.` : "Continuer les candidatures et les relances utiles."}</p>
+      </div>
     </div>
   );
 }
@@ -156,17 +184,45 @@ const pageConfig: Record<Exclude<SummaryMode, "dashboard" | "applications">, { t
 
 export function AdminAutomationSummary({ mode = "dashboard" }: { mode?: SummaryMode }) {
   const [detectedMode, setDetectedMode] = useState<SummaryMode>(mode);
+  const runAiSummary = useServerFn(getAdminAiSummary);
+
   useEffect(() => {
-    if (mode !== "dashboard") return setDetectedMode(mode);
+    if (mode !== "dashboard") {
+      setDetectedMode(mode);
+      return;
+    }
     const title = document.querySelector("h1")?.textContent ?? "";
     setDetectedMode(detectMode(title));
   });
 
   const effectiveMode = mode === "dashboard" ? detectedMode : mode;
-  const { data = {}, isLoading } = useQuery({ queryKey: ["admin-automation-summaries"], queryFn: loadSummaries, refetchInterval: 5 * 60 * 1000 });
-  const { data: applications = [], isLoading: applicationsLoading } = useQuery({ queryKey: ["admin-application-summary"], queryFn: loadApplications, refetchInterval: 5 * 60 * 1000, enabled: effectiveMode === "applications" || effectiveMode === "dashboard" });
+  const { data = {}, isLoading } = useQuery({
+    queryKey: ["admin-automation-summaries"],
+    queryFn: loadSummaries,
+    refetchInterval: 5 * 60 * 1000,
+    refetchOnWindowFocus: true,
+  });
+  const { data: applications = [], isLoading: applicationsLoading } = useQuery({
+    queryKey: ["admin-application-summary"],
+    queryFn: loadApplications,
+    refetchInterval: 5 * 60 * 1000,
+    refetchOnWindowFocus: true,
+    enabled: effectiveMode === "applications" || effectiveMode === "dashboard",
+  });
+  const { data: aiSummary, isFetching: aiRefreshing } = useQuery({
+    queryKey: ["admin-openai-summary"],
+    queryFn: () => runAiSummary(),
+    refetchInterval: 5 * 60 * 1000,
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
+    staleTime: 4 * 60 * 1000,
+    retry: 1,
+    enabled: effectiveMode === "dashboard",
+  });
 
-  if (isLoading || ((effectiveMode === "applications" || effectiveMode === "dashboard") && applicationsLoading)) return <p className="text-sm text-muted-foreground">Chargement du bilan…</p>;
+  if (isLoading || ((effectiveMode === "applications" || effectiveMode === "dashboard") && applicationsLoading)) {
+    return <p className="text-sm text-muted-foreground">Chargement du bilan…</p>;
+  }
 
   const gmail = data.gmail_dashboard?.payload;
   const cockpit = data.admin_cockpit_summary?.payload;
@@ -174,23 +230,59 @@ export function AdminAutomationSummary({ mode = "dashboard" }: { mode?: SummaryM
   const calendar = data.google_calendar_dashboard?.payload;
 
   if (effectiveMode === "applications") {
-    return <section className="mb-5 rounded-[2rem] border border-border bg-card p-4 shadow-sm sm:p-6"><p className="flex items-center gap-2 font-semibold text-foreground"><Inbox className="h-5 w-5 text-primary" />Bilan candidatures</p><p className="mt-2 text-sm text-muted-foreground">Le point rapide sur les candidatures.</p><ApplicationsSummary applications={applications} /></section>;
+    return (
+      <section className="mb-5 rounded-[2rem] border border-border bg-card p-4 shadow-sm sm:p-6">
+        <p className="flex items-center gap-2 font-semibold text-foreground"><Inbox className="h-5 w-5 text-primary" />Bilan candidatures</p>
+        <p className="mt-2 text-sm text-muted-foreground">Le point rapide sur les candidatures.</p>
+        <ApplicationsSummary applications={applications} />
+      </section>
+    );
   }
 
   if (effectiveMode !== "dashboard") {
     const config = pageConfig[effectiveMode];
-    const value = effectiveMode === "mail" ? (gmail?.summary ?? gmail?.otherSummary ?? cockpit?.gmail) : effectiveMode === "agenda" ? (calendar?.summary ?? calendar ?? cockpit?.agenda) : cockpit?.[config.key];
+    const value = effectiveMode === "mail"
+      ? (gmail?.summary ?? gmail?.otherSummary ?? cockpit?.gmail)
+      : effectiveMode === "agenda"
+        ? (calendar?.summary ?? calendar ?? cockpit?.agenda)
+        : cockpit?.[config.key];
     const Icon = config.icon;
     const summary = simpleShortSummary(value, config.fallback);
-    return <section className="mb-5 rounded-[2rem] border border-border bg-card p-4 shadow-sm sm:p-6"><div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#e8def8] text-[#594b66]"><Icon className="h-5 w-5" /></span><div className="min-w-0 flex-1"><p className="font-semibold text-foreground">{config.title}</p><p className="mt-2 text-[15px] leading-6 text-foreground/90 sm:text-base">{summary}</p></div></div></section>;
+    return (
+      <section className="mb-5 rounded-[2rem] border border-border bg-card p-4 shadow-sm sm:p-6">
+        <div className="flex items-start gap-3">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#e8def8] text-[#594b66]"><Icon className="h-5 w-5" /></span>
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold text-foreground">{config.title}</p>
+            <p className="mt-2 text-[15px] leading-6 text-foreground/90 sm:text-base">{summary}</p>
+          </div>
+        </div>
+      </section>
+    );
   }
 
   const activeApplications = applications.filter((app) => !["refusee", "acceptee", "acceptée"].includes(app.status ?? "")).length;
   const importantMail = gmail?.important?.length ?? cockpit?.gmail?.important ?? 0;
   const newsCount = Array.isArray(news?.items) ? news.items.length : 0;
   const fallbackText = `${activeApplications} candidature${activeApplications > 1 ? "s" : ""} active${activeApplications > 1 ? "s" : ""}. ${importantMail > 0 ? `${importantMail} mail${importantMail > 1 ? "s" : ""} important${importantMail > 1 ? "s" : ""} à voir.` : "Pas de mail urgent."}${newsCount > 0 ? ` ${newsCount} actu${newsCount > 1 ? "s" : ""} récente${newsCount > 1 ? "s" : ""}.` : ""}`;
-  const sourceText = (typeof cockpit?.generalText === "string" && cockpit.generalText.trim()) || (typeof cockpit?.summary === "string" && cockpit.summary.trim()) || fallbackText;
-  const generalText = simpleShortSummary(sourceText, fallbackText);
+  const legacyText = (typeof cockpit?.generalText === "string" && cockpit.generalText.trim()) || (typeof cockpit?.summary === "string" && cockpit.summary.trim()) || fallbackText;
+  const generalText = aiSummary?.text || simpleShortSummary(legacyText, fallbackText);
+  const updatedAt = aiSummary?.generatedAt || data.admin_cockpit_summary?.updated_at;
 
-  return <section className="mb-5 rounded-[2rem] border border-border bg-card p-4 shadow-sm sm:p-6"><div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#e8def8] text-[#594b66]"><Sparkles className="h-5 w-5" /></span><div className="min-w-0 flex-1"><p className="font-semibold text-foreground">Bilan général</p><p className="mt-2 text-[15px] leading-6 text-foreground/90 sm:text-base">{generalText}</p>{data.admin_cockpit_summary?.updated_at && <p className="mt-3 text-xs text-muted-foreground">Mis à jour {new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short" }).format(new Date(data.admin_cockpit_summary.updated_at))}</p>}</div></div></section>;
+  return (
+    <section className="mb-5 rounded-[2rem] border border-border bg-card p-4 shadow-sm sm:p-6">
+      <div className="flex items-start gap-3">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#e8def8] text-[#594b66]"><Sparkles className="h-5 w-5" /></span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-semibold text-foreground">Bilan général</p>
+            {aiSummary && <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">{aiSummary.source === "openai" ? "OpenAI" : "secours local"}</span>}
+            {aiRefreshing && <span className="text-[10px] text-muted-foreground">actualisation…</span>}
+          </div>
+          <p className="mt-2 text-[15px] leading-6 text-foreground/90 sm:text-base">{generalText}</p>
+          {updatedAt && <p className="mt-3 text-xs text-muted-foreground">Mis à jour {new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short" }).format(new Date(updatedAt))} · rafraîchissement automatique toutes les 5 min</p>}
+        </div>
+      </div>
+    </section>
+  );
 }
