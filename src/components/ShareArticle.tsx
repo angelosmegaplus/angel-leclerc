@@ -99,9 +99,11 @@ export function ShareArticle({ slug, title, className = "" }: ShareArticleProps)
     }
   };
 
+  const actionClass = "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground sm:h-9 sm:w-9";
+
   return (
-    <div className={`flex flex-wrap items-center gap-2 ${className}`}>
-      <span className="mr-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+    <div className={`flex flex-nowrap items-center gap-1.5 sm:gap-2 ${className}`}>
+      <span className="mr-0.5 shrink-0 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:mr-1 sm:text-xs sm:tracking-[0.14em]">
         Partager
       </span>
       {links.map((l) => (
@@ -112,7 +114,7 @@ export function ShareArticle({ slug, title, className = "" }: ShareArticleProps)
           rel="noreferrer noopener"
           aria-label={l.label}
           title={l.label}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground"
+          className={actionClass}
         >
           {l.icon}
         </a>
@@ -122,7 +124,7 @@ export function ShareArticle({ slug, title, className = "" }: ShareArticleProps)
         onClick={copy}
         aria-label="Copier le lien de l'article"
         title="Copier le lien"
-        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground"
+        className={actionClass}
       >
         {copied ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
       </button>
