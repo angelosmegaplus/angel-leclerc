@@ -102,7 +102,7 @@ export function Logo({
 
   const boxCls = bare
     ? "inline-flex shrink-0 items-center justify-center"
-    : `inline-flex shrink-0 items-center justify-center border border-border bg-background ${rounded ? "rounded-xl" : ""}`;
+    : `inline-flex shrink-0 items-center justify-center border border-border bg-background dark:border-white/15 dark:bg-white ${rounded ? "rounded-xl" : ""}`;
 
   const box = (
     <span
@@ -139,7 +139,7 @@ export function Logo({
           }}
         />
       ) : (
-        <span className="text-[10px] font-semibold text-foreground">
+        <span className="text-[10px] font-semibold text-foreground dark:text-black">
           {alt.replace(/^Logo\s+/i, "").charAt(0).toUpperCase()}
         </span>
       )}
