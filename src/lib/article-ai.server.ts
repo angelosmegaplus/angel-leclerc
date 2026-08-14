@@ -208,6 +208,10 @@ async function findCommonsImage(subject: string): Promise<{ url: string; meta: C
   }
 }
 
+export async function findArticleCover(subject: string) {
+  return findCommonsImage(subject);
+}
+
 /** Génère un brouillon complet : texte vérifié + sources web + image libre avec crédit. */
 export async function generateArticleDraft(subject: string): Promise<GeneratedArticleDraft | null> {
   const written = await researchAndWrite(subject);

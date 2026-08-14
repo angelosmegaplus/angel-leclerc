@@ -1,4 +1,4 @@
-import { generateArticleDraft } from "./article-ai.server";
+import { findArticleCover, generateArticleDraft, type GeneratedArticleDraft } from "./article-ai.server";
 import { fetchAdminNewsSnapshot } from "./news.functions";
 import type { NewsPayload } from "./news.functions";
 
@@ -13,6 +13,52 @@ function slugify(value: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "")
     .slice(0, 82);
+}
+
+function escapeHtml(value: string) {
+  return value.replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  })[character] ?? character);
+}
+
+async function buildAutomaticPressReview(news: NewsPayload): Promise<GeneratedArticleDraft | null> {
+  const dayLabel = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZone: "Europe/Paris" }).format(new Date());
+  const selected = news.items.filter((item, index, items) =>
+    index === items.findIndex((other) => other.category === item.category),
+  );
+  if (selected.length < 4) return null;
+
+  const categoryNames: Record<string, string> = {
+    une: "À la une",
+    politique: "Politique",
+    medias: "Radio et médias",
+    journalisme: "Journalisme et communication",
+    ia: "Intelligence artificielle et technologie",
+    dordogne: "Sarlat et Dordogne",
+    emploi: "Emploi et alternance",
+  };
+  const content = [
+    `<p>Voici la revue de presse automatique d’Angel OS pour le ${escapeHtml(dayLabel)}. Elle rassemble un sujet récent par rubrique à partir de la veille web. Les titres ci-dessous proviennent des médias cités ; ouvrez les sources pour lire les informations complètes et leur contexte.</p>`,
+    ...selected.map((item) =>
+      `<h2>${escapeHtml(categoryNames[item.category] ?? item.category)}</h2><p><strong>${escapeHtml(item.title)}</strong></p><p>Signal repéré par la veille Angel OS auprès de ${escapeHtml(item.source)}${item.publishedAt ? `, publié le ${escapeHtml(new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeStyle: "short", timeZone: "Europe/Paris" }).format(new Date(item.publishedAt)))}` : ""}. Cette revue automatique ne reformule pas les faits au-delà du titre fourni par la source afin de ne pas ajouter d’information non vérifiée.</p>`,
+    ),
+    "<h2>Comment lire cette veille ?</h2><p>Cette sélection est un point de départ, pas un remplacement du travail des rédactions. Les titres peuvent évoluer, simplifier un sujet ou refléter un angle éditorial particulier. Il est recommandé de comparer plusieurs médias, de vérifier la date et de consulter directement les articles d’origine avant de partager une affirmation.</p>",
+  ].join("");
+  const cover = await findArticleCover("journalisme presse actualité France");
+  if (!cover) return null;
+  return {
+    title: `La veille Angel OS du ${dayLabel} : les actualités à retenir`,
+    excerpt: "Politique, médias, IA, Dordogne et emploi : la sélection quotidienne automatiquement compilée par la veille Angel OS.",
+    content,
+    sources: selected.map((item) => ({ label: `${item.source} — ${item.title}`, url: item.url })),
+    topics: ["Société", "Communication & médias", "Technologie & numérique"],
+    coverUrl: cover.url,
+    coverMeta: cover.meta,
+  };
 }
 
 async function fetchDailyNews(): Promise<NewsPayload> {
@@ -53,9 +99,9 @@ export async function publishDailyWatchArticle() {
   const candidate = news.items.find((item) => item.category === "une") ?? news.items[0];
   if (!candidate) throw new Error("Aucune actualité exploitable aujourd'hui.");
 
-  const generated = await generateArticleDraft(
+  const generated = (await generateArticleDraft(
     `${candidate.title}. Point de départ obligatoire à vérifier : ${candidate.source} — ${candidate.url}`,
-  );
+  )) ?? (await buildAutomaticPressReview(news));
   if (!generated) throw new Error("La génération IA n'a pas produit de résultat vérifiable.");
 
   const sources = [...generated.sources];
