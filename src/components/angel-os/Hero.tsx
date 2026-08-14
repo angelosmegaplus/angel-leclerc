@@ -1,27 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Github, Sparkles } from "lucide-react";
 
-const layers = [
-  {
-    name: "Angel OS",
-    role: "Le noyau",
-    simple: "La base technique qui organise les modules, les événements et les échanges entre les composants.",
-    technical: "Core d’orchestration générique : module registry, event bus, adapters, état partagé et interfaces communes. Il reste indépendant d’une application précise et n’impose pas l’usage de l’IA.",
-  },
-  {
-    name: "Angel OS IA",
-    role: "La distribution IA",
-    simple: "Une version spécialisée construite sur Angel OS qui ajoute l’intelligence artificielle et les automatisations.",
-    technical: "Distribution basée sur le Core : couche de raisonnement IA, tâches planifiées, règles opérationnelles et automatisations. Elle consomme les primitives du noyau sans se confondre avec lui.",
-  },
-  {
-    name: "angel-leclerc.fr",
-    role: "L’application web",
-    simple: "Le site concret qui utilise Angel OS IA pour certaines fonctions d’administration et d’automatisation.",
-    technical: "Application React/TanStack distincte. Elle appelle les capacités de la distribution pour les usages concernés, puis son code est versionné sur GitHub, contrôlé par la chaîne CI/build et déployé vers la production.",
-  },
-] as const;
-
 export function Hero() {
   return (
     <section className="relative isolate overflow-hidden px-5 pb-20 pt-8 sm:px-8 lg:px-12">
@@ -33,43 +12,37 @@ export function Hero() {
           <div className="hidden items-center gap-2 sm:flex"><img src="/angel-os/logo.png" alt="" className="h-8 w-8 rounded-lg object-cover"/><span className="text-sm font-semibold text-white/70">Angel OS</span></div>
         </div>
 
-        <div className="pt-14 lg:pt-20">
-          <div className="inline-flex items-center gap-2 rounded-full border border-red-500/25 bg-red-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[.2em] text-red-300"><Sparkles size={13}/> Documentation produit</div>
-          <h1 className="mt-6 font-display text-5xl font-bold tracking-[-.05em] sm:text-7xl lg:text-8xl">Angel <span className="text-red-500">OS</span></h1>
-          <p className="mt-5 max-w-2xl text-xl font-medium text-white/85 sm:text-2xl">Une architecture en trois couches clairement séparées.</p>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/55">Le projet est parti d’un besoin simple : centraliser et automatiser des opérations récurrentes. La documentation ci-dessous distingue le noyau, sa distribution IA et l’application qui l’utilise.</p>
+        <div className="grid items-start gap-10 pt-14 lg:grid-cols-[1.2fr_.8fr] lg:pt-20">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-red-500/25 bg-red-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[.2em] text-red-300"><Sparkles size={13}/> Noyau d’orchestration</div>
+            <h1 className="mt-6 font-display text-5xl font-bold tracking-[-.05em] sm:text-7xl lg:text-8xl">Angel <span className="text-red-500">OS</span></h1>
+            <p className="mt-5 max-w-2xl text-xl font-medium text-white/85 sm:text-2xl">Le noyau technique du projet.</p>
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/60 sm:text-lg">Angel OS est la base qui organise les modules, les événements, les adaptateurs et les échanges entre les composants. C’est cette architecture qui constitue le cœur du projet.</p>
 
-          <div className="mt-10 grid gap-4 lg:grid-cols-3">
-            {layers.map((layer, index) => (
-              <article key={layer.name} className="relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#0b0d10]/95 p-6 transition duration-300 hover:-translate-y-1 hover:border-red-500/30">
-                <div className="absolute right-5 top-5 font-mono text-[10px] text-white/20">0{index + 1}</div>
-                <p className="text-xs font-semibold uppercase tracking-[.18em] text-red-300">{layer.role}</p>
-                <h2 className="mt-3 font-display text-2xl font-bold">{layer.name}</h2>
-                <p className="mt-3 text-sm leading-relaxed text-white/70">{layer.simple}</p>
-                <div className="mt-5 border-t border-white/10 pt-4">
-                  <p className="font-mono text-[9px] uppercase tracking-[.18em] text-white/30">Niveau technique</p>
-                  <p className="mt-2 text-xs leading-relaxed text-white/40">{layer.technical}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          <div className="mt-6 overflow-hidden rounded-[1.75rem] border border-red-500/20 bg-black/65 p-6">
-            <p className="font-mono text-[10px] uppercase tracking-[.2em] text-red-300">Relation de référence</p>
-            <div className="mt-5 flex flex-col items-stretch gap-3 md:flex-row md:items-center">
-              {["Angel OS\nNoyau", "Angel OS IA\nDistribution", "angel-leclerc.fr\nApplication"].map((item, index) => (
-                <div key={item} className="contents">
-                  <div className="flex-1 rounded-2xl border border-white/10 bg-white/[.035] p-4 text-center">
-                    {item.split("\n").map((line, lineIndex) => <p key={line} className={lineIndex === 0 ? "font-semibold text-white" : "mt-1 text-xs text-white/40"}>{line}</p>)}
-                  </div>
-                  {index < 2 && <div className="text-center font-mono text-red-400/70 md:rotate-0">→</div>}
-                </div>
-              ))}
+            <div className="mt-7 rounded-[1.75rem] border border-red-500/20 bg-black/50 p-6">
+              <p className="font-mono text-[10px] uppercase tracking-[.2em] text-red-300">Niveau technique</p>
+              <p className="mt-3 max-w-3xl text-sm leading-relaxed text-white/45">Core d’orchestration générique avec registre de modules, bus d’événements, adaptateurs, état partagé et interfaces communes. Le noyau reste indépendant d’une application précise et peut accueillir des distributions spécialisées au-dessus de ses primitives.</p>
+              <div className="mt-5 font-mono text-[11px] leading-relaxed text-white/35">core.boot → event.bus → module.registry → adapter.dispatch → state.sync</div>
             </div>
-            <p className="mt-5 font-mono text-[11px] leading-relaxed text-white/35">core.boot → distribution.load → ai / scheduler / automation → application.request → CI / build → production</p>
+
+            <a href="https://github.com/angelosmegaplus/angel-leclerc/tree/main/angel-os" target="_blank" rel="noopener noreferrer" className="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:-translate-y-0.5"><Github size={17}/> Voir le noyau Angel OS sur GitHub</a>
           </div>
 
-          <a href="https://github.com/angelosmegaplus/angel-leclerc/tree/main/angel-os" target="_blank" rel="noopener noreferrer" className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:-translate-y-0.5"><Github size={17}/> Voir le Core sur GitHub</a>
+          <div className="rounded-[2rem] border border-white/10 bg-[#0b0d10]/95 p-6 shadow-2xl">
+            <div className="flex items-center gap-5"><img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-20 w-20 rounded-2xl object-cover"/><div><p className="text-xs uppercase tracking-[.22em] text-white/35">Architecture</p><p className="mt-2 text-2xl font-bold">Angel OS Core</p><p className="mt-1 text-sm text-white/45">orchestration · modules · événements · adaptateurs</p></div></div>
+            <div className="mt-6 space-y-3 font-mono text-xs text-white/55"><p><span className="text-red-400">core</span> → noyau d’orchestration</p><p><span className="text-red-400">modules</span> → capacités spécialisées</p><p><span className="text-red-400">events</span> → circulation des actions</p><p><span className="text-red-400">adapters</span> → interfaces vers les services</p><p><span className="text-red-400">state</span> → état partagé</p></div>
+          </div>
+        </div>
+
+        <div className="mt-10 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-2xl border border-white/10 bg-white/[.025] p-4">
+            <p className="text-xs font-semibold uppercase tracking-[.18em] text-white/35">Angel OS IA</p>
+            <p className="mt-2 text-sm leading-relaxed text-white/55">Une distribution basée sur Angel OS qui ajoute l’intelligence artificielle, les tâches planifiées et les automatisations.</p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/[.025] p-4">
+            <p className="text-xs font-semibold uppercase tracking-[.18em] text-white/35">angel-leclerc.fr</p>
+            <p className="mt-2 text-sm leading-relaxed text-white/55">Une application web qui utilise certaines capacités d’Angel OS IA. Elle reste distincte du noyau.</p>
+          </div>
         </div>
       </div>
     </section>
