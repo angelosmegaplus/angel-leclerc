@@ -6,6 +6,8 @@ on:
     branches: [main]
     paths:
       - "angel-os/platform/linux/**"
+      - "angel-os/services/data/**"
+      - "angel-os/adapters/data.server.ts"
       - "vite.config.ts"
       - "package.json"
       - "bun.lock"
@@ -19,15 +21,19 @@ concurrency:
 
 jobs:
   container:
-    name: Build Linux container
+    name: Build Linux containers
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - name: Build Angel OS Linux image
+      - name: Build Angel OS application image
         run: docker build -f angel-os/platform/linux/Containerfile -t angel-os-linux:test .
-      - name: Inspect image
-        run: docker image inspect angel-os-linux:test --format '{{.Id}} {{.Size}}'
+      - name: Build Angel Data image
+        run: docker build -f angel-os/services/data/Containerfile -t angel-data:test .
+      - name: Inspect images
+        run: |
+          docker image inspect angel-os-linux:test --format '{{.Id}} {{.Size}}'
+          docker image inspect angel-data:test --format '{{.Id}} {{.Size}}'
 
   quadlet:
     name: Validate Linux service files
@@ -42,5 +48,7 @@ jobs:
           test -s angel-os/platform/linux/env.example
           test -x angel-os/platform/linux/scripts/install.sh
           test -x angel-os/platform/linux/scripts/backup.sh
+          test -s angel-os/platform/linux/quadlet/angel-data.container
+          test -s angel-os/services/data/server.ts
           for f in angel-os/platform/linux/quadlet/*; do test -s "$f"; done
           for f in angel-os/platform/linux/systemd/*; do test -s "$f"; done
