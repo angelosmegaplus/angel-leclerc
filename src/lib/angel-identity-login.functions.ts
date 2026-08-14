@@ -1,10 +1,5 @@
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
-import { AngelOSAdapterRegistry } from '../../angel-os/core/adapter-registry';
-import { identityServerAdapter, type AngelIdentityClient } from '../../angel-os/adapters/identity.server';
-
-const adapters = new AngelOSAdapterRegistry();
-adapters.register(identityServerAdapter);
 
 const inputSchema = z.object({ identifier: z.string().email(), secret: z.string().min(8) });
 
@@ -13,7 +8,15 @@ export const openAngelIdentitySession = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     if (!process.env.ANGEL_IDENTITY_URL) return { ok: false as const, unavailable: true as const };
     try {
-      const client = await adapters.connect<AngelIdentityClient>('angel.identity.native');
+      const [{ AngelOSAdapterRegistry }, { identityServerAdapter }] = await Promise.all([
+        import('../../angel-os/core/adapter-registry'),
+        import('../../angel-os/adapters/identity.server'),
+      ]);
+      const adapters = new AngelOSAdapterRegistry();
+      adapters.register(identityServerAdapter);
+      const client = await adapters.connect<{
+        login(email: string, password: string): Promise<{ token: string; expiresAt: string; user: { id: string; email: string; role: string } }>;
+      }>('angel.identity.native');
       const session = await client.login(data.identifier, data.secret);
       return { ok: true as const, ...session };
     } catch {
