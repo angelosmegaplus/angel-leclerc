@@ -1,10 +1,38 @@
-import { AngelEventLog, AngelTelemetry, AngelMemoryIndex } from "../../angel-os/core";
+import {
+  AngelDeployEngine,
+  AngelEventLog,
+  AngelGuardian,
+  AngelMemoryIndex,
+  AngelNodeGateway,
+  AngelRecovery,
+  AngelReleaseManager,
+  AngelSyncEngine,
+  AngelTelemetry,
+  DurableWorkflowEngine,
+  HybridOrchestrator,
+  MemoryCache,
+  MemoryWorkflowStateStore,
+  NativeTaskWorker,
+} from "../../angel-os/core";
 
-// Process-local runtime shared by server routes. It complements existing external
-// services: it does not replace OpenAI, Supabase, Google or GitHub.
+// Angel OS system runtime. These are system services, not Angel OS IA services.
+// External providers remain complementary and are attached through adapters.
 export const angelEventLog = new AngelEventLog(5000);
 export const angelTelemetry = new AngelTelemetry();
 export const angelMemoryIndex = new AngelMemoryIndex();
+export const angelCache = new MemoryCache();
+export const angelNativeWorker = new NativeTaskWorker();
+export const angelWorkflowEngine = new DurableWorkflowEngine(new MemoryWorkflowStateStore(), angelEventLog, angelTelemetry);
+export const angelHybridOrchestrator = new HybridOrchestrator(angelCache, [angelNativeWorker], angelEventLog, angelTelemetry);
+export const angelReleaseManager = new AngelReleaseManager();
+export const angelDeployEngine = new AngelDeployEngine(angelReleaseManager, angelEventLog, angelTelemetry);
+export const angelNodeGateway = new AngelNodeGateway();
+export const angelGuardian = new AngelGuardian(angelEventLog, angelTelemetry);
+export const angelRecovery = new AngelRecovery();
+export const angelSyncEngine = new AngelSyncEngine();
+
+// Known web target. Health is updated by deployment/integrity adapters when data exists.
+angelNodeGateway.upsert({ id: "vercel-web", kind: "vercel", priority: 50, state: "unknown" });
 
 export async function recordAngelOperation(input: {
   type: string;
