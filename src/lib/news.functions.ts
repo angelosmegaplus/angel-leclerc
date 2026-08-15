@@ -32,12 +32,12 @@ const HEADLINE_FRESH_HOURS = 24;
 const HEADLINE_RECENT_HOURS = 6;
 
 const FEEDS: Array<{ category: Exclude<NewsCategory, "une">; query: string }> = [
-  { category: "politique", query: "politique France société gouvernement élections souveraineté social" },
-  { category: "medias", query: "radio médias France animateur radio podcast audiovisuel" },
-  { category: "journalisme", query: "journalisme communication édition presse France" },
-  { category: "ia", query: "intelligence artificielle technologie ChatGPT IA France web" },
-  { category: "dordogne", query: "Sarlat Dordogne Périgord Bergerac Périgueux actualité" },
-  { category: "emploi", query: "alternance communication emploi BTS communication radio média stage" },
+  { category: "politique", query: "politique France société gouvernement élections souveraineté social when:1d" },
+  { category: "medias", query: "radio médias France animateur radio podcast audiovisuel when:1d" },
+  { category: "journalisme", query: "journalisme communication édition presse France when:1d" },
+  { category: "ia", query: "intelligence artificielle technologie ChatGPT IA France web when:1d" },
+  { category: "dordogne", query: "Sarlat Dordogne Périgord Bergerac Périgueux actualité when:1d" },
+  { category: "emploi", query: "alternance communication emploi BTS communication radio média stage when:1d" },
 ];
 
 const PREFERENCE_WEIGHTS: Array<{ pattern: RegExp; weight: number }> = [
@@ -184,8 +184,7 @@ function preferenceScore(item: NewsItem) {
 function buildPersonalizedHeadlines(items: NewsItem[]): NewsItem[] {
   const seenTitles = new Set<string>();
   const fresh = items.filter((item) => ageHours(item) <= HEADLINE_FRESH_HOURS);
-  const pool = fresh.length >= 6 ? fresh : items;
-  const ranked = [...pool]
+  const ranked = [...fresh]
     .sort((a, b) => preferenceScore(b) - preferenceScore(a))
     .filter((item) => {
       const key = normalizedTitle(item.title);
@@ -223,7 +222,9 @@ function buildPersonalizedHeadlines(items: NewsItem[]): NewsItem[] {
 }
 
 function finalize(items: NewsItem[]) {
-  const topical = dedupe(items.filter((item) => item.category !== "une"));
+  const topical = dedupe(
+    items.filter((item) => item.category !== "une" && ageHours(item) <= HEADLINE_FRESH_HOURS),
+  );
   const headlines = buildPersonalizedHeadlines(topical);
   return [...headlines, ...topical];
 }
@@ -254,7 +255,9 @@ export const getAdminNews = createServerFn({ method: "GET" })
     }
 
     const liveCategories = new Set(liveItems.filter((item) => item.category !== "une").map((item) => item.category));
-    const cachedFill = (cached?.items ?? []).filter((item) => item.category !== "une" && !liveCategories.has(item.category));
+    const cachedFill = (cached?.items ?? []).filter(
+      (item) => item.category !== "une" && !liveCategories.has(item.category) && ageHours(item) <= HEADLINE_FRESH_HOURS,
+    );
     const merged = finalize([...liveItems.filter((item) => item.category !== "une"), ...cachedFill]);
     const payload: NewsPayload = {
       items: merged,
