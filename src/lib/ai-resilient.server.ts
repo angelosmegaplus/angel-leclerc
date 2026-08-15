@@ -55,6 +55,7 @@ export async function resilientAngelAi(options: {
       text: null,
       reason: "provider" as const,
       detail: "Le fournisseur a renvoyé du HTML au lieu d’une réponse IA exploitable.",
+      cached: false,
       fallbackRequired: true,
     };
   }
@@ -76,6 +77,7 @@ export async function resilientAngelAi(options: {
           text: null,
           reason: "provider" as const,
           detail: "Le fournisseur a renvoyé du HTML au lieu d’une réponse IA exploitable.",
+          cached: false,
           fallbackRequired: true,
         };
       }
@@ -123,6 +125,7 @@ export async function resilientAngelAi(options: {
         text: null,
         reason: "provider" as const,
         detail: "Le fournisseur a renvoyé du HTML au lieu d’une réponse IA exploitable.",
+        cached: false,
         fallbackRequired: true,
       };
     }
