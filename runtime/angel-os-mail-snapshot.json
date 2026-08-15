@@ -1,9 +1,17 @@
 {
-  "fetchedAt": "2026-08-15T08:59:25Z",
+  "fetchedAt": "2026-08-15T10:01:58Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-15T08:59:25Z",
+      "fetchedAt": "2026-08-15T10:01:58Z",
       "important": [
+        {
+          "subject": "Échecs répétés GitHub Actions sur angelosmegaplus/angel-leclerc",
+          "from": "GitHub <notifications@github.com>",
+          "date": "2026-08-15T09:54:46Z",
+          "summary": "Une série de notifications GitHub signale des échecs répétés du workflow CI sur plusieurs commits récents de main, ainsi qu'un échec de Maintenance Angel OS. Le dernier commit observé est 57f178516f126d9966c6811d09a0dda705a005fc. Le statut GitHub associé au commit indique aussi un échec Vercel lié au build-rate-limit. Le workflow Publication Angel OS associé à ce commit est toutefois lui-même marqué success, ce qui ne prouve pas que Vercel a effectivement construit la version.",
+          "reason": "Alerte technique réelle sur le dépôt principal ; à laisser à la routine de maintenance technique pour diagnostic afin d'éviter une correction concurrente.",
+          "suggestedReply": ""
+        },
         {
           "subject": "Votre essai gratuit Trading Pro se termine bientôt ⏳",
           "from": "Revolut <no-reply@revolut.com>",
@@ -13,40 +21,41 @@
           "suggestedReply": ""
         }
       ],
-      "otherSummary": "Un nouveau mail a été reçu depuis le précédent rapport : un message de bienvenue Supabase, purement informatif, sans demande d’action. Aucun nouveau mail de candidature, refus, entretien, demande de CV, redirection professionnelle ou autre réponse d’entreprise n’a été détecté. Les notifications GitHub non lues visibles sont antérieures à la période suivie. Gmail n’a subi aucune modification.",
+      "otherSummary": "Depuis le précédent rapport, 16 nouveaux messages ont été détectés ; ils correspondent tous à des notifications techniques GitHub concernant des échecs de workflows sur angelosmegaplus/angel-leclerc. Aucun nouveau mail de candidature, refus, entretien, demande de CV, redirection professionnelle ou réponse d’entreprise n’a été détecté. Gmail n’a subi aucune modification.",
       "counts": {
-        "new_since_last_run": 1,
-        "important": 1,
+        "new_since_last_run": 16,
+        "important": 2,
         "employment_or_application": 0
       }
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-15T05:48:57Z",
-    "period_end": "2026-08-15T08:59:25Z",
-    "summary": "Un nouveau mail informatif de Supabase a été reçu depuis le précédent passage. Aucun nouveau mail de candidature, refus, entretien, demande de CV ou redirection professionnelle n’a été détecté. L’essai Revolut Trading Pro reste l’unique échéance mail importante à surveiller. Aucune action Gmail n’a été effectuée. La file ai_actions n’a pas pu être interrogée directement avec les connecteurs disponibles pendant cette exécution ; aucune action validée n’a donc été exécutée ni modifiée.",
+    "period_start": "2026-08-15T08:59:25Z",
+    "period_end": "2026-08-15T10:01:58Z",
+    "summary": "Seize nouveaux mails ont été reçus depuis le précédent passage, tous issus de GitHub et liés à des échecs de CI ou de maintenance sur le dépôt angelosmegaplus/angel-leclerc. Aucun nouveau mail de candidature, refus, entretien, demande de CV ou redirection professionnelle n’a été détecté. La vérification GitHub confirme que le dernier main est 57f178516f126d9966c6811d09a0dda705a005fc et que son statut Vercel reste en échec sur build-rate-limit ; aucune modification technique n’a été lancée ici pour éviter de concurrencer la routine de maintenance. La file ai_actions n’est toujours pas interrogeable directement avec les connecteurs disponibles pendant cette exécution ; aucune action validée n’a donc été exécutée ou modifiée.",
     "counts": {
-      "total": 1,
+      "total": 16,
       "important": 1,
       "employment_or_application": 0
     },
     "items": [
       {
-        "subject": "Welcome to Supabase",
-        "from": "Supabase <welcome@supabase.com>",
-        "date": "2026-08-15T07:35:32Z",
-        "reason": "Message de bienvenue et documentation de démarrage ; aucune action requise."
+        "subject": "Échecs répétés GitHub Actions sur angelosmegaplus/angel-leclerc",
+        "from": "GitHub <notifications@github.com>",
+        "date": "2026-08-15T09:54:46Z",
+        "reason": "16 notifications nouvelles sur la période, principalement des échecs CI, dont un échec Maintenance Angel OS."
       },
       {
         "subject": "Votre essai gratuit Trading Pro se termine bientôt ⏳",
         "from": "Revolut <no-reply@revolut.com>",
         "date": "2026-08-15T00:00:13Z",
-        "reason": "Échéance le 18 août 2026 ; tarif annoncé ensuite : 4,99 € par mois."
+        "reason": "Échéance déjà connue au 18 août 2026 ; conservée dans le dashboard car toujours pertinente, mais antérieure à cette période horaire."
       }
     ],
     "recommendations": [
+      "Laisser la routine Maintenance complète Angel OS diagnostiquer les échecs CI afin d’éviter plusieurs corrections concurrentes sur main.",
       "Vérifier avant le 18 août si Trading Pro doit être conservé ou désactivé afin d’éviter une facturation non souhaitée.",
-      "Exposer à terme un endpoint serveur authentifié ou une voie GitHub Actions dédiée permettant à l’automatisation de lire et mettre à jour ai_actions sans passer par Lovable."
+      "Ajouter à terme une voie serveur authentifiée ou un workflow dédié permettant à cette automatisation de lire et mettre à jour ai_actions directement sans exposer de secrets."
     ],
     "source": "chatgpt-hourly-direct"
   }
