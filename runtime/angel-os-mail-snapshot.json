@@ -1,15 +1,15 @@
 {
-  "fetchedAt": "2026-08-15T10:01:58Z",
+  "fetchedAt": "2026-08-15T11:00:52Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-15T10:01:58Z",
+      "fetchedAt": "2026-08-15T11:00:52Z",
       "important": [
         {
-          "subject": "Échecs répétés GitHub Actions sur angelosmegaplus/angel-leclerc",
+          "subject": "Échecs CI répétés sur angelosmegaplus/angel-leclerc",
           "from": "GitHub <notifications@github.com>",
-          "date": "2026-08-15T09:54:46Z",
-          "summary": "Une série de notifications GitHub signale des échecs répétés du workflow CI sur plusieurs commits récents de main, ainsi qu'un échec de Maintenance Angel OS. Le dernier commit observé est 57f178516f126d9966c6811d09a0dda705a005fc. Le statut GitHub associé au commit indique aussi un échec Vercel lié au build-rate-limit. Le workflow Publication Angel OS associé à ce commit est toutefois lui-même marqué success, ce qui ne prouve pas que Vercel a effectivement construit la version.",
-          "reason": "Alerte technique réelle sur le dépôt principal ; à laisser à la routine de maintenance technique pour diagnostic afin d'éviter une correction concurrente.",
+          "date": "2026-08-15T10:55:22Z",
+          "summary": "Depuis le précédent passage, 18 nouvelles notifications GitHub signalent des échecs de CI sur plusieurs commits récents de main, avec aussi un nouvel échec du workflow Maintenance Angel OS. Le dernier main vérifié est a0a9b5fc36266e7fac34d41aeb0415835ae8f363 (Keep latest published task visible in admin queue), committé à 10:54:19Z. Son statut combiné indique toujours un échec Vercel lié au build-rate-limit.",
+          "reason": "Alerte technique persistante sur le dépôt principal ; à laisser à la routine Maintenance complète Angel OS pour éviter des corrections concurrentes.",
           "suggestedReply": ""
         },
         {
@@ -21,39 +21,48 @@
           "suggestedReply": ""
         }
       ],
-      "otherSummary": "Depuis le précédent rapport, 16 nouveaux messages ont été détectés ; ils correspondent tous à des notifications techniques GitHub concernant des échecs de workflows sur angelosmegaplus/angel-leclerc. Aucun nouveau mail de candidature, refus, entretien, demande de CV, redirection professionnelle ou réponse d’entreprise n’a été détecté. Gmail n’a subi aucune modification.",
+      "otherSummary": "Depuis le précédent rapport, 19 nouveaux messages entrants ont été détectés : 18 notifications techniques GitHub liées à des échecs de CI/maintenance et une promotion Widilo sans action utile. Aucun nouveau mail entrant de candidature, refus, entretien, demande de CV, redirection professionnelle ou réponse d’entreprise n’a été reçu. Un message sortant de relance a en revanche été envoyé à 10:58Z au Comptoir Authentique au sujet de la candidature BTS Communication ; aucune réponse nouvelle n’est visible à ce stade. Gmail n’a subi aucune modification pendant cette exécution.",
       "counts": {
-        "new_since_last_run": 16,
+        "new_since_last_run": 19,
         "important": 2,
-        "employment_or_application": 0
+        "employment_or_application_incoming": 0,
+        "outgoing_application_followups": 1
       }
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-15T08:59:25Z",
-    "period_end": "2026-08-15T10:01:58Z",
-    "summary": "Seize nouveaux mails ont été reçus depuis le précédent passage, tous issus de GitHub et liés à des échecs de CI ou de maintenance sur le dépôt angelosmegaplus/angel-leclerc. Aucun nouveau mail de candidature, refus, entretien, demande de CV ou redirection professionnelle n’a été détecté. La vérification GitHub confirme que le dernier main est 57f178516f126d9966c6811d09a0dda705a005fc et que son statut Vercel reste en échec sur build-rate-limit ; aucune modification technique n’a été lancée ici pour éviter de concurrencer la routine de maintenance. La file ai_actions n’est toujours pas interrogeable directement avec les connecteurs disponibles pendant cette exécution ; aucune action validée n’a donc été exécutée ou modifiée.",
+    "period_start": "2026-08-15T10:01:58Z",
+    "period_end": "2026-08-15T11:00:52Z",
+    "summary": "Dix-neuf nouveaux messages entrants ont été reçus sur la période : dix-huit notifications GitHub signalant des échecs répétés de CI/maintenance sur angelosmegaplus/angel-leclerc, plus une promotion Widilo sans intérêt opérationnel. Aucun nouveau mail entrant de candidature, refus, entretien, demande de CV, redirection professionnelle ou réponse d’entreprise n’a été détecté. Une relance sortante a toutefois été envoyée à 10:58Z au Comptoir Authentique pour la candidature BTS Communication, sans nouvelle réponse reçue. Le dernier main vérifié est a0a9b5fc36266e7fac34d41aeb0415835ae8f363 et son statut Vercel reste en échec sur build-rate-limit ; aucune correction technique n’a été lancée ici afin de laisser la routine Maintenance complète Angel OS gérer ce problème. La file ai_actions reste non interrogeable directement avec les connecteurs disponibles pendant cette exécution ; aucune action awaiting_operator n’a donc été exécutée ou modifiée.",
     "counts": {
-      "total": 16,
+      "total_incoming": 19,
       "important": 1,
-      "employment_or_application": 0
+      "employment_or_application_incoming": 0,
+      "outgoing_application_followups": 1
     },
     "items": [
       {
-        "subject": "Échecs répétés GitHub Actions sur angelosmegaplus/angel-leclerc",
+        "subject": "Échecs CI répétés sur angelosmegaplus/angel-leclerc",
         "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T09:54:46Z",
-        "reason": "16 notifications nouvelles sur la période, principalement des échecs CI, dont un échec Maintenance Angel OS."
+        "date": "2026-08-15T10:55:22Z",
+        "reason": "18 nouvelles notifications GitHub sur la période, principalement des échecs CI avec un échec Maintenance Angel OS ; le dernier main reste associé à un échec Vercel build-rate-limit."
+      },
+      {
+        "subject": "Re: Candidature BTS Communication en alternance – Sarlat centre",
+        "from": "Angel Leclerc <angelleclerc2006@gmail.com>",
+        "date": "2026-08-15T10:58:00Z",
+        "reason": "Relance sortante vérifiée vers le Comptoir Authentique ; aucune réponse entrante nouvelle à ce stade."
       },
       {
         "subject": "Votre essai gratuit Trading Pro se termine bientôt ⏳",
         "from": "Revolut <no-reply@revolut.com>",
         "date": "2026-08-15T00:00:13Z",
-        "reason": "Échéance déjà connue au 18 août 2026 ; conservée dans le dashboard car toujours pertinente, mais antérieure à cette période horaire."
+        "reason": "Échéance déjà connue au 18 août 2026 ; conservée dans le dashboard car elle reste pertinente, mais elle est antérieure à cette période horaire."
       }
     ],
     "recommendations": [
       "Laisser la routine Maintenance complète Angel OS diagnostiquer les échecs CI afin d’éviter plusieurs corrections concurrentes sur main.",
+      "Ne pas relancer de nouveau le Comptoir Authentique tant qu’aucun développement nouveau ne le justifie ; une relance vient d’être envoyée à 10:58Z.",
       "Vérifier avant le 18 août si Trading Pro doit être conservé ou désactivé afin d’éviter une facturation non souhaitée.",
       "Ajouter à terme une voie serveur authentifiée ou un workflow dédié permettant à cette automatisation de lire et mettre à jour ai_actions directement sans exposer de secrets."
     ],
