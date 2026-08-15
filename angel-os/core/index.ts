@@ -9,3 +9,4 @@ export * from './service-adapters';
 export * from './native-services';
 export * from './native-api-router';
 export * from './native-realtime';
+export * from './hybrid-orchestrator';
