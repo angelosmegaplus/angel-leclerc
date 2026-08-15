@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { ChevronDown, ExternalLink, Globe2, Maximize2, Plus, RefreshCw, ShieldCheck, Trash2 } from "lucide-react";
 import { getMovixOfficialSource, type MovixOfficialSource } from "@/lib/movix-source.functions";
@@ -34,13 +34,17 @@ export function MovixLauncherPanel() {
   const [sourceMeta, setSourceMeta] = useState<MovixOfficialSource | null>(null);
   const [syncingSource, setSyncingSource] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
+  const primaryUrlRef = useRef(DEFAULT_MIRRORS[0].url);
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved) as Mirror[];
-        if (Array.isArray(parsed) && parsed.length) setMirrors(parsed);
+        if (Array.isArray(parsed) && parsed.length) {
+          setMirrors(parsed);
+          primaryUrlRef.current = parsed[0]?.url || DEFAULT_MIRRORS[0].url;
+        }
       }
       setLast(localStorage.getItem(LAST_KEY));
     } catch { /* optional */ }
@@ -53,12 +57,25 @@ export function MovixLauncherPanel() {
       try {
         const source = await resolveOfficialSource();
         if (!active || !source?.url) return;
+
+        const previousPrimary = primaryUrlRef.current;
+        primaryUrlRef.current = source.url;
         setSourceMeta(source);
         setMirrors((current) => {
           const custom = current.filter((mirror) => mirror.id !== "main");
           const next = [{ id: "main", label: "Source principale synchronisée", url: source.url }, ...custom];
           try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* optional */ }
           return next;
+        });
+
+        setEmbed((current) => {
+          if (!current || current === previousPrimary) {
+            try { localStorage.setItem(LAST_KEY, source.url); } catch { /* optional */ }
+            setLast(source.url);
+            setFrameKey((value) => value + 1);
+            return source.url;
+          }
+          return current;
         });
       } catch (error) {
         console.error("[cinema-sandbox] source sync failed", error);
@@ -124,7 +141,7 @@ export function MovixLauncherPanel() {
           <div>
             <div className="flex items-center gap-2 text-red-300"><Maximize2 className="h-4 w-4" /><span className="font-mono text-[10px] uppercase tracking-[.2em]">Angel Cinema Sandbox</span></div>
             <h2 className="mt-2 text-2xl font-semibold tracking-[-.045em] sm:text-3xl">Bac à sable grand écran</h2>
-            <p className="mt-1 max-w-2xl text-xs leading-5 text-white/35">La zone principale reste volontairement immense. Les outils techniques sont rangés en dessous.</p>
+            <p className="mt-1 max-w-2xl text-xs leading-5 text-white/35">La dernière source valide est chargée automatiquement. Les outils techniques restent rangés en dessous.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/15 bg-emerald-400/[.06] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[.12em] text-emerald-200/65"><ShieldCheck className="h-3 w-3" />sandbox actif</span>
@@ -134,13 +151,13 @@ export function MovixLauncherPanel() {
 
         <div id="cinema-sandbox-frame" className="scroll-mt-3 p-3 sm:p-4">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3 px-1">
-            <div><p className="font-mono text-[10px] uppercase tracking-[.16em] text-white/25">Source chargée</p><p className="mt-1 font-mono text-xs text-white/45">{embed ? hostOf(embed) : "aucune source chargée"}</p></div>
+            <div><p className="font-mono text-[10px] uppercase tracking-[.16em] text-white/25">Source chargée</p><p className="mt-1 font-mono text-xs text-white/45">{embed ? hostOf(embed) : "synchronisation en cours…"}</p></div>
             <div className="flex flex-wrap gap-2">
               {!embed ? <button type="button" onClick={() => openIntegrated(primary.url)} className="rounded-xl bg-red-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-red-500">Lancer la source principale</button> : null}
               {embed ? <><button type="button" onClick={() => setFrameKey((value) => value + 1)} className="rounded-xl border border-white/10 px-3 py-2 text-xs text-white/55">Recharger</button><a href={embed} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-xs text-white/55">Nouvelle page <ExternalLink className="h-3.5 w-3.5" /></a><button type="button" onClick={() => setEmbed(null)} className="rounded-xl border border-white/10 px-3 py-2 text-xs text-white/40">Fermer</button></> : null}
             </div>
           </div>
-          {embed ? <iframe key={frameKey} src={embed} title={`Angel Cinema Sandbox — ${hostOf(embed)}`} referrerPolicy="no-referrer" allow="fullscreen" sandbox="allow-forms allow-same-origin allow-scripts" className="h-[82dvh] min-h-[680px] w-full rounded-2xl border border-white/10 bg-black shadow-inner" /> : <div className="grid h-[78dvh] min-h-[640px] place-items-center rounded-2xl border border-dashed border-white/10 bg-[radial-gradient(circle_at_center,rgba(255,255,255,.04),transparent_42%)] p-8 text-center"><div><Globe2 className="mx-auto h-8 w-8 text-white/15" /><p className="mt-4 text-sm font-medium text-white/40">Grand écran prêt</p><p className="mt-2 max-w-md text-xs leading-5 text-white/25">Charge la source principale pour l’ouvrir dans l’environnement isolé du navigateur.</p><button type="button" onClick={() => openIntegrated(primary.url)} className="mt-5 rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white hover:bg-red-500">Ouvrir dans le bac à sable</button></div></div>}
+          {embed ? <iframe key={frameKey} src={embed} title={`Angel Cinema Sandbox — ${hostOf(embed)}`} referrerPolicy="no-referrer" allow="fullscreen" sandbox="allow-forms allow-same-origin allow-scripts" className="h-[82dvh] min-h-[680px] w-full rounded-2xl border border-white/10 bg-black shadow-inner" /> : <div className="grid h-[78dvh] min-h-[640px] place-items-center rounded-2xl border border-dashed border-white/10 bg-[radial-gradient(circle_at_center,rgba(255,255,255,.04),transparent_42%)] p-8 text-center"><div><Globe2 className="mx-auto h-8 w-8 text-white/15" /><p className="mt-4 text-sm font-medium text-white/40">Synchronisation de la source…</p><p className="mt-2 max-w-md text-xs leading-5 text-white/25">Angel OS vérifie la dernière adresse valide avant de charger automatiquement le bac à sable.</p><button type="button" onClick={() => openIntegrated(primary.url)} className="mt-5 rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white hover:bg-red-500">Ouvrir maintenant</button></div></div>}
         </div>
       </div>
 
