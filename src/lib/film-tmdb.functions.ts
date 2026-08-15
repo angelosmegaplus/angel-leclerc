@@ -60,7 +60,6 @@ async function artwork(tmdbId: number, mediaType: "movie" | "tv", fallbackPoster
 export const getFilmCatalogMetadata = createServerFn({ method: "GET" })
   .inputValidator((data: { items: FilmLookupInput[] }) => ({ items: (data.items ?? []).slice(0, 20).map((item) => ({ id: String(item.id), title: String(item.title).slice(0, 160), year: Number(item.year), mediaType: item.mediaType === "tv" ? "tv" as const : "movie" as const })) }))
   .handler(async ({ data }): Promise<FilmMeta[]> => {
-    if (!(process.env["TMDB_API_KEY"] || process.env["VITE_TMDB_API_KEY"])) return [];
     const results = await Promise.all(data.items.map(async (item) => {
       try {
         const found = await resolve(item);
@@ -76,7 +75,6 @@ export const getFilmCatalogMetadata = createServerFn({ method: "GET" })
 export const getFilmDetail = createServerFn({ method: "GET" })
   .inputValidator((data: FilmLookupInput) => ({ id: String(data.id), title: String(data.title).slice(0, 160), year: Number(data.year), mediaType: data.mediaType === "tv" ? "tv" as const : "movie" as const }))
   .handler(async ({ data }): Promise<FilmDetail | null> => {
-    if (!(process.env["TMDB_API_KEY"] || process.env["VITE_TMDB_API_KEY"])) return null;
     const { tmdb } = await import("./tmdb.server");
     const found = await resolve(data);
     if (!found) return null;
