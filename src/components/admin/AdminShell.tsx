@@ -67,16 +67,13 @@ export function AdminShell({
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
-  // Sur téléphone, la barre Angel AI ne doit jamais recouvrir un champ ou le clavier.
   useEffect(() => {
     const isEditable = (node: EventTarget | null) => {
       const el = node instanceof HTMLElement ? node : null;
       return Boolean(el?.matches('input, textarea, select, [contenteditable="true"]'));
     };
     const onFocusIn = (event: FocusEvent) => setEditing(isEditable(event.target));
-    const onFocusOut = () => {
-      window.setTimeout(() => setEditing(isEditable(document.activeElement)), 0);
-    };
+    const onFocusOut = () => window.setTimeout(() => setEditing(isEditable(document.activeElement)), 0);
     document.addEventListener("focusin", onFocusIn);
     document.addEventListener("focusout", onFocusOut);
     return () => {
@@ -101,11 +98,7 @@ export function AdminShell({
     return COMPACT_NAV.map((definition) => {
       const source = items.find((item) => item.key === definition.source) ?? items[0];
       const badges = definition.children.map((key) => items.find((item) => item.key === key)?.badge ?? 0);
-      return {
-        ...definition,
-        icon: source?.icon,
-        badge: badges.reduce((sum, value) => sum + value, 0),
-      };
+      return { ...definition, icon: source?.icon, badge: badges.reduce((sum, value) => sum + value, 0) };
     }).filter((item) => item.icon);
   }, [items]);
 
@@ -134,9 +127,9 @@ export function AdminShell({
             type="button"
             key={key}
             onClick={() => selectCompact(source)}
-            className={`group relative min-h-24 overflow-hidden rounded-[1.65rem] border p-4 text-left transition-all active:scale-[0.98] ${isActive ? "border-red-500/30 bg-red-500/10 text-red-100" : "border-white/10 bg-white/[.035] text-white/70 hover:border-red-500/20 hover:bg-red-500/[.05]"}`}
+            className={`group relative min-h-24 overflow-hidden rounded-[1.65rem] border p-4 text-left transition-all duration-300 active:scale-[0.98] ${isActive ? "border-red-500/30 bg-red-500/10 text-red-100 shadow-[0_0_40px_rgba(239,68,68,.06)]" : "border-white/10 bg-white/[.025] text-white/70 hover:border-red-500/20 hover:bg-red-500/[.04]"}`}
           >
-            <span className={`grid h-10 w-10 place-items-center rounded-xl border ${isActive ? "border-red-500/25 bg-red-500/15 text-red-300" : "border-white/10 bg-black/30 text-white/55"}`}>
+            <span className={`grid h-10 w-10 place-items-center rounded-xl border transition ${isActive ? "border-red-500/25 bg-red-500/15 text-red-300" : "border-white/10 bg-black/30 text-white/55 group-hover:text-red-200"}`}>
               <Icon className="h-5 w-5 stroke-[1.8]" />
             </span>
             <span className="absolute inset-x-4 bottom-3 truncate text-[13px] font-semibold">{label}</span>
@@ -152,15 +145,15 @@ export function AdminShell({
       <div className="mb-5 flex items-center justify-between gap-3 px-1">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-8 w-8 rounded-lg object-contain" />
+            <img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-8 w-8 rounded-lg object-cover" />
             <p className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-red-300">Angel OS</p>
           </div>
           <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.04em] text-white">Applications</p>
         </div>
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-300"><Grid2X2 className="h-5 w-5" /></span>
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-300 shadow-[0_0_35px_rgba(239,68,68,.08)]"><Grid2X2 className="h-5 w-5" /></span>
       </div>
       {appGrid}
-      <div className="mt-5 flex items-center gap-2 px-1 font-mono text-[10px] uppercase tracking-[.16em] text-white/35"><span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" /> system.online</div>
+      <div className="mt-5 flex items-center gap-2 px-1 font-mono text-[10px] uppercase tracking-[.16em] text-white/35"><span className="h-2 w-2 animate-pulse rounded-full bg-red-400" /> angel.os.online</div>
     </>
   );
 
@@ -169,27 +162,29 @@ export function AdminShell({
   const isDashboard = active === "dashboard";
 
   return (
-    <div className="min-h-[100dvh] w-full overflow-x-hidden bg-[#050607] text-white lg:flex" style={{ fontFamily: '"Inter", system-ui, sans-serif' }}>
+    <div className="relative isolate min-h-[100dvh] w-full overflow-x-hidden bg-[#050607] text-white lg:flex" style={{ fontFamily: '"Inter", system-ui, sans-serif' }}>
       <AINotificationMonitor />
-      <div aria-hidden className="pointer-events-none fixed inset-0 z-0 opacity-[.06] [background-image:linear-gradient(rgba(255,255,255,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.08)_1px,transparent_1px)] [background-size:36px_36px]" />
-      <aside className="sticky top-0 z-10 hidden h-[100dvh] w-[19rem] shrink-0 overflow-y-auto border-r border-white/10 bg-[#090b0d]/95 px-4 py-6 backdrop-blur-xl lg:block">{menuContents}</aside>
+      <div aria-hidden className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_18%_18%,rgba(225,55,55,.16),transparent_30%),linear-gradient(180deg,#0a0b0d_0%,#050607_76%)]" />
+      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 opacity-[.07] [background-image:linear-gradient(rgba(255,255,255,.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.12)_1px,transparent_1px)] [background-size:44px_44px]" />
+      <aside className="sticky top-0 z-10 hidden h-[100dvh] w-[19rem] shrink-0 overflow-y-auto border-r border-white/10 bg-[#090b0d]/92 px-4 py-6 backdrop-blur-xl lg:block">{menuContents}</aside>
 
       {open ? (
         <div className="fixed inset-0 z-50 h-[100dvh] bg-black/70 backdrop-blur-md lg:hidden">
-          <div className="ml-auto flex h-full w-full max-w-md flex-col border-l border-white/10 bg-[#090b0d] px-3 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-[calc(1rem+env(safe-area-inset-top))] shadow-2xl sm:rounded-l-[2rem] sm:px-4">
-            <div className="mb-3 flex justify-end"><button type="button" aria-label="Fermer" onClick={() => setOpen(false)} className="grid h-12 w-12 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white"><X className="h-6 w-6" /></button></div>
+          <div className="ml-auto flex h-full w-full max-w-md flex-col border-l border-white/10 bg-[#090b0d]/97 px-3 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-[calc(1rem+env(safe-area-inset-top))] shadow-2xl sm:rounded-l-[2rem] sm:px-4">
+            <div className="mb-3 flex justify-end"><button type="button" aria-label="Fermer" onClick={() => setOpen(false)} className="grid h-12 w-12 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white transition hover:border-red-500/25 hover:text-red-200"><X className="h-6 w-6" /></button></div>
             <div className="min-h-0 flex-1 overflow-y-auto pb-4">{menuContents}</div>
           </div>
         </div>
       ) : null}
 
       <div className="relative z-10 min-w-0 flex-1">
-        <header className="sticky top-0 z-30 border-b border-white/10 bg-[#050607]/90 px-3 pb-2 pt-[calc(.55rem+env(safe-area-inset-top))] backdrop-blur-xl sm:px-7 sm:pb-3 sm:pt-[calc(.75rem+env(safe-area-inset-top))] lg:px-10">
+        <header className="sticky top-0 z-30 border-b border-white/10 bg-[#050607]/88 px-3 pb-2 pt-[calc(.55rem+env(safe-area-inset-top))] backdrop-blur-xl sm:px-7 sm:pb-3 sm:pt-[calc(.75rem+env(safe-area-inset-top))] lg:px-10">
           <div className="mx-auto flex min-w-0 max-w-[1500px] items-center gap-2">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-7 w-7 rounded-lg object-contain sm:h-8 sm:w-8" />
+                <img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-7 w-7 rounded-lg object-cover sm:h-8 sm:w-8" />
                 <p className="font-mono text-[9px] font-semibold uppercase tracking-[.18em] text-red-300 sm:text-[10px]">Angel OS</p>
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-400" aria-hidden />
               </div>
               <div className="mt-1.5 flex min-w-0 items-center gap-2 sm:mt-2">
                 {CurrentIcon ? <span className="hidden h-10 w-10 shrink-0 place-items-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-300 sm:grid"><CurrentIcon className="h-5 w-5" /></span> : null}
@@ -202,19 +197,13 @@ export function AdminShell({
         </header>
 
         {sectionItems.length > 0 ? (
-          <nav aria-label={`Sections ${activeDefinition?.label ?? ""}`} className="sticky top-[calc(4.65rem+env(safe-area-inset-top))] z-20 border-b border-white/10 bg-[#050607]/92 px-3 py-2 backdrop-blur-xl sm:top-[calc(6.2rem+env(safe-area-inset-top))] sm:px-7 lg:px-10">
+          <nav aria-label={`Sections ${activeDefinition?.label ?? ""}`} className="sticky top-[calc(4.65rem+env(safe-area-inset-top))] z-20 border-b border-white/10 bg-[#050607]/90 px-3 py-2 backdrop-blur-xl sm:top-[calc(6.2rem+env(safe-area-inset-top))] sm:px-7 lg:px-10">
             <div className="mx-auto flex max-w-[1500px] gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {sectionItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = item.key === active;
                 return (
-                  <button
-                    key={item.key}
-                    type="button"
-                    onClick={() => onSelect(item.key)}
-                    aria-current={isActive ? "page" : undefined}
-                    className={`flex min-h-10 shrink-0 items-center gap-2 rounded-xl border px-3 text-sm font-medium transition-colors ${isActive ? "border-red-500/30 bg-red-500/10 text-red-200" : "border-white/10 bg-white/[.035] text-white/55 hover:border-red-500/20 hover:bg-white/[.06] hover:text-white"}`}
-                  >
+                  <button key={item.key} type="button" onClick={() => onSelect(item.key)} aria-current={isActive ? "page" : undefined} className={`flex min-h-10 shrink-0 items-center gap-2 rounded-xl border px-3 text-sm font-medium transition-colors ${isActive ? "border-red-500/30 bg-red-500/10 text-red-200" : "border-white/10 bg-white/[.025] text-white/55 hover:border-red-500/20 hover:bg-red-500/[.04] hover:text-white"}`}>
                     <Icon className="h-4 w-4" />
                     <span>{item.label}</span>
                     {(item.badge ?? 0) > 0 ? <span className="rounded-full bg-red-500/15 px-1.5 py-0.5 text-[10px] font-bold text-red-200">{item.badge}</span> : null}
@@ -232,10 +221,7 @@ export function AdminShell({
               <NewsPanel />
             </div>
           ) : null}
-          <div
-            key={active}
-            className="min-w-0 max-w-full animate-in fade-in zoom-in-[.985] duration-300 [&_.bg-card]:bg-[#090b0d] [&_.bg-background]:bg-[#050607] [&_.bg-muted]:bg-white/[.04] [&_.border-border]:border-white/10 [&_.text-foreground]:text-white [&_.text-muted-foreground]:text-white/45 [&_.rounded-xl]:rounded-[1.25rem] [&_.rounded-2xl]:rounded-[1.75rem] [&_.rounded-lg]:rounded-xl [&_.shadow-sm]:shadow-[0_18px_60px_rgba(0,0,0,.28)] [&_img]:max-w-full [&_input]:max-w-full [&_textarea]:max-w-full [&_select]:max-w-full [&_input]:border-white/10 [&_textarea]:border-white/10 [&_select]:border-white/10 [&_input]:bg-black/30 [&_textarea]:bg-black/30 [&_select]:bg-black/30 [&_input]:text-white [&_textarea]:text-white [&_select]:text-white max-sm:[&_form]:!mt-2 max-sm:[&_form]:!space-y-4 max-sm:[&_form]:!rounded-2xl max-sm:[&_form]:!p-3 max-sm:[&_input]:min-h-11 max-sm:[&_select]:min-h-11 max-sm:[&_input]:text-base max-sm:[&_textarea]:text-base max-sm:[&_select]:text-base max-sm:[&_table]:text-xs max-sm:[&_label]:leading-snug"
-          >
+          <div key={active} className="min-w-0 max-w-full animate-in fade-in zoom-in-[.985] duration-300 [&_.bg-card]:bg-[#090b0d]/95 [&_.bg-background]:bg-[#050607]/92 [&_.bg-muted]:bg-white/[.04] [&_.border-border]:border-white/10 [&_.text-foreground]:text-white [&_.text-muted-foreground]:text-white/45 [&_.rounded-xl]:rounded-[1.25rem] [&_.rounded-2xl]:rounded-[1.75rem] [&_.rounded-lg]:rounded-xl [&_.shadow-sm]:shadow-[0_18px_60px_rgba(0,0,0,.28)] [&_img]:max-w-full [&_input]:max-w-full [&_textarea]:max-w-full [&_select]:max-w-full [&_input]:border-white/10 [&_textarea]:border-white/10 [&_select]:border-white/10 [&_input]:bg-black/30 [&_textarea]:bg-black/30 [&_select]:bg-black/30 [&_input]:text-white [&_textarea]:text-white [&_select]:text-white max-sm:[&_form]:!mt-2 max-sm:[&_form]:!space-y-4 max-sm:[&_form]:!rounded-2xl max-sm:[&_form]:!p-3 max-sm:[&_input]:min-h-11 max-sm:[&_select]:min-h-11 max-sm:[&_input]:text-base max-sm:[&_textarea]:text-base max-sm:[&_select]:text-base max-sm:[&_table]:text-xs max-sm:[&_label]:leading-snug">
             {children}
           </div>
         </main>
@@ -246,9 +232,7 @@ export function AdminShell({
               <p className="truncate font-mono text-[9px] font-semibold uppercase tracking-[.14em] text-red-300 sm:text-[10px] sm:tracking-[.16em]">Recherche universelle · Angel AI</p>
               <button type="button" aria-label="Fermer Angel AI" onClick={() => setAiOpen(false)} className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white/60 hover:text-white"><X className="h-4 w-4" /></button>
             </div>
-            <div className="max-h-[min(72dvh,42rem)] overflow-y-auto p-2 sm:p-3">
-              <AngelCommandCenter compact />
-            </div>
+            <div className="max-h-[min(72dvh,42rem)] overflow-y-auto p-2 sm:p-3"><AngelCommandCenter compact /></div>
           </div>
         ) : !editing ? (
           <div className="fixed inset-x-2 bottom-[calc(.5rem+env(safe-area-inset-bottom))] z-30 flex h-14 items-center rounded-[1.35rem] border border-white/10 bg-[#090b0d]/95 shadow-[0_12px_40px_rgba(0,0,0,.55)] backdrop-blur-xl sm:left-1/2 sm:right-auto sm:h-16 sm:w-[min(34rem,calc(100vw-2rem))] sm:-translate-x-1/2 sm:rounded-full lg:w-[min(38rem,calc(100vw-24rem))]">
@@ -256,21 +240,11 @@ export function AdminShell({
               <span className="min-w-0 flex-1 truncate text-sm font-medium sm:text-base">Rechercher ou demander…</span>
               <span className="hidden rounded-lg border border-white/10 bg-white/[.04] px-2 py-1 font-mono text-[10px] text-white/35 sm:inline">Ctrl K</span>
             </button>
-            <button
-              type="button"
-              aria-label="Notifications"
-              onClick={() => onSelect("notifications")}
-              className="relative mr-1.5 grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-300 sm:mr-2 sm:h-12 sm:w-12"
-            >
+            <button type="button" aria-label="Notifications" onClick={() => onSelect("notifications")} className="relative mr-1.5 grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-300 sm:mr-2 sm:h-12 sm:w-12">
               <Bell className="h-5 w-5" />
               {notificationBadge > 0 ? <span className="absolute -right-0.5 -top-0.5 grid min-h-5 min-w-5 place-items-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">{notificationBadge}</span> : null}
             </button>
-            <button
-              type="button"
-              aria-label="Ouvrir les applications"
-              onClick={() => setOpen(true)}
-              className="mr-1.5 grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white/60 sm:mr-2 sm:h-12 sm:w-12 lg:hidden"
-            >
+            <button type="button" aria-label="Ouvrir les applications" onClick={() => setOpen(true)} className="mr-1.5 grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white/60 sm:mr-2 sm:h-12 sm:w-12 lg:hidden">
               <Grid2X2 className="h-5 w-5" />
             </button>
           </div>
@@ -282,7 +256,7 @@ export function AdminShell({
 
 export function AdminCard({ title, description, children, className = "" }: { title?: string; description?: string; children: ReactNode; className?: string }) {
   return (
-    <section className={`min-w-0 max-w-full overflow-x-clip rounded-[1.35rem] border border-white/10 bg-[#090b0d] p-3 shadow-[0_18px_60px_rgba(0,0,0,.28)] sm:rounded-[1.75rem] sm:p-6 ${className}`}>
+    <section className={`min-w-0 max-w-full overflow-x-clip rounded-[1.35rem] border border-white/10 bg-[#090b0d]/95 p-3 shadow-[0_18px_60px_rgba(0,0,0,.28)] backdrop-blur-sm sm:rounded-[1.75rem] sm:p-6 ${className}`}>
       {title ? <h2 className="break-words text-lg font-semibold tracking-[-0.03em] text-white sm:text-xl">{title}</h2> : null}
       {description ? <p className="mt-1 max-w-3xl break-words text-sm leading-relaxed text-white/45">{description}</p> : null}
       <div className={`min-w-0 max-w-full ${title || description ? "mt-4 sm:mt-5" : ""}`}>{children}</div>
