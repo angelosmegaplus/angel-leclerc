@@ -48,27 +48,29 @@ function requestBody(model: string) {
   return {
     model,
     tools: [{ type: "web_search", search_context_size: "low" }],
-    max_output_tokens: 2600,
+    tool_choice: "required",
+    max_output_tokens: 1800,
+    store: false,
     input: [
       {
         role: "system",
-        content: [{ type: "input_text", text: "Tu alimentes le fil d’actualité privé d’Angel OS. Le fil doit être réellement personnalisé, pas un fil tech générique. Cherche réellement sur le web. Priorité aux contenus publiés ou substantiellement mis à jour dans les dernières heures, avec extension à 48 h pour le local/tourisme et à 7 jours pour le scoutisme s’il n’y a rien de plus frais. Ne fournis que des articles/pages accessibles avec URL directe vérifiable. N’invente jamais une date, une source ou une URL. Évite les doublons, les polémiques vides, le clickbait et les sujets sans rapport avec le profil." }],
+        content: [{ type: "input_text", text: "Tu alimentes le fil d’actualité privé d’Angel OS. Utilise obligatoirement la recherche web disponible. Le fil doit être réellement personnalisé, pas un fil tech générique. Priorité aux contenus publiés ou substantiellement mis à jour dans les dernières heures, avec extension à 48 h pour le local/tourisme et à 7 jours pour le scoutisme s’il n’y a rien de plus frais. Ne fournis que des articles/pages accessibles avec URL directe vérifiable. N’invente jamais une date, une source ou une URL. Évite les doublons, les polémiques vides, le clickbait et les sujets sans rapport avec le profil." }],
       },
       {
         role: "user",
-        content: [{ type: "input_text", text: `Construis une veille très personnalisée. Le profil éditorial est, par ordre de priorité :
-1. Politique et société françaises : institutions, services publics, pouvoir d’achat, souveraineté, collectivités, politiques sociales, enquêtes solides, corruption, favoritisme, lobbying, conflits d’intérêts, justice et finances publiques. Rester factuel et pluraliste ; ne pas transformer le fil en propagande partisane.
+        content: [{ type: "input_text", text: `Construis une veille très personnalisée et compacte. Le profil éditorial est, par ordre de priorité :
+1. Politique et société françaises : institutions, services publics, pouvoir d’achat, souveraineté, collectivités, politiques sociales, enquêtes solides, corruption, favoritisme, lobbying, conflits d’intérêts, justice et finances publiques.
 2. Sarlat-la-Canéda / Périgord Noir / Dordogne : politique locale, mairie/intercommunalité, travaux, commerces, logement, transports, justice, culture, associations, emploi et informations pratiques. Périgueux, Bergerac et Souillac en second cercle.
-3. Tourisme : offices de tourisme, attractivité, patrimoine, hôtellerie, campings, fréquentation, saison touristique, tourisme en Dordogne/Lot/Nouvelle-Aquitaine et évolutions nationales importantes. Le tourisme est un vrai centre d’intérêt professionnel, pas une rubrique décorative.
+3. Tourisme : offices de tourisme, attractivité, patrimoine, hôtellerie, campings, fréquentation, saison touristique, tourisme en Dordogne/Lot/Nouvelle-Aquitaine et évolutions nationales importantes.
 4. Radio et médias : radios locales et nationales, animation radio, antenne, podcasts, audiences, audiovisuel et métiers de la radio.
 5. Journalisme / communication : presse, rédaction, information locale, communication, création de contenu, édition et méthodes du métier.
 6. Emploi / alternance : BTS Communication et opportunités compatibles communication, radio, médias, journalisme ou tourisme, surtout Sarlat, Périgueux, Bergerac, Brive puis Bordeaux.
-7. IA / tech : seulement les développements réellement utiles ou importants autour d’OpenAI/ChatGPT, Android, Pixel et technologie grand public. Ne pas laisser la tech envahir la une.
-8. Scoutisme / éducation populaire : actualités réellement significatives du scoutisme, des mouvements de jeunesse et de l’éducation populaire ; priorité basse mais rubrique conservée.
+7. IA / tech : seulement les développements réellement utiles ou importants autour d’OpenAI/ChatGPT, Android, Pixel et technologie grand public.
+8. Scoutisme / éducation populaire : actualités réellement significatives du scoutisme, des mouvements de jeunesse et de l’éducation populaire.
 
-Retourne idéalement 3 à 5 résultats pour politique, Dordogne et tourisme ; 2 à 4 pour radio/médias, journalisme et emploi ; 1 à 3 pour IA et scoutisme. Les catégories exactes sont : politique, dordogne, tourisme, medias, journalisme, emploi, ia, scoutisme.
+Retourne seulement 8 à 14 résultats au total, en privilégiant politique, Dordogne et tourisme. Les catégories exactes sont : politique, dordogne, tourisme, medias, journalisme, emploi, ia, scoutisme.
 
-Réponds UNIQUEMENT avec un tableau JSON valide, sans markdown. Chaque objet doit avoir exactement : {"title":"...","url":"https://...","source":"nom du média","publishedAt":"ISO-8601 ou null","category":"politique|dordogne|tourisme|medias|journalisme|emploi|ia|scoutisme"}. Utilise l'URL de l'article source, pas une URL de moteur de recherche.` }],
+Réponds UNIQUEMENT avec un tableau JSON valide, sans markdown. Chaque objet doit avoir exactement : {"title":"...","url":"https://...","source":"nom du média","publishedAt":"ISO-8601 ou null","category":"politique|dordogne|tourisme|medias|journalisme|emploi|ia|scoutisme"}. Utilise l'URL directe de la source consultée, jamais une URL de moteur de recherche.` }],
       },
     ],
   };
@@ -134,15 +136,14 @@ export async function searchNewsWithOpenAI(): Promise<NewsItem[]> {
       if (!response) continue;
       const json = await response.json();
       const raw = responseText(json);
-      const items = parseJsonArray(raw).map(cleanItem).filter((item): item is NewsItem => Boolean(item)).slice(0, 40);
+      const items = parseJsonArray(raw).map(cleanItem).filter((item): item is NewsItem => Boolean(item)).slice(0, 24);
       if (items.length > 0) {
         state.items = items;
         state.expiresAt = now + TTL_MS;
         state.failureUntil = 0;
-      } else {
-        console.warn("[ai-news-search] provider returned no usable structured news items", { model, outputLength: raw.length });
+        return state.items;
       }
-      if (items.length > 0) return state.items;
+      console.warn("[ai-news-search] provider returned no usable structured news items", { model, outputLength: raw.length });
     }
     state.failureUntil = now + FAILURE_COOLDOWN_MS;
     return state.items;
