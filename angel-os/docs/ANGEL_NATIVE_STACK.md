@@ -23,6 +23,15 @@ La puissance cible vient donc de l’addition : externe + natif.
 - Angel Event Log : journal central immuable des événements fonctionnels et techniques.
 - Angel Telemetry : métriques, latences, succès, erreurs et santé des moteurs.
 - Angel Memory Index : mémoire unifiée et recherche interne multi-source.
+- Storage Orchestrator : sélection et réplication entre stockage principal, archive et sauvegarde.
+
+## Stockage hybride
+
+Google Drive est la couche d’archive externe de référence pour les gros fichiers et les données qui n’ont pas besoin d’un stockage transactionnel : médias lourds, pièces jointes, exports et sauvegardes. Le dossier racine est `Angel OS Storage`, structuré en `Media`, `Backups`, `Attachments` et `Exports`.
+
+Le stockage de production déjà fonctionnel reste le stockage principal pour les opérations courantes. Le Storage Orchestrator peut ensuite envoyer ou référencer une copie d’archive sans bloquer la fonction principale si Drive est indisponible. Le navigateur ne simule jamais un upload Drive sans autorisation Google réelle côté serveur ; l’archivage Drive est assuré par les automatisations Angel OS lorsqu’elles disposent de l’accès nécessaire.
+
+Vercel n’est pas considéré comme un stockage applicatif obligatoire : il reste une couche de déploiement/front lorsque pertinente. GitHub conserve le code ; Drive prend les fichiers lourds ; Angel OS orchestre les traitements et l’indexation.
 
 ## Équivalents internes complémentaires
 
@@ -57,3 +66,4 @@ Angel Memory Index fournit une recherche transversale sur les contenus indexés 
 6. Aucune configuration manuelle utilisateur n’est requise pour les fonctions Angel Native.
 7. Les données sensibles ou multi-appareils restent sur la couche de production fiable ; Angel Native peut les indexer et les enrichir.
 8. Le critère de réussite est la puissance obtenue par la combinaison des couches.
+9. Un stockage secondaire ou d’archive ne doit jamais faire échouer un upload principal déjà fonctionnel.
