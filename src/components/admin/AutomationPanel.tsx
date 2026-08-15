@@ -1,32 +1,29 @@
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { AdminCard } from "./AdminShell";
+import { AdminStatus, type AdminStatusTone } from "./AdminStatus";
 import { integrationReadiness } from "@/lib/system.functions";
 import { pushStatus } from "@/lib/notifications.functions";
 
 type Level = "auto" | "approval" | "scheduled" | "manual" | "pending";
 
-const LABELS: Record<Level, { text: string; className: string }> = {
-  auto: { text: "Automatique", className: "bg-primary/10 text-primary" },
-  approval: { text: "Après validation", className: "bg-sky-500/10 text-sky-700" },
-  scheduled: { text: "Planifié", className: "bg-emerald-500/10 text-emerald-700" },
-  manual: { text: "Manuel", className: "bg-amber-500/10 text-amber-700" },
-  pending: { text: "En attente de connexion", className: "bg-muted text-muted-foreground" },
+const LABELS: Record<Level, { text: string; tone: AdminStatusTone }> = {
+  auto: { text: "Automatique", tone: "success" },
+  approval: { text: "Après validation", tone: "info" },
+  scheduled: { text: "Planifié", tone: "info" },
+  manual: { text: "Manuel", tone: "pending" },
+  pending: { text: "En attente", tone: "pending" },
 };
 
 function Row({ name, level, detail }: { name: string; level: Level; detail: string }) {
-  const l = LABELS[level];
+  const status = LABELS[level];
   return (
-    <li className="flex flex-col gap-1 rounded-xl border border-border bg-background p-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+    <li className="flex flex-col gap-2 rounded-xl border border-white/10 bg-white/[.025] p-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
       <div className="min-w-0">
-        <p className="font-medium text-foreground">{name}</p>
-        <p className="text-sm text-muted-foreground">{detail}</p>
+        <p className="text-sm font-semibold text-white">{name}</p>
+        <p className="mt-1 text-xs leading-5 text-white/50 sm:text-sm">{detail}</p>
       </div>
-      <span
-        className={`w-fit shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] ${l.className}`}
-      >
-        {l.text}
-      </span>
+      <AdminStatus tone={status.tone} compact>{status.text}</AdminStatus>
     </li>
   );
 }
@@ -41,83 +38,72 @@ export function AutomationPanel() {
   const { data: push } = useQuery({ queryKey: ["push-status"], queryFn: () => status() });
 
   const connected = (key: string) =>
-    (services ?? []).some((s) => s.key === key && s.connection === "connected");
-  const anyConnected = (services ?? []).some((s) => s.connection === "connected");
+    (services ?? []).some((service) => service.key === key && service.connection === "connected");
+  const anyConnected = (services ?? []).some((service) => service.connection === "connected");
 
   const rows: { name: string; level: Level; detail: string }[] = [
     {
-      name: "Build & vérifications GitHub",
+      name: "Contrôles GitHub",
       level: "auto",
-      detail:
-        "GitHub Actions installe les dépendances puis contrôle TypeScript et le build sur chaque PR et chaque push vers main.",
+      detail: "La CI bloque une version qui échoue au lint, au build, à TypeScript ou aux contrôles de sortie de production.",
     },
     {
-      name: "Publication Lovable",
+      name: "Publication Vercel",
+      level: "auto",
+      detail: "Le déploiement de main est suivi jusqu’à l’état READY, puis Angel OS vérifie la version réellement servie et son endpoint de santé.",
+    },
+    {
+      name: "File Angel OS IA",
       level: "approval",
-      detail:
-        "Après CI et fusion autorisée, l'opérateur publie via le mécanisme officiel Lovable puis vérifie le site réel.",
+      detail: "Les opérations sûres peuvent s’exécuter et être journalisées ; une action sensible ou irréversible reste soumise à validation.",
     },
     {
-      name: "File Angel AI (ai_actions)",
-      level: "approval",
-      detail:
-        "Les commandes locales sûres s'exécutent et sont journalisées ; les actions externes ou irréversibles attendent une validation finale.",
-    },
-    {
-      name: "Rafraîchissement des jetons OAuth",
+      name: "Rafraîchissement OAuth",
       level: anyConnected ? "auto" : "pending",
-      detail:
-        "Le serveur renouvelle automatiquement les jetons expirés des comptes réellement connectés, sans intervention.",
+      detail: anyConnected
+        ? "Les connexions réellement présentes sont renouvelées côté serveur lorsque leur fournisseur le permet."
+        : "Aucune connexion OAuth active n’est actuellement détectée par Angel OS.",
     },
     {
-      name: "Notifications internes Angel OS",
+      name: "Notifications internes",
       level: "auto",
-      detail:
-        "Générées à partir de vos données réelles (tâches, candidatures, messages, connexions, agenda, publications) à chaque ouverture de l'admin.",
+      detail: "Les alertes sont générées à partir des données réelles du centre de contrôle : tâches, candidatures, messages, agenda et publications.",
     },
     {
-      name: "Notifications push système",
+      name: "Notifications push",
       level: push?.serverReady ? "auto" : "pending",
       detail: push?.serverReady
-        ? "Le serveur peut envoyer des notifications même application fermée."
-        : "Clés VAPID serveur absentes : les notifications locales fonctionnent, l'envoi serveur reste à activer.",
+        ? "Le serveur peut envoyer les alertes à un appareil abonné même lorsque l’application est fermée."
+        : "Le centre de notifications interne fonctionne ; le push serveur attend encore une configuration VAPID complète.",
     },
     {
       name: "Synchronisation Gmail / Drive / Agenda",
       level: connected("google") ? "auto" : "pending",
       detail: connected("google")
-        ? "Compte Google connecté : les candidatures sont vérifiées automatiquement à l'ouverture du module et les jetons sont renouvelés côté serveur."
-        : "Nécessite la connexion du compte Google depuis Connexions.",
+        ? "Compte Google détecté : les modules peuvent exploiter les données synchronisées et renouveler l’accès côté serveur."
+        : "Aucune connexion Google active n’est actuellement confirmée dans ce module.",
     },
     {
-      name: "Supervision et journal IA",
+      name: "Supervision IA",
       level: "auto",
-      detail:
-        "Chaque commande, exécution, erreur et synchronisation importante est enregistrée dans Angel OS.",
+      detail: "Les requêtes critiques, erreurs et états OpenAI sont surveillés ; l’administration affiche un diagnostic au lieu d’un faux fallback local.",
     },
     {
-      name: "Newsletter hebdomadaire",
+      name: "Maintenance Angel OS",
       level: "scheduled",
-      detail: "Tâche planifiée côté base de données, protégée par un secret d'appel.",
+      detail: "Les contrôles de santé et de production sont exécutés régulièrement par GitHub Actions.",
     },
     {
-      name: "Synchronisation boutique Printful",
+      name: "Synchronisation boutique",
       level: "manual",
-      detail:
-        "Import déclenché depuis l'onglet Boutique ; le webhook met ensuite les commandes à jour automatiquement.",
+      detail: "Les synchronisations commerciales restent déclenchées depuis le module Boutique lorsque l’action doit rester explicitement contrôlée.",
     },
   ];
 
   return (
-    <AdminCard title="Automatisation réelle">
-      <p className="mb-3 text-sm text-muted-foreground">
-        État honnête de chaque mécanisme : rien n'est marqué « automatique » sans dispositif concret
-        derrière.
-      </p>
+    <AdminCard title="Automatisation" description="Un état simple et vérifiable : automatique, en attente, manuel ou soumis à validation.">
       <ul className="grid gap-2">
-        {rows.map((r) => (
-          <Row key={r.name} {...r} />
-        ))}
+        {rows.map((row) => <Row key={row.name} {...row} />)}
       </ul>
     </AdminCard>
   );
