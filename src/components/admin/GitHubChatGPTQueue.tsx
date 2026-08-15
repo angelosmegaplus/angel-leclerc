@@ -42,6 +42,7 @@ const RAW_QUEUE = "https://raw.githubusercontent.com/angelosmegaplus/angel-lecle
 const COMMITS_API = "https://api.github.com/repos/angelosmegaplus/angel-leclerc/commits?sha=main&per_page=6";
 const LIVE_REFRESH_MS = 5_000;
 const COMMITS_REFRESH_MS = 90_000;
+const MAX_PENDING_AGE_MS = 90 * 60 * 1000;
 
 function bust(url: string) {
   return `${url}${url.includes("?") ? "&" : "?"}t=${Date.now()}`;
@@ -71,6 +72,19 @@ function isDone(status: string) {
 
 function isFailed(status: string) {
   return ["failed", "error", "rejected"].includes(status);
+}
+
+function isPending(status: string) {
+  return !isDone(status) && !isFailed(status);
+}
+
+function actionAgeMs(item: LiveAction, now = Date.now()) {
+  const createdAt = new Date(item.created_at).getTime();
+  return Number.isFinite(createdAt) ? Math.max(0, now - createdAt) : 0;
+}
+
+function isOverdue(item: LiveAction, now = Date.now()) {
+  return isPending(item.status) && actionAgeMs(item, now) >= MAX_PENDING_AGE_MS;
 }
 
 function StatusIcon({ status }: { status: string }) {
@@ -121,6 +135,7 @@ export function GitHubChatGPTQueue() {
   const [lastCommitSyncAt, setLastCommitSyncAt] = useState<string | null>(null);
   const [commitError, setCommitError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [clock, setClock] = useState(Date.now());
 
   async function refreshQueue() {
     setError(null);
@@ -139,6 +154,7 @@ export function GitHubChatGPTQueue() {
       setQueue((await queueResponse.json()) as WorkPayload);
       if (!actionsResult.error) setLiveActions((actionsResult.data ?? []) as LiveAction[]);
       setLastSyncAt(new Date().toISOString());
+      setClock(Date.now());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Synchronisation GitHub indisponible");
     } finally {
@@ -185,13 +201,16 @@ export function GitHubChatGPTQueue() {
     const commitsTimer = window.setInterval(() => {
       if (!document.hidden) void refreshCommits();
     }, COMMITS_REFRESH_MS);
+    const clockTimer = window.setInterval(() => setClock(Date.now()), 60_000);
     const onQueueUpdated = () => void refreshQueue();
     const onFocus = () => {
+      setClock(Date.now());
       void refreshQueue();
       void refreshCommits();
     };
     const onVisibility = () => {
       if (!document.hidden) {
+        setClock(Date.now());
         void refreshQueue();
         void refreshCommits();
       }
@@ -204,6 +223,7 @@ export function GitHubChatGPTQueue() {
     return () => {
       window.clearInterval(queueTimer);
       window.clearInterval(commitsTimer);
+      window.clearInterval(clockTimer);
       window.removeEventListener("angel-os:chatgpt-queue-updated", onQueueUpdated);
       window.removeEventListener("focus", onFocus);
       window.removeEventListener("online", onOnline);
@@ -217,7 +237,24 @@ export function GitHubChatGPTQueue() {
     ...(queue?.done ?? []).slice(0, 8).map((item) => ({ ...item, section: "Terminé" })),
   ], [queue]);
 
-  const pendingCount = liveActions.filter((item) => !isDone(item.status) && !isFailed(item.status)).length;
+  const prioritizedLiveActions = useMemo(() => {
+    return [...liveActions].sort((a, b) => {
+      const aPending = isPending(a.status);
+      const bPending = isPending(b.status);
+      if (aPending !== bPending) return aPending ? -1 : 1;
+
+      const aOverdue = isOverdue(a, clock);
+      const bOverdue = isOverdue(b, clock);
+      if (aOverdue !== bOverdue) return aOverdue ? -1 : 1;
+
+      const aCreated = new Date(a.created_at).getTime();
+      const bCreated = new Date(b.created_at).getTime();
+      return aCreated - bCreated;
+    });
+  }, [liveActions, clock]);
+
+  const pendingCount = liveActions.filter((item) => isPending(item.status)).length;
+  const overdueCount = liveActions.filter((item) => isOverdue(item, clock)).length;
 
   return (
     <section className="rounded-[1.75rem] border border-white/10 bg-[#090b0d] p-4 sm:p-5" aria-label="Activité ChatGPT GitHub" data-no-refresh-queue="true">
@@ -231,7 +268,7 @@ export function GitHubChatGPTQueue() {
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-300" /> En direct
               </span>
             </div>
-            <p className="text-xs text-white/45">Toutes les demandes de modification, de la plus ancienne valide à la plus récente.</p>
+            <p className="text-xs text-white/45">Demandes traitées par ancienneté. Toute modification encore en attente après 1 h 30 passe automatiquement en priorité renforcée.</p>
             <p className="mt-1 text-[10px] text-white/30">File toutes les 5 s{lastSyncAt ? ` · synchro ${timeLabel(lastSyncAt)}` : ""} · commits toutes les 90 s{lastCommitSyncAt ? ` · ${timeLabel(lastCommitSyncAt)}` : ""}</p>
           </div>
         </div>
@@ -252,23 +289,28 @@ export function GitHubChatGPTQueue() {
       <div className="mt-4 grid gap-4 xl:grid-cols-[1.15fr_.85fr]">
         <div className="space-y-4">
           <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-[11px] font-semibold uppercase tracking-[.12em] text-white/70">Demandes de modification · plus anciennes d’abord</p>
-              <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-2 py-1 text-[10px] font-semibold text-amber-200">{pendingCount} en attente</span>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-[11px] font-semibold uppercase tracking-[.12em] text-white/70">Demandes de modification · priorité aux plus anciennes</p>
+              <div className="flex items-center gap-2">
+                {overdueCount > 0 ? <span className="rounded-full border border-red-400/25 bg-red-400/10 px-2 py-1 text-[10px] font-semibold text-red-200">{overdueCount} priorité &gt; 1 h 30</span> : null}
+                <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-2 py-1 text-[10px] font-semibold text-amber-200">{pendingCount} en attente</span>
+              </div>
             </div>
-            {liveActions.length === 0 ? (
+            {prioritizedLiveActions.length === 0 ? (
               <div className="rounded-xl border border-white/10 bg-white/[.03] p-4 text-sm text-white/40">Aucune demande enregistrée.</div>
-            ) : liveActions.map((item) => {
+            ) : prioritizedLiveActions.map((item) => {
               const done = isDone(item.status);
               const failed = isFailed(item.status);
+              const overdue = isOverdue(item, clock);
               return (
-                <div key={item.id} className={`rounded-xl border p-3 ${done ? "border-emerald-500/20 bg-emerald-500/[.055]" : failed ? "border-red-500/20 bg-red-500/[.045]" : "border-amber-400/20 bg-amber-400/[.045]"}`}>
+                <div key={item.id} className={`rounded-xl border p-3 ${done ? "border-emerald-500/20 bg-emerald-500/[.055]" : failed ? "border-red-500/20 bg-red-500/[.045]" : overdue ? "border-red-400/35 bg-red-400/[.06]" : "border-amber-400/20 bg-amber-400/[.045]"}`}>
                   <div className="flex items-start gap-2">
                     <StatusIcon status={item.status} />
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="text-sm font-medium text-white">{item.title}</p>
                         <span className={`rounded-full border px-2 py-0.5 text-[9px] uppercase tracking-wide ${done ? "border-emerald-500/20 text-emerald-200/80" : failed ? "border-red-500/20 text-red-200/80" : "border-amber-400/20 text-amber-200/80"}`}>{statusLabel(item.status)}</span>
+                        {overdue ? <span className="rounded-full border border-red-400/25 bg-red-400/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-red-200">Priorité · +1 h 30</span> : null}
                         <span className="rounded-full border border-white/10 px-2 py-0.5 text-[9px] uppercase tracking-wide text-white/35">{actionKindLabel(item.kind)}</span>
                       </div>
                       {item.description ? <p className="mt-1 text-xs leading-relaxed text-white/45">{item.description}</p> : null}
