@@ -1,7 +1,5 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
 import { Bot, Loader2, Send, Sparkles, UserRound } from "lucide-react";
-import { askAssistant } from "@/lib/assistant.functions";
 import { answer as localAnswer } from "@/lib/assistant-engine";
 import { Button } from "@/components/ui/button";
 
@@ -19,10 +17,16 @@ type Message = {
   text: string;
 };
 
+type AssistantApiResponse = {
+  text?: string | null;
+  source?: "openai" | "fallback";
+  reason?: string;
+  requestId?: string;
+};
+
 const uid = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
 export function ContactAssistantThread() {
-  const askServer = useServerFn(askAssistant);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
@@ -68,14 +72,18 @@ export function ContactAssistantThread() {
 
     let answerText: string | null = null;
     try {
-      const response = await askServer({
-        data: {
+      const response = await fetch("/api/assistant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({
           question: question.slice(0, 1000),
-          mode: "contact" as const,
+          mode: "contact",
           history: history.slice(0, -1),
-        },
+        }),
       });
-      answerText = response.text;
+      const result = (await response.json()) as AssistantApiResponse;
+      answerText = typeof result.text === "string" && result.text.trim() ? result.text : null;
     } catch {
       answerText = null;
     }
