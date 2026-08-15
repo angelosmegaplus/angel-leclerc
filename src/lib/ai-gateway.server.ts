@@ -20,14 +20,14 @@ function prune(now = Date.now()) {
 }
 function estimate(messages: AiMessage[], output: number) { const chars = messages.reduce((n, m) => n + m.content.length, 0); return Math.ceil(chars / 4) + output; }
 function hash(value: string) { let h = 2166136261; for (let i = 0; i < value.length; i += 1) h = Math.imul(h ^ value.charCodeAt(i), 16777619); return (h >>> 0).toString(36); }
-function fail(reason: Exclude<AiFailureReason, "ok">, now = Date.now()) {
+function fail(reason: Exclude<AiFailureReason, "ok">, now = Date.now(), detail?: string) {
   health.lastReason = reason; health.lastFailureAt = now;
   if (reason === "provider") {
     health.consecutiveFailures += 1;
     const threshold = numberEnv("ANGEL_AI_CIRCUIT_FAILURES", 3);
     if (health.consecutiveFailures >= threshold) health.circuitOpenUntil = now + numberEnv("ANGEL_AI_CIRCUIT_COOLDOWN_MS", 5 * 60_000);
   }
-  return { text: null, reason, cached: false, fallbackRequired: true } as const;
+  return { text: null, reason, detail: detail?.slice(0, 900) || null, cached: false, fallbackRequired: true } as const;
 }
 function succeed() { health.consecutiveFailures = 0; health.lastSuccessAt = Date.now(); health.lastReason = "ok"; health.circuitOpenUntil = 0; }
 
@@ -43,23 +43,37 @@ function responseText(json: any): string | null {
   }
   return null;
 }
+function providerErrorDetail(status: number, body: string, model: string, requestId: string | null) {
+  let parsedMessage = "";
+  let parsedCode = "";
+  try {
+    const parsed = JSON.parse(body);
+    parsedMessage = typeof parsed?.error?.message === "string" ? parsed.error.message : "";
+    parsedCode = typeof parsed?.error?.code === "string" ? parsed.error.code : typeof parsed?.error?.type === "string" ? parsed.error.type : "";
+  } catch { /* réponse non JSON */ }
+  const parts = [`OpenAI HTTP ${status}`, `modèle ${model}`];
+  if (parsedCode) parts.push(`code ${parsedCode}`);
+  if (parsedMessage) parts.push(parsedMessage.replace(/sk-[A-Za-z0-9_-]+/g, "[clé masquée]").slice(0, 500));
+  if (requestId) parts.push(`request ${requestId}`);
+  return parts.join(" · ");
+}
 
 export async function angelAi(options: { messages: AiMessage[]; priority?: AiPriority; maxTokens?: number; temperature?: number; cacheKey?: string; cacheTtlMs?: number; model?: string }) {
   const now = Date.now(); prune(now);
   const priority = options.priority ?? "background";
   const interactive = priority === "interactive";
-  if (!enabled()) { console.error("[angel-ai-gateway] disabled", { priority }); return fail("disabled", now); }
+  if (!enabled()) { console.error("[angel-ai-gateway] disabled", { priority }); return fail("disabled", now, "ANGEL_AI_ENABLED désactive explicitement l'IA intégrée sur ce déploiement."); }
 
   const credential = await getOpenAiCredential();
   if (!credential) {
     console.error("[angel-ai-gateway] OpenAI credential missing from env and Vercel Connect", { priority });
-    return fail("not_configured", now);
+    return fail("not_configured", now, "Aucun identifiant OpenAI utilisable : ni OPENAI_API_KEY ni credential Vercel Connect n'a été résolu côté serveur.");
   }
   const key = credential.value;
 
   if (!interactive && health.circuitOpenUntil > now) {
     console.warn("[angel-ai-gateway] circuit open for background request", { priority, circuitOpenUntil: health.circuitOpenUntil });
-    return fail("circuit_open", now);
+    return fail("circuit_open", now, `Circuit IA ouvert après plusieurs échecs fournisseur jusqu'à ${new Date(health.circuitOpenUntil).toISOString()}.`);
   }
 
   const messages = sanitizeMessages(options.messages);
@@ -75,7 +89,7 @@ export async function angelAi(options: { messages: AiMessage[]; priority?: AiPri
     const reserve = priority === "important" ? 0.85 : 0.65;
     if (usedDay + estimated > dailyLimit * reserve || usedHour + estimated > hourlyLimit * reserve) {
       console.warn("[angel-ai-gateway] background budget reached", { priority, usedDay, usedHour, dailyLimit, hourlyLimit });
-      return fail("budget", now);
+      return fail("budget", now, `Budget IA de fond atteint : heure ${usedHour}/${hourlyLimit}, jour ${usedDay}/${dailyLimit}. Les requêtes interactives restent prioritaires.`);
     }
   }
 
@@ -83,7 +97,7 @@ export async function angelAi(options: { messages: AiMessage[]; priority?: AiPri
   const rawCache = options.cacheKey ?? `${model}\n${messages.map((m) => `${m.role}:${m.content}`).join("\n")}`;
   const cacheKey = hash(rawCache);
   const hit = cache.get(cacheKey);
-  if (hit && hit.expires > now) { succeed(); return { text: hit.text, reason: "ok" as const, cached: true, fallbackRequired: false }; }
+  if (hit && hit.expires > now) { succeed(); return { text: hit.text, reason: "ok" as const, detail: null, cached: true, fallbackRequired: false }; }
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), interactive ? 24_000 : 18_000);
@@ -98,20 +112,28 @@ export async function angelAi(options: { messages: AiMessage[]; priority?: AiPri
     if (!response.ok) {
       const body = await response.text();
       console.error("[angel-ai-gateway] OpenAI", response.status, { model, priority, credentialSource: credential.source, clientRequestId, openAiRequestId, body: body.slice(0, 1200) });
-      return fail("provider");
+      return fail("provider", Date.now(), providerErrorDetail(response.status, body, model, openAiRequestId));
     }
     const json = await response.json();
     const text = responseText(json);
-    if (!text) { console.error("[angel-ai-gateway] empty OpenAI response", { model, priority, clientRequestId, openAiRequestId }); return fail("provider"); }
+    if (!text) {
+      console.error("[angel-ai-gateway] empty OpenAI response", { model, priority, clientRequestId, openAiRequestId });
+      return fail("provider", Date.now(), `OpenAI a répondu sans texte exploitable · modèle ${model}${openAiRequestId ? ` · request ${openAiRequestId}` : ""}.`);
+    }
     const totalTokens = Number(json?.usage?.total_tokens);
     usage.push({ at: now, estimatedTokens: Number.isFinite(totalTokens) ? totalTokens : estimated, priority });
     cache.set(cacheKey, { expires: now + (options.cacheTtlMs ?? (interactive ? 60_000 : 15 * 60_000)), text });
     succeed();
     console.info("[angel-ai-gateway] success", { model, priority, credentialSource: credential.source, cached: false, clientRequestId, openAiRequestId, filteredHistory: options.messages.length - messages.length });
-    return { text, reason: "ok" as const, cached: false, fallbackRequired: false };
+    return { text, reason: "ok" as const, detail: null, cached: false, fallbackRequired: false };
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const aborted = controller.signal.aborted || (error instanceof Error && error.name === "AbortError");
+    const detail = aborted
+      ? `Délai OpenAI dépassé (${interactive ? 24 : 18}s) · modèle ${model} · client ${clientRequestId}.`
+      : `Échec réseau/appel OpenAI · modèle ${model} · ${message.slice(0, 500)} · client ${clientRequestId}.`;
     console.error("[angel-ai-gateway] failure", { model, priority, credentialSource: credential.source, clientRequestId, error });
-    return fail("provider");
+    return fail("provider", Date.now(), detail);
   } finally { clearTimeout(timeout); }
 }
 
