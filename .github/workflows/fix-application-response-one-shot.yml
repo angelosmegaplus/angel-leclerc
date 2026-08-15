@@ -63,6 +63,7 @@ jobs:
       - name: Verify
         run: |
           bun install
+          bun run build
           bunx tsc --noEmit --pretty false
       - name: Commit fix
         shell: bash
