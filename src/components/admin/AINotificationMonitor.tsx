@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { AlertTriangle } from "lucide-react";
 import { refreshNotifications } from "@/lib/notifications.functions";
 import { getAdminAiHealth, type AdminAiHealth } from "@/lib/ai-health.functions";
+import { getAdminIntegritySnapshot, type AdminIntegritySnapshot } from "@/lib/admin-integrity.functions";
 import { getServiceWorkerRegistration } from "@/lib/pwa";
 import { playRetroSound } from "@/lib/retro-sounds";
 import { queueAdminRefresh } from "@/lib/admin-refresh-queue";
@@ -38,23 +39,23 @@ function refreshSectionFromButton(button: HTMLButtonElement) {
 export function AINotificationMonitor() {
   const sync = useServerFn(refreshNotifications);
   const readAiHealth = useServerFn(getAdminAiHealth);
+  const readIntegrity = useServerFn(getAdminIntegritySnapshot);
   const running = useRef(false);
   const [aiHealth, setAiHealth] = useState<AdminAiHealth | null>(null);
+  const [integrity, setIntegrity] = useState<AdminIntegritySnapshot | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    const checkAi = async () => {
-      try {
-        const result = await readAiHealth();
-        if (!cancelled) setAiHealth(result);
-      } catch {
-        if (!cancelled) setAiHealth(null);
-      }
+    const checkHealth = async () => {
+      const [aiResult, integrityResult] = await Promise.allSettled([readAiHealth(), readIntegrity()]);
+      if (cancelled) return;
+      setAiHealth(aiResult.status === "fulfilled" ? aiResult.value : null);
+      setIntegrity(integrityResult.status === "fulfilled" ? integrityResult.value : null);
     };
-    void checkAi();
-    const interval = window.setInterval(() => void checkAi(), 60_000);
+    void checkHealth();
+    const interval = window.setInterval(() => void checkHealth(), 60_000);
     return () => { cancelled = true; window.clearInterval(interval); };
-  }, [readAiHealth]);
+  }, [readAiHealth, readIntegrity]);
 
   useEffect(() => {
     let cancelled = false;
@@ -95,19 +96,36 @@ export function AINotificationMonitor() {
     return () => document.removeEventListener("click", onClick, true);
   }, []);
 
-  const broken = aiHealth && (!aiHealth.enabled || !aiHealth.providerConfigured || !aiHealth.healthy);
-  if (!broken) return null;
-  const message = !aiHealth.providerConfigured
-    ? "OPENAI_API_KEY absente : l’IA intégrée ne peut pas fonctionner."
-    : !aiHealth.enabled
-      ? "Angel AI est désactivée côté serveur."
-      : `OpenAI est en erreur (${aiHealth.lastReason || "provider"}) : vérifiez la clé API et le fournisseur.`;
+  const aiBroken = aiHealth && (!aiHealth.enabled || !aiHealth.providerConfigured || !aiHealth.healthy);
+  const integrityBroken = Boolean(integrity?.warnings.length);
+  if (!aiBroken && !integrityBroken) return null;
+
+  if (aiBroken) {
+    const message = !aiHealth.providerConfigured
+      ? "OPENAI_API_KEY absente : l’IA intégrée ne peut pas fonctionner."
+      : !aiHealth.enabled
+        ? "Angel AI est désactivée côté serveur."
+        : `OpenAI est en erreur (${aiHealth.lastReason || "provider"}) : vérifiez la clé API et le fournisseur.`;
+
+    return (
+      <div className="fixed inset-x-3 top-3 z-[100] mx-auto max-w-3xl rounded-2xl border-2 border-red-500 bg-red-950/95 p-4 text-red-50 shadow-[0_15px_60px_rgba(239,68,68,.35)] backdrop-blur-xl" role="alert" aria-live="assertive">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="mt-0.5 h-6 w-6 shrink-0 text-red-400" />
+          <div><p className="font-bold">ALERTE IA INTÉGRÉE</p><p className="mt-1 text-sm text-red-100/90">{message}</p></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="fixed inset-x-3 top-3 z-[100] mx-auto max-w-3xl rounded-2xl border-2 border-red-500 bg-red-950/95 p-4 text-red-50 shadow-[0_15px_60px_rgba(239,68,68,.35)] backdrop-blur-xl" role="alert" aria-live="assertive">
+    <div className="fixed inset-x-3 top-3 z-[100] mx-auto max-w-3xl rounded-2xl border-2 border-amber-400 bg-amber-950/95 p-4 text-amber-50 shadow-[0_15px_60px_rgba(245,158,11,.28)] backdrop-blur-xl" role="status" aria-live="polite">
       <div className="flex items-start gap-3">
-        <AlertTriangle className="mt-0.5 h-6 w-6 shrink-0 text-red-400" />
-        <div><p className="font-bold">ALERTE IA INTÉGRÉE</p><p className="mt-1 text-sm text-red-100/90">{message}</p></div>
+        <AlertTriangle className="mt-0.5 h-6 w-6 shrink-0 text-amber-300" />
+        <div>
+          <p className="font-bold">DONNÉES ADMIN À RESYNCHRONISER</p>
+          <p className="mt-1 text-sm text-amber-100/90">{integrity?.warnings.join(" · ")}</p>
+          {integrity?.staleCaches.length ? <p className="mt-1 text-xs text-amber-200/80">Snapshots concernés : {integrity.staleCaches.join(", ")}</p> : null}
+        </div>
       </div>
     </div>
   );
