@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ExternalLink, Film, Heart, History, Loader2, Moon, Play, RotateCcw, Save, Search, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { MovixOpenSourceHub } from "@/components/admin/MovixOpenSourceHub";
 
 export const Route = createFileRoute("/admin-movix")({
   head: () => ({
@@ -155,6 +156,8 @@ function MovixPage() {
             })}
           </div>
         </section>
+
+        <MovixOpenSourceHub favorites={favorites} onToggleFavorite={toggleFavorite} />
 
         <section className="mt-8 rounded-[2rem] border border-white/10 bg-[#0b0d10] p-5 sm:p-6">
           <div className="flex items-center gap-2"><Play className="h-5 w-5 text-red-300" /><h2 className="text-xl font-semibold">Lanceur personnel</h2></div>
