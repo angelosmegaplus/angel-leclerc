@@ -1,28 +1,34 @@
 {
   "version": 4,
-  "updatedAt": "2026-08-15T13:33:00Z",
+  "updatedAt": "2026-08-15T15:29:00Z",
   "source": "github",
   "current": [
     {
       "id": "angel-ai-end-to-end",
-      "title": "Valider Angel AI OpenAI de bout en bout en production",
-      "status": "waiting_publish",
-      "detail": "Le correctif 729d7e957a195acb11347550774f04ac17bedd97 qui rend aiMemoryPrompt/Supabase non bloquant est bien sur main, mais une vraie réponse OpenAI en production n'est toujours pas validée. Le dernier main 241ad41c1e86fe1c6cc5ad74c28fc73a60c2b3df a un statut Vercel failure lié au build-rate-limit. Le workflow GitHub de publication ne peut pas retenter proprement car VERCEL_TOKEN est absent des secrets GitHub. Ne jamais considérer le statut Deployment GitHub 'success' comme preuve de publication : dans ce passage, les étapes de build/deploy Vercel ont été skipped."
+      "title": "Maintenir Angel AI OpenAI validée de bout en bout",
+      "status": "running",
+      "detail": "Le test réel de production /api/assistant a réussi dans Maintenance Angel OS le 15 août 2026 à 13:52 UTC : source=openai et texte non vide. Le workflow de maintenance a été corrigé par d06cb1ee288f9de28cbef5417561e74195a9a12f pour exécuter ce test OpenAI AVANT build/typecheck, afin qu'une erreur technique secondaire ne masque plus l'état IA. Les changements privés/admin plus récents restent à valider après publication du dernier main."
     },
     {
       "id": "publication-production",
-      "title": "Publier le dernier main en production",
-      "status": "blocked_external",
-      "detail": "Publication du dernier main bloquée par deux signaux réels : statut Vercel failure avec build-rate-limit et absence de VERCEL_TOKEN dans GitHub Actions. Aucun contournement ni faux build. Le dernier main reste la cible unique de publication."
+      "title": "Rétablir une chaîne CI/publication verte pour le dernier main",
+      "status": "blocked_code",
+      "detail": "Le dernier main a un build de bundle réussi mais le TypeScript échoue sur les exécutions CI récentes ; le workflow Publication Angel OS échoue donc avant publication. La production actuelle reste fonctionnelle et Angel AI publique y répond réellement. Diagnostiquer et corriger l'erreur TypeScript sans publier un état cassé."
     },
     {
       "id": "movix-max-port",
       "title": "Adapter au maximum Movix dans Films & séries",
       "status": "running",
-      "detail": "Portage Movix toujours valide mais secondaire tant qu’Angel AI n’est pas validée : Home cinéma, carrousels tactiles, recherche/autocomplétion, filtres, TMDB, fiches riches, casting, trailers, fournisseurs légaux, collections, watchlist, historique/progression, lazy loading, cache et UX mobile. Aucun module de proxy/débridage/contournement publicitaire ou lecture non autorisée. Attribution CC BY-NC 4.0 conservée."
+      "detail": "Portage Movix toujours valide, à reprendre après les blocages IA/CI : Home cinéma, carrousels tactiles, recherche/autocomplétion, filtres, TMDB, fiches riches, casting, trailers, fournisseurs légaux, collections, watchlist, historique/progression, lazy loading, cache et UX mobile. Aucun module de proxy/débridage/contournement publicitaire ou lecture non autorisée. Attribution CC BY-NC 4.0 conservée."
     }
   ],
   "waiting": [
+    {
+      "id": "admin-ai-production-check",
+      "title": "Valider les points d'entrée Angel AI privés/admin après publication",
+      "status": "waiting_publish",
+      "detail": "Les commits récents ont rendu la recherche universelle privée et le chat Angel OS IA OpenAI-only. Ils ne sont pas encore validés en production car la chaîne CI actuelle échoue au type-check. Vérifier accueil admin, recherche universelle, fil IA et conservation du contexte dès publication."
+    },
     {
       "id": "admin-auth-production-check",
       "title": "Vérifier le nouveau parcours d’accès administrateur",
@@ -38,11 +44,11 @@
   ],
   "done": [
     {
-      "id": "ci-latest-main",
-      "title": "CI du dernier main",
+      "id": "angel-ai-public-production-validation",
+      "title": "Valider Angel AI publique OpenAI en production",
       "status": "done",
-      "detail": "Le workflow CI du commit 241ad41c1e86fe1c6cc5ad74c28fc73a60c2b3df est terminé avec conclusion success.",
-      "commit": "241ad41c1e86fe1c6cc5ad74c28fc73a60c2b3df"
+      "detail": "Le workflow Maintenance Angel OS run 31888325464 a exécuté un POST réel vers /api/assistant et l'étape Check Angel AI end-to-end in production a réussi le 15 août 2026 à 13:52 UTC.",
+      "commit": "715879505aa4a539e817ce68869d20275353e99b"
     },
     {
       "id": "movix-tmdb-foundation",
