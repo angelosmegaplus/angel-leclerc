@@ -1,0 +1,109 @@
+{
+  "updatedAt": "2026-08-15T16:31:08Z",
+  "source": "chatgpt-alternance-urgent",
+  "newApplicationSent": false,
+  "newApplicationReason": "Aucune nouvelle piste à la fois sérieuse, compatible BTS/niveau 5, directe, vérifiée et non déjà contactée n'a été retenue pendant ce passage.",
+  "gmailActions": [
+    {
+      "company": "Le Comptoir Authentique",
+      "city": "Sarlat-la-Canéda",
+      "status": "refusee",
+      "lastAction": "Réponse de courtoisie envoyée dans le même fil après refus explicite.",
+      "lastActionAt": "2026-08-15T16:31:08Z",
+      "nextAction": null,
+      "gmailThreadId": "19fb1f3b7418edbb"
+    },
+    {
+      "company": "Biocoop Sarlat",
+      "city": "Sarlat-la-Canéda",
+      "status": "relancee",
+      "lastAction": "Relance de rattrapage unique envoyée après plus de 10 jours sans réponse ni relance antérieure.",
+      "lastActionAt": "2026-08-15T16:31:08Z",
+      "nextAction": "Attendre une réponse; ne pas relancer automatiquement une seconde fois.",
+      "gmailThreadId": "19fb1f35cfa0859a"
+    },
+    {
+      "company": "Decathlon Sarlat",
+      "city": "Sarlat-la-Canéda",
+      "status": "erreur",
+      "visualStatus": "gris 😞",
+      "lastAction": "Ancienne candidature identifiée comme non distribuée.",
+      "reason": "Adresse julien.farinotti@decathlon.com inexistante (550 5.1.1).",
+      "nextAction": "N'utiliser un autre contact que s'il est professionnel, public et vérifié."
+    }
+  ],
+  "screenedLeads": [
+    {
+      "employer": "Centre Hospitalier de Brive",
+      "city": "Brive-la-Gaillarde",
+      "position": "Apprenti chargé de communication",
+      "freshness": "offre publiée le 8 juillet 2026",
+      "source": "site officiel CH Brive / La Bonne Alternance",
+      "missions": "communication et gestion de projets",
+      "level": "Bac+5 indiqué sur La Bonne Alternance",
+      "contract": "apprentissage",
+      "directRecruiter": true,
+      "fit": "incompatible niveau BTS",
+      "action": "écartée"
+    },
+    {
+      "employer": "Atelier Bulle",
+      "city": "Bordeaux",
+      "position": "Chargé de communication / graphisme",
+      "freshness": "offre active en août 2026",
+      "source": "La Bonne Alternance",
+      "missions": "communication / graphisme",
+      "level": "BTS / Bac+2",
+      "contract": "apprentissage",
+      "directRecruiter": true,
+      "fit": "très compatible",
+      "action": "écartée comme doublon: candidature déjà envoyée le 14 août 2026"
+    },
+    {
+      "employer": "Negocom Atlantique",
+      "city": "Périgueux",
+      "position": "Alternant communication",
+      "freshness": "rentrée août/septembre 2026",
+      "source": "publication publique de l'entreprise",
+      "missions": "communication, tourisme, marketing digital",
+      "level": "Licence 3 ou Master",
+      "contract": "alternance",
+      "directRecruiter": true,
+      "fit": "niveau obligatoire supérieur au BTS",
+      "action": "écartée"
+    },
+    {
+      "employer": "Brive Tourisme",
+      "city": "Brive-la-Gaillarde",
+      "position": "Assistant communication",
+      "freshness": "prise de poste septembre 2026 mais candidature exigée avant le 7 mai 2026",
+      "source": "La Bonne Alternance",
+      "missions": "réseaux sociaux, rédaction web, veille, photothèque, événements",
+      "level": "Bac+2 compatible",
+      "contract": "alternance",
+      "directRecruiter": true,
+      "fit": "missions très compatibles mais offre clôturée et CV exigé",
+      "action": "écartée / action manuelle seulement si réouverture officielle"
+    },
+    {
+      "employer": "Conseil départemental de la Dordogne",
+      "city": "Périgueux",
+      "position": "Chargé de communication community manager",
+      "freshness": "publiée le 21 juillet 2026",
+      "source": "Emploi-Territorial",
+      "missions": "communication / community management",
+      "level": "emploi permanent catégorie attaché",
+      "contract": "emploi permanent, pas alternance",
+      "directRecruiter": true,
+      "fit": "hors contrat recherché",
+      "action": "écartée"
+    }
+  ],
+  "angelOsSync": {
+    "status": "blocked",
+    "visualStatus": "gris 😞",
+    "reason": "Le backend natif Angel OS impose une fonction serveur POST authentifiée Supabase; aucun connecteur Supabase ni session applicative authentifiée n'est disponible dans cette exécution pour écrire la table applications sans contourner la sécurité.",
+    "preservation": "Aucune donnée existante Angel OS n'a été écrasée.",
+    "fallbackJournal": "runtime/alternance-urgent-latest.json"
+  }
+}
