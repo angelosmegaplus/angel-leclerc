@@ -19,6 +19,24 @@ jobs:
     timeout-minutes: 15
 
     steps:
+      - name: Check Angel AI end-to-end in production
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp)"
+          code="$(curl -L --silent --show-error --output "$tmp" --write-out '%{http_code}' --max-time 35 \
+            -X POST \
+            -H 'Content-Type: application/json' \
+            --data '{"question":"Réponds uniquement par ANGEL_AI_OK si tu reçois ce test.","mode":"site","history":[]}' \
+            "https://www.angel-leclerc.fr/api/assistant")"
+          cat "$tmp"
+          if [ "$code" != "200" ]; then
+            echo "::error::Angel AI indisponible en production (HTTP $code)."
+            exit 1
+          fi
+          jq -e '.source == "openai" and (.text | type == "string") and (.text | length > 0)' "$tmp" >/dev/null
+          echo "Angel AI OpenAI répond réellement en production"
+
       - name: Check out latest main
         uses: actions/checkout@v4
         with:
@@ -61,24 +79,6 @@ jobs:
             echo "OK $code $url"
           done
 
-      - name: Check Angel AI end-to-end in production
-        shell: bash
-        run: |
-          set -euo pipefail
-          tmp="$(mktemp)"
-          code="$(curl -L --silent --show-error --output "$tmp" --write-out '%{http_code}' --max-time 35 \
-            -X POST \
-            -H 'Content-Type: application/json' \
-            --data '{"question":"Réponds uniquement par ANGEL_AI_OK si tu reçois ce test.","mode":"site","history":[]}' \
-            "https://www.angel-leclerc.fr/api/assistant")"
-          cat "$tmp"
-          if [ "$code" != "200" ]; then
-            echo "::error::Angel AI indisponible en production (HTTP $code)."
-            exit 1
-          fi
-          jq -e '.source == "openai" and (.text | type == "string") and (.text | length > 0)' "$tmp" >/dev/null
-          echo "Angel AI OpenAI répond réellement en production"
-
       - name: Check public weather endpoint
         shell: bash
         run: |
@@ -112,9 +112,9 @@ jobs:
             echo "## Maintenance Angel OS"
             echo ""
             echo "- Commit vérifié : \`${GITHUB_SHA}\`"
+            echo "- Angel AI OpenAI : test end-to-end réel exécuté en priorité sur /api/assistant"
             echo "- Build + TypeScript : exécutés sur GitHub Actions"
             echo "- Pages critiques : contrôlées"
-            echo "- Angel AI OpenAI : test end-to-end réel exécuté sur /api/assistant"
             echo "- API météo : contrôlée"
             echo "- API actualités : contrôlée"
             echo ""
