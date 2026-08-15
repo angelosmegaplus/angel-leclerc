@@ -18,12 +18,21 @@ export async function queueAdminRefresh(section: string, details?: Record<string
     kind: "refresh_check",
     title,
     description:
-      "Demande créée depuis un bouton Actualiser de l’espace administrateur. ChatGPT doit lire cette demande, contrôler les données réelles de la section, signaler les incohérences et mettre à jour ce qui peut l’être sans action sensible.",
+      "Demande créée depuis un bouton Actualiser de l’espace administrateur. ChatGPT doit lire cette demande, contrôler les données réelles de la section à partir des meilleures sources récentes disponibles et des informations déjà accessibles dans ChatGPT, confronter les sources, signaler clairement toute incohérence, donnée périmée ou information incertaine, puis mettre à jour automatiquement ce qui peut l’être sans action sensible. Toute donnée susceptible d’avoir changé doit être vérifiée avant mise à jour et aucune information ne doit être inventée pour combler un manque.",
     payload: {
       section: normalizedSection,
       requested_at: requestedAt,
       source: "admin_refresh_button",
       execution: "chatgpt_operator",
+      verification: {
+        prefer_recent_sources: true,
+        cross_check_sources: true,
+        use_chatgpt_context: true,
+        flag_inconsistencies: true,
+        flag_uncertainty: true,
+        auto_update_non_sensitive_only: true,
+        never_invent_missing_data: true,
+      },
       ...details,
     },
     status: "pending",
