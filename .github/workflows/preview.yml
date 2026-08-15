@@ -4,8 +4,6 @@ on:
   pull_request:
     branches: [main]
 
-auto_cancel:
-
 permissions:
   contents: read
   pull-requests: write
