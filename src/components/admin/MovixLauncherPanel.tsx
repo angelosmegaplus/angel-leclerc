@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { ExternalLink, Globe2, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { getMovixOfficialSource, type MovixOfficialSource } from "@/lib/movix-source.functions";
 
 type Mirror = {
   id: string;
@@ -16,6 +18,7 @@ const DEFAULT_MIRRORS: Mirror[] = [
 
 const STORAGE_KEY = "angel-os-movix-launcher-mirrors-v1";
 const LAST_KEY = "angel-os-movix-launcher-last-v1";
+const AUTO_REFRESH_MS = 60 * 60_000;
 
 function normalize(raw: string) {
   const value = raw.trim();
@@ -32,6 +35,7 @@ function hostOf(url: string) {
 }
 
 export function MovixLauncherPanel() {
+  const resolveOfficialSource = useServerFn(getMovixOfficialSource);
   const [mirrors, setMirrors] = useState<Mirror[]>(DEFAULT_MIRRORS);
   const [input, setInput] = useState("");
   const [label, setLabel] = useState("");
@@ -40,6 +44,8 @@ export function MovixLauncherPanel() {
   const [status, setStatus] = useState<Record<string, LinkStatus>>({});
   const [embed, setEmbed] = useState<string | null>(null);
   const [frameKey, setFrameKey] = useState(0);
+  const [sourceMeta, setSourceMeta] = useState<MovixOfficialSource | null>(null);
+  const [syncingSource, setSyncingSource] = useState(false);
 
   useEffect(() => {
     try {
@@ -53,6 +59,43 @@ export function MovixLauncherPanel() {
       // Local persistence is optional.
     }
   }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    const syncOfficial = async () => {
+      setSyncingSource(true);
+      try {
+        const source = await resolveOfficialSource();
+        if (!active || !source?.url) return;
+        setSourceMeta(source);
+        setMirrors((current) => {
+          const custom = current.filter((mirror) => mirror.id !== "main");
+          const next = [
+            { id: "main", label: "Movix — lien officiel synchronisé", url: source.url },
+            ...custom,
+          ];
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+          } catch {
+            // Local persistence is optional.
+          }
+          return next;
+        });
+      } catch (error) {
+        console.error("[movix-launcher] source sync failed", error);
+      } finally {
+        if (active) setSyncingSource(false);
+      }
+    };
+
+    void syncOfficial();
+    const interval = window.setInterval(() => void syncOfficial(), AUTO_REFRESH_MS);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+    };
+  }, [resolveOfficialSource]);
 
   const persist = (next: Mirror[]) => {
     const safe = next.length ? next : DEFAULT_MIRRORS;
@@ -139,13 +182,27 @@ export function MovixLauncherPanel() {
             </div>
             <h2 className="mt-2 text-3xl font-semibold tracking-[-.045em]">Accès Movix intégré</h2>
             <p className="mt-2 max-w-xl text-sm leading-6 text-white/50">
-              Les plateformes auxquelles tu es abonné restent prioritaires dans les fiches. Ce lanceur sert de raccourci secondaire et conserve les liens que tu ajoutes sur cet appareil.
+              Le lien principal est désormais résolu automatiquement depuis le dépôt GitHub officiel Movix. La vérification se fait à l’ouverture puis toutes les heures, avec conservation du dernier lien valide si GitHub est temporairement indisponible.
             </p>
           </div>
 
           <div className="rounded-2xl border border-white/10 bg-white/[.035] p-5">
-            <p className="text-[10px] font-semibold uppercase tracking-[.18em] text-white/35">Lien principal configuré</p>
-            <p className="mt-2 font-mono text-lg text-white/85">{hostOf(primary.url)}</p>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[.18em] text-white/35">Lien principal synchronisé</p>
+                <p className="mt-2 font-mono text-lg text-white/85">{hostOf(primary.url)}</p>
+              </div>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[.04] px-2.5 py-1 text-[10px] uppercase tracking-[.12em] text-white/45">
+                <RefreshCw className={`h-3 w-3 ${syncingSource ? "animate-spin" : ""}`} />
+                {sourceMeta?.source === "github" ? "GitHub Movix" : sourceMeta ? "Secours" : "Synchronisation"}
+              </span>
+            </div>
+            {sourceMeta ? (
+              <p className="mt-2 text-[11px] text-white/30">
+                Vérifié {new Date(sourceMeta.checkedAt).toLocaleString("fr-FR")}
+                {sourceMeta.upstreamSha ? ` · ${sourceMeta.upstreamSha.slice(0, 7)}` : ""}
+              </p>
+            ) : null}
             <button
               type="button"
               onClick={() => openIntegrated(primary.url)}
