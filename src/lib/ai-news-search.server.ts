@@ -5,13 +5,46 @@ type SearchState = { expiresAt: number; items: NewsItem[]; failureUntil: number 
 const state: SearchState = { expiresAt: 0, items: [], failureUntil: 0 };
 const TTL_MS = 10 * 60_000;
 const FAILURE_COOLDOWN_MS = 5 * 60_000;
-const PROVIDER_TIMEOUT_MS = 12_000;
+const PROVIDER_TIMEOUT_MS = 20_000;
 const DEFAULT_WEB_MODEL = "gpt-4.1-mini";
 const DEFAULT_WEB_FALLBACK_MODEL = "gpt-4o-mini";
 
 const allowedCategories = new Set<Exclude<NewsCategory, "une">>([
   "politique", "dordogne", "tourisme", "medias", "journalisme", "emploi", "ia", "scoutisme",
 ]);
+
+const structuredNewsFormat = {
+  type: "json_schema",
+  name: "angel_os_news_feed",
+  strict: true,
+  schema: {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      items: {
+        type: "array",
+        minItems: 1,
+        maxItems: 14,
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            title: { type: "string" },
+            url: { type: "string" },
+            source: { type: "string" },
+            publishedAt: { anyOf: [{ type: "string" }, { type: "null" }] },
+            category: {
+              type: "string",
+              enum: ["politique", "dordogne", "tourisme", "medias", "journalisme", "emploi", "ia", "scoutisme"],
+            },
+          },
+          required: ["title", "url", "source", "publishedAt", "category"],
+        },
+      },
+    },
+    required: ["items"],
+  },
+} as const;
 
 function responseText(json: any): string {
   if (typeof json?.output_text === "string") return json.output_text;
@@ -49,6 +82,7 @@ function requestBody(model: string) {
     model,
     tools: [{ type: "web_search", search_context_size: "low" }],
     tool_choice: "required",
+    text: { format: structuredNewsFormat },
     max_output_tokens: 1800,
     store: false,
     input: [
@@ -68,9 +102,7 @@ function requestBody(model: string) {
 7. IA / tech : seulement les développements réellement utiles ou importants autour d’OpenAI/ChatGPT, Android, Pixel et technologie grand public.
 8. Scoutisme / éducation populaire : actualités réellement significatives du scoutisme, des mouvements de jeunesse et de l’éducation populaire.
 
-Retourne seulement 8 à 14 résultats au total, en privilégiant politique, Dordogne et tourisme. Les catégories exactes sont : politique, dordogne, tourisme, medias, journalisme, emploi, ia, scoutisme.
-
-Réponds UNIQUEMENT avec un tableau JSON valide, sans markdown. Chaque objet doit avoir exactement : {"title":"...","url":"https://...","source":"nom du média","publishedAt":"ISO-8601 ou null","category":"politique|dordogne|tourisme|medias|journalisme|emploi|ia|scoutisme"}. Utilise l'URL directe de la source consultée, jamais une URL de moteur de recherche.` }],
+Retourne entre 8 et 14 résultats au total quand les sources récentes le permettent, en privilégiant politique, Dordogne et tourisme. Les catégories exactes sont : politique, dordogne, tourisme, medias, journalisme, emploi, ia, scoutisme. Utilise l'URL directe de la source consultée, jamais une URL de moteur de recherche.` }],
       },
     ],
   };
