@@ -5,6 +5,27 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function isPrivateAdminConversation(messages: AiMessage[]) {
+  return messages.some(
+    (message) =>
+      message.role === "system" &&
+      /espace administrateur privé Angel OS|assistant principal de l'espace administrateur/i.test(message.content),
+  );
+}
+
+function adminFailureMessage(result: { reason?: string; detail?: string | null; recoveryExplanation?: string | null }) {
+  const labels: Record<string, string> = {
+    disabled: "IA intégrée désactivée",
+    not_configured: "configuration OpenAI absente ou inaccessible",
+    budget: "limite interne de budget IA atteinte",
+    circuit_open: "circuit de protection IA temporairement ouvert",
+    provider: "échec du fournisseur OpenAI",
+  };
+  const label = labels[result.reason ?? ""] ?? "échec de l'IA intégrée";
+  const detail = result.detail?.trim() || result.recoveryExplanation?.trim() || "Aucun détail technique supplémentaire n'a été fourni.";
+  return `Impossible d'obtenir une réponse de l'IA intégrée. Problème détecté : ${label}.\n\nDétail technique : ${detail}\n\nAucune réponse locale n'a été substituée dans l'espace administrateur.`;
+}
+
 export async function resilientAngelAi(options: {
   messages: AiMessage[];
   priority?: AiPriority;
@@ -49,12 +70,21 @@ export async function resilientAngelAi(options: {
     });
 
     if (decision.action !== "retry") {
-      return {
+      const failure = {
         ...result,
         recoveryAction: decision.action,
         recoveryExplanation: decision.explanation,
         usedFallbackModel,
       };
+      if (options.priority === "interactive" && isPrivateAdminConversation(options.messages)) {
+        return {
+          ...failure,
+          text: adminFailureMessage(failure),
+          fallbackRequired: false,
+          adminFailure: true,
+        };
+      }
+      return failure;
     }
 
     if (decision.delayMs) await sleep(decision.delayMs);
@@ -62,7 +92,7 @@ export async function resilientAngelAi(options: {
     result = await angelAi(currentOptions);
   }
 
-  return {
+  const finalResult = {
     ...result,
     recoveryAction: result.text ? (attempt > 0 ? "retry" : "none") : "wait",
     recoveryExplanation: result.text
@@ -74,4 +104,15 @@ export async function resilientAngelAi(options: {
       : "Le fournisseur reste indisponible : le module appelant doit différer la génération ou utiliser uniquement des données déterministes.",
     usedFallbackModel,
   };
+
+  if (!finalResult.text && options.priority === "interactive" && isPrivateAdminConversation(options.messages)) {
+    return {
+      ...finalResult,
+      text: adminFailureMessage(finalResult),
+      fallbackRequired: false,
+      adminFailure: true,
+    };
+  }
+
+  return finalResult;
 }
