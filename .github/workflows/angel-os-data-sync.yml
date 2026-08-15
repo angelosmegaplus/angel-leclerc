@@ -24,17 +24,14 @@ jobs:
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
       NEWSLETTER_CRON_SECRET: ${{ secrets.NEWSLETTER_CRON_SECRET }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: main
           fetch-depth: 1
-
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.14
 
       - name: Choisir le snapshot à synchroniser
         shell: bash
@@ -42,102 +39,44 @@ jobs:
           SNAPSHOT_FILE="runtime/angel-os-snapshot.json"
           if [ "${{ github.event_name }}" = "push" ] && [ -f "runtime/angel-os-mail-snapshot.json" ]; then
             CHANGED_FILES="$(jq -r '[(.head_commit.added // []), (.head_commit.modified // [])] | add[]?' "$GITHUB_EVENT_PATH" 2>/dev/null || true)"
-            if printf '%s\n' "$CHANGED_FILES" | grep -Fxq "runtime/angel-os-mail-snapshot.json"; then
-              SNAPSHOT_FILE="runtime/angel-os-mail-snapshot.json"
-            fi
+            if printf '%s\n' "$CHANGED_FILES" | grep -Fxq "runtime/angel-os-mail-snapshot.json"; then SNAPSHOT_FILE="runtime/angel-os-mail-snapshot.json"; fi
           fi
           echo "snapshot_file=$SNAPSHOT_FILE" >> "$GITHUB_ENV"
-          echo "Snapshot sélectionné : $SNAPSHOT_FILE"
 
-      - name: Charger la configuration Supabase native
+      - name: Vérifier les secrets de synchronisation
         shell: bash
         run: |
-          if [ -f .env ]; then
-            echo "public_env=.env" >> "$GITHUB_ENV"
-          else
-            echo "public_env=" >> "$GITHUB_ENV"
+          test -n "${SUPABASE_URL:-}" || { echo "::error::SUPABASE_URL absent des secrets GitHub"; exit 1; }
+          if [ -z "${SUPABASE_SERVICE_ROLE_KEY:-}" ] && [ -z "${SUPABASE_PUBLISHABLE_KEY:-}" ]; then
+            echo "::error::Aucune clé Supabase disponible dans les secrets GitHub"
+            exit 1
           fi
-          if [ -n "${SUPABASE_SERVICE_ROLE_KEY:-}" ]; then
-            echo "Clé serveur Supabase disponible via les secrets GitHub."
-          else
-            echo "::warning::SUPABASE_SERVICE_ROLE_KEY absente : les écritures protégées pourront être refusées par RLS."
-          fi
+          echo "Configuration chargée uniquement depuis les secrets GitHub ; aucun fichier .env n'est sourcé."
 
       - name: Synchroniser les caches Angel OS directement vers Supabase
         shell: bash
         run: |
-          if [ -n "${public_env:-}" ]; then
-            set -a
-            source "$public_env"
-            set +a
-          fi
           node <<'NODE'
           const fs = require('fs');
           const snapshot = JSON.parse(fs.readFileSync(process.env.snapshot_file || 'runtime/angel-os-snapshot.json', 'utf8'));
           const base = process.env.SUPABASE_URL;
           const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
           const privileged = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
-
-          if (!base || !key) {
-            console.warn('Aucune configuration Supabase exploitable : anciennes données conservées.');
-            process.exit(0);
-          }
-
-          const headers = {
-            'apikey': key,
-            'Content-Type': 'application/json',
-            'Prefer': 'resolution=merge-duplicates,return=minimal',
-          };
+          const headers = { apikey: key, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' };
           if (!key.startsWith('sb_secret_') && !key.startsWith('sb_publishable_')) headers.Authorization = `Bearer ${key}`;
-
           async function request(path, options = {}) {
-            const response = await fetch(`${base.replace(/\/$/, '')}/rest/v1/${path}`, {
-              ...options,
-              headers: { ...headers, ...(options.headers || {}) },
-            });
+            const response = await fetch(`${base.replace(/\/$/, '')}/rest/v1/${path}`, { ...options, headers: { ...headers, ...(options.headers || {}) } });
             const text = await response.text();
             if (!response.ok) throw new Error(`${path}: HTTP ${response.status} ${text.slice(0, 500)}`);
             return text;
           }
-
           (async () => {
             const now = snapshot.fetchedAt || new Date().toISOString();
-            const rows = Object.entries(snapshot.caches || {}).map(([cacheKey, payload]) => ({
-              key: cacheKey,
-              payload,
-              updated_at: payload?.fetchedAt || now,
-            }));
-            if (!rows.length) {
-              console.warn('Aucun cache à synchroniser.');
-            } else {
-              try {
-                await request('angel_os_cache?on_conflict=key', {
-                  method: 'POST',
-                  body: JSON.stringify(rows),
-                });
-                console.log(`Caches synchronisés: ${rows.map((r) => r.key).join(', ')}`);
-              } catch (error) {
-                console.warn(`Écriture angel_os_cache bloquée (${privileged ? 'clé serveur' : 'clé publique'}): ${error.message}`);
-                console.warn('Les anciennes valeurs restent intactes.');
-              }
-            }
-
-            if (snapshot.hourly_mail_report) {
-              try {
-                await request('hourly_mail_reports', {
-                  method: 'POST',
-                  headers: { Prefer: 'return=minimal' },
-                  body: JSON.stringify(snapshot.hourly_mail_report),
-                });
-                console.log('Rapport mail horaire inséré');
-              } catch (error) {
-                console.warn(`Rapport mail non inséré: ${error.message}`);
-              }
-            }
-          })().catch((error) => {
-            console.warn(error.message);
-            process.exit(0);
-          });
+            const rows = Object.entries(snapshot.caches || {}).map(([cacheKey, payload]) => ({ key: cacheKey, payload, updated_at: payload?.fetchedAt || now }));
+            if (rows.length) await request('angel_os_cache?on_conflict=key', { method: 'POST', body: JSON.stringify(rows) });
+            if (snapshot.hourly_mail_report) await request('hourly_mail_reports', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(snapshot.hourly_mail_report) });
+            console.log(`Synchronisation terminée (${privileged ? 'service role' : 'publishable key'})`);
+          })().catch((error) => { console.error(error.message); process.exit(1); });
           NODE
 
       - name: Publier la revue quotidienne si elle n’existe pas encore
@@ -145,15 +84,8 @@ jobs:
         if: env.snapshot_file == 'runtime/angel-os-snapshot.json'
         shell: bash
         run: |
-          if [ -z "${NEWSLETTER_CRON_SECRET:-}" ]; then
-            echo "NEWSLETTER_CRON_SECRET absent : revue quotidienne non déclenchée"
-            exit 0
-          fi
-          curl --fail --silent --show-error --max-time 90 \
-            -X POST \
-            -H "x-cron-token: ${NEWSLETTER_CRON_SECRET}" \
-            -H "Content-Type: application/json" \
-            https://www.angel-leclerc.fr/api/public/hooks/daily-article
+          if [ -z "${NEWSLETTER_CRON_SECRET:-}" ]; then echo "NEWSLETTER_CRON_SECRET absent : revue quotidienne non déclenchée"; exit 0; fi
+          curl --fail --silent --show-error --max-time 90 -X POST -H "x-cron-token: ${NEWSLETTER_CRON_SECRET}" -H "Content-Type: application/json" https://www.angel-leclerc.fr/api/public/hooks/daily-article
 
       - name: Résumé
         if: always()
@@ -161,6 +93,6 @@ jobs:
           echo "## Synchronisation Angel OS" >> "$GITHUB_STEP_SUMMARY"
           echo "- Source : ${snapshot_file:-runtime/angel-os-snapshot.json}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Voie : GitHub Actions → Supabase direct" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Secrets : GitHub Environments uniquement" >> "$GITHUB_STEP_SUMMARY"
           echo "- Lovable : non utilisé" >> "$GITHUB_STEP_SUMMARY"
           echo "- Vercel : non requis pour l’écriture des caches" >> "$GITHUB_STEP_SUMMARY"
-          echo "- En cas de permission manquante, les anciennes données sont conservées et le blocage est journalisé sans faire échouer le workflow." >> "$GITHUB_STEP_SUMMARY"
