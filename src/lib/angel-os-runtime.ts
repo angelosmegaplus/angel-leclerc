@@ -4,6 +4,11 @@ import { AngelOSModuleRegistry } from "../../angel-os/core/module-registry";
 import type { AngelOSContext } from "../../angel-os/core/types";
 import { angelOSIA } from "../../angel-os/distributions/angel-os-ia";
 import { angelLeclercWebAdapter } from "../../angel-os/adapters/angel-leclerc-web";
+import {
+  bootGitHubLiveIntegrations,
+  getGitHubLiveIntegrationsStatus,
+  reloadGitHubLiveIntegrations,
+} from "./github-live-integrations";
 
 const events = new AngelOSEventBus();
 const modules = new AngelOSModuleRegistry();
@@ -16,6 +21,7 @@ const context: AngelOSContext = {
     "network",
     "ai",
     "automation",
+    "github-live-integrations",
   ]),
   config: createConfig({
     product: "angel-leclerc.fr",
@@ -48,6 +54,13 @@ export async function bootAngelOS() {
 
   webConnection = await angelLeclercWebAdapter.connect();
   await modules.startAll(context);
+
+  if (typeof window !== "undefined") {
+    void bootGitHubLiveIntegrations().catch((error) => {
+      console.warn("Angel OS GitHub live integrations unavailable", error);
+    });
+  }
+
   const bootPayload = {
     core: "Angel OS Core",
     coreVersion: context.version,
@@ -56,6 +69,7 @@ export async function bootAngelOS() {
     application: webConnection.product,
     platform: context.platform,
     capabilities: [...context.capabilities],
+    liveIntegrations: getGitHubLiveIntegrationsStatus(),
   };
   rememberEvent("angel-os:boot", bootPayload);
   await events.emit("angel-os:boot", bootPayload);
@@ -106,6 +120,7 @@ export function getAngelOSStatus() {
       adminPath: "/admin" as const,
     },
     capabilities: [...context.capabilities],
+    liveIntegrations: getGitHubLiveIntegrationsStatus(),
     recentEvents: recentEvents.map(({ name, at }) => ({ name, at })),
   };
 }
@@ -118,4 +133,8 @@ export const angelOS = {
   adapter: angelLeclercWebAdapter,
   emit: emitAngelOSEvent,
   getStatus: getAngelOSStatus,
+  liveIntegrations: {
+    getStatus: getGitHubLiveIntegrationsStatus,
+    reload: reloadGitHubLiveIntegrations,
+  },
 } as const;
