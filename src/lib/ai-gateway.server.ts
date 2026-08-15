@@ -1,4 +1,4 @@
-import { getOpenAiCredential } from "./vercel-connect-credentials.server";
+import { getAiGatewayCredential, getOpenAiCredential } from "./vercel-connect-credentials.server";
 
 type AiRole = "system" | "user" | "assistant";
 export type AiMessage = { role: AiRole; content: string };
@@ -43,7 +43,7 @@ function responseText(json: any): string | null {
   }
   return null;
 }
-function providerErrorDetail(status: number, body: string, model: string, requestId: string | null) {
+function providerErrorDetail(status: number, body: string, model: string, requestId: string | null, provider = "OpenAI") {
   let parsedMessage = "";
   let parsedCode = "";
   try {
@@ -51,11 +51,43 @@ function providerErrorDetail(status: number, body: string, model: string, reques
     parsedMessage = typeof parsed?.error?.message === "string" ? parsed.error.message : "";
     parsedCode = typeof parsed?.error?.code === "string" ? parsed.error.code : typeof parsed?.error?.type === "string" ? parsed.error.type : "";
   } catch { /* réponse non JSON */ }
-  const parts = [`OpenAI HTTP ${status}`, `modèle ${model}`];
+  const parts = [`${provider} HTTP ${status}`, `modèle ${model}`];
   if (parsedCode) parts.push(`code ${parsedCode}`);
   if (parsedMessage) parts.push(parsedMessage.replace(/sk-[A-Za-z0-9_-]+/g, "[clé masquée]").slice(0, 500));
   if (requestId) parts.push(`request ${requestId}`);
   return parts.join(" · ");
+}
+
+function gatewayModel(model: string) {
+  return model.includes("/") ? model : `openai/${model}`;
+}
+
+async function requestResponses(args: {
+  endpoint: string;
+  token: string;
+  model: string;
+  messages: AiMessage[];
+  maxTokens: number;
+  temperature: number;
+  signal: AbortSignal;
+  clientRequestId: string;
+}) {
+  return fetch(args.endpoint, {
+    method: "POST",
+    signal: args.signal,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${args.token}`,
+      "X-Client-Request-Id": args.clientRequestId,
+    },
+    body: JSON.stringify({
+      model: args.model,
+      input: args.messages,
+      max_output_tokens: args.maxTokens,
+      temperature: args.temperature,
+      store: false,
+    }),
+  });
 }
 
 export async function angelAi(options: { messages: AiMessage[]; priority?: AiPriority; maxTokens?: number; temperature?: number; cacheKey?: string; cacheTtlMs?: number; model?: string }) {
@@ -64,12 +96,11 @@ export async function angelAi(options: { messages: AiMessage[]; priority?: AiPri
   const interactive = priority === "interactive";
   if (!enabled()) { console.error("[angel-ai-gateway] disabled", { priority }); return fail("disabled", now, "ANGEL_AI_ENABLED désactive explicitement l'IA intégrée sur ce déploiement."); }
 
-  const credential = await getOpenAiCredential();
-  if (!credential) {
-    console.error("[angel-ai-gateway] OpenAI credential missing from env and Vercel Connect", { priority });
-    return fail("not_configured", now, "Aucun identifiant OpenAI utilisable : ni OPENAI_API_KEY ni credential Vercel Connect n'a été résolu côté serveur.");
+  const [credential, gatewayCredential] = await Promise.all([getOpenAiCredential(), Promise.resolve(getAiGatewayCredential())]);
+  if (!credential && !gatewayCredential) {
+    console.error("[angel-ai-gateway] no AI credential available", { priority });
+    return fail("not_configured", now, "Aucun identifiant IA utilisable : ni OpenAI direct, ni Vercel AI Gateway/OIDC n'est disponible côté serveur.");
   }
-  const key = credential.value;
 
   if (!interactive && health.circuitOpenUntil > now) {
     console.warn("[angel-ai-gateway] circuit open for background request", { priority, circuitOpenUntil: health.circuitOpenUntil });
@@ -102,37 +133,92 @@ export async function angelAi(options: { messages: AiMessage[]; priority?: AiPri
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), interactive ? 24_000 : 18_000);
   const clientRequestId = `${priority}-${now}-${Math.random().toString(36).slice(2, 10)}`;
+  const temperature = options.temperature ?? 0.3;
+
   try {
-    const response = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST", signal: controller.signal,
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}`, "X-Client-Request-Id": clientRequestId },
-      body: JSON.stringify({ model, input: messages, max_output_tokens: maxTokens, temperature: options.temperature ?? 0.3, store: false }),
-    });
-    const openAiRequestId = response.headers.get("x-request-id");
+    let response: Response | null = null;
+    let providerName = "OpenAI";
+    let providerModel = model;
+    let credentialSource = credential?.source ?? gatewayCredential?.source ?? "unknown";
+    let directFailureDetail = "";
+
+    if (credential) {
+      response = await requestResponses({
+        endpoint: "https://api.openai.com/v1/responses",
+        token: credential.value,
+        model,
+        messages,
+        maxTokens,
+        temperature,
+        signal: controller.signal,
+        clientRequestId,
+      });
+
+      if (!response.ok) {
+        const body = await response.text();
+        const requestId = response.headers.get("x-request-id");
+        directFailureDetail = providerErrorDetail(response.status, body, model, requestId, "OpenAI");
+        console.warn("[angel-ai-gateway] direct OpenAI failed; trying gateway", {
+          status: response.status,
+          model,
+          priority,
+          credentialSource: credential.source,
+          clientRequestId,
+          requestId,
+          body: body.slice(0, 1000),
+        });
+        response = null;
+      }
+    }
+
+    if (!response && gatewayCredential) {
+      providerName = "Vercel AI Gateway";
+      providerModel = gatewayModel(model);
+      credentialSource = gatewayCredential.source;
+      response = await requestResponses({
+        endpoint: "https://ai-gateway.vercel.sh/v1/responses",
+        token: gatewayCredential.value,
+        model: providerModel,
+        messages,
+        maxTokens,
+        temperature,
+        signal: controller.signal,
+        clientRequestId: `${clientRequestId}-gateway`,
+      });
+    }
+
+    if (!response) {
+      return fail("provider", Date.now(), directFailureDetail || "Aucun fournisseur IA n'a pu être joint.");
+    }
+
+    const providerRequestId = response.headers.get("x-request-id");
     if (!response.ok) {
       const body = await response.text();
-      console.error("[angel-ai-gateway] OpenAI", response.status, { model, priority, credentialSource: credential.source, clientRequestId, openAiRequestId, body: body.slice(0, 1200) });
-      return fail("provider", Date.now(), providerErrorDetail(response.status, body, model, openAiRequestId));
+      console.error("[angel-ai-gateway] provider failure", response.status, { providerName, providerModel, priority, credentialSource, clientRequestId, providerRequestId, body: body.slice(0, 1200) });
+      const gatewayDetail = providerErrorDetail(response.status, body, providerModel, providerRequestId, providerName);
+      return fail("provider", Date.now(), directFailureDetail ? `${directFailureDetail} | secours: ${gatewayDetail}` : gatewayDetail);
     }
+
     const json = await response.json();
     const text = responseText(json);
     if (!text) {
-      console.error("[angel-ai-gateway] empty OpenAI response", { model, priority, clientRequestId, openAiRequestId });
-      return fail("provider", Date.now(), `OpenAI a répondu sans texte exploitable · modèle ${model}${openAiRequestId ? ` · request ${openAiRequestId}` : ""}.`);
+      console.error("[angel-ai-gateway] empty provider response", { providerName, providerModel, priority, clientRequestId, providerRequestId });
+      return fail("provider", Date.now(), `${providerName} a répondu sans texte exploitable · modèle ${providerModel}${providerRequestId ? ` · request ${providerRequestId}` : ""}.`);
     }
+
     const totalTokens = Number(json?.usage?.total_tokens);
     usage.push({ at: now, estimatedTokens: Number.isFinite(totalTokens) ? totalTokens : estimated, priority });
     cache.set(cacheKey, { expires: now + (options.cacheTtlMs ?? (interactive ? 60_000 : 15 * 60_000)), text });
     succeed();
-    console.info("[angel-ai-gateway] success", { model, priority, credentialSource: credential.source, cached: false, clientRequestId, openAiRequestId, filteredHistory: options.messages.length - messages.length });
+    console.info("[angel-ai-gateway] success", { providerName, providerModel, priority, credentialSource, cached: false, clientRequestId, providerRequestId, filteredHistory: options.messages.length - messages.length, recoveredFromDirectFailure: Boolean(directFailureDetail) });
     return { text, reason: "ok" as const, detail: null, cached: false, fallbackRequired: false };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     const aborted = controller.signal.aborted || (error instanceof Error && error.name === "AbortError");
     const detail = aborted
-      ? `Délai OpenAI dépassé (${interactive ? 24 : 18}s) · modèle ${model} · client ${clientRequestId}.`
-      : `Échec réseau/appel OpenAI · modèle ${model} · ${message.slice(0, 500)} · client ${clientRequestId}.`;
-    console.error("[angel-ai-gateway] failure", { model, priority, credentialSource: credential.source, clientRequestId, error });
+      ? `Délai IA dépassé (${interactive ? 24 : 18}s) · modèle ${model} · client ${clientRequestId}.`
+      : `Échec réseau/appel IA · modèle ${model} · ${message.slice(0, 500)} · client ${clientRequestId}.`;
+    console.error("[angel-ai-gateway] failure", { model, priority, clientRequestId, error });
     return fail("provider", Date.now(), detail);
   } finally { clearTimeout(timeout); }
 }
@@ -145,10 +231,11 @@ export function angelAiSupervisorSnapshot() {
   const dailyLimit = numberEnv("ANGEL_AI_DAILY_TOKEN_BUDGET", 120_000);
   const hourlyLimit = numberEnv("ANGEL_AI_HOURLY_TOKEN_BUDGET", 30_000);
   const envConfigured = Boolean(process.env["OPENAI_API_KEY"]);
+  const gatewayConfigured = Boolean(process.env["AI_GATEWAY_API_KEY"] || process.env["VERCEL_OIDC_TOKEN"]);
   const connectCapable = Boolean(process.env["VERCEL"] || process.env["VERCEL_ENV"]);
   return {
-    enabled: enabled(), providerConfigured: envConfigured || connectCapable,
-    healthy: enabled() && (envConfigured || connectCapable) && health.circuitOpenUntil <= now,
+    enabled: enabled(), providerConfigured: envConfigured || gatewayConfigured || connectCapable,
+    healthy: enabled() && (envConfigured || gatewayConfigured || connectCapable) && health.circuitOpenUntil <= now,
     circuitOpen: health.circuitOpenUntil > now, circuitOpenUntil: health.circuitOpenUntil || null,
     consecutiveFailures: health.consecutiveFailures, lastFailureAt: health.lastFailureAt || null, lastSuccessAt: health.lastSuccessAt || null, lastReason: health.lastReason,
     usedToday, usedHour, dailyLimit, hourlyLimit, remainingToday: Math.max(0, dailyLimit - usedToday), remainingHour: Math.max(0, hourlyLimit - usedHour),
