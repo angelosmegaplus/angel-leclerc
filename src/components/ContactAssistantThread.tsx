@@ -3,7 +3,8 @@ import { Bot, Loader2, Send, Sparkles, UserRound } from "lucide-react";
 import { answer as localAnswer } from "@/lib/assistant-engine";
 import { Button } from "@/components/ui/button";
 
-const STORAGE_KEY = "alc-contact-ai-thread-v1";
+const STORAGE_KEY = "alc-contact-ai-thread-v2";
+const LEGACY_STORAGE_KEYS = ["alc-contact-ai-thread-v1"];
 const SUGGESTIONS = [
   "Que propose Angel exactement ?",
   "Combien coûte une affiche ?",
@@ -35,6 +36,9 @@ export function ContactAssistantThread() {
 
   useEffect(() => {
     try {
+      // Réinitialisation forcée de l'ancien fil : on supprime la version précédente
+      // pour éviter de réinjecter des réponses locales ou obsolètes dans l'IA intégrée.
+      LEGACY_STORAGE_KEYS.forEach((key) => sessionStorage.removeItem(key));
       const raw = sessionStorage.getItem(STORAGE_KEY);
       if (raw) {
         const saved = JSON.parse(raw) as Message[];
@@ -74,7 +78,12 @@ export function ContactAssistantThread() {
     try {
       const response = await fetch("/api/assistant", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
         cache: "no-store",
         body: JSON.stringify({
           question: question.slice(0, 1000),
