@@ -39,12 +39,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if git ls-files | grep -E '(^|/)\.env($|\.)' | grep -vE '\.example$'; then
-            echo "::warning::Des fichiers .env historiques sont encore suivis par Git. Les nouveaux fichiers .env sont désormais ignorés et leur migration vers les secrets centralisés doit être terminée avant suppression."
-          fi
+          failed=0
+          while IFS= read -r file; do
+            [ -n "$file" ] || continue
+            if grep -qE '^(OPENAI_API_KEY|SUPABASE_SERVICE_ROLE_KEY|VERCEL_TOKEN|GITHUB_TOKEN|NEWSLETTER_CRON_SECRET|GOOGLE_CLIENT_SECRET|STRIPE_SECRET_KEY|SUPABASE_ACCESS_TOKEN|[A-Z0-9_]*PRIVATE_KEY|[A-Z0-9_]*PASSWORD)=' "$file"; then
+              echo "::error file=$file::Variable sensible détectée dans un fichier suivi par Git"
+              failed=1
+            fi
+          done < <(git ls-files | grep -E '(^|/)\.env($|\.)' | grep -vE '\.example$' || true)
+          test "$failed" -eq 0
 
-      - name: Lint diagnostics (legacy debt is non-blocking)
-        continue-on-error: true
+      - name: Lint
         run: bun run lint
 
       - name: Build production bundle
@@ -62,7 +67,7 @@ jobs:
         if: always()
         run: |
           echo "## Angel OS quality gate" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Lint exécuté en diagnostic tant que la dette historique n'est pas résorbée" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Lint bloquant" >> "$GITHUB_STEP_SUMMARY"
           echo "- Build production bloquant (détecte notamment JSX/TypeScript invalide)" >> "$GITHUB_STEP_SUMMARY"
           echo "- TypeScript bloquant" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Hygiène des secrets" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Hygiène des secrets sensibles bloquante" >> "$GITHUB_STEP_SUMMARY"
