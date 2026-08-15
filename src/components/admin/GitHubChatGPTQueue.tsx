@@ -132,7 +132,7 @@ export function GitHubChatGPTQueue() {
           .select("id, kind, title, description, status, created_at, updated_at")
           .in("kind", ["refresh_check", "chatgpt_task", "operator_request"])
           .in("status", ["pending", "running", "awaiting_operator", "completed", "failed", "rejected"])
-          .order("updated_at", { ascending: false })
+          .order("created_at", { ascending: true })
           .limit(50),
       ]);
       if (!queueResponse.ok) throw new Error(`File GitHub indisponible (${queueResponse.status})`);
@@ -192,7 +192,7 @@ export function GitHubChatGPTQueue() {
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-300" /> En direct
               </span>
             </div>
-            <p className="text-xs text-white/45">Toutes les demandes de modification, leur état et les derniers commits de main.</p>
+            <p className="text-xs text-white/45">Toutes les demandes de modification, de la plus ancienne valide à la plus récente.</p>
             <p className="mt-1 text-[10px] text-white/30">Actualisation automatique toutes les 5 s{lastSyncAt ? ` · dernière synchro ${timeLabel(lastSyncAt)}` : ""}</p>
           </div>
         </div>
@@ -214,7 +214,7 @@ export function GitHubChatGPTQueue() {
         <div className="space-y-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-[11px] font-semibold uppercase tracking-[.12em] text-white/70">Demandes de modification</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[.12em] text-white/70">Demandes de modification · plus anciennes d’abord</p>
               <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-2 py-1 text-[10px] font-semibold text-amber-200">{pendingCount} en attente</span>
             </div>
             {liveActions.length === 0 ? (
