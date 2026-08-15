@@ -156,6 +156,31 @@ function rejection(text: string): boolean {
   );
 }
 
+function cleanReplyText(value: string): string {
+  return value
+    .replace(/<!doctype[^>]*>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function isInvalidReply(value: unknown): boolean {
+  const text = String(value ?? "").toLowerCase();
+  return (
+    text.includes("<!doctype html") ||
+    text.includes("this page didn't load") ||
+    text.includes("something went wrong on our end") ||
+    text.includes("id-preview-") ||
+    text.includes("lovable.app")
+  );
+}
+
 async function gmailGet<T>(token: string, path: string, params?: URLSearchParams): Promise<T> {
   const query = params?.toString();
   const response = await fetch(
@@ -191,10 +216,10 @@ async function threadReply(token: string, threadId: string, ownEmail: string) {
   });
   const latest = replies.at(-1);
   if (!latest) return null;
-  const summary = [header(latest, "Subject"), latest.snippet]
-    .filter(Boolean)
-    .join(" — ")
-    .slice(0, 600);
+  const summary = cleanReplyText(
+    [header(latest, "Subject"), latest.snippet].filter(Boolean).join(" — "),
+  ).slice(0, 600);
+  if (!summary || isInvalidReply(summary)) return null;
   return { summary, rejected: rejection(summary) };
 }
 
@@ -322,7 +347,16 @@ export async function syncApplicationsForUser(
     }
 
     const patch: ApplicationUpdate = {};
-    if (!match.response && candidate.response) patch.response = candidate.response;
+    const invalidExistingResponse = isInvalidReply(match.response);
+    if (invalidExistingResponse) {
+      patch.response = candidate.response ?? null;
+      patch.follow_up_at = candidate.response ? null : candidate.follow_up_at;
+      if (["refusee", "envoyee", "relance"].includes(key(match.status))) {
+        patch.status = candidate.status;
+      }
+    } else if (!match.response && candidate.response) {
+      patch.response = candidate.response;
+    }
     if (candidate.response && match.follow_up_at) patch.follow_up_at = null;
     if (candidate.status === "refusee" && ["envoyee", "relance"].includes(key(match.status))) {
       patch.status = "refusee";

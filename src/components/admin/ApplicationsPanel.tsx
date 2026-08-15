@@ -25,6 +25,20 @@ function sentMailOf(row: Row) {
   );
 }
 
+function cleanApplicationText(value: string) {
+  if (!value) return "";
+  const looksLikeBrokenPage = /<!doctype html|this page didn't load|something went wrong on our end|lovable\.app|id-preview-/i.test(value);
+  if (looksLikeBrokenPage) return "";
+  return value
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function ApplicationsPanel() {
   const queryClient = useQueryClient();
   const syncApplications = useServerFn(syncGoogleApplications);
@@ -119,7 +133,7 @@ export function ApplicationsPanel() {
               const position = str(row, "position");
               const city = str(row, "city");
               const mail = sentMailOf(row);
-              const response = str(row, "response");
+              const response = cleanApplicationText(str(row, "response"));
               const isOpen = openId === id;
 
               return (
