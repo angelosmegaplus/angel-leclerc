@@ -1,31 +1,38 @@
 # Angel Native Stack
 
-Objectif : couvrir les besoins fonctionnels des technologies cibles sans imposer de connexion, de compte ou de configuration manuelle à l’utilisateur.
+Objectif : construire dans Angel OS des briques maison couvrant les mêmes besoins fonctionnels que la stack cible, sans imposer de connexion, de compte ou de configuration manuelle à l’utilisateur.
+
+## Principe
+
+Les services externes déjà fonctionnels sont conservés. Angel Native ne les remplace pas par défaut : il fonctionne en parallèle et augmente l’autonomie du système.
+
+Lorsqu’une technologie exige normalement une connexion ou un service séparé, Angel OS doit disposer d’une implémentation interne couvrant les usages réellement nécessaires au projet. Cette implémentation est développée de zéro pour Angel OS, sans prétendre être un clone généraliste complet du produit d’origine.
 
 ## Base active
 
 - React / TypeScript / Tailwind CSS / Vite / Framer Motion : interface et expérience utilisateur.
-- TanStack Start : serveur web/API actuel, utilisé tant qu’un serveur Express autonome n’est pas provisionné automatiquement.
-- Angel Native Storage : IndexedDB pour les données privées/offline qui n’ont pas besoin d’être partagées entre appareils.
-- Angel Native Cache : cache mémoire rapide pour remplacer Redis quand aucun Redis auto-provisionné n’existe.
-- Angel Native Worker : exécution de tâches TypeScript en processus courant, pour remplacer les petits workers Python/Rust lorsqu’aucun runtime externe n’est disponible.
+- TanStack Start : serveur web/API actuel.
+- Angel Native Storage : persistance locale/offline structurée via IndexedDB.
+- Angel Native Cache : cache mémoire namespacé et état éphémère.
+- Angel Native Worker : moteur de tâches interne.
 - Request Queue Angel OS : file de tâches interne existante.
 
-## Technologies cibles et alternatives automatiques
+## Équivalents Angel Native à construire
 
-| Technologie cible | Besoin couvert | Alternative immédiate sans connexion |
+| Technologie de référence | Besoin Angel OS | Brique Angel Native |
 |---|---|---|
-| Express | API / backend | Routes serveur TanStack Start |
-| MySQL | données relationnelles | couche de données actuelle + Angel Native Storage pour le privé/offline |
-| Redis | cache / file / état éphémère | Angel Native Cache + request queue |
-| Python | automatisation / traitement | Angel Native Worker TypeScript |
-| Rust | outils système / performance | Angel Native Worker et utilitaires TypeScript |
-| ZTP | provisionnement serveur | pipeline GitHub/Vercel existant tant qu’un VPS n’est pas auto-provisionnable |
+| Express | routage API, middleware, contrôles | Angel Native API Router |
+| MySQL | collections, relations, index, requêtes structurées | Angel Native Data Engine |
+| Redis | cache, TTL, files, pub/sub, verrous | Angel Native Realtime Core |
+| Python | automatisation, pipelines, traitement de données | Angel Native Automation Engine |
+| Rust | tâches intensives et fonctions bas niveau | Angel Native Compute Layer |
+| ZTP | bootstrap automatique d’une instance | Angel Native Bootstrap |
 
 ## Règles
 
-1. Une technologie externe n’est activée que si Angel OS peut la provisionner et la configurer automatiquement.
-2. Aucun écran ne doit afficher « connecté » ou « actif » pour une brique qui n’a pas passé un contrôle réel.
-3. Une fonction existante et fiable n’est pas supprimée avant que l’alternative Angel Native soit au moins équivalente.
-4. Les données sensibles ou multi-appareils restent sur la couche de production existante tant qu’un stockage serveur Angel Native réellement persistant n’est pas disponible.
-5. Les briques externes deviennent des accélérateurs optionnels, jamais des prérequis au fonctionnement du site.
+1. Les services externes fonctionnels restent disponibles tant qu’ils apportent de la valeur.
+2. Une brique Angel Native est développée en parallèle pour réduire la dépendance et assurer un fallback autonome.
+3. Aucun écran ne doit afficher « connecté », « actif » ou « équivalent » si la fonction correspondante n’existe pas réellement.
+4. Une brique maison doit viser la parité fonctionnelle sur les besoins d’Angel OS, pas la reproduction intégrale d’un moteur généraliste comme MySQL ou Rust.
+5. Aucune configuration manuelle utilisateur ne doit être nécessaire pour activer les fonctions Angel Native.
+6. Les données sensibles ou multi-appareils restent sur la couche de production fiable tant que la brique maison n’offre pas la même robustesse.
