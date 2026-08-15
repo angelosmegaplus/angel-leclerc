@@ -37,6 +37,36 @@ function daysUntil(date: string) {
   return Math.max(0, Math.ceil((end.getTime() - now.getTime()) / 86_400_000));
 }
 
+function getApplicationStatus(status: string) {
+  if (status === "refusee") {
+    return {
+      label: "Refusé",
+      marker: <span className="h-2.5 w-2.5 rounded-full bg-red-500" aria-hidden />,
+    };
+  }
+  if (status === "acceptee") {
+    return {
+      label: "Accepté",
+      marker: <span className="h-2.5 w-2.5 rounded-full bg-green-500" aria-hidden />,
+    };
+  }
+  if (status === "entretien" || status === "peut_etre") {
+    return {
+      label: "Peut-être",
+      marker: <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" aria-hidden />,
+    };
+  }
+  return {
+    label: "En attente",
+    marker: (
+      <span className="inline-flex items-center gap-0.5" aria-hidden>
+        <span className="h-3 w-0.5 rounded-full bg-yellow-400" />
+        <span className="h-3 w-0.5 rounded-full bg-yellow-400" />
+      </span>
+    ),
+  };
+}
+
 export function ApplicationsPanel() {
   const queryClient = useQueryClient();
   const { data: rows = [], isFetching } = useQuery({
@@ -57,6 +87,17 @@ export function ApplicationsPanel() {
         );
       }).length,
     };
+  }, [rows]);
+
+  const recentApplications = useMemo(() => {
+    return [...rows]
+      .filter((row) => str(row, "status") !== "a_envoyer")
+      .sort((a, b) => {
+        const aDate = str(a, "sent_at") || str(a, "created_at") || str(a, "updated_at");
+        const bDate = str(b, "sent_at") || str(b, "created_at") || str(b, "updated_at");
+        return bDate.localeCompare(aDate);
+      })
+      .slice(0, 10);
   }, [rows]);
 
   const urgentSearch = useMemo(() => {
@@ -211,6 +252,41 @@ export function ApplicationsPanel() {
           </div>
         ))}
       </dl>
+
+      <AdminCard>
+        <div className="flex items-center gap-2">
+          <Briefcase className="h-5 w-5 text-primary" />
+          <h3 className="font-display font-bold text-foreground">Candidatures récemment envoyées</h3>
+        </div>
+        <div className="mt-3 divide-y divide-border">
+          {recentApplications.length === 0 ? (
+            <p className="py-3 text-sm text-muted-foreground">Aucune candidature envoyée pour le moment.</p>
+          ) : (
+            recentApplications.map((row, index) => {
+              const status = getApplicationStatus(str(row, "status"));
+              const company = str(row, "company") || "Candidature";
+              const position = str(row, "position");
+              const city = str(row, "city");
+              return (
+                <div key={str(row, "id") || `${company}-${index}`} className="flex items-center justify-between gap-4 py-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-foreground">{company}</p>
+                    {(position || city) && (
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                        {[position, city].filter(Boolean).join(" · ")}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2 text-xs font-medium text-foreground">
+                    {status.marker}
+                    <span>{status.label}</span>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </AdminCard>
 
       <CrudModule
         table="applications"
