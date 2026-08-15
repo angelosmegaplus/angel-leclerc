@@ -4,8 +4,8 @@ import { ChevronDown, MessageCircleQuestion, Send } from "lucide-react";
 import { ContactChat, type Track } from "@/components/ContactChat";
 import { PublicContactAssistant } from "@/components/PublicContactAssistant";
 
-const TITLE = "Contact — Angel Leclerc Communication";
-const DESCRIPTION = "Contactez Angel Leclerc ou posez une question à l’assistant du site.";
+const TITLE = "Contact — Angel Leclerc";
+const DESCRIPTION = "Contactez Angel Leclerc pour une alternance, un projet professionnel ou une demande liée à Angel Leclerc Communication.";
 
 type OpenPanel = "question" | "contact" | null;
 
@@ -78,8 +78,8 @@ function ContactPage() {
                 <Send className="h-5 w-5" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block font-display text-lg font-bold text-foreground">Contacter Angel Leclerc Communication</span>
-                <span className="mt-0.5 block text-sm text-muted-foreground">Envoyer directement un message</span>
+                <span className="block font-display text-lg font-bold text-foreground">Contacter Angel Leclerc</span>
+                <span className="mt-0.5 block text-sm text-muted-foreground">Alternance, projet professionnel ou Angel Leclerc Communication</span>
               </span>
               <ChevronDown className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-200 ${openPanel === "contact" ? "rotate-180" : ""}`} />
             </button>
