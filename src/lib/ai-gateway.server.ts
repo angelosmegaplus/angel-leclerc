@@ -82,14 +82,32 @@ export async function angelAi(options: {
 }) {
   const now = Date.now();
   prune(now);
-  if (!enabled()) return fail("disabled", now);
+  const priority = options.priority ?? "background";
+  const interactive = priority === "interactive";
+
+  if (!enabled()) {
+    console.error("[angel-ai-gateway] disabled", { priority });
+    return fail("disabled", now);
+  }
+
   const key = process.env["OPENAI_API_KEY"];
-  if (!key) return fail("not_configured", now);
-  if (health.circuitOpenUntil > now) return fail("circuit_open", now);
+  if (!key) {
+    console.error("[angel-ai-gateway] OPENAI_API_KEY missing", { priority });
+    return fail("not_configured", now);
+  }
+
+  // Le circuit protège les traitements automatiques, jamais une demande humaine en direct.
+  // Une requête interactive sert aussi de sonde de reprise du fournisseur.
+  if (!interactive && health.circuitOpenUntil > now) {
+    console.warn("[angel-ai-gateway] circuit open for background request", {
+      priority,
+      circuitOpenUntil: health.circuitOpenUntil,
+    });
+    return fail("circuit_open", now);
+  }
 
   const messages = sanitizeMessages(options.messages);
-  const priority = options.priority ?? "background";
-  const maxTokens = Math.min(options.maxTokens ?? 500, priority === "interactive" ? 1200 : 800);
+  const maxTokens = Math.min(options.maxTokens ?? 500, interactive ? 1400 : 800);
   const estimated = estimate(messages, maxTokens);
   const dailyLimit = numberEnv("ANGEL_AI_DAILY_TOKEN_BUDGET", 120_000);
   const hourlyLimit = numberEnv("ANGEL_AI_HOURLY_TOKEN_BUDGET", 30_000);
@@ -97,9 +115,21 @@ export async function angelAi(options: {
   const hourAgo = now - 3_600_000;
   const usedHour = usage.filter((e) => e.at >= hourAgo).reduce((n, e) => n + e.estimatedTokens, 0);
 
-  const reserve = priority === "interactive" ? 1 : priority === "important" ? 0.85 : 0.65;
-  if (usedDay + estimated > dailyLimit * reserve || usedHour + estimated > hourlyLimit * reserve) {
-    return fail("budget", now);
+  // Les quotas internes servent à ralentir les automatisations. Le chat administrateur
+  // interactif reste prioritaire et ne doit jamais tomber sur une pseudo-réponse locale
+  // simplement parce que des tâches de fond ont consommé leur enveloppe.
+  if (!interactive) {
+    const reserve = priority === "important" ? 0.85 : 0.65;
+    if (usedDay + estimated > dailyLimit * reserve || usedHour + estimated > hourlyLimit * reserve) {
+      console.warn("[angel-ai-gateway] background budget reached", {
+        priority,
+        usedDay,
+        usedHour,
+        dailyLimit,
+        hourlyLimit,
+      });
+      return fail("budget", now);
+    }
   }
 
   const model = options.model || process.env["OPENAI_MODEL"] || "gpt-4o-mini";
@@ -112,7 +142,7 @@ export async function angelAi(options: {
   }
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), priority === "interactive" ? 30_000 : 22_000);
+  const timeout = setTimeout(() => controller.abort(), interactive ? 45_000 : 22_000);
   try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -126,19 +156,27 @@ export async function angelAi(options: {
       }),
     });
     if (!response.ok) {
-      console.error("[angel-ai-gateway] OpenAI", response.status, { model, body: await response.text() });
+      const body = await response.text();
+      console.error("[angel-ai-gateway] OpenAI", response.status, {
+        model,
+        priority,
+        body: body.slice(0, 1200),
+      });
       return fail("provider");
     }
     const json = (await response.json()) as { choices?: Array<{ message?: { content?: string } }>; usage?: { total_tokens?: number } };
     const text = json.choices?.[0]?.message?.content?.trim() ?? null;
-    if (!text) return fail("provider");
+    if (!text) {
+      console.error("[angel-ai-gateway] empty OpenAI response", { model, priority });
+      return fail("provider");
+    }
     usage.push({ at: now, estimatedTokens: json.usage?.total_tokens ?? estimated, priority });
-    cache.set(cacheKey, { expires: now + (options.cacheTtlMs ?? (priority === "interactive" ? 60_000 : 15 * 60_000)), text });
+    cache.set(cacheKey, { expires: now + (options.cacheTtlMs ?? (interactive ? 60_000 : 15 * 60_000)), text });
     succeed();
     console.info("[angel-ai-gateway] success", { model, priority, cached: false, filteredHistory: options.messages.length - messages.length });
     return { text, reason: "ok" as const, cached: false, fallbackRequired: false };
   } catch (error) {
-    console.error("[angel-ai-gateway] failure", { model, error });
+    console.error("[angel-ai-gateway] failure", { model, priority, error });
     return fail("provider");
   } finally {
     clearTimeout(timeout);
