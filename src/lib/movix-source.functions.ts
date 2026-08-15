@@ -59,7 +59,7 @@ function extractCandidateFromHtml(source: string) {
   if (!source) return null;
   const candidates = [
     ...source.matchAll(/(?:href|content)=["'](https?:\/\/[^"']+)["']/gi),
-    ...source.matchAll(/https?:\/\/[a-z0-9.-]+(?:\/[a-z0-9._~:/?#\[\]@!$&'()*+,;=%-]*)?/gi),
+    ...source.matchAll(/https?:\/\/[^\s"'<>]+/gi),
   ]
     .map((match) => normalizeUrl(match[1] || match[0]))
     .filter((value): value is string => Boolean(value));
