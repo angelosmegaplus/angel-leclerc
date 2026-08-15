@@ -9,8 +9,8 @@ type SearchState = {
 const state: SearchState = { expiresAt: 0, items: [], failureUntil: 0 };
 const TTL_MS = 10 * 60_000;
 const FAILURE_COOLDOWN_MS = 5 * 60_000;
-const DEFAULT_WEB_MODEL = "gpt-5-mini";
-const DEFAULT_WEB_FALLBACK_MODEL = "gpt-4.1-mini";
+const DEFAULT_WEB_MODEL = "gpt-4.1-mini";
+const DEFAULT_WEB_FALLBACK_MODEL = "gpt-4o-mini";
 
 const allowedCategories = new Set<Exclude<NewsCategory, "une">>([
   "politique",
