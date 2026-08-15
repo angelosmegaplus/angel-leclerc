@@ -1,39 +1,11 @@
 {
-  "fetchedAt": "2026-08-15T06:47:22Z",
+  "fetchedAt": "2026-08-15T07:47:05Z",
   "caches": {
     "news_dashboard": {
-      "fetchedAt": "2026-08-15T06:47:22Z",
-      "changed_since_previous": "Aucune nouvelle actualité nationale fiable et suffisamment importante publiée dans les six dernières heures n’a été vérifiée pendant ce passage. Le fil reste volontairement très court plutôt que de recycler des contenus. Les éléments conservés sont soit encore importants et âgés de moins de 24 heures, soit directement utiles aujourd’hui.",
-      "top_stories": [
-        {
-          "title": "Le Conseil constitutionnel bloque l’interdiction des réseaux sociaux aux moins de 15 ans",
-          "source": "Associated Press",
-          "date": "2026-08-14T17:31:42+02:00",
-          "category": "politique_société",
-          "summary": "Le Conseil constitutionnel a censuré l’interdiction générale visant les moins de 15 ans, jugeant le dispositif disproportionné au regard des libertés et insuffisamment protecteur de la vie privée. L’exécutif a annoncé vouloir retravailler le texte.",
-          "link": "https://apnews.com/article/a4e96488d1eb913c7a039eb5e4fc1e18",
-          "importance": "haute",
-          "why_relevant": "Décision institutionnelle importante sur les libertés publiques, la protection des mineurs et la régulation des grandes plateformes.",
-          "age_minutes": 916,
-          "freshness": "moins_24h",
-          "status": "fait établi"
-        }
-      ],
-      "politics_society": [
-        {
-          "title": "Dette française : les coûts d’intérêts pèsent davantage à l’approche de 2027",
-          "source": "Reuters Breakingviews",
-          "date": "2026-08-14T10:17:37+02:00",
-          "category": "politique_société",
-          "summary": "Reuters Breakingviews analyse la hausse du coût de la dette française et les marges budgétaires plus contraintes à l’approche de 2027.",
-          "link": "https://www.reuters.com/commentary/breakingviews/france-is-headed-election-year-debt-reckoning-2026-08-14/",
-          "importance": "haute",
-          "why_relevant": "Le sujet touche directement la souveraineté budgétaire, le financement des services publics et les arbitrages sociaux à venir.",
-          "age_minutes": 1350,
-          "freshness": "moins_24h",
-          "status": "analyse-opinion"
-        }
-      ],
+      "fetchedAt": "2026-08-15T07:47:05Z",
+      "changed_since_previous": "Aucun nouveau développement national ou local suffisamment important et vérifiable publié au cours de la dernière heure n’a été trouvé pendant ce passage. Le fil reste volontairement court et conserve uniquement les informations encore utiles aujourd’hui plutôt que de recycler des contenus anciens.",
+      "top_stories": [],
+      "politics_society": [],
       "investigations": [],
       "local_news": [],
       "tech_android_ai": [],
@@ -61,7 +33,7 @@
           "date": "2026-08-15T19:00:00+02:00",
           "category": "pratique_local",
           "summary": "Festi’Sarlat est programmé ce samedi 15 août à partir de 19 h au stade Christian-Goumondie, avec plusieurs DJ/artistes et des food trucks.",
-          "link": "https://unidivers.fr/event/festisarlat-sarlat-la-caneda-dordogne-2026-08-15/",
+          "link": "https://www.fenelon-tourisme.com/offres/festisarlat-sarlat-la-caneda-fr-5914994/",
           "zone": "Sarlat-la-Canéda",
           "importance": "moyenne",
           "why_relevant": "Événement local du jour à Sarlat, directement utile pour les sorties et l’animation de la ville.",
@@ -77,41 +49,13 @@
           "zone": "Sarlat-la-Canéda",
           "importance": "moyenne",
           "why_relevant": "Information de mobilité directement utile aujourd’hui à Sarlat.",
-          "freshness": "suivi"
+          "age_minutes": 17,
+          "freshness": "moins_1h"
         }
       ]
     },
-    "weather_sarlat": {
-      "fetchedAt": "2026-08-15T06:47:22Z",
-      "location": "Sarlat-la-Canéda",
-      "current": {
-        "temperatureC": 23,
-        "condition": "Ensoleillé"
-      },
-      "today": {
-        "date": "2026-08-15",
-        "highC": 30,
-        "lowC": 20,
-        "condition": "Plutôt nuageux, humide et devenant plus frais"
-      },
-      "forecast": [
-        {"date": "2026-08-16", "highC": 29, "lowC": 19, "condition": "Plutôt nuageux et humide ; orages par endroits l’après-midi"},
-        {"date": "2026-08-17", "highC": 32, "lowC": 16, "condition": "Orages par endroits le matin puis éclaircies et chaleur"},
-        {"date": "2026-08-18", "highC": 33, "lowC": 16, "condition": "Ensoleillé et chaud"},
-        {"date": "2026-08-19", "highC": 31, "lowC": 17, "condition": "Plutôt nuageux et très chaud"},
-        {"date": "2026-08-20", "highC": 31, "lowC": 16, "condition": "Soleil puis nuages ; quelques orages l’après-midi"},
-        {"date": "2026-08-21", "highC": 28, "lowC": 15, "condition": "Humide ; orages le matin puis quelques averses"},
-        {"date": "2026-08-22", "highC": 27, "lowC": 15, "condition": "Ensoleillé et moins humide"}
-      ],
-      "alerts": [
-        {"level": "orange", "type": "canicule", "area": "Dordogne", "expires": "2026-08-16T00:00:00+02:00", "source": "Météo-France", "summary": "Vigilance orange canicule en vigueur jusqu’à dimanche 0 h."},
-        {"level": "jaune", "type": "orages", "area": "Dordogne", "expires": "2026-08-16T00:00:00+02:00", "source": "Météo-France", "summary": "Vigilance jaune orages en vigueur jusqu’à dimanche 0 h."},
-        {"level": "jaune", "type": "orages", "area": "Dordogne", "starts": "2026-08-16T00:00:00+02:00", "expires": "2026-08-17T00:00:00+02:00", "source": "Météo-France", "summary": "Vigilance jaune orages annoncée pour dimanche."}
-      ],
-      "source": "prévisions météo structurées et vigilances Météo-France"
-    },
     "google_calendar_dashboard": {
-      "fetchedAt": "2026-08-15T06:47:22Z",
+      "fetchedAt": "2026-08-15T07:47:05Z",
       "nextEvent": {
         "title": "Maman - Anniversaire",
         "start": "2026-08-15T00:00:00",
@@ -124,7 +68,7 @@
       },
       "events": [
         {"title":"Maman - Anniversaire","start":"2026-08-15T00:00:00","end":"2026-08-16T00:00:00","allDay":true,"location":"","description":"","url":"https://www.google.com/calendar/event?eid=dnVsOWRtcTdiMmZ1N250NGZpMWI2c2IwNW9fMjAyNjA4MTUgYW5nZWxsZWNsZXJjMjAwNkBt&ctz=Europe/Paris","advice":"Penser à souhaiter l’anniversaire aujourd’hui."},
-        {"title":"Les Wonda Mamas en concert","start":"2026-08-15T21:00:00+02:00","end":"2026-08-15T21:00:00+02:00","allDay":false,"location":"Place de la Liberté, 24200 Sarlat-la-Canéda","description":"Concert gratuit pop, soul et funk annoncé de 21 h à minuit.","url":"","advice":""},
+        {"title":"Les Wonda Mamas en concert","start":"2026-08-15T21:00:00+02:00","end":"2026-08-15T21:00:00+02:00","allDay":false,"location":"Place de la Liberté, 24200 Sarlat-la-Canéda","description":"Concert gratuit pop, soul et funk annoncé de 21 h à minuit.","url":"https://www.google.com/calendar/event?eid=NjFnajJvcGc3NHNtY2I5aDZsaW1hYjlrY2tzNjZiOW82c3M2NGJiNjZsaDY0b3BpYzVpajJkajJjZyBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":""},
         {"title":"Rdv cias sur place","start":"2026-08-19T10:00:00+02:00","end":"2026-08-19T11:00:00+02:00","allDay":false,"location":"","description":"","url":"https://www.google.com/calendar/event?eid=NzFoamVwajM2c3NqYWI5bWNjcm1jYjlrY3BpamdiOW82a3NtOGJiMzZncDZjcDMyNjlqNjZvaGo2MCBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":"Prévoir l’enchaînement direct avec le rendez-vous logement à 11 h."},
         {"title":"Rdv renouvellement contrat logement","start":"2026-08-19T11:00:00+02:00","end":"2026-08-19T12:00:00+02:00","allDay":false,"location":"","description":"","url":"https://www.google.com/calendar/event?eid=Y2dvamNkOXA3MWlqY2JiNDcwcDY4YjlrNzBvM2NiYjE2MHEzZ2I5aTZkajNnZGI0NmNxamVkMzI2MCBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":""},
         {"title":"Ouverture de l'actualisation pour le mois d'août 2026","start":"2026-08-27T00:00:00","end":"2026-08-28T00:00:00","allDay":true,"location":"","description":"France Travail","url":"https://www.google.com/calendar/event?eid=Y2RpMzBjOWk2b282NGI5bDY4cW04YjlrNnRqMzJiYjI2MHAzZ2I5a2M4cm02YzloNjBvNjJjMzI2byBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":"L’actualisation France Travail ouvre ce jour-là."},
@@ -134,63 +78,36 @@
       ]
     },
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-15T06:47:22Z",
-      "important": [
-        {
-          "subject": "Votre essai gratuit Trading Pro se termine bientôt ⏳",
-          "from": "Revolut <no-reply@revolut.com>",
-          "date": "2026-08-15T00:00:13Z",
-          "summary": "L’essai gratuit Trading Pro se termine le 18 août 2026. Après cette date, Revolut annonce un tarif de 4,99 € par mois.",
-          "reason": "Échéance proche susceptible d’entraîner un abonnement payant si l’option n’est pas désactivée.",
-          "suggestedReply": ""
-        }
-      ],
-      "otherSummary": "Depuis le précédent passage, un seul nouveau message entrant non critique a été détecté : un rappel Samsung pour configurer les préférences du compte/appareil. Aucun nouvel entretien, demande de CV, redirection professionnelle ou autre réponse de candidature entrante n’a été détecté. Gmail montre en revanche deux activités sortantes pertinentes vers 8 h 32–8 h 34 : une réponse de courtoisie déjà envoyée dans le fil Radio France et une nouvelle candidature à Bulle Architectes avec CV. Les anciennes alertes GitHub non lues sont dépassées par les derniers workflows main, actuellement réussis. Gmail n’a subi aucune modification pendant cette veille.",
+      "fetchedAt": "2026-08-15T07:47:05Z",
+      "important": [],
+      "otherSummary": "Depuis le passage précédent, un seul nouveau message pertinent a été détecté : l’email de bienvenue de Supabase reçu à 09 h 35, de nature informative et sans action urgente. Aucun nouveau mail de candidature, demande d’entretien ou message professionnel nécessitant une réponse n’a été trouvé dans cette période.",
       "counts": {
         "new_since_last_run": 1,
-        "important": 1,
-        "employment_or_application_incoming": 0,
-        "relevant_sent_activity": 2
+        "important": 0,
+        "secondary": 1,
+        "applications": 0
       }
     },
     "admin_cockpit_summary": {
-      "fetchedAt": "2026-08-15T06:47:22Z",
-      "generalText": "Voici le bilan du moment. Côté candidatures, Gmail montre qu’une nouvelle candidature avec CV a été envoyée ce matin à Bulle Architectes, et une réponse de courtoisie est déjà partie dans le fil Radio France ; aucune nouvelle demande d’entretien ou de CV n’a été reçue depuis le dernier passage. Aujourd’hui, l’agenda comprend l’anniversaire de ta mère et un concert des Wonda Mamas à 21 h place de la Liberté ; les prochains rendez-vous importants restent ceux du CIAS et du renouvellement du logement mercredi 19 août. Côté météo, il fait 23 °C et soleil à Sarlat, avec 30 °C attendus au plus chaud et des vigilances canicule/orages en Dordogne. La veille actualité reste volontairement courte faute de nouveauté majeure fiable dans les dernières heures ; côté pratique, la grève easyJet commence aujourd’hui et Festi’Sarlat est annoncé ce soir. Le dernier main vérifié a un CI et une publication GitHub réussis. Priorité utile : surveiller l’échéance Revolut Trading Pro du 18 août et préparer les deux rendez-vous de mercredi.",
-      "siteStatus": {
-        "repository": "angelosmegaplus/angel-leclerc",
-        "mainSha": "3c7fb5cd37c34d073f2d5227b930e8793c098070",
-        "ci": "success",
-        "publication": "success",
-        "dataSync": "success",
-        "checkedAt": "2026-08-15T06:47:22Z"
-      }
+      "fetchedAt": "2026-08-15T07:47:05Z",
+      "generalText": "Voici le bilan du moment. Aucun nouveau mail important ni nouvelle réponse de candidature n’est arrivé depuis le dernier passage ; le seul nouveau message est un email de bienvenue Supabase sans urgence. Côté agenda, l’anniversaire de Maman est aujourd’hui et le concert des Wonda Mamas est prévu ce soir à Sarlat, puis deux rendez-vous CIAS/logement s’enchaînent mercredi matin. La veille actualité n’a trouvé aucun développement majeur suffisamment récent dans la dernière heure et conserve seulement les informations pratiques réellement utiles du jour. Côté Angel OS, le dernier workflow de publication GitHub s’est terminé avec succès à 09 h 46 sur le commit b5883a2. La priorité immédiate est donc surtout de garder un œil sur les candidatures et de préparer les deux rendez-vous du 19 août.",
+      "site": {
+        "latestMain": "b5883a29b1f77e09b9bbd309ab67bb5a2d5d12e8",
+        "publicationWorkflow": "success",
+        "publicationCheckedAt": "2026-08-15T07:46:17Z"
+      },
+      "mail": {"important": 0, "new_since_last_run": 1},
+      "agenda": {"nextTitle": "Maman - Anniversaire", "nextStart": "2026-08-15T00:00:00"},
+      "news": {"new_major_last_hour": 0}
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-15T05:48:57Z",
-    "period_end": "2026-08-15T06:47:22Z",
-    "summary": "Un nouveau mail entrant non critique Samsung a été détecté depuis le précédent passage. Aucun nouveau message entrant de candidature, entretien, demande de CV ou redirection n’a été trouvé. Deux activités sortantes pertinentes sont visibles dans Gmail : une réponse de courtoisie dans le fil Radio France et une nouvelle candidature à Bulle Architectes avec CV. Aucune action Gmail n’a été effectuée par cette veille.",
-    "counts": {
-      "new_incoming": 1,
-      "important": 1,
-      "employment_or_application_incoming": 0,
-      "relevant_sent_activity": 2
-    },
-    "items": [
-      {
-        "type": "important_existing",
-        "subject": "Votre essai gratuit Trading Pro se termine bientôt ⏳",
-        "from": "Revolut <no-reply@revolut.com>",
-        "date": "2026-08-15T00:00:13Z",
-        "summary": "Fin de l’essai gratuit le 18 août, puis 4,99 € par mois annoncé.",
-        "action": "Vérifier avant le 18 août si Trading Pro doit être conservé ou désactivé."
-      }
-    ],
-    "recommendations": [
-      "Vérifier l’option Trading Pro avant le 18 août si l’abonnement payant n’est pas souhaité.",
-      "Aucune action nécessaire sur le rappel Samsung.",
-      "Ne pas répondre de nouveau au fil Radio France tant qu’aucun nouveau message entrant n’est reçu."
-    ],
+    "period_start": "2026-08-15T06:47:22Z",
+    "period_end": "2026-08-15T07:47:05Z",
+    "summary": "Un nouveau mail secondaire depuis le dernier passage : bienvenue Supabase. Aucun nouveau mail important, aucune nouvelle réponse de candidature et aucune action urgente détectée.",
+    "counts": {"new": 1, "important": 0, "secondary": 1, "applications": 0},
+    "items": [],
+    "recommendations": [],
     "source": "gmail_connector_readonly"
   }
 }
