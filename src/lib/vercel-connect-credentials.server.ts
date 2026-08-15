@@ -8,6 +8,7 @@ const CONNECTORS = {
 
 export const TMDB_READ_TOKEN_COOKIE = "angel_tmdb_read_token";
 export const TMDB_API_KEY_COOKIE = "angel_tmdb_api_key";
+export const OPENAI_API_KEY_COOKIE = "angel_openai_api_key";
 
 async function connectToken(connector: string) {
   try {
@@ -53,11 +54,19 @@ export async function getTmdbCredential() {
 }
 
 export async function getOpenAiCredential() {
-  const legacy = process.env["OPENAI_API_KEY"];
-  if (legacy?.trim()) return { value: legacy.trim(), source: "env" as const };
+  // 1) Persistent server secret remains the preferred source.
+  const serverKey = process.env["OPENAI_API_KEY"];
+  if (serverKey?.trim()) return { value: serverKey.trim(), source: "env" as const };
 
+  // 2) Vercel Connect connector shown in the Vercel project remains supported.
   const connected = await connectToken(CONNECTORS.openai);
-  return connected ? { value: connected, source: "vercel-connect" as const } : null;
+  if (connected) return { value: connected, source: "vercel-connect" as const };
+
+  // 3) Emergency admin-site fallback. The key is server-readable only.
+  const browserKey = requestCookie(OPENAI_API_KEY_COOKIE);
+  if (browserKey) return { value: browserKey, source: "admin-site-api-key" as const };
+
+  return null;
 }
 
 export const VERCEL_CONNECTOR_IDS = CONNECTORS;
