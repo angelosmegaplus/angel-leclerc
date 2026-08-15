@@ -1,97 +1,90 @@
 {
-  "fetchedAt": "2026-08-15T16:59:52Z",
+  "fetchedAt": "2026-08-15T17:59:50Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-15T16:59:52Z",
+      "fetchedAt": "2026-08-15T17:59:50Z",
       "important": [
         {
-          "subject": "Refus explicite — Le Comptoir Authentique",
-          "from": "Le Comptoir Authentique <contact@lecomptoirauthentique.com>",
-          "date": "2026-08-15T16:19:07Z",
-          "summary": "Agnès, gérante du Comptoir Authentique à Sarlat, indique explicitement qu'elle ne peut pas répondre positivement à la candidature BTS Communication. Une réponse de courtoisie a déjà été envoyée à 16:32:22Z dans le même fil ; cette routine n'envoie donc rien afin d'éviter tout doublon.",
-          "reason": "Refus d'alternance certain. Le fil montre qu'une réponse a déjà été envoyée, donc aucune nouvelle action mail n'est requise ici.",
-          "suggestedReply": ""
-        },
-        {
           "subject": "Échecs techniques GitHub persistants sur angel-leclerc",
-          "from": "GitHub <notifications@github.com>",
-          "date": "2026-08-15T16:56:44Z",
-          "summary": "Vingt-quatre nouvelles notifications GitHub ont été détectées depuis le précédent rapport. Elles concernent principalement CI, preview.yml, Observabilité Angel OS, Synchronisation données Angel OS et Publication Angel OS ; le dernier message visible signale l'échec du workflow Publication Angel OS sur le commit 2753d99.",
-          "reason": "Incident technique persistant sur le dépôt principal. Cette routine mail le consigne uniquement et laisse la maintenance technique dédiée diagnostiquer et corriger sans concurrence.",
+          "from": "Angel OS <notifications@github.com>",
+          "date": "2026-08-15T17:51:17Z",
+          "summary": "Quatre nouvelles notifications GitHub ont été détectées depuis le rapport précédent : échec de Synchronisation données Angel OS à 17:01:55Z, Observabilité Angel OS à 17:02:44Z, Maintenance Angel OS à 17:40:44Z et Publication Angel OS à 17:51:17Z. Aucun correctif n'est lancé par cette routine mail afin d'éviter une concurrence avec la maintenance technique dédiée.",
+          "reason": "Incident technique persistant sur le dépôt principal angel-leclerc ; le dernier signal est l'échec du workflow Publication Angel OS.",
           "suggestedReply": ""
         },
         {
-          "subject": "Relance Biocoop Sarlat envoyée",
-          "from": "Angel LECLERC <angelleclerc2006@gmail.com>",
-          "date": "2026-08-15T16:32:26Z",
-          "summary": "Une relance sortante concernant la candidature BTS Communication à Biocoop Sarlat a été envoyée. Aucun nouveau message entrant de Biocoop n'a été détecté sur cette période.",
-          "reason": "Information factuelle utile au suivi des candidatures ; ne pas relancer de nouveau automatiquement sans nouveau délai ou réponse.",
+          "subject": "Rappel agenda — Les Wonda Mamas en concert",
+          "from": "Google Agenda <calendar-notification@google.com>",
+          "date": "2026-08-15T17:59:56Z",
+          "summary": "Google Agenda a envoyé un rappel pour le concert des Wonda Mamas prévu ce samedi 15 août à 21:00, place de la Liberté.",
+          "reason": "Rappel d'un événement imminent reçu dans Gmail ; aucune action Gmail n'est nécessaire.",
           "suggestedReply": ""
         }
       ],
-      "otherSummary": "Depuis le précédent rapport, un refus explicite du Comptoir Authentique a été reçu puis déjà traité dans le même fil, une relance Biocoop Sarlat a été envoyée, et 24 notifications techniques GitHub ont signalé de nouveaux échecs de workflows. Aucun entretien, demande de CV, acceptation, redirection professionnelle ou autre réponse d'entreprise n'a été détecté. Gmail n'a subi aucune modification pendant cette exécution.",
+      "otherSummary": "Depuis le précédent rapport, cinq nouveaux messages entrants ont été détectés : quatre notifications techniques GitHub signalant des échecs de workflows Angel OS et un rappel Google Agenda pour un concert à 21:00. Aucun nouveau mail de candidature, entretien, demande de CV, acceptation, refus ou redirection professionnelle n'a été détecté. Gmail n'a subi aucune modification pendant cette exécution.",
       "counts": {
-        "new_since_last_run": 27,
-        "incoming": 25,
-        "technical_incoming": 24,
-        "employment_or_application_incoming": 1,
-        "explicit_rejections": 1,
+        "new_since_last_run": 5,
+        "incoming": 5,
+        "technical_incoming": 4,
+        "calendar_notifications": 1,
+        "employment_or_application_incoming": 0,
+        "explicit_rejections": 0,
         "positive_or_interview": 0,
-        "outgoing_application_followups": 1,
-        "already_sent_rejection_replies": 1
+        "outgoing_application_followups": 0,
+        "already_sent_rejection_replies": 0
       }
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-15T16:03:30Z",
-    "period_end": "2026-08-15T16:59:52Z",
-    "summary": "Vingt-sept messages ont été détectés depuis le précédent rapport : 24 notifications techniques GitHub, un refus explicite du Comptoir Authentique, une réponse de courtoisie déjà envoyée dans ce même fil et une relance sortante à Biocoop Sarlat. Le refus ne nécessite aucune action de cette routine : la réponse était déjà partie à 16:32:22Z et la gestion des refus reste réservée à la tâche alternance. Aucun entretien, demande de CV, acceptation ou redirection professionnelle n'a été détecté. La file ai_actions reste non interrogeable directement avec les connecteurs disponibles pendant cette exécution ; aucune action awaiting_operator n'a donc été exécutée ou modifiée.",
+    "period_start": "2026-08-15T16:59:52Z",
+    "period_end": "2026-08-15T17:59:50Z",
+    "summary": "Cinq nouveaux messages entrants ont été détectés depuis le précédent rapport : quatre notifications GitHub concernant Synchronisation données Angel OS, Observabilité Angel OS, Maintenance Angel OS et Publication Angel OS, ainsi qu'un rappel Google Agenda pour le concert des Wonda Mamas à 21:00. Aucun nouveau message lié à une candidature, un entretien, une demande de CV, une acceptation, un refus ou une redirection professionnelle n'a été détecté. La file ai_actions reste non interrogeable directement avec les connecteurs disponibles pendant cette exécution ; aucune action awaiting_operator n'a donc été exécutée ou modifiée.",
     "counts": {
-      "total_messages": 27,
-      "incoming": 25,
-      "technical_incoming": 24,
-      "employment_or_application_incoming": 1,
-      "explicit_rejections": 1,
+      "total_messages": 5,
+      "incoming": 5,
+      "technical_incoming": 4,
+      "calendar_notifications": 1,
+      "employment_or_application_incoming": 0,
+      "explicit_rejections": 0,
       "positive_or_interview": 0,
-      "outgoing_application_followups": 1,
-      "already_sent_rejection_replies": 1
+      "outgoing_application_followups": 0,
+      "already_sent_rejection_replies": 0
     },
     "items": [
       {
-        "subject": "Re: Candidature BTS Communication en alternance – Sarlat centre",
-        "from": "Le Comptoir Authentique <contact@lecomptoirauthentique.com>",
-        "date": "2026-08-15T16:19:07Z",
-        "reason": "Refus explicite de la candidature. Le fil contient déjà une réponse de courtoisie envoyée à 16:32:22Z ; aucune seconde réponse ne doit être envoyée."
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Synchronisation données Angel OS - main (45a3c95)",
+        "from": "Angel OS <notifications@github.com>",
+        "date": "2026-08-15T17:01:55Z",
+        "reason": "Nouvel échec de la synchronisation des données Angel OS ; cohérent avec le blocage serveur déjà connu."
       },
       {
-        "subject": "Re: Candidature BTS Communication en alternance – Biocoop Sarlat",
-        "from": "Angel LECLERC <angelleclerc2006@gmail.com>",
-        "date": "2026-08-15T16:32:26Z",
-        "reason": "Relance sortante détectée ; aucune réponse entrante correspondante sur la période."
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Observabilité Angel OS - main (45a3c95)",
+        "from": "Angel OS <notifications@github.com>",
+        "date": "2026-08-15T17:02:44Z",
+        "reason": "Nouvel échec du contrôle d'observabilité."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Publication Angel OS - main (2753d99)",
-        "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T16:56:44Z",
-        "reason": "Échec le plus récent du workflow Publication Angel OS."
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Maintenance Angel OS - main (524e5a2)",
+        "from": "Angel OS <notifications@github.com>",
+        "date": "2026-08-15T17:40:44Z",
+        "reason": "Échec récent du workflow de maintenance technique."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Observabilité Angel OS - main (ad21776)",
-        "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T16:34:56Z",
-        "reason": "Échec récent du contrôle d'observabilité de la production."
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Publication Angel OS - main (524e5a2)",
+        "from": "Angel OS <notifications@github.com>",
+        "date": "2026-08-15T17:51:17Z",
+        "reason": "Échec le plus récent du workflow de publication Angel OS."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Synchronisation données Angel OS - main (a35741d)",
-        "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T16:04:14Z",
-        "reason": "Échec de la synchronisation des données Angel OS, cohérent avec le blocage serveur déjà observé."
+        "subject": "Notification: Les Wonda Mamas en concert - sam. 15 août 2026 9pm (UTC+2)",
+        "from": "Google Agenda <calendar-notification@google.com>",
+        "date": "2026-08-15T17:59:56Z",
+        "reason": "Rappel d'un événement prévu à 21:00 ; aucune réponse email nécessaire."
       }
     ],
     "recommendations": [
-      "Ne jamais répondre une seconde fois au refus du Comptoir Authentique : le fil contient déjà la réponse envoyée.",
       "Laisser la routine de maintenance technique traiter les échecs GitHub afin d'éviter des corrections concurrentes.",
-      "Ne pas relancer de nouveau Biocoop Sarlat automatiquement après la relance envoyée aujourd'hui ; attendre une réponse ou le prochain délai prévu.",
+      "Aucune action candidature n'est requise sur cette période : aucun nouveau message d'entreprise n'a été reçu.",
       "La lecture/exécution de ai_actions nécessite toujours une voie serveur authentifiée ou un connecteur direct ; ne pas simuler d'action validée tant que cette source reste inaccessible."
     ],
     "source": "chatgpt-hourly-direct"
