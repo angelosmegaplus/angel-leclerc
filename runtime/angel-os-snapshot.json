@@ -1,9 +1,9 @@
 {
-  "fetchedAt": "2026-08-15T08:46:23Z",
+  "fetchedAt": "2026-08-15T09:48:47Z",
   "caches": {
     "news_dashboard": {
-      "fetchedAt": "2026-08-15T08:46:23Z",
-      "changed_since_previous": "Aucune nouvelle publication suffisamment récente, importante et vérifiable n’a été trouvée dans la dernière heure. Le fil reste volontairement très court : les événements pratiques de Sarlat prévus aujourd’hui sont conservés comme suivis utiles, sans recycler d’anciennes actualités nationales.",
+      "fetchedAt": "2026-08-15T09:48:47Z",
+      "changed_since_previous": "Aucune nouvelle publication publique suffisamment récente, importante et vérifiable n’a émergé dans la dernière heure. Le fil reste volontairement court plutôt que de recycler des informations anciennes ; les informations pratiques locales du jour sont conservées comme suivis utiles. Le vivier Films et séries a été actualisé aujourd’hui avec Obsession (2026) et Backrooms (2026).",
       "top_stories": [],
       "politics_society": [],
       "investigations": [],
@@ -16,11 +16,11 @@
       "practical_local": [
         {
           "title": "Festi’Sarlat ce soir au stade Christian-Goumondie",
-          "source": "Office de Tourisme Sarlat Périgord Noir / eTerritoire",
+          "source": "Office de Tourisme Sarlat Périgord Noir / Unidivers",
           "date": "2026-08-15T19:00:00+02:00",
           "category": "pratique_local",
           "summary": "Festi’Sarlat est programmé ce samedi 15 août à partir de 19 h au stade Christian-Goumondie, avec plusieurs DJ/artistes et restauration sur place.",
-          "link": "https://www.eterritoire.fr/detail/manifestations-aquitaine/festi-sarlat/2053120487/nouvelle-aquitaine%2Cdordogne%2Csarlat-la-caneda%2824200%29",
+          "link": "https://unidivers.fr/event/festisarlat-sarlat-la-caneda-dordogne-2026-08-15/",
           "zone": "Sarlat-la-Canéda",
           "importance": "moyenne",
           "why_relevant": "Événement local du jour directement utile pour les sorties et l’animation de Sarlat.",
@@ -41,7 +41,7 @@
       ]
     },
     "weather_sarlat": {
-      "fetchedAt": "2026-08-15T08:46:23Z",
+      "fetchedAt": "2026-08-15T09:48:47Z",
       "location": "Sarlat-la-Canéda, Dordogne, France",
       "current": {
         "condition": "Plutôt ensoleillé",
@@ -78,11 +78,20 @@
           "valid_until": "2026-08-16T00:00:00+02:00",
           "source": "Météo-France",
           "summary": "Vigilance jaune orages en vigueur jusqu’à minuit, puis maintenue dimanche."
+        },
+        {
+          "level": "jaune",
+          "type": "canicule",
+          "area": "Dordogne",
+          "valid_from": "2026-08-16T00:00:00+02:00",
+          "valid_until": "2026-08-17T00:00:00+02:00",
+          "source": "Météo-France",
+          "summary": "Vigilance jaune chaleur extrême prévue dimanche."
         }
       ]
     },
     "google_calendar_dashboard": {
-      "fetchedAt": "2026-08-15T08:46:23Z",
+      "fetchedAt": "2026-08-15T09:48:47Z",
       "nextEvent": {
         "title": "Les Wonda Mamas en concert",
         "start": "2026-08-15T21:00:00+02:00",
@@ -105,8 +114,16 @@
       ]
     },
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-15T08:46:23Z",
+      "fetchedAt": "2026-08-15T09:48:47Z",
       "important": [
+        {
+          "subject": "Échecs GitHub Actions répétés sur angel-leclerc",
+          "from": "GitHub <notifications@github.com>",
+          "date": "2026-08-15T09:47:37Z",
+          "summary": "Quatorze nouvelles notifications GitHub sont arrivées depuis le dernier passage : treize échecs CI sur des commits successifs et un échec Maintenance Angel OS. Sur le dernier commit contrôlé, le build réussit mais le type-check échoue.",
+          "reason": "Blocage technique réel pouvant empêcher les contrôles complets ; la tâche de maintenance dédiée doit le traiter sans dupliquer d’action ici.",
+          "suggestedReply": ""
+        },
         {
           "subject": "Votre essai gratuit Trading Pro se termine bientôt ⏳",
           "from": "Revolut <no-reply@revolut.com>",
@@ -116,44 +133,31 @@
           "suggestedReply": ""
         }
       ],
-      "otherSummary": "Aucun nouvel email reçu depuis le passage précédent à 09 h 47. Les autres non-lus récents visibles sont essentiellement informatifs (bienvenue Supabase et préférences Samsung). Aucun nouveau mail de candidature, demande d’entretien ou réponse professionnelle n’est arrivé dans la période.",
+      "otherSummary": "Aucun nouveau mail de candidature, demande d’entretien ou réponse professionnelle n’est arrivé depuis le passage précédent. Les nouveaux messages sont des alertes GitHub techniques ; les messages Supabase et Samsung restent secondaires.",
       "counts": {
-        "new_since_last_run": 0,
-        "important": 1,
+        "new_since_last_run": 14,
+        "important": 2,
         "secondary_recent_unread": 2,
-        "applications": 0
+        "applications": 0,
+        "technical_alerts": 14
       }
     },
     "admin_cockpit_summary": {
-      "fetchedAt": "2026-08-15T08:46:23Z",
-      "generalText": "Voici le bilan du moment. Aucun nouveau mail de candidature ni message professionnel important n’est arrivé depuis le dernier passage ; en revanche, un ancien non-lu de Revolut mérite un coup d’œil car l’essai Trading Pro est annoncé comme se terminant le 18 août avant un tarif de 4,99 € par mois. Côté agenda, l’anniversaire de Maman est aujourd’hui et le prochain rendez-vous à venir est le concert des Wonda Mamas ce soir à Sarlat ; les deux rendez-vous CIAS/logement restent prévus mercredi matin. La météo est le point pratique principal : 26 °C actuellement, jusqu’à 31 °C aujourd’hui, avec vigilance orange canicule en Dordogne et risque d’orages. La veille actualité n’a pas trouvé de nouvelle publication suffisamment récente et solide dans la dernière heure, donc elle n’a pas rempli artificiellement le fil. Côté Angel OS, plusieurs commits viennent d’être poussés sur main mais Vercel signale encore un blocage build-rate-limit sur le dernier commit. La priorité concrète est de vérifier l’essai Revolut et de rester attentif à la chaleur et aux orages aujourd’hui.",
+      "fetchedAt": "2026-08-15T09:48:47Z",
+      "generalText": "Voici le bilan du moment. Aucun nouveau mail de candidature ni demande professionnelle n’est arrivé depuis le dernier passage ; en revanche, GitHub a envoyé une série d’alertes techniques, avec un build qui passe mais un type-check qui échoue sur le dernier contrôle. La publication automatique n’a pas été lancée par le workflow GitHub car VERCEL_TOKEN n’y est pas disponible, donc il faut considérer la production comme non confirmée plutôt que comme à jour. Côté agenda, le prochain rendez-vous est le concert des Wonda Mamas ce soir à 21 h, puis les rendez-vous CIAS et logement mercredi matin. La météo reste le point pratique principal : 26 °C actuellement, jusqu’à 31 °C aujourd’hui, vigilance orange canicule et risque d’orages en Dordogne. La veille publique n’a pas trouvé de nouvelle information suffisamment fraîche et solide dans la dernière heure, tandis que la sélection Films et séries a été enrichie aujourd’hui avec Obsession et Backrooms. L’autre point à ne pas oublier est l’essai Revolut Trading Pro annoncé comme se terminant le 18 août. La priorité technique est de laisser la maintenance corriger le type-check et rétablir une voie de publication vérifiable, sans dupliquer les actions depuis cette veille.",
       "site": {
-        "latestMain": "25249019e3c485fb47d2dad71f0da7861903516c",
-        "deploymentStatus": "failure_build_rate_limit",
+        "latestMain": "e5bde42aa988611366d8d2f990677c332dbad2a2",
+        "buildStatus": "success",
+        "typecheckStatus": "failure",
+        "deploymentStatus": "deferred_vercel_token_missing",
         "deploymentTarget": "Vercel",
-        "checkedAt": "2026-08-15T08:46:23Z"
+        "checkedAt": "2026-08-15T09:48:47Z"
       },
-      "mail": {"important":1,"new_since_last_run":0,"applications":0},
-      "agenda": {"nextTitle":"Les Wonda Mamas en concert","nextStart":"2026-08-15T21:00:00+02:00"},
-      "weather": {"current_c":26,"high_c":31,"alert":"vigilance orange canicule; vigilance jaune orages"},
-      "news": {"new_major_last_hour":0}
+      "mail": {"important":2,"new_since_last_run":14,"applications":0,"technical_alerts":14},
+      "calendar": {"next":"Les Wonda Mamas en concert","nextStart":"2026-08-15T21:00:00+02:00"},
+      "weather": {"current_c":26,"high_c":31,"alerts":["orange_canicule","jaune_orages"]},
+      "filmsSeries": {"updatedDate":"2026-08-15","newCandidates":["Obsession","Backrooms"],"movixHomepageChanged":false},
+      "news": {"freshTopStories":0}
     }
-  },
-  "hourly_mail_report": {
-    "period_start": "2026-08-15T07:47:05Z",
-    "period_end": "2026-08-15T08:46:23Z",
-    "summary": "Aucun nouvel email depuis le rapport précédent. Un non-lu plus ancien reste à surveiller : fin annoncée de l’essai Revolut Trading Pro le 18 août, avec tarif de 4,99 € par mois ensuite. Aucun nouveau message de candidature ou professionnel.",
-    "counts": {"new":0,"important":1,"secondary_recent_unread":2,"applications":0},
-    "items": [
-      {
-        "subject":"Votre essai gratuit Trading Pro se termine bientôt ⏳",
-        "from":"Revolut <no-reply@revolut.com>",
-        "date":"2026-08-15T00:00:13Z",
-        "summary":"Essai Trading Pro annoncé comme se terminant le 18 août 2026, puis 4,99 € par mois.",
-        "reason":"Échéance financière proche sur un message non lu."
-      }
-    ],
-    "recommendations": ["Vérifier dans Revolut si Trading Pro doit être conservé ou arrêté avant le 18 août."],
-    "source": "gmail_connector_readonly"
   }
 }
