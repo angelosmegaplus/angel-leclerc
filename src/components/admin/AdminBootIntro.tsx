@@ -1,20 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2, Volume2 } from "lucide-react";
-import { isStandalone } from "@/lib/pwa";
 
-const BOOT_KEY = "angel-os:boot-played-this-session";
+export const ADMIN_BOOT_PENDING_KEY = "angel-os:admin-boot-pending";
 
-function hasPlayedThisSession() {
+function hasPendingBoot() {
   try {
-    return window.sessionStorage.getItem(BOOT_KEY) === "1";
+    return window.sessionStorage.getItem(ADMIN_BOOT_PENDING_KEY) === "1";
   } catch {
     return false;
   }
 }
 
-function markPlayedThisSession() {
+function consumePendingBoot() {
   try {
-    window.sessionStorage.setItem(BOOT_KEY, "1");
+    window.sessionStorage.removeItem(ADMIN_BOOT_PENDING_KEY);
   } catch {
     /* stockage indisponible */
   }
@@ -22,7 +21,7 @@ function markPlayedThisSession() {
 
 export function AdminBootIntro() {
   // L'overlay existe dès le premier rendu afin que l'interface admin ne puisse
-  // jamais apparaître une fraction de seconde avant le générique.
+  // jamais apparaître une fraction de seconde avant un générique demandé.
   const [visible, setVisible] = useState(true);
   const [shouldPlay, setShouldPlay] = useState(true);
   const [videoReady, setVideoReady] = useState(false);
@@ -31,15 +30,15 @@ export function AdminBootIntro() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
-    // Intro uniquement dans l'app installée, une seule fois pendant la session PWA.
-    // Le test est fait après que l'écran noir de boot soit déjà en place.
-    if (!isStandalone() || hasPlayedThisSession()) {
+    // Le générique n'est plus lié au lancement PWA : il est déclenché par
+    // la validation du PIN et attend l'arrivée réelle dans l'espace admin.
+    if (!hasPendingBoot()) {
       setShouldPlay(false);
       setVisible(false);
       return;
     }
 
-    markPlayedThisSession();
+    consumePendingBoot();
     setShouldPlay(true);
   }, []);
 
@@ -60,8 +59,8 @@ export function AdminBootIntro() {
         await video.play();
         if (!cancelled) setSoundBlocked(false);
       } catch {
-        // L'intro doit démarrer immédiatement même si Android/Chrome refuse
-        // l'autoplay sonore. On lance alors la vidéo sans son au lieu de bloquer.
+        // Android/Chrome peut refuser l'autoplay sonore. Dans ce cas la vidéo
+        // démarre quand même sans son au lieu de bloquer l'accès à l'admin.
         video.muted = true;
         try {
           await video.play();
