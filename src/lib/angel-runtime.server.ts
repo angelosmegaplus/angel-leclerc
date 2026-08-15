@@ -15,6 +15,7 @@ import {
   MemoryWorkflowStateStore,
   NativeTaskWorker,
 } from "../../angel-os/core";
+import { getOpenAiCredential } from "./vercel-connect-credentials.server";
 
 // Angel OS system runtime. These are system services, not Angel OS IA services.
 // External providers remain complementary and are attached through adapters.
@@ -36,11 +37,15 @@ export const angelApplicationRuntime = new AngelApplicationRuntime();
 angelApplicationRuntime.register({
   id: "angel-os-ia",
   name: "Angel OS IA",
-  version: "0.2.0",
+  version: "0.2.1",
   layer: "angel-os-ia",
   requires: ["angel-os", "events", "memory", "workflows", "hybrid-orchestrator"],
   provides: ["ai-providers", "conversation", "analysis", "generation", "agents", "intelligent-automation"],
-  health: async () => Boolean(process.env["OPENAI_API_KEY"]) && !["0", "false", "off", "disabled"].includes(String(process.env["ANGEL_AI_ENABLED"] ?? "true").toLowerCase()),
+  health: async () => {
+    const enabled = !["0", "false", "off", "disabled"].includes(String(process.env["ANGEL_AI_ENABLED"] ?? "true").toLowerCase());
+    if (!enabled) return false;
+    return Boolean(await getOpenAiCredential());
+  },
 });
 
 angelApplicationRuntime.register({
@@ -53,7 +58,6 @@ angelApplicationRuntime.register({
   health: async () => true,
 });
 
-// Known web target. Health is updated by deployment/integrity adapters when data exists.
 angelNodeGateway.upsert({ id: "vercel-web", kind: "vercel", priority: 50, state: "unknown" });
 
 export async function recordAngelOperation(input: {
