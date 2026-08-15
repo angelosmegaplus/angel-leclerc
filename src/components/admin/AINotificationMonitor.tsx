@@ -106,6 +106,7 @@ export function AINotificationMonitor() {
       if (!(target instanceof Element)) return;
       const button = target.closest("button");
       if (!(button instanceof HTMLButtonElement)) return;
+      if (button.closest("[data-no-refresh-queue='true']")) return;
 
       const aria = button.getAttribute("aria-label") ?? "";
       const text = button.textContent ?? "";
@@ -117,6 +118,8 @@ export function AINotificationMonitor() {
       void queueAdminRefresh(section, {
         label: (aria || text).replace(/\s+/g, " ").trim().slice(0, 180),
         path: window.location.pathname,
+      }).then(() => {
+        window.dispatchEvent(new CustomEvent("angel-os:chatgpt-queue-updated"));
       }).catch((error) => {
         console.error("[angel-os] impossible d’ajouter le contrôle d’actualisation", error);
       });
