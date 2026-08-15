@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "revision": "2026-08-15-live-integrations-v1",
+  "refreshMs": 30000,
+  "integrations": [
+    {
+      "id": "angel-os-live-status",
+      "enabled": true,
+      "type": "json",
+      "file": "status.json"
+    }
+  ]
+}
