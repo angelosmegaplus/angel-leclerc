@@ -3,15 +3,24 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const KEY_PREFIX = "workflow:";
 
+function hasDurableBackend() {
+  return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
 /**
- * Durable Angel OS workflow state backed by the existing angel_os_cache table.
- * A small in-process fallback keeps development usable when Supabase is absent,
- * while production persists every snapshot through the service-role client.
+ * Durable Angel OS workflow state backed by angel_os_cache when the server-side
+ * Supabase credentials are available. The process-local map keeps the runtime
+ * operational without generating false production errors when that optional
+ * persistence backend is not configured.
  */
 export class SupabaseWorkflowStateStore implements WorkflowStateStore {
   private readonly fallback = new Map<string, WorkflowSnapshot<unknown>>();
 
   async load<TContext>(id: string): Promise<WorkflowSnapshot<TContext> | null> {
+    if (!hasDurableBackend()) {
+      return (this.fallback.get(id) as WorkflowSnapshot<TContext> | undefined) ?? null;
+    }
+
     try {
       const { data, error } = await (supabaseAdmin as unknown as {
         from: (table: string) => {
@@ -28,7 +37,7 @@ export class SupabaseWorkflowStateStore implements WorkflowStateStore {
         return snapshot;
       }
     } catch (error) {
-      console.warn("[angel-workflow] durable store read unavailable; using process fallback", error);
+      console.warn("[angel-workflow] durable read unavailable; using process fallback", error instanceof Error ? error.message : String(error));
     }
 
     return (this.fallback.get(id) as WorkflowSnapshot<TContext> | undefined) ?? null;
@@ -36,6 +45,8 @@ export class SupabaseWorkflowStateStore implements WorkflowStateStore {
 
   async save<TContext>(snapshot: WorkflowSnapshot<TContext>): Promise<void> {
     this.fallback.set(snapshot.id, snapshot as WorkflowSnapshot<unknown>);
+    if (!hasDurableBackend()) return;
+
     try {
       const { error } = await (supabaseAdmin as unknown as {
         from: (table: string) => {
@@ -54,7 +65,7 @@ export class SupabaseWorkflowStateStore implements WorkflowStateStore {
       );
       if (error) throw new Error(error.message || "Supabase workflow write failed");
     } catch (error) {
-      console.warn("[angel-workflow] durable store write unavailable; snapshot retained in process fallback", error);
+      console.warn("[angel-workflow] durable write unavailable; snapshot retained in process fallback", error instanceof Error ? error.message : String(error));
     }
   }
 }
