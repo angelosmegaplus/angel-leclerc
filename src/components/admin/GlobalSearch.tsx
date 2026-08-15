@@ -55,7 +55,8 @@ export function GlobalSearch({ open, onClose, onNavigate }: { open: boolean; onC
       return { result } as const;
     },
     onSuccess: (payload) => {
-      if ("navigation" in payload) { navigateThroughCore(payload.navigation.target); toast.success(`Ouverture : ${payload.navigation.target.label}`); return; }
+      const navigationPayload = "navigation" in payload ? payload.navigation : undefined;
+      if (navigationPayload) { navigateThroughCore(navigationPayload.target); toast.success(`Ouverture : ${navigationPayload.target.label}`); return; }
       void emitAngelOSEvent("angel-os-ia:universal-search:conversation-started", { query: trimmed.slice(0, 500), source: "openai" }).catch(() => {});
       void queryClient.invalidateQueries({ queryKey: ["angel-ai-messages"] });
       void queryClient.invalidateQueries({ queryKey: ["angel"] });
