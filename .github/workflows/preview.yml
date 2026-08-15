@@ -1,0 +1,70 @@
+name: Preview Angel OS
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  VERCEL_ORG_ID: team_V2zZ6Gj9Vt3ULjCO6ssDbqwM
+  VERCEL_PROJECT_ID: prj_TZoiBkJM3z1knPE6Pc1V854CwrNe
+
+jobs:
+  preview:
+    name: Build, test and preview
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: preview
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Validate source
+        run: |
+          bun install
+          bun run lint
+          bun run build
+          bunx tsc --noEmit --pretty false
+
+      - name: Ensure Vercel preview credentials exist
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: test -n "$VERCEL_TOKEN" || { echo "::error::VERCEL_TOKEN absent"; exit 1; }
+
+      - name: Pull preview configuration
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: bunx vercel@latest pull --yes --environment=preview --token="$VERCEL_TOKEN" --scope=angel-os2
+
+      - name: Deploy preview
+        id: deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        shell: bash
+        run: |
+          URL="$(bunx vercel@latest deploy --token="$VERCEL_TOKEN" --scope=angel-os2)"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke-test preview
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+        run: bunx vercel@latest curl /api/angel-os/health --deployment "$DEPLOY_URL" --token="$VERCEL_TOKEN" --scope=angel-os2 --fail --silent --show-error >/dev/null
+
+      - name: Comment preview URL
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+        run: gh pr comment ${{ github.event.pull_request.number }} --body "Preview Angel OS vérifiée : $DEPLOY_URL"
