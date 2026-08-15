@@ -6,7 +6,7 @@ import { rememberPersonalContext } from "./angel-os-ia/personal-context.server";
 type AdminAiSummaryResult = {
   text: string;
   generatedAt: string;
-  source: "openai" | "local";
+  source: "openai" | "unavailable";
   stale: boolean;
 };
 
@@ -16,6 +16,13 @@ const CACHE_KEY = "admin_openai_summary";
 function clip(value: unknown, max = 1_200) {
   if (typeof value !== "string") return value;
   return value.replace(/\s+/g, " ").trim().slice(0, max);
+}
+
+function localDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 export const getAdminAiSummary = createServerFn({ method: "GET" })
@@ -28,7 +35,9 @@ export const getAdminAiSummary = createServerFn({ method: "GET" })
     const { data: cachedRow } = await supabase.from("angel_os_cache").select("payload,updated_at").eq("key", CACHE_KEY).maybeSingle();
     const cachedPayload = cachedRow?.payload as AdminAiSummaryResult | undefined;
     const cachedAt = cachedRow?.updated_at ? new Date(cachedRow.updated_at).getTime() : 0;
-    if (cachedPayload?.text && Date.now() - cachedAt < SUMMARY_TTL_MS) return { ...cachedPayload, stale: false };
+    if (cachedPayload?.text && cachedPayload.source === "openai" && Date.now() - cachedAt < SUMMARY_TTL_MS) {
+      return { ...cachedPayload, stale: false };
+    }
 
     const [applicationsResult, reportsResult, cacheResult, actionsResult] = await Promise.all([
       supabase.from("applications").select("company,city,position,status,response,follow_up_at,sent_at").order("sent_at", { ascending: false }).limit(80),
@@ -38,7 +47,7 @@ export const getAdminAiSummary = createServerFn({ method: "GET" })
     ]);
 
     const applications = applicationsResult.data ?? [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = localDateKey();
     const active = applications.filter((app: any) => !["refusee", "acceptee", "acceptée"].includes(app.status ?? ""));
     const followUps = active.filter((app: any) => app.follow_up_at && app.follow_up_at <= today).length;
     const recentResponses = applications.filter((app: any) => app.response).slice(0, 5).map((app: any) => ({ company: clip(app.company, 100), status: app.status, response: clip(app.response, 240) }));
@@ -92,14 +101,19 @@ export const getAdminAiSummary = createServerFn({ method: "GET" })
     if (!ai.text) {
       if (cachedPayload?.text && cachedPayload.source === "openai") return { ...cachedPayload, stale: true };
       return {
-        text: "Angel OS IA est temporairement indisponible. Les données et fonctions système d’Angel OS restent accessibles, mais aucune synthèse personnelle n’est générée localement à sa place.",
+        text: "Angel OS IA est temporairement indisponible. Les données et fonctions système restent accessibles, mais aucune synthèse locale ne remplace OpenAI dans l’administration.",
         generatedAt: new Date().toISOString(),
-        source: "local",
+        source: "unavailable",
         stale: true,
       };
     }
 
-    const payload: AdminAiSummaryResult = { text: ai.text.slice(0, 1_800), generatedAt: new Date().toISOString(), source: "openai", stale: false };
+    const payload: AdminAiSummaryResult = {
+      text: ai.text.slice(0, 1_800),
+      generatedAt: new Date().toISOString(),
+      source: "openai",
+      stale: false,
+    };
     await supabase.from("angel_os_cache").upsert({ key: CACHE_KEY, payload, updated_at: payload.generatedAt }, { onConflict: "key" });
     return payload;
   });
