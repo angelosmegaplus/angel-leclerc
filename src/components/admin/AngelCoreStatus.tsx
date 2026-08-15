@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Activity, Brain, Cpu, Database, ShieldCheck, TriangleAlert } from "lucide-react";
+import { Activity, Brain, Cpu, Database, Network, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
 import { getAngelSupervisorSnapshot } from "@/lib/angel-supervisor.functions";
 
 export function AngelCoreStatus() {
@@ -15,8 +15,10 @@ export function AngelCoreStatus() {
   });
 
   if (!data) return null;
-  const warning = data.health.level !== "ok";
-  const counters = data.runtime.telemetry.counters ?? {};
+  const os = data.angelOs;
+  const ia = data.angelOsIa;
+  const warning = os.health.level !== "ok";
+  const counters = os.runtime.telemetry.counters ?? {};
   const success = Object.entries(counters)
     .filter(([key]) => key.startsWith("angel.operation.success"))
     .reduce((sum, [, value]) => sum + Number(value || 0), 0);
@@ -32,19 +34,31 @@ export function AngelCoreStatus() {
             {warning ? <TriangleAlert className="h-5 w-5" /> : <ShieldCheck className="h-5 w-5" />}
           </span>
           <div>
-            <p className="font-mono text-[10px] font-semibold uppercase tracking-[.18em] text-white/45">Angel OS Core · superviseur</p>
-            <p className="mt-1 font-semibold text-white">{warning ? "Attention requise" : "Noyau opérationnel"}</p>
-            {data.health.warnings.length ? <p className="mt-1 text-xs text-amber-100/75">{data.health.warnings.join(" · ")}</p> : <p className="mt-1 text-xs text-white/40">IA, mémoire, événements et télémétrie surveillés ensemble.</p>}
+            <p className="font-mono text-[10px] font-semibold uppercase tracking-[.18em] text-white/45">Angel OS Core · superviseur système</p>
+            <p className="mt-1 font-semibold text-white">{warning ? "Attention système requise" : "Noyau opérationnel"}</p>
+            {os.health.warnings.length ? <p className="mt-1 text-xs text-amber-100/75">{os.health.warnings.join(" · ")}</p> : <p className="mt-1 text-xs text-white/40">Le noyau fonctionne indépendamment d’Angel OS IA.</p>}
           </div>
         </div>
-        <span className={`rounded-full px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[.12em] ${warning ? "bg-amber-500/15 text-amber-200" : "bg-emerald-500/12 text-emerald-200"}`}>{data.health.level}</span>
+        <span className={`rounded-full px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[.12em] ${warning ? "bg-amber-500/15 text-amber-200" : "bg-emerald-500/12 text-emerald-200"}`}>{os.health.level}</span>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <Stat icon={Brain} label="Mémoire" value={String(data.runtime.memory.total)} />
-        <Stat icon={Activity} label="Événements" value={String(data.runtime.recentEvents.length)} />
+      <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
+        <Stat icon={Brain} label="Mémoire" value={String(os.runtime.memory.total)} />
+        <Stat icon={Activity} label="Événements" value={String(os.runtime.recentEvents.length)} />
         <Stat icon={Cpu} label="Succès" value={String(success)} />
         <Stat icon={Database} label="Échecs" value={String(failures)} />
+        <Stat icon={Network} label="Nœuds" value={String(os.runtime.nodes.length)} />
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/20 p-3">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-red-300" />
+          <div>
+            <p className="text-xs font-semibold text-white">Angel OS IA</p>
+            <p className="text-[11px] text-white/45">Distribution IA distincte du noyau</p>
+          </div>
+        </div>
+        <span className={`rounded-full px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[.12em] ${ia.health.level === "ok" ? "bg-emerald-500/12 text-emerald-200" : ia.health.level === "critical" ? "bg-red-500/15 text-red-200" : "bg-amber-500/15 text-amber-200"}`}>{ia.health.level}</span>
       </div>
     </section>
   );
