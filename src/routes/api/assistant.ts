@@ -4,6 +4,7 @@ import { resilientAngelAi } from "@/lib/ai-resilient.server";
 import { ASSISTANT_SYSTEM_PROMPT, CONTACT_ASSISTANT_ADDENDUM } from "@/lib/assistant-context";
 import { checkAssistantRate } from "@/lib/assistant-rate.server";
 import { aiMemoryPrompt } from "@/lib/ai-memory.server";
+import { angelMemoryIndex, recordAngelOperation } from "@/lib/angel-runtime.server";
 
 const jsonHeaders = {
   "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
@@ -29,7 +30,7 @@ export const Route = createFileRoute("/api/assistant")({
         try {
           const ip = clientIp(request);
           if (!checkAssistantRate(ip)) {
-            console.warn("[assistant-api] rate limited", { requestId });
+            await recordAngelOperation({ type: "assistant.rate_limited", source: "angel-ai", ok: false });
             return Response.json({ text: null, source: "fallback", reason: "rate_limit", requestId }, { status: 429, headers: jsonHeaders });
           }
 
@@ -48,33 +49,48 @@ export const Route = createFileRoute("/api/assistant")({
           });
 
           const liveMemory = await aiMemoryPrompt("public");
+          const nativeHits = angelMemoryIndex.search(question, 5);
+          const nativeMemory = nativeHits.length
+            ? `\n\nMémoire Angel OS pertinente :\n${nativeHits.map((hit) => `- ${hit.title}: ${hit.text.slice(0, 500)}`).join("\n")}`
+            : "";
           const basePrompt = mode === "contact" ? `${ASSISTANT_SYSTEM_PROMPT}\n\n${CONTACT_ASSISTANT_ADDENDUM}` : ASSISTANT_SYSTEM_PROMPT;
-          const systemPrompt = `${basePrompt}${liveMemory}`;
+          const systemPrompt = `${basePrompt}${liveMemory}${nativeMemory}`;
           const messages: AiMessage[] = [
             { role: "system", content: systemPrompt },
             ...history,
             { role: "user", content: question },
           ];
 
-          console.info("[assistant-api] request", { requestId, mode, history: history.length, liveMemory: Boolean(liveMemory) });
           const result = await resilientAngelAi({
             messages,
             priority: "interactive",
             maxTokens: mode === "contact" ? 700 : 600,
             temperature: mode === "contact" ? 0.35 : 0.3,
-            // Un identifiant unique force une réponse neuve pour chaque message et
-            // évite qu'un ancien résultat du cache serveur réapparaisse dans le fil.
             cacheKey: `assistant-live:${requestId}`,
             cacheTtlMs: 1,
           });
 
-          console.info("[assistant-api] result", {
-            requestId,
-            ok: Boolean(result.text),
-            reason: result.reason,
-            recoveryAction: result.recoveryAction,
-            durationMs: Date.now() - startedAt,
+          const durationMs = Date.now() - startedAt;
+          const ok = Boolean(result.text);
+          await recordAngelOperation({
+            type: ok ? "assistant.completed" : "assistant.failed",
+            source: "angel-ai",
+            ok,
+            durationMs,
+            payload: { requestId, mode, reason: result.reason, recoveryAction: result.recoveryAction },
           });
+
+          if (result.text) {
+            angelMemoryIndex.upsert({
+              id: `assistant:${requestId}`,
+              source: "assistant",
+              title: question.slice(0, 120),
+              text: `Question: ${question}\nRéponse: ${result.text.slice(0, 2500)}`,
+              tags: ["angel-ai", mode],
+              updatedAt: Date.now(),
+              metadata: { requestId },
+            });
+          }
 
           return Response.json(
             {
@@ -86,7 +102,9 @@ export const Route = createFileRoute("/api/assistant")({
             { headers: jsonHeaders },
           );
         } catch (error) {
-          console.error("[assistant-api] failure", { requestId, durationMs: Date.now() - startedAt, error });
+          const durationMs = Date.now() - startedAt;
+          console.error("[assistant-api] failure", { requestId, durationMs, error });
+          await recordAngelOperation({ type: "assistant.exception", source: "angel-ai", ok: false, durationMs, payload: { requestId } });
           return Response.json({ text: null, source: "fallback", reason: "server_error", requestId }, { status: 500, headers: jsonHeaders });
         }
       },
