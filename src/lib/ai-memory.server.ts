@@ -37,11 +37,31 @@ export async function readAiMemory(scope: AiMemoryScope | "all" = "all", limit =
   }));
 }
 
+async function publicSiteUpdates() {
+  const { data, error } = await supabaseAdmin
+    .from("articles")
+    .select("title, slug, category, excerpt, published_at, updated_at")
+    .eq("published", true)
+    .eq("is_private", false)
+    .order("published_at", { ascending: false, nullsFirst: false })
+    .limit(12);
+  if (error) {
+    console.error("[ai-memory] public site updates failed", error);
+    return "";
+  }
+  if (!data?.length) return "";
+  return `\n\nNOUVEAUTÉS PUBLIÉES SUR LE SITE\n${data.map((article) => {
+    const summary = article.excerpt ? ` — ${String(article.excerpt).replace(/\s+/g, " ").slice(0, 220)}` : "";
+    return `- ${article.title} (${article.category}) : /articles/${article.slug}${summary}`;
+  }).join("\n")}`;
+}
+
 export async function aiMemoryPrompt(scope: AiMemoryScope | "all") {
   const items = await readAiMemory(scope);
-  if (!items.length) return "";
   const lines = items.map((item) => `- ${item.title}: ${item.content || "(aucun détail supplémentaire)"}`);
-  return `\n\nMÉMOIRE ANGEL OS ACTUALISÉE\n${lines.join("\n")}`;
+  const memory = lines.length ? `\n\nMÉMOIRE ANGEL OS ACTUALISÉE\n${lines.join("\n")}` : "";
+  if (scope === "public") return `${memory}${await publicSiteUpdates()}`;
+  return memory;
 }
 
 export async function readChatGptQueue(limit = 50) {
@@ -49,7 +69,7 @@ export async function readChatGptQueue(limit = 50) {
     .from("ai_actions")
     .select("id, kind, title, description, payload, status, sensitive, created_at, updated_at")
     .in("kind", ["chatgpt_task", "operator_request"])
-    .in("status", ["pending", "running"])
+    .in("status", ["pending", "running", "awaiting_operator"])
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) {
