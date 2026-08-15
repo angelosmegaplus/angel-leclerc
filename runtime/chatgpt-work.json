@@ -1,45 +1,51 @@
 {
   "version": 4,
-  "updatedAt": "2026-08-15T15:29:00Z",
+  "updatedAt": "2026-08-15T23:30:00Z",
   "source": "github",
   "current": [
     {
       "id": "angel-ai-end-to-end",
       "title": "Maintenir Angel AI OpenAI validée de bout en bout",
       "status": "running",
-      "detail": "Le test réel de production /api/assistant a réussi dans Maintenance Angel OS le 15 août 2026 à 13:52 UTC : source=openai et texte non vide. Le workflow de maintenance a été corrigé par d06cb1ee288f9de28cbef5417561e74195a9a12f pour exécuter ce test OpenAI AVANT build/typecheck, afin qu'une erreur technique secondaire ne masque plus l'état IA. Les changements privés/admin plus récents restent à valider après publication du dernier main."
+      "detail": "Le test réel de production /api/assistant a encore réussi le 15 août 2026 à 22:00:57Z avec HTTP 200, source=openai et texte ANGEL_AI_OK. Le workflow Maintenance Angel OS a été renforcé sur main par le commit 3c95f67ae8f53a7723ce05455d9db330c75d1797 : il doit désormais tester à chaque cycle un message court, une question normale, le mode Contact, un contexte multi-tour, un échec contrôlé et le health OpenAI. Le chemin privé Angel OS IA utilise le même resilientAngelAi et interdit le fallback local, mais sa validation end-to-end reste impossible sans session administrateur authentifiée de test."
+    },
+    {
+      "id": "data-sync-secrets",
+      "title": "Rétablir la synchronisation native des caches Angel OS",
+      "status": "blocked_secret",
+      "detail": "Le workflow Synchronisation données Angel OS échoue avant écriture : le run 31913819272 du 15 août 2026 à 23:05Z confirme que SUPABASE_URL est absent des secrets GitHub de l'environnement production ; SUPABASE_SERVICE_ROLE_KEY/SUPABASE_PUBLISHABLE_KEY et NEWSLETTER_CRON_SECRET ne sont pas injectés non plus. Aucun contournement ni secret inventé : les snapshots GitHub restent conservés jusqu'à configuration serveur."
     },
     {
       "id": "publication-production",
-      "title": "Rétablir une chaîne CI/publication verte pour le dernier main",
-      "status": "blocked_code",
-      "detail": "Le dernier main a un build de bundle réussi mais le TypeScript échoue sur les exécutions CI récentes ; le workflow Publication Angel OS échoue donc avant publication. La production actuelle reste fonctionnelle et Angel AI publique y répond réellement. Diagnostiquer et corriger l'erreur TypeScript sans publier un état cassé."
+      "title": "Garder main et production synchronisés",
+      "status": "waiting_publish",
+      "detail": "La dernière CI de code observée sur 76ba8a66010f376d9427aeef3bbf0a531cde4a57 est verte et Publication Angel OS a réussi à 22:54Z. Le commit 3c95f67ae8f53a7723ce05455d9db330c75d1797 ne modifie que le workflow de maintenance ; son statut Vercel est actuellement pending. Ne pas fabriquer de commit ou de build concurrent : vérifier le prochain état officiel."
     },
     {
       "id": "movix-max-port",
       "title": "Adapter au maximum Movix dans Films & séries",
-      "status": "running",
-      "detail": "Portage Movix toujours valide, à reprendre après les blocages IA/CI : Home cinéma, carrousels tactiles, recherche/autocomplétion, filtres, TMDB, fiches riches, casting, trailers, fournisseurs légaux, collections, watchlist, historique/progression, lazy loading, cache et UX mobile. Aucun module de proxy/débridage/contournement publicitaire ou lecture non autorisée. Attribution CC BY-NC 4.0 conservée."
+      "status": "waiting_priority",
+      "detail": "Le portage Movix reste valide mais passe après la priorité IA : Home cinéma, carrousels tactiles, recherche/autocomplétion, filtres, TMDB, fiches riches, casting, trailers, fournisseurs légaux, collections, watchlist, historique/progression, lazy loading, cache et UX mobile. Aucun module de proxy/débridage/contournement publicitaire ou lecture non autorisée. Attribution CC BY-NC 4.0 conservée."
     }
   ],
   "waiting": [
     {
       "id": "admin-ai-production-check",
-      "title": "Valider les points d'entrée Angel AI privés/admin après publication",
-      "status": "waiting_publish",
-      "detail": "Les commits récents ont rendu la recherche universelle privée et le chat Angel OS IA OpenAI-only. Ils ne sont pas encore validés en production car la chaîne CI actuelle échoue au type-check. Vérifier accueil admin, recherche universelle, fil IA et conservation du contexte dès publication."
+      "title": "Valider les points d'entrée Angel AI privés/admin avec une vraie session",
+      "status": "blocked_auth",
+      "detail": "Le code privé runPrivateAngelOsIaChat est présent sur main, impose requireSupabaseAuth + rôle admin, utilise resilientAngelAi et échoue explicitement plutôt que de substituer un moteur local. Une vraie validation production de la persistance ai_messages, de l'accueil admin, de la recherche universelle et du contexte nécessite une session administrateur authentifiée ; elle ne doit pas être simulée par une route publique."
     },
     {
       "id": "admin-auth-production-check",
       "title": "Vérifier le nouveau parcours d’accès administrateur",
-      "status": "waiting_publish",
-      "detail": "Contrôle production différé tant que le dernier main n'est pas réellement publié. Vérifier ensuite CAPTCHA visuel aléatoire multi-catégories, limitation des tentatives, écran noir de sécurité puis connexion, sans retour au PIN 2005 ni boucle."
+      "status": "waiting_manual_session",
+      "detail": "À vérifier avec une vraie session/navigation admin : CAPTCHA visuel aléatoire multi-catégories, limitation des tentatives, écran de sécurité puis connexion, sans retour au PIN 2005 ni boucle."
     },
     {
       "id": "admin-news-production-check",
       "title": "Vérifier toutes les rubriques Actualités en production",
-      "status": "waiting_publish",
-      "detail": "Contrôle production différé tant que le dernier main n'est pas réellement publié. Chaque rubrique doit recevoir des contenus et À la une doit rester fraîche et personnalisée."
+      "status": "waiting_live_data",
+      "detail": "Le correctif de parsing structuré des actualités est publié et /api/admin/news a déjà répondu HTTP 200. Il reste à contrôler dans l'interface que chaque rubrique reçoit effectivement des contenus récents et que À la une reste fraîche et personnalisée."
     }
   ],
   "done": [
@@ -47,8 +53,15 @@
       "id": "angel-ai-public-production-validation",
       "title": "Valider Angel AI publique OpenAI en production",
       "status": "done",
-      "detail": "Le workflow Maintenance Angel OS run 31888325464 a exécuté un POST réel vers /api/assistant et l'étape Check Angel AI end-to-end in production a réussi le 15 août 2026 à 13:52 UTC.",
-      "commit": "715879505aa4a539e817ce68869d20275353e99b"
+      "detail": "Le workflow Maintenance Angel OS a exécuté plusieurs POST réels vers /api/assistant ; le contrôle du 15 août 2026 à 22:00:57Z a renvoyé HTTP 200, source=openai et ANGEL_AI_OK en environ 1,6 seconde.",
+      "commit": "76ba8a66010f376d9427aeef3bbf0a531cde4a57"
+    },
+    {
+      "id": "maintenance-secondary-dependency",
+      "title": "Empêcher Gmail non configuré de masquer l'état IA",
+      "status": "done",
+      "detail": "Le workflow Maintenance Angel OS ignore désormais proprement la synchronisation candidatures lorsque NEWSLETTER_CRON_SECRET est absent et poursuit lint, build, TypeScript et contrôles de pages au lieu d'échouer avant eux.",
+      "commit": "76ba8a66010f376d9427aeef3bbf0a531cde4a57"
     },
     {
       "id": "movix-tmdb-foundation",
