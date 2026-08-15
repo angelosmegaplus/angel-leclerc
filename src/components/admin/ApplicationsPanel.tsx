@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Briefcase, ChevronDown, RefreshCw } from "lucide-react";
 import { listRows, str, type Row } from "@/lib/angelos";
+import { queueAdminRefresh } from "@/lib/admin-refresh-queue";
 import { Button } from "@/components/ui/button";
 import { AdminCard } from "./AdminShell";
 
@@ -63,6 +64,16 @@ export function ApplicationsPanel() {
       });
   }, [rows]);
 
+  const refresh = async () => {
+    await Promise.allSettled([
+      queryClient.invalidateQueries({ queryKey: ["angel", "applications"] }),
+      queueAdminRefresh("Candidatures", {
+        visible_count: applications.length,
+        instruction: "Vérifier les candidatures, les réponses, les statuts et les éventuelles relances à faire.",
+      }),
+    ]);
+  };
+
   return (
     <div className="space-y-4">
       <AdminCard>
@@ -75,7 +86,7 @@ export function ApplicationsPanel() {
             variant="outline"
             size="sm"
             disabled={isFetching}
-            onClick={() => void queryClient.invalidateQueries({ queryKey: ["angel", "applications"] })}
+            onClick={() => void refresh()}
           >
             <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
             Actualiser
