@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { angelMemoryIndex, recordAngelOperation } from "./angel-runtime.server";
+import { rememberPersonalContext } from "./angel-os-ia/personal-context.server";
 
 export type AdminIntegritySnapshot = {
   checkedAt: string;
@@ -31,31 +32,26 @@ export const getAdminIntegritySnapshot = createServerFn({ method: "GET" })
       db.from("articles").select("published"),
       db.from("ai_actions").select("id", { count: "exact", head: true }).eq("status", "pending"),
       db.from("contact_requests").select("id", { count: "exact", head: true }).eq("is_read", false),
-      db.from("angel_os_cache").select("key,updated_at").in("key", ["google_calendar_dashboard", "gmail_dashboard", "admin_cockpit_summary", "news_dashboard"]),
+      db.from("angel_os_cache").select("key,payload,updated_at").in("key", ["google_calendar_dashboard", "gmail_dashboard", "admin_cockpit_summary", "news_dashboard"]),
     ]);
 
     const results = [applications, projects, tasks, articles, actions, messages, cache];
     const errors = results.map((result: any) => result.error?.message).filter(Boolean);
     if (errors.length) {
-      await recordAngelOperation({
-        type: "admin.integrity.failed",
-        source: "admin-integrity",
-        ok: false,
-        durationMs: Date.now() - startedAt,
-        payload: { errors },
-      });
+      await recordAngelOperation({ type: "admin.integrity.failed", source: "admin-integrity", ok: false, durationMs: Date.now() - startedAt, payload: { errors } });
       throw new Error(errors.join(" · "));
     }
 
     const articleRows = (articles.data ?? []) as Array<{ published?: boolean | null }>;
     const now = Date.now();
-    const staleCaches = ((cache.data ?? []) as Array<{ key: string; updated_at: string }>).filter((row) => {
+    const cacheRows = (cache.data ?? []) as Array<{ key: string; payload?: unknown; updated_at: string }>;
+    const staleCaches = cacheRows.filter((row) => {
       const age = now - new Date(row.updated_at).getTime();
       return !Number.isFinite(age) || age > CACHE_MAX_AGE_MS;
     }).map((row) => row.key);
 
     const expected = new Set(["google_calendar_dashboard", "gmail_dashboard", "admin_cockpit_summary", "news_dashboard"]);
-    for (const row of (cache.data ?? []) as Array<{ key: string }>) expected.delete(row.key);
+    for (const row of cacheRows) expected.delete(row.key);
     staleCaches.push(...expected);
 
     const warnings: string[] = [];
@@ -85,6 +81,13 @@ export const getAdminIntegritySnapshot = createServerFn({ method: "GET" })
       updatedAt: now,
       metadata: { ...snapshot.counts, staleCaches: snapshot.staleCaches },
     });
+
+    const byKey = Object.fromEntries(cacheRows.map((row) => [row.key, row]));
+    const personalUpdates: Promise<unknown>[] = [];
+    if (byKey.google_calendar_dashboard?.payload) personalUpdates.push(rememberPersonalContext({ id: "agenda-dashboard", domain: "agenda", title: "Agenda personnel actuel", text: JSON.stringify(byKey.google_calendar_dashboard.payload), tags: ["calendar", "dashboard"], metadata: { updatedAt: byKey.google_calendar_dashboard.updated_at } }));
+    if (byKey.gmail_dashboard?.payload) personalUpdates.push(rememberPersonalContext({ id: "mail-dashboard", domain: "mail", title: "Messagerie personnelle actuelle", text: JSON.stringify(byKey.gmail_dashboard.payload), tags: ["gmail", "dashboard"], metadata: { updatedAt: byKey.gmail_dashboard.updated_at } }));
+    if (byKey.news_dashboard?.payload) personalUpdates.push(rememberPersonalContext({ id: "news-dashboard", domain: "news", title: "Fil d'actualités personnalisé actuel", text: JSON.stringify(byKey.news_dashboard.payload), tags: ["news", "dashboard"], metadata: { updatedAt: byKey.news_dashboard.updated_at } }));
+    await Promise.all(personalUpdates);
 
     await recordAngelOperation({
       type: warnings.length ? "admin.integrity.warning" : "admin.integrity.ok",
