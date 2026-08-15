@@ -88,14 +88,15 @@ function requestBody(model: string) {
   return {
     model,
     tools: [{ type: "web_search" }],
-    max_output_tokens: 1600,
+    max_output_tokens: 2200,
     input: [
       {
         role: "system",
         content: [
           {
             type: "input_text",
-            text: "Tu complètes un fil d'actualité privé. Cherche réellement sur le web et ne fournis que des articles/pages de médias accessibles avec URL directe vérifiable. Priorité absolue aux contenus publiés ou substantiellement mis à jour dans les 6 dernières heures, puis 24 heures. Évite les doublons et les contenus anciens sans évolution. N'invente jamais une date, une source ou une URL.",
+            text:
+              "Tu alimentes un fil d’actualité privé très personnalisé. Cherche réellement sur le web. Priorité absolue aux contenus publiés ou substantiellement mis à jour dans les 6 dernières heures, puis 24 heures. Évite les reprises anciennes, les contenus génériques, les marronniers et les doublons. Ne fournis que des articles/pages accessibles avec URL directe vérifiable. N’invente jamais une date, une source ou une URL. La fraîcheur et la pertinence passent avant la quantité.",
           },
         ],
       },
@@ -104,7 +105,17 @@ function requestBody(model: string) {
         content: [
           {
             type: "input_text",
-            text: `Recherche maintenant des actualités françaises et locales pour compléter Google News. Retourne au maximum 24 résultats utiles, répartis entre ces catégories exactes :\n- politique : politique/société France, pouvoir d'achat, services publics, souveraineté, institutions, enquêtes documentées\n- medias : radio, audiovisuel, médias, podcasts\n- journalisme : journalisme, communication, presse, création de contenu\n- ia : IA, OpenAI, Android, smartphones, applications et technologie\n- dordogne : Sarlat-la-Canéda/Périgord Noir en priorité, puis Dordogne, Périgueux, Bergerac\n- emploi : alternance BTS Communication, communication, radio, médias, emploi/stage compatibles Bac+2\n\nRéponds UNIQUEMENT avec un tableau JSON valide, sans markdown. Chaque objet doit avoir exactement : {"title":"...","url":"https://...","source":"nom du média","publishedAt":"ISO-8601 ou null","category":"politique|medias|journalisme|ia|dordogne|emploi"}. Utilise l'URL de l'article source, pas une URL de moteur de recherche.`,
+            text: `Recherche maintenant des actualités françaises et locales. Retourne idéalement 3 à 5 résultats PAR CATÉGORIE, avec au moins 2 résultats par catégorie quand l’actualité le permet. Les catégories exactes sont :
+- politique : politique et société françaises, pouvoir d'achat, services publics, souveraineté, institutions, rapports de pouvoir, enquêtes documentées, corruption, favoritisme, lobbying, conflits d'intérêts, justice et affaires financières. Prioriser les sujets substantiels et les médias sérieux ; éviter la petite polémique vide.
+- medias : radio, audiovisuel, médias, podcasts, audience, évolutions des radios et télévisions, animateurs et métiers de l'antenne.
+- journalisme : journalisme, presse, rédaction, communication, création de contenu, médias, édition, méthodes et évolutions du métier.
+- ia : IA, OpenAI, ChatGPT, Android, Google Pixel, smartphones, applications utiles et technologie grand public.
+- dordogne : Sarlat-la-Canéda et Périgord Noir d'abord, puis Dordogne, Périgueux, Bergerac et Souillac ; inclure politique locale, travaux, commerces, emploi, justice, culture, transports et informations pratiques.
+- emploi : alternance BTS Communication ou postes/stages compatibles Bac+2 en communication, radio, médias, journalisme ou création de contenu, prioritairement Bordeaux, Périgueux, Bergerac, Brive et Sarlat.
+
+Pour la sélection générale, favorise particulièrement les enquêtes solides, la politique/société, le local Sarlat/Périgord Noir, Android/IA, radio/médias et les opportunités concrètes en communication. Évite les sujets très éloignés de ces centres d’intérêt sauf s’ils sont réellement majeurs.
+
+Réponds UNIQUEMENT avec un tableau JSON valide, sans markdown. Chaque objet doit avoir exactement : {"title":"...","url":"https://...","source":"nom du média","publishedAt":"ISO-8601 ou null","category":"politique|medias|journalisme|ia|dordogne|emploi"}. Utilise l'URL de l'article source, pas une URL de moteur de recherche.`,
           },
         ],
       },
@@ -152,7 +163,7 @@ export async function searchNewsWithOpenAI(): Promise<NewsItem[]> {
 
       const json = await response.json();
       const parsed = parseJsonArray(responseText(json));
-      const items = parsed.map(cleanItem).filter((item): item is NewsItem => Boolean(item)).slice(0, 24);
+      const items = parsed.map(cleanItem).filter((item): item is NewsItem => Boolean(item)).slice(0, 30);
       if (items.length > 0) {
         state.items = items;
         state.expiresAt = now + TTL_MS;
