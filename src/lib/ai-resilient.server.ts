@@ -9,8 +9,14 @@ function isPrivateAdminConversation(messages: AiMessage[]) {
   return messages.some(
     (message) =>
       message.role === "system" &&
-      /espace administrateur privé Angel OS|assistant principal de l'espace administrateur/i.test(message.content),
+      /espace administrateur privé|administration privée|assistant principal de l'espace administrateur|distribution d’intelligence artificielle privée/i.test(message.content),
   );
+}
+
+function looksLikeHtml(value: string | null | undefined) {
+  if (!value) return false;
+  const sample = value.trim().slice(0, 600).toLowerCase();
+  return sample.startsWith("<!doctype html") || sample.startsWith("<html") || /<head[\s>]|<body[\s>]|<title>this page didn't load<\/title>/.test(sample);
 }
 
 function adminFailureMessage(result: { reason?: string; detail?: string | null; recoveryExplanation?: string | null }) {
@@ -22,7 +28,8 @@ function adminFailureMessage(result: { reason?: string; detail?: string | null; 
     provider: "échec du fournisseur OpenAI",
   };
   const label = labels[result.reason ?? ""] ?? "échec de l'IA intégrée";
-  const detail = result.detail?.trim() || result.recoveryExplanation?.trim() || "Aucun détail technique supplémentaire n'a été fourni.";
+  const rawDetail = result.detail?.trim() || result.recoveryExplanation?.trim() || "Aucun détail technique supplémentaire n'a été fourni.";
+  const detail = looksLikeHtml(rawDetail) ? "Le service amont a renvoyé une page d’erreur HTML au lieu d’une réponse API exploitable." : rawDetail;
   return `Impossible d'obtenir une réponse de l'IA intégrée. Problème détecté : ${label}.\n\nDétail technique : ${detail}\n\nAucune réponse locale n'a été substituée dans l'espace administrateur.`;
 }
 
@@ -42,6 +49,16 @@ export async function resilientAngelAi(options: {
   const fallbackModel = process.env["OPENAI_FALLBACK_MODEL"]?.trim();
   const primaryModel = options.model || process.env["OPENAI_MODEL"] || "gpt-4o-mini";
 
+  if (result.text && looksLikeHtml(result.text)) {
+    result = {
+      ...result,
+      text: null,
+      reason: "provider" as const,
+      detail: "Le fournisseur a renvoyé du HTML au lieu d’une réponse IA exploitable.",
+      fallbackRequired: true,
+    };
+  }
+
   while (!result.text && attempt < 2) {
     if (
       result.reason === "provider" &&
@@ -53,6 +70,15 @@ export async function resilientAngelAi(options: {
       attempt += 1;
       currentOptions = { ...options, model: fallbackModel, cacheKey: options.cacheKey ? `${options.cacheKey}:fallback` : undefined };
       result = await angelAi(currentOptions);
+      if (result.text && looksLikeHtml(result.text)) {
+        result = {
+          ...result,
+          text: null,
+          reason: "provider" as const,
+          detail: "Le fournisseur a renvoyé du HTML au lieu d’une réponse IA exploitable.",
+          fallbackRequired: true,
+        };
+      }
       continue;
     }
 
@@ -79,9 +105,10 @@ export async function resilientAngelAi(options: {
       if (options.priority === "interactive" && isPrivateAdminConversation(options.messages)) {
         return {
           ...failure,
-          text: adminFailureMessage(failure),
+          text: null,
           fallbackRequired: false,
           adminFailure: true,
+          adminFailureMessage: adminFailureMessage(failure),
         };
       }
       return failure;
@@ -90,6 +117,15 @@ export async function resilientAngelAi(options: {
     if (decision.delayMs) await sleep(decision.delayMs);
     attempt += 1;
     result = await angelAi(currentOptions);
+    if (result.text && looksLikeHtml(result.text)) {
+      result = {
+        ...result,
+        text: null,
+        reason: "provider" as const,
+        detail: "Le fournisseur a renvoyé du HTML au lieu d’une réponse IA exploitable.",
+        fallbackRequired: true,
+      };
+    }
   }
 
   const finalResult = {
@@ -108,9 +144,10 @@ export async function resilientAngelAi(options: {
   if (!finalResult.text && options.priority === "interactive" && isPrivateAdminConversation(options.messages)) {
     return {
       ...finalResult,
-      text: adminFailureMessage(finalResult),
+      text: null,
       fallbackRequired: false,
       adminFailure: true,
+      adminFailureMessage: adminFailureMessage(finalResult),
     };
   }
 
