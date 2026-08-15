@@ -373,6 +373,39 @@ main article *,
   }
 }
 
+/* L'éditeur d'articles de l'administration reste toujours en thème clair,
+   même lorsque le reste d'Angel OS est en mode sombre. Le ciblage par champs
+   uniques évite d'altérer Studio, les autres formulaires et le reste de l'admin. */
+.dark form:has(#title):has(#category):has(#excerpt) {
+  --background: #F6F1E8;
+  --foreground: #181716;
+  --card: #FFFDF9;
+  --card-foreground: #181716;
+  --popover: #FFFDF9;
+  --popover-foreground: #181716;
+  --primary: #CE654B;
+  --primary-foreground: #FFFDF9;
+  --secondary: #172638;
+  --secondary-foreground: #FFFDF9;
+  --muted: #E6DED2;
+  --muted-foreground: #706D68;
+  --accent: #A84D38;
+  --accent-foreground: #FFFDF9;
+  --border: #E6DED2;
+  --input: #E6DED2;
+  --ring: rgba(206, 101, 75, 0.5);
+  color-scheme: light;
+  background: var(--card);
+  color: var(--foreground);
+}
+
+.dark form:has(#title):has(#category):has(#excerpt) input,
+.dark form:has(#title):has(#category):has(#excerpt) textarea,
+.dark form:has(#title):has(#category):has(#excerpt) select,
+.dark form:has(#title):has(#category):has(#excerpt) [contenteditable="true"] {
+  color-scheme: light;
+}
+
 @media (display-mode: standalone) {
   body {
     padding-top: env(safe-area-inset-top);
