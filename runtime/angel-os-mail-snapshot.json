@@ -1,15 +1,15 @@
 {
-  "fetchedAt": "2026-08-15T11:00:52Z",
+  "fetchedAt": "2026-08-15T12:02:12Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-15T11:00:52Z",
+      "fetchedAt": "2026-08-15T12:02:12Z",
       "important": [
         {
-          "subject": "Échecs CI répétés sur angelosmegaplus/angel-leclerc",
+          "subject": "Échecs CI et maintenance toujours actifs sur angelosmegaplus/angel-leclerc",
           "from": "GitHub <notifications@github.com>",
-          "date": "2026-08-15T10:55:22Z",
-          "summary": "Depuis le précédent passage, 18 nouvelles notifications GitHub signalent des échecs de CI sur plusieurs commits récents de main, avec aussi un nouvel échec du workflow Maintenance Angel OS. Le dernier main vérifié est a0a9b5fc36266e7fac34d41aeb0415835ae8f363 (Keep latest published task visible in admin queue), committé à 10:54:19Z. Son statut combiné indique toujours un échec Vercel lié au build-rate-limit.",
-          "reason": "Alerte technique persistante sur le dépôt principal ; à laisser à la routine Maintenance complète Angel OS pour éviter des corrections concurrentes.",
+          "date": "2026-08-15T11:54:53Z",
+          "summary": "Depuis le précédent rapport, cinq nouvelles notifications GitHub ont été reçues : quatre échecs du workflow CI et un échec du workflow Maintenance Angel OS. Les commits concernés sont cd9e6d7, d192e68, 27ec0f2 et be12979. Le dernier main vérifié est be129796fdaa48526585eb2d7dc64b961aebec90, committé à 11:53:39Z avec le message « Retry direct Angel OS data sync ».",
+          "reason": "Alerte technique persistante sur le dépôt principal ; la routine Maintenance complète Angel OS doit rester seule responsable du diagnostic et des corrections afin d’éviter des interventions concurrentes.",
           "suggestedReply": ""
         },
         {
@@ -21,50 +21,61 @@
           "suggestedReply": ""
         }
       ],
-      "otherSummary": "Depuis le précédent rapport, 19 nouveaux messages entrants ont été détectés : 18 notifications techniques GitHub liées à des échecs de CI/maintenance et une promotion Widilo sans action utile. Aucun nouveau mail entrant de candidature, refus, entretien, demande de CV, redirection professionnelle ou réponse d’entreprise n’a été reçu. Un message sortant de relance a en revanche été envoyé à 10:58Z au Comptoir Authentique au sujet de la candidature BTS Communication ; aucune réponse nouvelle n’est visible à ce stade. Gmail n’a subi aucune modification pendant cette exécution.",
+      "otherSummary": "Depuis le rapport précédent, cinq nouveaux messages entrants pertinents ont été détectés, tous provenant de GitHub et signalant des échecs CI/maintenance. Aucun nouveau mail entrant de candidature, refus, entretien, demande de CV, redirection professionnelle ou réponse d’entreprise n’a été reçu. Gmail n’a subi aucune modification pendant cette exécution.",
       "counts": {
-        "new_since_last_run": 19,
-        "important": 2,
+        "new_since_last_run": 5,
+        "important": 1,
         "employment_or_application_incoming": 0,
-        "outgoing_application_followups": 1
+        "outgoing_application_followups": 0
       }
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-15T10:01:58Z",
-    "period_end": "2026-08-15T11:00:52Z",
-    "summary": "Dix-neuf nouveaux messages entrants ont été reçus sur la période : dix-huit notifications GitHub signalant des échecs répétés de CI/maintenance sur angelosmegaplus/angel-leclerc, plus une promotion Widilo sans intérêt opérationnel. Aucun nouveau mail entrant de candidature, refus, entretien, demande de CV, redirection professionnelle ou réponse d’entreprise n’a été détecté. Une relance sortante a toutefois été envoyée à 10:58Z au Comptoir Authentique pour la candidature BTS Communication, sans nouvelle réponse reçue. Le dernier main vérifié est a0a9b5fc36266e7fac34d41aeb0415835ae8f363 et son statut Vercel reste en échec sur build-rate-limit ; aucune correction technique n’a été lancée ici afin de laisser la routine Maintenance complète Angel OS gérer ce problème. La file ai_actions reste non interrogeable directement avec les connecteurs disponibles pendant cette exécution ; aucune action awaiting_operator n’a donc été exécutée ou modifiée.",
+    "period_start": "2026-08-15T11:00:52Z",
+    "period_end": "2026-08-15T12:02:12Z",
+    "summary": "Cinq nouveaux messages entrants ont été reçus sur la période, tous des notifications GitHub concernant angelosmegaplus/angel-leclerc : quatre échecs CI et un échec Maintenance Angel OS. Aucun nouveau mail entrant de candidature, refus, entretien, demande de CV, redirection professionnelle ou réponse d’entreprise n’a été détecté. Le dernier main vérifié est be129796fdaa48526585eb2d7dc64b961aebec90 (« Retry direct Angel OS data sync », 11:53:39Z). Aucune correction technique n’a été lancée depuis cette routine afin de laisser la maintenance technique dédiée gérer les échecs. La file ai_actions reste non interrogeable directement avec les connecteurs disponibles pendant cette exécution ; aucune action awaiting_operator n’a donc été exécutée ou modifiée.",
     "counts": {
-      "total_incoming": 19,
+      "total_incoming": 5,
       "important": 1,
       "employment_or_application_incoming": 0,
-      "outgoing_application_followups": 1
+      "outgoing_application_followups": 0
     },
     "items": [
       {
-        "subject": "Échecs CI répétés sur angelosmegaplus/angel-leclerc",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: CI - main (be12979)",
         "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T10:55:22Z",
-        "reason": "18 nouvelles notifications GitHub sur la période, principalement des échecs CI avec un échec Maintenance Angel OS ; le dernier main reste associé à un échec Vercel build-rate-limit."
+        "date": "2026-08-15T11:54:53Z",
+        "reason": "Échec CI sur le dernier main be12979."
       },
       {
-        "subject": "Re: Candidature BTS Communication en alternance – Sarlat centre",
-        "from": "Angel Leclerc <angelleclerc2006@gmail.com>",
-        "date": "2026-08-15T10:58:00Z",
-        "reason": "Relance sortante vérifiée vers le Comptoir Authentique ; aucune réponse entrante nouvelle à ce stade."
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: CI - main (27ec0f2)",
+        "from": "GitHub <notifications@github.com>",
+        "date": "2026-08-15T11:53:29Z",
+        "reason": "Nouvel échec CI sur un commit récent de main."
       },
       {
-        "subject": "Votre essai gratuit Trading Pro se termine bientôt ⏳",
-        "from": "Revolut <no-reply@revolut.com>",
-        "date": "2026-08-15T00:00:13Z",
-        "reason": "Échéance déjà connue au 18 août 2026 ; conservée dans le dashboard car elle reste pertinente, mais elle est antérieure à cette période horaire."
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Maintenance Angel OS - main (d192e68)",
+        "from": "GitHub <notifications@github.com>",
+        "date": "2026-08-15T11:38:41Z",
+        "reason": "Le workflow de maintenance a échoué sur d192e68."
+      },
+      {
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: CI - main (d192e68)",
+        "from": "GitHub <notifications@github.com>",
+        "date": "2026-08-15T11:32:18Z",
+        "reason": "Échec CI sur d192e68."
+      },
+      {
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: CI - main (cd9e6d7)",
+        "from": "GitHub <notifications@github.com>",
+        "date": "2026-08-15T11:03:16Z",
+        "reason": "Échec CI sur cd9e6d7."
       }
     ],
     "recommendations": [
-      "Laisser la routine Maintenance complète Angel OS diagnostiquer les échecs CI afin d’éviter plusieurs corrections concurrentes sur main.",
-      "Ne pas relancer de nouveau le Comptoir Authentique tant qu’aucun développement nouveau ne le justifie ; une relance vient d’être envoyée à 10:58Z.",
-      "Vérifier avant le 18 août si Trading Pro doit être conservé ou désactivé afin d’éviter une facturation non souhaitée.",
-      "Ajouter à terme une voie serveur authentifiée ou un workflow dédié permettant à cette automatisation de lire et mettre à jour ai_actions directement sans exposer de secrets."
+      "Laisser la routine Maintenance complète Angel OS diagnostiquer les échecs CI et maintenance afin d’éviter plusieurs corrections concurrentes sur main.",
+      "Aucune action candidature ou réponse mail n’est requise sur cette période.",
+      "La lecture/exécution de ai_actions nécessite toujours une voie serveur authentifiée ou un connecteur direct ; ne pas simuler d’action validée tant que cette source reste inaccessible."
     ],
     "source": "chatgpt-hourly-direct"
   }
