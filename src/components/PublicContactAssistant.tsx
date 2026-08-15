@@ -15,7 +15,7 @@ const SUGGESTIONS = [
   "Quel est son parcours ?",
 ];
 
-const CLIENT_AI_TIMEOUT_MS = 12000;
+const CLIENT_AI_TIMEOUT_MS = 32000;
 
 export function PublicContactAssistant() {
   const askServer = useServerFn(askAssistant);
