@@ -1,3 +1,5 @@
+import { getOpenAiCredential } from "./vercel-connect-credentials.server";
+
 type ArticleSource = { label: string; url: string };
 
 type CoverMeta = {
@@ -52,14 +54,17 @@ function parseJsonObject(text: string) {
 }
 
 async function researchAndWrite(subject: string): Promise<Omit<GeneratedArticleDraft, "coverUrl" | "coverMeta"> | null> {
-  const key = process.env["OPENAI_API_KEY"];
-  if (!key) return null;
+  const credential = await getOpenAiCredential();
+  if (!credential) {
+    console.error("[article-ai] OpenAI credential unavailable from env and Vercel Connect");
+    return null;
+  }
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 45_000);
   try {
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST", signal: controller.signal,
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${credential.value}` },
       body: JSON.stringify({
         model: "gpt-5",
         tools: [{ type: "web_search", search_context_size: "high" }],
@@ -70,7 +75,7 @@ async function researchAndWrite(subject: string): Promise<Omit<GeneratedArticleD
         ],
       }),
     });
-    if (!response.ok) { console.error("[article-ai] OpenAI Responses", response.status, await response.text()); return null; }
+    if (!response.ok) { console.error("[article-ai] OpenAI Responses", response.status, { credentialSource: credential.source, body: await response.text() }); return null; }
     const text = extractResponseText(await response.json());
     if (!text) return null;
     const parsed = parseJsonObject(text); if (!parsed) return null;
