@@ -36,8 +36,7 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Lint diagnostics
-        continue-on-error: true
+      - name: Lint
         run: bun run lint
 
       - name: Build
