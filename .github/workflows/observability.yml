@@ -1,0 +1,71 @@
+name: Observabilité Angel OS
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 * * * *"
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: angel-os-observability
+  cancel-in-progress: true
+
+jobs:
+  health:
+    name: Contrôle production
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Probe Angel OS production
+        id: probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          RESPONSE="$(curl --fail --silent --show-error --max-time 20 https://www.angel-leclerc.fr/api/angel-os/health)"
+          printf '%s' "$RESPONSE" > /tmp/health.json
+          jq . /tmp/health.json
+          test "$(jq -r '.healthy // false' /tmp/health.json)" = "true"
+
+          FAILURES="$(jq -r '
+            [.dependencies // {} | to_entries[]
+              | select(.value.configured == true and .value.reachable == false)
+              | .key + ":" + (.value.reason // "unreachable")]
+            | join(",")
+          ' /tmp/health.json)"
+          MISSING="$(jq -r '
+            [.dependencies // {} | to_entries[]
+              | select(.value.configured == false)
+              | .key]
+            | join(",")
+          ' /tmp/health.json)"
+          echo "failures=$FAILURES" >> "$GITHUB_OUTPUT"
+          echo "missing=$MISSING" >> "$GITHUB_OUTPUT"
+          if [ -n "$FAILURES" ]; then
+            echo "::error::Dépendances configurées mais injoignables : $FAILURES"
+            exit 1
+          fi
+
+      - name: Record production incident
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          TITLE="[Angel OS] Journal incidents production"
+          ISSUE="$(gh issue list --state open --search "$TITLE in:title" --limit 1 --json number --jq '.[0].number // empty')"
+          BODY="Incident observabilité · $(date -u +%FT%TZ) · dépendances=${{ steps.probe.outputs.failures }} · run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          if [ -z "$ISSUE" ]; then gh issue create --title "$TITLE" --body "$BODY" >/dev/null; else gh issue comment "$ISSUE" --body "$BODY" >/dev/null; fi
+
+      - name: Health summary
+        if: always()
+        shell: bash
+        run: |
+          echo "## Observabilité Angel OS" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Production : https://www.angel-leclerc.fr" >> "$GITHUB_STEP_SUMMARY"
+          echo "- OpenAI/TMDB : test réseau réel quand configurés" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Gmail : contrôle de configuration OAuth, contrôle de compte conservé dans l'administration" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Configuration manquante : ${{ steps.probe.outputs.missing }}" >> "$GITHUB_STEP_SUMMARY"
