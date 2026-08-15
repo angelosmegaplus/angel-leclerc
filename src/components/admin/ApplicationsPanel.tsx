@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Briefcase, ChevronDown, RefreshCw } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { AlertTriangle, Briefcase, CheckCircle2, ChevronDown, RefreshCw } from "lucide-react";
 import { listRows, str, type Row } from "@/lib/angelos";
-import { queueAdminRefresh } from "@/lib/admin-refresh-queue";
+import { syncGoogleApplications } from "@/lib/applications.functions";
 import { Button } from "@/components/ui/button";
 import { AdminCard } from "./AdminShell";
 
@@ -48,10 +49,17 @@ function sentMailOf(row: Row) {
 
 export function ApplicationsPanel() {
   const queryClient = useQueryClient();
+  const syncApplications = useServerFn(syncGoogleApplications);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
   const { data: rows = [], isFetching } = useQuery({
     queryKey: ["angel", "applications"],
     queryFn: () => listRows("applications"),
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
+    staleTime: 15_000,
   });
 
   const applications = useMemo(() => {
@@ -65,14 +73,35 @@ export function ApplicationsPanel() {
   }, [rows]);
 
   const refresh = async () => {
-    await Promise.allSettled([
-      queryClient.invalidateQueries({ queryKey: ["angel", "applications"] }),
-      queueAdminRefresh("Candidatures", {
-        visible_count: applications.length,
-        instruction: "Vérifier les candidatures, les réponses, les statuts et les éventuelles relances à faire.",
-      }),
-    ]);
+    if (syncing) return;
+    setSyncing(true);
+    setSyncMessage(null);
+    setSyncError(null);
+
+    try {
+      const result = await syncApplications();
+      await queryClient.invalidateQueries({ queryKey: ["angel", "applications"] });
+      await queryClient.refetchQueries({ queryKey: ["angel", "applications"], type: "active" });
+
+      if (result.status === "not_connected") {
+        setSyncError(result.message || "La source Gmail n’est pas connectée au serveur.");
+      } else {
+        const details = [
+          result.imported ? `${result.imported} ajoutée${result.imported > 1 ? "s" : ""}` : null,
+          result.updated ? `${result.updated} mise${result.updated > 1 ? "s" : ""} à jour` : null,
+          result.skipped ? `${result.skipped} inchangée${result.skipped > 1 ? "s" : ""}` : null,
+        ].filter(Boolean).join(" · ");
+        setSyncMessage(details || result.message || "Candidatures synchronisées.");
+      }
+    } catch (error) {
+      setSyncError(error instanceof Error ? error.message : "La synchronisation des candidatures a échoué.");
+      await queryClient.invalidateQueries({ queryKey: ["angel", "applications"] });
+    } finally {
+      setSyncing(false);
+    }
   };
+
+  const busy = syncing || isFetching;
 
   return (
     <div className="space-y-4">
@@ -85,13 +114,26 @@ export function ApplicationsPanel() {
           <Button
             variant="outline"
             size="sm"
-            disabled={isFetching}
+            disabled={busy}
             onClick={() => void refresh()}
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
-            Actualiser
+            <RefreshCw className={`mr-2 h-4 w-4 ${busy ? "animate-spin" : ""}`} />
+            {syncing ? "Synchronisation…" : "Actualiser"}
           </Button>
         </div>
+
+        {syncMessage ? (
+          <div className="mt-3 flex items-start gap-2 rounded-lg border border-green-500/20 bg-green-500/10 px-3 py-2 text-xs text-green-700 dark:text-green-300">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>{syncMessage}</span>
+          </div>
+        ) : null}
+        {syncError ? (
+          <div className="mt-3 flex items-start gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-700 dark:text-red-300">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>{syncError}</span>
+          </div>
+        ) : null}
 
         <div className="mt-4 divide-y divide-border">
           {applications.length === 0 ? (
