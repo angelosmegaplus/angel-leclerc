@@ -1,19 +1,19 @@
 {
   "version": 4,
-  "updatedAt": "2026-08-15T11:31:30Z",
+  "updatedAt": "2026-08-15T13:33:00Z",
   "source": "github",
   "current": [
     {
       "id": "angel-ai-end-to-end",
       "title": "Valider Angel AI OpenAI de bout en bout en production",
-      "status": "running",
-      "detail": "Le dernier main est désormais déployé READY en production. Le correctif rendant la mémoire Supabase optionnelle est donc publié. La validation reste ouverte tant qu'une vraie requête POST vers /api/assistant n'a pas produit une réponse OpenAI exploitable ; aucun succès n'est simulé."
+      "status": "waiting_publish",
+      "detail": "Le correctif 729d7e957a195acb11347550774f04ac17bedd97 qui rend aiMemoryPrompt/Supabase non bloquant est bien sur main, mais une vraie réponse OpenAI en production n'est toujours pas validée. Le dernier main 241ad41c1e86fe1c6cc5ad74c28fc73a60c2b3df a un statut Vercel failure lié au build-rate-limit. Le workflow GitHub de publication ne peut pas retenter proprement car VERCEL_TOKEN est absent des secrets GitHub. Ne jamais considérer le statut Deployment GitHub 'success' comme preuve de publication : dans ce passage, les étapes de build/deploy Vercel ont été skipped."
     },
     {
-      "id": "ci-typecheck-failure",
-      "title": "Diagnostiquer l’échec TypeScript du dernier main",
-      "status": "running",
-      "detail": "Le build production réussit, mais le workflow CI du dernier main échoue à l’étape tsc --noEmit avec exit code 2. La cause précise doit être extraite avant correction ; ne pas modifier à l’aveugle."
+      "id": "publication-production",
+      "title": "Publier le dernier main en production",
+      "status": "blocked_external",
+      "detail": "Publication du dernier main bloquée par deux signaux réels : statut Vercel failure avec build-rate-limit et absence de VERCEL_TOKEN dans GitHub Actions. Aucun contournement ni faux build. Le dernier main reste la cible unique de publication."
     },
     {
       "id": "movix-max-port",
@@ -26,23 +26,23 @@
     {
       "id": "admin-auth-production-check",
       "title": "Vérifier le nouveau parcours d’accès administrateur",
-      "status": "waiting_check",
-      "detail": "La production sert désormais le dernier main. Contrôler le parcours réel : CAPTCHA visuel aléatoire multi-catégories, limitation des tentatives, écran noir de sécurité puis connexion, sans retour au PIN 2005 ni boucle."
+      "status": "waiting_publish",
+      "detail": "Contrôle production différé tant que le dernier main n'est pas réellement publié. Vérifier ensuite CAPTCHA visuel aléatoire multi-catégories, limitation des tentatives, écran noir de sécurité puis connexion, sans retour au PIN 2005 ni boucle."
     },
     {
       "id": "admin-news-production-check",
       "title": "Vérifier toutes les rubriques Actualités en production",
-      "status": "waiting_check",
-      "detail": "La production sert désormais le dernier main. Chaque rubrique doit recevoir des contenus et À la une doit rester fraîche et personnalisée."
+      "status": "waiting_publish",
+      "detail": "Contrôle production différé tant que le dernier main n'est pas réellement publié. Chaque rubrique doit recevoir des contenus et À la une doit rester fraîche et personnalisée."
     }
   ],
   "done": [
     {
-      "id": "publication-production",
-      "title": "Publier le dernier main en production",
+      "id": "ci-latest-main",
+      "title": "CI du dernier main",
       "status": "done",
-      "detail": "Le déploiement production Vercel correspondant au commit cd9e6d7db825a34ff0d8d0ab5a0fa7700a579cc6 est READY et cible production.",
-      "commit": "cd9e6d7db825a34ff0d8d0ab5a0fa7700a579cc6"
+      "detail": "Le workflow CI du commit 241ad41c1e86fe1c6cc5ad74c28fc73a60c2b3df est terminé avec conclusion success.",
+      "commit": "241ad41c1e86fe1c6cc5ad74c28fc73a60c2b3df"
     },
     {
       "id": "movix-tmdb-foundation",
