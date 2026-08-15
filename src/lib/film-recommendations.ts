@@ -12,6 +12,12 @@ export type RecommendationCandidate = {
   popularity: number;
   pitch: string;
   genreLabel: string;
+  posterUrl?: string;
+  backdropUrl?: string;
+  runtime?: string;
+  rating?: number;
+  certification?: string;
+  originalTitle?: string;
 };
 
 export type ViewingSignal = {
