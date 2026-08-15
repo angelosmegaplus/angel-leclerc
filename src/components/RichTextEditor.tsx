@@ -28,7 +28,6 @@ import { buildEmbedHtml } from "@/lib/embeds";
 
 const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
 
-/** Extrait l'identifiant d'une vidéo YouTube depuis n'importe quelle forme d'URL. */
 export function parseYouTubeId(input: string): string | null {
   const value = input.trim();
   if (/^[\w-]{11}$/.test(value)) return value;
@@ -67,15 +66,15 @@ export function RichTextEditor({ value, onChange }: Props) {
   const replaceRef = useRef<HTMLInputElement>(null);
   const [selectedImg, setSelectedImg] = useState<HTMLImageElement | null>(null);
 
+  // Important : les contenus appliqués par Angel OS IA doivent apparaître immédiatement
+  // dans l'éditeur. La comparaison évite de déplacer le curseur pendant la saisie normale.
   useEffect(() => {
     const el = ref.current;
     if (el && value !== el.innerHTML) el.innerHTML = value || "";
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [value]);
 
   const sync = () => onChange(ref.current?.innerHTML ?? "");
 
-  /** Sélection d'une image déjà insérée dans le contenu. */
   const onEditorClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     if (target.tagName === "IMG") {
@@ -162,7 +161,6 @@ export function RichTextEditor({ value, onChange }: Props) {
     toast.success(`Contenu ${embed.label} intégré`);
   };
 
-  /** Insère un bloc dédié ne contenant que des vidéos / intégrations externes. */
   const onInsertEmbedSection = () => {
     const title = prompt("Titre du bloc (laissez vide pour aucun titre)", "En vidéo") ?? "";
     const raw = prompt(
@@ -191,9 +189,7 @@ export function RichTextEditor({ value, onChange }: Props) {
     insertHtml(
       `<section class="embed-section${grid}">${heading}${parts.join("")}</section><p><br/></p>`,
     );
-    if (rejected.length > 0) {
-      toast.warning(`${rejected.length} lien(s) non reconnu(s)`);
-    }
+    if (rejected.length > 0) toast.warning(`${rejected.length} lien(s) non reconnu(s)`);
     toast.success(`Bloc créé avec ${parts.length} intégration(s)`);
   };
 
@@ -208,19 +204,13 @@ export function RichTextEditor({ value, onChange }: Props) {
       const url = await uploadMedia(file);
       const name = file.name.replace(/"/g, "");
       if (kind === "image") {
-        insertHtml(
-          `<img src="${url}" alt="${name}" style="max-width:100%;border-radius:12px" /><p><br/></p>`,
-        );
+        insertHtml(`<img src="${url}" alt="${name}" style="max-width:100%;border-radius:12px" /><p><br/></p>`);
         toast.success("Image ajoutée");
       } else if (kind === "video") {
-        insertHtml(
-          `<video class="media-video" src="${url}" controls playsinline preload="metadata"></video><p><br/></p>`,
-        );
+        insertHtml(`<video class="media-video" src="${url}" controls playsinline preload="metadata"></video><p><br/></p>`);
         toast.success("Vidéo ajoutée");
       } else {
-        insertHtml(
-          `<figure class="media-audio"><figcaption>${name}</figcaption><audio src="${url}" controls preload="metadata"></audio></figure><p><br/></p>`,
-        );
+        insertHtml(`<figure class="media-audio"><figcaption>${name}</figcaption><audio src="${url}" controls preload="metadata"></audio></figure><p><br/></p>`);
         toast.success("Audio ajouté");
       }
     } catch (e) {
@@ -232,189 +222,59 @@ export function RichTextEditor({ value, onChange }: Props) {
   };
 
   const btn =
-    "inline-flex h-8 w-8 items-center justify-center rounded-md border border-transparent text-muted-foreground transition-colors hover:bg-muted hover:text-foreground";
+    "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-transparent text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:scale-95 sm:h-9 sm:w-9 sm:rounded-lg";
 
   return (
-    <div className="overflow-hidden rounded-md border border-input bg-background">
-      <div className="flex flex-wrap items-center gap-1 border-b border-border bg-muted/40 p-1.5">
-        <button type="button" className={btn} title="Gras" onClick={() => cmd("bold")}>
-          <Bold className="h-4 w-4" />
-        </button>
-        <button type="button" className={btn} title="Italique" onClick={() => cmd("italic")}>
-          <Italic className="h-4 w-4" />
-        </button>
-        <button type="button" className={btn} title="Souligné" onClick={() => cmd("underline")}>
-          <Underline className="h-4 w-4" />
-        </button>
-        <span className="mx-1 h-5 w-px bg-border" />
-        <button type="button" className={btn} title="Titre" onClick={() => cmd("formatBlock", "<h2>")}>
-          <Heading2 className="h-4 w-4" />
-        </button>
-        <button type="button" className={btn} title="Sous-titre" onClick={() => cmd("formatBlock", "<h3>")}>
-          <Heading3 className="h-4 w-4" />
-        </button>
-        <button type="button" className={btn} title="Citation" onClick={() => cmd("formatBlock", "<blockquote>")}>
-          <Quote className="h-4 w-4" />
-        </button>
-        <span className="mx-1 h-5 w-px bg-border" />
-        <button type="button" className={btn} title="Liste à puces" onClick={() => cmd("insertUnorderedList")}>
-          <List className="h-4 w-4" />
-        </button>
-        <button type="button" className={btn} title="Liste numérotée" onClick={() => cmd("insertOrderedList")}>
-          <ListOrdered className="h-4 w-4" />
-        </button>
-        <span className="mx-1 h-5 w-px bg-border" />
-        <button
-          type="button"
-          className={btn}
-          title="Lien"
-          onClick={() => {
-            const url = prompt("Adresse du lien (https://…)");
-            if (url) cmd("createLink", url);
-          }}
-        >
-          <Link2 className="h-4 w-4" />
-        </button>
-        <button
-          type="button"
-          className={btn}
-          title="Insérer une image"
-          onClick={() => fileRef.current?.click()}
-          disabled={uploading !== null}
-        >
-          {uploading === "image" ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
-        </button>
-        <button
-          type="button"
-          className={btn}
-          title="Insérer une vidéo (MP4)"
-          onClick={() => videoRef.current?.click()}
-          disabled={uploading !== null}
-        >
-          {uploading === "video" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Film className="h-4 w-4" />}
-        </button>
-        <button
-          type="button"
-          className={btn}
-          title="Insérer un son (MP3, WAV…)"
-          onClick={() => audioRef.current?.click()}
-          disabled={uploading !== null}
-        >
-          {uploading === "audio" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Music2 className="h-4 w-4" />}
-        </button>
-        <button
-          type="button"
-          className={btn}
-          title="Insérer une vidéo YouTube"
-          onClick={onInsertVideo}
-        >
-          <Youtube className="h-4 w-4" />
-        </button>
-        <button
-          type="button"
-          className={btn}
-          title="Intégrer Spotify, Deezer, SoundCloud, Apple Music, Vimeo…"
-          onClick={onInsertEmbed}
-        >
-          <Radio className="h-4 w-4" />
-        </button>
-        <button
-          type="button"
-          className={btn}
-          title="Bloc dédié : plusieurs vidéos ou intégrations"
-          onClick={onInsertEmbedSection}
-        >
-          <LayoutGrid className="h-4 w-4" />
-        </button>
-        <span className="mx-1 h-5 w-px bg-border" />
-        <button type="button" className={btn} title="Annuler" onClick={() => cmd("undo")}>
-          <Undo2 className="h-4 w-4" />
-        </button>
-        <button type="button" className={btn} title="Rétablir" onClick={() => cmd("redo")}>
-          <Redo2 className="h-4 w-4" />
-        </button>
-        <button type="button" className={btn} title="Effacer la mise en forme" onClick={() => cmd("removeFormat")}>
-          <Eraser className="h-4 w-4" />
-        </button>
-        <span className="mx-1 h-5 w-px bg-border" />
-        <button
-          type="button"
-          className={`${btn} ${preview ? "bg-primary/10 text-primary" : ""}`}
-          title={preview ? "Revenir à l'édition" : "Aperçu de l'article"}
-          onClick={() => setPreview((v) => !v)}
-        >
+    <div className="min-w-0 overflow-hidden rounded-xl border border-input bg-background">
+      <div className="flex items-center gap-1 overflow-x-auto border-b border-border bg-muted/40 p-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <button type="button" className={btn} title="Gras" onClick={() => cmd("bold")}><Bold className="h-4 w-4" /></button>
+        <button type="button" className={btn} title="Italique" onClick={() => cmd("italic")}><Italic className="h-4 w-4" /></button>
+        <button type="button" className={btn} title="Souligné" onClick={() => cmd("underline")}><Underline className="h-4 w-4" /></button>
+        <span className="mx-1 h-5 w-px shrink-0 bg-border" />
+        <button type="button" className={btn} title="Titre" onClick={() => cmd("formatBlock", "<h2>")}><Heading2 className="h-4 w-4" /></button>
+        <button type="button" className={btn} title="Sous-titre" onClick={() => cmd("formatBlock", "<h3>")}><Heading3 className="h-4 w-4" /></button>
+        <button type="button" className={btn} title="Citation" onClick={() => cmd("formatBlock", "<blockquote>")}><Quote className="h-4 w-4" /></button>
+        <span className="mx-1 h-5 w-px shrink-0 bg-border" />
+        <button type="button" className={btn} title="Liste à puces" onClick={() => cmd("insertUnorderedList")}><List className="h-4 w-4" /></button>
+        <button type="button" className={btn} title="Liste numérotée" onClick={() => cmd("insertOrderedList")}><ListOrdered className="h-4 w-4" /></button>
+        <span className="mx-1 h-5 w-px shrink-0 bg-border" />
+        <button type="button" className={btn} title="Lien" onClick={() => { const url = prompt("Adresse du lien (https://…)"); if (url) cmd("createLink", url); }}><Link2 className="h-4 w-4" /></button>
+        <button type="button" className={btn} title="Insérer une image" onClick={() => fileRef.current?.click()} disabled={uploading !== null}>{uploading === "image" ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}</button>
+        <button type="button" className={btn} title="Insérer une vidéo (MP4)" onClick={() => videoRef.current?.click()} disabled={uploading !== null}>{uploading === "video" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Film className="h-4 w-4" />}</button>
+        <button type="button" className={btn} title="Insérer un son (MP3, WAV…)" onClick={() => audioRef.current?.click()} disabled={uploading !== null}>{uploading === "audio" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Music2 className="h-4 w-4" />}</button>
+        <button type="button" className={btn} title="Insérer une vidéo YouTube" onClick={onInsertVideo}><Youtube className="h-4 w-4" /></button>
+        <button type="button" className={btn} title="Intégrer Spotify, Deezer, SoundCloud, Apple Music, Vimeo…" onClick={onInsertEmbed}><Radio className="h-4 w-4" /></button>
+        <button type="button" className={btn} title="Bloc dédié : plusieurs vidéos ou intégrations" onClick={onInsertEmbedSection}><LayoutGrid className="h-4 w-4" /></button>
+        <span className="mx-1 h-5 w-px shrink-0 bg-border" />
+        <button type="button" className={btn} title="Annuler" onClick={() => cmd("undo")}><Undo2 className="h-4 w-4" /></button>
+        <button type="button" className={btn} title="Rétablir" onClick={() => cmd("redo")}><Redo2 className="h-4 w-4" /></button>
+        <button type="button" className={btn} title="Effacer la mise en forme" onClick={() => cmd("removeFormat")}><Eraser className="h-4 w-4" /></button>
+        <span className="mx-1 h-5 w-px shrink-0 bg-border" />
+        <button type="button" className={`${btn} w-auto px-3 ${preview ? "bg-primary/10 text-primary" : ""}`} title={preview ? "Revenir à l'édition" : "Aperçu de l'article"} onClick={() => setPreview((v) => !v)}>
           {preview ? <Pencil className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          <span className="ml-1.5 text-xs font-medium">
-            {preview ? "Éditer" : "Aperçu"}
-          </span>
+          <span className="ml-1.5 text-xs font-medium">{preview ? "Éditer" : "Aperçu"}</span>
         </button>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => onPickMedia("image", e.target.files?.[0], fileRef.current)}
-        />
-        <input
-          ref={videoRef}
-          type="file"
-          accept="video/mp4,video/webm,video/quicktime,video/*"
-          className="hidden"
-          onChange={(e) => onPickMedia("video", e.target.files?.[0], videoRef.current)}
-        />
-        <input
-          ref={audioRef}
-          type="file"
-          accept="audio/mpeg,audio/wav,audio/ogg,audio/mp4,audio/*"
-          className="hidden"
-          onChange={(e) => onPickMedia("audio", e.target.files?.[0], audioRef.current)}
-        />
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => onPickMedia("image", e.target.files?.[0], fileRef.current)} />
+        <input ref={videoRef} type="file" accept="video/mp4,video/webm,video/quicktime,video/*" className="hidden" onChange={(e) => onPickMedia("video", e.target.files?.[0], videoRef.current)} />
+        <input ref={audioRef} type="file" accept="audio/mpeg,audio/wav,audio/ogg,audio/mp4,audio/*" className="hidden" onChange={(e) => onPickMedia("audio", e.target.files?.[0], audioRef.current)} />
       </div>
+
       {selectedImg && !preview && (
-        <div className="flex flex-wrap items-center gap-2 border-b border-border bg-primary/5 px-3 py-2 text-xs">
-          <span className="font-medium text-foreground">Image sélectionnée :</span>
+        <div className="flex items-center gap-2 overflow-x-auto border-b border-border bg-primary/5 px-2 py-2 text-xs [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <span className="shrink-0 font-medium text-foreground">Image :</span>
           {(["25%", "50%", "75%", "100%"] as const).map((w) => (
-            <button
-              key={w}
-              type="button"
-              onClick={() => resizeSelected(w)}
-              className="rounded-md border border-border bg-background px-2 py-1 text-foreground hover:bg-muted"
-            >
-              {w}
-            </button>
+            <button key={w} type="button" onClick={() => resizeSelected(w)} className="min-h-9 shrink-0 rounded-lg border border-border bg-background px-2 text-foreground hover:bg-muted">{w}</button>
           ))}
-          <button
-            type="button"
-            onClick={() => replaceRef.current?.click()}
-            className="rounded-md border border-border bg-background px-2 py-1 text-foreground hover:bg-muted"
-          >
-            Remplacer
-          </button>
-          <button
-            type="button"
-            onClick={deleteSelected}
-            className="rounded-md border border-border bg-background px-2 py-1 text-destructive hover:bg-muted"
-          >
-            Supprimer
-          </button>
-          <input
-            ref={replaceRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => void replaceSelected(e.target.files?.[0], replaceRef.current)}
-          />
+          <button type="button" onClick={() => replaceRef.current?.click()} className="min-h-9 shrink-0 rounded-lg border border-border bg-background px-2 text-foreground hover:bg-muted">Remplacer</button>
+          <button type="button" onClick={deleteSelected} className="min-h-9 shrink-0 rounded-lg border border-border bg-background px-2 text-destructive hover:bg-muted">Supprimer</button>
+          <input ref={replaceRef} type="file" accept="image/*" className="hidden" onChange={(e) => void replaceSelected(e.target.files?.[0], replaceRef.current)} />
         </div>
       )}
+
       {preview && (
-        <div className="border-t border-border bg-background px-4 py-6">
-          <p className="mb-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Aperçu — rendu tel qu'il apparaîtra sur le site
-          </p>
-          <div
-            className="article-content text-sm leading-relaxed text-foreground"
-            dangerouslySetInnerHTML={{ __html: value || "<p>Aucun contenu pour le moment.</p>" }}
-          />
+        <div className="border-t border-border bg-background px-3 py-4 sm:px-4 sm:py-6">
+          <p className="mb-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">Aperçu — rendu public</p>
+          <div className="article-content text-sm leading-relaxed text-foreground" dangerouslySetInnerHTML={{ __html: value || "<p>Aucun contenu pour le moment.</p>" }} />
         </div>
       )}
       <div
@@ -428,7 +288,7 @@ export function RichTextEditor({ value, onChange }: Props) {
         onInput={sync}
         onBlur={sync}
         onClick={onEditorClick}
-        className="article-content min-h-[320px] w-full px-4 py-3 text-sm leading-relaxed text-foreground outline-none"
+        className="article-content min-h-[220px] w-full overflow-x-hidden px-3 py-3 text-base leading-relaxed text-foreground outline-none sm:min-h-[320px] sm:px-4 sm:text-sm"
       />
     </div>
   );
