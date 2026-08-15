@@ -1,8 +1,10 @@
 import { horrorArticle } from "@/content/horrorArticle";
 import { macronPhilippeArticle } from "@/content/macronPhilippeArticle";
+import { politicalSalariesArticle } from "@/content/politicalSalariesArticle";
 import type { Article } from "@/lib/articles-types";
 
 export const legacyGitArticles = [
+  politicalSalariesArticle as unknown as Article,
   macronPhilippeArticle as unknown as Article,
   horrorArticle as unknown as Article,
 ];
