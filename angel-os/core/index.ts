@@ -14,3 +14,4 @@ export * from './event-log';
 export * from './observability';
 export * from './memory-index';
 export * from './durable-workflow';
+export * from './storage-orchestrator';
