@@ -1,8 +1,11 @@
+import { getTmdbCredential } from "./vercel-connect-credentials.server";
+
 const BASE = "https://api.themoviedb.org/3";
 
 export async function tmdb<T>(path: string, params: Record<string, string> = {}): Promise<T> {
-  const key = process.env["TMDB_API_KEY"] || process.env["VITE_TMDB_API_KEY"];
-  if (!key) throw new Error("TMDB_API_KEY_MISSING");
+  const credential = await getTmdbCredential();
+  if (!credential) throw new Error("TMDB_CREDENTIAL_MISSING");
+  const key = credential.value;
 
   const url = new URL(BASE + path);
   if (!params.language) url.searchParams.set("language", "fr-FR");
@@ -15,6 +18,9 @@ export async function tmdb<T>(path: string, params: Record<string, string> = {})
     headers: isBearer ? { Authorization: `Bearer ${key}`, Accept: "application/json" } : { Accept: "application/json" },
   });
 
-  if (!response.ok) throw new Error(`TMDB_REQUEST_FAILED_${response.status}`);
+  if (!response.ok) {
+    console.error("[tmdb] request failed", { status: response.status, credentialSource: credential.source, path });
+    throw new Error(`TMDB_REQUEST_FAILED_${response.status}`);
+  }
   return await response.json() as T;
 }
