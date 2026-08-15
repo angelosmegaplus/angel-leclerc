@@ -40,7 +40,7 @@ type LiveAction = {
 
 const RAW_QUEUE = "https://raw.githubusercontent.com/angelosmegaplus/angel-leclerc/main/runtime/chatgpt-work.json";
 const COMMITS_API = "https://api.github.com/repos/angelosmegaplus/angel-leclerc/commits?sha=main&per_page=6";
-const LIVE_REFRESH_MS = 15_000;
+const LIVE_REFRESH_MS = 5_000;
 
 function bust(url: string) {
   return `${url}${url.includes("?") ? "&" : "?"}t=${Date.now()}`;
@@ -55,6 +55,13 @@ function dateLabel(value?: string | null) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
   return new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).format(date);
+}
+
+function timeLabel(value?: string | null) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(date);
 }
 
 function isDone(status: string) {
@@ -108,14 +115,18 @@ export function GitHubChatGPTQueue() {
   const [commits, setCommits] = useState<Commit[]>([]);
   const [liveActions, setLiveActions] = useState<LiveAction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function refresh() {
+    if (refreshing) return;
+    setRefreshing(true);
     setError(null);
     try {
       const [queueResponse, commitsResponse, actionsResult] = await Promise.all([
         fetch(bust(RAW_QUEUE), { cache: "no-store" }),
-        fetch(COMMITS_API, { cache: "no-store", headers: { Accept: "application/vnd.github+json" } }),
+        fetch(bust(COMMITS_API), { cache: "no-store", headers: { Accept: "application/vnd.github+json" } }),
         supabase
           .from("ai_actions")
           .select("id, kind, title, description, status, created_at, updated_at")
@@ -128,21 +139,36 @@ export function GitHubChatGPTQueue() {
       setQueue((await queueResponse.json()) as WorkPayload);
       if (commitsResponse.ok) setCommits((await commitsResponse.json()) as Commit[]);
       if (!actionsResult.error) setLiveActions((actionsResult.data ?? []) as LiveAction[]);
+      setLastSyncAt(new Date().toISOString());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Synchronisation GitHub indisponible");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }
 
   useEffect(() => {
     void refresh();
-    const timer = window.setInterval(() => void refresh(), LIVE_REFRESH_MS);
+    const timer = window.setInterval(() => {
+      if (!document.hidden) void refresh();
+    }, LIVE_REFRESH_MS);
     const onQueueUpdated = () => void refresh();
+    const onFocus = () => void refresh();
+    const onVisibility = () => {
+      if (!document.hidden) void refresh();
+    };
+    const onOnline = () => void refresh();
     window.addEventListener("angel-os:chatgpt-queue-updated", onQueueUpdated);
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("online", onOnline);
+    document.addEventListener("visibilitychange", onVisibility);
     return () => {
       window.clearInterval(timer);
       window.removeEventListener("angel-os:chatgpt-queue-updated", onQueueUpdated);
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("online", onOnline);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, []);
 
@@ -160,12 +186,25 @@ export function GitHubChatGPTQueue() {
         <div className="flex items-center gap-3">
           <span className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white"><Github className="h-5 w-5" /></span>
           <div>
-            <h2 className="font-semibold text-white">ChatGPT · GitHub en direct</h2>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="font-semibold text-white">ChatGPT · GitHub en direct</h2>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-200">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-300" /> En direct
+              </span>
+            </div>
             <p className="text-xs text-white/45">Toutes les demandes de modification, leur état et les derniers commits de main.</p>
+            <p className="mt-1 text-[10px] text-white/30">Actualisation automatique toutes les 5 s{lastSyncAt ? ` · dernière synchro ${timeLabel(lastSyncAt)}` : ""}</p>
           </div>
         </div>
-        <button type="button" onClick={() => void refresh()} className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white/55 hover:text-white" aria-label="Actualiser GitHub">
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+        <button
+          type="button"
+          onClick={() => void refresh()}
+          className="flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[.04] px-3 text-xs font-medium text-white/65 transition hover:border-white/20 hover:bg-white/[.07] hover:text-white active:scale-[.98]"
+          aria-label="Actualiser GitHub maintenant"
+          title="Actualiser GitHub maintenant"
+        >
+          {refreshing || loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+          <span className="hidden sm:inline">Actualiser</span>
         </button>
       </div>
 
@@ -203,7 +242,7 @@ export function GitHubChatGPTQueue() {
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2"><p className="text-[11px] font-semibold uppercase tracking-[.12em] text-white/70">File GitHub</p>{queue?.updatedAt ? <span className="text-[10px] text-white/30">maj {dateLabel(queue.updatedAt)}</span> : null}</div>
+            <div className="flex items-center justify-between gap-2"><p className="text-[11px] font-semibold uppercase tracking-[.12em] text-white/70">File GitHub</p>{queue?.updatedAt ? <span className="text-[10px] text-white/30">source maj {dateLabel(queue.updatedAt)}</span> : null}</div>
             {items.length === 0 ? <div className="rounded-xl border border-white/10 bg-white/[.03] p-4 text-sm text-white/40">Aucune demande enregistrée dans la file GitHub.</div> : items.map((item) => {
               const done = isDone(item.status);
               const failed = isFailed(item.status);
