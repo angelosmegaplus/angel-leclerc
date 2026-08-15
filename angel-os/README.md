@@ -1,39 +1,107 @@
 # Angel OS
 
-Angel OS is a lightweight, modular, open-source core designed to be reused across different projects without imposing a specific interface, website, AI provider, database, or device.
+Angel OS is a modular, Linux-ready system core and application platform. Its role is to coordinate infrastructure, applications, data flows, workflows, releases, nodes, storage and recovery without imposing one website, AI provider, database or hosting platform.
 
-The guiding model is the Linux ecosystem: a small common base, then distributions and products built on top of it.
+The architectural model is intentionally close to the Linux ecosystem: a reusable system core, then distributions and applications built above it.
 
-## Architecture
+## Official boundary
 
 ```text
 Host OS / Linux
    ↓
 Angel OS Core
-   ↓
-Distributions (Angel OS IA, future variants)
-   ↓
-Adapters / apps / websites / desktop / embedded clients
+   ├─ events / telemetry / memory
+   ├─ durable workflows
+   ├─ hybrid orchestration
+   ├─ release / deploy / nodes / gateway
+   ├─ sync / realtime / storage
+   ├─ guardian / recovery
+   └─ application runtime
+        ↓
+        ├─ Angel OS IA (AI distribution)
+        ├─ angel-leclerc.fr
+        └─ future applications
 ```
 
-Angel OS is **not** the current website and does not replace it. `angel-leclerc.fr` is a distinct web application that now consumes the `Angel OS IA` distribution through the `angel-leclerc.fr.web` adapter. The Core remains independently reusable and has no dependency on the website.
+**Angel OS** is the system layer. It must remain usable without AI.
 
-## Principles
+**Angel OS IA** is a separate distribution built on Angel OS. It adds AI providers, conversation, analysis, generation, agents and intelligent automation. Dependency direction is strictly `Angel OS IA -> Angel OS`; the Core must never depend on Angel OS IA.
 
-- Core first, interface second.
-- No dependency on the current website.
-- Modules are optional and replaceable.
-- Adapters isolate platform-specific code.
-- Distributions compose modules without modifying the Core.
-- Backward-compatible public APIs whenever possible.
-- Safe-by-default configuration.
-- Open-source and fork-friendly.
+`angel-leclerc.fr` is an application using Angel OS and selected capabilities from Angel OS IA. It is not the Core.
 
-## Current status
+## Hybrid design
 
-`v0.1` establishes the reusable foundation: module registry, event bus, configuration, capability contracts and platform adapters.
+Angel OS does not remove external services simply to become independent. Existing useful services are combined with Angel Native engines so the complete system gains capacity, resilience and observability.
 
-The first distribution is `Angel OS IA`, which adds AI and automation capabilities above the base Core. `angel-leclerc.fr` boots that distribution as an application consumer and exposes a safe runtime status endpoint at `/api/angel-os/status`.
+Examples:
+
+- GitHub remains a source of truth for code and CI.
+- Vercel can remain a web deployment node.
+- Angel Node provides a Linux-ready native web node implementation for additional targets.
+- Google Drive / `Angel OS Storage` is used as a heavy-file archive tier.
+- Existing application data services remain available while Angel Native storage, cache and sync add complementary capabilities.
+- External AI providers belong to Angel OS IA, while workflows, memory, events, deployment and recovery remain Angel OS system capabilities.
+
+## Core services
+
+### Event Log and Telemetry
+System operations can produce events and metrics instead of failing silently.
+
+### Memory Index
+A cross-module search index for operational context.
+
+### Durable Workflow Engine
+Checkpointed workflows with retries and resumable state.
+
+### Hybrid Orchestrator
+Runs external and native providers using cascade, race, merge or adaptive selection strategies.
+
+### Angel Release and Angel Deploy
+A release identifies version, commit and checksum. Angel Deploy can distribute the same release to several targets and record each target state.
+
+### Angel Gateway and Angel Node
+Nodes are ranked by health, priority and latency. Vercel can be one node; a Linux Angel Node can be another. A transparent public-domain failover still requires an appropriate reachable network/DNS/proxy layer.
+
+### Angel Sync
+Versioned reconciliation, duplicate detection and conflict handling between data representations.
+
+### Guardian and Recovery
+Guardian detects anomalies. Recovery maps them to retry, fallback, rollback, resync, cache invalidation, provider isolation or checkpoint restoration policies.
+
+### Application Runtime
+Distributions and applications are explicitly registered above the Core instead of being mixed into system services.
+
+## Native and external services
+
+Angel Native services are complementary. They are not presented as fake MySQL, Redis, Python or Rust instances.
+
+- TypeScript is the main application and orchestration language.
+- Python can supply data/automation workers where it is actually executable.
+- Rust is reserved for performance-critical or system-level work when infrastructure makes it useful.
+- Redis/MySQL/Express can extend Angel OS when genuinely available, while native cache/realtime/API/storage primitives keep the architecture functional without pretending those external services exist.
+
+## Deployment model
+
+```text
+GitHub
+   ↓
+Angel Release / Angel Deploy
+   ├─ Vercel
+   ├─ Angel Node Linux
+   └─ future targets
+
+clients
+   ↓
+network / gateway layer
+   ↓
+healthy serving node
+```
+
+The software components for multi-target deployment and Angel Node are part of the Core. Real redundancy is only live when at least two independently reachable serving targets exist.
+
+## Documentation
+
+See `docs/DISTRIBUTED_HYBRID_ARCHITECTURE.md` for the detailed architecture and system rules.
 
 ## License
 
