@@ -4,7 +4,7 @@ import { AngelEventLog, AngelTelemetry, AngelMemoryIndex } from "../../angel-os/
 // services: it does not replace OpenAI, Supabase, Google or GitHub.
 export const angelEventLog = new AngelEventLog(5000);
 export const angelTelemetry = new AngelTelemetry();
-export const angelMemoryIndex = new AngelMemoryIndex(5000);
+export const angelMemoryIndex = new AngelMemoryIndex();
 
 export async function recordAngelOperation(input: {
   type: string;
