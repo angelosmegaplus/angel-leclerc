@@ -1,8 +1,8 @@
 {
-  "fetchedAt": "2026-08-15T20:00:34Z",
+  "fetchedAt": "2026-08-15T20:57:07Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-15T20:00:34Z",
+      "fetchedAt": "2026-08-15T20:57:07Z",
       "important": [
         {
           "subject": "Complétez votre dossier de candidature",
@@ -13,20 +13,20 @@
           "suggestedReply": ""
         },
         {
-          "subject": "Échecs techniques répétés Angel OS / GitHub / Vercel",
-          "from": "GitHub / Vercel / Codex notifications",
-          "date": "2026-08-15T19:56:02Z",
-          "summary": "Depuis 19:00Z, quinze alertes techniques ont été reçues : échecs répétés de Publication Angel OS, Observabilité Angel OS, Fix invalid application responses et Preview Angel OS sur les PR #28 et #29. Vercel confirme encore une limite de ressource avec réessai conseillé après 24 heures, et le bot Codex indique que la limite d'usage pour les revues de code est atteinte.",
-          "reason": "La chaîne technique reste fortement dégradée ; cette routine mail consigne les alertes sans lancer de correctif concurrent.",
+          "subject": "Échecs techniques répétés Angel OS / GitHub",
+          "from": "GitHub Actions notifications",
+          "date": "2026-08-15T20:56:31Z",
+          "summary": "Neuf nouvelles alertes techniques ont été reçues depuis le précédent rapport : échecs de Preview Angel OS, Maintenance Angel OS, Synchronisation données Angel OS, Observabilité Angel OS et Publication Angel OS. Aucun nouveau message de candidature n'est arrivé pendant cette période.",
+          "reason": "La chaîne technique reste dégradée ; cette routine consigne les alertes et laisse la maintenance technique éviter les correctifs concurrents.",
           "suggestedReply": ""
         }
       ],
-      "otherSummary": "Aucun nouveau mail de candidature, refus, acceptation, entretien, demande de CV ou redirection professionnelle n'a été reçu pendant cette période. Les quinze nouveaux messages entrants sont exclusivement des alertes techniques GitHub/Vercel/Codex liées à angel-leclerc. Gmail n'a subi aucune modification.",
+      "otherSummary": "Depuis le précédent rapport, neuf nouveaux messages entrants ont été reçus, tous des alertes techniques GitHub liées à angel-leclerc. Aucun nouveau mail de candidature, refus, acceptation, entretien, demande de CV, demande d'information ou redirection professionnelle n'a été reçu. Gmail n'a subi aucune modification.",
       "counts": {
-        "new_since_last_run": 15,
-        "incoming": 15,
+        "new_since_last_run": 9,
+        "incoming": 9,
         "outgoing": 0,
-        "technical_incoming": 15,
+        "technical_incoming": 9,
         "employment_or_application_incoming": 0,
         "outgoing_applications": 0,
         "application_action_required": 0,
@@ -38,14 +38,14 @@
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-15T19:00:26Z",
-    "period_end": "2026-08-15T20:00:34Z",
-    "summary": "Quinze nouveaux messages ont été reçus sur la période, tous techniques et liés à angel-leclerc. Les workflows Publication Angel OS, Observabilité Angel OS, Fix invalid application responses et Preview Angel OS ont échoué à plusieurs reprises. Les PR #28 (Polish Angel OS admin) et #29 (Refonte cinéma privée Angel OS) ont également reçu des échecs de preview ; Vercel signale toujours une limite de ressource avec réessai après 24 heures et le bot Codex indique que la limite d'usage pour les revues de code est atteinte. Aucun nouveau mail de candidature, refus, acceptation, proposition d'entretien, demande de CV ou redirection professionnelle n'a été reçu. Aucun email n'a été envoyé, modifié, classé ou marqué lu par cette routine. La source native `ai_actions` n'est pas directement interrogeable avec les connecteurs disponibles pendant cette exécution ; aucune action `awaiting_operator` n'a donc été exécutée ou modifiée.",
+    "period_start": "2026-08-15T20:00:34Z",
+    "period_end": "2026-08-15T20:57:07Z",
+    "summary": "Neuf nouveaux messages ont été reçus sur la période, tous techniques et liés à angel-leclerc. Ils signalent des échecs de Preview Angel OS, Maintenance Angel OS, Synchronisation données Angel OS, Observabilité Angel OS et Publication Angel OS. Aucun nouveau mail de candidature, refus, acceptation, proposition d'entretien, demande de CV, demande d'information ou redirection professionnelle n'a été reçu. Aucun email n'a été envoyé, modifié, classé ou marqué lu par cette routine. La source native `ai_actions` n'est toujours pas directement interrogeable avec les connecteurs disponibles pendant cette exécution ; aucune action `awaiting_operator` n'a donc été exécutée ou modifiée.",
     "counts": {
-      "total_messages": 15,
-      "incoming": 15,
+      "total_messages": 9,
+      "incoming": 9,
       "outgoing": 0,
-      "technical_incoming": 15,
+      "technical_incoming": 9,
       "employment_or_application_incoming": 0,
       "outgoing_applications": 0,
       "application_action_required": 0,
@@ -56,100 +56,64 @@
     },
     "items": [
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Publication Angel OS - main (1cfdbae)",
+        "subject": "[angelosmegaplus/angel-leclerc] PR run failed: Preview Angel OS - Refonte cinéma privée Angel OS (0ad26bc)",
         "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T19:04:22Z",
-        "reason": "Échec de publication ; à laisser à la routine de maintenance technique."
+        "date": "2026-08-15T20:01:09Z",
+        "reason": "Échec de preview sur la PR de refonte cinéma ; à laisser à la maintenance technique."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Observabilité Angel OS - main (9a73392)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Maintenance Angel OS - main (9a4ab9a)",
         "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T19:33:40Z",
-        "reason": "Échec d'observabilité production."
+        "date": "2026-08-15T20:01:44Z",
+        "reason": "Échec du workflow de maintenance Angel OS."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Observabilité Angel OS - main (59296fd)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Synchronisation données Angel OS - main (3a364e2)",
         "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T19:35:20Z",
-        "reason": "Nouvel échec d'observabilité production."
+        "date": "2026-08-15T20:02:32Z",
+        "reason": "Échec de la synchronisation des données Angel OS."
       },
       {
-        "subject": "Re: [angelosmegaplus/angel-leclerc] Polish Angel OS admin (PR #28)",
-        "from": "vercel[bot] <notifications@github.com>",
-        "date": "2026-08-15T19:36:24Z",
-        "reason": "Vercel indique une limite de ressource et recommande de réessayer dans 24 heures."
-      },
-      {
-        "subject": "Re: [angelosmegaplus/angel-leclerc] Polish Angel OS admin (PR #28)",
-        "from": "chatgpt-codex-connector[bot] <notifications@github.com>",
-        "date": "2026-08-15T19:36:24Z",
-        "reason": "Limite d'usage Codex atteinte pour les revues de code."
-      },
-      {
-        "subject": "[angelosmegaplus/angel-leclerc] PR run failed: Preview Angel OS - Polish Angel OS admin (be7d945)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Observabilité Angel OS - main (9402d1f)",
         "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T19:37:12Z",
-        "reason": "Échec du preview de la PR #28."
+        "date": "2026-08-15T20:30:38Z",
+        "reason": "Échec du contrôle d'observabilité production."
       },
       {
-        "subject": "Re: [angelosmegaplus/angel-leclerc] Refonte cinéma privée Angel OS (PR #29)",
-        "from": "vercel[bot] <notifications@github.com>",
-        "date": "2026-08-15T19:46:19Z",
-        "reason": "Vercel confirme à nouveau la limite de ressource."
-      },
-      {
-        "subject": "Re: [angelosmegaplus/angel-leclerc] Refonte cinéma privée Angel OS (PR #29)",
-        "from": "chatgpt-codex-connector[bot] <notifications@github.com>",
-        "date": "2026-08-15T19:46:21Z",
-        "reason": "Limite d'usage Codex atteinte pour les revues de code."
-      },
-      {
-        "subject": "[angelosmegaplus/angel-leclerc] PR run failed: Preview Angel OS - Refonte cinéma privée Angel OS (af7e38a)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Observabilité Angel OS, Attempt #2 - main (9402d1f)",
         "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T19:47:06Z",
-        "reason": "Premier échec de preview recensé sur la PR #29 pendant la période."
+        "date": "2026-08-15T20:31:45Z",
+        "reason": "Deuxième tentative d'observabilité également en échec."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Publication Angel OS - main (987e6ac)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Observabilité Angel OS - main (42e887f)",
         "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T19:49:11Z",
-        "reason": "Nouvel échec de publication Angel OS."
+        "date": "2026-08-15T20:32:42Z",
+        "reason": "Nouvel échec d'observabilité sur un commit plus récent."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Fix invalid application responses - main (ccded8e)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Observabilité Angel OS, Attempt #2 - main (42e887f)",
         "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T19:49:25Z",
-        "reason": "Échec du workflow chargé de corriger les réponses de candidatures invalides."
+        "date": "2026-08-15T20:34:00Z",
+        "reason": "Deuxième tentative d'observabilité également en échec sur ce commit."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Fix invalid application responses - main (fd3a40f)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Observabilité Angel OS - main (6bafa3d)",
         "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T19:51:02Z",
-        "reason": "Deuxième échec du workflow de correction des réponses de candidatures invalides."
+        "date": "2026-08-15T20:35:29Z",
+        "reason": "Nouvel échec d'observabilité sur le dernier commit recensé."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] PR run failed: Preview Angel OS - Refonte cinéma privée Angel OS (5b2026b)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Publication Angel OS - main (6bafa3d)",
         "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T19:53:13Z",
-        "reason": "Nouvel échec de preview sur la PR #29."
-      },
-      {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Observabilité Angel OS - main (9a4ab9a)",
-        "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T19:54:40Z",
-        "reason": "Nouvel échec d'observabilité production."
-      },
-      {
-        "subject": "[angelosmegaplus/angel-leclerc] PR run failed: Preview Angel OS - Refonte cinéma privée Angel OS (fedd7e3)",
-        "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T19:56:02Z",
-        "reason": "Nouvel échec de preview sur la PR #29."
+        "date": "2026-08-15T20:56:31Z",
+        "reason": "Échec de publication sur le dernier commit recensé ; à laisser à la maintenance technique."
       }
     ],
     "recommendations": [
       "Aucune action mail n'est requise sur cette période.",
-      "Conserver le questionnaire Université de Bordeaux comme action candidature encore pertinente issue du cycle précédent.",
-      "Laisser la maintenance technique traiter les échecs GitHub/Vercel/Codex afin d'éviter des correctifs concurrents.",
+      "Conserver le questionnaire Université de Bordeaux comme action candidature encore pertinente issue d'un cycle précédent.",
+      "Laisser la maintenance technique traiter les échecs GitHub afin d'éviter des correctifs concurrents.",
       "Ne pas simuler l'exécution d'actions `awaiting_operator` tant que `ai_actions` n'est pas accessible par une voie serveur authentifiée."
     ],
     "source": "chatgpt-hourly-direct"
