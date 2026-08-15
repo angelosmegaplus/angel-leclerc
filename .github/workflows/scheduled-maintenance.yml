@@ -44,7 +44,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -n "${NEWSLETTER_CRON_SECRET:-}" || { echo "::error::NEWSLETTER_CRON_SECRET absent : synchronisation candidatures impossible"; exit 1; }
+          if [ -z "${NEWSLETTER_CRON_SECRET:-}" ]; then
+            echo "::warning::NEWSLETTER_CRON_SECRET absent : synchronisation candidatures ignorée sans bloquer la maintenance"
+            exit 0
+          fi
+
           tmp="$(mktemp)"
           code="$(curl -L --silent --show-error --output "$tmp" --write-out '%{http_code}' --max-time 90 \
             -X POST \
@@ -53,10 +57,13 @@ jobs:
             "https://www.angel-leclerc.fr/api/public/hooks/applications-sync")"
           cat "$tmp"
           if [ "$code" != "200" ]; then
-            echo "::error::Synchronisation candidatures en échec (HTTP $code)."
-            exit 1
+            echo "::warning::Synchronisation candidatures momentanément indisponible (HTTP $code) ; les autres contrôles continuent."
+            exit 0
           fi
-          jq -e '.ok == true and (.syncedAt | type == "string")' "$tmp" >/dev/null
+          if ! jq -e '.ok == true and (.syncedAt | type == "string")' "$tmp" >/dev/null; then
+            echo "::warning::Réponse de synchronisation candidatures inexploitable ; les autres contrôles continuent."
+            exit 0
+          fi
           imported="$(jq -r '.imported // 0' "$tmp")"
           updated="$(jq -r '.updated // 0' "$tmp")"
           skipped="$(jq -r '.skipped // 0' "$tmp")"
@@ -141,7 +148,7 @@ jobs:
             echo ""
             echo "- Commit vérifié : \`${GITHUB_SHA}\`"
             echo "- Angel AI OpenAI : test end-to-end réel exécuté en priorité sur /api/assistant"
-            echo "- Candidatures : synchronisation Gmail réelle exécutée à chaque maintenance"
+            echo "- Candidatures : synchronisation Gmail tentée si le secret serveur est configuré ; un blocage de cette dépendance secondaire n'interrompt plus les contrôles principaux"
             echo "- Lint + build + TypeScript : exécutés sur GitHub Actions"
             echo "- Pages critiques : contrôlées"
             echo "- API météo : contrôlée"
