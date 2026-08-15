@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { refreshNotifications } from "@/lib/notifications.functions";
 import { getServiceWorkerRegistration } from "@/lib/pwa";
 import { playRetroSound } from "@/lib/retro-sounds";
+import { queueAdminRefresh } from "@/lib/admin-refresh-queue";
 
 const CHECK_EVERY_MS = 5 * 60 * 1000;
 const IMPORTANT_KINDS = new Set(["application", "message", "agenda", "task", "ai"]);
@@ -39,6 +40,24 @@ async function showSystemAlert(created: number, kinds: string[]) {
   } catch {
     // Le centre de notifications interne reste la source de vérité si le navigateur refuse l'affichage système.
   }
+}
+
+function refreshSectionFromButton(button: HTMLButtonElement) {
+  const aria = button.getAttribute("aria-label")?.trim() ?? "";
+  const text = button.textContent?.replace(/\s+/g, " ").trim() ?? "";
+  const explicit = aria || text;
+  if (explicit && !/^actualis/i.test(explicit)) return null;
+
+  if (explicit && !/^actualiser$/i.test(explicit)) {
+    return explicit.replace(/^actualiser\s*/i, "").replace(/^(les|la|le|l’|l')\s*/i, "").trim() || explicit;
+  }
+
+  const container = button.closest("section, article, [role='region'], main, div");
+  const localHeading = container?.querySelector("h1, h2, h3, [data-section-title]")?.textContent?.trim();
+  if (localHeading) return localHeading;
+
+  const pageHeading = document.querySelector("main h1, header h1")?.textContent?.trim();
+  return pageHeading || "Espace administrateur";
 }
 
 export function AINotificationMonitor() {
@@ -80,6 +99,32 @@ export function AINotificationMonitor() {
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, [sync]);
+
+  useEffect(() => {
+    const onClick = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const button = target.closest("button");
+      if (!(button instanceof HTMLButtonElement)) return;
+
+      const aria = button.getAttribute("aria-label") ?? "";
+      const text = button.textContent ?? "";
+      if (!/actualis/i.test(`${aria} ${text}`)) return;
+
+      const section = refreshSectionFromButton(button);
+      if (!section) return;
+
+      void queueAdminRefresh(section, {
+        label: (aria || text).replace(/\s+/g, " ").trim().slice(0, 180),
+        path: window.location.pathname,
+      }).catch((error) => {
+        console.error("[angel-os] impossible d’ajouter le contrôle d’actualisation", error);
+      });
+    };
+
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, []);
 
   return null;
 }
