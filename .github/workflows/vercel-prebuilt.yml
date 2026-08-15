@@ -89,7 +89,7 @@ jobs:
 
       - name: Install dependencies
         if: steps.vercel.outputs.available == 'true' && steps.production.outputs.already_ready != 'true'
-        run: bun install --frozen-lockfile
+        run: bun install
 
       - name: Build application
         if: steps.vercel.outputs.available == 'true' && steps.production.outputs.already_ready != 'true'
