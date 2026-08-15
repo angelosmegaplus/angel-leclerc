@@ -1,81 +1,97 @@
 {
-  "fetchedAt": "2026-08-15T16:03:30Z",
+  "fetchedAt": "2026-08-15T16:59:52Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-15T16:03:30Z",
+      "fetchedAt": "2026-08-15T16:59:52Z",
       "important": [
         {
-          "subject": "Échecs techniques GitHub/Vercel très nombreux sur angel-leclerc",
-          "from": "GitHub / Vercel",
-          "date": "2026-08-15T16:02:47Z",
-          "summary": "Depuis le précédent rapport, 125 notifications GitHub liées à angelosmegaplus/angel-leclerc et 3 notifications Vercel de déploiement de production en échec ont été détectées. Les messages récents concernent notamment CI, Maintenance Angel OS, Publication Angel OS et preview.yml. Les derniers événements visibles incluent un échec CI et Maintenance sur abaf68b ainsi qu'un échec preview.yml sur e3f42b3.",
-          "reason": "Alerte technique massive et persistante sur le dépôt principal. Cette routine mail ne lance aucune correction afin de laisser la maintenance technique dédiée diagnostiquer les causes sans conflit.",
+          "subject": "Refus explicite — Le Comptoir Authentique",
+          "from": "Le Comptoir Authentique <contact@lecomptoirauthentique.com>",
+          "date": "2026-08-15T16:19:07Z",
+          "summary": "Agnès, gérante du Comptoir Authentique à Sarlat, indique explicitement qu'elle ne peut pas répondre positivement à la candidature BTS Communication. Une réponse de courtoisie a déjà été envoyée à 16:32:22Z dans le même fil ; cette routine n'envoie donc rien afin d'éviter tout doublon.",
+          "reason": "Refus d'alternance certain. Le fil montre qu'une réponse a déjà été envoyée, donc aucune nouvelle action mail n'est requise ici.",
           "suggestedReply": ""
         },
         {
-          "subject": "Relance Radio Vallée Vézère envoyée",
-          "from": "Angel LECLERC",
-          "date": "2026-08-15T14:29:34Z",
-          "summary": "Un message sortant de relance concernant la candidature BTS Communication envoyée le 27 juillet à Radio Vallée Vézère a été détecté dans Gmail.",
-          "reason": "Information factuelle utile au suivi des candidatures ; aucun nouveau message entrant de l'entreprise n'a été détecté sur la période.",
+          "subject": "Échecs techniques GitHub persistants sur angel-leclerc",
+          "from": "GitHub <notifications@github.com>",
+          "date": "2026-08-15T16:56:44Z",
+          "summary": "Vingt-quatre nouvelles notifications GitHub ont été détectées depuis le précédent rapport. Elles concernent principalement CI, preview.yml, Observabilité Angel OS, Synchronisation données Angel OS et Publication Angel OS ; le dernier message visible signale l'échec du workflow Publication Angel OS sur le commit 2753d99.",
+          "reason": "Incident technique persistant sur le dépôt principal. Cette routine mail le consigne uniquement et laisse la maintenance technique dédiée diagnostiquer et corriger sans concurrence.",
+          "suggestedReply": ""
+        },
+        {
+          "subject": "Relance Biocoop Sarlat envoyée",
+          "from": "Angel LECLERC <angelleclerc2006@gmail.com>",
+          "date": "2026-08-15T16:32:26Z",
+          "summary": "Une relance sortante concernant la candidature BTS Communication à Biocoop Sarlat a été envoyée. Aucun nouveau message entrant de Biocoop n'a été détecté sur cette période.",
+          "reason": "Information factuelle utile au suivi des candidatures ; ne pas relancer de nouveau automatiquement sans nouveau délai ou réponse.",
           "suggestedReply": ""
         }
       ],
-      "otherSummary": "Aucun nouveau mail entrant de candidature, refus, entretien, demande de CV, redirection professionnelle ou réponse d'entreprise n'a été détecté depuis le précédent rapport. Gmail n'a subi aucune modification pendant cette exécution.",
+      "otherSummary": "Depuis le précédent rapport, un refus explicite du Comptoir Authentique a été reçu puis déjà traité dans le même fil, une relance Biocoop Sarlat a été envoyée, et 24 notifications techniques GitHub ont signalé de nouveaux échecs de workflows. Aucun entretien, demande de CV, acceptation, redirection professionnelle ou autre réponse d'entreprise n'a été détecté. Gmail n'a subi aucune modification pendant cette exécution.",
       "counts": {
-        "new_since_last_run": 128,
-        "important": 2,
-        "employment_or_application_incoming": 0,
-        "outgoing_application_followups": 1
+        "new_since_last_run": 27,
+        "incoming": 25,
+        "technical_incoming": 24,
+        "employment_or_application_incoming": 1,
+        "explicit_rejections": 1,
+        "positive_or_interview": 0,
+        "outgoing_application_followups": 1,
+        "already_sent_rejection_replies": 1
       }
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-15T13:58:55Z",
-    "period_end": "2026-08-15T16:03:30Z",
-    "summary": "Cent vingt-huit nouveaux messages entrants techniques pertinents ont été détectés depuis le précédent rapport : 125 notifications GitHub concernant angelosmegaplus/angel-leclerc et 3 notifications Vercel signalant des déploiements de production en échec. Aucun nouveau mail entrant de candidature, refus, entretien, demande de CV, redirection professionnelle ou réponse d'entreprise n'a été détecté. Un message sortant de relance à Radio Vallée Vézère a été trouvé à 14:29:34Z. La routine n'a répondu à aucun email et n'a modifié aucun message Gmail. La file ai_actions reste non interrogeable directement avec les connecteurs disponibles pendant cette exécution ; aucune action awaiting_operator n'a donc été exécutée ou modifiée.",
+    "period_start": "2026-08-15T16:03:30Z",
+    "period_end": "2026-08-15T16:59:52Z",
+    "summary": "Vingt-sept messages ont été détectés depuis le précédent rapport : 24 notifications techniques GitHub, un refus explicite du Comptoir Authentique, une réponse de courtoisie déjà envoyée dans ce même fil et une relance sortante à Biocoop Sarlat. Le refus ne nécessite aucune action de cette routine : la réponse était déjà partie à 16:32:22Z et la gestion des refus reste réservée à la tâche alternance. Aucun entretien, demande de CV, acceptation ou redirection professionnelle n'a été détecté. La file ai_actions reste non interrogeable directement avec les connecteurs disponibles pendant cette exécution ; aucune action awaiting_operator n'a donc été exécutée ou modifiée.",
     "counts": {
-      "total_incoming": 128,
-      "important": 2,
-      "employment_or_application_incoming": 0,
-      "outgoing_application_followups": 1
+      "total_messages": 27,
+      "incoming": 25,
+      "technical_incoming": 24,
+      "employment_or_application_incoming": 1,
+      "explicit_rejections": 1,
+      "positive_or_interview": 0,
+      "outgoing_application_followups": 1,
+      "already_sent_rejection_replies": 1
     },
     "items": [
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Maintenance Angel OS - main (abaf68b)",
+        "subject": "Re: Candidature BTS Communication en alternance – Sarlat centre",
+        "from": "Le Comptoir Authentique <contact@lecomptoirauthentique.com>",
+        "date": "2026-08-15T16:19:07Z",
+        "reason": "Refus explicite de la candidature. Le fil contient déjà une réponse de courtoisie envoyée à 16:32:22Z ; aucune seconde réponse ne doit être envoyée."
+      },
+      {
+        "subject": "Re: Candidature BTS Communication en alternance – Biocoop Sarlat",
+        "from": "Angel LECLERC <angelleclerc2006@gmail.com>",
+        "date": "2026-08-15T16:32:26Z",
+        "reason": "Relance sortante détectée ; aucune réponse entrante correspondante sur la période."
+      },
+      {
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Publication Angel OS - main (2753d99)",
         "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T16:02:15Z",
-        "reason": "Échec récent du workflow de maintenance sur main."
+        "date": "2026-08-15T16:56:44Z",
+        "reason": "Échec le plus récent du workflow Publication Angel OS."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: CI - main (abaf68b)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Observabilité Angel OS - main (ad21776)",
         "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T16:02:28Z",
-        "reason": "Échec récent du quality gate CI."
+        "date": "2026-08-15T16:34:56Z",
+        "reason": "Échec récent du contrôle d'observabilité de la production."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: .github/workflows/preview.yml - main (e3f42b3)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Synchronisation données Angel OS - main (a35741d)",
         "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T16:02:47Z",
-        "reason": "Le workflow preview.yml signale qu'aucun job n'a été exécuté."
-      },
-      {
-        "subject": "Failed production deployment on team 'AngelOS'",
-        "from": "Vercel <notifications@vercel.com>",
-        "date": "2026-08-15T15:23:10Z",
-        "reason": "Déploiement de production angel-leclerc en échec ; deux autres notifications Vercel comparables ont également été reçues sur la période."
-      },
-      {
-        "subject": "Re: Candidature pour un BTS Communication en alternance",
-        "from": "Angel LECLERC",
-        "date": "2026-08-15T14:29:34Z",
-        "reason": "Relance sortante détectée vers Radio Vallée Vézère ; aucune réponse entrante correspondante détectée sur la période."
+        "date": "2026-08-15T16:04:14Z",
+        "reason": "Échec de la synchronisation des données Angel OS, cohérent avec le blocage serveur déjà observé."
       }
     ],
     "recommendations": [
-      "Laisser la routine Maintenance complète Angel OS diagnostiquer les échecs GitHub/Vercel afin d'éviter plusieurs corrections concurrentes sur main.",
-      "Ne pas relancer de nouveau Radio Vallée Vézère automatiquement après le message déjà envoyé aujourd'hui ; attendre une réponse ou le délai prévu par la routine alternance.",
-      "Aucune réponse automatique à un refus n'est requise sur cette période.",
+      "Ne jamais répondre une seconde fois au refus du Comptoir Authentique : le fil contient déjà la réponse envoyée.",
+      "Laisser la routine de maintenance technique traiter les échecs GitHub afin d'éviter des corrections concurrentes.",
+      "Ne pas relancer de nouveau Biocoop Sarlat automatiquement après la relance envoyée aujourd'hui ; attendre une réponse ou le prochain délai prévu.",
       "La lecture/exécution de ai_actions nécessite toujours une voie serveur authentifiée ou un connecteur direct ; ne pas simuler d'action validée tant que cette source reste inaccessible."
     ],
     "source": "chatgpt-hourly-direct"
