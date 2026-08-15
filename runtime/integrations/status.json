@@ -1,0 +1,6 @@
+{
+  "service": "Angel OS GitHub Live Integrations",
+  "enabled": true,
+  "mode": "github-runtime",
+  "updatedAt": "2026-08-15T09:43:00+02:00"
+}
