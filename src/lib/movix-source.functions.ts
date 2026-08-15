@@ -120,7 +120,6 @@ async function resolveMovixSource(): Promise<MovixOfficialSource> {
   if (cache && cache.expiresAt > now) return cache.value;
   const chain: string[] = [];
 
-  // 1. Conserver le dernier lien réellement valide tant qu'il répond.
   if (lastKnownGoodUrl) {
     chain.push("last_known");
     const probe = await probeUrl(lastKnownGoodUrl);
@@ -138,7 +137,6 @@ async function resolveMovixSource(): Promise<MovixOfficialSource> {
     }
   }
 
-  // 2. Revenir à movix.online et suivre la redirection / l'adresse annoncée.
   chain.push("movix_online");
   const reference = await probeUrl(REFERENCE_URL);
   if (reference) {
@@ -159,7 +157,6 @@ async function resolveMovixSource(): Promise<MovixOfficialSource> {
     }
   }
 
-  // 3. Si la référence n'aboutit plus, consulter le dépôt officiel Movix.
   chain.push("github");
   try {
     const official = await githubOfficialUrl();
@@ -182,7 +179,6 @@ async function resolveMovixSource(): Promise<MovixOfficialSource> {
     console.error("[movix-source] github resolution failed", error);
   }
 
-  // 4. Dernier secours : URL de référence connue, sans prétendre qu'elle est valide.
   const value: MovixOfficialSource = {
     url: REFERENCE_URL,
     checkedAt: new Date(now).toISOString(),
