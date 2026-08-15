@@ -2,11 +2,9 @@ name: CI
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
   push:
-    branches:
-      - main
+    branches: [main]
     paths-ignore:
       - "runtime/angel-os-snapshot.json"
       - "runtime/angel-os-mail-snapshot.json"
@@ -20,10 +18,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Install, build and type-check
+  quality:
+    name: Quality gate
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Check out repository
@@ -34,16 +32,43 @@ jobs:
         with:
           bun-version: 1.3.14
 
-      # Keep CI aligned with the publication workflow. The repository lockfile can lag
-      # behind package.json after dependency-only maintenance commits; Bun resolves the
-      # declared dependency graph locally without committing generated lockfile changes.
       - name: Install dependencies
         run: bun install
 
-      # TanStack Router generates src/routeTree.gen.ts during the Vite build.
-      # Building first keeps CI in sync with newly added file-based routes before tsc runs.
+      - name: Reject accidental secrets and JSX in .ts files
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-files | grep -E '(^|/)\.env($|\.)' | grep -vE '\.example$'; then
+            echo "::warning::Des fichiers .env sont encore suivis par Git. Ils doivent être migrés vers les secrets Vercel/GitHub avant suppression du dépôt."
+          fi
+          BAD_TS="$(grep -RIl --include='*.ts' -E '<[A-Za-z][A-Za-z0-9]*(\s|>|/)' src 2>/dev/null || true)"
+          if [ -n "$BAD_TS" ]; then
+            echo "::error::JSX détecté dans un fichier .ts :"
+            echo "$BAD_TS"
+            exit 1
+          fi
+
+      - name: Lint
+        run: bun run lint
+
       - name: Build production bundle
         run: bun run build
 
       - name: Type-check
         run: bunx tsc --noEmit --pretty false
+
+      - name: Verify generated production output
+        shell: bash
+        run: |
+          test -d dist || test -d .output || { echo "::error::Aucun bundle de production généré"; exit 1; }
+
+      - name: CI summary
+        if: always()
+        run: |
+          echo "## Angel OS quality gate" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Lint" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Build production" >> "$GITHUB_STEP_SUMMARY"
+          echo "- TypeScript" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Détection JSX accidentel dans .ts" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Détection de fichiers .env suivis" >> "$GITHUB_STEP_SUMMARY"
