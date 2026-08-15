@@ -1,9 +1,9 @@
 {
-  "fetchedAt": "2026-08-15T09:48:47Z",
+  "fetchedAt": "2026-08-15T10:48:36Z",
   "caches": {
     "news_dashboard": {
-      "fetchedAt": "2026-08-15T09:48:47Z",
-      "changed_since_previous": "Aucune nouvelle publication publique suffisamment récente, importante et vérifiable n’a émergé dans la dernière heure. Le fil reste volontairement court plutôt que de recycler des informations anciennes ; les informations pratiques locales du jour sont conservées comme suivis utiles. Le vivier Films et séries a été actualisé aujourd’hui avec Obsession (2026) et Backrooms (2026).",
+      "fetchedAt": "2026-08-15T10:48:36Z",
+      "changed_since_previous": "Aucune nouvelle actualité publique suffisamment récente, importante et vérifiable n’a émergé depuis le passage précédent. Le fil reste volontairement court plutôt que de recycler des informations âgées de plus de 24 heures ; les informations pratiques locales du jour restent conservées comme suivis utiles.",
       "top_stories": [],
       "politics_society": [],
       "investigations": [],
@@ -16,11 +16,11 @@
       "practical_local": [
         {
           "title": "Festi’Sarlat ce soir au stade Christian-Goumondie",
-          "source": "Office de Tourisme Sarlat Périgord Noir / Unidivers",
+          "source": "Office de Tourisme Sarlat Périgord Noir / Unidivers / HelloAsso CA Sarlat XV",
           "date": "2026-08-15T19:00:00+02:00",
           "category": "pratique_local",
-          "summary": "Festi’Sarlat est programmé ce samedi 15 août à partir de 19 h au stade Christian-Goumondie, avec plusieurs DJ/artistes et restauration sur place.",
-          "link": "https://unidivers.fr/event/festisarlat-sarlat-la-caneda-dordogne-2026-08-15/",
+          "summary": "Festi’Sarlat est programmé ce samedi 15 août à partir de 19 h au stade Christian-Goumondie, avec concert, DJ, feu d’artifice annoncé vers 23 h 30, food trucks et buvette.",
+          "link": "https://www.helloasso.com/associations/club-athletique-sarladais-perigord-noir/evenements/festi-sarlat-xv",
           "zone": "Sarlat-la-Canéda",
           "importance": "moyenne",
           "why_relevant": "Événement local du jour directement utile pour les sorties et l’animation de Sarlat.",
@@ -41,11 +41,11 @@
       ]
     },
     "weather_sarlat": {
-      "fetchedAt": "2026-08-15T09:48:47Z",
+      "fetchedAt": "2026-08-15T10:48:36Z",
       "location": "Sarlat-la-Canéda, Dordogne, France",
       "current": {
         "condition": "Plutôt ensoleillé",
-        "temperature_c": 26
+        "temperature_c": 28
       },
       "today": {
         "date": "2026-08-15",
@@ -83,15 +83,32 @@
           "level": "jaune",
           "type": "canicule",
           "area": "Dordogne",
+          "valid_until": "2026-08-16T00:00:00+02:00",
+          "source": "Météo-France",
+          "summary": "Vigilance jaune chaleur extrême également signalée jusqu’à minuit."
+        },
+        {
+          "level": "jaune",
+          "type": "canicule",
+          "area": "Dordogne",
           "valid_from": "2026-08-16T00:00:00+02:00",
           "valid_until": "2026-08-17T00:00:00+02:00",
           "source": "Météo-France",
           "summary": "Vigilance jaune chaleur extrême prévue dimanche."
+        },
+        {
+          "level": "jaune",
+          "type": "orages",
+          "area": "Dordogne",
+          "valid_from": "2026-08-16T00:00:00+02:00",
+          "valid_until": "2026-08-17T00:00:00+02:00",
+          "source": "Météo-France",
+          "summary": "Vigilance jaune orages prévue dimanche."
         }
       ]
     },
     "google_calendar_dashboard": {
-      "fetchedAt": "2026-08-15T09:48:47Z",
+      "fetchedAt": "2026-08-15T10:48:36Z",
       "nextEvent": {
         "title": "Les Wonda Mamas en concert",
         "start": "2026-08-15T21:00:00+02:00",
@@ -114,14 +131,14 @@
       ]
     },
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-15T09:48:47Z",
+      "fetchedAt": "2026-08-15T10:48:36Z",
       "important": [
         {
           "subject": "Échecs GitHub Actions répétés sur angel-leclerc",
           "from": "GitHub <notifications@github.com>",
-          "date": "2026-08-15T09:47:37Z",
-          "summary": "Quatorze nouvelles notifications GitHub sont arrivées depuis le dernier passage : treize échecs CI sur des commits successifs et un échec Maintenance Angel OS. Sur le dernier commit contrôlé, le build réussit mais le type-check échoue.",
-          "reason": "Blocage technique réel pouvant empêcher les contrôles complets ; la tâche de maintenance dédiée doit le traiter sans dupliquer d’action ici.",
+          "date": "2026-08-15T10:46:14Z",
+          "summary": "Quatorze nouveaux échecs CI ont été notifiés depuis le passage précédent. Sur le dernier commit `ee97bee`, le bundle de production se construit correctement mais le type-check échoue ; le workflow Publication Angel OS se termine en succès administratif mais les étapes de déploiement sont sautées après le contrôle de disponibilité.",
+          "reason": "Blocage technique réel à suivre par la tâche de maintenance dédiée ; cette veille ne doit pas dupliquer la réparation.",
           "suggestedReply": ""
         },
         {
@@ -133,7 +150,7 @@
           "suggestedReply": ""
         }
       ],
-      "otherSummary": "Aucun nouveau mail de candidature, demande d’entretien ou réponse professionnelle n’est arrivé depuis le passage précédent. Les nouveaux messages sont des alertes GitHub techniques ; les messages Supabase et Samsung restent secondaires.",
+      "otherSummary": "Aucun nouveau mail de candidature, demande d’entretien ou réponse professionnelle n’a été détecté depuis le passage précédent. Les nouveautés sont exclusivement des alertes GitHub CI ; les messages Supabase et Samsung restent secondaires.",
       "counts": {
         "new_since_last_run": 14,
         "important": 2,
@@ -143,19 +160,19 @@
       }
     },
     "admin_cockpit_summary": {
-      "fetchedAt": "2026-08-15T09:48:47Z",
-      "generalText": "Voici le bilan du moment. Aucun nouveau mail de candidature ni demande professionnelle n’est arrivé depuis le dernier passage ; en revanche, GitHub a envoyé une série d’alertes techniques, avec un build qui passe mais un type-check qui échoue sur le dernier contrôle. La publication automatique n’a pas été lancée par le workflow GitHub car VERCEL_TOKEN n’y est pas disponible, donc il faut considérer la production comme non confirmée plutôt que comme à jour. Côté agenda, le prochain rendez-vous est le concert des Wonda Mamas ce soir à 21 h, puis les rendez-vous CIAS et logement mercredi matin. La météo reste le point pratique principal : 26 °C actuellement, jusqu’à 31 °C aujourd’hui, vigilance orange canicule et risque d’orages en Dordogne. La veille publique n’a pas trouvé de nouvelle information suffisamment fraîche et solide dans la dernière heure, tandis que la sélection Films et séries a été enrichie aujourd’hui avec Obsession et Backrooms. L’autre point à ne pas oublier est l’essai Revolut Trading Pro annoncé comme se terminant le 18 août. La priorité technique est de laisser la maintenance corriger le type-check et rétablir une voie de publication vérifiable, sans dupliquer les actions depuis cette veille.",
+      "fetchedAt": "2026-08-15T10:48:36Z",
+      "generalText": "Voici le bilan du moment. Aucun nouveau mail de candidature ni demande professionnelle n’est arrivé depuis le dernier passage ; en revanche, GitHub a encore envoyé 14 alertes CI et le dernier `main` construit correctement mais échoue toujours au type-check. Le workflow de publication associé au dernier commit s’est terminé sans erreur, mais ses étapes de build/déploiement ont été sautées, donc la mise en production n’est pas confirmée par cette veille. Côté agenda, le prochain événement reste le concert des Wonda Mamas ce soir à 21 h, puis les rendez-vous CIAS et logement mercredi matin. À Sarlat, il fait environ 28 °C avec un maximum prévu de 31 °C, une vigilance orange canicule et un risque d’orages en Dordogne. La veille actualité n’a trouvé aucune nouveauté assez fraîche et solide depuis le passage précédent, et le vivier Films et séries a déjà été mis à jour aujourd’hui. L’échéance financière à garder en tête reste la fin annoncée de l’essai Revolut Trading Pro le 18 août. La priorité concrète reste la correction du type-check par la maintenance technique, sans lancer d’action mail ou calendrier en double.",
       "site": {
-        "latestMain": "e5bde42aa988611366d8d2f990677c332dbad2a2",
+        "latestMain": "ee97bee9436e7db0cea574784c17312a42cca73c",
         "buildStatus": "success",
         "typecheckStatus": "failure",
-        "deploymentStatus": "deferred_vercel_token_missing",
+        "deploymentStatus": "not_confirmed_steps_skipped",
         "deploymentTarget": "Vercel",
-        "checkedAt": "2026-08-15T09:48:47Z"
+        "checkedAt": "2026-08-15T10:48:36Z"
       },
       "mail": {"important":2,"new_since_last_run":14,"applications":0,"technical_alerts":14},
       "calendar": {"next":"Les Wonda Mamas en concert","nextStart":"2026-08-15T21:00:00+02:00"},
-      "weather": {"current_c":26,"high_c":31,"alerts":["orange_canicule","jaune_orages"]},
+      "weather": {"current_c":28,"high_c":31,"alerts":["orange_canicule","jaune_orages"]},
       "filmsSeries": {"updatedDate":"2026-08-15","newCandidates":["Obsession","Backrooms"],"movixHomepageChanged":false},
       "news": {"freshTopStories":0}
     }
