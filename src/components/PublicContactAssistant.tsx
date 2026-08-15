@@ -1,12 +1,17 @@
 import { FormEvent, useMemo, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Send, Sparkles } from "lucide-react";
-import { askAssistant } from "@/lib/assistant.functions";
 import { answer as localAnswer } from "@/lib/assistant-engine";
 
 type ChatMessage = {
   role: "user" | "assistant";
   text: string;
+};
+
+type AssistantApiResponse = {
+  text?: string | null;
+  source?: "openai" | "fallback";
+  reason?: string;
+  requestId?: string;
 };
 
 const SUGGESTIONS = [
@@ -15,10 +20,7 @@ const SUGGESTIONS = [
   "Quel est son parcours ?",
 ];
 
-const CLIENT_AI_TIMEOUT_MS = 32000;
-
 export function PublicContactAssistant() {
-  const askServer = useServerFn(askAssistant);
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [thinking, setThinking] = useState(false);
@@ -41,25 +43,21 @@ export function PublicContactAssistant() {
     setThinking(true);
 
     let text: string | null = null;
-    let timer: ReturnType<typeof setTimeout> | undefined;
     try {
-      const result = await Promise.race([
-        askServer({
-          data: {
-            question: value.slice(0, 500),
-            mode: "contact" as const,
-            history,
-          },
+      const response = await fetch("/api/assistant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({
+          question: value.slice(0, 500),
+          mode: "contact",
+          history,
         }),
-        new Promise<null>((resolve) => {
-          timer = setTimeout(() => resolve(null), CLIENT_AI_TIMEOUT_MS);
-        }),
-      ]);
-      text = result && "text" in result ? result.text : null;
+      });
+      const result = (await response.json()) as AssistantApiResponse;
+      text = typeof result.text === "string" && result.text.trim() ? result.text : null;
     } catch {
       text = null;
-    } finally {
-      if (timer) clearTimeout(timer);
     }
 
     if (!text) text = localAnswer(value).text;
@@ -81,9 +79,6 @@ export function PublicContactAssistant() {
         </div>
         <div>
           <h2 className="font-display text-lg font-bold text-foreground">Une question ?</h2>
-          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-            Posez-la directement ici. La discussion reste séparée du formulaire de contact.
-          </p>
         </div>
       </div>
 
