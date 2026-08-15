@@ -46,7 +46,8 @@ jobs:
         run: |
           if [ -z "$VERCEL_TOKEN" ]; then
             echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "Vercel indisponible pour ce passage : VERCEL_TOKEN absent. Le dernier main reste en file de publication et sera retenté automatiquement au prochain passage horaire."
+            echo "::error::Publication Vercel bloquée : VERCEL_TOKEN absent. Le workflow ne doit pas apparaître en succès tant qu'aucun déploiement n'a réellement été effectué ou confirmé READY."
+            exit 1
           else
             echo "available=true" >> "$GITHUB_OUTPUT"
             echo "Vercel disponible : vérification de la production."
@@ -123,7 +124,7 @@ jobs:
         shell: bash
         run: |
           if [ "${{ steps.vercel.outputs.available }}" != "true" ]; then
-            echo "Publication différée : le dernier commit de main (${{ steps.current.outputs.sha }}) reste la cible. GitHub Actions retentera automatiquement à :17 de chaque heure et à chaque nouveau push sur main."
+            echo "Publication non exécutée : le dernier commit de main (${{ steps.current.outputs.sha }}) reste la cible. Le job est volontairement marqué en échec pour ne plus confondre file d'attente et publication réussie."
           elif [ "${{ steps.production.outputs.already_ready }}" = "true" ]; then
             echo "File de publication vide : production déjà synchronisée avec main."
           else
