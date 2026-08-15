@@ -8,7 +8,9 @@ const FAILURE_COOLDOWN_MS = 5 * 60_000;
 const DEFAULT_WEB_MODEL = "gpt-4.1-mini";
 const DEFAULT_WEB_FALLBACK_MODEL = "gpt-4o-mini";
 
-const allowedCategories = new Set<Exclude<NewsCategory, "une">>(["politique","medias","journalisme","ia","dordogne","emploi"]);
+const allowedCategories = new Set<Exclude<NewsCategory, "une">>([
+  "politique", "dordogne", "tourisme", "medias", "journalisme", "emploi", "ia", "scoutisme",
+]);
 
 function responseText(json: any): string {
   if (typeof json?.output_text === "string") return json.output_text;
@@ -39,15 +41,34 @@ function webModels() {
   return Array.from(new Set([primary, fallback].filter(Boolean)));
 }
 function shouldTryFallback(status: number, body: string) { return (status === 400 || status === 403 || status === 404) && /model_not_found|model[^\n]*(?:unavailable|access|verified|verification)|organization must be verified/i.test(body); }
+
 function requestBody(model: string) {
   return {
     model,
     tools: [{ type: "web_search" }],
-    max_output_tokens: 2200,
+    max_output_tokens: 2600,
     input: [
-      { role: "system", content: [{ type: "input_text", text: "Tu alimentes un fil d’actualité privé très personnalisé. Cherche réellement sur le web. Priorité absolue aux contenus publiés ou substantiellement mis à jour dans les 6 dernières heures, puis 24 heures. Évite les reprises anciennes, les contenus génériques, les marronniers et les doublons. Ne fournis que des articles/pages accessibles avec URL directe vérifiable. N’invente jamais une date, une source ou une URL. La fraîcheur et la pertinence passent avant la quantité." }] },
-      { role: "user", content: [{ type: "input_text", text: `Recherche maintenant des actualités françaises et locales. Retourne idéalement 3 à 5 résultats PAR CATÉGORIE, avec au moins 2 résultats par catégorie quand l’actualité le permet. Les catégories exactes sont :\n- politique : politique et société françaises, pouvoir d'achat, services publics, souveraineté, institutions, rapports de pouvoir, enquêtes documentées, corruption, favoritisme, lobbying, conflits d'intérêts, justice et affaires financières. Prioriser les sujets substantiels et les médias sérieux ; éviter la petite polémique vide.\n- medias : radio, audiovisuel, médias, podcasts, audience, évolutions des radios et télévisions, animateurs et métiers de l'antenne.\n- journalisme : journalisme, presse, rédaction, communication, création de contenu, médias, édition, méthodes et évolutions du métier.\n- ia : IA, OpenAI, ChatGPT, Android, Google Pixel, smartphones, applications utiles et technologie grand public.\n- dordogne : Sarlat-la-Canéda et Périgord Noir d'abord, puis Dordogne, Périgueux, Bergerac et Souillac ; inclure politique locale, travaux, commerces, emploi, justice, culture, transports et informations pratiques.\n- emploi : alternance BTS Communication ou postes/stages compatibles Bac+2 en communication, radio, médias, journalisme ou création de contenu, prioritairement Bordeaux, Périgueux, Bergerac, Brive et Sarlat.\n\nPour la sélection générale, favorise particulièrement les enquêtes solides, la politique/société, le local Sarlat/Périgord Noir, Android/IA, radio/médias et les opportunités concrètes en communication. Évite les sujets très éloignés de ces centres d’intérêt sauf s’ils sont réellement majeurs.\n\nRéponds UNIQUEMENT avec un tableau JSON valide, sans markdown. Chaque objet doit avoir exactement : {"title":"...","url":"https://...","source":"nom du média","publishedAt":"ISO-8601 ou null","category":"politique|medias|journalisme|ia|dordogne|emploi"}. Utilise l'URL de l'article source, pas une URL de moteur de recherche.` }] }
-    ]
+      {
+        role: "system",
+        content: [{ type: "input_text", text: "Tu alimentes le fil d’actualité privé d’Angel OS. Le fil doit être réellement personnalisé, pas un fil tech générique. Cherche réellement sur le web. Priorité aux contenus publiés ou substantiellement mis à jour dans les dernières heures, avec extension à 48 h pour le local/tourisme et à 7 jours pour le scoutisme s’il n’y a rien de plus frais. Ne fournis que des articles/pages accessibles avec URL directe vérifiable. N’invente jamais une date, une source ou une URL. Évite les doublons, les polémiques vides, le clickbait et les sujets sans rapport avec le profil." }],
+      },
+      {
+        role: "user",
+        content: [{ type: "input_text", text: `Construis une veille très personnalisée. Le profil éditorial est, par ordre de priorité :
+1. Politique et société françaises : institutions, services publics, pouvoir d’achat, souveraineté, collectivités, politiques sociales, enquêtes solides, corruption, favoritisme, lobbying, conflits d’intérêts, justice et finances publiques. Rester factuel et pluraliste ; ne pas transformer le fil en propagande partisane.
+2. Sarlat-la-Canéda / Périgord Noir / Dordogne : politique locale, mairie/intercommunalité, travaux, commerces, logement, transports, justice, culture, associations, emploi et informations pratiques. Périgueux, Bergerac et Souillac en second cercle.
+3. Tourisme : offices de tourisme, attractivité, patrimoine, hôtellerie, campings, fréquentation, saison touristique, tourisme en Dordogne/Lot/Nouvelle-Aquitaine et évolutions nationales importantes. Le tourisme est un vrai centre d’intérêt professionnel, pas une rubrique décorative.
+4. Radio et médias : radios locales et nationales, animation radio, antenne, podcasts, audiences, audiovisuel et métiers de la radio.
+5. Journalisme / communication : presse, rédaction, information locale, communication, création de contenu, édition et méthodes du métier.
+6. Emploi / alternance : BTS Communication et opportunités compatibles communication, radio, médias, journalisme ou tourisme, surtout Sarlat, Périgueux, Bergerac, Brive puis Bordeaux.
+7. IA / tech : seulement les développements réellement utiles ou importants autour d’OpenAI/ChatGPT, Android, Pixel et technologie grand public. Ne pas laisser la tech envahir la une.
+8. Scoutisme / éducation populaire : actualités réellement significatives du scoutisme, des mouvements de jeunesse et de l’éducation populaire ; priorité basse mais rubrique conservée.
+
+Retourne idéalement 3 à 5 résultats pour politique, Dordogne et tourisme ; 2 à 4 pour radio/médias, journalisme et emploi ; 1 à 3 pour IA et scoutisme. Les catégories exactes sont : politique, dordogne, tourisme, medias, journalisme, emploi, ia, scoutisme.
+
+Réponds UNIQUEMENT avec un tableau JSON valide, sans markdown. Chaque objet doit avoir exactement : {"title":"...","url":"https://...","source":"nom du média","publishedAt":"ISO-8601 ou null","category":"politique|dordogne|tourisme|medias|journalisme|emploi|ia|scoutisme"}. Utilise l'URL de l'article source, pas une URL de moteur de recherche.` }],
+      },
+    ],
   };
 }
 
@@ -80,7 +101,7 @@ export async function searchNewsWithOpenAI(): Promise<NewsItem[]> {
         return state.items;
       }
       const json = await response.json();
-      const items = parseJsonArray(responseText(json)).map(cleanItem).filter((item): item is NewsItem => Boolean(item)).slice(0, 30);
+      const items = parseJsonArray(responseText(json)).map(cleanItem).filter((item): item is NewsItem => Boolean(item)).slice(0, 40);
       if (items.length > 0) { state.items = items; state.expiresAt = now + TTL_MS; state.failureUntil = 0; }
       else state.failureUntil = now + FAILURE_COOLDOWN_MS;
       return state.items;
