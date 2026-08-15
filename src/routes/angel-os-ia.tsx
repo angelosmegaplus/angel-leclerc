@@ -8,11 +8,11 @@ import { SiteFlow } from "@/components/angel-os/SiteFlow";
 export const Route = createFileRoute("/angel-os-ia")({
   head: () => ({
     meta: [
-      { title: "Angel OS & Angel OS IA — architecture distribuée hybride" },
+      { title: "Angel OS & Angel OS IA — noyau indépendant et distribution personnelle" },
       {
         name: "description",
         content:
-          "Angel OS est le noyau système Linux-ready : workflows, déploiement multi-cibles, mémoire, événements, synchronisation, supervision et reprise. Angel OS IA est une distribution distincte construite au-dessus du noyau pour les fonctions d'intelligence artificielle.",
+          "Angel OS est le noyau système Linux-ready, neutre et réutilisable. Angel OS IA est la distribution personnelle intelligente construite au-dessus : assistant, mémoire personnelle, agents, recommandations, candidatures, mails, agenda, actualités et automatisations.",
       },
       { name: "robots", content: "index,follow" },
     ],
@@ -44,13 +44,16 @@ function AngelOsPage() {
               <div className="min-w-0">
                 <p className="text-xs font-semibold uppercase tracking-[.22em] text-red-400">Angel OS Core · Linux-ready</p>
                 <h2 className="mt-2 break-words font-display text-2xl font-bold leading-tight sm:text-3xl">
-                  Le noyau système et la distribution IA sont volontairement séparés.
+                  Angel OS reste indépendant. Angel OS IA devient la couche personnelle.
                 </h2>
                 <p className="mt-3 max-w-2xl text-sm leading-7 text-white/60">
-                  Angel OS porte l’infrastructure : événements, mémoire, workflows durables, synchronisation, Guardian/Recovery, releases, déploiement multi-cibles et sélection des nœuds. Angel OS IA dépend de ce noyau et ajoute les fournisseurs IA, la conversation, l’analyse, la génération, les agents et les automatisations intelligentes. Angel OS continue de fonctionner sans Angel OS IA.
+                  Angel OS porte les fonctions système neutres : événements, workflows durables, données, synchronisation, stockage, releases, déploiement multi-cibles, nœuds, Guardian/Recovery et observabilité. Il doit rester réutilisable dans d’autres projets et continuer à fonctionner sans intelligence artificielle personnelle.
                 </p>
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-white/45">
-                  GitHub reste la source du code, Vercel peut rester un nœud web, Google Drive sert d’archive lourde et les moteurs Angel Native complètent les services déjà connectés au lieu de les supprimer.
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-white/50">
+                  Angel OS IA est la distribution personnelle construite au-dessus : fournisseurs IA, assistant, agents, mémoire personnelle, préférences, recommandations, priorisation, candidatures, mails, agenda, actualités personnalisées, Movix et automatisations intelligentes. Angel OS observe et exécute ; Angel OS IA comprend, personnalise et recommande.
+                </p>
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-white/40">
+                  Les services existants restent complémentaires : GitHub versionne le code, Vercel peut servir un nœud web, Google Drive archive les fichiers lourds et les moteurs Angel Native renforcent l’ensemble.
                 </p>
               </div>
             </div>
