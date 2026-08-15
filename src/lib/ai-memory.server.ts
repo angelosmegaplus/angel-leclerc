@@ -57,11 +57,19 @@ async function publicSiteUpdates() {
 }
 
 export async function aiMemoryPrompt(scope: AiMemoryScope | "all") {
-  const items = await readAiMemory(scope);
-  const lines = items.map((item) => `- ${item.title}: ${item.content || "(aucun détail supplémentaire)"}`);
-  const memory = lines.length ? `\n\nMÉMOIRE ANGEL OS ACTUALISÉE\n${lines.join("\n")}` : "";
-  if (scope === "public") return `${memory}${await publicSiteUpdates()}`;
-  return memory;
+  try {
+    const items = await readAiMemory(scope);
+    const lines = items.map((item) => `- ${item.title}: ${item.content || "(aucun détail supplémentaire)"}`);
+    const memory = lines.length ? `\n\nMÉMOIRE ANGEL OS ACTUALISÉE\n${lines.join("\n")}` : "";
+    if (scope === "public") return `${memory}${await publicSiteUpdates()}`;
+    return memory;
+  } catch (error) {
+    // Memory enriches Angel AI but must never prevent the core OpenAI request.
+    // This notably keeps /api/assistant operational when Supabase is temporarily
+    // unavailable or not configured in the current runtime environment.
+    console.warn("[ai-memory] unavailable; continuing without memory", error);
+    return "";
+  }
 }
 
 export async function readChatGptQueue(limit = 50) {
