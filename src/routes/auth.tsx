@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { KeyRound, Loader2, LogIn, ShieldAlert } from "lucide-react";
+import { Loader2, LogIn, RefreshCw, ShieldAlert, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -9,14 +9,39 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Captcha, type CaptchaValue } from "@/components/Captcha";
 import { verifyCaptchaAnswer } from "@/lib/captcha.functions";
-import { verifyAdminPinCode } from "@/lib/admin-pin.functions";
 
-const PIN_SESSION_KEY = "angel-os-admin-pin-ok";
+const HUMAN_SESSION_KEY = "angel-os-admin-human-ok";
 const ADMIN_BOOT_PENDING_KEY = "angel-os:admin-boot-pending";
-const PIN_ATTEMPTS_KEY = "angel-os-admin-pin-attempts";
-const PIN_LOCK_UNTIL_KEY = "angel-os-admin-pin-lock-until";
-const MAX_PIN_ATTEMPTS = 5;
-const PIN_LOCK_MS = 15 * 60 * 1000;
+const HUMAN_ATTEMPTS_KEY = "angel-os-admin-human-attempts";
+const HUMAN_LOCK_UNTIL_KEY = "angel-os-admin-human-lock-until";
+const MAX_HUMAN_ATTEMPTS = 5;
+const HUMAN_LOCK_MS = 15 * 60 * 1000;
+const MIN_CHALLENGE_MS = 900;
+
+type ChallengeItem = { id: string; icon: string; label: string; food: boolean };
+
+const CHALLENGE_POOL: ChallengeItem[] = [
+  { id: "pizza", icon: "🍕", label: "Pizza", food: true },
+  { id: "apple", icon: "🍎", label: "Pomme", food: true },
+  { id: "bread", icon: "🥖", label: "Pain", food: true },
+  { id: "cheese", icon: "🧀", label: "Fromage", food: true },
+  { id: "burger", icon: "🍔", label: "Burger", food: true },
+  { id: "carrot", icon: "🥕", label: "Carotte", food: true },
+  { id: "cake", icon: "🍰", label: "Gâteau", food: true },
+  { id: "car", icon: "🚗", label: "Voiture", food: false },
+  { id: "phone", icon: "📱", label: "Téléphone", food: false },
+  { id: "key", icon: "🔑", label: "Clé", food: false },
+  { id: "tree", icon: "🌳", label: "Arbre", food: false },
+  { id: "camera", icon: "📷", label: "Appareil photo", food: false },
+  { id: "ball", icon: "⚽", label: "Ballon", food: false },
+  { id: "book", icon: "📚", label: "Livres", food: false },
+];
+
+function makeChallenge() {
+  const foods = CHALLENGE_POOL.filter((item) => item.food).sort(() => Math.random() - 0.5).slice(0, 4);
+  const others = CHALLENGE_POOL.filter((item) => !item.food).sort(() => Math.random() - 0.5).slice(0, 5);
+  return [...foods, ...others].sort(() => Math.random() - 0.5);
+}
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -36,15 +61,15 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const { session, loading } = useAuth();
-  const [pinUnlocked, setPinUnlocked] = useState(false);
+  const [humanUnlocked, setHumanUnlocked] = useState(false);
   const [authPassed, setAuthPassed] = useState(false);
-  const [pin, setPin] = useState("");
-  const [pinBusy, setPinBusy] = useState(false);
-  const [pinError, setPinError] = useState<string | null>(null);
-  const [pinAttempts, setPinAttempts] = useState(0);
+  const [challenge, setChallenge] = useState<ChallengeItem[]>(() => makeChallenge());
+  const [selected, setSelected] = useState<string[]>([]);
+  const [challengeStartedAt, setChallengeStartedAt] = useState(() => Date.now());
+  const [humanError, setHumanError] = useState<string | null>(null);
+  const [humanAttempts, setHumanAttempts] = useState(0);
   const [lockUntil, setLockUntil] = useState(0);
   const [now, setNow] = useState(Date.now());
-  const [showPinHelp, setShowPinHelp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -52,13 +77,12 @@ function AuthPage() {
   const [captcha, setCaptcha] = useState<CaptchaValue>({ token: "", answer: "" });
   const [captchaKey, setCaptchaKey] = useState(0);
   const verifyCaptcha = useServerFn(verifyCaptchaAnswer);
-  const verifyAdminPin = useServerFn(verifyAdminPinCode);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    setPinUnlocked(sessionStorage.getItem(PIN_SESSION_KEY) === "1");
-    setPinAttempts(Number(localStorage.getItem(PIN_ATTEMPTS_KEY) ?? "0") || 0);
-    setLockUntil(Number(localStorage.getItem(PIN_LOCK_UNTIL_KEY) ?? "0") || 0);
+    setHumanUnlocked(sessionStorage.getItem(HUMAN_SESSION_KEY) === "1");
+    setHumanAttempts(Number(localStorage.getItem(HUMAN_ATTEMPTS_KEY) ?? "0") || 0);
+    setLockUntil(Number(localStorage.getItem(HUMAN_LOCK_UNTIL_KEY) ?? "0") || 0);
   }, []);
 
   useEffect(() => {
@@ -66,8 +90,8 @@ function AuthPage() {
   }, [loading, session]);
 
   useEffect(() => {
-    if (!loading && session && pinUnlocked) navigate({ to: "/admin" });
-  }, [loading, session, pinUnlocked, navigate]);
+    if (!loading && session && humanUnlocked) navigate({ to: "/admin" });
+  }, [loading, session, humanUnlocked, navigate]);
 
   useEffect(() => {
     if (lockUntil <= Date.now()) return;
@@ -75,50 +99,55 @@ function AuthPage() {
     return () => window.clearInterval(timer);
   }, [lockUntil]);
 
-  const remainingLockSeconds = useMemo(
-    () => Math.max(0, Math.ceil((lockUntil - now) / 1000)),
-    [lockUntil, now],
-  );
-  const pinLocked = remainingLockSeconds > 0;
-  const remainingAttempts = Math.max(0, MAX_PIN_ATTEMPTS - pinAttempts);
+  const remainingLockSeconds = useMemo(() => Math.max(0, Math.ceil((lockUntil - now) / 1000)), [lockUntil, now]);
+  const humanLocked = remainingLockSeconds > 0;
 
-  async function onPinSubmit(e: React.FormEvent) {
+  function refreshChallenge() {
+    setChallenge(makeChallenge());
+    setSelected([]);
+    setHumanError(null);
+    setChallengeStartedAt(Date.now());
+  }
+
+  function toggleItem(id: string) {
+    setSelected((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
+  }
+
+  function onHumanSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (pinLocked) return;
-    setPinBusy(true);
-    setPinError(null);
-    setShowPinHelp(false);
+    if (humanLocked) return;
 
-    try {
-      await verifyAdminPin({ data: { pin } });
-      localStorage.removeItem(PIN_ATTEMPTS_KEY);
-      localStorage.removeItem(PIN_LOCK_UNTIL_KEY);
-      sessionStorage.setItem(PIN_SESSION_KEY, "1");
+    const expected = challenge.filter((item) => item.food).map((item) => item.id).sort();
+    const answer = [...selected].sort();
+    const correct = expected.length === answer.length && expected.every((id, index) => id === answer[index]);
+    const plausibleTiming = Date.now() - challengeStartedAt >= MIN_CHALLENGE_MS;
+
+    if (correct && plausibleTiming) {
+      localStorage.removeItem(HUMAN_ATTEMPTS_KEY);
+      localStorage.removeItem(HUMAN_LOCK_UNTIL_KEY);
+      sessionStorage.setItem(HUMAN_SESSION_KEY, "1");
       sessionStorage.setItem(ADMIN_BOOT_PENDING_KEY, "1");
-      setPinAttempts(0);
-      setLockUntil(0);
-      setPinUnlocked(true);
+      setHumanAttempts(0);
+      setHumanUnlocked(true);
       navigate({ to: "/admin" });
-    } catch {
-      const nextAttempts = pinAttempts + 1;
-      setPin("");
-
-      if (nextAttempts >= MAX_PIN_ATTEMPTS) {
-        const nextLockUntil = Date.now() + PIN_LOCK_MS;
-        localStorage.setItem(PIN_ATTEMPTS_KEY, "0");
-        localStorage.setItem(PIN_LOCK_UNTIL_KEY, String(nextLockUntil));
-        setPinAttempts(0);
-        setLockUntil(nextLockUntil);
-        setNow(Date.now());
-        setPinError("Trop de codes incorrects. Accès temporairement bloqué pendant 15 minutes.");
-      } else {
-        localStorage.setItem(PIN_ATTEMPTS_KEY, String(nextAttempts));
-        setPinAttempts(nextAttempts);
-        setPinError(`Code PIN incorrect. ${MAX_PIN_ATTEMPTS - nextAttempts} tentative${MAX_PIN_ATTEMPTS - nextAttempts > 1 ? "s" : ""} restante${MAX_PIN_ATTEMPTS - nextAttempts > 1 ? "s" : ""}.`);
-      }
-    } finally {
-      setPinBusy(false);
+      return;
     }
+
+    const nextAttempts = humanAttempts + 1;
+    if (nextAttempts >= MAX_HUMAN_ATTEMPTS) {
+      const nextLockUntil = Date.now() + HUMAN_LOCK_MS;
+      localStorage.setItem(HUMAN_ATTEMPTS_KEY, "0");
+      localStorage.setItem(HUMAN_LOCK_UNTIL_KEY, String(nextLockUntil));
+      setHumanAttempts(0);
+      setLockUntil(nextLockUntil);
+      setNow(Date.now());
+      setHumanError("Trop de vérifications incorrectes. Accès temporairement bloqué pendant 15 minutes.");
+    } else {
+      localStorage.setItem(HUMAN_ATTEMPTS_KEY, String(nextAttempts));
+      setHumanAttempts(nextAttempts);
+      setHumanError(`Sélection incorrecte. ${MAX_HUMAN_ATTEMPTS - nextAttempts} tentative${MAX_HUMAN_ATTEMPTS - nextAttempts > 1 ? "s" : ""} restante${MAX_HUMAN_ATTEMPTS - nextAttempts > 1 ? "s" : ""}.`);
+    }
+    refreshChallenge();
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -127,14 +156,10 @@ function AuthPage() {
     setError(null);
     try {
       await verifyCaptcha({ data: { token: captcha.token, answer: captcha.answer } });
-      const { error: err } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
+      const { error: err } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (err) throw err;
       setAuthPassed(true);
       setPassword("");
-      setError(null);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Une erreur est survenue.";
       setError(message.includes("Invalid login credentials") ? "Identifiants incorrects." : message);
@@ -144,13 +169,7 @@ function AuthPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <section className="flex min-h-[70vh] items-center justify-center bg-background">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-      </section>
-    );
-  }
+  if (loading) return <section className="flex min-h-[70vh] items-center justify-center bg-background"><Loader2 className="h-6 w-6 animate-spin text-primary" /></section>;
 
   if (!authPassed) {
     return (
@@ -158,30 +177,15 @@ function AuthPage() {
         <div className="mx-auto w-full max-w-md px-5 sm:px-6">
           <div className="flex items-center gap-3">
             <img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-11 w-11 rounded-xl object-contain" />
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">Accès réservé</p>
-              <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Connexion Angel OS</h1>
-            </div>
+            <div><p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">Accès réservé</p><h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Connexion Angel OS</h1></div>
           </div>
-          <p className="mt-3 text-sm text-muted-foreground">Connectez-vous d'abord avec le compte administrateur autorisé. Le code PIN sera demandé ensuite.</p>
-
+          <p className="mt-3 text-sm text-muted-foreground">Connectez-vous avec le compte administrateur autorisé.</p>
           <form onSubmit={onSubmit} className="mt-8 space-y-4 rounded-xl border border-border bg-card p-6">
-            <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
-              <Input id="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
-              <Input id="password" type="password" autoComplete="current-password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
-            </div>
-
+            <div className="space-y-2"><Label htmlFor="email">E-mail</Label><Input id="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+            <div className="space-y-2"><Label htmlFor="password">Mot de passe</Label><Input id="password" type="password" autoComplete="current-password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} /></div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Captcha key={captchaKey} value={captcha} onChange={setCaptcha} />
-
-            <Button type="submit" disabled={busy} className="w-full">
-              {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LogIn className="mr-2 h-4 w-4" />}
-              Me connecter
-            </Button>
+            <Button type="submit" disabled={busy} className="w-full">{busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LogIn className="mr-2 h-4 w-4" />}Me connecter</Button>
           </form>
         </div>
       </section>
@@ -190,69 +194,28 @@ function AuthPage() {
 
   return (
     <section className="min-h-[70vh] bg-background py-16 md:py-24">
-      <div className="mx-auto w-full max-w-sm px-5 sm:px-6">
+      <div className="mx-auto w-full max-w-md px-5 sm:px-6">
         <div className="mb-6 flex items-center gap-3">
           <img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-12 w-12 rounded-xl object-contain" />
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground">Angel OS</p>
-            <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">Vérification PIN</h1>
-          </div>
+          <div><p className="text-xs font-semibold text-muted-foreground">Angel OS</p><h1 className="font-display text-2xl font-bold tracking-tight text-foreground">Vérification anti-robot</h1></div>
         </div>
-
-        <form onSubmit={onPinSubmit} className="space-y-5 rounded-3xl border border-border bg-card p-6 shadow-sm">
-          <div>
-            <p className="text-sm font-semibold text-foreground">Connexion validée</p>
-            <p className="mt-1 text-xs text-muted-foreground">Saisissez maintenant le code PIN administrateur.</p>
-          </div>
-
-          {pinLocked ? (
-            <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-sm">
-              <div className="flex items-start gap-3">
-                <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
-                <div>
-                  <p className="font-semibold text-foreground">Accès temporairement bloqué</p>
-                  <p className="mt-1 text-muted-foreground">Nouvelle tentative possible dans {Math.ceil(remainingLockSeconds / 60)} min.</p>
-                </div>
-              </div>
-            </div>
+        <form onSubmit={onHumanSubmit} className="space-y-5 rounded-3xl border border-border bg-card p-6 shadow-sm">
+          {humanLocked ? (
+            <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-sm"><div className="flex items-start gap-3"><ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-destructive" /><div><p className="font-semibold text-foreground">Accès temporairement bloqué</p><p className="mt-1 text-muted-foreground">Nouvelle tentative possible dans {Math.ceil(remainingLockSeconds / 60)} min.</p></div></div></div>
           ) : (
-            <div className="space-y-2">
-              <Label htmlFor="admin-pin">Code PIN</Label>
-              <Input
-                id="admin-pin"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                maxLength={4}
-                required
-                autoFocus
-                value={pin}
-                onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                className="h-14 text-center text-2xl tracking-[0.45em]"
-              />
-              {pinAttempts > 0 && <p className="text-xs text-muted-foreground">{remainingAttempts} tentative{remainingAttempts > 1 ? "s" : ""} avant blocage temporaire.</p>}
-            </div>
+            <>
+              <div><p className="flex items-center gap-2 text-sm font-semibold text-foreground"><ShieldCheck className="h-4 w-4 text-primary" />Sélectionnez toutes les icônes liées à la nourriture</p><p className="mt-1 text-xs text-muted-foreground">La grille change après chaque erreur ou actualisation.</p></div>
+              <div className="grid grid-cols-3 gap-3">
+                {challenge.map((item) => {
+                  const active = selected.includes(item.id);
+                  return <button key={item.id} type="button" aria-pressed={active} aria-label={item.label} onClick={() => toggleItem(item.id)} className={`flex aspect-square items-center justify-center rounded-2xl border text-4xl transition-all ${active ? "border-primary bg-primary/10 ring-2 ring-primary/30" : "border-border bg-background hover:border-primary/50 hover:bg-muted/40"}`}>{item.icon}</button>;
+                })}
+              </div>
+              <Button type="button" variant="ghost" size="sm" className="w-full" onClick={refreshChallenge}><RefreshCw className="mr-2 h-4 w-4" />Changer la grille</Button>
+            </>
           )}
-
-          {pinError && <p className="text-sm text-destructive">{pinError}</p>}
-
-          {!pinLocked && (
-            <Button type="submit" disabled={pinBusy || pin.length !== 4} className="h-12 w-full rounded-full">
-              {pinBusy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <KeyRound className="mr-2 h-4 w-4" />}
-              Accéder à l'espace administrateur
-            </Button>
-          )}
-
-          <Button type="button" variant="ghost" className="w-full" onClick={() => setShowPinHelp((value) => !value)}>
-            Code oublié ?
-          </Button>
-
-          {showPinHelp && (
-            <div className="rounded-2xl border border-border bg-muted/40 p-4 text-xs text-muted-foreground">
-              <p className="font-semibold text-foreground">Récupération du code</p>
-              <p className="mt-1">Le PIN ne peut pas être affiché directement depuis la page. La récupération doit passer par le compte administrateur afin d'éviter qu'un visiteur puisse contourner cette seconde vérification.</p>
-              <p className="mt-2">Si le code est réellement perdu, il faut le réinitialiser côté serveur plutôt que le révéler dans le navigateur.</p>
-            </div>
-          )}
+          {humanError && <p className="text-sm text-destructive">{humanError}</p>}
+          {!humanLocked && <Button type="submit" disabled={selected.length === 0} className="h-12 w-full rounded-full"><ShieldCheck className="mr-2 h-4 w-4" />Valider et accéder à l’espace administrateur</Button>}
         </form>
       </div>
     </section>
