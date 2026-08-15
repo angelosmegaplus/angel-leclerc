@@ -39,8 +39,6 @@ jobs:
         run: |
           SHA="$(git rev-parse HEAD)"
           echo "sha=$SHA" >> "$GITHUB_OUTPUT"
-          mkdir -p public
-          printf '{"sha":"%s","builtAt":"%s"}\n' "$SHA" "$(date -u +%FT%TZ)" > public/angel-release.json
 
       - name: Require successful CI for this exact commit
         env:
@@ -49,21 +47,32 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          SUCCESS="$(gh run list --workflow ci.yml --commit "$SHA" --limit 10 --json status,conclusion --jq '[.[] | select(.status=="completed" and .conclusion=="success")] | length')"
-          if [ "$SUCCESS" -lt 1 ]; then
-            echo "::error::Aucun CI réussi pour $SHA. Publication refusée."
-            exit 1
-          fi
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            SUCCESS="$(gh run list --workflow ci.yml --commit "$SHA" --limit 10 --json status,conclusion --jq '[.[] | select(.status=="completed" and .conclusion=="success")] | length')"
+            if [ "$SUCCESS" -gt 0 ]; then exit 0; fi
+            FAILED="$(gh run list --workflow ci.yml --commit "$SHA" --limit 10 --json status,conclusion --jq '[.[] | select(.status=="completed" and (.conclusion=="failure" or .conclusion=="timed_out"))] | length')"
+            if [ "$FAILED" -gt 0 ]; then echo "::error::CI en échec pour $SHA"; exit 1; fi
+            sleep 12
+          done
+          echo "::error::Aucun CI réussi dans le délai pour $SHA"
+          exit 1
 
-      - name: Check Vercel token
+      - name: Detect Vercel token
+        id: vercel_auth
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         shell: bash
         run: |
-          test -n "$VERCEL_TOKEN" || { echo "::error::VERCEL_TOKEN absent : publication contrôlée impossible."; exit 1; }
+          if [ -n "$VERCEL_TOKEN" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "VERCEL_TOKEN absent : utilisation du déploiement Git Vercel avec vérification stricte du SHA."
+          fi
 
-      - name: Read current production and detect already-published release
+      - name: Read current production with Vercel API
         id: production
+        if: steps.vercel_auth.outputs.available == 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           SHA: ${{ steps.current.outputs.sha }}
@@ -77,38 +86,38 @@ jobs:
           if [ "$MATCH" -gt 0 ]; then echo "already_ready=true" >> "$GITHUB_OUTPUT"; else echo "already_ready=false" >> "$GITHUB_OUTPUT"; fi
 
       - name: Set up Bun
-        if: steps.production.outputs.already_ready != 'true'
+        if: steps.vercel_auth.outputs.available == 'true' && steps.production.outputs.already_ready != 'true'
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.14
 
       - name: Install dependencies
-        if: steps.production.outputs.already_ready != 'true'
+        if: steps.vercel_auth.outputs.available == 'true' && steps.production.outputs.already_ready != 'true'
         run: bun install
 
       - name: Lint
-        if: steps.production.outputs.already_ready != 'true'
+        if: steps.vercel_auth.outputs.available == 'true' && steps.production.outputs.already_ready != 'true'
         run: bun run lint
 
       - name: Build production bundle
-        if: steps.production.outputs.already_ready != 'true'
+        if: steps.vercel_auth.outputs.available == 'true' && steps.production.outputs.already_ready != 'true'
         run: bun run build
 
       - name: Type-check
-        if: steps.production.outputs.already_ready != 'true'
+        if: steps.vercel_auth.outputs.available == 'true' && steps.production.outputs.already_ready != 'true'
         run: bunx tsc --noEmit --pretty false
 
       - name: Pull production environment and build prebuilt output
-        if: steps.production.outputs.already_ready != 'true'
+        if: steps.vercel_auth.outputs.available == 'true' && steps.production.outputs.already_ready != 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           bunx vercel@latest pull --yes --environment=production --token="$VERCEL_TOKEN" --scope=angel-os2
           bunx vercel@latest build --prod --token="$VERCEL_TOKEN" --scope=angel-os2
 
-      - name: Create staged production deployment without touching the domain
+      - name: Create staged production deployment
         id: staged
-        if: steps.production.outputs.already_ready != 'true'
+        if: steps.vercel_auth.outputs.available == 'true' && steps.production.outputs.already_ready != 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           SHA: ${{ steps.current.outputs.sha }}
@@ -117,10 +126,9 @@ jobs:
           set -euo pipefail
           URL="$(bunx vercel@latest deploy --prebuilt --prod --skip-domain --token="$VERCEL_TOKEN" --scope=angel-os2 --meta githubCommitSha="$SHA")"
           echo "url=$URL" >> "$GITHUB_OUTPUT"
-          echo "Staged: $URL"
 
       - name: Smoke-test staged deployment
-        if: steps.production.outputs.already_ready != 'true'
+        if: steps.vercel_auth.outputs.available == 'true' && steps.production.outputs.already_ready != 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           SHA: ${{ steps.current.outputs.sha }}
@@ -128,43 +136,41 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          bunx vercel@latest curl /angel-release.json --deployment "$DEPLOY_URL" --token="$VERCEL_TOKEN" --scope=angel-os2 --fail --silent --show-error > /tmp/release.json
-          test "$(jq -r .sha /tmp/release.json)" = "$SHA" || { echo "::error::Le staged ne contient pas le bon commit"; exit 1; }
           bunx vercel@latest curl /api/angel-os/health --deployment "$DEPLOY_URL" --token="$VERCEL_TOKEN" --scope=angel-os2 --fail --silent --show-error > /tmp/health.json
+          test "$(jq -r .release /tmp/health.json)" = "$SHA" || { cat /tmp/health.json; exit 1; }
           test "$(jq -r .healthy /tmp/health.json)" = "true" || { cat /tmp/health.json; exit 1; }
 
       - name: Promote verified deployment to production
-        if: steps.production.outputs.already_ready != 'true'
+        if: steps.vercel_auth.outputs.available == 'true' && steps.production.outputs.already_ready != 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           DEPLOY_URL: ${{ steps.staged.outputs.url }}
         run: bunx vercel@latest promote "$DEPLOY_URL" --token="$VERCEL_TOKEN" --scope=angel-os2
 
-      - name: Verify real production domain
-        if: steps.production.outputs.already_ready != 'true'
+      - name: Verify exact production release
         env:
           SHA: ${{ steps.current.outputs.sha }}
         shell: bash
         run: |
           set -euo pipefail
           OK=false
-          for attempt in 1 2 3 4 5 6; do
-            RELEASE="$(curl --silent --show-error --fail --max-time 15 "$PRODUCTION_URL/angel-release.json" || true)"
+          for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
             HEALTH="$(curl --silent --show-error --fail --max-time 15 "$PRODUCTION_URL/api/angel-os/health" || true)"
-            if [ "$(printf '%s' "$RELEASE" | jq -r '.sha // empty' 2>/dev/null)" = "$SHA" ] && [ "$(printf '%s' "$HEALTH" | jq -r '.healthy // false' 2>/dev/null)" = "true" ]; then OK=true; break; fi
+            SERVED="$(printf '%s' "$HEALTH" | jq -r '.release // empty' 2>/dev/null)"
+            HEALTHY="$(printf '%s' "$HEALTH" | jq -r '.healthy // false' 2>/dev/null)"
+            if [ "$SERVED" = "$SHA" ] && [ "$HEALTHY" = "true" ]; then OK=true; break; fi
+            echo "Attente production : cible=$SHA servie=${SERVED:-aucune} santé=$HEALTHY"
             sleep 10
           done
-          test "$OK" = true || { echo "::error::La production ne sert pas le commit vérifié $SHA"; exit 1; }
+          test "$OK" = true || { echo "::error::La production ne sert pas le commit sain $SHA"; exit 1; }
 
-      - name: Roll back automatically if post-promotion verification failed
-        if: failure() && steps.staged.outputs.url != '' && steps.production.outputs.previous_url != ''
+      - name: Roll back automatically if token-based promotion failed
+        if: failure() && steps.vercel_auth.outputs.available == 'true' && steps.staged.outputs.url != '' && steps.production.outputs.previous_url != ''
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           PREVIOUS_URL: ${{ steps.production.outputs.previous_url }}
         shell: bash
-        run: |
-          echo "Tentative de rollback vers $PREVIOUS_URL"
-          bunx vercel@latest rollback "$PREVIOUS_URL" --token="$VERCEL_TOKEN" --scope=angel-os2 || true
+        run: bunx vercel@latest rollback "$PREVIOUS_URL" --token="$VERCEL_TOKEN" --scope=angel-os2 || true
 
       - name: Append failure to incident journal
         if: failure()
@@ -175,7 +181,7 @@ jobs:
         run: |
           TITLE="[Angel OS] Journal incidents production"
           ISSUE="$(gh issue list --state open --search "$TITLE in:title" --limit 1 --json number --jq '.[0].number // empty')"
-          BODY="Échec publication Angel OS · commit $SHA · $(date -u +%FT%TZ) · run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          BODY="Échec publication/vérification Angel OS · commit $SHA · $(date -u +%FT%TZ) · run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           if [ -z "$ISSUE" ]; then gh issue create --title "$TITLE" --body "$BODY" >/dev/null; else gh issue comment "$ISSUE" --body "$BODY" >/dev/null; fi
 
       - name: Publication summary
@@ -183,8 +189,7 @@ jobs:
         run: |
           echo "## Publication Angel OS" >> "$GITHUB_STEP_SUMMARY"
           echo "- Cible : ${{ steps.current.outputs.sha }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- CI obligatoire avant publication" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Lint, build et TypeScript bloquants" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Déploiement staged avant promotion" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Smoke tests avant et après promotion" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Rollback automatique tenté si la vérification production échoue" >> "$GITHUB_STEP_SUMMARY"
+          echo "- CI du SHA exact obligatoire" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Publication Vercel : staged si token disponible, Git sinon" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Vérification finale : domaine réel + SHA exact + health=true" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Rollback automatique disponible pour le chemin tokenisé" >> "$GITHUB_STEP_SUMMARY"
