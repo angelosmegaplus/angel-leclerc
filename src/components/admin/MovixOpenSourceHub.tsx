@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Clapperboard, Film, Heart, ListPlus, Search, Sparkles, Trophy, Tv, Users } from "lucide-react";
+import { Clapperboard, Film, Heart, ListPlus, Play, Search, Sparkles, Trophy, Tv, Users } from "lucide-react";
 
 type MediaItem = {
   title: string;
