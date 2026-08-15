@@ -30,6 +30,7 @@ export type NewsPayload = {
 const NEWS_CACHE_KEY = "news_dashboard";
 const HEADLINE_FRESH_HOURS = 24;
 const HEADLINE_RECENT_HOURS = 6;
+const AI_NEWS_TIMEOUT_MS = 4500;
 
 const FEEDS: Array<{ category: Exclude<NewsCategory, "une">; query: string }> = [
   { category: "politique", query: "politique France société gouvernement élections souveraineté social when:1d" },
@@ -234,9 +235,23 @@ async function loadGoogleNews() {
   return groups.flat();
 }
 
+async function loadAiNewsFast(): Promise<NewsItem[]> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      searchNewsWithOpenAI().catch(() => []),
+      new Promise<NewsItem[]>((resolve) => {
+        timer = setTimeout(() => resolve([]), AI_NEWS_TIMEOUT_MS);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
 async function loadCombinedNews() {
   const [aiItems, googleItems] = await Promise.all([
-    searchNewsWithOpenAI().catch(() => []),
+    loadAiNewsFast(),
     loadGoogleNews(),
   ]);
   return finalize([...aiItems, ...googleItems]);
@@ -270,7 +285,7 @@ export const getAdminNews = createServerFn({ method: "GET" })
   });
 
 export async function fetchAiNewsSnapshot(): Promise<NewsPayload> {
-  const aiItems = finalize(await searchNewsWithOpenAI().catch(() => []));
+  const aiItems = finalize(await loadAiNewsFast());
   if (aiItems.length === 0) throw new Error("Recherche web OpenAI indisponible");
   return { items: aiItems, fetchedAt: new Date().toISOString(), source: "live", phase: "openai" };
 }
