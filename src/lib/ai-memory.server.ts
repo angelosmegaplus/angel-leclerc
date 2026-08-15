@@ -68,7 +68,7 @@ export async function readChatGptQueue(limit = 50) {
   const { data, error } = await supabaseAdmin
     .from("ai_actions")
     .select("id, kind, title, description, payload, status, sensitive, created_at, updated_at")
-    .in("kind", ["chatgpt_task", "operator_request"])
+    .in("kind", ["chatgpt_task", "operator_request", "refresh_check"])
     .in("status", ["pending", "running", "awaiting_operator"])
     .order("created_at", { ascending: false })
     .limit(limit);
