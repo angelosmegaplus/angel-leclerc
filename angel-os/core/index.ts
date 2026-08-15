@@ -5,3 +5,4 @@ export * from './module-registry';
 export * from './config';
 export * from './request-queue';
 export * from './capabilities';
+export * from './service-adapters';
