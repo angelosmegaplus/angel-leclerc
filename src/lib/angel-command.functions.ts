@@ -122,16 +122,18 @@ async function openAiAnswer(
   context: Awaited<ReturnType<typeof counts>>,
   history: ChatHistory,
 ) {
+  const { aiMemoryPrompt } = await import("./ai-memory.server");
+  const memory = await aiMemoryPrompt("all");
   const messages: AiMessage[] = [
     {
       role: "system",
       content:
-        "Tu es Angel AI, l'assistant principal de l'espace administrateur privé Angel OS. La conversation est continue : utilise les échanges précédents, comprends les pronoms et les références comme « ça », « lui », « continue », « développe », sans obliger l'administrateur à répéter le contexte. Réponds concrètement et avec suffisamment de détail. Utilise l'état JSON de l'administration quand il est pertinent, mais tu peux aussi expliquer, analyser, rédiger et raisonner au-delà de ce JSON. Une question reste une question même si elle contient des mots comme corriger, modifier, publier ou programmer : n'interprète pas ces mots comme une action à exécuter sauf si l'utilisateur formule clairement un ordre. Si une information dépend de données absentes ou d'une actualité non fournie, dis-le. N'affirme jamais qu'une action a été exécutée si elle ne l'a pas été. Les emails, publications, paiements, suppressions et autres actions externes ou irréversibles nécessitent une validation finale.",
+        "Tu es Angel AI, l'assistant principal de l'espace administrateur privé Angel OS. OpenAI est le moteur conversationnel principal. Le moteur local Angel OS ne sert qu'à exécuter des actions déterministes ou comme secours si OpenAI est indisponible. La conversation est continue : utilise les échanges précédents, comprends les pronoms et les références comme « ça », « lui », « continue », « développe », sans obliger l'administrateur à répéter le contexte. Réponds concrètement et avec suffisamment de détail. Utilise l'état JSON de l'administration et la mémoire Angel OS quand ils sont pertinents. Une question reste une question même si elle contient des mots comme corriger, modifier, publier ou programmer : n'interprète pas ces mots comme une action à exécuter sauf si l'utilisateur formule clairement un ordre. Si une information dépend de données absentes ou d'une actualité non fournie, dis-le. N'affirme jamais qu'une action a été exécutée si elle ne l'a pas été. Les emails, publications, paiements, suppressions et autres actions externes ou irréversibles nécessitent une validation finale. Quand une modification technique doit être faite par ChatGPT, indique clairement ce qui doit être placé dans la file À faire par ChatGPT.",
     },
     ...history,
     {
       role: "user",
-      content: `Demande actuelle : ${command}\n\nContexte interne actuel : ${JSON.stringify(context)}`,
+      content: `Demande actuelle : ${command}\n\nContexte interne actuel : ${JSON.stringify(context)}${memory}`,
     },
   ];
   const result = await resilientAngelAi({
@@ -253,7 +255,7 @@ export const runAngelCommand = createServerFn({ method: "POST" })
         result = {
           response: generated
             ? `Brouillon complet créé automatiquement : « ${finalTitle} » — texte, ${generated.sources.length} source(s), catégories${generated.coverUrl ? " et image Wikimedia créditée" : ""}. Rien n'a été publié : vous pouvez relire et modifier avant publication.`
-            : `Brouillon créé : « ${finalTitle} », mais le moteur IA externe n'est pas disponible sur ce déploiement. Le brouillon reste non publié et modifiable.`,
+            : `Brouillon créé : « ${finalTitle} », mais OpenAI n'est pas disponible sur ce déploiement. Le brouillon reste non publié et modifiable.`,
           status: generated ? "completed" : "partial",
           source: generated ? "openai" : "local",
           autoExecuted: true,
@@ -268,14 +270,14 @@ export const runAngelCommand = createServerFn({ method: "POST" })
           const { data: action, error } = await db
             .from("ai_actions")
             .insert({
-              kind: "operator_request",
+              kind: "chatgpt_task",
               title: command.slice(0, 160),
               description: sensitive
-                ? "Action préparée par Angel AI. Une validation finale reste obligatoire avant toute action externe ou irréversible."
-                : "Demande enregistrée pour l'opérateur technique. L'interface ne prétend pas l'avoir exécutée.",
-              payload: { command, command_id: message.id, execution: "operator_required" },
+                ? "Tâche préparée par Angel AI pour ChatGPT. Une validation finale reste obligatoire avant toute action externe ou irréversible."
+                : "Tâche créée par Angel AI dans la file À faire par ChatGPT. Elle n'est pas présentée comme exécutée tant que ChatGPT ne l'a pas réellement traitée.",
+              payload: { command, command_id: message.id, execution: "chatgpt_operator" },
               status: "pending",
-              target_type: "system",
+              target_type: "chatgpt",
               sensitive,
             })
             .select("id")
@@ -283,8 +285,8 @@ export const runAngelCommand = createServerFn({ method: "POST" })
           if (error) throw error;
           result = {
             response: sensitive
-              ? "La préparation est enregistrée. Angel OS attend une validation finale unique avant l'action externe."
-              : "La demande est enregistrée et tracée pour l'opérateur IA. Elle n'est pas présentée comme exécutée tant qu'aucun agent ne l'a réellement traitée.",
+              ? "La tâche est ajoutée à « À faire par ChatGPT ». Une validation finale restera nécessaire avant l'action externe."
+              : "La demande est ajoutée à « À faire par ChatGPT » et restera en attente jusqu'à son traitement réel.",
             status: "awaiting_approval",
             source: "local",
             autoExecuted: false,
@@ -306,7 +308,7 @@ export const runAngelCommand = createServerFn({ method: "POST" })
             result = {
               response:
                 localContext ??
-                "Le moteur IA externe n'est pas disponible actuellement. Angel OS conserve les actions locales, mais ne remplace plus une vraie réponse IA par une réponse automatique limitée. La maintenance ChatGPT pourra reprendre cette question si le fournisseur reste indisponible.",
+                "OpenAI est momentanément indisponible. Angel OS reste uniquement en secours et conserve les fonctions locales déterministes ; la conversation complète reprendra dès que le fournisseur IA répondra de nouveau.",
               status: "partial",
               source: "local",
               autoExecuted: true,
