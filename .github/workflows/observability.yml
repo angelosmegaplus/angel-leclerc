@@ -52,8 +52,7 @@ jobs:
           echo "failures=$FAILURES" >> "$GITHUB_OUTPUT"
           echo "missing=$MISSING" >> "$GITHUB_OUTPUT"
           if [ -n "$FAILURES" ]; then
-            echo "::error::Dépendances configurées mais injoignables : $FAILURES"
-            exit 1
+            echo "::warning::Dépendances configurées mais injoignables : $FAILURES"
           fi
 
       - name: Verify real AI generation in production
@@ -61,27 +60,52 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          RESPONSE="$(curl --fail --silent --show-error --max-time 40 \
+          HTTP_CODE="$(curl --silent --show-error --max-time 40 \
+            -o /tmp/assistant.json -w '%{http_code}' \
             -X POST https://www.angel-leclerc.fr/api/assistant \
             -H 'Content-Type: application/json' \
             --data '{"question":"Réponds en une phrase très courte pour confirmer que le moteur IA fonctionne réellement.","mode":"site","history":[]}')"
-          printf '%s' "$RESPONSE" > /tmp/assistant.json
-          jq . /tmp/assistant.json
 
-          TEXT="$(jq -r '.text // empty' /tmp/assistant.json)"
-          SOURCE="$(jq -r '.source // empty' /tmp/assistant.json)"
-          REASON="$(jq -r '.reason // empty' /tmp/assistant.json)"
-          REQUEST_ID="$(jq -r '.requestId // empty' /tmp/assistant.json)"
+          if jq -e . /tmp/assistant.json >/dev/null 2>&1; then
+            jq . /tmp/assistant.json
+            TEXT="$(jq -r '.text // empty' /tmp/assistant.json)"
+            SOURCE="$(jq -r '.source // empty' /tmp/assistant.json)"
+            REASON="$(jq -r '.reason // empty' /tmp/assistant.json)"
+            REQUEST_ID="$(jq -r '.requestId // empty' /tmp/assistant.json)"
+          else
+            TEXT=""
+            SOURCE="invalid_response"
+            REASON="non_json"
+            REQUEST_ID=""
+            head -c 500 /tmp/assistant.json || true
+          fi
+
+          echo "http_code=$HTTP_CODE" >> "$GITHUB_OUTPUT"
           echo "source=$SOURCE" >> "$GITHUB_OUTPUT"
           echo "reason=$REASON" >> "$GITHUB_OUTPUT"
           echo "request_id=$REQUEST_ID" >> "$GITHUB_OUTPUT"
 
+          if [[ ! "$HTTP_CODE" =~ ^2 ]]; then
+            echo "::error::L'endpoint IA répond HTTP $HTTP_CODE (source=$SOURCE, reason=$REASON, requestId=$REQUEST_ID)."
+            exit 1
+          fi
           if [ -z "$TEXT" ] || [ "$SOURCE" != "openai" ]; then
             echo "::error::L'endpoint IA n'a pas produit de réponse exploitable (source=$SOURCE, reason=$REASON, requestId=$REQUEST_ID)."
             exit 1
           fi
           if printf '%s' "$TEXT" | grep -Eiq '^\s*<(html|!doctype)|^\s*\{'; then
             echo "::error::Réponse IA invalide ou brute (requestId=$REQUEST_ID)."
+            exit 1
+          fi
+
+      - name: Enforce dependency health
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          FAILURES='${{ steps.probe.outputs.failures }}'
+          if [ -n "$FAILURES" ]; then
+            echo "::error::Dépendances configurées mais injoignables : $FAILURES"
             exit 1
           fi
 
@@ -92,9 +116,13 @@ jobs:
         shell: bash
         run: |
           TITLE="[Angel OS] Journal incidents production"
-          ISSUE="$(gh issue list --state open --search "$TITLE in:title" --limit 1 --json number --jq '.[0].number // empty')"
-          BODY="Incident observabilité · $(date -u +%FT%TZ) · dépendances=${{ steps.probe.outputs.failures }} · ai_reason=${{ steps.ai_smoke.outputs.reason }} · ai_request=${{ steps.ai_smoke.outputs.request_id }} · run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          if [ -z "$ISSUE" ]; then gh issue create --title "$TITLE" --body "$BODY" >/dev/null; else gh issue comment "$ISSUE" --body "$BODY" >/dev/null; fi
+          ISSUE="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$TITLE in:title" --limit 1 --json number --jq '.[0].number // empty')"
+          BODY="Incident observabilité · $(date -u +%FT%TZ) · dépendances=${{ steps.probe.outputs.failures }} · ai_http=${{ steps.ai_smoke.outputs.http_code }} · ai_reason=${{ steps.ai_smoke.outputs.reason }} · ai_request=${{ steps.ai_smoke.outputs.request_id }} · run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          if [ -z "$ISSUE" ]; then
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --body "$BODY" >/dev/null
+          else
+            gh issue comment --repo "$GITHUB_REPOSITORY" "$ISSUE" --body "$BODY" >/dev/null
+          fi
 
       - name: Health summary
         if: always()
@@ -104,6 +132,7 @@ jobs:
           echo "- Production : https://www.angel-leclerc.fr" >> "$GITHUB_STEP_SUMMARY"
           echo "- OpenAI/TMDB : test réseau réel quand configurés" >> "$GITHUB_STEP_SUMMARY"
           echo "- IA conversationnelle : vraie génération requise, réponse vide/fallback interdite" >> "$GITHUB_STEP_SUMMARY"
+          echo "- HTTP IA : ${{ steps.ai_smoke.outputs.http_code }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Source IA observée : ${{ steps.ai_smoke.outputs.source }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Raison IA : ${{ steps.ai_smoke.outputs.reason }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Configuration manquante : ${{ steps.probe.outputs.missing }}" >> "$GITHUB_STEP_SUMMARY"
