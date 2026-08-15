@@ -5,6 +5,7 @@ type SearchState = { expiresAt: number; items: NewsItem[]; failureUntil: number 
 const state: SearchState = { expiresAt: 0, items: [], failureUntil: 0 };
 const TTL_MS = 10 * 60_000;
 const FAILURE_COOLDOWN_MS = 5 * 60_000;
+const PROVIDER_TIMEOUT_MS = 12_000;
 const DEFAULT_WEB_MODEL = "gpt-4.1-mini";
 const DEFAULT_WEB_FALLBACK_MODEL = "gpt-4o-mini";
 
@@ -46,7 +47,7 @@ function gatewayModel(model: string) { return model.includes("/") ? model : `ope
 function requestBody(model: string) {
   return {
     model,
-    tools: [{ type: "web_search" }],
+    tools: [{ type: "web_search", search_context_size: "low" }],
     max_output_tokens: 2600,
     input: [
       {
@@ -73,13 +74,23 @@ Réponds UNIQUEMENT avec un tableau JSON valide, sans markdown. Chaque objet doi
   };
 }
 
-async function runProvider(endpoint: string, token: string, model: string, controller: AbortController) {
-  return fetch(endpoint, {
-    method: "POST",
-    signal: controller.signal,
-    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-    body: JSON.stringify(requestBody(model)),
-  });
+async function runProvider(endpoint: string, token: string, model: string, label: string): Promise<Response | null> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), PROVIDER_TIMEOUT_MS);
+  try {
+    return await fetch(endpoint, {
+      method: "POST",
+      signal: controller.signal,
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody(model)),
+    });
+  } catch (error) {
+    const aborted = controller.signal.aborted || (error instanceof DOMException && error.name === "AbortError");
+    console.warn(`[ai-news-search] ${label} request unavailable`, { model, reason: aborted ? "timeout" : "network_error" });
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export async function searchNewsWithOpenAI(): Promise<NewsItem[]> {
@@ -91,8 +102,6 @@ export async function searchNewsWithOpenAI(): Promise<NewsItem[]> {
   const [credential, gatewayCredential] = await Promise.all([getOpenAiCredential(), Promise.resolve(getAiGatewayCredential())]);
   if (!credential && !gatewayCredential) return [];
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 14_000);
   try {
     const models = webModels();
     for (let index = 0; index < models.length; index += 1) {
@@ -100,8 +109,8 @@ export async function searchNewsWithOpenAI(): Promise<NewsItem[]> {
       let response: Response | null = null;
 
       if (credential) {
-        response = await runProvider("https://api.openai.com/v1/responses", credential.value, model, controller);
-        if (!response.ok) {
+        response = await runProvider("https://api.openai.com/v1/responses", credential.value, model, "direct OpenAI web search");
+        if (response && !response.ok) {
           const body = await response.text();
           console.warn("[ai-news-search] direct OpenAI web search unavailable", response.status, { model, credentialSource: credential.source });
           const hasFallbackModel = index < models.length - 1;
@@ -112,34 +121,35 @@ export async function searchNewsWithOpenAI(): Promise<NewsItem[]> {
 
       if (!response && gatewayCredential) {
         const routedModel = gatewayModel(model);
-        response = await runProvider("https://ai-gateway.vercel.sh/v1/responses", gatewayCredential.value, routedModel, controller);
-        if (!response.ok) {
+        response = await runProvider("https://ai-gateway.vercel.sh/v1/responses", gatewayCredential.value, routedModel, "Vercel AI Gateway web search");
+        if (response && !response.ok) {
           const body = await response.text();
           console.warn("[ai-news-search] Vercel AI Gateway web search unavailable", response.status, { model: routedModel, credentialSource: gatewayCredential.source });
           const hasFallbackModel = index < models.length - 1;
           if (hasFallbackModel && shouldTryFallback(response.status, body)) continue;
-          state.failureUntil = now + FAILURE_COOLDOWN_MS;
-          return state.items;
+          response = null;
         }
       }
 
       if (!response) continue;
       const json = await response.json();
-      const items = parseJsonArray(responseText(json)).map(cleanItem).filter((item): item is NewsItem => Boolean(item)).slice(0, 40);
-      if (items.length > 0) { state.items = items; state.expiresAt = now + TTL_MS; state.failureUntil = 0; }
-      else state.failureUntil = now + FAILURE_COOLDOWN_MS;
-      return state.items;
+      const raw = responseText(json);
+      const items = parseJsonArray(raw).map(cleanItem).filter((item): item is NewsItem => Boolean(item)).slice(0, 40);
+      if (items.length > 0) {
+        state.items = items;
+        state.expiresAt = now + TTL_MS;
+        state.failureUntil = 0;
+      } else {
+        console.warn("[ai-news-search] provider returned no usable structured news items", { model, outputLength: raw.length });
+      }
+      if (items.length > 0) return state.items;
     }
     state.failureUntil = now + FAILURE_COOLDOWN_MS;
     return state.items;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    if (controller.signal.aborted || (error instanceof DOMException && error.name === "AbortError")) {
-      console.warn("[ai-news-search] timed out; keeping cached feed");
-    } else {
-      console.warn("[ai-news-search] unavailable; keeping cached feed", message);
-    }
+    console.warn("[ai-news-search] unavailable; keeping cached feed", message);
     state.failureUntil = now + FAILURE_COOLDOWN_MS;
     return state.items;
-  } finally { clearTimeout(timeout); }
+  }
 }
