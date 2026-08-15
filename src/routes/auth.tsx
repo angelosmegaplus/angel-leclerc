@@ -9,19 +9,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Captcha, type CaptchaValue } from "@/components/Captcha";
 import { verifyCaptchaAnswer } from "@/lib/captcha.functions";
+import { verifyAdminPinCode } from "@/lib/admin-pin.functions";
 
 const PIN_SESSION_KEY = "angel-os-admin-pin-ok";
 const ADMIN_BOOT_PENDING_KEY = "angel-os:admin-boot-pending";
-const ADMIN_PIN = "2005";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Connexion Angel OS | Angel Leclerc Communication" },
-      {
-        name: "description",
-        content: "Accès réservé à l'espace administrateur Angel OS.",
-      },
+      { name: "description", content: "Accès réservé à l'espace administrateur Angel OS." },
       { name: "robots", content: "noindex, nofollow" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -39,15 +36,14 @@ function AuthPage() {
   const [pin, setPin] = useState("");
   const [pinBusy, setPinBusy] = useState(false);
   const [pinError, setPinError] = useState<string | null>(null);
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [info, setInfo] = useState<string | null>(null);
   const [captcha, setCaptcha] = useState<CaptchaValue>({ token: "", answer: "" });
   const [captchaKey, setCaptchaKey] = useState(0);
   const verifyCaptcha = useServerFn(verifyCaptchaAnswer);
+  const verifyAdminPin = useServerFn(verifyAdminPinCode);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -65,20 +61,14 @@ function AuthPage() {
     setPinError(null);
 
     try {
-      await new Promise((resolve) => window.setTimeout(resolve, 180));
-      if (pin !== ADMIN_PIN) {
-        setPinError("Code PIN incorrect.");
-        setPin("");
-        return;
-      }
-
-      // Le PIN valide arme le générique, mais il ne se joue qu'une fois
-      // l'espace administrateur réellement accessible. Si une session existe
-      // déjà, la navigation est immédiate ; sinon il attend la connexion.
+      await verifyAdminPin({ data: { pin } });
       sessionStorage.setItem(PIN_SESSION_KEY, "1");
       sessionStorage.setItem(ADMIN_BOOT_PENDING_KEY, "1");
       setPinUnlocked(true);
       if (session) navigate({ to: "/admin" });
+    } catch {
+      setPinError("Code PIN incorrect.");
+      setPin("");
     } finally {
       setPinBusy(false);
     }
@@ -88,26 +78,14 @@ function AuthPage() {
     e.preventDefault();
     setBusy(true);
     setError(null);
-    setInfo(null);
     try {
       await verifyCaptcha({ data: { token: captcha.token, answer: captcha.answer } });
-      if (mode === "signup") {
-        const { error: err } = await supabase.auth.signUp({
-          email: email.trim(),
-          password,
-          options: { emailRedirectTo: `${window.location.origin}/admin` },
-        });
-        if (err) throw err;
-        setInfo("Compte créé. Vous pouvez maintenant vous connecter.");
-        setMode("signin");
-      } else {
-        const { error: err } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password,
-        });
-        if (err) throw err;
-        navigate({ to: "/admin" });
-      }
+      const { error: err } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (err) throw err;
+      navigate({ to: "/admin" });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Une erreur est survenue.";
       setError(message.includes("Invalid login credentials") ? "Identifiants incorrects." : message);
@@ -168,7 +146,7 @@ function AuthPage() {
             <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Connexion Angel OS</h1>
           </div>
         </div>
-        <p className="mt-3 text-sm text-muted-foreground">Le code PIN est validé. Connectez maintenant votre compte administrateur.</p>
+        <p className="mt-3 text-sm text-muted-foreground">Le code PIN est validé. Connectez-vous avec le compte administrateur autorisé.</p>
 
         <form onSubmit={onSubmit} className="mt-8 space-y-4 rounded-xl border border-border bg-card p-6">
           <div className="space-y-2">
@@ -177,29 +155,16 @@ function AuthPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Mot de passe</Label>
-            <Input id="password" type="password" autoComplete={mode === "signup" ? "new-password" : "current-password"} required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Input id="password" type="password" autoComplete="current-password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
           <Captcha key={captchaKey} value={captcha} onChange={setCaptcha} />
-          {info && <p className="text-sm text-primary">{info}</p>}
 
           <Button type="submit" disabled={busy} className="w-full">
             {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LogIn className="mr-2 h-4 w-4" />}
-            {mode === "signup" ? "Créer mon compte" : "Me connecter"}
+            Me connecter
           </Button>
-
-          <button
-            type="button"
-            onClick={() => {
-              setMode(mode === "signin" ? "signup" : "signin");
-              setError(null);
-              setInfo(null);
-            }}
-            className="w-full text-center text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
-          >
-            {mode === "signin" ? "Première connexion ? Créer mon compte" : "J'ai déjà un compte"}
-          </button>
         </form>
       </div>
     </section>
