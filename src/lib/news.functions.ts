@@ -28,36 +28,62 @@ export type NewsPayload = {
 };
 
 const NEWS_CACHE_KEY = "news_dashboard";
-const HEADLINE_FRESH_HOURS = 24;
-const HEADLINE_RECENT_HOURS = 6;
-const AI_NEWS_TIMEOUT_MS = 4500;
+const TOPICAL_MAX_HOURS = 36;
+const HEADLINE_PRIMARY_HOURS = 8;
+const HEADLINE_FALLBACK_HOURS = 24;
+const AI_NEWS_TIMEOUT_MS = 6500;
 
 const FEEDS: Array<{ category: Exclude<NewsCategory, "une">; query: string }> = [
-  { category: "politique", query: "politique France société gouvernement élections souveraineté social when:1d" },
-  { category: "medias", query: "radio médias France animateur radio podcast audiovisuel when:1d" },
-  { category: "journalisme", query: "journalisme communication édition presse France when:1d" },
-  { category: "ia", query: "intelligence artificielle technologie ChatGPT IA France web when:1d" },
-  { category: "dordogne", query: "Sarlat Dordogne Périgord Bergerac Périgueux actualité when:1d" },
-  { category: "emploi", query: "alternance communication emploi BTS communication radio média stage when:1d" },
+  {
+    category: "politique",
+    query:
+      '(politique France OR société OR gouvernement OR Assemblée OR services publics OR pouvoir achat OR souveraineté OR corruption OR enquête OR lobbying OR justice) when:1d',
+  },
+  {
+    category: "medias",
+    query:
+      '(radio OR audiovisuel OR médias OR animateur radio OR podcast OR audience OR France Télévisions OR Radio France) France when:1d',
+  },
+  {
+    category: "journalisme",
+    query:
+      '(journalisme OR presse OR rédaction OR communication OR création contenu OR médias OR édition) France when:1d',
+  },
+  {
+    category: "ia",
+    query:
+      '(intelligence artificielle OR OpenAI OR ChatGPT OR Android OR smartphone OR Google Pixel OR application OR technologie) France when:1d',
+  },
+  {
+    category: "dordogne",
+    query:
+      '(Sarlat OR Périgord Noir OR Dordogne OR Périgueux OR Bergerac OR Souillac) (actualité OR emploi OR politique OR travaux OR commerce OR justice OR culture) when:2d',
+  },
+  {
+    category: "emploi",
+    query:
+      '(alternance BTS Communication OR assistant communication OR chargé communication OR radio OR média OR journalisme OR stage communication) (Bordeaux OR Périgueux OR Bergerac OR Brive OR Sarlat) when:2d',
+  },
 ];
 
 const PREFERENCE_WEIGHTS: Array<{ pattern: RegExp; weight: number }> = [
-  { pattern: /radio|animateur|antenne|podcast|audio|fm\b|audiovisuel/i, weight: 9 },
-  { pattern: /journalis|presse|média|media|édition|editeur|rédaction/i, weight: 8 },
+  { pattern: /corruption|favoritisme|conflit d.?intérêts|lobby|scandale|enquête|justice|financier|marché public/i, weight: 18 },
+  { pattern: /politique|gouvernement|assemblée|président|élection|social|souverain|service public|pouvoir d.?achat/i, weight: 14 },
+  { pattern: /sarlat|périgord noir|dordogne|périgueux|bergerac|souillac/i, weight: 16 },
+  { pattern: /android|pixel|smartphone|openai|chatgpt|intelligence artificielle|\bia\b|application/i, weight: 12 },
+  { pattern: /radio|animateur|antenne|podcast|audio|fm\b|audiovisuel/i, weight: 10 },
+  { pattern: /journalis|presse|média|media|édition|rédaction/i, weight: 9 },
+  { pattern: /alternance|apprentissage|bts|emploi|stage|recrut/i, weight: 9 },
   { pattern: /communication|création|contenu|canva|marketing/i, weight: 6 },
-  { pattern: /sarlat|dordogne|périgord|périgueux|bergerac/i, weight: 8 },
-  { pattern: /alternance|apprentissage|bts|emploi|stage|recrut/i, weight: 7 },
-  { pattern: /intelligence artificielle|\bia\b|chatgpt|openai|technolog|numérique|web/i, weight: 6 },
-  { pattern: /politique|gouvernement|élection|assemblée|président|social|souverain/i, weight: 5 },
 ];
 
 const CATEGORY_WEIGHT: Record<Exclude<NewsCategory, "une">, number> = {
-  medias: 8,
-  journalisme: 8,
-  dordogne: 8,
-  emploi: 7,
-  politique: 6,
-  ia: 6,
+  politique: 14,
+  dordogne: 13,
+  ia: 10,
+  medias: 9,
+  journalisme: 9,
+  emploi: 9,
 };
 
 const decodeXml = (value: string) =>
@@ -76,21 +102,24 @@ function tag(block: string, name: string): string {
 
 function parseFeed(xml: string, category: Exclude<NewsCategory, "une">): NewsItem[] {
   const items = xml.match(/<item\b[\s\S]*?<\/item>/gi) ?? [];
-  return items.slice(0, 18).map((block, index) => {
-    const title = tag(block, "title").replace(/\s+-\s+[^-]+$/, "").trim();
-    const url = tag(block, "link");
-    const source = tag(block, "source") || "Google News";
-    const pubDate = tag(block, "pubDate");
-    const parsedDate = pubDate ? new Date(pubDate) : null;
-    return {
-      id: `${category}-${index}-${title}`,
-      title,
-      url,
-      source,
-      publishedAt: parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate.toISOString() : null,
-      category,
-    };
-  }).filter((item) => item.title && item.url);
+  return items
+    .slice(0, 24)
+    .map((block, index) => {
+      const title = tag(block, "title").replace(/\s+-\s+[^-]+$/, "").trim();
+      const url = tag(block, "link");
+      const source = tag(block, "source") || "Google News";
+      const pubDate = tag(block, "pubDate");
+      const parsedDate = pubDate ? new Date(pubDate) : null;
+      return {
+        id: `${category}-${index}-${title}`,
+        title,
+        url,
+        source,
+        publishedAt: parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate.toISOString() : null,
+        category,
+      };
+    })
+    .filter((item) => item.title && item.url);
 }
 
 async function assertAdmin(context: { supabase: { from: (table: string) => any }; userId: string }) {
@@ -109,7 +138,10 @@ async function loadFeed(feed: (typeof FEEDS)[number]): Promise<NewsItem[]> {
   const timeout = setTimeout(() => controller.abort(), 6500);
   try {
     const response = await fetch(url, {
-      headers: { "User-Agent": "AngelOS-News/1.0", Accept: "application/rss+xml, application/xml, text/xml" },
+      headers: {
+        "User-Agent": "AngelOS-News/1.0",
+        Accept: "application/rss+xml, application/xml, text/xml",
+      },
       signal: controller.signal,
     });
     if (!response.ok) return [];
@@ -146,7 +178,12 @@ function ageHours(item: NewsItem) {
 }
 
 function normalizedTitle(value: string) {
-  return value.toLocaleLowerCase("fr").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\W+/g, " ").trim();
+  return value
+    .toLocaleLowerCase("fr")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\W+/g, " ")
+    .trim();
 }
 
 function dedupe(items: NewsItem[]) {
@@ -172,33 +209,32 @@ function preferenceScore(item: NewsItem) {
   }
 
   const age = ageHours(item);
-  if (age <= 1) score += 45;
-  else if (age <= 3) score += 34;
-  else if (age <= HEADLINE_RECENT_HOURS) score += 25;
-  else if (age <= 12) score += 14;
-  else if (age <= HEADLINE_FRESH_HOURS) score += 6;
-  else score -= Math.min(30, (age - HEADLINE_FRESH_HOURS) / 2);
+  if (age <= 1) score += 70;
+  else if (age <= 3) score += 52;
+  else if (age <= 6) score += 36;
+  else if (age <= 12) score += 18;
+  else if (age <= HEADLINE_FALLBACK_HOURS) score += 4;
+  else score -= 40;
 
   return score;
 }
 
 function buildPersonalizedHeadlines(items: NewsItem[]): NewsItem[] {
-  const seenTitles = new Set<string>();
-  const fresh = items.filter((item) => ageHours(item) <= HEADLINE_FRESH_HOURS);
-  const ranked = [...fresh]
-    .sort((a, b) => preferenceScore(b) - preferenceScore(a))
-    .filter((item) => {
-      const key = normalizedTitle(item.title);
-      if (!key || seenTitles.has(key)) return false;
-      seenTitles.add(key);
-      return true;
-    });
+  const primary = items.filter((item) => ageHours(item) <= HEADLINE_PRIMARY_HOURS);
+  const fallback = items.filter((item) => ageHours(item) <= HEADLINE_FALLBACK_HOURS);
+  const source = primary.length >= 6 ? primary : fallback;
+  const ranked = [...source].sort((a, b) => {
+    const score = preferenceScore(b) - preferenceScore(a);
+    if (score !== 0) return score;
+    return (b.publishedAt ?? "").localeCompare(a.publishedAt ?? "");
+  });
 
   const selected: NewsItem[] = [];
   const selectedIds = new Set<string>();
   const perCategory = new Map<NewsCategory, number>();
 
   for (const item of ranked) {
+    if (selectedIds.has(item.id)) continue;
     const count = perCategory.get(item.category) ?? 0;
     if (count >= 2) continue;
     selected.push({ ...item, id: `une-${item.id}`, category: "une" });
@@ -207,24 +243,43 @@ function buildPersonalizedHeadlines(items: NewsItem[]): NewsItem[] {
     if (selected.length >= 10) break;
   }
 
-  if (selected.length < 12) {
+  if (selected.length < 10) {
     for (const item of ranked) {
       if (selectedIds.has(item.id)) continue;
-      const count = perCategory.get(item.category) ?? 0;
-      if (count >= 3) continue;
       selected.push({ ...item, id: `une-${item.id}`, category: "une" });
       selectedIds.add(item.id);
-      perCategory.set(item.category, count + 1);
-      if (selected.length >= 12) break;
+      if (selected.length >= 10) break;
     }
   }
 
   return selected;
 }
 
+function ensureCategoryCoverage(items: NewsItem[]) {
+  const categories = FEEDS.map((feed) => feed.category);
+  const result = [...items];
+  for (const category of categories) {
+    if (result.some((item) => item.category === category)) continue;
+    const fallback = items
+      .filter((item) => item.category !== "une")
+      .filter((item) => {
+        const text = normalizedTitle(item.title);
+        if (category === "politique") return /politique|gouvernement|assemblee|social|justice|corruption|souverain/.test(text);
+        if (category === "medias") return /radio|media|audiovisuel|podcast|television/.test(text);
+        if (category === "journalisme") return /journalis|presse|redaction|communication|edition/.test(text);
+        if (category === "ia") return /ia |intelligence artificielle|chatgpt|openai|android|smartphone|pixel|technolog/.test(text);
+        if (category === "dordogne") return /sarlat|dordogne|perigord|perigueux|bergerac|souillac/.test(text);
+        return /alternance|bts|emploi|stage|recrut|apprentissage/.test(text);
+      })
+      .sort((a, b) => preferenceScore(b) - preferenceScore(a))[0];
+    if (fallback) result.push({ ...fallback, id: `${category}-fallback-${fallback.id}`, category });
+  }
+  return result;
+}
+
 function finalize(items: NewsItem[]) {
-  const topical = dedupe(
-    items.filter((item) => item.category !== "une" && ageHours(item) <= HEADLINE_FRESH_HOURS),
+  const topical = ensureCategoryCoverage(
+    dedupe(items.filter((item) => item.category !== "une" && ageHours(item) <= TOPICAL_MAX_HOURS)),
   );
   const headlines = buildPersonalizedHeadlines(topical);
   return [...headlines, ...topical];
@@ -250,10 +305,7 @@ async function loadAiNewsFast(): Promise<NewsItem[]> {
 }
 
 async function loadCombinedNews() {
-  const [aiItems, googleItems] = await Promise.all([
-    loadAiNewsFast(),
-    loadGoogleNews(),
-  ]);
+  const [aiItems, googleItems] = await Promise.all([loadAiNewsFast(), loadGoogleNews()]);
   return finalize([...aiItems, ...googleItems]);
 }
 
@@ -269,11 +321,19 @@ export const getAdminNews = createServerFn({ method: "GET" })
       return cached ?? { items: [], fetchedAt: new Date().toISOString(), source: "cache", phase: "combined" };
     }
 
-    const liveCategories = new Set(liveItems.filter((item) => item.category !== "une").map((item) => item.category));
-    const cachedFill = (cached?.items ?? []).filter(
-      (item) => item.category !== "une" && !liveCategories.has(item.category) && ageHours(item) <= HEADLINE_FRESH_HOURS,
+    const liveCategories = new Set(
+      liveItems.filter((item) => item.category !== "une").map((item) => item.category),
     );
-    const merged = finalize([...liveItems.filter((item) => item.category !== "une"), ...cachedFill]);
+    const cachedFill = (cached?.items ?? []).filter(
+      (item) =>
+        item.category !== "une" &&
+        !liveCategories.has(item.category) &&
+        ageHours(item) <= TOPICAL_MAX_HOURS,
+    );
+    const merged = finalize([
+      ...liveItems.filter((item) => item.category !== "une"),
+      ...cachedFill,
+    ]);
     const payload: NewsPayload = {
       items: merged,
       fetchedAt: new Date().toISOString(),
