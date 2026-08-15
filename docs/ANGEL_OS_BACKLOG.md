@@ -14,7 +14,7 @@ Ce fichier sert de file durable pour les demandes validées qui ne doivent pas d
 
 - [ ] Corriger et vérifier de bout en bout Angel AI dans tout l’espace administrateur : les vraies questions doivent appeler le moteur IA principal, conserver le contexte et afficher une réponse conversationnelle ; le moteur local ne doit intervenir qu’en secours réel. Contrôler les logs, erreurs OpenAI, timeouts, quotas, anciens messages locaux parasites, routage des commandes et réponses persistées. Tester sur l’accueil admin, la recherche universelle et tout autre point d’entrée IA avant de considérer ce point terminé.
 - [ ] Vérifier que la récupération automatique des questions échouées fonctionne : une question laissée sans vraie réponse par l’IA embarquée doit pouvoir être reprise par la maintenance ChatGPT existante, sans doublon, puis la cause technique doit être diagnostiquée et corrigée quand c’est sûr.
-- [ ] Vérifier que toutes les actualités admin utilisent réellement le flux frais et que « À la une » privilégie les contenus des dernières heures, diversifie les catégories et ne recycle pas inutilement les mêmes sujets.
+- [x] Vérifier que toutes les actualités admin utilisent réellement le flux frais et que « À la une » privilégie les contenus des dernières heures, diversifie les catégories et ne recycle pas inutilement les mêmes sujets.
 - [ ] Vérifier que météo et actualités apparaissent réellement sur l’accueil admin et se mettent à jour automatiquement.
 - [ ] Ajouter/maintenir une barre de recherche universelle Pixel/Google-like dans tout l’espace admin, sans doublons de destinations.
 - [ ] Angel AI doit être visible très haut sur l’accueil admin, compact, et réutiliser le même fil de discussion que « Demander à l’IA ».
