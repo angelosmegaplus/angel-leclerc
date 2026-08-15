@@ -1,1 +1,196 @@
-{"fetchedAt":"2026-08-15T04:49:21Z","caches":{"news_dashboard":{"fetchedAt":"2026-08-15T04:49:21Z","changed_since_previous":"Aucune actualité fiable et suffisamment importante publiée dans les six dernières heures n’a été vérifiée pendant ce passage. Le fil reste donc volontairement court au lieu de recycler des contenus. Les développements les plus récents conservés datent de moins de 24 heures : censure constitutionnelle de l’interdiction des réseaux sociaux aux moins de 15 ans, incendie actif dans les Landes, tensions budgétaires et reconstruction après les feux du Sud-Ouest.","top_stories":[{"title":"Le Conseil constitutionnel bloque l’interdiction des réseaux sociaux aux moins de 15 ans","source":"Associated Press","date":"2026-08-14T17:31:42+02:00","category":"politique_société","summary":"Le Conseil constitutionnel a censuré l’interdiction générale visant les moins de 15 ans, jugeant que le dispositif portait une atteinte disproportionnée à la liberté d’expression et ne protégeait pas suffisamment la vie privée. L’exécutif annonce vouloir retravailler le texte.","link":"https://apnews.com/article/a4e96488d1eb913c7a039eb5e4fc1e18","importance":"haute","why_relevant":"Décision institutionnelle importante sur les libertés publiques, la protection des mineurs et le pouvoir de régulation des grandes plateformes.","age_minutes":797,"freshness":"moins_24h","status":"fait établi"},{"title":"Un nouvel incendie dans les Landes entraîne l’évacuation de 525 habitants","source":"Reuters","date":"2026-08-14T08:15:04+02:00","category":"société_environnement","summary":"Un feu dans les Landes a brûlé environ 1 100 hectares et s’est approché de Luglon, où 525 habitants ont été évacués. Environ 500 pompiers et six aéronefs étaient mobilisés au moment du dernier bilan Reuters.","link":"https://www.reuters.com/business/environment/france-evacuates-525-another-wildfire-hits-southwestern-pine-woods-2026-08-14/","zone":"Landes / Nouvelle-Aquitaine","importance":"haute","why_relevant":"Le feu concerne directement le Sud-Ouest et s’inscrit dans un contexte de chaleur et de risque incendie qui touche aussi la Dordogne.","age_minutes":1354,"freshness":"moins_24h","status":"fait établi"}],"politics_society":[{"title":"Dette française : les coûts d’intérêts pèsent davantage à l’approche de 2027","source":"Reuters Breakingviews","date":"2026-08-14T10:17:37+02:00","category":"politique_société","summary":"Une analyse de Reuters Breakingviews souligne la hausse du coût de la dette française et les marges budgétaires de plus en plus contraintes avant l’élection présidentielle de 2027.","link":"https://www.reuters.com/commentary/breakingviews/france-is-headed-election-year-debt-reckoning-2026-08-14/","importance":"haute","why_relevant":"Le sujet touche directement la souveraineté budgétaire, les services publics, les choix fiscaux et le financement du modèle social.","age_minutes":1231,"freshness":"moins_24h","status":"analyse-opinion"},{"title":"Incendies et budget 2027 mettent le gouvernement sous pression","source":"Le Monde","date":"2026-08-14T15:00:12+02:00","category":"politique_société","summary":"Le Monde décrit la double pression qui pèse sur le gouvernement : reconstruction après les incendies du Sud-Ouest et préparation du budget 2027, avec des débats sur les économies structurelles et les moyens de la protection civile.","link":"https://www.lemonde.fr/en/politics/article/2026/08/14/for-france-s-pm-a-tense-summer-of-wildfires-and-budget-planning_6756506_5.html","importance":"haute","why_relevant":"Croisement concret entre services publics, protection civile, dépenses publiques et arbitrages politiques à l’approche de 2027.","age_minutes":949,"freshness":"moins_24h","status":"analyse-opinion"}],"investigations":[],"local_news":[],"tech_android_ai":[],"cinema_series":[],"orientation_learning":[],"youtube_to_watch":[],"general_news":[],"practical_local":[{"title":"Festi’Sarlat ce soir au stade Christian-Goumondie","source":"Office de Tourisme Sarlat Périgord Noir / DATAtourisme","date":"2026-08-15T19:00:00+02:00","category":"pratique_local","summary":"Festi’Sarlat est programmé ce samedi 15 août à partir de 19 h au stade Christian-Goumondie, avec plusieurs DJ/artistes et des food trucks.","link":"https://unidivers.fr/event/festisarlat-sarlat-la-caneda-dordogne-2026-08-15/","zone":"Sarlat-la-Canéda","importance":"moyenne","why_relevant":"Événement local du jour à Sarlat, directement utile pour les sorties et l’animation de la ville.","freshness":"suivi"},{"title":"La navette de Sarlat circule aujourd’hui","source":"Mairie de Sarlat","date":"2026-08-15T09:30:00+02:00","category":"transport_local","summary":"La navette estivale de Sarlat est annoncée de 9 h 30 à 18 h 45 et reste en service jusqu’au 22 août.","link":"https://sarlat.fr/sortir-et-bouger/agenda/","zone":"Sarlat-la-Canéda","importance":"moyenne","why_relevant":"Information pratique de mobilité pour aujourd’hui à Sarlat.","freshness":"suivi"}]},"weather_sarlat":{"fetchedAt":"2026-08-15T04:49:21Z","location":"Sarlat-la-Canéda","current":{"temperatureC":21,"condition":"Nuageux"},"today":{"date":"2026-08-15","highC":30,"lowC":20,"condition":"Plutôt nuageux, humide et devenant plus frais"},"forecast":[{"date":"2026-08-16","highC":29,"lowC":19,"condition":"Plutôt nuageux et humide ; orages par endroits l’après-midi"},{"date":"2026-08-17","highC":32,"lowC":16,"condition":"Orages par endroits le matin puis éclaircies et chaleur"},{"date":"2026-08-18","highC":33,"lowC":16,"condition":"Ensoleillé et chaud"},{"date":"2026-08-19","highC":31,"lowC":17,"condition":"Plutôt nuageux et très chaud"},{"date":"2026-08-20","highC":31,"lowC":16,"condition":"Soleil puis nuages ; quelques orages l’après-midi"},{"date":"2026-08-21","highC":28,"lowC":15,"condition":"Humide ; orages le matin puis quelques averses"},{"date":"2026-08-22","highC":27,"lowC":15,"condition":"Soleil ; moins humide"}],"alerts":[{"level":"orange","type":"canicule","area":"Dordogne","expires":"2026-08-16T00:00:00+02:00","source":"Météo-France","summary":"Vigilance orange canicule en vigueur jusqu’à dimanche 0 h."},{"level":"jaune","type":"orages","area":"Dordogne","expires":"2026-08-16T00:00:00+02:00","source":"Météo-France","summary":"Vigilance jaune orages en vigueur jusqu’à dimanche 0 h."},{"level":"jaune","type":"orages","area":"Dordogne","starts":"2026-08-16T00:00:00+02:00","expires":"2026-08-17T00:00:00+02:00","source":"Météo-France","summary":"Vigilance jaune orages annoncée pour dimanche."}],"source":"prévisions météo structurées ; vigilances Météo-France"},"google_calendar_dashboard":{"fetchedAt":"2026-08-15T04:49:21Z","nextEvent":{"title":"Maman - Anniversaire","start":"2026-08-15T00:00:00","end":"2026-08-16T00:00:00","allDay":true,"location":"","description":"","url":"https://www.google.com/calendar/event?eid=dnVsOWRtcTdiMmZ1N250NGZpMWI2c2IwNW9fMjAyNjA4MTUgYW5nZWxsZWNsZXJjMjAwNkBt&ctz=Europe/Paris","advice":"Penser à souhaiter l’anniversaire aujourd’hui."},"events":[{"title":"Maman - Anniversaire","start":"2026-08-15T00:00:00","end":"2026-08-16T00:00:00","allDay":true,"location":"","description":"","url":"https://www.google.com/calendar/event?eid=dnVsOWRtcTdiMmZ1N250NGZpMWI2c2IwNW9fMjAyNjA4MTUgYW5nZWxsZWNsZXJjMjAwNkBt&ctz=Europe/Paris","advice":"Penser à souhaiter l’anniversaire aujourd’hui."},{"title":"Rdv cias sur place","start":"2026-08-19T10:00:00+02:00","end":"2026-08-19T11:00:00+02:00","allDay":false,"location":"","description":"","url":"https://www.google.com/calendar/event?eid=NzFoamVwajM2c3NqYWI5bWNjcm1jYjlrY3BpamdiOW82a3NtOGJiMzZncDZjcDMyNjlqNjZvaGo2MCBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":"Prévoir l’enchaînement direct avec le rendez-vous logement à 11 h."},{"title":"Rdv renouvellement contrat logement","start":"2026-08-19T11:00:00+02:00","end":"2026-08-19T12:00:00+02:00","allDay":false,"location":"","description":"","url":"https://www.google.com/calendar/event?eid=Y2dvamNkOXA3MWlqY2JiNDcwcDY4YjlrNzBvM2NiYjE2MHEzZ2I5aTZkajNnZGI0NmNxamVkMzI2MCBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":""},{"title":"Ouverture de l'actualisation pour le mois d'août 2026","start":"2026-08-27T00:00:00","end":"2026-08-28T00:00:00","allDay":true,"location":"","description":"France Travail","url":"https://www.google.com/calendar/event?eid=Y2RpMzBjOWk2b282NGI5bDY4cW04YjlrNnRqMzJiYjI2MHAzZ2I5a2M4cm02YzloNjBvNjJjMzI2byBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":"L’actualisation France Travail ouvre ce jour-là."},{"title":"Tirage de la tombola Tombola Patrimoine","start":"2026-08-28T18:00:00+02:00","end":"2026-08-28T19:00:00+02:00","allDay":false,"location":"","description":"","url":"https://www.google.com/calendar/event?eid=X2N0bm44b2hkZWhrbTZxcjVlZ21tOHBia2M1a21vYjloNnNzM2VlOWo2OHMzMGMxZzYwbzQwcHJmZWhubXFvamZkaGdnIGFuZ2VsbGVjbGVyYzIwMDZAbQ&ctz=Europe/Paris","advice":""},{"title":"Rendre portable à Orange 📲🟧","start":"2026-09-04T08:30:00+02:00","end":"2026-09-04T09:30:00+02:00","allDay":false,"location":"Orange, 41 Av. Gambetta, 24200 Sarlat-la-Canéda, France","description":"Rendre téléphone à Orange et prendre rdv pour nouveau téléphone voir papier","url":"https://www.google.com/calendar/event?eid=YzloMzJkMzNjZGhqMmI5ZzY0c21hYjlrYzloNjZiYjI2a3FtNmI5cGNsaTMyZHBvNnBpMzhwMXA2cyBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":"Prévoir le téléphone et le papier mentionné dans l’événement."},{"title":"Fermeture de l'actualisation pour le mois d'août 2026","start":"2026-09-14T00:00:00","end":"2026-09-15T00:00:00","allDay":true,"location":"","description":"France Travail","url":"https://www.google.com/calendar/event?eid=YzhyamlkYjU2OHJqNGJiMjY1aDY0YjlrNnNxbThiYjI3MHEzNmJiMzZjb2owcDFvNnNxajBjMW02NCBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":"Dernier jour de la période d’actualisation du mois d’août."}]},"gmail_dashboard":{"fetchedAt":"2026-08-15T04:49:21Z","important":[{"subject":"Votre essai gratuit Trading Pro se termine bientôt ⏳","from":"Revolut <no-reply@revolut.com>","date":"2026-08-15T00:00:13Z","summary":"L’essai gratuit Trading Pro se termine le 18 août 2026. Après cette date, Revolut annonce un tarif de 4,99 € par mois.","reason":"Échéance proche susceptible d’entraîner un abonnement payant si l’option n’est pas désactivée.","suggestedReply":""}],"otherSummary":"Aucun nouvel email n’est arrivé depuis le précédent passage. Parmi les non-lus récents pertinents restent un message de bienvenue Scaleway et plusieurs anciennes notifications GitHub d’échecs CI/publication ; elles sont historiques, car le dernier main vérifié a désormais un CI et une publication GitHub réussis. Aucun nouveau refus, entretien, demande de CV, redirection professionnelle ou réponse de candidature n’a été détecté. Gmail n’a subi aucune modification.","counts":{"new_since_last_run":0,"important":1,"employment_or_application":0}},"admin_cockpit_summary":{"fetchedAt":"2026-08-15T04:49:21Z","generalText":"Voici le bilan du moment. Aucun nouveau mail n’est arrivé depuis le dernier passage ; le point concret à surveiller reste l’essai Revolut Trading Pro qui se termine le 18 août. Aujourd’hui, l’agenda commence par l’anniversaire de ta mère, puis les prochains rendez-vous importants sont ceux du CIAS et du renouvellement du logement mercredi 19 août. La météo a bien été rafraîchie : 21 °C et nuageux ce matin à Sarlat, avec une vigilance orange canicule et une vigilance jaune orages en Dordogne. Côté actualité, je n’ai pas trouvé de grosse information fiable publiée dans les six dernières heures, donc la veille reste volontairement courte plutôt que de recycler de vieux contenus. Le dernier main corrige le blocage possible du chat IA de la page Contact et les derniers contrôles CI/publication GitHub sont réussis. Priorité concrète : décider avant le 18 août si Trading Pro doit être conservé.","site_status":{"main_sha":"03b6222d6a789a277bb21ca25dd9779a8e5ff598","main_message":"fix(contact): prevent AI chat from hanging","ci":"success","publication":"success","public_site":"reachable","verified_at":"2026-08-15T04:49:21Z"},"next_event":{"title":"Maman - Anniversaire","start":"2026-08-15T00:00:00","allDay":true},"mail":{"new_since_last_run":0,"important":1,"employment_or_application":0},"weather":{"temperatureC":21,"condition":"Nuageux","orange_heat_alert":true,"yellow_storm_alert":true},"news":{"verified_less_6h":0,"top_stories":2}}},"hourly_mail_report":{"period_start":"2026-08-15T03:50:08Z","period_end":"2026-08-15T04:49:21Z","summary":"Aucun nouvel email reçu pendant la période. Le rappel Revolut Trading Pro reste non lu et pertinent en raison de son échéance au 18 août. Aucun nouveau message lié à une candidature ou à un emploi.","counts":{"new":0,"important":1,"employment_or_application":0},"items":[{"subject":"Votre essai gratuit Trading Pro se termine bientôt ⏳","from":"Revolut <no-reply@revolut.com>","date":"2026-08-15T00:00:13Z","summary":"Essai Trading Pro se terminant le 18 août ; 4,99 € par mois annoncé ensuite.","reason":"Échéance financière proche."}],"recommendations":["Vérifier avant le 18 août si Trading Pro doit être conservé ou désactivé."],"source":"gmail_connector_readonly"}}
+{
+  "fetchedAt": "2026-08-15T06:47:22Z",
+  "caches": {
+    "news_dashboard": {
+      "fetchedAt": "2026-08-15T06:47:22Z",
+      "changed_since_previous": "Aucune nouvelle actualité nationale fiable et suffisamment importante publiée dans les six dernières heures n’a été vérifiée pendant ce passage. Le fil reste volontairement très court plutôt que de recycler des contenus. Les éléments conservés sont soit encore importants et âgés de moins de 24 heures, soit directement utiles aujourd’hui.",
+      "top_stories": [
+        {
+          "title": "Le Conseil constitutionnel bloque l’interdiction des réseaux sociaux aux moins de 15 ans",
+          "source": "Associated Press",
+          "date": "2026-08-14T17:31:42+02:00",
+          "category": "politique_société",
+          "summary": "Le Conseil constitutionnel a censuré l’interdiction générale visant les moins de 15 ans, jugeant le dispositif disproportionné au regard des libertés et insuffisamment protecteur de la vie privée. L’exécutif a annoncé vouloir retravailler le texte.",
+          "link": "https://apnews.com/article/a4e96488d1eb913c7a039eb5e4fc1e18",
+          "importance": "haute",
+          "why_relevant": "Décision institutionnelle importante sur les libertés publiques, la protection des mineurs et la régulation des grandes plateformes.",
+          "age_minutes": 916,
+          "freshness": "moins_24h",
+          "status": "fait établi"
+        }
+      ],
+      "politics_society": [
+        {
+          "title": "Dette française : les coûts d’intérêts pèsent davantage à l’approche de 2027",
+          "source": "Reuters Breakingviews",
+          "date": "2026-08-14T10:17:37+02:00",
+          "category": "politique_société",
+          "summary": "Reuters Breakingviews analyse la hausse du coût de la dette française et les marges budgétaires plus contraintes à l’approche de 2027.",
+          "link": "https://www.reuters.com/commentary/breakingviews/france-is-headed-election-year-debt-reckoning-2026-08-14/",
+          "importance": "haute",
+          "why_relevant": "Le sujet touche directement la souveraineté budgétaire, le financement des services publics et les arbitrages sociaux à venir.",
+          "age_minutes": 1350,
+          "freshness": "moins_24h",
+          "status": "analyse-opinion"
+        }
+      ],
+      "investigations": [],
+      "local_news": [],
+      "tech_android_ai": [],
+      "cinema_series": [],
+      "orientation_learning": [],
+      "youtube_to_watch": [],
+      "general_news": [
+        {
+          "title": "Grève des personnels navigants easyJet en France les 15 et 16 août",
+          "source": "Reuters",
+          "date": "2026-08-12T13:41:54+02:00",
+          "category": "transport_travail",
+          "summary": "Le syndicat SNPC-FO a appelé les personnels navigants easyJet en France à la grève les 15 et 16 août pour protester contre les conditions de travail. La compagnie a annoncé vouloir limiter les perturbations et proposer transferts ou remboursements en cas d’annulation.",
+          "link": "https://www.reuters.com/business/world-at-work/easyjet-flight-attendants-france-go-strike-august-15-16-unions-say-2026-08-12/",
+          "importance": "moyenne",
+          "why_relevant": "Information pratique nationale du jour sur les transports, avec un enjeu social lié aux conditions de travail.",
+          "freshness": "suivi",
+          "status": "fait établi"
+        }
+      ],
+      "practical_local": [
+        {
+          "title": "Festi’Sarlat ce soir au stade Christian-Goumondie",
+          "source": "Office de Tourisme Sarlat Périgord Noir / DATAtourisme",
+          "date": "2026-08-15T19:00:00+02:00",
+          "category": "pratique_local",
+          "summary": "Festi’Sarlat est programmé ce samedi 15 août à partir de 19 h au stade Christian-Goumondie, avec plusieurs DJ/artistes et des food trucks.",
+          "link": "https://unidivers.fr/event/festisarlat-sarlat-la-caneda-dordogne-2026-08-15/",
+          "zone": "Sarlat-la-Canéda",
+          "importance": "moyenne",
+          "why_relevant": "Événement local du jour à Sarlat, directement utile pour les sorties et l’animation de la ville.",
+          "freshness": "suivi"
+        },
+        {
+          "title": "La navette estivale de Sarlat circule aujourd’hui",
+          "source": "Mairie de Sarlat",
+          "date": "2026-08-15T09:30:00+02:00",
+          "category": "transport_local",
+          "summary": "La navette estivale de Sarlat est annoncée de 9 h 30 à 18 h 45 et reste en service jusqu’au 22 août.",
+          "link": "https://sarlat.fr/sortir-et-bouger/agenda/",
+          "zone": "Sarlat-la-Canéda",
+          "importance": "moyenne",
+          "why_relevant": "Information de mobilité directement utile aujourd’hui à Sarlat.",
+          "freshness": "suivi"
+        }
+      ]
+    },
+    "weather_sarlat": {
+      "fetchedAt": "2026-08-15T06:47:22Z",
+      "location": "Sarlat-la-Canéda",
+      "current": {
+        "temperatureC": 23,
+        "condition": "Ensoleillé"
+      },
+      "today": {
+        "date": "2026-08-15",
+        "highC": 30,
+        "lowC": 20,
+        "condition": "Plutôt nuageux, humide et devenant plus frais"
+      },
+      "forecast": [
+        {"date": "2026-08-16", "highC": 29, "lowC": 19, "condition": "Plutôt nuageux et humide ; orages par endroits l’après-midi"},
+        {"date": "2026-08-17", "highC": 32, "lowC": 16, "condition": "Orages par endroits le matin puis éclaircies et chaleur"},
+        {"date": "2026-08-18", "highC": 33, "lowC": 16, "condition": "Ensoleillé et chaud"},
+        {"date": "2026-08-19", "highC": 31, "lowC": 17, "condition": "Plutôt nuageux et très chaud"},
+        {"date": "2026-08-20", "highC": 31, "lowC": 16, "condition": "Soleil puis nuages ; quelques orages l’après-midi"},
+        {"date": "2026-08-21", "highC": 28, "lowC": 15, "condition": "Humide ; orages le matin puis quelques averses"},
+        {"date": "2026-08-22", "highC": 27, "lowC": 15, "condition": "Ensoleillé et moins humide"}
+      ],
+      "alerts": [
+        {"level": "orange", "type": "canicule", "area": "Dordogne", "expires": "2026-08-16T00:00:00+02:00", "source": "Météo-France", "summary": "Vigilance orange canicule en vigueur jusqu’à dimanche 0 h."},
+        {"level": "jaune", "type": "orages", "area": "Dordogne", "expires": "2026-08-16T00:00:00+02:00", "source": "Météo-France", "summary": "Vigilance jaune orages en vigueur jusqu’à dimanche 0 h."},
+        {"level": "jaune", "type": "orages", "area": "Dordogne", "starts": "2026-08-16T00:00:00+02:00", "expires": "2026-08-17T00:00:00+02:00", "source": "Météo-France", "summary": "Vigilance jaune orages annoncée pour dimanche."}
+      ],
+      "source": "prévisions météo structurées et vigilances Météo-France"
+    },
+    "google_calendar_dashboard": {
+      "fetchedAt": "2026-08-15T06:47:22Z",
+      "nextEvent": {
+        "title": "Maman - Anniversaire",
+        "start": "2026-08-15T00:00:00",
+        "end": "2026-08-16T00:00:00",
+        "allDay": true,
+        "location": "",
+        "description": "",
+        "url": "https://www.google.com/calendar/event?eid=dnVsOWRtcTdiMmZ1N250NGZpMWI2c2IwNW9fMjAyNjA4MTUgYW5nZWxsZWNsZXJjMjAwNkBt&ctz=Europe/Paris",
+        "advice": "Penser à souhaiter l’anniversaire aujourd’hui."
+      },
+      "events": [
+        {"title":"Maman - Anniversaire","start":"2026-08-15T00:00:00","end":"2026-08-16T00:00:00","allDay":true,"location":"","description":"","url":"https://www.google.com/calendar/event?eid=dnVsOWRtcTdiMmZ1N250NGZpMWI2c2IwNW9fMjAyNjA4MTUgYW5nZWxsZWNsZXJjMjAwNkBt&ctz=Europe/Paris","advice":"Penser à souhaiter l’anniversaire aujourd’hui."},
+        {"title":"Les Wonda Mamas en concert","start":"2026-08-15T21:00:00+02:00","end":"2026-08-15T21:00:00+02:00","allDay":false,"location":"Place de la Liberté, 24200 Sarlat-la-Canéda","description":"Concert gratuit pop, soul et funk annoncé de 21 h à minuit.","url":"","advice":""},
+        {"title":"Rdv cias sur place","start":"2026-08-19T10:00:00+02:00","end":"2026-08-19T11:00:00+02:00","allDay":false,"location":"","description":"","url":"https://www.google.com/calendar/event?eid=NzFoamVwajM2c3NqYWI5bWNjcm1jYjlrY3BpamdiOW82a3NtOGJiMzZncDZjcDMyNjlqNjZvaGo2MCBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":"Prévoir l’enchaînement direct avec le rendez-vous logement à 11 h."},
+        {"title":"Rdv renouvellement contrat logement","start":"2026-08-19T11:00:00+02:00","end":"2026-08-19T12:00:00+02:00","allDay":false,"location":"","description":"","url":"https://www.google.com/calendar/event?eid=Y2dvamNkOXA3MWlqY2JiNDcwcDY4YjlrNzBvM2NiYjE2MHEzZ2I5aTZkajNnZGI0NmNxamVkMzI2MCBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":""},
+        {"title":"Ouverture de l'actualisation pour le mois d'août 2026","start":"2026-08-27T00:00:00","end":"2026-08-28T00:00:00","allDay":true,"location":"","description":"France Travail","url":"https://www.google.com/calendar/event?eid=Y2RpMzBjOWk2b282NGI5bDY4cW04YjlrNnRqMzJiYjI2MHAzZ2I5a2M4cm02YzloNjBvNjJjMzI2byBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":"L’actualisation France Travail ouvre ce jour-là."},
+        {"title":"Tirage de la tombola Tombola Patrimoine","start":"2026-08-28T18:00:00+02:00","end":"2026-08-28T19:00:00+02:00","allDay":false,"location":"","description":"","url":"https://www.google.com/calendar/event?eid=X2N0bm44b2hkZWhrbTZxcjVlZ21tOHBia2M1a21vYjloNnNzM2VlOWo2OHMzMGMxZzYwbzQwcHJmZWhubXFvamZkaGdnIGFuZ2VsbGVjbGVyYzIwMDZAbQ&ctz=Europe/Paris","advice":""},
+        {"title":"Rendre portable à Orange 📲🟧","start":"2026-09-04T08:30:00+02:00","end":"2026-09-04T09:30:00+02:00","allDay":false,"location":"Orange, 41 Av. Gambetta, 24200 Sarlat-la-Canéda, France","description":"Rendre téléphone à Orange et prendre rdv pour nouveau téléphone voir papier","url":"https://www.google.com/calendar/event?eid=YzloMzJkMzNjZGhqMmI5ZzY0c21hYjlrYzloNjZiYjI2a3FtNmI5cGNsaTMyZHBvNnBpMzhwMXA2cyBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":"Prévoir le téléphone et le papier mentionné dans l’événement."},
+        {"title":"Fermeture de l'actualisation pour le mois d'août 2026","start":"2026-09-14T00:00:00","end":"2026-09-15T00:00:00","allDay":true,"location":"","description":"France Travail","url":"https://www.google.com/calendar/event?eid=YzhyamlkYjU2OHJqNGJiMjY1aDY0YjlrNnNxbThiYjI3MHEzNmJiMzZjb2owcDFvNnNxajBjMW02NCBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":"Dernier jour de la période d’actualisation du mois d’août."}
+      ]
+    },
+    "gmail_dashboard": {
+      "fetchedAt": "2026-08-15T06:47:22Z",
+      "important": [
+        {
+          "subject": "Votre essai gratuit Trading Pro se termine bientôt ⏳",
+          "from": "Revolut <no-reply@revolut.com>",
+          "date": "2026-08-15T00:00:13Z",
+          "summary": "L’essai gratuit Trading Pro se termine le 18 août 2026. Après cette date, Revolut annonce un tarif de 4,99 € par mois.",
+          "reason": "Échéance proche susceptible d’entraîner un abonnement payant si l’option n’est pas désactivée.",
+          "suggestedReply": ""
+        }
+      ],
+      "otherSummary": "Depuis le précédent passage, un seul nouveau message entrant non critique a été détecté : un rappel Samsung pour configurer les préférences du compte/appareil. Aucun nouvel entretien, demande de CV, redirection professionnelle ou autre réponse de candidature entrante n’a été détecté. Gmail montre en revanche deux activités sortantes pertinentes vers 8 h 32–8 h 34 : une réponse de courtoisie déjà envoyée dans le fil Radio France et une nouvelle candidature à Bulle Architectes avec CV. Les anciennes alertes GitHub non lues sont dépassées par les derniers workflows main, actuellement réussis. Gmail n’a subi aucune modification pendant cette veille.",
+      "counts": {
+        "new_since_last_run": 1,
+        "important": 1,
+        "employment_or_application_incoming": 0,
+        "relevant_sent_activity": 2
+      }
+    },
+    "admin_cockpit_summary": {
+      "fetchedAt": "2026-08-15T06:47:22Z",
+      "generalText": "Voici le bilan du moment. Côté candidatures, Gmail montre qu’une nouvelle candidature avec CV a été envoyée ce matin à Bulle Architectes, et une réponse de courtoisie est déjà partie dans le fil Radio France ; aucune nouvelle demande d’entretien ou de CV n’a été reçue depuis le dernier passage. Aujourd’hui, l’agenda comprend l’anniversaire de ta mère et un concert des Wonda Mamas à 21 h place de la Liberté ; les prochains rendez-vous importants restent ceux du CIAS et du renouvellement du logement mercredi 19 août. Côté météo, il fait 23 °C et soleil à Sarlat, avec 30 °C attendus au plus chaud et des vigilances canicule/orages en Dordogne. La veille actualité reste volontairement courte faute de nouveauté majeure fiable dans les dernières heures ; côté pratique, la grève easyJet commence aujourd’hui et Festi’Sarlat est annoncé ce soir. Le dernier main vérifié a un CI et une publication GitHub réussis. Priorité utile : surveiller l’échéance Revolut Trading Pro du 18 août et préparer les deux rendez-vous de mercredi.",
+      "siteStatus": {
+        "repository": "angelosmegaplus/angel-leclerc",
+        "mainSha": "3c7fb5cd37c34d073f2d5227b930e8793c098070",
+        "ci": "success",
+        "publication": "success",
+        "dataSync": "success",
+        "checkedAt": "2026-08-15T06:47:22Z"
+      }
+    }
+  },
+  "hourly_mail_report": {
+    "period_start": "2026-08-15T05:48:57Z",
+    "period_end": "2026-08-15T06:47:22Z",
+    "summary": "Un nouveau mail entrant non critique Samsung a été détecté depuis le précédent passage. Aucun nouveau message entrant de candidature, entretien, demande de CV ou redirection n’a été trouvé. Deux activités sortantes pertinentes sont visibles dans Gmail : une réponse de courtoisie dans le fil Radio France et une nouvelle candidature à Bulle Architectes avec CV. Aucune action Gmail n’a été effectuée par cette veille.",
+    "counts": {
+      "new_incoming": 1,
+      "important": 1,
+      "employment_or_application_incoming": 0,
+      "relevant_sent_activity": 2
+    },
+    "items": [
+      {
+        "type": "important_existing",
+        "subject": "Votre essai gratuit Trading Pro se termine bientôt ⏳",
+        "from": "Revolut <no-reply@revolut.com>",
+        "date": "2026-08-15T00:00:13Z",
+        "summary": "Fin de l’essai gratuit le 18 août, puis 4,99 € par mois annoncé.",
+        "action": "Vérifier avant le 18 août si Trading Pro doit être conservé ou désactivé."
+      }
+    ],
+    "recommendations": [
+      "Vérifier l’option Trading Pro avant le 18 août si l’abonnement payant n’est pas souhaité.",
+      "Aucune action nécessaire sur le rappel Samsung.",
+      "Ne pas répondre de nouveau au fil Radio France tant qu’aucun nouveau message entrant n’est reçu."
+    ],
+    "source": "gmail_connector_readonly"
+  }
+}
