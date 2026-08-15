@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import {
   CalendarDays,
+  Clapperboard,
   Cloud,
   CloudDrizzle,
   CloudFog,
@@ -158,6 +160,21 @@ export function PixelWidgets() {
         </section>
       </div>
       <AIMemoryPanel />
+      <Link
+        to="/admin-movix"
+        className="mt-5 flex min-h-24 items-center justify-between gap-4 rounded-[2rem] border border-white/10 bg-[#0b0d10] p-5 text-white shadow-[0_18px_60px_rgba(0,0,0,.22)] transition-transform active:scale-[0.99]"
+      >
+        <span className="flex items-center gap-4">
+          <span className="grid h-12 w-12 place-items-center rounded-2xl border border-red-500/20 bg-red-500/10 text-red-300">
+            <Clapperboard className="h-6 w-6" />
+          </span>
+          <span>
+            <span className="block text-lg font-semibold">Movix</span>
+            <span className="mt-1 block text-sm text-white/45">3 films pour ce soir · lanceur personnel</span>
+          </span>
+        </span>
+        <span className="rounded-full border border-white/10 bg-white/[.04] px-3 py-1.5 text-xs font-semibold text-white/55">Ouvrir</span>
+      </Link>
     </>
   );
 }
