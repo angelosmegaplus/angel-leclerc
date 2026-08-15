@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getAdminAiSummary } from "@/lib/admin-ai-summary.functions";
+import { AdminStatus } from "./AdminStatus";
 
 type CacheRow = { key: string; payload: Record<string, any>; updated_at: string };
 type ApplicationRow = {
@@ -54,6 +55,7 @@ type SummaryMode =
   | "ai";
 
 const anyDb = supabase as unknown as { from: (table: string) => any };
+const summaryCard = "mb-4 rounded-[1.5rem] border border-white/10 bg-[#090b0d]/95 p-4 shadow-[0_18px_60px_rgba(0,0,0,.24)] sm:rounded-[1.75rem] sm:p-5";
 
 async function loadSummaries(): Promise<Record<string, CacheRow>> {
   const { data, error } = await anyDb
@@ -73,6 +75,13 @@ async function loadApplications(): Promise<ApplicationRow[]> {
   return (data ?? []) as ApplicationRow[];
 }
 
+function localDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function formatShortDate(value?: string | null) {
   if (!value) return "date inconnue";
   const date = new Date(`${value}T12:00:00`);
@@ -84,19 +93,14 @@ function readable(value: any, fallback = "Rien de nouveau pour le moment.") {
   if (!value) return fallback;
   if (typeof value === "string") return value;
   if (typeof value.summary === "string") return value.summary;
-  return (
-    Object.entries(value)
-      .filter(([, item]) => ["string", "number", "boolean"].includes(typeof item))
-      .map(([key, item]) => `${key.replace(/_/g, " ")} : ${String(item)}`)
-      .join(" · ") || fallback
-  );
+  return Object.entries(value)
+    .filter(([, item]) => ["string", "number", "boolean"].includes(typeof item))
+    .map(([key, item]) => `${key.replace(/_/g, " ")} : ${String(item)}`)
+    .join(" · ") || fallback;
 }
 
 function simpleShortSummary(value: any, fallback: string) {
-  const raw = readable(value, fallback)
-    .replace(/\s+/g, " ")
-    .replace(/\s+([,.;:!?])/g, "$1")
-    .trim();
+  const raw = readable(value, fallback).replace(/\s+/g, " ").replace(/\s+([,.;:!?])/g, "$1").trim();
   if (!raw) return fallback;
   const sentences = raw.match(/[^.!?]+[.!?]?/g)?.map((part: string) => part.trim()).filter(Boolean) ?? [raw];
   const firstTwo = sentences.slice(0, 2).join(" ");
@@ -135,30 +139,17 @@ function detectMode(title: string): SummaryMode {
 }
 
 function ApplicationsSummary({ applications }: { applications: ApplicationRow[] }) {
-  if (applications.length === 0) {
-    return <p className="mt-2 text-sm text-muted-foreground">Aucune candidature pour le moment.</p>;
-  }
-  const today = new Date().toISOString().slice(0, 10);
+  if (applications.length === 0) return <p className="mt-2 text-sm text-white/45">Aucune candidature pour le moment.</p>;
+  const today = localDateKey();
   const rejected = applications.filter((app) => app.status === "refusee");
   const active = applications.filter((app) => !["refusee", "acceptee", "acceptée"].includes(app.status ?? ""));
   const due = active.filter((app) => app.follow_up_at && app.follow_up_at <= today);
-  const future = active
-    .filter((app) => app.follow_up_at && app.follow_up_at > today)
-    .sort((a, b) => (a.follow_up_at ?? "").localeCompare(b.follow_up_at ?? ""));
+  const future = active.filter((app) => app.follow_up_at && app.follow_up_at > today).sort((a, b) => (a.follow_up_at ?? "").localeCompare(b.follow_up_at ?? ""));
   return (
-    <div className="mt-3 grid gap-3 md:grid-cols-3">
-      <div className="rounded-lg border border-border bg-card p-3">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Passé</p>
-        <p className="mt-2 text-sm"><strong>{applications.length}</strong> candidature(s), dont <strong>{rejected.length}</strong> refus.</p>
-      </div>
-      <div className="rounded-lg border border-border bg-card p-3">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Maintenant</p>
-        <p className="mt-2 text-sm"><strong>{active.length}</strong> dossier(s) actif(s). {due.length > 0 ? `${due.length} relance(s) à faire.` : "Pas de relance urgente."}</p>
-      </div>
-      <div className="rounded-lg border border-border bg-card p-3">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Après</p>
-        <p className="mt-2 text-sm">{future.length > 0 ? `Prochaine relance : ${applicationLabel(future[0])}, le ${formatShortDate(future[0].follow_up_at)}.` : "Continuer les candidatures et les relances utiles."}</p>
-      </div>
+    <div className="mt-3 grid gap-2 md:grid-cols-3">
+      <div className="rounded-xl border border-white/10 bg-white/[.025] p-3"><p className="font-mono text-[10px] font-semibold uppercase tracking-[.12em] text-white/35">Passé</p><p className="mt-2 text-sm text-white/70"><strong className="text-white">{applications.length}</strong> candidature(s), dont <strong className="text-white">{rejected.length}</strong> refus.</p></div>
+      <div className="rounded-xl border border-white/10 bg-white/[.025] p-3"><p className="font-mono text-[10px] font-semibold uppercase tracking-[.12em] text-white/35">Maintenant</p><p className="mt-2 text-sm text-white/70"><strong className="text-white">{active.length}</strong> dossier(s) actif(s). {due.length > 0 ? `${due.length} relance(s) à faire.` : "Pas de relance urgente."}</p></div>
+      <div className="rounded-xl border border-white/10 bg-white/[.025] p-3"><p className="font-mono text-[10px] font-semibold uppercase tracking-[.12em] text-white/35">Après</p><p className="mt-2 text-sm text-white/70">{future.length > 0 ? `Prochaine relance : ${applicationLabel(future[0])}, le ${formatShortDate(future[0].follow_up_at)}.` : "Continuer les candidatures et les relances utiles."}</p></div>
     </div>
   );
 }
@@ -179,7 +170,7 @@ const pageConfig: Record<Exclude<SummaryMode, "dashboard" | "applications">, { t
   subscribers: { title: "Bilan communauté", icon: Users, key: "subscribers", fallback: "Regarde les nouveaux abonnés et les changements utiles." },
   shop: { title: "Bilan boutique", icon: ShoppingBag, key: "shop", fallback: "Regarde les commandes et les actions à faire." },
   feedback: { title: "Bilan avis", icon: MessageSquare, key: "feedback", fallback: "Regarde les derniers avis et ce qu’il faut corriger." },
-  ai: { title: "Bilan Angel IA", icon: Sparkles, key: "ai", fallback: "Voici l’action IA la plus utile maintenant." },
+  ai: { title: "Bilan Angel OS IA", icon: Sparkles, key: "ai", fallback: "Voici l’action IA la plus utile maintenant." },
 };
 
 export function AdminAutomationSummary({ mode = "dashboard" }: { mode?: SummaryMode }) {
@@ -193,7 +184,7 @@ export function AdminAutomationSummary({ mode = "dashboard" }: { mode?: SummaryM
     }
     const title = document.querySelector("h1")?.textContent ?? "";
     setDetectedMode(detectMode(title));
-  });
+  }, [mode]);
 
   const effectiveMode = mode === "dashboard" ? detectedMode : mode;
   const { data = {}, isLoading } = useQuery({
@@ -221,7 +212,7 @@ export function AdminAutomationSummary({ mode = "dashboard" }: { mode?: SummaryM
   });
 
   if (isLoading || ((effectiveMode === "applications" || effectiveMode === "dashboard") && applicationsLoading)) {
-    return <p className="text-sm text-muted-foreground">Chargement du bilan…</p>;
+    return <p className="text-sm text-white/45">Chargement du bilan…</p>;
   }
 
   const gmail = data.gmail_dashboard?.payload;
@@ -231,9 +222,9 @@ export function AdminAutomationSummary({ mode = "dashboard" }: { mode?: SummaryM
 
   if (effectiveMode === "applications") {
     return (
-      <section className="mb-5 rounded-[2rem] border border-border bg-card p-4 shadow-sm sm:p-6">
-        <p className="flex items-center gap-2 font-semibold text-foreground"><Inbox className="h-5 w-5 text-primary" />Bilan candidatures</p>
-        <p className="mt-2 text-sm text-muted-foreground">Le point rapide sur les candidatures.</p>
+      <section className={summaryCard}>
+        <p className="flex items-center gap-2 font-semibold text-white"><Inbox className="h-5 w-5 text-red-300" />Bilan candidatures</p>
+        <p className="mt-1 text-sm text-white/45">Le point utile, sans tableau inutile.</p>
         <ApplicationsSummary applications={applications} />
       </section>
     );
@@ -249,13 +240,10 @@ export function AdminAutomationSummary({ mode = "dashboard" }: { mode?: SummaryM
     const Icon = config.icon;
     const summary = simpleShortSummary(value, config.fallback);
     return (
-      <section className="mb-5 rounded-[2rem] border border-border bg-card p-4 shadow-sm sm:p-6">
+      <section className={summaryCard}>
         <div className="flex items-start gap-3">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#e8def8] text-[#594b66]"><Icon className="h-5 w-5" /></span>
-          <div className="min-w-0 flex-1">
-            <p className="font-semibold text-foreground">{config.title}</p>
-            <p className="mt-2 text-[15px] leading-6 text-foreground/90 sm:text-base">{summary}</p>
-          </div>
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-300"><Icon className="h-5 w-5" /></span>
+          <div className="min-w-0 flex-1"><p className="font-semibold text-white">{config.title}</p><p className="mt-1.5 text-sm leading-6 text-white/65 sm:text-[15px]">{summary}</p></div>
         </div>
       </section>
     );
@@ -270,17 +258,17 @@ export function AdminAutomationSummary({ mode = "dashboard" }: { mode?: SummaryM
   const updatedAt = aiSummary?.generatedAt || data.admin_cockpit_summary?.updated_at;
 
   return (
-    <section className="mb-5 rounded-[2rem] border border-border bg-card p-4 shadow-sm sm:p-6">
+    <section className={summaryCard}>
       <div className="flex items-start gap-3">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#e8def8] text-[#594b66]"><Sparkles className="h-5 w-5" /></span>
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-300"><Sparkles className="h-5 w-5" /></span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="font-semibold text-foreground">Bilan général</p>
-            {aiSummary && <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">{aiSummary.source === "openai" ? "OpenAI" : "secours local"}</span>}
-            {aiRefreshing && <span className="text-[10px] text-muted-foreground">actualisation…</span>}
+            <p className="font-semibold text-white">Bilan général</p>
+            {aiSummary ? <AdminStatus tone={aiSummary.source === "openai" ? "success" : "error"} compact>{aiSummary.source === "openai" ? "OpenAI" : "IA indisponible"}</AdminStatus> : null}
+            {aiRefreshing ? <span className="text-[10px] text-white/35">actualisation…</span> : null}
           </div>
-          <p className="mt-2 text-[15px] leading-6 text-foreground/90 sm:text-base">{generalText}</p>
-          {updatedAt && <p className="mt-3 text-xs text-muted-foreground">Mis à jour {new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short" }).format(new Date(updatedAt))} · rafraîchissement automatique toutes les 5 min</p>}
+          <p className="mt-1.5 text-sm leading-6 text-white/65 sm:text-[15px]">{generalText}</p>
+          {updatedAt ? <p className="mt-2 text-[10px] text-white/30">Mis à jour {new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short" }).format(new Date(updatedAt))} · toutes les 5 min</p> : null}
         </div>
       </div>
     </section>
