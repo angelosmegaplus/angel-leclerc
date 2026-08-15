@@ -3,6 +3,7 @@ import type { AiMessage } from "@/lib/ai-gateway.server";
 import { resilientAngelAi } from "@/lib/ai-resilient.server";
 import { ASSISTANT_SYSTEM_PROMPT, CONTACT_ASSISTANT_ADDENDUM } from "@/lib/assistant-context";
 import { checkAssistantRate } from "@/lib/assistant-rate.server";
+import { aiMemoryPrompt } from "@/lib/ai-memory.server";
 
 const jsonHeaders = {
   "Cache-Control": "no-store",
@@ -44,14 +45,16 @@ export const Route = createFileRoute("/api/assistant")({
             return role && content ? [{ role, content } as AiMessage] : [];
           });
 
-          const systemPrompt = mode === "contact" ? `${ASSISTANT_SYSTEM_PROMPT}\n\n${CONTACT_ASSISTANT_ADDENDUM}` : ASSISTANT_SYSTEM_PROMPT;
+          const liveMemory = await aiMemoryPrompt("public");
+          const basePrompt = mode === "contact" ? `${ASSISTANT_SYSTEM_PROMPT}\n\n${CONTACT_ASSISTANT_ADDENDUM}` : ASSISTANT_SYSTEM_PROMPT;
+          const systemPrompt = `${basePrompt}${liveMemory}`;
           const messages: AiMessage[] = [
             { role: "system", content: systemPrompt },
             ...history,
             { role: "user", content: question },
           ];
 
-          console.info("[assistant-api] request", { requestId, mode, history: history.length });
+          console.info("[assistant-api] request", { requestId, mode, history: history.length, liveMemory: Boolean(liveMemory) });
           const result = await resilientAngelAi({
             messages,
             priority: "interactive",
