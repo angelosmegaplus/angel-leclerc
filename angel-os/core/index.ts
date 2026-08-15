@@ -21,3 +21,4 @@ export * from './deploy-engine';
 export * from './node-gateway';
 export * from './guardian-recovery';
 export * from './sync-engine';
+export * from './application-runtime';
