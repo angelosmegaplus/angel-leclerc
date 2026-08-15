@@ -16,8 +16,13 @@ async function connectToken(connector: string) {
 }
 
 export async function getTmdbCredential() {
-  const legacy = process.env["TMDB_API_KEY"] || process.env["VITE_TMDB_API_KEY"];
-  if (legacy?.trim()) return { value: legacy.trim(), source: "env" as const };
+  // Secrets TMDB must remain server-side. Prefer the API Read Access Token,
+  // while retaining TMDB_API_KEY for an older v3 key if one is already configured.
+  const readToken = process.env["TMDB_READ_ACCESS_TOKEN"];
+  if (readToken?.trim()) return { value: readToken.trim(), source: "env-read-token" as const };
+
+  const apiKey = process.env["TMDB_API_KEY"];
+  if (apiKey?.trim()) return { value: apiKey.trim(), source: "env-api-key" as const };
 
   const connected = await connectToken(CONNECTORS.tmdb);
   return connected ? { value: connected, source: "vercel-connect" as const } : null;
