@@ -23,6 +23,7 @@ const COMMITS_API = "https://api.github.com/repos/angelosmegaplus/angel-leclerc/
 const LIVE_REFRESH_MS = 5_000;
 const COMMITS_REFRESH_MS = 90_000;
 const MAX_VISIBLE_ITEMS = 5;
+const MAX_ACTIVE_ITEMS = 4;
 
 function bust(url: string) { return `${url}${url.includes("?") ? "&" : "?"}t=${Date.now()}`; }
 function shortSha(value?: string) { return value ? value.slice(0, 7) : ""; }
@@ -99,44 +100,52 @@ export function GitHubChatGPTQueue() {
   }, []);
 
   const feed = useMemo(() => {
-    const items: FeedItem[] = [];
+    const activeItems: FeedItem[] = [];
+    const completedItems: FeedItem[] = [];
     const queueTime = queue?.updatedAt ? new Date(queue.updatedAt).getTime() : Date.now();
 
     for (const item of queue?.current ?? []) {
-      items.push({ key: `q-current-${item.id}`, title: item.title, detail: item.detail, status: item.status, kind: "queue", timestamp: queueTime + 3, label: "En cours", commit: item.commit });
+      activeItems.push({ key: `q-current-${item.id}`, title: item.title, detail: item.detail, status: item.status, kind: "queue", timestamp: queueTime + 3, label: "En cours", commit: item.commit });
     }
     for (const item of queue?.waiting ?? []) {
-      items.push({ key: `q-wait-${item.id}`, title: item.title, detail: item.detail, status: item.status, kind: "queue", timestamp: queueTime + 2, label: item.status === "waiting_publish" ? "Publication" : "En attente", commit: item.commit });
+      activeItems.push({ key: `q-wait-${item.id}`, title: item.title, detail: item.detail, status: item.status, kind: "queue", timestamp: queueTime + 2, label: item.status === "waiting_publish" ? "Publication" : "En attente", commit: item.commit });
     }
-    for (const item of (queue?.done ?? []).slice(0, 4)) {
-      items.push({ key: `q-done-${item.id}`, title: item.title, detail: item.detail, status: item.status, kind: "queue", timestamp: queueTime + 1, label: "Terminé", commit: item.commit });
+    for (const item of queue?.done ?? []) {
+      completedItems.push({ key: `q-done-${item.id}`, title: item.title, detail: item.detail, status: item.status, kind: "queue", timestamp: queueTime + 1, label: "Dernière publication", commit: item.commit });
     }
     for (const action of liveActions) {
       const timestamp = new Date(action.updated_at || action.created_at).getTime();
-      items.push({ key: `a-${action.id}`, title: action.title, detail: action.description || undefined, status: action.status, kind: "action", timestamp: Number.isFinite(timestamp) ? timestamp : 0, label: "Demande" });
+      const target = isDone(action.status) ? completedItems : activeItems;
+      target.push({ key: `a-${action.id}`, title: action.title, detail: action.description || undefined, status: action.status, kind: "action", timestamp: Number.isFinite(timestamp) ? timestamp : 0, label: isDone(action.status) ? "Dernière publication" : "Demande" });
     }
     for (const commit of commits) {
       const timestamp = new Date(commit.commit.author?.date || 0).getTime();
-      items.push({ key: `c-${commit.sha}`, title: commit.commit.message.split("\n")[0], status: "commit", kind: "commit", timestamp: Number.isFinite(timestamp) ? timestamp : 0, label: "GitHub main", href: commit.html_url, commit: commit.sha });
+      activeItems.push({ key: `c-${commit.sha}`, title: commit.commit.message.split("\n")[0], status: "commit", kind: "commit", timestamp: Number.isFinite(timestamp) ? timestamp : 0, label: "GitHub main", href: commit.html_url, commit: commit.sha });
     }
 
-    const deduped: FeedItem[] = [];
-    const seen = new Set<string>();
-    for (const item of items.sort((a, b) => b.timestamp - a.timestamp)) {
-      const key = `${item.title.toLowerCase()}-${item.commit || ""}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      deduped.push(item);
-      if (deduped.length >= MAX_VISIBLE_ITEMS) break;
-    }
-    return deduped;
+    const dedupe = (items: FeedItem[]) => {
+      const result: FeedItem[] = [];
+      const seen = new Set<string>();
+      for (const item of items.sort((a, b) => b.timestamp - a.timestamp)) {
+        const key = `${item.title.toLowerCase()}-${item.commit || ""}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        result.push(item);
+      }
+      return result;
+    };
+
+    const active = dedupe(activeItems).slice(0, MAX_ACTIVE_ITEMS);
+    const latestPublished = dedupe(completedItems)[0];
+    const result = latestPublished ? [...active, latestPublished] : active;
+    return result.slice(0, MAX_VISIBLE_ITEMS);
   }, [queue, liveActions, commits]);
 
   return <section className="rounded-[1.75rem] border border-white/10 bg-[#090b0d] p-4 sm:p-5" aria-label="Activité ChatGPT GitHub" data-no-refresh-queue="true">
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div className="flex items-center gap-3">
         <span className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white"><Github className="h-5 w-5" /></span>
-        <div><h2 className="font-semibold text-white">ChatGPT · GitHub en direct</h2><p className="text-xs text-white/45">Un seul fil fusionné · 5 éléments maximum au total · du plus récent au plus ancien.</p><p className="mt-1 text-[10px] text-white/30">Actualisation toutes les 5 s{lastSyncAt ? ` · ${timeLabel(lastSyncAt)}` : ""}</p></div>
+        <div><h2 className="font-semibold text-white">ChatGPT · GitHub en direct</h2><p className="text-xs text-white/45">Jusqu’à 4 éléments actuels + la dernière tâche publiée · 5 éléments maximum.</p><p className="mt-1 text-[10px] text-white/30">Actualisation toutes les 5 s{lastSyncAt ? ` · ${timeLabel(lastSyncAt)}` : ""}</p></div>
       </div>
       <button type="button" onClick={() => void refreshAll()} className="flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[.04] px-3 text-xs text-white/65">{refreshing || loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}<span className="hidden sm:inline">Actualiser</span></button>
     </div>
