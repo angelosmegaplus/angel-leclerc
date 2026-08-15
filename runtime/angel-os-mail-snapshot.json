@@ -1,120 +1,8 @@
 {
-  "fetchedAt": "2026-08-15T05:48:57Z",
+  "fetchedAt": "2026-08-15T08:59:25Z",
   "caches": {
-    "news_dashboard": {
-      "fetchedAt": "2026-08-15T05:48:57Z",
-      "changed_since_previous": "Aucune nouvelle actualité nationale fiable et suffisamment importante publiée dans les six dernières heures n’a été vérifiée pendant ce passage. Le fil reste donc volontairement court. Mise à jour utile du matin : grève des personnels navigants easyJet en France les 15 et 16 août, et informations pratiques locales du jour à Sarlat.",
-      "top_stories": [],
-      "politics_society": [
-        {
-          "title": "Dette française : les coûts d’intérêts pèsent davantage à l’approche de 2027",
-          "source": "Reuters Breakingviews",
-          "date": "2026-08-14T10:17:37+02:00",
-          "category": "politique_société",
-          "summary": "Reuters Breakingviews analyse la hausse du coût de la dette française et les marges budgétaires plus contraintes à l’approche de 2027.",
-          "link": "https://www.reuters.com/commentary/breakingviews/france-is-headed-election-year-debt-reckoning-2026-08-14/",
-          "importance": "haute",
-          "why_relevant": "Le sujet touche directement la souveraineté budgétaire, le financement des services publics et les arbitrages sociaux à venir.",
-          "age_minutes": 1291,
-          "freshness": "moins_24h",
-          "status": "analyse-opinion"
-        }
-      ],
-      "investigations": [],
-      "local_news": [],
-      "tech_android_ai": [],
-      "cinema_series": [],
-      "orientation_learning": [],
-      "youtube_to_watch": [],
-      "general_news": [
-        {
-          "title": "Grève des personnels navigants easyJet en France les 15 et 16 août",
-          "source": "Reuters",
-          "date": "2026-08-12T13:41:54+02:00",
-          "category": "transport_travail",
-          "summary": "Le syndicat SNPC-FO a appelé les personnels navigants easyJet en France à la grève les 15 et 16 août pour protester contre les conditions de travail. La compagnie dit vouloir limiter les perturbations et proposer transferts ou remboursements en cas d’annulation.",
-          "link": "https://www.reuters.com/business/world-at-work/easyjet-flight-attendants-france-go-strike-august-15-16-unions-say-2026-08-12/",
-          "importance": "moyenne",
-          "why_relevant": "Information pratique nationale du jour sur les transports, avec un enjeu social lié aux conditions de travail.",
-          "freshness": "suivi",
-          "status": "fait établi"
-        }
-      ],
-      "practical_local": [
-        {
-          "title": "Festi’Sarlat ce soir au stade Christian-Goumondie",
-          "source": "Office de Tourisme Sarlat Périgord Noir / DATAtourisme",
-          "date": "2026-08-15T19:00:00+02:00",
-          "category": "pratique_local",
-          "summary": "Festi’Sarlat est programmé ce samedi 15 août à partir de 19 h au stade Christian-Goumondie, avec plusieurs DJ/artistes et des food trucks.",
-          "link": "https://unidivers.fr/event/festisarlat-sarlat-la-caneda-dordogne-2026-08-15/",
-          "zone": "Sarlat-la-Canéda",
-          "importance": "moyenne",
-          "why_relevant": "Événement local du jour à Sarlat, directement utile pour les sorties et l’animation de la ville.",
-          "freshness": "suivi"
-        },
-        {
-          "title": "La navette estivale de Sarlat circule aujourd’hui",
-          "source": "Mairie de Sarlat",
-          "date": "2026-08-15T09:30:00+02:00",
-          "category": "transport_local",
-          "summary": "La navette estivale de Sarlat est annoncée de 9 h 30 à 18 h 45 et reste en service jusqu’au 22 août.",
-          "link": "https://sarlat.fr/sortir-et-bouger/agenda/",
-          "zone": "Sarlat-la-Canéda",
-          "importance": "moyenne",
-          "why_relevant": "Information de mobilité directement utile aujourd’hui à Sarlat.",
-          "freshness": "suivi"
-        }
-      ]
-    },
-    "weather_sarlat": {
-      "fetchedAt": "2026-08-15T05:48:57Z",
-      "location": "Sarlat-la-Canéda",
-      "current": {
-        "temperatureC": 21,
-        "condition": "Nuageux",
-        "retainedFromLastValidSource": true
-      },
-      "today": {
-        "date": "2026-08-15",
-        "highC": 34,
-        "lowC": 16,
-        "condition": "Brume légère puis temps chaud"
-      },
-      "forecast": [
-        {"date": "2026-08-16", "highC": 35, "lowC": 17, "condition": "Clair et ensoleillé"},
-        {"date": "2026-08-17", "highC": 32, "lowC": 16, "condition": "Risque d’averses éparses"},
-        {"date": "2026-08-18", "highC": 30, "lowC": 14, "condition": "Brume ou brouillard possible"},
-        {"date": "2026-08-19", "highC": 27, "lowC": 12, "condition": "Éclaircies"},
-        {"date": "2026-08-20", "highC": 28, "lowC": 12, "condition": "Éclaircies"},
-        {"date": "2026-08-21", "highC": 24, "lowC": 13, "condition": "Partiellement nuageux"}
-      ],
-      "source": "prévisions web vérifiées ; valeur courante conservée depuis la dernière source valide faute de mesure temps réel exploitable pendant ce passage"
-    },
-    "google_calendar_dashboard": {
-      "fetchedAt": "2026-08-15T05:48:57Z",
-      "nextEvent": {
-        "title": "Maman - Anniversaire",
-        "start": "2026-08-15T00:00:00",
-        "end": "2026-08-16T00:00:00",
-        "allDay": true,
-        "location": "",
-        "description": "",
-        "url": "https://www.google.com/calendar/event?eid=dnVsOWRtcTdiMmZ1N250NGZpMWI2c2IwNW9fMjAyNjA4MTUgYW5nZWxsZWNsZXJjMjAwNkBt&ctz=Europe/Paris",
-        "advice": "Penser à souhaiter l’anniversaire aujourd’hui."
-      },
-      "events": [
-        {"title":"Maman - Anniversaire","start":"2026-08-15T00:00:00","end":"2026-08-16T00:00:00","allDay":true,"location":"","description":"","url":"https://www.google.com/calendar/event?eid=dnVsOWRtcTdiMmZ1N250NGZpMWI2c2IwNW9fMjAyNjA4MTUgYW5nZWxsZWNsZXJjMjAwNkBt&ctz=Europe/Paris","advice":"Penser à souhaiter l’anniversaire aujourd’hui."},
-        {"title":"Rdv cias sur place","start":"2026-08-19T10:00:00+02:00","end":"2026-08-19T11:00:00+02:00","allDay":false,"location":"","description":"","url":"https://www.google.com/calendar/event?eid=NzFoamVwajM2c3NqYWI5bWNjcm1jYjlrY3BpamdiOW82a3NtOGJiMzZncDZjcDMyNjlqNjZvaGo2MCBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":"Prévoir l’enchaînement direct avec le rendez-vous logement à 11 h."},
-        {"title":"Rdv renouvellement contrat logement","start":"2026-08-19T11:00:00+02:00","end":"2026-08-19T12:00:00+02:00","allDay":false,"location":"","description":"","url":"https://www.google.com/calendar/event?eid=Y2dvamNkOXA3MWlqY2JiNDcwcDY4YjlrNzBvM2NiYjE2MHEzZ2I5aTZkajNnZGI0NmNxamVkMzI2MCBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":""},
-        {"title":"Ouverture de l'actualisation pour le mois d'août 2026","start":"2026-08-27T00:00:00","end":"2026-08-28T00:00:00","allDay":true,"location":"","description":"France Travail","url":"https://www.google.com/calendar/event?eid=Y2RpMzBjOWk2b282NGI5bDY4cW04YjlrNnRqMzJiYjI2MHAzZ2I5a2M4cm02YzloNjBvNjJjMzI2byBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":"L’actualisation France Travail ouvre ce jour-là."},
-        {"title":"Tirage de la tombola Tombola Patrimoine","start":"2026-08-28T18:00:00+02:00","end":"2026-08-28T19:00:00+02:00","allDay":false,"location":"","description":"","url":"https://www.google.com/calendar/event?eid=X2N0bm44b2hkZWhrbTZxcjVlZ21tOHBia2M1a21vYjloNnNzM2VlOWo2OHMzMGMxZzYwbzQwcHJmZWhubXFvamZkaGdnIGFuZ2VsbGVjbGVyYzIwMDZAbQ&ctz=Europe/Paris","advice":""},
-        {"title":"Rendre portable à Orange 📲🟧","start":"2026-09-04T08:30:00+02:00","end":"2026-09-04T09:30:00+02:00","allDay":false,"location":"Orange, 41 Av. Gambetta, 24200 Sarlat-la-Canéda, France","description":"Rendre téléphone à Orange et prendre rdv pour nouveau téléphone voir papier","url":"https://www.google.com/calendar/event?eid=YzloMzJkMzNjZGhqMmI5ZzY0c21hYjlrYzloNjZiYjI2a3FtNmI5cGNsaTMyZHBvNnBpMzhwMXA2cyBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":"Prévoir le téléphone et le papier mentionné dans l’événement."},
-        {"title":"Fermeture de l'actualisation pour le mois d'août 2026","start":"2026-09-14T00:00:00","end":"2026-09-15T00:00:00","allDay":true,"location":"","description":"France Travail","url":"https://www.google.com/calendar/event?eid=YzhyamlkYjU2OHJqNGJiMjY1aDY0YjlrNnNxbThiYjI3MHEzNmJiMzZjb2owcDFvNnNxajBjMW02NCBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":"Dernier jour de la période d’actualisation du mois d’août."}
-      ]
-    },
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-15T05:48:57Z",
+      "fetchedAt": "2026-08-15T08:59:25Z",
       "important": [
         {
           "subject": "Votre essai gratuit Trading Pro se termine bientôt ⏳",
@@ -125,34 +13,30 @@
           "suggestedReply": ""
         }
       ],
-      "otherSummary": "Aucun nouvel email n’est arrivé depuis le précédent passage. Les notifications GitHub non lues visibles dans la boîte correspondent à des échecs plus anciens ; le dernier workflow CI vérifié sur main s’est terminé avec succès à 06 h 55 heure de Paris. Aucun nouveau refus, entretien, demande de CV, redirection professionnelle ou réponse de candidature n’a été détecté. Gmail n’a subi aucune modification.",
+      "otherSummary": "Un nouveau mail a été reçu depuis le précédent rapport : un message de bienvenue Supabase, purement informatif, sans demande d’action. Aucun nouveau mail de candidature, refus, entretien, demande de CV, redirection professionnelle ou autre réponse d’entreprise n’a été détecté. Les notifications GitHub non lues visibles sont antérieures à la période suivie. Gmail n’a subi aucune modification.",
       "counts": {
-        "new_since_last_run": 0,
+        "new_since_last_run": 1,
         "important": 1,
         "employment_or_application": 0
-      }
-    },
-    "admin_cockpit_summary": {
-      "fetchedAt": "2026-08-15T05:48:57Z",
-      "generalText": "Voici le bilan du moment. Aucun nouveau mail n’est arrivé depuis le dernier passage ; le point concret à surveiller reste l’essai Revolut Trading Pro qui se termine le 18 août. Aujourd’hui, l’agenda commence par l’anniversaire de ta mère, puis les prochains rendez-vous importants sont ceux du CIAS et du renouvellement du logement mercredi 19 août. La veille actualité reste volontairement très courte ce matin faute de nouveauté majeure fiable dans les dernières heures ; côté pratique, une grève easyJet est prévue aujourd’hui et demain en France, et Festi’Sarlat est annoncé ce soir. Le dernier CI GitHub vérifié sur main est vert. Priorité utile : garder un œil sur l’échéance Revolut et préparer les deux rendez-vous logement/CIAS de mercredi.",
-      "siteStatus": {
-        "repository": "angelosmegaplus/angel-leclerc",
-        "mainSha": "21dd62c99803e16da3ebebc8d4fc9f893de51e54",
-        "ci": "success",
-        "ciCheckedAt": "2026-08-15T04:55:04Z"
       }
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-15T04:49:21Z",
-    "period_end": "2026-08-15T05:48:57Z",
-    "summary": "Aucun nouveau mail depuis le précédent passage. Aucun nouveau mail de candidature, refus, entretien, demande de CV, redirection ou autre message professionnel nécessitant une action n’a été détecté. L’essai Revolut Trading Pro reste l’unique échéance mail importante à surveiller. Aucune action Gmail effectuée.",
+    "period_start": "2026-08-15T05:48:57Z",
+    "period_end": "2026-08-15T08:59:25Z",
+    "summary": "Un nouveau mail informatif de Supabase a été reçu depuis le précédent passage. Aucun nouveau mail de candidature, refus, entretien, demande de CV ou redirection professionnelle n’a été détecté. L’essai Revolut Trading Pro reste l’unique échéance mail importante à surveiller. Aucune action Gmail n’a été effectuée. La file ai_actions n’a pas pu être interrogée directement avec les connecteurs disponibles pendant cette exécution ; aucune action validée n’a donc été exécutée ni modifiée.",
     "counts": {
-      "total": 0,
+      "total": 1,
       "important": 1,
       "employment_or_application": 0
     },
     "items": [
+      {
+        "subject": "Welcome to Supabase",
+        "from": "Supabase <welcome@supabase.com>",
+        "date": "2026-08-15T07:35:32Z",
+        "reason": "Message de bienvenue et documentation de démarrage ; aucune action requise."
+      },
       {
         "subject": "Votre essai gratuit Trading Pro se termine bientôt ⏳",
         "from": "Revolut <no-reply@revolut.com>",
@@ -161,8 +45,9 @@
       }
     ],
     "recommendations": [
-      "Vérifier avant le 18 août si Trading Pro doit être conservé ou désactivé afin d’éviter une facturation non souhaitée."
+      "Vérifier avant le 18 août si Trading Pro doit être conservé ou désactivé afin d’éviter une facturation non souhaitée.",
+      "Exposer à terme un endpoint serveur authentifié ou une voie GitHub Actions dédiée permettant à l’automatisation de lire et mettre à jour ai_actions sans passer par Lovable."
     ],
-    "source": "gmail_connector_readonly"
+    "source": "chatgpt-hourly-direct"
   }
 }
