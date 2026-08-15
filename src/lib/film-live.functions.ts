@@ -87,7 +87,7 @@ function dedupe(items: RecommendationCandidate[]) {
 }
 
 export const getLiveFilmCatalog = createServerFn({ method: "GET" })
-  .inputValidator((input: { query?: string; page?: number; mediaType?: "all" | MediaType } | undefined) => ({
+  .validator((input: { query?: string; page?: number; mediaType?: "all" | MediaType } | undefined) => ({
     query: String(input?.query ?? "").trim().slice(0, 100),
     page: Math.max(1, Math.min(5, Number(input?.page) || 1)),
     mediaType: input?.mediaType === "movie" || input?.mediaType === "tv" ? input.mediaType : "all" as const,

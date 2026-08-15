@@ -52,7 +52,7 @@ export const getTmdbCredentialStatus = createServerFn({ method: "GET" }).handler
 });
 
 export const saveTmdbCredentials = createServerFn({ method: "POST" })
-  .inputValidator((input: CredentialInput) => ({
+  .validator((input: CredentialInput) => ({
     apiKey: String(input?.apiKey ?? "").trim().slice(0, 256),
     readToken: String(input?.readToken ?? "").trim().slice(0, 4096),
   }))

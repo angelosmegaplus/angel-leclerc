@@ -47,7 +47,7 @@ const submissionSchema = z.object({
 export type ContactSubmissionInput = z.infer<typeof submissionSchema>;
 
 export const submitProjectRequest = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => submissionSchema.parse(data))
+  .validator((data: unknown) => submissionSchema.parse(data))
   .handler(async ({ data }) => {
     // Reject bots that filled the honeypot silently (act as success).
     if (data.website && data.website.length > 0) {

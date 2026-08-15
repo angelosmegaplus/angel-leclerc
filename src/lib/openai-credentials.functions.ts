@@ -49,7 +49,7 @@ export const getOpenAiCredentialStatus = createServerFn({ method: "GET" }).handl
 });
 
 export const saveOpenAiCredential = createServerFn({ method: "POST" })
-  .inputValidator((input: { apiKey?: string }) => ({
+  .validator((input: { apiKey?: string }) => ({
     apiKey: String(input?.apiKey ?? "").trim().slice(0, 4096),
   }))
   .handler(async ({ data }) => {

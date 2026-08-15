@@ -18,7 +18,7 @@ export type MediaPreferenceInput = {
 
 export const rememberMediaPreference = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: MediaPreferenceInput) => input)
+  .validator((input: MediaPreferenceInput) => input)
   .handler(async ({ data }) => {
     const state = data.rejected ? "rejected" : data.liked ? "liked" : (data.completion ?? 0) >= 0.9 ? "seen" : "interacted";
     await rememberPersonalContext({

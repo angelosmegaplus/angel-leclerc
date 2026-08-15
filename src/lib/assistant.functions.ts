@@ -11,7 +11,7 @@ const AskSchema = z.object({
 export type AskAssistantResult = { text: string | null; source: "openai" | "fallback" };
 
 export const askAssistant = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => AskSchema.parse(input))
+  .validator((input: unknown) => AskSchema.parse(input))
   .handler(async ({ data }): Promise<AskAssistantResult> => {
     const { getRequestIP } = await import("@tanstack/react-start/server");
     const { checkAssistantRate } = await import("./assistant-rate.server");
