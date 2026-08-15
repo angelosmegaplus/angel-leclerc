@@ -5,7 +5,6 @@ import { ASSISTANT_SYSTEM_PROMPT, CONTACT_ASSISTANT_ADDENDUM } from "@/lib/assis
 import { checkAssistantRate } from "@/lib/assistant-rate.server";
 import { aiMemoryPrompt } from "@/lib/ai-memory.server";
 import { recordAngelOperation } from "@/lib/angel-runtime.server";
-import { rememberPersonalContext, searchPersonalContext } from "@/lib/angel-os-ia/personal-context.server";
 
 const jsonHeaders = { "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0", Pragma: "no-cache", Expires: "0", "Content-Type": "application/json; charset=utf-8" };
 type IncomingMessage = { role?: unknown; content?: unknown };
@@ -25,7 +24,7 @@ export const Route = createFileRoute("/api/assistant")({
         try {
           const ip = clientIp(request);
           if (!checkAssistantRate(ip)) {
-            await recordAngelOperation({ type: "angel-os-ia.assistant.rate_limited", source: "angel-os-ia", ok: false });
+            await recordAngelOperation({ type: "assistant.public.rate_limited", source: "public-assistant", ok: false });
             return Response.json({ text: null, source: "fallback", reason: "rate_limit", requestId }, { status: 429, headers: jsonHeaders });
           }
 
@@ -41,27 +40,23 @@ export const Route = createFileRoute("/api/assistant")({
             return role && content ? [{ role, content } as AiMessage] : [];
           });
 
+          // Public route: only public/site memory is allowed here. Personal Angel OS IA
+          // context is restricted to authenticated admin functions.
           const liveMemory = await aiMemoryPrompt("public");
-          const personalHits = searchPersonalContext(question, 5);
-          const personalMemory = personalHits.length ? `\n\nContexte personnel Angel OS IA pertinent :\n${personalHits.map((hit) => `- ${hit.title}: ${hit.text.slice(0, 500)}`).join("\n")}` : "";
           const basePrompt = mode === "contact" ? `${ASSISTANT_SYSTEM_PROMPT}\n\n${CONTACT_ASSISTANT_ADDENDUM}` : ASSISTANT_SYSTEM_PROMPT;
-          const systemPrompt = `${basePrompt}${liveMemory}${personalMemory}`;
+          const systemPrompt = `${basePrompt}${liveMemory}`;
           const messages: AiMessage[] = [{ role: "system", content: systemPrompt }, ...history, { role: "user", content: question }];
 
-          const result = await resilientAngelAi({ messages, priority: "interactive", maxTokens: mode === "contact" ? 700 : 600, temperature: mode === "contact" ? 0.35 : 0.3, cacheKey: `angel-os-ia:assistant-live:${requestId}`, cacheTtlMs: 1 });
+          const result = await resilientAngelAi({ messages, priority: "interactive", maxTokens: mode === "contact" ? 700 : 600, temperature: mode === "contact" ? 0.35 : 0.3, cacheKey: `assistant-public:${requestId}`, cacheTtlMs: 1 });
           const durationMs = Date.now() - startedAt;
           const ok = Boolean(result.text);
-          await recordAngelOperation({ type: ok ? "angel-os-ia.assistant.completed" : "angel-os-ia.assistant.failed", source: "angel-os-ia", ok, durationMs, payload: { requestId, mode, reason: result.reason, recoveryAction: result.recoveryAction } });
-
-          if (result.text && mode !== "contact") {
-            await rememberPersonalContext({ id: `assistant:${requestId}`, domain: "preferences", title: question.slice(0, 120), text: `Question: ${question}\nRéponse: ${result.text.slice(0, 2500)}`, tags: ["conversation"], metadata: { requestId } });
-          }
+          await recordAngelOperation({ type: ok ? "assistant.public.completed" : "assistant.public.failed", source: "public-assistant", ok, durationMs, payload: { requestId, mode, reason: result.reason } });
 
           return Response.json({ text: result.text ? result.text.slice(0, 3000) : null, source: result.text ? "openai" : "fallback", reason: result.reason, requestId }, { headers: jsonHeaders });
         } catch (error) {
           const durationMs = Date.now() - startedAt;
           console.error("[assistant-api] failure", { requestId, durationMs, error });
-          await recordAngelOperation({ type: "angel-os-ia.assistant.exception", source: "angel-os-ia", ok: false, durationMs, payload: { requestId } });
+          await recordAngelOperation({ type: "assistant.public.exception", source: "public-assistant", ok: false, durationMs, payload: { requestId } });
           return Response.json({ text: null, source: "fallback", reason: "server_error", requestId }, { status: 500, headers: jsonHeaders });
         }
       },
