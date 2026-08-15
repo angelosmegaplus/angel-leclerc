@@ -26,19 +26,67 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
+          call_ai() {
+            local payload="$1"
+            local expected_code="$2"
+            local label="$3"
+            local tmp
+            tmp="$(mktemp)"
+            local started ended code
+            started="$(date +%s%3N)"
+            code="$(curl -L --silent --show-error --output "$tmp" --write-out '%{http_code}' --max-time 35 \
+              -X POST \
+              -H 'Content-Type: application/json' \
+              --data "$payload" \
+              "https://www.angel-leclerc.fr/api/assistant")"
+            ended="$(date +%s%3N)"
+            echo "[$label] HTTP $code · $((ended-started)) ms"
+            cat "$tmp"
+            echo
+            if [ "$code" != "$expected_code" ]; then
+              echo "::error::$label en échec (HTTP $code, attendu $expected_code)."
+              return 1
+            fi
+            AI_TMP="$tmp"
+          }
+
+          # 1) Message minimal : le cœur fournisseur doit réellement répondre.
+          call_ai '{"question":"Réponds uniquement par ANGEL_AI_OK si tu reçois ce test.","mode":"site","history":[]}' "200" "IA publique — message court"
+          jq -e '(.source == "openai") and (.text | type == "string") and (.text | contains("ANGEL_AI_OK")) and (.text | test("<html|<!doctype"; "i") | not)' "$AI_TMP" >/dev/null
+
+          # 2) Question normale : pas de placeholder, JSON brut ou réponse vide.
+          call_ai '{"question":"En une phrase simple, explique à quoi sert ce site sans inventer d’information.","mode":"site","history":[]}' "200" "IA publique — question normale"
+          jq -e '(.source == "openai") and (.text | type == "string") and (.text | length > 20) and (.text | test("<html|<!doctype|mode de secours|moteur local"; "i") | not)' "$AI_TMP" >/dev/null
+
+          # 3) Mode Contact : même moteur réel, avec le contexte propre au formulaire public.
+          call_ai '{"question":"Je veux contacter Angel au sujet d’un projet de communication. Réponds en une phrase utile.","mode":"contact","history":[]}' "200" "IA Contact"
+          jq -e '(.source == "openai") and (.text | type == "string") and (.text | length > 20) and (.text | test("<html|<!doctype"; "i") | not)' "$AI_TMP" >/dev/null
+
+          # 4) Conversation multi-tour : le chemin doit accepter et exploiter l’historique transmis.
+          call_ai '{"question":"Quel est le mot témoin ? Réponds uniquement avec ce mot.","mode":"site","history":[{"role":"user","content":"Le mot témoin de cette conversation est ORION-27."},{"role":"assistant","content":"Bien reçu."}]}' "200" "IA publique — contexte multi-tour"
+          jq -e '(.source == "openai") and (.text | type == "string") and (.text | contains("ORION-27"))' "$AI_TMP" >/dev/null
+
+          # 5) Échec contrôlé : une entrée invalide doit être rejetée proprement, sans faux succès.
+          call_ai '{"question":"x","mode":"site","history":[]}' "400" "IA publique — échec contrôlé"
+          jq -e '(.text == null) and (.reason == "invalid_question")' "$AI_TMP" >/dev/null
+
+          echo "Angel AI : scénarios publics, Contact, contexte et erreur contrôlée validés en production"
+
+      - name: Check Angel AI health endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
           tmp="$(mktemp)"
-          code="$(curl -L --silent --show-error --output "$tmp" --write-out '%{http_code}' --max-time 35 \
-            -X POST \
-            -H 'Content-Type: application/json' \
-            --data '{"question":"Réponds uniquement par ANGEL_AI_OK si tu reçois ce test.","mode":"site","history":[]}' \
-            "https://www.angel-leclerc.fr/api/assistant")"
+          code="$(curl -L --silent --show-error --output "$tmp" --write-out '%{http_code}' --max-time 25 \
+            "https://www.angel-leclerc.fr/api/angel-os/health")"
           cat "$tmp"
           if [ "$code" != "200" ]; then
-            echo "::error::Angel AI indisponible en production (HTTP $code)."
+            echo "::error::Health Angel OS indisponible (HTTP $code)."
             exit 1
           fi
-          jq -e '.source == "openai" and (.text | type == "string") and (.text | length > 0)' "$tmp" >/dev/null
-          echo "Angel AI OpenAI répond réellement en production"
+          jq -e '.openai.configured == true and .openai.reachable == true' "$tmp" >/dev/null
+          echo "Health OpenAI : configuré et joignable"
 
       - name: Synchroniser les candidatures avec Gmail
         shell: bash
@@ -147,7 +195,9 @@ jobs:
             echo "## Maintenance Angel OS"
             echo ""
             echo "- Commit vérifié : \`${GITHUB_SHA}\`"
-            echo "- Angel AI OpenAI : test end-to-end réel exécuté en priorité sur /api/assistant"
+            echo "- Angel AI public/Contact : tests réels court, normal, multi-tour et erreur contrôlée"
+            echo "- Health IA : OpenAI configuré/joignable vérifié"
+            echo "- Angel OS IA privé : chemin de code contrôlé séparément ; validation end-to-end nécessite une session admin authentifiée et ne doit pas être simulée"
             echo "- Candidatures : synchronisation Gmail tentée si le secret serveur est configuré ; un blocage de cette dépendance secondaire n'interrompt plus les contrôles principaux"
             echo "- Lint + build + TypeScript : exécutés sur GitHub Actions"
             echo "- Pages critiques : contrôlées"
