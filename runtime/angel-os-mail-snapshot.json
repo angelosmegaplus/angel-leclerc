@@ -1,8 +1,8 @@
 {
-  "fetchedAt": "2026-08-15T20:57:07Z",
+  "fetchedAt": "2026-08-15T21:57:38Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-15T20:57:07Z",
+      "fetchedAt": "2026-08-15T21:57:38Z",
       "important": [
         {
           "subject": "Complétez votre dossier de candidature",
@@ -15,18 +15,18 @@
         {
           "subject": "Échecs techniques répétés Angel OS / GitHub",
           "from": "GitHub Actions notifications",
-          "date": "2026-08-15T20:56:31Z",
-          "summary": "Neuf nouvelles alertes techniques ont été reçues depuis le précédent rapport : échecs de Preview Angel OS, Maintenance Angel OS, Synchronisation données Angel OS, Observabilité Angel OS et Publication Angel OS. Aucun nouveau message de candidature n'est arrivé pendant cette période.",
+          "date": "2026-08-15T21:39:52Z",
+          "summary": "Quatre nouvelles alertes techniques ont été reçues depuis le précédent rapport : un échec de synchronisation des données Angel OS, deux échecs d'observabilité et un échec de maintenance. Aucun nouveau message de candidature n'est arrivé pendant cette période.",
           "reason": "La chaîne technique reste dégradée ; cette routine consigne les alertes et laisse la maintenance technique éviter les correctifs concurrents.",
           "suggestedReply": ""
         }
       ],
-      "otherSummary": "Depuis le précédent rapport, neuf nouveaux messages entrants ont été reçus, tous des alertes techniques GitHub liées à angel-leclerc. Aucun nouveau mail de candidature, refus, acceptation, entretien, demande de CV, demande d'information ou redirection professionnelle n'a été reçu. Gmail n'a subi aucune modification.",
+      "otherSummary": "Depuis le précédent rapport, quatre nouveaux messages entrants ont été reçus, tous des alertes techniques GitHub liées à angel-leclerc. Aucun nouveau mail de candidature, refus, acceptation, entretien, demande de CV, demande d'information ou redirection professionnelle n'a été reçu. Gmail n'a subi aucune modification.",
       "counts": {
-        "new_since_last_run": 9,
-        "incoming": 9,
+        "new_since_last_run": 4,
+        "incoming": 4,
         "outgoing": 0,
-        "technical_incoming": 9,
+        "technical_incoming": 4,
         "employment_or_application_incoming": 0,
         "outgoing_applications": 0,
         "application_action_required": 0,
@@ -38,14 +38,14 @@
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-15T20:00:34Z",
-    "period_end": "2026-08-15T20:57:07Z",
-    "summary": "Neuf nouveaux messages ont été reçus sur la période, tous techniques et liés à angel-leclerc. Ils signalent des échecs de Preview Angel OS, Maintenance Angel OS, Synchronisation données Angel OS, Observabilité Angel OS et Publication Angel OS. Aucun nouveau mail de candidature, refus, acceptation, proposition d'entretien, demande de CV, demande d'information ou redirection professionnelle n'a été reçu. Aucun email n'a été envoyé, modifié, classé ou marqué lu par cette routine. La source native `ai_actions` n'est toujours pas directement interrogeable avec les connecteurs disponibles pendant cette exécution ; aucune action `awaiting_operator` n'a donc été exécutée ou modifiée.",
+    "period_start": "2026-08-15T20:57:07Z",
+    "period_end": "2026-08-15T21:57:38Z",
+    "summary": "Quatre nouveaux messages ont été reçus sur la période, tous techniques et liés à angel-leclerc : échec de Synchronisation données Angel OS à 20:58:45Z, échec d'Observabilité Angel OS à 21:00:12Z, nouvel échec d'Observabilité à 21:33:11Z et échec de Maintenance Angel OS à 21:39:52Z. Aucun nouveau mail de candidature, refus, acceptation, proposition d'entretien, demande de CV, demande d'information ou redirection professionnelle n'a été reçu. Aucun email n'a été envoyé, modifié, classé ou marqué lu par cette routine. La source native `ai_actions` n'est toujours pas directement interrogeable avec les connecteurs disponibles pendant cette exécution ; aucune action `awaiting_operator` n'a donc été exécutée ou modifiée.",
     "counts": {
-      "total_messages": 9,
-      "incoming": 9,
+      "total_messages": 4,
+      "incoming": 4,
       "outgoing": 0,
-      "technical_incoming": 9,
+      "technical_incoming": 4,
       "employment_or_application_incoming": 0,
       "outgoing_applications": 0,
       "application_action_required": 0,
@@ -56,58 +56,28 @@
     },
     "items": [
       {
-        "subject": "[angelosmegaplus/angel-leclerc] PR run failed: Preview Angel OS - Refonte cinéma privée Angel OS (0ad26bc)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Synchronisation données Angel OS - main (7221331)",
         "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T20:01:09Z",
-        "reason": "Échec de preview sur la PR de refonte cinéma ; à laisser à la maintenance technique."
+        "date": "2026-08-15T20:58:45Z",
+        "reason": "Échec de synchronisation des données Angel OS ; à laisser à la maintenance technique."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Maintenance Angel OS - main (9a4ab9a)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Observabilité Angel OS - main (7221331)",
         "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T20:01:44Z",
-        "reason": "Échec du workflow de maintenance Angel OS."
-      },
-      {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Synchronisation données Angel OS - main (3a364e2)",
-        "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T20:02:32Z",
-        "reason": "Échec de la synchronisation des données Angel OS."
-      },
-      {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Observabilité Angel OS - main (9402d1f)",
-        "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T20:30:38Z",
+        "date": "2026-08-15T21:00:12Z",
         "reason": "Échec du contrôle d'observabilité production."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Observabilité Angel OS, Attempt #2 - main (9402d1f)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Observabilité Angel OS - main (a408ed7)",
         "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T20:31:45Z",
-        "reason": "Deuxième tentative d'observabilité également en échec."
-      },
-      {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Observabilité Angel OS - main (42e887f)",
-        "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T20:32:42Z",
+        "date": "2026-08-15T21:33:11Z",
         "reason": "Nouvel échec d'observabilité sur un commit plus récent."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Observabilité Angel OS, Attempt #2 - main (42e887f)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Maintenance Angel OS - main (e26e9b3)",
         "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T20:34:00Z",
-        "reason": "Deuxième tentative d'observabilité également en échec sur ce commit."
-      },
-      {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Observabilité Angel OS - main (6bafa3d)",
-        "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T20:35:29Z",
-        "reason": "Nouvel échec d'observabilité sur le dernier commit recensé."
-      },
-      {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Publication Angel OS - main (6bafa3d)",
-        "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T20:56:31Z",
-        "reason": "Échec de publication sur le dernier commit recensé ; à laisser à la maintenance technique."
+        "date": "2026-08-15T21:39:52Z",
+        "reason": "Échec du workflow de maintenance Angel OS."
       }
     ],
     "recommendations": [
