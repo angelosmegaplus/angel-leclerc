@@ -43,6 +43,13 @@ jobs:
               | .key + ":" + (.value.reason // "unreachable")]
             | join(",")
           ' /tmp/health.json)"
+          CRITICAL_FAILURES="$(jq -r '
+            [.dependencies // {} | to_entries[]
+              | select(.key == "openai")
+              | select(.value.configured != true or .value.reachable == false)
+              | .key + ":" + (.value.reason // (if .value.configured == true then "unreachable" else "not_configured" end))]
+            | join(",")
+          ' /tmp/health.json)"
           MISSING="$(jq -r '
             [.dependencies // {} | to_entries[]
               | select(.value.configured == false)
@@ -50,6 +57,7 @@ jobs:
             | join(",")
           ' /tmp/health.json)"
           echo "failures=$FAILURES" >> "$GITHUB_OUTPUT"
+          echo "critical_failures=$CRITICAL_FAILURES" >> "$GITHUB_OUTPUT"
           echo "missing=$MISSING" >> "$GITHUB_OUTPUT"
           if [ -n "$FAILURES" ]; then
             echo "::warning::Dépendances configurées mais injoignables : $FAILURES"
@@ -104,14 +112,14 @@ jobs:
           probe_ai "contact" '{"question":"Je voudrais savoir comment prendre contact pour une demande de communication. Réponds brièvement.","mode":"contact","history":[]}'
           probe_ai "context" '{"question":"Quel mot t’ai-je demandé de retenir ?","mode":"site","history":[{"role":"user","content":"Retiens le mot ORION pour le prochain message."},{"role":"assistant","content":"D’accord, je retiens ORION."}]}'
 
-      - name: Enforce dependency health
+      - name: Enforce critical AI dependency health
         if: always()
         shell: bash
         run: |
           set -euo pipefail
-          FAILURES='${{ steps.probe.outputs.failures }}'
-          if [ -n "$FAILURES" ]; then
-            echo "::error::Dépendances configurées mais injoignables : $FAILURES"
+          CRITICAL_FAILURES='${{ steps.probe.outputs.critical_failures }}'
+          if [ -n "$CRITICAL_FAILURES" ]; then
+            echo "::error::Dépendance IA critique indisponible : $CRITICAL_FAILURES"
             exit 1
           fi
 
@@ -123,7 +131,7 @@ jobs:
         run: |
           TITLE="[Angel OS] Journal incidents production"
           ISSUE="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$TITLE in:title" --limit 1 --json number --jq '.[0].number // empty')"
-          BODY="Incident observabilité · $(date -u +%FT%TZ) · dépendances=${{ steps.probe.outputs.failures }} · site=${{ steps.ai_smoke.outputs.site_http }}/${{ steps.ai_smoke.outputs.site_reason }} · contact=${{ steps.ai_smoke.outputs.contact_http }}/${{ steps.ai_smoke.outputs.contact_reason }} · contexte=${{ steps.ai_smoke.outputs.context_http }}/${{ steps.ai_smoke.outputs.context_reason }} · run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          BODY="Incident observabilité · $(date -u +%FT%TZ) · dépendances=${{ steps.probe.outputs.failures }} · critiques=${{ steps.probe.outputs.critical_failures }} · site=${{ steps.ai_smoke.outputs.site_http }}/${{ steps.ai_smoke.outputs.site_reason }} · contact=${{ steps.ai_smoke.outputs.contact_http }}/${{ steps.ai_smoke.outputs.contact_reason }} · contexte=${{ steps.ai_smoke.outputs.context_http }}/${{ steps.ai_smoke.outputs.context_reason }} · run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           if [ -z "$ISSUE" ]; then
             gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --body "$BODY" >/dev/null
           else
@@ -141,4 +149,6 @@ jobs:
           echo "- IA contact : ${{ steps.ai_smoke.outputs.contact_http }} / ${{ steps.ai_smoke.outputs.contact_reason }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- IA contexte : ${{ steps.ai_smoke.outputs.context_http }} / ${{ steps.ai_smoke.outputs.context_reason }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Réponse vide/fallback interdite pour les trois scénarios" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Dépendances optionnelles en échec : ${{ steps.probe.outputs.failures }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Dépendances critiques en échec : ${{ steps.probe.outputs.critical_failures }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Configuration manquante : ${{ steps.probe.outputs.missing }}" >> "$GITHUB_STEP_SUMMARY"
