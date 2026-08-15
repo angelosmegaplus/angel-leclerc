@@ -34,13 +34,12 @@ async function checkTmdb(): Promise<DependencyHealth> {
   const credential = await getTmdbCredential();
   if (!credential) return { configured: false, reachable: null, reason: "credential_missing" };
   try {
-    const isApiKey = credential.source === "env-api-key" || credential.source === "admin-site-api-key";
-    const url = isApiKey
+    const url = credential.kind === "api-key"
       ? `https://api.themoviedb.org/3/configuration?api_key=${encodeURIComponent(credential.value)}`
       : "https://api.themoviedb.org/3/configuration";
     const response = await withTimeout((signal) => fetch(url, {
       signal,
-      headers: isApiKey ? undefined : { Authorization: `Bearer ${credential.value}` },
+      headers: credential.kind === "bearer" ? { Authorization: `Bearer ${credential.value}` } : undefined,
     }));
     return { configured: true, reachable: response.ok, source: credential.source, reason: response.ok ? null : `http_${response.status}` };
   } catch (error) {
