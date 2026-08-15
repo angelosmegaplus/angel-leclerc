@@ -11,6 +11,7 @@ import { Captcha, type CaptchaValue } from "@/components/Captcha";
 import { verifyCaptchaAnswer } from "@/lib/captcha.functions";
 
 const PIN_SESSION_KEY = "angel-os-admin-pin-ok";
+const ADMIN_BOOT_PENDING_KEY = "angel-os:admin-boot-pending";
 const ADMIN_PIN = "2005";
 
 export const Route = createFileRoute("/auth")({
@@ -71,7 +72,11 @@ function AuthPage() {
         return;
       }
 
+      // Le PIN valide arme le générique, mais il ne se joue qu'une fois
+      // l'espace administrateur réellement accessible. Si une session existe
+      // déjà, la navigation est immédiate ; sinon il attend la connexion.
       sessionStorage.setItem(PIN_SESSION_KEY, "1");
+      sessionStorage.setItem(ADMIN_BOOT_PENDING_KEY, "1");
       setPinUnlocked(true);
       if (session) navigate({ to: "/admin" });
     } finally {
