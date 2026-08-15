@@ -1,72 +1,30 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": {
+    "deploymentEnabled": false
+  },
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        {
-          "key": "Strict-Transport-Security",
-          "value": "max-age=63072000; includeSubDomains"
-        },
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "0"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        },
-        {
-          "key": "Permissions-Policy",
-          "value": "accelerometer=(), gyroscope=(), magnetometer=(), usb=(), browsing-topics=()"
-        },
-        {
-          "key": "Cross-Origin-Opener-Policy",
-          "value": "same-origin-allow-popups"
-        },
-        {
-          "key": "Cross-Origin-Resource-Policy",
-          "value": "same-site"
-        },
-        {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self' https:; img-src 'self' data: blob: https:; font-src 'self' data: https:; style-src 'self' 'unsafe-inline' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; connect-src 'self' https: wss:; frame-src 'self' https:; media-src 'self' blob: https:; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests"
-        }
+        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-XSS-Protection", "value": "0" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "accelerometer=(), gyroscope=(), magnetometer=(), usb=(), browsing-topics=()" },
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin-allow-popups" },
+        { "key": "Cross-Origin-Resource-Policy", "value": "same-site" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self' https:; img-src 'self' data: blob: https:; font-src 'self' data: https:; style-src 'self' 'unsafe-inline' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; connect-src 'self' https: wss:; frame-src 'self' https:; media-src 'self' blob: https:; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests" }
       ]
     }
   ],
   "rewrites": [
-    {
-      "source": "/.well-known/security.txt",
-      "destination": "/security.txt"
-    },
-    {
-      "source": "/_serverFn/:path*",
-      "destination": "https://angel-leclerc.lovable.app/_serverFn/:path*"
-    },
-    {
-      "source": "/__server",
-      "destination": "https://angel-leclerc.lovable.app/__server"
-    },
-    {
-      "source": "/~oauth/:path*",
-      "destination": "https://angel-leclerc.lovable.app/~oauth/:path*"
-    },
-    {
-      "source": "/api/public/:path*",
-      "destination": "https://angel-leclerc.lovable.app/api/public/:path*"
-    },
-    {
-      "source": "/lovable/:path*",
-      "destination": "https://angel-leclerc.lovable.app/lovable/:path*"
-    }
+    { "source": "/.well-known/security.txt", "destination": "/security.txt" },
+    { "source": "/_serverFn/:path*", "destination": "https://angel-leclerc.lovable.app/_serverFn/:path*" },
+    { "source": "/__server", "destination": "https://angel-leclerc.lovable.app/__server" },
+    { "source": "/~oauth/:path*", "destination": "https://angel-leclerc.lovable.app/~oauth/:path*" },
+    { "source": "/api/public/:path*", "destination": "https://angel-leclerc.lovable.app/api/public/:path*" },
+    { "source": "/lovable/:path*", "destination": "https://angel-leclerc.lovable.app/lovable/:path*" }
   ]
 }
