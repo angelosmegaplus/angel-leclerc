@@ -6,7 +6,9 @@ import { checkAssistantRate } from "@/lib/assistant-rate.server";
 import { aiMemoryPrompt } from "@/lib/ai-memory.server";
 
 const jsonHeaders = {
-  "Cache-Control": "no-store",
+  "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+  Pragma: "no-cache",
+  Expires: "0",
   "Content-Type": "application/json; charset=utf-8",
 };
 
@@ -60,7 +62,10 @@ export const Route = createFileRoute("/api/assistant")({
             priority: "interactive",
             maxTokens: mode === "contact" ? 700 : 600,
             temperature: mode === "contact" ? 0.35 : 0.3,
-            cacheTtlMs: 2 * 60_000,
+            // Un identifiant unique force une réponse neuve pour chaque message et
+            // évite qu'un ancien résultat du cache serveur réapparaisse dans le fil.
+            cacheKey: `assistant-live:${requestId}`,
+            cacheTtlMs: 1,
           });
 
           console.info("[assistant-api] result", {
