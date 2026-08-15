@@ -4,12 +4,12 @@ import type { AngelOSContext, AngelOSDistribution, AngelOSModule } from '../../c
 function module(id: string, provides: string[]): AngelOSModule {
   return {
     id: `angel-os-ia.${id}`,
-    version: '0.2.0',
+    version: '0.3.0',
     requires: ['events', 'configuration'],
     provides,
     start(_context: AngelOSContext) {
-      // Angel OS IA consumes Angel OS services through adapters. It must never
-      // become a dependency of the Angel OS core itself.
+      // Angel OS IA consumes neutral Angel OS system services through adapters.
+      // Personal logic must stay here and never leak into the reusable core.
     },
   };
 }
@@ -20,19 +20,39 @@ const analysisModule = module('analysis', ['ai-analysis', 'recommendations']);
 const generationModule = module('generation', ['content-generation']);
 const agentModule = module('agents', ['ai-agents', 'ai-orchestration']);
 const automationModule = module('automation', ['intelligent-automation']);
+const personalMemoryModule = module('personal-memory', ['personal-memory', 'preference-context', 'user-history']);
+const personalSupervisorModule = module('personal-supervisor', ['personal-prioritization', 'intelligent-supervision', 'decision-support']);
+const personalDomainsModule = module('personal-domains', [
+  'applications-tracking',
+  'mail-intelligence',
+  'calendar-intelligence',
+  'personal-news',
+  'media-recommendations',
+]);
 
 export const ANGEL_OS_IA_BOUNDARY = {
   dependsOn: 'angel-os',
   coreDependencyDirection: 'angel-os-ia -> angel-os',
   forbiddenDirection: 'angel-os -> angel-os-ia',
   systemCapabilitiesRemainInAngelOs: true,
+  personalCapabilitiesRemainInAngelOsIa: true,
 } as const;
 
 export const angelOSIA: AngelOSDistribution = {
   id: 'angel-os-ia',
   name: 'Angel OS IA',
-  version: '0.2.0',
-  modules: [aiProviderModule, conversationModule, analysisModule, generationModule, agentModule, automationModule],
+  version: '0.3.0',
+  modules: [
+    aiProviderModule,
+    conversationModule,
+    analysisModule,
+    generationModule,
+    agentModule,
+    automationModule,
+    personalMemoryModule,
+    personalSupervisorModule,
+    personalDomainsModule,
+  ],
 };
 
 export default angelOSIA;
