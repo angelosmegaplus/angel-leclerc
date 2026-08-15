@@ -14,9 +14,12 @@ concurrency:
 
 jobs:
   health-and-live-data:
-    name: Vérifier le site et les données publiques
+    name: Vérifier le site et les données vivantes
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    environment: production
+    env:
+      NEWSLETTER_CRON_SECRET: ${{ secrets.NEWSLETTER_CRON_SECRET }}
 
     steps:
       - name: Check Angel AI end-to-end in production
@@ -36,6 +39,28 @@ jobs:
           fi
           jq -e '.source == "openai" and (.text | type == "string") and (.text | length > 0)' "$tmp" >/dev/null
           echo "Angel AI OpenAI répond réellement en production"
+
+      - name: Synchroniser les candidatures avec Gmail
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${NEWSLETTER_CRON_SECRET:-}" || { echo "::error::NEWSLETTER_CRON_SECRET absent : synchronisation candidatures impossible"; exit 1; }
+          tmp="$(mktemp)"
+          code="$(curl -L --silent --show-error --output "$tmp" --write-out '%{http_code}' --max-time 90 \
+            -X POST \
+            -H "x-cron-token: ${NEWSLETTER_CRON_SECRET}" \
+            -H 'Content-Type: application/json' \
+            "https://www.angel-leclerc.fr/api/public/hooks/applications-sync")"
+          cat "$tmp"
+          if [ "$code" != "200" ]; then
+            echo "::error::Synchronisation candidatures en échec (HTTP $code)."
+            exit 1
+          fi
+          jq -e '.ok == true and (.syncedAt | type == "string")' "$tmp" >/dev/null
+          imported="$(jq -r '.imported // 0' "$tmp")"
+          updated="$(jq -r '.updated // 0' "$tmp")"
+          skipped="$(jq -r '.skipped // 0' "$tmp")"
+          echo "Candidatures synchronisées : ${imported} importée(s), ${updated} mise(s) à jour, ${skipped} ignorée(s)."
 
       - name: Check out latest main
         uses: actions/checkout@v5
@@ -116,10 +141,9 @@ jobs:
             echo ""
             echo "- Commit vérifié : \`${GITHUB_SHA}\`"
             echo "- Angel AI OpenAI : test end-to-end réel exécuté en priorité sur /api/assistant"
+            echo "- Candidatures : synchronisation Gmail réelle exécutée à chaque maintenance"
             echo "- Lint + build + TypeScript : exécutés sur GitHub Actions"
             echo "- Pages critiques : contrôlées"
             echo "- API météo : contrôlée"
             echo "- API actualités : contrôlée"
-            echo ""
-            echo "Les tâches dépendant de connecteurs personnels restent exécutées hors GitHub Actions."
           } >> "$GITHUB_STEP_SUMMARY"
