@@ -29,6 +29,23 @@ Angel OS is **not** the current website and does not replace it. The current sit
 - Safe-by-default configuration.
 - Open-source and fork-friendly.
 
+## Storage
+
+The native `Angel Storage` service remains the fast, independent storage layer. External providers can be added as replaceable adapters instead of becoming hard dependencies of the Core.
+
+A Google Drive storage adapter is available at `adapters/google-drive-storage.server.ts`. It implements the same storage capability as native Angel Storage and is intended for large files, archives, attachments and backups. It uses Drive `appProperties` to keep Angel OS logical paths independent from the visible Drive folder layout.
+
+Required server-side environment variables:
+
+```text
+GOOGLE_DRIVE_CLIENT_ID=
+GOOGLE_DRIVE_CLIENT_SECRET=
+GOOGLE_DRIVE_REFRESH_TOKEN=
+GOOGLE_DRIVE_ROOT_FOLDER_ID=   # optional dedicated Angel OS folder
+```
+
+The recommended OAuth scope is `https://www.googleapis.com/auth/drive.file`, so Angel OS only manages files created or explicitly granted to the application. Secrets must remain in the server/runtime secret store and must never be committed to Git.
+
 ## Current status
 
 `v0.1` establishes the reusable foundation: module registry, event bus, configuration, capability contracts and platform adapters.
