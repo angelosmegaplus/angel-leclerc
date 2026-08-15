@@ -6,7 +6,7 @@ on:
     - cron: "41 * * * *"
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: maintenance-angel-os
@@ -67,6 +67,23 @@ jobs:
         with:
           ref: main
           fetch-depth: 1
+
+      - name: Synchroniser la source cinéma
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/sync-cinema-source.mjs
+          if git diff --quiet -- runtime/cinema-source.json; then
+            echo "Source cinéma inchangée : dernière adresse saine conservée."
+            exit 0
+          fi
+          echo "Nouvelle source cinéma valide détectée."
+          git diff -- runtime/cinema-source.json
+          git config user.name "Angel OS Maintenance"
+          git config user.email "actions@users.noreply.github.com"
+          git add runtime/cinema-source.json
+          git commit -m "chore(cinema): update last healthy source"
+          git push origin HEAD:main
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
@@ -142,6 +159,7 @@ jobs:
             echo "- Commit vérifié : \`${GITHUB_SHA}\`"
             echo "- Angel AI OpenAI : test end-to-end réel exécuté en priorité sur /api/assistant"
             echo "- Candidatures : synchronisation Gmail réelle exécutée à chaque maintenance"
+            echo "- Cinéma : movix.online contrôlé, redirections suivies et dernière adresse saine conservée"
             echo "- Lint + build + TypeScript : exécutés sur GitHub Actions"
             echo "- Pages critiques : contrôlées"
             echo "- API météo : contrôlée"
