@@ -1,5 +1,6 @@
-import { createElement, useState } from "react";
+import { useState } from "react";
 import { RichTextEditor as VisualEditor, parseYouTubeId } from "./RichTextEditor.tsx";
+import { RichEditorModeTabs, type RichEditorMode } from "./RichEditorModeTabs";
 import { sanitizeArticleHtml } from "@/lib/sanitize-article-html";
 
 export { parseYouTubeId };
@@ -7,76 +8,63 @@ export { parseYouTubeId };
 type Props = { value: string; onChange: (html: string) => void };
 
 export function RichTextEditor({ value, onChange }: Props) {
-  const [htmlMode, setHtmlMode] = useState(false);
+  const [mode, setMode] = useState<RichEditorMode>("visual");
   const [htmlDraft, setHtmlDraft] = useState(value);
   const [visualKey, setVisualKey] = useState(0);
 
-  const switchToHtml = () => {
-    setHtmlDraft(value);
-    setHtmlMode(true);
-  };
-  const switchToVisual = () => {
-    onChange(sanitizeArticleHtml(htmlDraft));
-    setVisualKey((key) => key + 1);
-    setHtmlMode(false);
+  const changeMode = (next: RichEditorMode) => {
+    if (next === "html") setHtmlDraft(value);
+    if (mode === "html" && next !== "html") onChange(sanitizeArticleHtml(htmlDraft));
+    if (next === "visual" && mode !== "visual") setVisualKey((key) => key + 1);
+    setMode(next);
   };
 
-  const button = (active: boolean) =>
-    `min-h-10 rounded-lg border px-4 text-xs font-semibold transition-colors ${
-      active
-        ? "border-[#ce654b] bg-[#ce654b] text-white shadow-sm"
-        : "border-[#d8d1c8] bg-[#fffdf9] text-[#292522] hover:border-[#ce654b]/60 hover:bg-[#f8f1e9]"
-    }`;
+  const safePreview = sanitizeArticleHtml(mode === "html" ? htmlDraft : value);
 
-  return createElement(
-    "div",
-    {
-      className:
-        "overflow-visible rounded-xl border border-[#d8d1c8] bg-[#fffdf9] text-[#292522] shadow-sm",
-    },
-    createElement(
-      "div",
-      {
-        className:
-          "sticky top-0 z-30 flex gap-2 border-b border-[#ddd5cc] bg-[#f7f1e9]/95 p-2.5 backdrop-blur",
-      },
-      createElement(
-        "button",
-        { type: "button", className: button(!htmlMode), onClick: switchToVisual },
-        "Visuel",
-      ),
-      createElement(
-        "button",
-        { type: "button", className: button(htmlMode), onClick: switchToHtml },
-        "HTML",
-      ),
-    ),
-    htmlMode
-      ? createElement(
-          "div",
-          { className: "bg-[#fffdf9] p-3" },
-          createElement(
-            "p",
-            { className: "mb-2 text-xs text-[#6f665e]" },
-            "Modifiez le HTML puis revenez sur Visuel pour corriger directement le rendu normal.",
-          ),
-          createElement("textarea", {
-            value: htmlDraft,
-            onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) =>
-              setHtmlDraft(event.target.value),
-            spellCheck: false,
-            "aria-label": "Code HTML de l'article",
-            className:
-              "min-h-[420px] w-full resize-y rounded-lg border border-[#d8d1c8] bg-white p-4 font-mono text-xs leading-relaxed text-[#292522] outline-none placeholder:text-[#9b9188] focus:border-[#ce654b] focus:ring-2 focus:ring-[#ce654b]/20",
-          }),
-        )
-      : createElement(
-          "div",
-          {
-            className:
-              "bg-[#fffdf9] [&>div]:rounded-none [&>div]:border-0 [&>div]:bg-[#fffdf9] [&>div>div:first-child]:border-b [&>div>div:first-child]:border-[#ded6cd] [&>div>div:first-child]:bg-[#f4ede5] [&>div>div:first-child]:shadow-none [&>div>div:first-child>button]:border-[#ddd5cc] [&>div>div:first-child>button]:bg-[#fffaf5] [&>div>div:first-child>button]:text-[#332d29] [&>div>div:first-child>button:hover]:bg-[#eee4da] [&_.article-content]:bg-[#fffdf9] [&_.article-content]:text-[#292522] [&_.article-content]:caret-[#ce654b]",
-          },
-          createElement(VisualEditor, { key: visualKey, value, onChange }),
-        ),
+  return (
+    <div
+      className="overflow-visible rounded-xl border-2 border-[#E6DED2] bg-[#FFFDF9] text-[#181716] shadow-sm"
+      style={{
+        "--background": "#FFFDF9",
+        "--foreground": "#181716",
+        "--card": "#FFFDF9",
+        "--card-foreground": "#181716",
+        "--muted": "#F1EAE0",
+        "--muted-foreground": "#706D68",
+        "--border": "#E6DED2",
+        "--input": "#E6DED2",
+        "--primary": "#CE654B",
+        "--primary-foreground": "#FFFDF9",
+      } as React.CSSProperties}
+    >
+      <div className="sticky top-0 z-30 border-b border-[#E6DED2] bg-[#FFFDF9]/95 p-2.5 text-[#181716] backdrop-blur">
+        <RichEditorModeTabs mode={mode} onChange={changeMode} />
+      </div>
+
+      {mode === "visual" && (
+        <div className="bg-[#FFFDF9] text-[#181716] [&>div]:rounded-none [&>div]:border-0 [&>div]:bg-[#FFFDF9] [&>div]:text-[#181716] [&>div>div:first-child]:border-b-2 [&>div>div:first-child]:border-[#CE654B]/30 [&>div>div:first-child]:bg-[#F1EAE0] [&>div>div:first-child]:shadow-sm [&>div>div:first-child>button]:border [&>div>div:first-child>button]:border-[#E6DED2] [&>div>div:first-child>button]:bg-[#FFFDF9] [&>div>div:first-child>button]:text-[#181716] [&>div>div:first-child>button:last-of-type]:hidden [&_[contenteditable]]:bg-[#FFFDF9] [&_[contenteditable]]:text-[#181716] [&_.article-content]:bg-[#FFFDF9] [&_.article-content]:text-[#181716]">
+          <VisualEditor key={visualKey} value={value} onChange={onChange} />
+        </div>
+      )}
+
+      {mode === "html" && (
+        <textarea
+          value={htmlDraft}
+          onChange={(event) => setHtmlDraft(event.target.value)}
+          spellCheck={false}
+          aria-label="Code HTML de l'article"
+          className="min-h-[420px] w-full resize-y bg-[#FFFDF9] p-4 font-mono text-xs leading-relaxed text-[#181716] outline-none"
+        />
+      )}
+
+      {mode === "preview" && (
+        <iframe
+          title="Aperçu de l'article"
+          sandbox="allow-same-origin"
+          srcDoc={`<!doctype html><html><head><style>body{margin:0;padding:24px;background:#FFFDF9;color:#181716;font-family:Inter,system-ui,sans-serif}a{color:#CE654B}</style></head><body>${safePreview}</body></html>`}
+          className="min-h-[480px] w-full border-0 bg-[#FFFDF9]"
+        />
+      )}
+    </div>
   );
 }
