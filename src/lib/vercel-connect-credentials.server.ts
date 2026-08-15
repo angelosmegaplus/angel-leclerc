@@ -69,4 +69,18 @@ export async function getOpenAiCredential() {
   return null;
 }
 
+export function getAiGatewayCredential() {
+  // Vercel AI Gateway supports a dedicated API key and, on Vercel deployments,
+  // the automatically issued OIDC token. This gives Angel OS IA a second,
+  // independent route when the direct OpenAI account is out of quota or a
+  // connector credential is temporarily unusable.
+  const gatewayKey = process.env["AI_GATEWAY_API_KEY"];
+  if (gatewayKey?.trim()) return { value: gatewayKey.trim(), source: "ai-gateway-key" as const };
+
+  const oidc = process.env["VERCEL_OIDC_TOKEN"];
+  if (oidc?.trim()) return { value: oidc.trim(), source: "vercel-oidc" as const };
+
+  return null;
+}
+
 export const VERCEL_CONNECTOR_IDS = CONNECTORS;
