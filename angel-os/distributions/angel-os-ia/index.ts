@@ -1,31 +1,38 @@
 // SPDX-License-Identifier: GPL-2.0-only
 import type { AngelOSContext, AngelOSDistribution, AngelOSModule } from '../../core/types';
 
-const aiModule: AngelOSModule = {
-  id: 'angel-os-ia.ai',
-  version: '0.1.0',
-  requires: ['events', 'configuration'],
-  provides: ['ai'],
-  start(_context: AngelOSContext) {
-    // Provider-specific AI remains behind application adapters.
-  },
-};
+function module(id: string, provides: string[]): AngelOSModule {
+  return {
+    id: `angel-os-ia.${id}`,
+    version: '0.2.0',
+    requires: ['events', 'configuration'],
+    provides,
+    start(_context: AngelOSContext) {
+      // Angel OS IA consumes Angel OS services through adapters. It must never
+      // become a dependency of the Angel OS core itself.
+    },
+  };
+}
 
-const automationModule: AngelOSModule = {
-  id: 'angel-os-ia.automation',
-  version: '0.1.0',
-  requires: ['events', 'configuration'],
-  provides: ['automation'],
-  start(_context: AngelOSContext) {
-    // Schedulers and platform jobs are supplied by adapters/apps.
-  },
-};
+const aiProviderModule = module('providers', ['ai-providers']);
+const conversationModule = module('conversation', ['conversation', 'contextual-assistance']);
+const analysisModule = module('analysis', ['ai-analysis', 'recommendations']);
+const generationModule = module('generation', ['content-generation']);
+const agentModule = module('agents', ['ai-agents', 'ai-orchestration']);
+const automationModule = module('automation', ['intelligent-automation']);
+
+export const ANGEL_OS_IA_BOUNDARY = {
+  dependsOn: 'angel-os',
+  coreDependencyDirection: 'angel-os-ia -> angel-os',
+  forbiddenDirection: 'angel-os -> angel-os-ia',
+  systemCapabilitiesRemainInAngelOs: true,
+} as const;
 
 export const angelOSIA: AngelOSDistribution = {
   id: 'angel-os-ia',
   name: 'Angel OS IA',
-  version: '0.1.0',
-  modules: [aiModule, automationModule],
+  version: '0.2.0',
+  modules: [aiProviderModule, conversationModule, analysisModule, generationModule, agentModule, automationModule],
 };
 
 export default angelOSIA;
