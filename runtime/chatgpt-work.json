@@ -1,13 +1,13 @@
 {
   "version": 4,
-  "updatedAt": "2026-08-15T10:31:00Z",
+  "updatedAt": "2026-08-15T10:42:00Z",
   "source": "github",
   "current": [
     {
-      "id": "angel-ai-end-to-end",
-      "title": "PRIORITÉ ABSOLUE — Corriger et vérifier Angel AI OpenAI de bout en bout",
-      "status": "waiting_publish",
-      "detail": "Cause confirmée en production : /api/assistant échouait avant OpenAI car la mémoire IA exigeait SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY. Correctif poussé sur main (729d7e9) : la mémoire devient optionnelle et l’appel OpenAI peut continuer sans Supabase. Validation réelle encore requise après publication ; le déploiement automatique est actuellement bloqué par le build-rate-limit Vercel."
+      "id": "movix-max-port",
+      "title": "Adapter au maximum Movix dans Films & séries",
+      "status": "running",
+      "detail": "Analyse approfondie de movixcorp/MovixOpenSource en cours de portage : Home cinéma, carrousels tactiles, recherche/autocomplétion, filtres, TMDB, fiches riches, casting, trailers, fournisseurs légaux, collections, watchlist, historique/progression, lazy loading, cache et UX mobile. Les modules de proxy/débridage/contournement publicitaire ou lecture non autorisée ne sont pas importés. Attribution CC BY-NC 4.0 conservée."
     }
   ],
   "waiting": [
@@ -15,7 +15,13 @@
       "id": "publication-production",
       "title": "Publier le dernier main en production",
       "status": "waiting_publish",
-      "detail": "Le dernier main contient notamment le correctif Angel AI. Vercel signale actuellement build-rate-limit ; ne pas créer de commit artificiel ni multiplier les builds. Réessayer la publication officielle au prochain cycle."
+      "detail": "Le dernier main contient les dernières améliorations Angel OS. Vercel signale actuellement build-rate-limit ; ne pas créer de commit artificiel ni multiplier les builds. Réessayer la publication officielle au prochain cycle."
+    },
+    {
+      "id": "angel-ai-end-to-end",
+      "title": "Vérifier Angel AI OpenAI de bout en bout après publication",
+      "status": "waiting_publish",
+      "detail": "Le correctif Supabase est sur main. Validation réelle encore requise après publication avec une vraie réponse OpenAI."
     },
     {
       "id": "admin-auth-production-check",
@@ -27,35 +33,16 @@
       "id": "admin-news-production-check",
       "title": "Vérifier toutes les rubriques Actualités en production",
       "status": "waiting_publish",
-      "detail": "Les correctifs sont sur main : chaque rubrique doit recevoir des contenus, À la une doit être plus fraîche et mieux personnalisée, sans recyclage excessif d’anciens articles."
-    },
-    {
-      "id": "admin-home-data",
-      "title": "Finaliser les données utiles de l’accueil admin",
-      "status": "waiting",
-      "detail": "Regroupe météo, agenda, mails, candidatures et bilan général qui étaient dispersés dans plusieurs tickets visibles."
+      "detail": "Chaque rubrique doit recevoir des contenus et À la une doit être fraîche et personnalisée."
     }
   ],
   "done": [
     {
-      "id": "angel-ai-supabase-hard-fail-fix",
-      "title": "Empêcher Supabase de bloquer Angel AI avant OpenAI",
+      "id": "movix-tmdb-foundation",
+      "title": "Porter la base TMDB et la fiche riche Films & séries",
       "status": "done",
-      "detail": "La mémoire IA est désormais un enrichissement optionnel : si Supabase est absent ou indisponible, /api/assistant continue vers OpenAI au lieu de renvoyer 500.",
-      "commit": "729d7e957a195acb11347550774f04ac17bedd97"
-    },
-    {
-      "id": "queue-json-repair",
-      "title": "Réparer le format de la file GitHub live",
-      "status": "done",
-      "detail": "runtime/chatgpt-work.json avait été accidentellement encapsulé dans un objet content/encoding ; le fichier est revenu à son JSON attendu."
-    },
-    {
-      "id": "queue-main-state-fix",
-      "title": "Séparer main prêt et publication en attente",
-      "status": "done",
-      "detail": "La file ne présente plus le dernier main comme bloqué lorsque seul le déploiement production reste en attente.",
-      "commit": "57a6b172bb848dcb8123b138de15e9420b682484"
+      "detail": "Couche TMDB serveur, affiches enrichies, poster mobile, backdrop, synopsis, genres, casting, bande-annonce, fournisseurs légaux et recommandations sont sur main.",
+      "commit": "48dec5e5ed55c408d6fa7639a25ace81102b2c3c"
     }
   ]
 }
