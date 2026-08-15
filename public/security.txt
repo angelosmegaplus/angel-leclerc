@@ -1,0 +1,5 @@
+Contact: https://www.angel-leclerc.fr/contact
+Canonical: https://www.angel-leclerc.fr/.well-known/security.txt
+Policy: https://www.angel-leclerc.fr/politique-confidentialite
+Preferred-Languages: fr, en
+Expires: 2027-08-15T00:00:00Z
