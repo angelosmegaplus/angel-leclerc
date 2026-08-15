@@ -48,20 +48,20 @@ async function checkTmdb(): Promise<DependencyHealth> {
 }
 
 async function checkSupabaseAuth(): Promise<DependencyHealth> {
-  const url = process.env.SUPABASE_URL?.trim();
-  const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY?.trim();
-  if (!url || !publishableKey) {
-    const missing = [!url ? "SUPABASE_URL" : null, !publishableKey ? "SUPABASE_PUBLISHABLE_KEY" : null].filter(Boolean).join(",");
-    return { configured: false, reachable: null, source: "env", reason: `missing:${missing}` };
-  }
+  const runtimeUrl = process.env.SUPABASE_URL?.trim();
+  const runtimeKey = process.env.SUPABASE_PUBLISHABLE_KEY?.trim();
+  const url = runtimeUrl || import.meta.env.VITE_SUPABASE_URL?.trim();
+  const publishableKey = runtimeKey || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
+  const source = runtimeUrl && runtimeKey ? "runtime-env" : "bundled-public-config";
+  if (!url || !publishableKey) return { configured: false, reachable: null, source, reason: "public_config_missing" };
   try {
     const response = await withTimeout((signal) => fetch(`${url.replace(/\/$/, "")}/auth/v1/settings`, {
       signal,
       headers: { apikey: publishableKey },
     }));
-    return { configured: true, reachable: response.ok, source: "env", reason: response.ok ? null : `http_${response.status}` };
+    return { configured: true, reachable: response.ok, source, reason: response.ok ? null : `http_${response.status}` };
   } catch (error) {
-    return { configured: true, reachable: false, source: "env", reason: error instanceof Error ? error.name : "request_failed" };
+    return { configured: true, reachable: false, source, reason: error instanceof Error ? error.name : "request_failed" };
   }
 }
 
@@ -77,7 +77,7 @@ export const Route = createFileRoute("/api/angel-os/health")({
           {
             service: "angel-os",
             layer: "angel-os",
-            healthy: true,
+            healthy: openai.reachable !== false && tmdb.reachable !== false && supabaseAuth.reachable !== false,
             checkedAt: now,
             release: process.env["VERCEL_GIT_COMMIT_SHA"] ?? process.env["GITHUB_SHA"] ?? null,
             runtime: {
