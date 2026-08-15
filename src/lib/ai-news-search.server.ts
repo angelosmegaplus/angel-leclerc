@@ -92,7 +92,7 @@ export async function searchNewsWithOpenAI(): Promise<NewsItem[]> {
   if (!credential && !gatewayCredential) return [];
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 32_000);
+  const timeout = setTimeout(() => controller.abort(), 14_000);
   try {
     const models = webModels();
     for (let index = 0; index < models.length; index += 1) {
@@ -103,7 +103,7 @@ export async function searchNewsWithOpenAI(): Promise<NewsItem[]> {
         response = await runProvider("https://api.openai.com/v1/responses", credential.value, model, controller);
         if (!response.ok) {
           const body = await response.text();
-          console.warn("[ai-news-search] direct OpenAI web search failed", response.status, { model, credentialSource: credential.source, body: body.slice(0, 1200) });
+          console.warn("[ai-news-search] direct OpenAI web search unavailable", response.status, { model, credentialSource: credential.source });
           const hasFallbackModel = index < models.length - 1;
           if (hasFallbackModel && shouldTryFallback(response.status, body)) continue;
           response = null;
@@ -115,7 +115,7 @@ export async function searchNewsWithOpenAI(): Promise<NewsItem[]> {
         response = await runProvider("https://ai-gateway.vercel.sh/v1/responses", gatewayCredential.value, routedModel, controller);
         if (!response.ok) {
           const body = await response.text();
-          console.error("[ai-news-search] Vercel AI Gateway web search failed", response.status, { model: routedModel, credentialSource: gatewayCredential.source, body: body.slice(0, 1200) });
+          console.warn("[ai-news-search] Vercel AI Gateway web search unavailable", response.status, { model: routedModel, credentialSource: gatewayCredential.source });
           const hasFallbackModel = index < models.length - 1;
           if (hasFallbackModel && shouldTryFallback(response.status, body)) continue;
           state.failureUntil = now + FAILURE_COOLDOWN_MS;
@@ -133,7 +133,12 @@ export async function searchNewsWithOpenAI(): Promise<NewsItem[]> {
     state.failureUntil = now + FAILURE_COOLDOWN_MS;
     return state.items;
   } catch (error) {
-    console.error("[ai-news-search] failure", error);
+    const message = error instanceof Error ? error.message : String(error);
+    if (controller.signal.aborted || (error instanceof DOMException && error.name === "AbortError")) {
+      console.warn("[ai-news-search] timed out; keeping cached feed");
+    } else {
+      console.warn("[ai-news-search] unavailable; keeping cached feed", message);
+    }
     state.failureUntil = now + FAILURE_COOLDOWN_MS;
     return state.items;
   } finally { clearTimeout(timeout); }
