@@ -1,42 +1,49 @@
 {
   "version": 4,
-  "updatedAt": "2026-08-15T10:42:00Z",
+  "updatedAt": "2026-08-15T11:31:30Z",
   "source": "github",
   "current": [
+    {
+      "id": "angel-ai-end-to-end",
+      "title": "Valider Angel AI OpenAI de bout en bout en production",
+      "status": "running",
+      "detail": "Le dernier main est désormais déployé READY en production. Le correctif rendant la mémoire Supabase optionnelle est donc publié. La validation reste ouverte tant qu'une vraie requête POST vers /api/assistant n'a pas produit une réponse OpenAI exploitable ; aucun succès n'est simulé."
+    },
+    {
+      "id": "ci-typecheck-failure",
+      "title": "Diagnostiquer l’échec TypeScript du dernier main",
+      "status": "running",
+      "detail": "Le build production réussit, mais le workflow CI du dernier main échoue à l’étape tsc --noEmit avec exit code 2. La cause précise doit être extraite avant correction ; ne pas modifier à l’aveugle."
+    },
     {
       "id": "movix-max-port",
       "title": "Adapter au maximum Movix dans Films & séries",
       "status": "running",
-      "detail": "Analyse approfondie de movixcorp/MovixOpenSource en cours de portage : Home cinéma, carrousels tactiles, recherche/autocomplétion, filtres, TMDB, fiches riches, casting, trailers, fournisseurs légaux, collections, watchlist, historique/progression, lazy loading, cache et UX mobile. Les modules de proxy/débridage/contournement publicitaire ou lecture non autorisée ne sont pas importés. Attribution CC BY-NC 4.0 conservée."
+      "detail": "Portage Movix toujours valide mais secondaire tant qu’Angel AI n’est pas validée : Home cinéma, carrousels tactiles, recherche/autocomplétion, filtres, TMDB, fiches riches, casting, trailers, fournisseurs légaux, collections, watchlist, historique/progression, lazy loading, cache et UX mobile. Aucun module de proxy/débridage/contournement publicitaire ou lecture non autorisée. Attribution CC BY-NC 4.0 conservée."
     }
   ],
   "waiting": [
     {
-      "id": "publication-production",
-      "title": "Publier le dernier main en production",
-      "status": "waiting_publish",
-      "detail": "Le dernier main contient les dernières améliorations Angel OS. Vercel signale actuellement build-rate-limit ; ne pas créer de commit artificiel ni multiplier les builds. Réessayer la publication officielle au prochain cycle."
-    },
-    {
-      "id": "angel-ai-end-to-end",
-      "title": "Vérifier Angel AI OpenAI de bout en bout après publication",
-      "status": "waiting_publish",
-      "detail": "Le correctif Supabase est sur main. Validation réelle encore requise après publication avec une vraie réponse OpenAI."
-    },
-    {
       "id": "admin-auth-production-check",
       "title": "Vérifier le nouveau parcours d’accès administrateur",
-      "status": "waiting_publish",
-      "detail": "Contrôler en production : CAPTCHA visuel aléatoire multi-catégories, limitation des tentatives, écran noir de sécurité puis connexion, sans retour au PIN 2005 ni boucle."
+      "status": "waiting_check",
+      "detail": "La production sert désormais le dernier main. Contrôler le parcours réel : CAPTCHA visuel aléatoire multi-catégories, limitation des tentatives, écran noir de sécurité puis connexion, sans retour au PIN 2005 ni boucle."
     },
     {
       "id": "admin-news-production-check",
       "title": "Vérifier toutes les rubriques Actualités en production",
-      "status": "waiting_publish",
-      "detail": "Chaque rubrique doit recevoir des contenus et À la une doit être fraîche et personnalisée."
+      "status": "waiting_check",
+      "detail": "La production sert désormais le dernier main. Chaque rubrique doit recevoir des contenus et À la une doit rester fraîche et personnalisée."
     }
   ],
   "done": [
+    {
+      "id": "publication-production",
+      "title": "Publier le dernier main en production",
+      "status": "done",
+      "detail": "Le déploiement production Vercel correspondant au commit cd9e6d7db825a34ff0d8d0ab5a0fa7700a579cc6 est READY et cible production.",
+      "commit": "cd9e6d7db825a34ff0d8d0ab5a0fa7700a579cc6"
+    },
     {
       "id": "movix-tmdb-foundation",
       "title": "Porter la base TMDB et la fiche riche Films & séries",
