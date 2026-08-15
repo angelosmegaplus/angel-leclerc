@@ -1,13 +1,13 @@
 {
   "version": 3,
-  "updatedAt": "2026-08-15T09:35:30Z",
+  "updatedAt": "2026-08-15T10:12:00Z",
   "source": "github",
   "current": [
     {
       "id": "angel-ai-end-to-end",
       "title": "Corriger et vérifier Angel AI de bout en bout",
       "status": "running",
-      "detail": "Traitement prioritaire du plus ancien point du backlog. Le gateway OpenAI, le routage, l'historique et le fallback ont été relus sur main ; la vérification runtime complète accueil admin / recherche universelle / autres entrées IA reste à terminer avant validation. Dernier HEAD applicatif observé pendant ce contrôle : 6e41abb96469da86348b5c1d62964267eab516a0."
+      "detail": "Traitement prioritaire du plus ancien point du backlog. Le gateway OpenAI, le routage, l'historique et le fallback ont été relus sur main ; la vérification runtime complète accueil admin / recherche universelle / autres entrées IA reste à terminer avant validation."
     }
   ],
   "waiting": [
@@ -34,14 +34,16 @@
     {"id":"admin-connections-status","title":"Afficher l’état réel des connexions","status":"waiting","detail":"Connecté, reconnexion, activation serveur, scopes et dernière synchro si disponible."},
     {"id":"connector-open-source-review","title":"Rechercher des implémentations open source compatibles","status":"waiting","detail":"Vérifier licence, attribution, sécurité et compatibilité avant réutilisation."},
     {"id":"licenses-public-page","title":"Maintenir la page Logiciels, licences et crédits","status":"waiting","detail":"Page publique liée depuis les mentions légales."},
-    {"id":"publication-latest-main","title":"Publier le dernier main en production","status":"blocked","detail":"La cible reste dynamiquement le HEAD courant de main. Le workflow Publication Angel OS constate que VERCEL_TOKEN est absent dans l'environnement GitHub : aucun déploiement/build artificiel n'est lancé et le prochain passage retentera la version main la plus récente."},
+    {"id":"publication-production","title":"Publication production du dernier main","status":"waiting_publish","detail":"Le code est déjà prêt et présent sur main au commit 25eabae87ab9d211b89dca777ca98c4a01282051. Seule la synchronisation avec la production reste en attente du mécanisme de déploiement Vercel disponible ; ne pas présenter le dernier main lui-même comme une tâche bloquée."},
     {"id":"hosting-provider-check","title":"Vérifier le fournisseur d’hébergement réellement actif","status":"waiting","detail":"Adapter la publication au mécanisme officiel réellement disponible."},
     {"id":"duplicate-maintenance","title":"Contrôler les vrais doublons admin et site public","status":"waiting","detail":"Fusionner vers une version canonique en conservant toutes les informations uniques."},
     {"id":"continuous-regression-checks","title":"Contrôler mobile, PWA, auth, recherche et régressions","status":"waiting","detail":"Inclut statistiques, formulaires, liens, assets et thèmes clair/sombre."},
     {"id":"no-fake-state","title":"Garantir l’absence de données ou succès simulés","status":"waiting","detail":"Ne jamais fabriquer statistiques, statuts, mails, rendez-vous ou succès de déploiement."}
   ],
   "done": [
-    {"id":"admin-news-freshness","title":"Actualités admin fraîches et diversifiées","status":"done","detail":"Le backlog marque ce point comme vérifié : « À la une » privilégie les dernières heures et évite le recyclage inutile."},
+    {"id":"latest-main-ready","title":"Dernier main prêt","status":"done","detail":"Le dernier état du code est bien sur main et prêt à être publié. HEAD : 25eabae87ab9d211b89dca777ca98c4a01282051.","commit":"25eabae87ab9d211b89dca777ca98c4a01282051"},
+    {"id":"admin-news-coverage-fix","title":"Corriger la couverture et la personnalisation des actualités","status":"done","detail":"La récupération par rubrique et la personnalisation du fil ont été renforcées sur main.","commit":"25eabae87ab9d211b89dca777ca98c4a01282051"},
+    {"id":"admin-news-freshness","title":"Actualités admin fraîches et diversifiées","status":"done","detail":"« À la une » privilégie les dernières heures et évite le recyclage inutile."},
     {"id":"live-modification-queue-status","title":"Afficher toutes les demandes de modification en direct","status":"done","detail":"La file d'accueil affiche les demandes en attente avec deux points jaunes et les demandes terminées en vert, avec synchronisation fréquente.","commit":"1200dd3c4fa54b7adebd137084524d03e92350bd"},
     {"id":"admin-refresh-to-chatgpt","title":"Relier les boutons Actualiser à la file ChatGPT","status":"done","detail":"Les demandes refresh_check, chatgpt_task et operator_request sont affichées sur l'accueil et relues automatiquement.","commit":"25249019e3c485fb47d2dad71f0da7861903516c"},
     {"id":"ai-memory-and-queue","title":"Mémoire Angel AI et file de travail ChatGPT","status":"done","detail":"Mémoire publique/privée, contexte OpenAI et file technique ajoutés au code sur main.","commit":"11aefe34db53ce248e9395f1c90088d7841fdddf"}
