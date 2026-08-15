@@ -20,7 +20,9 @@ const NEWS_CACHE_KEY = "news_dashboard";
 const TOPICAL_MAX_HOURS = 48;
 const HEADLINE_PRIMARY_HOURS = 10;
 const HEADLINE_FALLBACK_HOURS = 30;
-const AI_NEWS_TIMEOUT_MS = 6500;
+// searchNewsWithOpenAI possède déjà son propre AbortController à 14 s.
+// Le délai externe doit rester légèrement supérieur pour ne pas jeter une recherche web encore valide.
+const AI_NEWS_TIMEOUT_MS = 16_000;
 
 const FEEDS: Array<{ category: Exclude<NewsCategory, "une">; query: string }> = [
   { category: "politique", query: '(politique France OR société OR gouvernement OR Assemblée OR collectivités OR services publics OR pouvoir achat OR souveraineté OR justice OR corruption OR lobbying OR institutions) when:1d' },
