@@ -60,7 +60,7 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         shell: bash
         run: |
-          test -n "$VERCEL_TOKEN" || { echo "::error::VERCEL_TOKEN absent"; exit 1; }
+          test -n "$VERCEL_TOKEN" || { echo "::error::VERCEL_TOKEN absent : publication contrôlée impossible."; exit 1; }
 
       - name: Read current production and detect already-published release
         id: production
@@ -86,9 +86,8 @@ jobs:
         if: steps.production.outputs.already_ready != 'true'
         run: bun install
 
-      - name: Lint diagnostics
+      - name: Lint
         if: steps.production.outputs.already_ready != 'true'
-        continue-on-error: true
         run: bun run lint
 
       - name: Build production bundle
@@ -142,7 +141,6 @@ jobs:
         run: bunx vercel@latest promote "$DEPLOY_URL" --token="$VERCEL_TOKEN" --scope=angel-os2
 
       - name: Verify real production domain
-        id: verify
         if: steps.production.outputs.already_ready != 'true'
         env:
           SHA: ${{ steps.current.outputs.sha }}
@@ -186,8 +184,7 @@ jobs:
           echo "## Publication Angel OS" >> "$GITHUB_STEP_SUMMARY"
           echo "- Cible : ${{ steps.current.outputs.sha }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- CI obligatoire avant publication" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Build et TypeScript bloquants" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Lint exécuté en diagnostic jusqu'à résorption de la dette historique" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Lint, build et TypeScript bloquants" >> "$GITHUB_STEP_SUMMARY"
           echo "- Déploiement staged avant promotion" >> "$GITHUB_STEP_SUMMARY"
           echo "- Smoke tests avant et après promotion" >> "$GITHUB_STEP_SUMMARY"
           echo "- Rollback automatique tenté si la vérification production échoue" >> "$GITHUB_STEP_SUMMARY"
