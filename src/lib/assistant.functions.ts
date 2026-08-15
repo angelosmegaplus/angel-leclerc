@@ -19,8 +19,13 @@ export const askAssistant = createServerFn({ method: "POST" })
     try { ip = getRequestIP({ xForwardedFor: true }) ?? "unknown"; } catch { /* hors requête */ }
     if (!checkAssistantRate(ip)) return { text: null, source: "fallback" };
 
-    const { ASSISTANT_SYSTEM_PROMPT, CONTACT_ASSISTANT_ADDENDUM } = await import("./assistant-context");
-    const systemPrompt = data.mode === "contact" ? `${ASSISTANT_SYSTEM_PROMPT}\n\n${CONTACT_ASSISTANT_ADDENDUM}` : ASSISTANT_SYSTEM_PROMPT;
+    const [{ ASSISTANT_SYSTEM_PROMPT, CONTACT_ASSISTANT_ADDENDUM }, { aiMemoryPrompt }] = await Promise.all([
+      import("./assistant-context"),
+      import("./ai-memory.server"),
+    ]);
+    const liveMemory = await aiMemoryPrompt("public");
+    const basePrompt = data.mode === "contact" ? `${ASSISTANT_SYSTEM_PROMPT}\n\n${CONTACT_ASSISTANT_ADDENDUM}` : ASSISTANT_SYSTEM_PROMPT;
+    const systemPrompt = `${basePrompt}${liveMemory}`;
     const messages: AiMessage[] = [
       { role: "system", content: systemPrompt },
       ...(data.history ?? []).slice(-12),
