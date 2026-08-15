@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 
 export type FilmLookupInput = { id: string; title: string; year: number; mediaType: "movie" | "tv" };
-export type FilmMeta = { catalogId: string; tmdbId: number; mediaType: "movie" | "tv"; poster: string | null; backdrop: string | null; overview: string; rating: number; year: string };
+export type FilmMeta = { catalogId: string; tmdbId: number; mediaType: "movie" | "tv"; poster: string | null; backdrop: string | null; logo: string | null; overview: string; rating: number; year: string };
 export type Provider = { id: number; name: string; logo: string | null };
 export type FilmDetail = FilmMeta & {
   title: string;
@@ -15,6 +15,8 @@ export type FilmDetail = FilmMeta & {
 };
 
 type SearchResult = { id: number; title?: string; name?: string; poster_path: string | null; backdrop_path: string | null; overview?: string; vote_average?: number; release_date?: string; first_air_date?: string };
+type ImageAsset = { file_path?: string | null; iso_639_1?: string | null; vote_average?: number };
+type ImagesPayload = { posters?: ImageAsset[]; backdrops?: ImageAsset[]; logos?: ImageAsset[] };
 
 function slim(raw: SearchResult, mediaType: "movie" | "tv") {
   const date = raw.release_date || raw.first_air_date || "";
@@ -30,17 +32,42 @@ async function resolve(input: FilmLookupInput) {
   return result.results[0] ?? null;
 }
 
+function bestLocalizedAsset(items: ImageAsset[] | undefined, preferred: string[], fallback?: string | null) {
+  const valid = (items ?? []).filter((item) => item.file_path);
+  for (const language of preferred) {
+    const matching = valid
+      .filter((item) => item.iso_639_1 === language)
+      .sort((a, b) => (b.vote_average ?? 0) - (a.vote_average ?? 0));
+    if (matching[0]?.file_path) return matching[0].file_path;
+  }
+  return valid.sort((a, b) => (b.vote_average ?? 0) - (a.vote_average ?? 0))[0]?.file_path ?? fallback ?? null;
+}
+
+async function artwork(tmdbId: number, mediaType: "movie" | "tv", fallbackPoster: string | null, fallbackBackdrop: string | null) {
+  const { tmdb } = await import("./tmdb.server");
+  try {
+    const images = await tmdb<ImagesPayload>(`/${mediaType}/${tmdbId}/images`, { include_image_language: "fr,en,null" });
+    return {
+      poster: bestLocalizedAsset(images.posters, ["fr", "en", null as unknown as string], fallbackPoster),
+      backdrop: bestLocalizedAsset(images.backdrops, [null as unknown as string, "fr", "en"], fallbackBackdrop),
+      logo: bestLocalizedAsset(images.logos, ["fr", "en", null as unknown as string], null),
+    };
+  } catch {
+    return { poster: fallbackPoster, backdrop: fallbackBackdrop, logo: null };
+  }
+}
+
 export const getFilmCatalogMetadata = createServerFn({ method: "GET" })
   .inputValidator((data: { items: FilmLookupInput[] }) => ({ items: (data.items ?? []).slice(0, 20).map((item) => ({ id: String(item.id), title: String(item.title).slice(0, 160), year: Number(item.year), mediaType: item.mediaType === "tv" ? "tv" as const : "movie" as const })) }))
   .handler(async ({ data }): Promise<FilmMeta[]> => {
-    const { tmdb } = await import("./tmdb.server");
     if (!(process.env["TMDB_API_KEY"] || process.env["VITE_TMDB_API_KEY"])) return [];
     const results = await Promise.all(data.items.map(async (item) => {
       try {
         const found = await resolve(item);
         if (!found) return null;
         const date = found.release_date || found.first_air_date || "";
-        return { catalogId: item.id, tmdbId: found.id, mediaType: item.mediaType, poster: found.poster_path, backdrop: found.backdrop_path, overview: found.overview ?? "", rating: Math.round((found.vote_average ?? 0) * 10) / 10, year: date.slice(0, 4) } satisfies FilmMeta;
+        const art = await artwork(found.id, item.mediaType, found.poster_path, found.backdrop_path);
+        return { catalogId: item.id, tmdbId: found.id, mediaType: item.mediaType, poster: art.poster, backdrop: art.backdrop, logo: art.logo, overview: found.overview ?? "", rating: Math.round((found.vote_average ?? 0) * 10) / 10, year: date.slice(0, 4) } satisfies FilmMeta;
       } catch { return null; }
     }));
     return results.filter((item): item is FilmMeta => Boolean(item));
@@ -65,14 +92,16 @@ export const getFilmDetail = createServerFn({ method: "GET" })
     const map = (items?: { provider_id: number; provider_name: string; logo_path: string | null }[]) => (items ?? []).map((provider) => ({ id: provider.provider_id, name: provider.provider_name, logo: provider.logo_path }));
     const date = raw.release_date || raw.first_air_date || "";
     const runtime = raw.runtime ? `${Math.floor(raw.runtime / 60)} h ${raw.runtime % 60} min` : raw.number_of_seasons ? `${raw.number_of_seasons} saison${raw.number_of_seasons > 1 ? "s" : ""}` : "";
+    const art = await artwork(raw.id, data.mediaType, raw.poster_path, raw.backdrop_path);
     return {
       catalogId: data.id,
       tmdbId: raw.id,
       mediaType: data.mediaType,
       title: raw.title || raw.name || data.title,
       tagline: raw.tagline ?? "",
-      poster: raw.poster_path,
-      backdrop: raw.backdrop_path,
+      poster: art.poster,
+      backdrop: art.backdrop,
+      logo: art.logo,
       overview: raw.overview ?? "",
       rating: Math.round((raw.vote_average ?? 0) * 10) / 10,
       year: date.slice(0, 4),
