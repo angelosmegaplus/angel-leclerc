@@ -22,8 +22,9 @@ jobs:
     timeout-minutes: 10
     environment: production
     env:
-      VERCEL_ORG_ID: team_V2zZ6Gj9Vt3ULjCO6ssDbqwM
-      VERCEL_PROJECT_ID: prj_TZoiBkJM3z1knPE6Pc1V854CwrNe
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      NEWSLETTER_CRON_SECRET: ${{ secrets.NEWSLETTER_CRON_SECRET }}
 
     steps:
       - uses: actions/checkout@v4
@@ -48,26 +49,28 @@ jobs:
           echo "snapshot_file=$SNAPSHOT_FILE" >> "$GITHUB_ENV"
           echo "Snapshot sélectionné : $SNAPSHOT_FILE"
 
-      - name: Charger les variables serveur disponibles
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      - name: Charger la configuration Supabase native
         shell: bash
         run: |
-          if [ -n "$VERCEL_TOKEN" ]; then
-            bunx vercel@latest pull --yes --environment=production --token="$VERCEL_TOKEN" --scope=angel-os2 >/dev/null
-            bunx vercel@latest env pull .env.production.local --yes --environment=production --token="$VERCEL_TOKEN" --scope=angel-os2 >/dev/null
-            echo "server_env=.env.production.local" >> "$GITHUB_ENV"
+          if [ -f .env ]; then
+            echo "public_env=.env" >> "$GITHUB_ENV"
           else
-            echo "::warning::VERCEL_TOKEN absent : tentative de synchronisation avec les variables publiques du dépôt uniquement."
-            echo "server_env=.env" >> "$GITHUB_ENV"
+            echo "public_env=" >> "$GITHUB_ENV"
+          fi
+          if [ -n "${SUPABASE_SERVICE_ROLE_KEY:-}" ]; then
+            echo "Clé serveur Supabase disponible via les secrets GitHub."
+          else
+            echo "::warning::SUPABASE_SERVICE_ROLE_KEY absente : les écritures protégées pourront être refusées par RLS."
           fi
 
       - name: Synchroniser les caches Angel OS directement vers Supabase
         shell: bash
         run: |
-          set -a
-          source "$server_env"
-          set +a
+          if [ -n "${public_env:-}" ]; then
+            set -a
+            source "$public_env"
+            set +a
+          fi
           node <<'NODE'
           const fs = require('fs');
           const snapshot = JSON.parse(fs.readFileSync(process.env.snapshot_file || 'runtime/angel-os-snapshot.json', 'utf8'));
@@ -142,13 +145,6 @@ jobs:
         if: env.snapshot_file == 'runtime/angel-os-snapshot.json'
         shell: bash
         run: |
-          if [ "$server_env" != ".env.production.local" ]; then
-            echo "Secrets serveur indisponibles : revue quotidienne non déclenchée depuis GitHub."
-            exit 0
-          fi
-          set -a
-          source "$server_env"
-          set +a
           if [ -z "${NEWSLETTER_CRON_SECRET:-}" ]; then
             echo "NEWSLETTER_CRON_SECRET absent : revue quotidienne non déclenchée"
             exit 0
@@ -166,4 +162,5 @@ jobs:
           echo "- Source : ${snapshot_file:-runtime/angel-os-snapshot.json}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Voie : GitHub Actions → Supabase direct" >> "$GITHUB_STEP_SUMMARY"
           echo "- Lovable : non utilisé" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Vercel : non requis pour l’écriture des caches" >> "$GITHUB_STEP_SUMMARY"
           echo "- En cas de permission manquante, les anciennes données sont conservées et le blocage est journalisé sans faire échouer le workflow." >> "$GITHUB_STEP_SUMMARY"
