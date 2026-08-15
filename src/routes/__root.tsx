@@ -143,7 +143,7 @@ function RootComponent() {
         <PageViewTracker />
         <PwaRegistrar />
         {isAngelOSPage || isAdminPage ? (
-          <main className="min-h-screen">
+          <main className="min-h-screen [&_footer]:hidden">
             <Outlet />
           </main>
         ) : (
