@@ -1,9 +1,9 @@
 {
-  "fetchedAt": "2026-08-15T07:47:05Z",
+  "fetchedAt": "2026-08-15T08:46:23Z",
   "caches": {
     "news_dashboard": {
-      "fetchedAt": "2026-08-15T07:47:05Z",
-      "changed_since_previous": "Aucun nouveau développement national ou local suffisamment important et vérifiable publié au cours de la dernière heure n’a été trouvé pendant ce passage. Le fil reste volontairement court et conserve uniquement les informations encore utiles aujourd’hui plutôt que de recycler des contenus anciens.",
+      "fetchedAt": "2026-08-15T08:46:23Z",
+      "changed_since_previous": "Aucune nouvelle publication suffisamment récente, importante et vérifiable n’a été trouvée dans la dernière heure. Le fil reste volontairement très court : les événements pratiques de Sarlat prévus aujourd’hui sont conservés comme suivis utiles, sans recycler d’anciennes actualités nationales.",
       "top_stories": [],
       "politics_society": [],
       "investigations": [],
@@ -12,31 +12,18 @@
       "cinema_series": [],
       "orientation_learning": [],
       "youtube_to_watch": [],
-      "general_news": [
-        {
-          "title": "Grève des personnels navigants easyJet en France les 15 et 16 août",
-          "source": "Reuters",
-          "date": "2026-08-12T13:41:54+02:00",
-          "category": "transport_travail",
-          "summary": "Le syndicat SNPC-FO a appelé les personnels navigants easyJet en France à la grève les 15 et 16 août pour protester contre les conditions de travail. La compagnie a annoncé vouloir limiter les perturbations et proposer transferts ou remboursements en cas d’annulation.",
-          "link": "https://www.reuters.com/business/world-at-work/easyjet-flight-attendants-france-go-strike-august-15-16-unions-say-2026-08-12/",
-          "importance": "moyenne",
-          "why_relevant": "Information pratique nationale du jour sur les transports, avec un enjeu social lié aux conditions de travail.",
-          "freshness": "suivi",
-          "status": "fait établi"
-        }
-      ],
+      "general_news": [],
       "practical_local": [
         {
           "title": "Festi’Sarlat ce soir au stade Christian-Goumondie",
-          "source": "Office de Tourisme Sarlat Périgord Noir / DATAtourisme",
+          "source": "Office de Tourisme Sarlat Périgord Noir / eTerritoire",
           "date": "2026-08-15T19:00:00+02:00",
           "category": "pratique_local",
-          "summary": "Festi’Sarlat est programmé ce samedi 15 août à partir de 19 h au stade Christian-Goumondie, avec plusieurs DJ/artistes et des food trucks.",
-          "link": "https://www.fenelon-tourisme.com/offres/festisarlat-sarlat-la-caneda-fr-5914994/",
+          "summary": "Festi’Sarlat est programmé ce samedi 15 août à partir de 19 h au stade Christian-Goumondie, avec plusieurs DJ/artistes et restauration sur place.",
+          "link": "https://www.eterritoire.fr/detail/manifestations-aquitaine/festi-sarlat/2053120487/nouvelle-aquitaine%2Cdordogne%2Csarlat-la-caneda%2824200%29",
           "zone": "Sarlat-la-Canéda",
           "importance": "moyenne",
-          "why_relevant": "Événement local du jour à Sarlat, directement utile pour les sorties et l’animation de la ville.",
+          "why_relevant": "Événement local du jour directement utile pour les sorties et l’animation de Sarlat.",
           "freshness": "suivi"
         },
         {
@@ -44,31 +31,71 @@
           "source": "Mairie de Sarlat",
           "date": "2026-08-15T09:30:00+02:00",
           "category": "transport_local",
-          "summary": "La navette estivale de Sarlat est annoncée de 9 h 30 à 18 h 45 et reste en service jusqu’au 22 août.",
+          "summary": "La navette estivale de Sarlat circule aujourd’hui de 9 h 30 à 18 h 45 et reste en service jusqu’au 22 août.",
           "link": "https://sarlat.fr/sortir-et-bouger/agenda/",
           "zone": "Sarlat-la-Canéda",
           "importance": "moyenne",
-          "why_relevant": "Information de mobilité directement utile aujourd’hui à Sarlat.",
-          "age_minutes": 17,
-          "freshness": "moins_1h"
+          "why_relevant": "Information de mobilité locale directement utile aujourd’hui.",
+          "freshness": "suivi"
+        }
+      ]
+    },
+    "weather_sarlat": {
+      "fetchedAt": "2026-08-15T08:46:23Z",
+      "location": "Sarlat-la-Canéda, Dordogne, France",
+      "current": {
+        "condition": "Plutôt ensoleillé",
+        "temperature_c": 26
+      },
+      "today": {
+        "date": "2026-08-15",
+        "summary": "Ciel se couvrant, humide et devenant plus frais, avec des orages possibles l’après-midi dans certaines parties de la région.",
+        "high_c": 31,
+        "low_c": 21
+      },
+      "forecast": [
+        {"date":"2026-08-16","summary":"Plutôt nuageux et humide, avec des orages épars l’après-midi.","high_c":28,"low_c":19},
+        {"date":"2026-08-17","summary":"Orages par endroits le matin, puis temps nuageux et très chaud.","high_c":32,"low_c":16},
+        {"date":"2026-08-18","summary":"Ensoleillé à partiellement couvert, chaud et moins humide.","high_c":32,"low_c":15},
+        {"date":"2026-08-19","summary":"Ciel se couvrant et très chaud, avec des averses l’après-midi.","high_c":32,"low_c":17},
+        {"date":"2026-08-20","summary":"Alternance de nuages et de soleil.","high_c":28,"low_c":16},
+        {"date":"2026-08-21","summary":"Partiellement ensoleillé, avec orages possibles le matin puis averses l’après-midi.","high_c":27,"low_c":14},
+        {"date":"2026-08-22","summary":"Ensoleillé et moins humide.","high_c":27,"low_c":15}
+      ],
+      "alerts": [
+        {
+          "level": "orange",
+          "type": "canicule",
+          "area": "Dordogne",
+          "valid_until": "2026-08-16T00:00:00+02:00",
+          "source": "Météo-France",
+          "summary": "Vigilance orange chaleur extrême en vigueur jusqu’à minuit."
+        },
+        {
+          "level": "jaune",
+          "type": "orages",
+          "area": "Dordogne",
+          "valid_until": "2026-08-16T00:00:00+02:00",
+          "source": "Météo-France",
+          "summary": "Vigilance jaune orages en vigueur jusqu’à minuit, puis maintenue dimanche."
         }
       ]
     },
     "google_calendar_dashboard": {
-      "fetchedAt": "2026-08-15T07:47:05Z",
+      "fetchedAt": "2026-08-15T08:46:23Z",
       "nextEvent": {
-        "title": "Maman - Anniversaire",
-        "start": "2026-08-15T00:00:00",
-        "end": "2026-08-16T00:00:00",
-        "allDay": true,
-        "location": "",
-        "description": "",
-        "url": "https://www.google.com/calendar/event?eid=dnVsOWRtcTdiMmZ1N250NGZpMWI2c2IwNW9fMjAyNjA4MTUgYW5nZWxsZWNsZXJjMjAwNkBt&ctz=Europe/Paris",
-        "advice": "Penser à souhaiter l’anniversaire aujourd’hui."
+        "title": "Les Wonda Mamas en concert",
+        "start": "2026-08-15T21:00:00+02:00",
+        "end": "2026-08-15T21:00:00+02:00",
+        "allDay": false,
+        "location": "Place de la Liberté, 24200 Sarlat-la-Canéda",
+        "description": "Concert gratuit pop, soul et funk annoncé de 21 h à minuit.",
+        "url": "https://www.google.com/calendar/event?eid=NjFnajJvcGc3NHNtY2I5aDZsaW1hYjlrY2tzNjZiOW82c3M2NGJiNjZsaDY0b3BpYzVpajJkajJjZyBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris",
+        "advice": "Avec la vigilance chaleur et le risque d’orages, vérifier les conditions locales avant de partir."
       },
       "events": [
         {"title":"Maman - Anniversaire","start":"2026-08-15T00:00:00","end":"2026-08-16T00:00:00","allDay":true,"location":"","description":"","url":"https://www.google.com/calendar/event?eid=dnVsOWRtcTdiMmZ1N250NGZpMWI2c2IwNW9fMjAyNjA4MTUgYW5nZWxsZWNsZXJjMjAwNkBt&ctz=Europe/Paris","advice":"Penser à souhaiter l’anniversaire aujourd’hui."},
-        {"title":"Les Wonda Mamas en concert","start":"2026-08-15T21:00:00+02:00","end":"2026-08-15T21:00:00+02:00","allDay":false,"location":"Place de la Liberté, 24200 Sarlat-la-Canéda","description":"Concert gratuit pop, soul et funk annoncé de 21 h à minuit.","url":"https://www.google.com/calendar/event?eid=NjFnajJvcGc3NHNtY2I5aDZsaW1hYjlrY2tzNjZiOW82c3M2NGJiNjZsaDY0b3BpYzVpajJkajJjZyBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":""},
+        {"title":"Les Wonda Mamas en concert","start":"2026-08-15T21:00:00+02:00","end":"2026-08-15T21:00:00+02:00","allDay":false,"location":"Place de la Liberté, 24200 Sarlat-la-Canéda","description":"Concert gratuit pop, soul et funk annoncé de 21 h à minuit.","url":"https://www.google.com/calendar/event?eid=NjFnajJvcGc3NHNtY2I5aDZsaW1hYjlrY2tzNjZiOW82c3M2NGJiNjZsaDY0b3BpYzVpajJkajJjZyBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":"Avec la vigilance chaleur et le risque d’orages, vérifier les conditions locales avant de partir."},
         {"title":"Rdv cias sur place","start":"2026-08-19T10:00:00+02:00","end":"2026-08-19T11:00:00+02:00","allDay":false,"location":"","description":"","url":"https://www.google.com/calendar/event?eid=NzFoamVwajM2c3NqYWI5bWNjcm1jYjlrY3BpamdiOW82a3NtOGJiMzZncDZjcDMyNjlqNjZvaGo2MCBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":"Prévoir l’enchaînement direct avec le rendez-vous logement à 11 h."},
         {"title":"Rdv renouvellement contrat logement","start":"2026-08-19T11:00:00+02:00","end":"2026-08-19T12:00:00+02:00","allDay":false,"location":"","description":"","url":"https://www.google.com/calendar/event?eid=Y2dvamNkOXA3MWlqY2JiNDcwcDY4YjlrNzBvM2NiYjE2MHEzZ2I5aTZkajNnZGI0NmNxamVkMzI2MCBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":""},
         {"title":"Ouverture de l'actualisation pour le mois d'août 2026","start":"2026-08-27T00:00:00","end":"2026-08-28T00:00:00","allDay":true,"location":"","description":"France Travail","url":"https://www.google.com/calendar/event?eid=Y2RpMzBjOWk2b282NGI5bDY4cW04YjlrNnRqMzJiYjI2MHAzZ2I5a2M4cm02YzloNjBvNjJjMzI2byBhbmdlbGxlY2xlcmMyMDA2QG0&ctz=Europe/Paris","advice":"L’actualisation France Travail ouvre ce jour-là."},
@@ -78,36 +105,55 @@
       ]
     },
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-15T07:47:05Z",
-      "important": [],
-      "otherSummary": "Depuis le passage précédent, un seul nouveau message pertinent a été détecté : l’email de bienvenue de Supabase reçu à 09 h 35, de nature informative et sans action urgente. Aucun nouveau mail de candidature, demande d’entretien ou message professionnel nécessitant une réponse n’a été trouvé dans cette période.",
+      "fetchedAt": "2026-08-15T08:46:23Z",
+      "important": [
+        {
+          "subject": "Votre essai gratuit Trading Pro se termine bientôt ⏳",
+          "from": "Revolut <no-reply@revolut.com>",
+          "date": "2026-08-15T00:00:13Z",
+          "summary": "Revolut indique que l’essai gratuit Trading Pro se termine le 18 août 2026 et qu’un tarif de 4,99 € par mois est annoncé après cette date.",
+          "reason": "Message non lu avec une échéance financière proche ; à vérifier si l’abonnement n’est pas souhaité.",
+          "suggestedReply": ""
+        }
+      ],
+      "otherSummary": "Aucun nouvel email reçu depuis le passage précédent à 09 h 47. Les autres non-lus récents visibles sont essentiellement informatifs (bienvenue Supabase et préférences Samsung). Aucun nouveau mail de candidature, demande d’entretien ou réponse professionnelle n’est arrivé dans la période.",
       "counts": {
-        "new_since_last_run": 1,
-        "important": 0,
-        "secondary": 1,
+        "new_since_last_run": 0,
+        "important": 1,
+        "secondary_recent_unread": 2,
         "applications": 0
       }
     },
     "admin_cockpit_summary": {
-      "fetchedAt": "2026-08-15T07:47:05Z",
-      "generalText": "Voici le bilan du moment. Aucun nouveau mail important ni nouvelle réponse de candidature n’est arrivé depuis le dernier passage ; le seul nouveau message est un email de bienvenue Supabase sans urgence. Côté agenda, l’anniversaire de Maman est aujourd’hui et le concert des Wonda Mamas est prévu ce soir à Sarlat, puis deux rendez-vous CIAS/logement s’enchaînent mercredi matin. La veille actualité n’a trouvé aucun développement majeur suffisamment récent dans la dernière heure et conserve seulement les informations pratiques réellement utiles du jour. Côté Angel OS, le dernier workflow de publication GitHub s’est terminé avec succès à 09 h 46 sur le commit b5883a2. La priorité immédiate est donc surtout de garder un œil sur les candidatures et de préparer les deux rendez-vous du 19 août.",
+      "fetchedAt": "2026-08-15T08:46:23Z",
+      "generalText": "Voici le bilan du moment. Aucun nouveau mail de candidature ni message professionnel important n’est arrivé depuis le dernier passage ; en revanche, un ancien non-lu de Revolut mérite un coup d’œil car l’essai Trading Pro est annoncé comme se terminant le 18 août avant un tarif de 4,99 € par mois. Côté agenda, l’anniversaire de Maman est aujourd’hui et le prochain rendez-vous à venir est le concert des Wonda Mamas ce soir à Sarlat ; les deux rendez-vous CIAS/logement restent prévus mercredi matin. La météo est le point pratique principal : 26 °C actuellement, jusqu’à 31 °C aujourd’hui, avec vigilance orange canicule en Dordogne et risque d’orages. La veille actualité n’a pas trouvé de nouvelle publication suffisamment récente et solide dans la dernière heure, donc elle n’a pas rempli artificiellement le fil. Côté Angel OS, plusieurs commits viennent d’être poussés sur main mais Vercel signale encore un blocage build-rate-limit sur le dernier commit. La priorité concrète est de vérifier l’essai Revolut et de rester attentif à la chaleur et aux orages aujourd’hui.",
       "site": {
-        "latestMain": "b5883a29b1f77e09b9bbd309ab67bb5a2d5d12e8",
-        "publicationWorkflow": "success",
-        "publicationCheckedAt": "2026-08-15T07:46:17Z"
+        "latestMain": "25249019e3c485fb47d2dad71f0da7861903516c",
+        "deploymentStatus": "failure_build_rate_limit",
+        "deploymentTarget": "Vercel",
+        "checkedAt": "2026-08-15T08:46:23Z"
       },
-      "mail": {"important": 0, "new_since_last_run": 1},
-      "agenda": {"nextTitle": "Maman - Anniversaire", "nextStart": "2026-08-15T00:00:00"},
-      "news": {"new_major_last_hour": 0}
+      "mail": {"important":1,"new_since_last_run":0,"applications":0},
+      "agenda": {"nextTitle":"Les Wonda Mamas en concert","nextStart":"2026-08-15T21:00:00+02:00"},
+      "weather": {"current_c":26,"high_c":31,"alert":"vigilance orange canicule; vigilance jaune orages"},
+      "news": {"new_major_last_hour":0}
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-15T06:47:22Z",
-    "period_end": "2026-08-15T07:47:05Z",
-    "summary": "Un nouveau mail secondaire depuis le dernier passage : bienvenue Supabase. Aucun nouveau mail important, aucune nouvelle réponse de candidature et aucune action urgente détectée.",
-    "counts": {"new": 1, "important": 0, "secondary": 1, "applications": 0},
-    "items": [],
-    "recommendations": [],
+    "period_start": "2026-08-15T07:47:05Z",
+    "period_end": "2026-08-15T08:46:23Z",
+    "summary": "Aucun nouvel email depuis le rapport précédent. Un non-lu plus ancien reste à surveiller : fin annoncée de l’essai Revolut Trading Pro le 18 août, avec tarif de 4,99 € par mois ensuite. Aucun nouveau message de candidature ou professionnel.",
+    "counts": {"new":0,"important":1,"secondary_recent_unread":2,"applications":0},
+    "items": [
+      {
+        "subject":"Votre essai gratuit Trading Pro se termine bientôt ⏳",
+        "from":"Revolut <no-reply@revolut.com>",
+        "date":"2026-08-15T00:00:13Z",
+        "summary":"Essai Trading Pro annoncé comme se terminant le 18 août 2026, puis 4,99 € par mois.",
+        "reason":"Échéance financière proche sur un message non lu."
+      }
+    ],
+    "recommendations": ["Vérifier dans Revolut si Trading Pro doit être conservé ou arrêté avant le 18 août."],
     "source": "gmail_connector_readonly"
   }
 }
