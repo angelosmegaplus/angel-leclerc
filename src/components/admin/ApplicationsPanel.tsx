@@ -6,35 +6,13 @@ import { listRows, str, type Row } from "@/lib/angelos";
 import { syncGoogleApplications } from "@/lib/applications.functions";
 import { Button } from "@/components/ui/button";
 import { AdminCard } from "./AdminShell";
+import { AdminStatus, type AdminStatusTone } from "./AdminStatus";
 
-function getApplicationStatus(status: string) {
-  if (status === "refusee") {
-    return {
-      label: "Refusé",
-      marker: <span className="h-2.5 w-2.5 rounded-full bg-red-500" aria-hidden />,
-    };
-  }
-  if (status === "acceptee") {
-    return {
-      label: "Accepté",
-      marker: <span className="h-2.5 w-2.5 rounded-full bg-green-500" aria-hidden />,
-    };
-  }
-  if (status === "entretien" || status === "peut_etre") {
-    return {
-      label: "Peut-être",
-      marker: <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" aria-hidden />,
-    };
-  }
-  return {
-    label: "En attente",
-    marker: (
-      <span className="inline-flex items-center gap-0.5" aria-hidden>
-        <span className="h-3 w-0.5 rounded-full bg-yellow-400" />
-        <span className="h-3 w-0.5 rounded-full bg-yellow-400" />
-      </span>
-    ),
-  };
+function getApplicationStatus(status: string): { label: string; tone: AdminStatusTone } {
+  if (status === "refusee") return { label: "Refusé", tone: "error" };
+  if (status === "acceptee") return { label: "Accepté", tone: "success" };
+  if (status === "entretien" || status === "peut_etre") return { label: "Peut-être", tone: "pending" };
+  return { label: "En attente", tone: "pending" };
 }
 
 function sentMailOf(row: Row) {
@@ -111,12 +89,7 @@ export function ApplicationsPanel() {
             <Briefcase className="h-5 w-5 text-primary" />
             <h2 className="font-display font-bold text-foreground">Candidatures</h2>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={busy}
-            onClick={() => void refresh()}
-          >
+          <Button variant="outline" size="sm" disabled={busy} onClick={() => void refresh()}>
             <RefreshCw className={`mr-2 h-4 w-4 ${busy ? "animate-spin" : ""}`} />
             {syncing ? "Synchronisation…" : "Actualiser"}
           </Button>
@@ -166,10 +139,7 @@ export function ApplicationsPanel() {
                       )}
                     </div>
                     <div className="flex shrink-0 items-center gap-3">
-                      <div className="flex items-center gap-2 text-xs font-medium text-foreground">
-                        {status.marker}
-                        <span>{status.label}</span>
-                      </div>
+                      <AdminStatus tone={status.tone} compact>{status.label}</AdminStatus>
                       <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
                     </div>
                   </button>
