@@ -30,7 +30,6 @@ export default defineConfig({
         injectRegister: null,
         devOptions: { enabled: false },
         filename: "sw.js",
-        outDir: "dist/client",
         manifestFilename: "manifest.webmanifest",
         includeAssets: ["favicon.png", "icons/apple-touch-icon.png", "offline.html"],
         manifest: {
