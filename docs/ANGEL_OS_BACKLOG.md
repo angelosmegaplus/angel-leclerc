@@ -9,12 +9,23 @@ Ce fichier sert de file durable pour les demandes validées qui ne doivent pas d
 - Une demande terminée doit être cochée seulement après vérification sur `main` et, si elle concerne l’interface publique/admin, après confirmation en production.
 - Regrouper les changements cohérents pour éviter les builds inutiles.
 - Ne jamais réintroduire Lovable comme dépendance normale.
+- La file visible de l’admin doit montrer les travaux concrets et récents, pas les règles permanentes de maintenance.
+- Les anciennes demandes visibles qui n’ont plus d’action concrète à mener doivent être retirées de la file active, sans perdre leur historique dans ce backlog.
+
+## Demandes récentes — 15 août 2026
+
+- [ ] Accès administrateur : remplacer le PIN actif par un CAPTCHA visuel aléatoire avec plusieurs familles de défis, limitation des tentatives, écran noir de sécurité intermédiaire, puis page de connexion. Vérifier régulièrement le parcours complet et l’absence de boucle/régression via la tâche de maintenance existante, sans créer une automatisation séparée.
+- [ ] Vérifier en production que l’ancien code PIN `2005` n’est plus requis par le flux actif et que les anciens modules PIN morts peuvent être retirés proprement s’ils ne servent plus.
+- [ ] Actualités admin : chaque rubrique (Politique, Radio & médias, Journalisme & com, IA & tech, Sarlat & Dordogne, Emploi & alternance) doit réellement recevoir des contenus et ne pas afficher « indisponible » simplement parce qu’un lot global est incomplet.
+- [ ] « À la une » : privilégier fortement les articles des dernières heures, éviter les contenus anciens recyclés et personnaliser davantage selon les centres d’intérêt définis pour Angel OS.
+- [ ] File GitHub admin : distinguer clairement « code prêt sur main » de « publication production en attente » ; ne jamais présenter le dernier `main` lui-même comme bloqué lorsque seul le déploiement l’est.
+- [ ] File GitHub admin : limiter l’affichage des demandes anciennes encore visibles. Une modification en attente depuis plus d’environ 1 h 30 doit être requalifiée avec un état explicite (toujours pertinente, bloquée, remplacée, déjà faite ou obsolète) au lieu de rester indéfiniment en pause jaune.
+- [ ] Nettoyer régulièrement la file visible : fusionner les doublons, retirer les règles permanentes et objectifs généraux de l’affichage des « choses à publier », conserver seulement les demandes concrètes en cours/récentes et les vrais blocages de publication.
 
 ## Priorité haute
 
 - [ ] Corriger et vérifier de bout en bout Angel AI dans tout l’espace administrateur : les vraies questions doivent appeler le moteur IA principal, conserver le contexte et afficher une réponse conversationnelle ; le moteur local ne doit intervenir qu’en secours réel. Contrôler les logs, erreurs OpenAI, timeouts, quotas, anciens messages locaux parasites, routage des commandes et réponses persistées. Tester sur l’accueil admin, la recherche universelle et tout autre point d’entrée IA avant de considérer ce point terminé.
 - [ ] Vérifier que la récupération automatique des questions échouées fonctionne : une question laissée sans vraie réponse par l’IA embarquée doit pouvoir être reprise par la maintenance ChatGPT existante, sans doublon, puis la cause technique doit être diagnostiquée et corrigée quand c’est sûr.
-- [x] Vérifier que toutes les actualités admin utilisent réellement le flux frais et que « À la une » privilégie les contenus des dernières heures, diversifie les catégories et ne recycle pas inutilement les mêmes sujets.
 - [ ] Vérifier que météo et actualités apparaissent réellement sur l’accueil admin et se mettent à jour automatiquement.
 - [ ] Ajouter/maintenir une barre de recherche universelle Pixel/Google-like dans tout l’espace admin, sans doublons de destinations.
 - [ ] Angel AI doit être visible très haut sur l’accueil admin, compact, et réutiliser le même fil de discussion que « Demander à l’IA ».
