@@ -49,6 +49,7 @@ export function AdminShell({
 }) {
   const [open, setOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -65,6 +66,24 @@ export function AdminShell({
     document.body.style.overflow = open ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [open]);
+
+  // Sur téléphone, la barre Angel AI ne doit jamais recouvrir un champ ou le clavier.
+  useEffect(() => {
+    const isEditable = (node: EventTarget | null) => {
+      const el = node instanceof HTMLElement ? node : null;
+      return Boolean(el?.matches('input, textarea, select, [contenteditable="true"]'));
+    };
+    const onFocusIn = (event: FocusEvent) => setEditing(isEditable(event.target));
+    const onFocusOut = () => {
+      window.setTimeout(() => setEditing(isEditable(document.activeElement)), 0);
+    };
+    document.addEventListener("focusin", onFocusIn);
+    document.addEventListener("focusout", onFocusOut);
+    return () => {
+      document.removeEventListener("focusin", onFocusIn);
+      document.removeEventListener("focusout", onFocusOut);
+    };
+  }, []);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -157,7 +176,7 @@ export function AdminShell({
 
       {open ? (
         <div className="fixed inset-0 z-50 h-[100dvh] bg-black/70 backdrop-blur-md lg:hidden">
-          <div className="ml-auto flex h-full w-full max-w-md flex-col rounded-l-[2rem] border-l border-white/10 bg-[#090b0d] px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-[calc(1rem+env(safe-area-inset-top))] shadow-2xl">
+          <div className="ml-auto flex h-full w-full max-w-md flex-col border-l border-white/10 bg-[#090b0d] px-3 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-[calc(1rem+env(safe-area-inset-top))] shadow-2xl sm:rounded-l-[2rem] sm:px-4">
             <div className="mb-3 flex justify-end"><button type="button" aria-label="Fermer" onClick={() => setOpen(false)} className="grid h-12 w-12 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white"><X className="h-6 w-6" /></button></div>
             <div className="min-h-0 flex-1 overflow-y-auto pb-4">{menuContents}</div>
           </div>
@@ -165,25 +184,25 @@ export function AdminShell({
       ) : null}
 
       <div className="relative z-10 min-w-0 flex-1">
-        <header className="sticky top-0 z-30 border-b border-white/10 bg-[#050607]/90 px-3 pb-3 pt-[calc(.75rem+env(safe-area-inset-top))] backdrop-blur-xl sm:px-7 lg:px-10">
+        <header className="sticky top-0 z-30 border-b border-white/10 bg-[#050607]/90 px-3 pb-2 pt-[calc(.55rem+env(safe-area-inset-top))] backdrop-blur-xl sm:px-7 sm:pb-3 sm:pt-[calc(.75rem+env(safe-area-inset-top))] lg:px-10">
           <div className="mx-auto flex min-w-0 max-w-[1500px] items-center gap-2">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-8 w-8 rounded-lg object-contain" />
-                <p className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-red-300">Angel OS</p>
+                <img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-7 w-7 rounded-lg object-contain sm:h-8 sm:w-8" />
+                <p className="font-mono text-[9px] font-semibold uppercase tracking-[.18em] text-red-300 sm:text-[10px]">Angel OS</p>
               </div>
-              <div className="mt-2 flex min-w-0 items-center gap-2">
+              <div className="mt-1.5 flex min-w-0 items-center gap-2 sm:mt-2">
                 {CurrentIcon ? <span className="hidden h-10 w-10 shrink-0 place-items-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-300 sm:grid"><CurrentIcon className="h-5 w-5" /></span> : null}
-                <h1 className="min-w-0 truncate text-[1.65rem] font-semibold leading-none tracking-[-0.05em] text-white sm:text-[2.2rem]">{title}</h1>
+                <h1 className="min-w-0 truncate text-[1.35rem] font-semibold leading-none tracking-[-0.04em] text-white sm:text-[2.2rem]">{title}</h1>
               </div>
             </div>
             <div className="hidden shrink-0 items-center gap-2 sm:flex [&_button]:rounded-xl [&_a]:rounded-xl [&_button]:border-white/10 [&_a]:border-white/10 [&_button]:bg-white/[.04] [&_a]:bg-white/[.04] [&_button]:text-white [&_a]:text-white [&_[aria-label='Recherche_globale']]:hidden">{actions}</div>
           </div>
-          {actions ? <div className="mx-auto mt-3 flex max-w-[1500px] gap-2 overflow-x-auto pb-1 sm:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:shrink-0 [&_button]:rounded-xl [&_a]:rounded-xl [&_button]:border-white/10 [&_a]:border-white/10 [&_button]:bg-white/[.04] [&_a]:bg-white/[.04] [&_button]:text-white [&_a]:text-white [&_[aria-label='Recherche_globale']]:hidden">{actions}</div> : null}
+          {actions ? <div className="mx-auto mt-2 flex max-w-[1500px] gap-2 overflow-x-auto pb-1 sm:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:shrink-0 [&_button]:min-h-10 [&_button]:min-w-10 [&_button]:rounded-xl [&_a]:rounded-xl [&_button]:border-white/10 [&_a]:border-white/10 [&_button]:bg-white/[.04] [&_a]:bg-white/[.04] [&_button]:text-white [&_a]:text-white [&_[aria-label='Recherche_globale']]:hidden">{actions}</div> : null}
         </header>
 
         {sectionItems.length > 0 ? (
-          <nav aria-label={`Sections ${activeDefinition?.label ?? ""}`} className="sticky top-[calc(5.4rem+env(safe-area-inset-top))] z-20 border-b border-white/10 bg-[#050607]/92 px-3 py-2 backdrop-blur-xl sm:top-[calc(6.2rem+env(safe-area-inset-top))] sm:px-7 lg:px-10">
+          <nav aria-label={`Sections ${activeDefinition?.label ?? ""}`} className="sticky top-[calc(4.65rem+env(safe-area-inset-top))] z-20 border-b border-white/10 bg-[#050607]/92 px-3 py-2 backdrop-blur-xl sm:top-[calc(6.2rem+env(safe-area-inset-top))] sm:px-7 lg:px-10">
             <div className="mx-auto flex max-w-[1500px] gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {sectionItems.map((item) => {
                 const Icon = item.icon;
@@ -206,37 +225,42 @@ export function AdminShell({
           </nav>
         ) : null}
 
-        <main className="mx-auto w-full min-w-0 max-w-[1500px] px-3 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4 sm:px-7 sm:pb-24 lg:px-10">
+        <main className="mx-auto w-full min-w-0 max-w-[1500px] px-2.5 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-3 sm:px-7 sm:pb-24 sm:pt-4 lg:px-10">
           {isDashboard ? (
-            <div className="mb-5 space-y-5" data-admin-dashboard-glance>
+            <div className="mb-5 space-y-4 sm:space-y-5" data-admin-dashboard-glance>
               <PixelWidgets />
               <NewsPanel />
             </div>
           ) : null}
-          <div key={active} className="min-w-0 max-w-full animate-in fade-in zoom-in-[.985] duration-300 [&_.bg-card]:bg-[#090b0d] [&_.bg-background]:bg-[#050607] [&_.bg-muted]:bg-white/[.04] [&_.border-border]:border-white/10 [&_.text-foreground]:text-white [&_.text-muted-foreground]:text-white/45 [&_.rounded-xl]:rounded-[1.25rem] [&_.rounded-2xl]:rounded-[1.75rem] [&_.rounded-lg]:rounded-xl [&_.shadow-sm]:shadow-[0_18px_60px_rgba(0,0,0,.28)] [&_img]:max-w-full [&_input]:max-w-full [&_textarea]:max-w-full [&_select]:max-w-full [&_input]:border-white/10 [&_textarea]:border-white/10 [&_select]:border-white/10 [&_input]:bg-black/30 [&_textarea]:bg-black/30 [&_select]:bg-black/30 [&_input]:text-white [&_textarea]:text-white [&_select]:text-white">{children}</div>
+          <div
+            key={active}
+            className="min-w-0 max-w-full animate-in fade-in zoom-in-[.985] duration-300 [&_.bg-card]:bg-[#090b0d] [&_.bg-background]:bg-[#050607] [&_.bg-muted]:bg-white/[.04] [&_.border-border]:border-white/10 [&_.text-foreground]:text-white [&_.text-muted-foreground]:text-white/45 [&_.rounded-xl]:rounded-[1.25rem] [&_.rounded-2xl]:rounded-[1.75rem] [&_.rounded-lg]:rounded-xl [&_.shadow-sm]:shadow-[0_18px_60px_rgba(0,0,0,.28)] [&_img]:max-w-full [&_input]:max-w-full [&_textarea]:max-w-full [&_select]:max-w-full [&_input]:border-white/10 [&_textarea]:border-white/10 [&_select]:border-white/10 [&_input]:bg-black/30 [&_textarea]:bg-black/30 [&_select]:bg-black/30 [&_input]:text-white [&_textarea]:text-white [&_select]:text-white max-sm:[&_form]:!mt-2 max-sm:[&_form]:!space-y-4 max-sm:[&_form]:!rounded-2xl max-sm:[&_form]:!p-3 max-sm:[&_input]:min-h-11 max-sm:[&_select]:min-h-11 max-sm:[&_input]:text-base max-sm:[&_textarea]:text-base max-sm:[&_select]:text-base max-sm:[&_table]:text-xs max-sm:[&_label]:leading-snug"
+          >
+            {children}
+          </div>
         </main>
 
         {aiOpen ? (
-          <div className="fixed bottom-[calc(.75rem+env(safe-area-inset-bottom))] left-1/2 z-40 w-[min(34rem,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden rounded-[1.75rem] border border-red-500/20 bg-[#090b0d]/98 shadow-[0_20px_70px_rgba(0,0,0,.72)] backdrop-blur-xl lg:w-[min(38rem,calc(100vw-24rem))]">
-            <div className="flex items-center justify-between border-b border-white/10 px-4 py-2.5">
-              <p className="font-mono text-[10px] font-semibold uppercase tracking-[.16em] text-red-300">Recherche universelle · Angel AI</p>
-              <button type="button" aria-label="Fermer Angel AI" onClick={() => setAiOpen(false)} className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white/60 hover:text-white"><X className="h-4 w-4" /></button>
+          <div className="fixed inset-x-2 bottom-[calc(.5rem+env(safe-area-inset-bottom))] z-40 overflow-hidden rounded-[1.5rem] border border-red-500/20 bg-[#090b0d]/98 shadow-[0_20px_70px_rgba(0,0,0,.72)] backdrop-blur-xl sm:left-1/2 sm:right-auto sm:w-[min(34rem,calc(100vw-2rem))] sm:-translate-x-1/2 sm:rounded-[1.75rem] lg:w-[min(38rem,calc(100vw-24rem))]">
+            <div className="flex items-center justify-between border-b border-white/10 px-3 py-2.5 sm:px-4">
+              <p className="truncate font-mono text-[9px] font-semibold uppercase tracking-[.14em] text-red-300 sm:text-[10px] sm:tracking-[.16em]">Recherche universelle · Angel AI</p>
+              <button type="button" aria-label="Fermer Angel AI" onClick={() => setAiOpen(false)} className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white/60 hover:text-white"><X className="h-4 w-4" /></button>
             </div>
-            <div className="max-h-[min(68dvh,42rem)] overflow-y-auto p-2 sm:p-3">
+            <div className="max-h-[min(72dvh,42rem)] overflow-y-auto p-2 sm:p-3">
               <AngelCommandCenter compact />
             </div>
           </div>
-        ) : (
-          <div className="fixed bottom-[calc(.75rem+env(safe-area-inset-bottom))] left-1/2 z-30 flex h-16 w-[min(34rem,calc(100vw-2rem))] -translate-x-1/2 items-center rounded-full border border-white/10 bg-[#090b0d]/95 shadow-[0_12px_40px_rgba(0,0,0,.55)] backdrop-blur-xl lg:w-[min(38rem,calc(100vw-24rem))]">
-            <button type="button" onClick={() => setAiOpen(true)} className="flex h-full min-w-0 flex-1 items-center px-5 text-left text-white/55">
-              <span className="min-w-0 flex-1 truncate text-sm font-medium sm:text-base">Rechercher ou demander à Angel AI…</span>
+        ) : !editing ? (
+          <div className="fixed inset-x-2 bottom-[calc(.5rem+env(safe-area-inset-bottom))] z-30 flex h-14 items-center rounded-[1.35rem] border border-white/10 bg-[#090b0d]/95 shadow-[0_12px_40px_rgba(0,0,0,.55)] backdrop-blur-xl sm:left-1/2 sm:right-auto sm:h-16 sm:w-[min(34rem,calc(100vw-2rem))] sm:-translate-x-1/2 sm:rounded-full lg:w-[min(38rem,calc(100vw-24rem))]">
+            <button type="button" onClick={() => setAiOpen(true)} className="flex h-full min-w-0 flex-1 items-center px-3 text-left text-white/55 sm:px-5">
+              <span className="min-w-0 flex-1 truncate text-sm font-medium sm:text-base">Rechercher ou demander…</span>
               <span className="hidden rounded-lg border border-white/10 bg-white/[.04] px-2 py-1 font-mono text-[10px] text-white/35 sm:inline">Ctrl K</span>
             </button>
             <button
               type="button"
               aria-label="Notifications"
               onClick={() => onSelect("notifications")}
-              className="relative mr-2 grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-300"
+              className="relative mr-1.5 grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-300 sm:mr-2 sm:h-12 sm:w-12"
             >
               <Bell className="h-5 w-5" />
               {notificationBadge > 0 ? <span className="absolute -right-0.5 -top-0.5 grid min-h-5 min-w-5 place-items-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">{notificationBadge}</span> : null}
@@ -245,12 +269,12 @@ export function AdminShell({
               type="button"
               aria-label="Ouvrir les applications"
               onClick={() => setOpen(true)}
-              className="mr-2 grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white/60 lg:hidden"
+              className="mr-1.5 grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white/60 sm:mr-2 sm:h-12 sm:w-12 lg:hidden"
             >
               <Grid2X2 className="h-5 w-5" />
             </button>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
@@ -258,10 +282,10 @@ export function AdminShell({
 
 export function AdminCard({ title, description, children, className = "" }: { title?: string; description?: string; children: ReactNode; className?: string }) {
   return (
-    <section className={`min-w-0 max-w-full overflow-x-clip rounded-[1.75rem] border border-white/10 bg-[#090b0d] p-4 shadow-[0_18px_60px_rgba(0,0,0,.28)] sm:p-6 ${className}`}>
-      {title ? <h2 className="break-words text-xl font-semibold tracking-[-0.03em] text-white">{title}</h2> : null}
+    <section className={`min-w-0 max-w-full overflow-x-clip rounded-[1.35rem] border border-white/10 bg-[#090b0d] p-3 shadow-[0_18px_60px_rgba(0,0,0,.28)] sm:rounded-[1.75rem] sm:p-6 ${className}`}>
+      {title ? <h2 className="break-words text-lg font-semibold tracking-[-0.03em] text-white sm:text-xl">{title}</h2> : null}
       {description ? <p className="mt-1 max-w-3xl break-words text-sm leading-relaxed text-white/45">{description}</p> : null}
-      <div className={`min-w-0 max-w-full ${title || description ? "mt-5" : ""}`}>{children}</div>
+      <div className={`min-w-0 max-w-full ${title || description ? "mt-4 sm:mt-5" : ""}`}>{children}</div>
     </section>
   );
 }
