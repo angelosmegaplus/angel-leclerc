@@ -41,6 +41,7 @@ type LiveAction = {
 const RAW_QUEUE = "https://raw.githubusercontent.com/angelosmegaplus/angel-leclerc/main/runtime/chatgpt-work.json";
 const COMMITS_API = "https://api.github.com/repos/angelosmegaplus/angel-leclerc/commits?sha=main&per_page=6";
 const LIVE_REFRESH_MS = 5_000;
+const COMMITS_REFRESH_MS = 90_000;
 
 function bust(url: string) {
   return `${url}${url.includes("?") ? "&" : "?"}t=${Date.now()}`;
@@ -117,16 +118,15 @@ export function GitHubChatGPTQueue() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
+  const [lastCommitSyncAt, setLastCommitSyncAt] = useState<string | null>(null);
+  const [commitError, setCommitError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function refresh() {
-    if (refreshing) return;
-    setRefreshing(true);
+  async function refreshQueue() {
     setError(null);
     try {
-      const [queueResponse, commitsResponse, actionsResult] = await Promise.all([
+      const [queueResponse, actionsResult] = await Promise.all([
         fetch(bust(RAW_QUEUE), { cache: "no-store" }),
-        fetch(bust(COMMITS_API), { cache: "no-store", headers: { Accept: "application/vnd.github+json" } }),
         supabase
           .from("ai_actions")
           .select("id, kind, title, description, status, created_at, updated_at")
@@ -137,34 +137,73 @@ export function GitHubChatGPTQueue() {
       ]);
       if (!queueResponse.ok) throw new Error(`File GitHub indisponible (${queueResponse.status})`);
       setQueue((await queueResponse.json()) as WorkPayload);
-      if (commitsResponse.ok) setCommits((await commitsResponse.json()) as Commit[]);
       if (!actionsResult.error) setLiveActions((actionsResult.data ?? []) as LiveAction[]);
       setLastSyncAt(new Date().toISOString());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Synchronisation GitHub indisponible");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function refreshCommits() {
+    try {
+      const response = await fetch(bust(COMMITS_API), {
+        cache: "no-store",
+        headers: { Accept: "application/vnd.github+json" },
+      });
+      if (!response.ok) {
+        if (response.status === 403 || response.status === 429) {
+          throw new Error("GitHub limite temporairement les actualisations des commits");
+        }
+        throw new Error(`Commits GitHub indisponibles (${response.status})`);
+      }
+      const data = (await response.json()) as Commit[];
+      setCommits(data);
+      setCommitError(null);
+      setLastCommitSyncAt(new Date().toISOString());
+    } catch (err) {
+      setCommitError(err instanceof Error ? err.message : "Commits GitHub indisponibles");
+    }
+  }
+
+  async function refreshAll() {
+    if (refreshing) return;
+    setRefreshing(true);
+    try {
+      await Promise.all([refreshQueue(), refreshCommits()]);
+    } finally {
       setRefreshing(false);
     }
   }
 
   useEffect(() => {
-    void refresh();
-    const timer = window.setInterval(() => {
-      if (!document.hidden) void refresh();
+    void refreshAll();
+    const queueTimer = window.setInterval(() => {
+      if (!document.hidden) void refreshQueue();
     }, LIVE_REFRESH_MS);
-    const onQueueUpdated = () => void refresh();
-    const onFocus = () => void refresh();
-    const onVisibility = () => {
-      if (!document.hidden) void refresh();
+    const commitsTimer = window.setInterval(() => {
+      if (!document.hidden) void refreshCommits();
+    }, COMMITS_REFRESH_MS);
+    const onQueueUpdated = () => void refreshQueue();
+    const onFocus = () => {
+      void refreshQueue();
+      void refreshCommits();
     };
-    const onOnline = () => void refresh();
+    const onVisibility = () => {
+      if (!document.hidden) {
+        void refreshQueue();
+        void refreshCommits();
+      }
+    };
+    const onOnline = () => void refreshAll();
     window.addEventListener("angel-os:chatgpt-queue-updated", onQueueUpdated);
     window.addEventListener("focus", onFocus);
     window.addEventListener("online", onOnline);
     document.addEventListener("visibilitychange", onVisibility);
     return () => {
-      window.clearInterval(timer);
+      window.clearInterval(queueTimer);
+      window.clearInterval(commitsTimer);
       window.removeEventListener("angel-os:chatgpt-queue-updated", onQueueUpdated);
       window.removeEventListener("focus", onFocus);
       window.removeEventListener("online", onOnline);
@@ -193,15 +232,15 @@ export function GitHubChatGPTQueue() {
               </span>
             </div>
             <p className="text-xs text-white/45">Toutes les demandes de modification, de la plus ancienne valide à la plus récente.</p>
-            <p className="mt-1 text-[10px] text-white/30">Actualisation automatique toutes les 5 s{lastSyncAt ? ` · dernière synchro ${timeLabel(lastSyncAt)}` : ""}</p>
+            <p className="mt-1 text-[10px] text-white/30">File toutes les 5 s{lastSyncAt ? ` · synchro ${timeLabel(lastSyncAt)}` : ""} · commits toutes les 90 s{lastCommitSyncAt ? ` · ${timeLabel(lastCommitSyncAt)}` : ""}</p>
           </div>
         </div>
         <button
           type="button"
-          onClick={() => void refresh()}
+          onClick={() => void refreshAll()}
           className="flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[.04] px-3 text-xs font-medium text-white/65 transition hover:border-white/20 hover:bg-white/[.07] hover:text-white active:scale-[.98]"
           aria-label="Actualiser GitHub maintenant"
-          title="Actualiser GitHub maintenant"
+          title="Actualiser la file et les commits maintenant"
         >
           {refreshing || loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
           <span className="hidden sm:inline">Actualiser</span>
@@ -266,8 +305,12 @@ export function GitHubChatGPTQueue() {
         </div>
 
         <div className="space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-[.12em] text-white/45">Derniers commits main</p>
-          {commits.length === 0 ? <div className="rounded-xl border border-white/10 bg-white/[.03] p-4 text-sm text-white/40">Aucun commit chargé.</div> : commits.map((commit) => (
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[11px] font-semibold uppercase tracking-[.12em] text-white/45">Derniers commits main · en direct</p>
+            {lastCommitSyncAt ? <span className="text-[10px] text-white/30">maj {timeLabel(lastCommitSyncAt)}</span> : null}
+          </div>
+          {commitError ? <p className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-200">{commitError}. Les derniers commits déjà chargés restent affichés.</p> : null}
+          {commits.length === 0 ? <div className="rounded-xl border border-white/10 bg-white/[.03] p-4 text-sm text-white/40">Chargement des commits GitHub…</div> : commits.map((commit) => (
             <a key={commit.sha} href={commit.html_url} target="_blank" rel="noreferrer" className="block rounded-xl border border-white/10 bg-white/[.03] p-3 transition hover:border-white/20 hover:bg-white/[.05]">
               <div className="flex items-center justify-between gap-3"><span className="font-mono text-[10px] text-white/60">{shortSha(commit.sha)}</span><span className="text-[10px] text-white/30">{dateLabel(commit.commit.author?.date)}</span></div>
               <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-white/65">{commit.commit.message.split("\n")[0]}</p>
