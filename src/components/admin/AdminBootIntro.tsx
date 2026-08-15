@@ -20,149 +20,119 @@ function consumePendingBoot() {
 }
 
 export function AdminBootIntro() {
-  // L'overlay existe dès le premier rendu afin que l'interface admin ne puisse
-  // jamais apparaître une fraction de seconde avant un générique demandé.
+  const ref = useRef<HTMLVideoElement | null>(null);
   const [visible, setVisible] = useState(true);
   const [shouldPlay, setShouldPlay] = useState(true);
-  const [videoReady, setVideoReady] = useState(false);
-  const [soundBlocked, setSoundBlocked] = useState(false);
-  const [leaving, setLeaving] = useState(false);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [blocked, setBlocked] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [exiting, setExiting] = useState(false);
 
   useEffect(() => {
-    // Le générique n'est plus lié au lancement PWA : il est déclenché par
-    // la validation du PIN et attend l'arrivée réelle dans l'espace admin.
     if (!hasPendingBoot()) {
       setShouldPlay(false);
       setVisible(false);
       return;
     }
-
     consumePendingBoot();
     setShouldPlay(true);
   }, []);
 
   useEffect(() => {
     if (!visible || !shouldPlay) return;
-    const video = videoRef.current;
+    const video = ref.current;
     if (!video) return;
 
-    let cancelled = false;
+    video.currentTime = 0;
+    video.muted = false;
+    video.volume = 1;
+    void video.play().catch(() => {
+      video.muted = true;
+      setBlocked(true);
+      void video.play().catch(() => finish());
+    });
 
-    const start = async () => {
-      if (cancelled) return;
-      video.currentTime = 0;
-      video.volume = 1;
-      video.muted = false;
-
-      try {
-        await video.play();
-        if (!cancelled) setSoundBlocked(false);
-      } catch {
-        // Android/Chrome peut refuser l'autoplay sonore. Dans ce cas la vidéo
-        // démarre quand même sans son au lieu de bloquer l'accès à l'admin.
-        video.muted = true;
-        try {
-          await video.play();
-          if (!cancelled) setSoundBlocked(true);
-        } catch {
-          if (!cancelled) finish();
-        }
-      }
-    };
-
-    void start();
+    const startExit = window.setTimeout(() => setExiting(true), 8200);
+    const finishTimer = window.setTimeout(() => setVisible(false), 8900);
     return () => {
-      cancelled = true;
+      window.clearTimeout(startExit);
+      window.clearTimeout(finishTimer);
     };
   }, [visible, shouldPlay]);
 
   const finish = () => {
-    setLeaving(true);
-    window.setTimeout(() => setVisible(false), 420);
-  };
-
-  const unlockSound = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    video.muted = false;
-    video.volume = 1;
-    void video.play().then(() => setSoundBlocked(false)).catch(() => undefined);
+    setExiting(true);
+    window.setTimeout(() => setVisible(false), 450);
   };
 
   if (!visible) return null;
 
   return (
-    <div
-      className={`fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-black transition-opacity duration-500 ${
-        leaving ? "opacity-0" : "opacity-100"
-      }`}
-      aria-label="Démarrage d'Angel OS"
-    >
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-black" aria-label="Démarrage d'Angel OS">
       <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-40"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 50% 50%, rgba(34,211,238,.10), transparent 45%),linear-gradient(rgba(34,211,238,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,.06) 1px,transparent 1px)",
-          backgroundSize: "100% 100%,32px 32px,32px 32px",
-          maskImage: "radial-gradient(circle at center, black, transparent 84%)",
-        }}
-      />
+        className={`absolute inset-0 flex items-center justify-center bg-black transition-[transform,filter,opacity,border-radius] duration-700 ease-[cubic-bezier(.72,0,.9,.35)] ${
+          exiting
+            ? "scale-x-[0.015] scale-y-[0.06] rounded-[50%] opacity-0 blur-md"
+            : "scale-100 rounded-none opacity-100 blur-0"
+        }`}
+        style={{ transformOrigin: "50% 50%" }}
+      >
+        {shouldPlay ? (
+          <video
+            ref={ref}
+            src="/angel-os/intro.mp4"
+            autoPlay
+            playsInline
+            preload="auto"
+            poster="/angel-os/logo.png"
+            onLoadedData={() => setReady(true)}
+            onCanPlay={() => setReady(true)}
+            onPlaying={() => setReady(true)}
+            onTimeUpdate={(event) => {
+              const video = event.currentTarget;
+              if (Number.isFinite(video.duration) && video.duration - video.currentTime <= 0.7) setExiting(true);
+            }}
+            onEnded={finish}
+            onError={finish}
+            className={`h-full w-full object-contain transition-all duration-500 ${ready ? "opacity-100 blur-0" : "opacity-0 blur-sm"}`}
+          />
+        ) : null}
 
-      <div className="pointer-events-none absolute inset-0 z-20 bg-[linear-gradient(transparent_0%,rgba(34,211,238,.025)_50%,transparent_100%)] bg-[length:100%_7px] opacity-50" />
+        {!ready && shouldPlay ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black">
+            <div className="relative grid h-24 w-24 place-items-center">
+              <div className="absolute inset-0 animate-ping rounded-full border border-red-500/10" />
+              <img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-16 w-16 rounded-2xl object-cover shadow-[0_0_55px_rgba(239,68,68,.16)]" />
+              <Loader2 className="absolute -bottom-7 h-4 w-4 animate-spin text-red-300" />
+            </div>
+            <p className="mt-11 font-mono text-[10px] font-semibold uppercase tracking-[.22em] text-red-300">Angel OS</p>
+            <p className="mt-2 font-mono text-[9px] uppercase tracking-[.18em] text-white/30">Initialisation du système</p>
+          </div>
+        ) : null}
 
-      {shouldPlay && (
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          preload="auto"
-          muted={false}
-          poster="/angel-os/logo.png"
-          onLoadedData={() => setVideoReady(true)}
-          onCanPlay={() => setVideoReady(true)}
-          onPlaying={() => setVideoReady(true)}
-          onEnded={finish}
-          onError={finish}
-          className={`relative z-10 h-full w-full object-contain transition-all duration-700 ${
-            videoReady ? "scale-100 opacity-100 blur-0" : "scale-[1.015] opacity-0 blur-sm"
+        <div
+          aria-hidden
+          className={`pointer-events-none absolute left-1/2 top-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white transition-all duration-500 ${
+            exiting ? "scale-[22] opacity-70 blur-sm" : "scale-0 opacity-0"
           }`}
-        >
-          <source src="/angel-os/intro.mp4" type="video/mp4" />
-        </video>
-      )}
+        />
+      </div>
 
-      {shouldPlay && !videoReady && (
-        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black">
-          <div className="relative flex h-20 w-20 items-center justify-center">
-            <div className="absolute inset-0 animate-ping rounded-full border border-cyan-300/10" />
-            <div className="absolute inset-2 rounded-full border border-cyan-300/15 shadow-[0_0_45px_rgba(34,211,238,.12)]" />
-            <Loader2 className="h-5 w-5 animate-spin text-cyan-200/90" />
-          </div>
-          <div className="mt-5 font-mono text-[11px] font-medium uppercase tracking-[0.28em] text-cyan-100/70">
-            Angel OS
-          </div>
-          <div className="mt-2 font-mono text-[9px] uppercase tracking-[0.18em] text-white/30">
-            Initialisation du système
-          </div>
-          <div className="mt-5 h-px w-28 overflow-hidden bg-white/10">
-            <div className="h-full w-1/2 animate-[pulse_1s_ease-in-out_infinite] bg-cyan-200/60" />
-          </div>
-        </div>
-      )}
-
-      {soundBlocked && videoReady && (
+      {blocked && !exiting ? (
         <button
           type="button"
-          onClick={unlockSound}
-          className="absolute bottom-5 right-5 z-40 flex items-center gap-2 rounded-full border border-white/10 bg-black/55 px-3 py-2 text-white/70 backdrop-blur-md transition hover:bg-black/75 hover:text-white"
-          aria-label="Activer le son du générique"
+          onClick={() => {
+            if (ref.current) {
+              ref.current.muted = false;
+              ref.current.volume = 1;
+              void ref.current.play();
+            }
+            setBlocked(false);
+          }}
+          className="absolute bottom-8 left-1/2 inline-flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/20 bg-black/75 px-5 py-3 text-sm font-semibold text-white backdrop-blur-md"
         >
-          <Volume2 className="h-4 w-4 text-cyan-200" />
-          <span className="font-mono text-[9px] uppercase tracking-[0.14em]">Activer le son</span>
+          <Volume2 size={17} /> Activer le son
         </button>
-      )}
+      ) : null}
     </div>
   );
 }
