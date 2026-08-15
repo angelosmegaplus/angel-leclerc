@@ -1,91 +1,102 @@
 {
-  "fetchedAt": "2026-08-15T17:59:50Z",
+  "fetchedAt": "2026-08-15T19:00:26Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-15T17:59:50Z",
+      "fetchedAt": "2026-08-15T19:00:26Z",
       "important": [
         {
-          "subject": "Échecs techniques GitHub persistants sur angel-leclerc",
-          "from": "Angel OS <notifications@github.com>",
-          "date": "2026-08-15T17:51:17Z",
-          "summary": "Quatre nouvelles notifications GitHub ont été détectées depuis le rapport précédent : échec de Synchronisation données Angel OS à 17:01:55Z, Observabilité Angel OS à 17:02:44Z, Maintenance Angel OS à 17:40:44Z et Publication Angel OS à 17:51:17Z. Aucun correctif n'est lancé par cette routine mail afin d'éviter une concurrence avec la maintenance technique dédiée.",
-          "reason": "Incident technique persistant sur le dépôt principal angel-leclerc ; le dernier signal est l'échec du workflow Publication Angel OS.",
+          "subject": "Complétez votre dossier de candidature",
+          "from": "Université de Bordeaux - Service des recrutements <message@beetween-software.com>",
+          "date": "2026-08-15T18:32:12Z",
+          "summary": "L'Université de Bordeaux confirme la réception de la candidature au poste de Chargé(e) de communication en alternance F/H et propose de compléter un court questionnaire afin d'en apprendre davantage sur le candidat. Il ne s'agit ni d'une acceptation ni d'un refus.",
+          "reason": "Action utile sur une candidature récente : compléter le questionnaire associé au dossier peut être nécessaire pour finaliser la candidature.",
           "suggestedReply": ""
         },
         {
-          "subject": "Rappel agenda — Les Wonda Mamas en concert",
-          "from": "Google Agenda <calendar-notification@google.com>",
-          "date": "2026-08-15T17:59:56Z",
-          "summary": "Google Agenda a envoyé un rappel pour le concert des Wonda Mamas prévu ce samedi 15 août à 21:00, place de la Liberté.",
-          "reason": "Rappel d'un événement imminent reçu dans Gmail ; aucune action Gmail n'est nécessaire.",
+          "subject": "Échecs techniques Angel OS et limite de déploiement Vercel",
+          "from": "GitHub / Vercel notifications",
+          "date": "2026-08-15T18:59:15Z",
+          "summary": "Plusieurs alertes techniques ont été reçues : nouvelle synchronisation des données Angel OS échouée à 18:01:45Z ; échec du preview de la PR #27 « Préparer la migration Google Cloud » ; Vercel indique explicitement que la ressource de déploiement est limitée avec la consigne de réessayer dans 24 heures après plus de 100 déploiements gratuits ; enfin le workflow admin-audit-one-shot n'a lancé aucun job à 18:59:15Z.",
+          "reason": "Les workflows techniques restent dégradés. La routine mail ne lance aucun correctif pour éviter de concurrencer la maintenance technique dédiée.",
           "suggestedReply": ""
         }
       ],
-      "otherSummary": "Depuis le précédent rapport, cinq nouveaux messages entrants ont été détectés : quatre notifications techniques GitHub signalant des échecs de workflows Angel OS et un rappel Google Agenda pour un concert à 21:00. Aucun nouveau mail de candidature, entretien, demande de CV, acceptation, refus ou redirection professionnelle n'a été détecté. Gmail n'a subi aucune modification pendant cette exécution.",
+      "otherSummary": "Depuis le rapport précédent, six messages pertinents ont été observés : une candidature sortante vers l'Université de Bordeaux, sa confirmation de réception avec questionnaire à compléter, et quatre signaux techniques GitHub/Vercel. Aucun refus, aucune acceptation, aucune proposition d'entretien et aucune redirection professionnelle n'ont été reçus. Gmail n'a subi aucune modification.",
       "counts": {
-        "new_since_last_run": 5,
+        "new_since_last_run": 6,
         "incoming": 5,
+        "outgoing": 1,
         "technical_incoming": 4,
-        "calendar_notifications": 1,
-        "employment_or_application_incoming": 0,
+        "employment_or_application_incoming": 1,
+        "outgoing_applications": 1,
+        "application_action_required": 1,
         "explicit_rejections": 0,
         "positive_or_interview": 0,
-        "outgoing_application_followups": 0,
+        "professional_redirects": 0,
         "already_sent_rejection_replies": 0
       }
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-15T16:59:52Z",
-    "period_end": "2026-08-15T17:59:50Z",
-    "summary": "Cinq nouveaux messages entrants ont été détectés depuis le précédent rapport : quatre notifications GitHub concernant Synchronisation données Angel OS, Observabilité Angel OS, Maintenance Angel OS et Publication Angel OS, ainsi qu'un rappel Google Agenda pour le concert des Wonda Mamas à 21:00. Aucun nouveau message lié à une candidature, un entretien, une demande de CV, une acceptation, un refus ou une redirection professionnelle n'a été détecté. La file ai_actions reste non interrogeable directement avec les connecteurs disponibles pendant cette exécution ; aucune action awaiting_operator n'a donc été exécutée ou modifiée.",
+    "period_start": "2026-08-15T17:59:50Z",
+    "period_end": "2026-08-15T19:00:26Z",
+    "summary": "Une candidature a été envoyée à l'Université de Bordeaux pour un poste de Chargé(e) de communication en alternance. Le service de recrutement en a accusé réception sept secondes plus tard et demande de compléter un court questionnaire lié au dossier ; le message ne constitue ni une acceptation, ni un refus, ni une proposition d'entretien. Quatre alertes techniques supplémentaires ont été reçues sur angel-leclerc : échec de Synchronisation données Angel OS, limite de déploiement Vercel sur la PR #27, échec du workflow Preview Angel OS de cette PR et exécution admin-audit-one-shot sans aucun job. Aucun email n'a été envoyé, modifié, classé ou marqué lu par cette routine. La file ai_actions reste non interrogeable directement avec les connecteurs disponibles pendant cette exécution ; aucune action awaiting_operator n'a donc été exécutée ou modifiée.",
     "counts": {
-      "total_messages": 5,
+      "total_messages": 6,
       "incoming": 5,
+      "outgoing": 1,
       "technical_incoming": 4,
-      "calendar_notifications": 1,
-      "employment_or_application_incoming": 0,
+      "employment_or_application_incoming": 1,
+      "outgoing_applications": 1,
+      "application_action_required": 1,
       "explicit_rejections": 0,
       "positive_or_interview": 0,
-      "outgoing_application_followups": 0,
+      "professional_redirects": 0,
       "already_sent_rejection_replies": 0
     },
     "items": [
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Synchronisation données Angel OS - main (45a3c95)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Synchronisation données Angel OS - main (77f1800)",
         "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T17:01:55Z",
-        "reason": "Nouvel échec de la synchronisation des données Angel OS ; cohérent avec le blocage serveur déjà connu."
+        "date": "2026-08-15T18:01:45Z",
+        "reason": "Nouvel échec de la synchronisation des données Angel OS ; ne pas lancer de correction concurrente depuis la routine mail."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Observabilité Angel OS - main (45a3c95)",
-        "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T17:02:44Z",
-        "reason": "Nouvel échec du contrôle d'observabilité."
+        "subject": "Candidature – Chargé de communication en alternance – Offre A-2026-231333",
+        "from": "Angel LECLERC <angelleclerc2006@gmail.com>",
+        "date": "2026-08-15T18:32:05Z",
+        "reason": "Nouvelle candidature sortante, utile pour le suivi et l'anti-doublon."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Maintenance Angel OS - main (524e5a2)",
-        "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T17:40:44Z",
-        "reason": "Échec récent du workflow de maintenance technique."
+        "subject": "Complétez votre dossier de candidature",
+        "from": "Université de Bordeaux - Service des recrutements <message@beetween-software.com>",
+        "date": "2026-08-15T18:32:12Z",
+        "reason": "Confirmation de réception de la candidature avec un questionnaire à compléter ; action manuelle utile, sans réponse email automatique."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Publication Angel OS - main (524e5a2)",
-        "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T17:51:17Z",
-        "reason": "Échec le plus récent du workflow de publication Angel OS."
+        "subject": "Re: [angelosmegaplus/angel-leclerc] Préparer la migration Google Cloud (PR #27)",
+        "from": "vercel[bot] <notifications@github.com>",
+        "date": "2026-08-15T18:32:54Z",
+        "reason": "Vercel signale une limite de ressource : plus de 100 déploiements gratuits et recommande de réessayer dans 24 heures."
       },
       {
-        "subject": "Notification: Les Wonda Mamas en concert - sam. 15 août 2026 9pm (UTC+2)",
-        "from": "Google Agenda <calendar-notification@google.com>",
-        "date": "2026-08-15T17:59:56Z",
-        "reason": "Rappel d'un événement prévu à 21:00 ; aucune réponse email nécessaire."
+        "subject": "[angelosmegaplus/angel-leclerc] PR run failed: Preview Angel OS - Préparer la migration Google Cloud (a1d1d9b)",
+        "from": "Angel OS <notifications@github.com>",
+        "date": "2026-08-15T18:33:40Z",
+        "reason": "Le workflow Preview Angel OS de la PR #27 a échoué ; à laisser à la routine de maintenance technique."
+      },
+      {
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: .github/workflows/admin-audit-one-shot.yml - angel-admin-polish (ba70294)",
+        "from": "Angel OS <notifications@github.com>",
+        "date": "2026-08-15T18:59:15Z",
+        "reason": "Le workflow ponctuel d'audit admin n'a lancé aucun job ; signal technique à consigner sans action concurrente."
       }
     ],
     "recommendations": [
-      "Laisser la routine de maintenance technique traiter les échecs GitHub afin d'éviter des corrections concurrentes.",
-      "Aucune action candidature n'est requise sur cette période : aucun nouveau message d'entreprise n'a été reçu.",
-      "La lecture/exécution de ai_actions nécessite toujours une voie serveur authentifiée ou un connecteur direct ; ne pas simuler d'action validée tant que cette source reste inaccessible."
+      "Compléter le questionnaire de l'Université de Bordeaux lié à la candidature au poste de Chargé(e) de communication en alternance ; ne pas considérer le message comme une acceptation ou un entretien.",
+      "Conserver l'Université de Bordeaux comme candidature déjà contactée pour éviter tout doublon automatique sur la même offre.",
+      "Laisser la maintenance technique traiter les échecs GitHub/Vercel ; ne pas relancer de déploiement depuis la routine mail pendant la limite Vercel.",
+      "La lecture/exécution de ai_actions nécessite toujours une voie serveur authentifiée ou un connecteur direct ; ne pas simuler d'action validated/awaiting_operator tant que cette source reste inaccessible."
     ],
     "source": "chatgpt-hourly-direct"
   }
