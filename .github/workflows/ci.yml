@@ -35,18 +35,12 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Reject accidental secrets and JSX in .ts files
+      - name: Secret hygiene check
         shell: bash
         run: |
           set -euo pipefail
           if git ls-files | grep -E '(^|/)\.env($|\.)' | grep -vE '\.example$'; then
-            echo "::warning::Des fichiers .env sont encore suivis par Git. Ils doivent être migrés vers les secrets Vercel/GitHub avant suppression du dépôt."
-          fi
-          BAD_TS="$(grep -RIl --include='*.ts' -E '<[A-Za-z][A-Za-z0-9]*(\s|>|/)' src 2>/dev/null || true)"
-          if [ -n "$BAD_TS" ]; then
-            echo "::error::JSX détecté dans un fichier .ts :"
-            echo "$BAD_TS"
-            exit 1
+            echo "::warning::Des fichiers .env historiques sont encore suivis par Git. Les nouveaux fichiers .env sont désormais ignorés et leur migration vers les secrets centralisés doit être terminée avant suppression."
           fi
 
       - name: Lint
@@ -68,7 +62,6 @@ jobs:
         run: |
           echo "## Angel OS quality gate" >> "$GITHUB_STEP_SUMMARY"
           echo "- Lint" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Build production" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Build production (détecte notamment JSX/TypeScript invalide)" >> "$GITHUB_STEP_SUMMARY"
           echo "- TypeScript" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Détection JSX accidentel dans .ts" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Détection de fichiers .env suivis" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Hygiène des secrets" >> "$GITHUB_STEP_SUMMARY"
