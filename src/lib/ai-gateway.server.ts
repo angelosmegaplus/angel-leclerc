@@ -71,6 +71,19 @@ function sanitizeMessages(messages: AiMessage[]): AiMessage[] {
   });
 }
 
+function responseText(json: any): string | null {
+  if (typeof json?.output_text === "string" && json.output_text.trim()) return json.output_text.trim();
+  for (const item of json?.output ?? []) {
+    if (item?.type !== "message") continue;
+    for (const content of item?.content ?? []) {
+      if (content?.type === "output_text" && typeof content.text === "string" && content.text.trim()) {
+        return content.text.trim();
+      }
+    }
+  }
+  return null;
+}
+
 export async function angelAi(options: {
   messages: AiMessage[];
   priority?: AiPriority;
@@ -96,13 +109,8 @@ export async function angelAi(options: {
     return fail("not_configured", now);
   }
 
-  // Le circuit protège les traitements automatiques, jamais une demande humaine en direct.
-  // Une requête interactive sert aussi de sonde de reprise du fournisseur.
   if (!interactive && health.circuitOpenUntil > now) {
-    console.warn("[angel-ai-gateway] circuit open for background request", {
-      priority,
-      circuitOpenUntil: health.circuitOpenUntil,
-    });
+    console.warn("[angel-ai-gateway] circuit open for background request", { priority, circuitOpenUntil: health.circuitOpenUntil });
     return fail("circuit_open", now);
   }
 
@@ -115,24 +123,15 @@ export async function angelAi(options: {
   const hourAgo = now - 3_600_000;
   const usedHour = usage.filter((e) => e.at >= hourAgo).reduce((n, e) => n + e.estimatedTokens, 0);
 
-  // Les quotas internes servent à ralentir les automatisations. Le chat administrateur
-  // interactif reste prioritaire et ne doit jamais tomber sur une pseudo-réponse locale
-  // simplement parce que des tâches de fond ont consommé leur enveloppe.
   if (!interactive) {
     const reserve = priority === "important" ? 0.85 : 0.65;
     if (usedDay + estimated > dailyLimit * reserve || usedHour + estimated > hourlyLimit * reserve) {
-      console.warn("[angel-ai-gateway] background budget reached", {
-        priority,
-        usedDay,
-        usedHour,
-        dailyLimit,
-        hourlyLimit,
-      });
+      console.warn("[angel-ai-gateway] background budget reached", { priority, usedDay, usedHour, dailyLimit, hourlyLimit });
       return fail("budget", now);
     }
   }
 
-  const model = options.model || process.env["OPENAI_MODEL"] || "gpt-4o-mini";
+  const model = options.model || process.env["OPENAI_MODEL"] || "gpt-4.1-mini";
   const rawCache = options.cacheKey ?? `${model}\n${messages.map((m) => `${m.role}:${m.content}`).join("\n")}`;
   const cacheKey = hash(rawCache);
   const hit = cache.get(cacheKey);
@@ -142,41 +141,61 @@ export async function angelAi(options: {
   }
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), interactive ? 45_000 : 22_000);
+  const timeout = setTimeout(() => controller.abort(), interactive ? 24_000 : 18_000);
+  const clientRequestId = `${priority}-${now}-${Math.random().toString(36).slice(2, 10)}`;
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       signal: controller.signal,
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${key}`,
+        "X-Client-Request-Id": clientRequestId,
+      },
       body: JSON.stringify({
         model,
+        input: messages,
+        max_output_tokens: maxTokens,
         temperature: options.temperature ?? 0.3,
-        max_tokens: maxTokens,
-        messages,
+        store: false,
       }),
     });
+
+    const openAiRequestId = response.headers.get("x-request-id");
     if (!response.ok) {
       const body = await response.text();
       console.error("[angel-ai-gateway] OpenAI", response.status, {
         model,
         priority,
+        clientRequestId,
+        openAiRequestId,
         body: body.slice(0, 1200),
       });
       return fail("provider");
     }
-    const json = (await response.json()) as { choices?: Array<{ message?: { content?: string } }>; usage?: { total_tokens?: number } };
-    const text = json.choices?.[0]?.message?.content?.trim() ?? null;
+
+    const json = await response.json();
+    const text = responseText(json);
     if (!text) {
-      console.error("[angel-ai-gateway] empty OpenAI response", { model, priority });
+      console.error("[angel-ai-gateway] empty OpenAI response", { model, priority, clientRequestId, openAiRequestId });
       return fail("provider");
     }
-    usage.push({ at: now, estimatedTokens: json.usage?.total_tokens ?? estimated, priority });
+
+    const totalTokens = Number(json?.usage?.total_tokens);
+    usage.push({ at: now, estimatedTokens: Number.isFinite(totalTokens) ? totalTokens : estimated, priority });
     cache.set(cacheKey, { expires: now + (options.cacheTtlMs ?? (interactive ? 60_000 : 15 * 60_000)), text });
     succeed();
-    console.info("[angel-ai-gateway] success", { model, priority, cached: false, filteredHistory: options.messages.length - messages.length });
+    console.info("[angel-ai-gateway] success", {
+      model,
+      priority,
+      cached: false,
+      clientRequestId,
+      openAiRequestId,
+      filteredHistory: options.messages.length - messages.length,
+    });
     return { text, reason: "ok" as const, cached: false, fallbackRequired: false };
   } catch (error) {
-    console.error("[angel-ai-gateway] failure", { model, priority, error });
+    console.error("[angel-ai-gateway] failure", { model, priority, clientRequestId, error });
     return fail("provider");
   } finally {
     clearTimeout(timeout);
