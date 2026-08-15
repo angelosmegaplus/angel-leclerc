@@ -50,7 +50,7 @@ export class DurableWorkflowEngine {
     steps: WorkflowStep<TContext>[],
   ): Promise<WorkflowSnapshot<TContext>> {
     const existing = await this.store.load<TContext>(id);
-    let snapshot: WorkflowSnapshot<TContext> = existing ?? {
+    const snapshot: WorkflowSnapshot<TContext> = existing ?? {
       id,
       name,
       status: 'pending',
