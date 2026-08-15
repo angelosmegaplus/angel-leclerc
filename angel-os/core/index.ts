@@ -6,3 +6,4 @@ export * from './config';
 export * from './request-queue';
 export * from './capabilities';
 export * from './service-adapters';
+export * from './native-services';
