@@ -61,6 +61,24 @@ jobs:
             echo "OK $code $url"
           done
 
+      - name: Check Angel AI end-to-end in production
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp)"
+          code="$(curl -L --silent --show-error --output "$tmp" --write-out '%{http_code}' --max-time 35 \
+            -X POST \
+            -H 'Content-Type: application/json' \
+            --data '{"question":"Réponds uniquement par ANGEL_AI_OK si tu reçois ce test.","mode":"site","history":[]}' \
+            "https://www.angel-leclerc.fr/api/assistant")"
+          cat "$tmp"
+          if [ "$code" != "200" ]; then
+            echo "::error::Angel AI indisponible en production (HTTP $code)."
+            exit 1
+          fi
+          jq -e '.source == "openai" and (.text | type == "string") and (.text | length > 0)' "$tmp" >/dev/null
+          echo "Angel AI OpenAI répond réellement en production"
+
       - name: Check public weather endpoint
         shell: bash
         run: |
@@ -96,8 +114,9 @@ jobs:
             echo "- Commit vérifié : \`${GITHUB_SHA}\`"
             echo "- Build + TypeScript : exécutés sur GitHub Actions"
             echo "- Pages critiques : contrôlées"
+            echo "- Angel AI OpenAI : test end-to-end réel exécuté sur /api/assistant"
             echo "- API météo : contrôlée"
             echo "- API actualités : contrôlée"
             echo ""
-            echo "Les tâches Gmail, Google Agenda, recherche d'alternance et rédaction/analyse IA restent hors de GitHub Actions tant qu'elles dépendent de connecteurs personnels ou d'un moteur IA dédié."
+            echo "Les tâches Gmail, Google Agenda et recherche d'alternance restent hors de GitHub Actions tant qu'elles dépendent de connecteurs personnels."
           } >> "$GITHUB_STEP_SUMMARY"
