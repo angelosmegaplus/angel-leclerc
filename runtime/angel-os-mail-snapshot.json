@@ -1,80 +1,84 @@
 {
-  "fetchedAt": "2026-08-15T12:02:12Z",
+  "fetchedAt": "2026-08-15T12:58:55Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-15T12:02:12Z",
+      "fetchedAt": "2026-08-15T12:58:55Z",
       "important": [
         {
           "subject": "Échecs CI et maintenance toujours actifs sur angelosmegaplus/angel-leclerc",
           "from": "GitHub <notifications@github.com>",
-          "date": "2026-08-15T11:54:53Z",
-          "summary": "Depuis le précédent rapport, cinq nouvelles notifications GitHub ont été reçues : quatre échecs du workflow CI et un échec du workflow Maintenance Angel OS. Les commits concernés sont cd9e6d7, d192e68, 27ec0f2 et be12979. Le dernier main vérifié est be129796fdaa48526585eb2d7dc64b961aebec90, committé à 11:53:39Z avec le message « Retry direct Angel OS data sync ».",
+          "date": "2026-08-15T12:23:44Z",
+          "summary": "Depuis le rapport précédent, six nouvelles notifications GitHub ont été reçues : cinq échecs du workflow CI et un échec du workflow Maintenance Angel OS. Les commits signalés sont 5c0a68c, 9170b32, ca636c8, a6a22c1 et 2c1fac0, ainsi qu’un échec Maintenance sur be12979. Le dernier main vérifié est désormais 1388ce16a8d5ec581638b7d209ca379a731652d9, committé à 12:55:26Z avec le message « Document priority Angel OS intelligence layers ».",
           "reason": "Alerte technique persistante sur le dépôt principal ; la routine Maintenance complète Angel OS doit rester seule responsable du diagnostic et des corrections afin d’éviter des interventions concurrentes.",
-          "suggestedReply": ""
-        },
-        {
-          "subject": "Votre essai gratuit Trading Pro se termine bientôt ⏳",
-          "from": "Revolut <no-reply@revolut.com>",
-          "date": "2026-08-15T00:00:13Z",
-          "summary": "L’essai gratuit Trading Pro se termine le 18 août 2026. Après cette date, Revolut annonce un tarif de 4,99 € par mois.",
-          "reason": "Échéance proche susceptible d’entraîner un abonnement payant si l’option n’est pas désactivée.",
           "suggestedReply": ""
         }
       ],
-      "otherSummary": "Depuis le rapport précédent, cinq nouveaux messages entrants pertinents ont été détectés, tous provenant de GitHub et signalant des échecs CI/maintenance. Aucun nouveau mail entrant de candidature, refus, entretien, demande de CV, redirection professionnelle ou réponse d’entreprise n’a été reçu. Gmail n’a subi aucune modification pendant cette exécution.",
+      "otherSummary": "Depuis le rapport précédent, six nouveaux messages entrants pertinents ont été détectés, tous provenant de GitHub et signalant des échecs CI/maintenance. Aucun nouveau mail entrant de candidature, refus, entretien, demande de CV, redirection professionnelle ou réponse d’entreprise n’a été reçu. Un message sortant de relance a été envoyé à contact@lesarenes-brive.fr à 12:30:46Z dans le fil « Recherche d’alternance en communication – BTS à Brive ». Gmail n’a subi aucune modification pendant cette exécution.",
       "counts": {
-        "new_since_last_run": 5,
+        "new_since_last_run": 6,
         "important": 1,
         "employment_or_application_incoming": 0,
-        "outgoing_application_followups": 0
+        "outgoing_application_followups": 1
       }
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-15T11:00:52Z",
-    "period_end": "2026-08-15T12:02:12Z",
-    "summary": "Cinq nouveaux messages entrants ont été reçus sur la période, tous des notifications GitHub concernant angelosmegaplus/angel-leclerc : quatre échecs CI et un échec Maintenance Angel OS. Aucun nouveau mail entrant de candidature, refus, entretien, demande de CV, redirection professionnelle ou réponse d’entreprise n’a été détecté. Le dernier main vérifié est be129796fdaa48526585eb2d7dc64b961aebec90 (« Retry direct Angel OS data sync », 11:53:39Z). Aucune correction technique n’a été lancée depuis cette routine afin de laisser la maintenance technique dédiée gérer les échecs. La file ai_actions reste non interrogeable directement avec les connecteurs disponibles pendant cette exécution ; aucune action awaiting_operator n’a donc été exécutée ou modifiée.",
+    "period_start": "2026-08-15T12:02:12Z",
+    "period_end": "2026-08-15T12:58:55Z",
+    "summary": "Six nouveaux messages entrants ont été reçus sur la période, tous des notifications GitHub concernant angelosmegaplus/angel-leclerc : cinq échecs CI et un échec Maintenance Angel OS. Aucun nouveau mail entrant de candidature, refus, entretien, demande de CV, redirection professionnelle ou réponse d’entreprise n’a été détecté. Une relance sortante a été envoyée à contact@lesarenes-brive.fr à 12:30:46Z dans le fil de candidature BTS Communication. Le dernier main vérifié est 1388ce16a8d5ec581638b7d209ca379a731652d9 (« Document priority Angel OS intelligence layers », 12:55:26Z). Aucune correction technique n’a été lancée depuis cette routine afin de laisser la maintenance technique dédiée gérer les échecs. La file ai_actions reste non interrogeable directement avec les connecteurs disponibles pendant cette exécution ; aucune action awaiting_operator n’a donc été exécutée ou modifiée.",
     "counts": {
-      "total_incoming": 5,
+      "total_incoming": 6,
       "important": 1,
       "employment_or_application_incoming": 0,
-      "outgoing_application_followups": 0
+      "outgoing_application_followups": 1
     },
     "items": [
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: CI - main (be12979)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: CI - main (2c1fac0)",
         "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T11:54:53Z",
-        "reason": "Échec CI sur le dernier main be12979."
-      },
-      {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: CI - main (27ec0f2)",
-        "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T11:53:29Z",
+        "date": "2026-08-15T12:23:44Z",
         "reason": "Nouvel échec CI sur un commit récent de main."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Maintenance Angel OS - main (d192e68)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: CI - main (a6a22c1)",
         "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T11:38:41Z",
-        "reason": "Le workflow de maintenance a échoué sur d192e68."
+        "date": "2026-08-15T12:19:09Z",
+        "reason": "Nouvel échec CI sur un commit récent de main."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: CI - main (d192e68)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: CI - main (ca636c8)",
         "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T11:32:18Z",
-        "reason": "Échec CI sur d192e68."
+        "date": "2026-08-15T12:17:17Z",
+        "reason": "Nouvel échec CI sur un commit récent de main."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: CI - main (cd9e6d7)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: CI - main (9170b32)",
         "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T11:03:16Z",
-        "reason": "Échec CI sur cd9e6d7."
+        "date": "2026-08-15T12:12:28Z",
+        "reason": "Nouvel échec CI sur un commit récent de main."
+      },
+      {
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: CI - main (5c0a68c)",
+        "from": "GitHub <notifications@github.com>",
+        "date": "2026-08-15T12:04:13Z",
+        "reason": "Nouvel échec CI sur un commit récent de main."
+      },
+      {
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Maintenance Angel OS - main (be12979)",
+        "from": "GitHub <notifications@github.com>",
+        "date": "2026-08-15T12:02:38Z",
+        "reason": "Le workflow Maintenance Angel OS a échoué sur be12979."
+      },
+      {
+        "subject": "Re: Recherche d’alternance en communication – BTS à Brive",
+        "from": "Angel Leclerc <angelleclerc2006@gmail.com>",
+        "date": "2026-08-15T12:30:46Z",
+        "reason": "Relance sortante vers Les Arènes Brive ; aucun nouveau retour entrant associé n’est encore visible."
       }
     ],
     "recommendations": [
       "Laisser la routine Maintenance complète Angel OS diagnostiquer les échecs CI et maintenance afin d’éviter plusieurs corrections concurrentes sur main.",
-      "Aucune action candidature ou réponse mail n’est requise sur cette période.",
+      "Aucune réponse candidature ou action Gmail n’est requise sur cette période ; attendre un éventuel retour à la relance Les Arènes Brive.",
       "La lecture/exécution de ai_actions nécessite toujours une voie serveur authentifiée ou un connecteur direct ; ne pas simuler d’action validée tant que cette source reste inaccessible."
     ],
     "source": "chatgpt-hourly-direct"
