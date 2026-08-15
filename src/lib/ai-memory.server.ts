@@ -9,6 +9,10 @@ export type AiMemoryItem = {
   updatedAt: string;
 };
 
+function hasSupabaseAdminConfig() {
+  return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
 function contentFromPayload(payload: unknown) {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) return "";
   const value = (payload as Record<string, unknown>).content;
@@ -16,6 +20,7 @@ function contentFromPayload(payload: unknown) {
 }
 
 export async function readAiMemory(scope: AiMemoryScope | "all" = "all", limit = 80): Promise<AiMemoryItem[]> {
+  if (!hasSupabaseAdminConfig()) return [];
   const kinds = scope === "public" ? ["memory_public"] : scope === "private" ? ["memory_private"] : ["memory_public", "memory_private"];
   const { data, error } = await supabaseAdmin
     .from("ai_actions")
@@ -25,7 +30,7 @@ export async function readAiMemory(scope: AiMemoryScope | "all" = "all", limit =
     .order("updated_at", { ascending: false })
     .limit(limit);
   if (error) {
-    console.error("[ai-memory] read failed", error);
+    console.warn("[ai-memory] read unavailable", error.message);
     return [];
   }
   return (data ?? []).map((row) => ({
@@ -38,6 +43,7 @@ export async function readAiMemory(scope: AiMemoryScope | "all" = "all", limit =
 }
 
 async function publicSiteUpdates() {
+  if (!hasSupabaseAdminConfig()) return "";
   const { data, error } = await supabaseAdmin
     .from("articles")
     .select("title, slug, category, excerpt, published_at, updated_at")
@@ -46,7 +52,7 @@ async function publicSiteUpdates() {
     .order("published_at", { ascending: false, nullsFirst: false })
     .limit(12);
   if (error) {
-    console.error("[ai-memory] public site updates failed", error);
+    console.warn("[ai-memory] public site updates unavailable", error.message);
     return "";
   }
   if (!data?.length) return "";
@@ -64,15 +70,13 @@ export async function aiMemoryPrompt(scope: AiMemoryScope | "all") {
     if (scope === "public") return `${memory}${await publicSiteUpdates()}`;
     return memory;
   } catch (error) {
-    // Memory enriches Angel AI but must never prevent the core OpenAI request.
-    // This notably keeps /api/assistant operational when Supabase is temporarily
-    // unavailable or not configured in the current runtime environment.
-    console.warn("[ai-memory] unavailable; continuing without memory", error);
+    console.warn("[ai-memory] unavailable; continuing without memory", error instanceof Error ? error.message : String(error));
     return "";
   }
 }
 
 export async function readChatGptQueue(limit = 50) {
+  if (!hasSupabaseAdminConfig()) return [];
   const { data, error } = await supabaseAdmin
     .from("ai_actions")
     .select("id, kind, title, description, payload, status, sensitive, created_at, updated_at")
@@ -81,7 +85,7 @@ export async function readChatGptQueue(limit = 50) {
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) {
-    console.error("[ai-memory] queue read failed", error);
+    console.warn("[ai-memory] queue unavailable", error.message);
     return [];
   }
   return data ?? [];
