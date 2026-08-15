@@ -1,4 +1,5 @@
 import {
+  AngelApplicationRuntime,
   AngelDeployEngine,
   AngelEventLog,
   AngelGuardian,
@@ -30,6 +31,27 @@ export const angelNodeGateway = new AngelNodeGateway();
 export const angelGuardian = new AngelGuardian(angelEventLog, angelTelemetry);
 export const angelRecovery = new AngelRecovery();
 export const angelSyncEngine = new AngelSyncEngine();
+export const angelApplicationRuntime = new AngelApplicationRuntime();
+
+angelApplicationRuntime.register({
+  id: "angel-os-ia",
+  name: "Angel OS IA",
+  version: "0.2.0",
+  layer: "angel-os-ia",
+  requires: ["angel-os", "events", "memory", "workflows", "hybrid-orchestrator"],
+  provides: ["ai-providers", "conversation", "analysis", "generation", "agents", "intelligent-automation"],
+  health: async () => Boolean(process.env["OPENAI_API_KEY"]) && !["0", "false", "off", "disabled"].includes(String(process.env["ANGEL_AI_ENABLED"] ?? "true").toLowerCase()),
+});
+
+angelApplicationRuntime.register({
+  id: "angel-leclerc-web",
+  name: "angel-leclerc.fr",
+  version: process.env["VERCEL_GIT_COMMIT_SHA"]?.slice(0, 8) ?? "development",
+  layer: "application",
+  requires: ["angel-os"],
+  provides: ["website", "admin", "blog", "movix"],
+  health: async () => true,
+});
 
 // Known web target. Health is updated by deployment/integrity adapters when data exists.
 angelNodeGateway.upsert({ id: "vercel-web", kind: "vercel", priority: 50, state: "unknown" });
