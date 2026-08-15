@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { RichTextEditor as LegacyRichTextEditor, parseYouTubeId } from "./RichTextEditor";
+import { RichTextEditor as LegacyRichTextEditor, parseYouTubeId } from "./RichTextEditor.tsx";
 import { RichEditorModeTabs, type RichEditorMode } from "./RichEditorModeTabs";
 import { sanitizeArticleHtml } from "@/lib/sanitize-article-html";
 
