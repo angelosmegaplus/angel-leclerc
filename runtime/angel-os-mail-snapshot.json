@@ -1,29 +1,29 @@
 {
-  "fetchedAt": "2026-08-15T03:00:23Z",
+  "fetchedAt": "2026-08-15T03:58:26Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-15T03:00:23Z",
+      "fetchedAt": "2026-08-15T03:58:26Z",
       "important": [],
-      "otherSummary": "Un nouveau message secondaire a été reçu depuis le précédent rapport : Revolut indique que l’essai gratuit Trading Pro se termine le 18 août 2026 et qu’il passera ensuite à 4,99 € par mois. Aucun nouveau message lié à une candidature, un entretien, une demande de CV, une redirection professionnelle ou un refus n’a été détecté sur la période. Aucun message Gmail n’a été modifié, marqué comme lu, classé ou répondu.",
+      "otherSummary": "Aucun nouveau message n’a été reçu depuis le précédent rapport. Aucun nouveau message lié à une candidature, un entretien, une demande de CV, une redirection professionnelle, un refus ou une alerte technique nouvelle n’a été détecté sur la période. Aucun message Gmail n’a été modifié, marqué comme lu, classé ou répondu.",
       "counts": {
-        "new_since_last_run": 1,
+        "new_since_last_run": 0,
         "important": 0,
         "employment_or_application": 0
       }
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-14T23:01:13Z",
-    "period_end": "2026-08-15T03:00:23Z",
-    "summary": "Un nouveau mail secondaire a été reçu : rappel Revolut concernant la fin de l’essai Trading Pro le 18 août 2026 et son passage à 4,99 € par mois. Aucun nouveau mail de candidature, refus, entretien, demande de CV, redirection ou message professionnel nécessitant une action n’a été détecté. Aucune action Gmail effectuée.",
+    "period_start": "2026-08-15T03:00:23Z",
+    "period_end": "2026-08-15T03:58:26Z",
+    "summary": "Aucun nouveau mail depuis le précédent rapport. Aucun nouveau mail de candidature, refus, entretien, demande de CV, redirection, message professionnel ou alerte technique nouvelle nécessitant une action n’a été détecté. Aucune action Gmail effectuée.",
     "counts": {
-      "total": 1,
+      "total": 0,
       "important": 0,
       "employment_or_application": 0
     },
     "items": [],
     "recommendations": [
-      "La file ai_actions n’a pas pu être lue directement dans cette exécution : aucun accès authentifié au backend Supabase/Angel OS n’était exposé au runtime. Aucune action awaiting_operator n’a donc été exécutée ou modifiée. Le snapshot est envoyé par la voie GitHub Actions → Supabase direct afin de mettre à jour le cache Gmail et le rapport horaire sans Lovable."
+      "La file ai_actions n’est pas directement lisible depuis ce runtime : aucun accès authentifié au backend Supabase/Angel OS n’est exposé ici. Aucune action awaiting_operator n’a donc été exécutée ou modifiée. Le rapport et le cache Gmail sont transmis par GitHub Actions vers Supabase direct, sans Lovable."
     ],
     "source": "chatgpt-hourly-direct"
   }
