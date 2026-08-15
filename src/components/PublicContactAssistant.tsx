@@ -15,6 +15,8 @@ const SUGGESTIONS = [
   "Quel est son parcours ?",
 ];
 
+const CLIENT_AI_TIMEOUT_MS = 12000;
+
 export function PublicContactAssistant() {
   const askServer = useServerFn(askAssistant);
   const [question, setQuestion] = useState("");
@@ -39,17 +41,25 @@ export function PublicContactAssistant() {
     setThinking(true);
 
     let text: string | null = null;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     try {
-      const result = await askServer({
-        data: {
-          question: value.slice(0, 500),
-          mode: "contact" as const,
-          history,
-        },
-      });
-      text = result.text;
+      const result = await Promise.race([
+        askServer({
+          data: {
+            question: value.slice(0, 500),
+            mode: "contact" as const,
+            history,
+          },
+        }),
+        new Promise<null>((resolve) => {
+          timer = setTimeout(() => resolve(null), CLIENT_AI_TIMEOUT_MS);
+        }),
+      ]);
+      text = result && "text" in result ? result.text : null;
     } catch {
       text = null;
+    } finally {
+      if (timer) clearTimeout(timer);
     }
 
     if (!text) text = localAnswer(value).text;
