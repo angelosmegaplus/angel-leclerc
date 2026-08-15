@@ -18,15 +18,16 @@ export async function queueAdminRefresh(section: string, details?: Record<string
     kind: "refresh_check",
     title,
     description:
-      "Demande créée depuis un bouton Actualiser de l’espace administrateur. Contrôler les données réelles de la section, signaler les incohérences et mettre à jour ce qui peut l’être sans action sensible.",
+      "Demande créée depuis un bouton Actualiser de l’espace administrateur. ChatGPT doit lire cette demande, contrôler les données réelles de la section, signaler les incohérences et mettre à jour ce qui peut l’être sans action sensible.",
     payload: {
       section: normalizedSection,
       requested_at: requestedAt,
       source: "admin_refresh_button",
+      execution: "chatgpt_operator",
       ...details,
     },
     status: "pending",
-    target_type: "system",
+    target_type: "chatgpt",
     sensitive: false,
   });
 
@@ -39,7 +40,7 @@ export async function queueAdminRefresh(section: string, details?: Record<string
     await supabase.from("activity_log").insert({
       source: "user",
       action: "request_refresh_check",
-      entity_type: "system",
+      entity_type: "chatgpt",
       details: { section: normalizedSection, requested_at: requestedAt, ...details },
     });
   } catch {
