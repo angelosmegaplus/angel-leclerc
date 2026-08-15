@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { angelMemoryIndex, recordAngelOperation } from "./angel-runtime.server";
 
 export type AdminIntegritySnapshot = {
   checkedAt: string;
@@ -21,6 +22,7 @@ const CACHE_MAX_AGE_MS = 20 * 60 * 1000;
 export const getAdminIntegritySnapshot = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<AdminIntegritySnapshot> => {
+    const startedAt = Date.now();
     const db = context.supabase as any;
     const [applications, projects, tasks, articles, actions, messages, cache] = await Promise.all([
       db.from("applications").select("id", { count: "exact", head: true }),
@@ -34,7 +36,16 @@ export const getAdminIntegritySnapshot = createServerFn({ method: "GET" })
 
     const results = [applications, projects, tasks, articles, actions, messages, cache];
     const errors = results.map((result: any) => result.error?.message).filter(Boolean);
-    if (errors.length) throw new Error(errors.join(" · "));
+    if (errors.length) {
+      await recordAngelOperation({
+        type: "admin.integrity.failed",
+        source: "admin-integrity",
+        ok: false,
+        durationMs: Date.now() - startedAt,
+        payload: { errors },
+      });
+      throw new Error(errors.join(" · "));
+    }
 
     const articleRows = (articles.data ?? []) as Array<{ published?: boolean | null }>;
     const now = Date.now();
@@ -50,7 +61,7 @@ export const getAdminIntegritySnapshot = createServerFn({ method: "GET" })
     const warnings: string[] = [];
     if (staleCaches.length) warnings.push(`${staleCaches.length} snapshot(s) admin périmé(s) ou absent(s)`);
 
-    return {
+    const snapshot: AdminIntegritySnapshot = {
       checkedAt: new Date().toISOString(),
       counts: {
         applications: applications.count ?? 0,
@@ -64,4 +75,24 @@ export const getAdminIntegritySnapshot = createServerFn({ method: "GET" })
       staleCaches: [...new Set(staleCaches)],
       warnings,
     };
+
+    angelMemoryIndex.upsert({
+      id: "admin:integrity:latest",
+      source: "admin-integrity",
+      title: "État courant de l'administration Angel OS",
+      text: `Candidatures ${snapshot.counts.applications}; projets ${snapshot.counts.projects}; tâches ouvertes ${snapshot.counts.openTasks}; articles ${snapshot.counts.articles}; publiés ${snapshot.counts.publishedArticles}; actions en attente ${snapshot.counts.pendingActions}; messages non lus ${snapshot.counts.unreadMessages}. ${warnings.join(" ")}`,
+      tags: ["admin", "integrity", "state"],
+      updatedAt: now,
+      metadata: { ...snapshot.counts, staleCaches: snapshot.staleCaches },
+    });
+
+    await recordAngelOperation({
+      type: warnings.length ? "admin.integrity.warning" : "admin.integrity.ok",
+      source: "admin-integrity",
+      ok: true,
+      durationMs: Date.now() - startedAt,
+      payload: { counts: snapshot.counts, staleCaches: snapshot.staleCaches },
+    });
+
+    return snapshot;
   });
