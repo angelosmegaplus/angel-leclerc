@@ -7,17 +7,7 @@ type WorkItem = { id: string; title: string; status: string; detail?: string; co
 type WorkPayload = { version: number; updatedAt: string; source: string; current?: WorkItem[]; waiting?: WorkItem[]; done?: WorkItem[] };
 type Commit = { sha: string; html_url: string; commit: { message: string; author?: { date?: string } } };
 type LiveAction = { id: string; kind: string; title: string; description: string | null; status: string; created_at: string; updated_at?: string | null };
-type FeedItem = {
-  key: string;
-  title: string;
-  detail?: string;
-  status: string;
-  kind: "queue" | "commit" | "action";
-  timestamp: number;
-  label: string;
-  href?: string;
-  commit?: string;
-};
+type FeedItem = { key: string; title: string; detail?: string; status: string; kind: "queue" | "commit" | "action"; timestamp: number; label: string; href?: string; commit?: string };
 
 const RAW_QUEUE = "https://raw.githubusercontent.com/angelosmegaplus/angel-leclerc/main/runtime/chatgpt-work.json";
 const COMMITS_API = "https://api.github.com/repos/angelosmegaplus/angel-leclerc/commits?sha=main&per_page=8";
@@ -31,19 +21,22 @@ function shortSha(value?: string) { return value ? value.slice(0, 7) : ""; }
 function timeLabel(value?: string | null) { if (!value) return ""; const d = new Date(value); if (Number.isNaN(d.getTime())) return ""; return new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(d); }
 function isDone(status: string) { return ["done", "completed", "ready", "published", "resolved"].includes(status); }
 function isFailed(status: string) { return ["failed", "error", "rejected"].includes(status); }
-function statusLabel(status: string) {
-  if (status === "commit") return "Publié";
-  if (isDone(status)) return "Terminé";
+function statusLabel(status: string, kind: FeedItem["kind"]) {
+  if (kind === "commit") return "Sur GitHub";
+  if (status === "published") return "Publié";
+  if (["done", "completed", "ready", "resolved"].includes(status)) return "Terminé";
   if (isFailed(status)) return "Erreur";
   if (status === "running") return "En cours";
-  if (status === "waiting_publish") return "Publication";
+  if (status === "waiting_publish") return "En attente de publication";
   if (status === "blocked") return "En pause";
   return "En attente";
 }
 function statusTone(status: string, kind: FeedItem["kind"]): AdminStatusTone {
-  if (kind === "commit" || isDone(status)) return "success";
+  if (status === "published") return "success";
   if (isFailed(status)) return "error";
   if (status === "running") return "info";
+  if (kind === "commit") return "info";
+  if (isDone(status)) return "success";
   return "pending";
 }
 
@@ -75,15 +68,10 @@ export function GitHubChatGPTQueue() {
     try {
       const response = await fetch(bust(COMMITS_API), { cache: "no-store", headers: { Accept: "application/vnd.github+json" } });
       if (response.ok) setCommits((await response.json()) as Commit[]);
-    } catch { /* le fil reste utilisable avec les données déjà chargées */ }
+    } catch { }
   }
 
-  async function refreshAll() {
-    if (refreshing) return;
-    setRefreshing(true);
-    try { await Promise.all([refreshQueue(), refreshCommits()]); }
-    finally { setRefreshing(false); }
-  }
+  async function refreshAll() { if (refreshing) return; setRefreshing(true); try { await Promise.all([refreshQueue(), refreshCommits()]); } finally { setRefreshing(false); } }
 
   useEffect(() => {
     void refreshAll();
@@ -92,70 +80,40 @@ export function GitHubChatGPTQueue() {
     const focus = () => void refreshAll();
     window.addEventListener("focus", focus);
     window.addEventListener("angel-os:chatgpt-queue-updated", focus);
-    return () => {
-      window.clearInterval(q);
-      window.clearInterval(c);
-      window.removeEventListener("focus", focus);
-      window.removeEventListener("angel-os:chatgpt-queue-updated", focus);
-    };
+    return () => { window.clearInterval(q); window.clearInterval(c); window.removeEventListener("focus", focus); window.removeEventListener("angel-os:chatgpt-queue-updated", focus); };
   }, []);
 
   const feed = useMemo(() => {
     const activeItems: FeedItem[] = [];
     const completedItems: FeedItem[] = [];
     const queueTime = queue?.updatedAt ? new Date(queue.updatedAt).getTime() : Date.now();
-
     for (const item of queue?.current ?? []) activeItems.push({ key: `q-current-${item.id}`, title: item.title, detail: item.detail, status: item.status, kind: "queue", timestamp: queueTime + 3, label: "En cours", commit: item.commit });
-    for (const item of queue?.waiting ?? []) activeItems.push({ key: `q-wait-${item.id}`, title: item.title, detail: item.detail, status: item.status, kind: "queue", timestamp: queueTime + 2, label: item.status === "waiting_publish" ? "Publication" : "En attente", commit: item.commit });
-    for (const item of queue?.done ?? []) completedItems.push({ key: `q-done-${item.id}`, title: item.title, detail: item.detail, status: item.status, kind: "queue", timestamp: queueTime + 1, label: "Dernière publication", commit: item.commit });
+    for (const item of queue?.waiting ?? []) activeItems.push({ key: `q-wait-${item.id}`, title: item.title, detail: item.detail, status: item.status, kind: "queue", timestamp: queueTime + 2, label: item.status === "waiting_publish" ? "En attente de publication" : "En attente", commit: item.commit });
+    for (const item of queue?.done ?? []) completedItems.push({ key: `q-done-${item.id}`, title: item.title, detail: item.detail, status: item.status, kind: "queue", timestamp: queueTime + 1, label: "Terminé", commit: item.commit });
     for (const action of liveActions) {
       const timestamp = new Date(action.updated_at || action.created_at).getTime();
       const target = isDone(action.status) ? completedItems : activeItems;
-      target.push({ key: `a-${action.id}`, title: action.title, detail: action.description || undefined, status: action.status, kind: "action", timestamp: Number.isFinite(timestamp) ? timestamp : 0, label: isDone(action.status) ? "Dernière publication" : "Demande" });
+      target.push({ key: `a-${action.id}`, title: action.title, detail: action.description || undefined, status: action.status, kind: "action", timestamp: Number.isFinite(timestamp) ? timestamp : 0, label: isDone(action.status) ? "Terminé" : "Demande" });
     }
     for (const commit of commits) {
       const timestamp = new Date(commit.commit.author?.date || 0).getTime();
       activeItems.push({ key: `c-${commit.sha}`, title: commit.commit.message.split("\n")[0], status: "commit", kind: "commit", timestamp: Number.isFinite(timestamp) ? timestamp : 0, label: "GitHub main", href: commit.html_url, commit: commit.sha });
     }
-
-    const dedupe = (items: FeedItem[]) => {
-      const result: FeedItem[] = [];
-      const seen = new Set<string>();
-      for (const item of items.sort((a, b) => b.timestamp - a.timestamp)) {
-        const key = `${item.title.toLowerCase()}-${item.commit || ""}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        result.push(item);
-      }
-      return result;
-    };
-
+    const dedupe = (items: FeedItem[]) => { const result: FeedItem[] = []; const seen = new Set<string>(); for (const item of items.sort((a, b) => b.timestamp - a.timestamp)) { const key = `${item.title.toLowerCase()}-${item.commit || ""}`; if (seen.has(key)) continue; seen.add(key); result.push(item); } return result; };
     const active = dedupe(activeItems).slice(0, MAX_ACTIVE_ITEMS);
-    const latestPublished = dedupe(completedItems)[0];
-    return (latestPublished ? [...active, latestPublished] : active).slice(0, MAX_VISIBLE_ITEMS);
+    const latestCompleted = dedupe(completedItems)[0];
+    return (latestCompleted ? [...active, latestCompleted] : active).slice(0, MAX_VISIBLE_ITEMS);
   }, [queue, liveActions, commits]);
 
   return <section className="rounded-[1.75rem] border border-white/10 bg-[#090b0d] p-4 sm:p-5" aria-label="Activité ChatGPT GitHub" data-no-refresh-queue="true">
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <div className="flex items-center gap-3">
-        <span className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white"><Github className="h-5 w-5" /></span>
-        <div><h2 className="font-semibold text-white">ChatGPT · GitHub</h2><p className="text-xs text-white/45">4 éléments actifs + la dernière publication.</p><p className="mt-1 text-[10px] text-white/30">Actualisation 5 s{lastSyncAt ? ` · ${timeLabel(lastSyncAt)}` : ""}</p></div>
-      </div>
+      <div className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white"><Github className="h-5 w-5" /></span><div><h2 className="font-semibold text-white">ChatGPT · GitHub</h2><p className="text-xs text-white/45">4 éléments actifs + le dernier élément terminé.</p><p className="mt-1 text-[10px] text-white/30">Actualisation 5 s{lastSyncAt ? ` · ${timeLabel(lastSyncAt)}` : ""}</p></div></div>
       <button type="button" onClick={() => void refreshAll()} className="flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[.04] px-3 text-xs text-white/65">{refreshing || loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}<span className="hidden sm:inline">Actualiser</span></button>
     </div>
-
     {error ? <div className="mt-4"><AdminStatus tone="error" compact>{error}</AdminStatus></div> : null}
-
     <div className="mt-4 divide-y divide-white/10">
       {feed.length === 0 ? <p className="py-4 text-sm text-white/40">Aucune activité récente.</p> : feed.map(item => {
-        const row = <div className="flex items-start justify-between gap-4 py-3">
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-white">{item.title}</p>
-            {item.detail ? <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-white/40">{item.detail}</p> : null}
-            {item.commit ? <p className="mt-1 font-mono text-[10px] text-white/30">{shortSha(item.commit)}</p> : null}
-          </div>
-          <AdminStatus tone={statusTone(item.status, item.kind)} compact>{statusLabel(item.status)}</AdminStatus>
-        </div>;
+        const row = <div className="flex items-start justify-between gap-4 py-3"><div className="min-w-0 flex-1"><p className="truncate text-sm font-medium text-white">{item.title}</p>{item.detail ? <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-white/40">{item.detail}</p> : null}{item.commit ? <p className="mt-1 font-mono text-[10px] text-white/30">{shortSha(item.commit)}</p> : null}</div><AdminStatus tone={statusTone(item.status, item.kind)} compact>{statusLabel(item.status, item.kind)}</AdminStatus></div>;
         return item.href ? <a key={item.key} href={item.href} target="_blank" rel="noreferrer" className="block hover:bg-white/[.025]">{row}</a> : <div key={item.key}>{row}</div>;
       })}
     </div>
