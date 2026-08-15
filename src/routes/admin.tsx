@@ -622,7 +622,7 @@ function AdminPage() {
 
         {draft ? (
           <form
-            className="mt-10 space-y-5 rounded-xl border border-border bg-card p-6"
+            className="mt-4 space-y-5 rounded-[1.5rem] border border-[#E6DED2] bg-[#FFFDF9] p-4 text-[#181716] shadow-[0_20px_70px_rgba(0,0,0,.22)] sm:p-6 [&_.text-muted-foreground]:!text-[#6F6B65] [&_.text-foreground]:!text-[#181716] [&_.bg-background]:!bg-[#FFFDF9] [&_.bg-card]:!bg-[#FFFDF9] [&_.border-border]:!border-[#E6DED2] [&_input]:!border-[#D9D0C4] [&_input]:!bg-white [&_input]:!text-[#181716] [&_textarea]:!border-[#D9D0C4] [&_textarea]:!bg-white [&_textarea]:!text-[#181716] [&_select]:!border-[#D9D0C4] [&_select]:!bg-white [&_select]:!text-[#181716]"
             onSubmit={(e) => {
               e.preventDefault();
               setSaveError(null);
