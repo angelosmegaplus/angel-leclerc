@@ -1,5 +1,5 @@
 import { FormEvent, useMemo, useState } from "react";
-import { Loader2, Send, Sparkles } from "lucide-react";
+import { Loader2, RotateCcw, Send, Sparkles } from "lucide-react";
 import { answer as localAnswer } from "@/lib/assistant-engine";
 
 type ChatMessage = {
@@ -34,6 +34,12 @@ export function PublicContactAssistant() {
     [messages],
   );
 
+  function resetConversation() {
+    setQuestion("");
+    setMessages([]);
+    setThinking(false);
+  }
+
   async function send(raw: string) {
     const value = raw.trim();
     if (value.length < 2 || thinking) return;
@@ -43,21 +49,28 @@ export function PublicContactAssistant() {
     setThinking(true);
 
     let text: string | null = null;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 15_000);
     try {
       const response = await fetch("/api/assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         cache: "no-store",
+        signal: controller.signal,
         body: JSON.stringify({
           question: value.slice(0, 500),
           mode: "contact",
           history,
         }),
       });
-      const result = (await response.json()) as AssistantApiResponse;
-      text = typeof result.text === "string" && result.text.trim() ? result.text : null;
+      if (response.ok) {
+        const result = (await response.json()) as AssistantApiResponse;
+        text = typeof result.text === "string" && result.text.trim() ? result.text : null;
+      }
     } catch {
       text = null;
+    } finally {
+      window.clearTimeout(timeout);
     }
 
     if (!text) text = localAnswer(value).text;
@@ -77,9 +90,20 @@ export function PublicContactAssistant() {
         <div className="mt-0.5 rounded-xl bg-primary/10 p-2 text-primary">
           <Sparkles size={18} aria-hidden />
         </div>
-        <div>
+        <div className="min-w-0 flex-1">
           <h2 className="font-display text-lg font-bold text-foreground">Une question ?</h2>
         </div>
+        {messages.length > 0 && (
+          <button
+            type="button"
+            onClick={resetConversation}
+            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-border bg-background px-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+            aria-label="Réinitialiser la discussion"
+          >
+            <RotateCcw size={14} aria-hidden />
+            Nouveau chat
+          </button>
+        )}
       </div>
 
       {messages.length > 0 && (
