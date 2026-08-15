@@ -3,7 +3,21 @@
 export type CapabilityState = "active" | "available" | "deferred" | "unavailable";
 
 export type AngelCapability = {
-  id: "react" | "typescript" | "tailwind" | "vite" | "framer-motion" | "express" | "mysql" | "redis" | "python" | "rust" | "ztp";
+  id:
+    | "react"
+    | "typescript"
+    | "tailwind"
+    | "vite"
+    | "framer-motion"
+    | "native-storage"
+    | "native-cache"
+    | "native-worker"
+    | "express"
+    | "mysql"
+    | "redis"
+    | "python"
+    | "rust"
+    | "ztp";
   label: string;
   state: CapabilityState;
   role: string;
@@ -23,11 +37,16 @@ export const ANGEL_OS_CAPABILITIES: AngelCapability[] = [
   { id: "tailwind", label: "Tailwind CSS", state: "active", role: "Design system and responsive UI", manualSetupRequired: false },
   { id: "vite", label: "Vite", state: "active", role: "Build and development pipeline", manualSetupRequired: false },
   { id: "framer-motion", label: "Framer Motion", state: "active", role: "UI motion and transitions", manualSetupRequired: false },
+
+  { id: "native-storage", label: "Angel Native Storage", state: "active", role: "Zero-connection private/offline persistence via IndexedDB", manualSetupRequired: false },
+  { id: "native-cache", label: "Angel Native Cache", state: "active", role: "Fast cache without an external Redis service", manualSetupRequired: false },
+  { id: "native-worker", label: "Angel Native Worker", state: "active", role: "In-process task execution without Python/Rust services", manualSetupRequired: false },
+
   { id: "express", label: "Express", state: "deferred", role: "Standalone Angel OS API when a managed server is available", fallback: "TanStack Start server routes", manualSetupRequired: true },
-  { id: "mysql", label: "MySQL", state: "deferred", role: "Portable relational storage", fallback: "Current production data layer", manualSetupRequired: true },
-  { id: "redis", label: "Redis", state: "deferred", role: "Cache, queue and ephemeral state", fallback: "In-process/server cache and existing queues", manualSetupRequired: true },
-  { id: "python", label: "Python", state: "available", role: "Automation, data processing and AI workers when locally executable", fallback: "TypeScript workers", manualSetupRequired: false },
-  { id: "rust", label: "Rust", state: "deferred", role: "Performance-critical or system-level tooling only", fallback: "TypeScript/Node utilities", manualSetupRequired: true },
+  { id: "mysql", label: "MySQL", state: "deferred", role: "Portable relational storage", fallback: "Current production data layer + Angel Native Storage for private/offline data", manualSetupRequired: true },
+  { id: "redis", label: "Redis", state: "deferred", role: "Cache, queue and ephemeral state", fallback: "Angel Native Cache and existing request queues", manualSetupRequired: true },
+  { id: "python", label: "Python", state: "available", role: "Automation, data processing and AI workers when locally executable", fallback: "Angel Native Worker", manualSetupRequired: false },
+  { id: "rust", label: "Rust", state: "deferred", role: "Performance-critical or system-level tooling only", fallback: "Angel Native Worker / TypeScript utilities", manualSetupRequired: true },
   { id: "ztp", label: "Zero-touch provisioning", state: "deferred", role: "Automatic server bootstrap", fallback: "Existing managed deployment pipeline", manualSetupRequired: true },
 ];
 
