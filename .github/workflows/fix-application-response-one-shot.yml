@@ -1,0 +1,73 @@
+name: Fix invalid application responses
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/fix-application-response-one-shot.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Harden application response parsing and display
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          server = Path('src/lib/applications.server.ts')
+          text = server.read_text()
+
+          anchor = '''function rejection(text: string): boolean {\n  return /malheureusement|au regret|ne (?:pouvons|pourrons|sommes) pas|pas (?:en mesure|de poste|de place)|pas donner suite|pas y répondre favorablement|candidature non retenue|refus|ne sera pas retenue|ne prenons pas d.alternant/i.test(\n    text,\n  );\n}\n'''
+          insert = anchor + '''\nfunction cleanReplyText(value: string): string {\n  return value\n    .replace(/<!doctype[^>]*>/gi, " ")\n    .replace(/<style[\\s\\S]*?<\\/style>/gi, " ")\n    .replace(/<script[\\s\\S]*?<\\/script>/gi, " ")\n    .replace(/<[^>]+>/g, " ")\n    .replace(/&nbsp;/gi, " ")\n    .replace(/&amp;/gi, "&")\n    .replace(/&lt;/gi, "<")\n    .replace(/&gt;/gi, ">")\n    .replace(/\\s+/g, " ")\n    .trim();\n}\n\nfunction isInvalidReply(value: unknown): boolean {\n  const text = String(value ?? "").toLowerCase();\n  return (\n    text.includes("<!doctype html") ||\n    text.includes("this page didn't load") ||\n    text.includes("something went wrong on our end") ||\n    text.includes("id-preview-") ||\n    text.includes("lovable.app")\n  );\n}\n'''
+          if 'function cleanReplyText' not in text:
+              if anchor not in text:
+                  raise SystemExit('rejection anchor not found')
+              text = text.replace(anchor, insert, 1)
+
+          old = '''  const summary = [header(latest, "Subject"), latest.snippet]\n    .filter(Boolean)\n    .join(" — ")\n    .slice(0, 600);\n  return { summary, rejected: rejection(summary) };\n'''
+          new = '''  const summary = cleanReplyText(\n    [header(latest, "Subject"), latest.snippet].filter(Boolean).join(" — "),\n  ).slice(0, 600);\n  if (!summary || isInvalidReply(summary)) return null;\n  return { summary, rejected: rejection(summary) };\n'''
+          if old in text:
+              text = text.replace(old, new, 1)
+
+          old_patch = '''    const patch: ApplicationUpdate = {};\n    if (!match.response && candidate.response) patch.response = candidate.response;\n    if (candidate.response && match.follow_up_at) patch.follow_up_at = null;\n'''
+          new_patch = '''    const patch: ApplicationUpdate = {};\n    const invalidExistingResponse = isInvalidReply(match.response);\n    if (invalidExistingResponse) {\n      patch.response = candidate.response ?? null;\n      patch.follow_up_at = candidate.response ? null : candidate.follow_up_at;\n      if (["refusee", "envoyee", "relance"].includes(key(match.status))) {\n        patch.status = candidate.status;\n      }\n    } else if (!match.response && candidate.response) {\n      patch.response = candidate.response;\n    }\n    if (candidate.response && match.follow_up_at) patch.follow_up_at = null;\n'''
+          if old_patch not in text:
+              raise SystemExit('application patch anchor not found')
+          text = text.replace(old_patch, new_patch, 1)
+          server.write_text(text)
+
+          panel = Path('src/components/admin/ApplicationsPanel.tsx')
+          text = panel.read_text()
+          anchor = '''function sentMailOf(row: Row) {\n  return (\n    str(row, "sent_message") ||\n    str(row, "email_body") ||\n    str(row, "mail_body") ||\n    str(row, "message_sent") ||\n    ""\n  );\n}\n'''
+          insert = anchor + '''\nfunction cleanApplicationText(value: string) {\n  if (!value) return "";\n  const looksLikeBrokenPage = /<!doctype html|this page didn't load|something went wrong on our end|lovable\\.app|id-preview-/i.test(value);\n  if (looksLikeBrokenPage) return "";\n  return value\n    .replace(/<style[\\s\\S]*?<\\/style>/gi, " ")\n    .replace(/<script[\\s\\S]*?<\\/script>/gi, " ")\n    .replace(/<[^>]+>/g, " ")\n    .replace(/&nbsp;/gi, " ")\n    .replace(/&amp;/gi, "&")\n    .replace(/\\s+/g, " ")\n    .trim();\n}\n'''
+          if 'function cleanApplicationText' not in text:
+              if anchor not in text:
+                  raise SystemExit('panel anchor not found')
+              text = text.replace(anchor, insert, 1)
+          text = text.replace('const response = str(row, "response");', 'const response = cleanApplicationText(str(row, "response"));', 1)
+          panel.write_text(text)
+          PY
+      - name: Verify
+        run: |
+          bun install
+          bunx tsc --noEmit --pretty false
+      - name: Commit fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'Angel OS'
+          git config user.email 'angelleclerc2006@gmail.com'
+          git add src/lib/applications.server.ts src/components/admin/ApplicationsPanel.tsx
+          git diff --cached --quiet && exit 0
+          git commit -m 'fix(applications): discard broken HTML responses and repair stale records'
+          git push origin HEAD:main
