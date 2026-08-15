@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ExternalLink, Film, Heart, History, Loader2, Moon, Play, RotateCcw, Save, Search } from "lucide-react";
+import { ExternalLink, Film, Heart, History, Loader2, Moon, Play, RotateCcw, Save, Search, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/admin-movix")({
@@ -35,11 +35,25 @@ const MOVIES: Movie[] = [
 const URL_KEY = "angel-os-movix-personal-url";
 const HISTORY_KEY = "angel-os-movix-history";
 const FAVORITES_KEY = "angel-os-movix-favorites";
+const LAST_CHECK_KEY = "angel-os-movix-last-reference-check";
+const REFERENCE_URL = "https://movix.online/";
 
 function dailyPicks() {
   const today = new Date();
   const daySeed = Math.floor(new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime() / 86_400_000);
   return [0, 1, 2].map((offset) => MOVIES[(daySeed * 3 + offset * 5) % MOVIES.length]);
+}
+
+function formatCheck(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Jamais";
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
 }
 
 function MovixPage() {
@@ -49,6 +63,7 @@ function MovixPage() {
   const [savedUrl, setSavedUrl] = useState("");
   const [history, setHistory] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [lastCheckedAt, setLastCheckedAt] = useState("");
   const picks = useMemo(() => dailyPicks(), []);
 
   useEffect(() => {
@@ -62,6 +77,7 @@ function MovixPage() {
       setSavedUrl(current);
       setHistory(JSON.parse(localStorage.getItem(HISTORY_KEY) ?? "[]"));
       setFavorites(JSON.parse(localStorage.getItem(FAVORITES_KEY) ?? "[]"));
+      setLastCheckedAt(localStorage.getItem(LAST_CHECK_KEY) ?? "");
     } catch {
       // Le hub reste utilisable même si le stockage local est indisponible.
     }
@@ -86,6 +102,13 @@ function MovixPage() {
     } catch {
       // URL invalide : ne rien ouvrir.
     }
+  };
+
+  const checkReference = () => {
+    const checkedAt = new Date().toISOString();
+    setLastCheckedAt(checkedAt);
+    try { localStorage.setItem(LAST_CHECK_KEY, checkedAt); } catch { /* facultatif */ }
+    window.open(REFERENCE_URL, "_blank", "noopener,noreferrer");
   };
 
   const toggleFavorite = (title: string) => {
@@ -142,6 +165,17 @@ function MovixPage() {
             <button type="button" disabled={!savedUrl} onClick={openPersonalSource} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-red-500 px-5 text-sm font-semibold text-white disabled:opacity-40"><ExternalLink className="h-4 w-4" /> Ouvrir</button>
           </div>
           {savedUrl ? <p className="mt-3 truncate text-xs text-white/35">Source enregistrée : {savedUrl}</p> : null}
+        </section>
+
+        <section className="mt-5 rounded-[1.6rem] border border-white/10 bg-white/[.025] p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-red-300" /><h2 className="font-semibold">Page de référence Movix</h2></div>
+              <p className="mt-2 text-sm text-white/45">Utilisez cette page pour vérifier manuellement l’adresse publiée, puis mettez à jour le lanceur ci-dessus si nécessaire.</p>
+              <p className="mt-2 text-xs text-white/30">Dernier contrôle : {lastCheckedAt ? formatCheck(lastCheckedAt) : "jamais"}</p>
+            </div>
+            <button type="button" onClick={checkReference} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[.05] px-4 text-sm font-semibold text-white hover:bg-white/[.08]"><ExternalLink className="h-4 w-4" /> Vérifier l’adresse</button>
+          </div>
         </section>
 
         <div className="mt-5 grid gap-3 md:grid-cols-2">
