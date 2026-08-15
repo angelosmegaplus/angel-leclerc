@@ -1,121 +1,82 @@
 {
-  "fetchedAt": "2026-08-15T13:58:55Z",
+  "fetchedAt": "2026-08-15T16:03:30Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-15T13:58:55Z",
+      "fetchedAt": "2026-08-15T16:03:30Z",
       "important": [
         {
-          "subject": "Échecs CI et Publication Angel OS toujours actifs",
-          "from": "GitHub <notifications@github.com>",
-          "date": "2026-08-15T13:57:21Z",
-          "summary": "Depuis le rapport précédent, quatorze nouvelles notifications GitHub pertinentes ont été reçues : trois échecs CI et onze notifications d’échec du workflow Publication Angel OS. Les commits concernés incluent d016dde, a86959d, 8296d01 puis plusieurs commits de la série Movix jusqu’à f1291d5. Le dernier main vérifié au moment du rapport est ed3edc08a9fd5cdfefa0fa6452a77dea5824b18a, commit « feat(movix): add horizontal carousel and localized artwork ».",
-          "reason": "Alerte technique persistante sur le dépôt principal. La routine Maintenance complète Angel OS doit rester seule responsable du diagnostic et des corrections afin d’éviter des interventions concurrentes.",
+          "subject": "Échecs techniques GitHub/Vercel très nombreux sur angel-leclerc",
+          "from": "GitHub / Vercel",
+          "date": "2026-08-15T16:02:47Z",
+          "summary": "Depuis le précédent rapport, 125 notifications GitHub liées à angelosmegaplus/angel-leclerc et 3 notifications Vercel de déploiement de production en échec ont été détectées. Les messages récents concernent notamment CI, Maintenance Angel OS, Publication Angel OS et preview.yml. Les derniers événements visibles incluent un échec CI et Maintenance sur abaf68b ainsi qu'un échec preview.yml sur e3f42b3.",
+          "reason": "Alerte technique massive et persistante sur le dépôt principal. Cette routine mail ne lance aucune correction afin de laisser la maintenance technique dédiée diagnostiquer les causes sans conflit.",
+          "suggestedReply": ""
+        },
+        {
+          "subject": "Relance Radio Vallée Vézère envoyée",
+          "from": "Angel LECLERC",
+          "date": "2026-08-15T14:29:34Z",
+          "summary": "Un message sortant de relance concernant la candidature BTS Communication envoyée le 27 juillet à Radio Vallée Vézère a été détecté dans Gmail.",
+          "reason": "Information factuelle utile au suivi des candidatures ; aucun nouveau message entrant de l'entreprise n'a été détecté sur la période.",
           "suggestedReply": ""
         }
       ],
-      "otherSummary": "Aucun nouveau mail entrant de candidature, refus, entretien, demande de CV, redirection professionnelle ou réponse d’entreprise n’a été reçu depuis le dernier rapport. Les nouveaux messages pertinents sont exclusivement des notifications GitHub d’échecs CI ou Publication Angel OS. Gmail n’a subi aucune modification pendant cette exécution.",
+      "otherSummary": "Aucun nouveau mail entrant de candidature, refus, entretien, demande de CV, redirection professionnelle ou réponse d'entreprise n'a été détecté depuis le précédent rapport. Gmail n'a subi aucune modification pendant cette exécution.",
       "counts": {
-        "new_since_last_run": 14,
-        "important": 1,
+        "new_since_last_run": 128,
+        "important": 2,
         "employment_or_application_incoming": 0,
-        "outgoing_application_followups": 0
+        "outgoing_application_followups": 1
       }
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-15T12:58:55Z",
-    "period_end": "2026-08-15T13:58:55Z",
-    "summary": "Quatorze nouveaux messages entrants pertinents ont été reçus sur la période, tous des notifications GitHub concernant angelosmegaplus/angel-leclerc : trois échecs CI et onze notifications d’échec du workflow Publication Angel OS. Aucun nouveau mail entrant de candidature, refus, entretien, demande de CV, redirection professionnelle ou réponse d’entreprise n’a été détecté. Le dernier main vérifié est ed3edc08a9fd5cdfefa0fa6452a77dea5824b18a (« feat(movix): add horizontal carousel and localized artwork »). Aucune correction technique n’a été lancée depuis cette routine afin de laisser la maintenance technique dédiée gérer les échecs. La file ai_actions reste non interrogeable directement avec les connecteurs disponibles pendant cette exécution ; aucune action awaiting_operator n’a donc été exécutée ou modifiée.",
+    "period_start": "2026-08-15T13:58:55Z",
+    "period_end": "2026-08-15T16:03:30Z",
+    "summary": "Cent vingt-huit nouveaux messages entrants techniques pertinents ont été détectés depuis le précédent rapport : 125 notifications GitHub concernant angelosmegaplus/angel-leclerc et 3 notifications Vercel signalant des déploiements de production en échec. Aucun nouveau mail entrant de candidature, refus, entretien, demande de CV, redirection professionnelle ou réponse d'entreprise n'a été détecté. Un message sortant de relance à Radio Vallée Vézère a été trouvé à 14:29:34Z. La routine n'a répondu à aucun email et n'a modifié aucun message Gmail. La file ai_actions reste non interrogeable directement avec les connecteurs disponibles pendant cette exécution ; aucune action awaiting_operator n'a donc été exécutée ou modifiée.",
     "counts": {
-      "total_incoming": 14,
-      "important": 1,
+      "total_incoming": 128,
+      "important": 2,
       "employment_or_application_incoming": 0,
-      "outgoing_application_followups": 0
+      "outgoing_application_followups": 1
     },
     "items": [
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: CI - main (d016dde)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Maintenance Angel OS - main (abaf68b)",
         "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T13:16:39Z",
-        "reason": "Nouvel échec CI après la borne du rapport précédent."
+        "date": "2026-08-15T16:02:15Z",
+        "reason": "Échec récent du workflow de maintenance sur main."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: CI - main (a86959d)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: CI - main (abaf68b)",
         "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T13:26:44Z",
-        "reason": "Nouvel échec CI sur main."
+        "date": "2026-08-15T16:02:28Z",
+        "reason": "Échec récent du quality gate CI."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: CI - main (8296d01)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: .github/workflows/preview.yml - main (e3f42b3)",
         "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T13:37:10Z",
-        "reason": "Nouvel échec CI sur main."
+        "date": "2026-08-15T16:02:47Z",
+        "reason": "Le workflow preview.yml signale qu'aucun job n'a été exécuté."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Publication Angel OS - main (462b055)",
-        "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T13:42:58Z",
-        "reason": "Le workflow de publication a échoué."
+        "subject": "Failed production deployment on team 'AngelOS'",
+        "from": "Vercel <notifications@vercel.com>",
+        "date": "2026-08-15T15:23:10Z",
+        "reason": "Déploiement de production angel-leclerc en échec ; deux autres notifications Vercel comparables ont également été reçues sur la période."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Publication Angel OS - main (1344e6d)",
-        "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T13:43:19Z",
-        "reason": "Le workflow de publication a échoué."
-      },
-      {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Publication Angel OS - main (fbb1b40)",
-        "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T13:43:38Z",
-        "reason": "Le workflow de publication a échoué."
-      },
-      {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Publication Angel OS - main (8a7f67a)",
-        "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T13:44:04Z",
-        "reason": "Le workflow de publication a échoué."
-      },
-      {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Publication Angel OS - main (420c521)",
-        "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T13:44:24Z",
-        "reason": "Le workflow de publication a échoué ; une seconde notification du même thread a été reçue à 13:46:02Z."
-      },
-      {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Publication Angel OS - main (6290d50)",
-        "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T13:46:36Z",
-        "reason": "Le workflow de publication a échoué."
-      },
-      {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Publication Angel OS - main (7158795)",
-        "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T13:47:14Z",
-        "reason": "Le workflow de publication a échoué."
-      },
-      {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Publication Angel OS - main (b970dcd)",
-        "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T13:54:18Z",
-        "reason": "Le workflow de publication a échoué."
-      },
-      {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Publication Angel OS - main (7d9c791)",
-        "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T13:56:50Z",
-        "reason": "Le workflow de publication a échoué."
-      },
-      {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Publication Angel OS - main (f1291d5)",
-        "from": "GitHub <notifications@github.com>",
-        "date": "2026-08-15T13:57:21Z",
-        "reason": "Dernière notification d’échec de publication reçue avant la fin de période."
+        "subject": "Re: Candidature pour un BTS Communication en alternance",
+        "from": "Angel LECLERC",
+        "date": "2026-08-15T14:29:34Z",
+        "reason": "Relance sortante détectée vers Radio Vallée Vézère ; aucune réponse entrante correspondante détectée sur la période."
       }
     ],
     "recommendations": [
-      "Laisser la routine Maintenance complète Angel OS diagnostiquer les échecs CI et Publication afin d’éviter plusieurs corrections concurrentes sur main.",
-      "Aucune réponse candidature ou action Gmail n’est requise sur cette période.",
-      "La lecture/exécution de ai_actions nécessite toujours une voie serveur authentifiée ou un connecteur direct ; ne pas simuler d’action validée tant que cette source reste inaccessible."
+      "Laisser la routine Maintenance complète Angel OS diagnostiquer les échecs GitHub/Vercel afin d'éviter plusieurs corrections concurrentes sur main.",
+      "Ne pas relancer de nouveau Radio Vallée Vézère automatiquement après le message déjà envoyé aujourd'hui ; attendre une réponse ou le délai prévu par la routine alternance.",
+      "Aucune réponse automatique à un refus n'est requise sur cette période.",
+      "La lecture/exécution de ai_actions nécessite toujours une voie serveur authentifiée ou un connecteur direct ; ne pas simuler d'action validée tant que cette source reste inaccessible."
     ],
     "source": "chatgpt-hourly-direct"
   }
