@@ -8,6 +8,7 @@ on:
       - ".github/workflows/observability.yml"
       - "src/routes/api/assistant.ts"
       - "src/lib/ai-*.server.ts"
+      - "src/lib/news.functions.ts"
       - "src/lib/vercel-connect-credentials.server.ts"
   schedule:
     - cron: "23 * * * *"
@@ -112,6 +113,31 @@ jobs:
           probe_ai "contact" '{"question":"Je voudrais savoir comment prendre contact pour une demande de communication. Réponds brièvement.","mode":"contact","history":[]}'
           probe_ai "context" '{"question":"Quel mot t’ai-je demandé de retenir ?","mode":"site","history":[{"role":"user","content":"Retiens le mot ORION pour le prochain message."},{"role":"assistant","content":"D’accord, je retiens ORION."}]}'
 
+      - name: Verify OpenAI contribution to news watch
+        id: news_ai
+        shell: bash
+        run: |
+          set -euo pipefail
+          HTTP="$(curl --silent --show-error --max-time 35 \
+            -o /tmp/news.json -w '%{http_code}' \
+            https://www.angel-leclerc.fr/api/admin/news)"
+          if ! jq -e . /tmp/news.json >/dev/null 2>&1; then
+            echo "::error::Veille : réponse non JSON, HTTP $HTTP"
+            head -c 500 /tmp/news.json || true
+            exit 1
+          fi
+          AI_COUNT="$(jq '[.items[]? | select(((.id // "") | tostring) | contains("openai-web-"))] | length' /tmp/news.json)"
+          TOTAL="$(jq '[.items[]?] | length' /tmp/news.json)"
+          PHASE="$(jq -r '.phase // empty' /tmp/news.json)"
+          echo "Veille HTTP=$HTTP phase=$PHASE total=$TOTAL openai=$AI_COUNT"
+          echo "http=$HTTP" >> "$GITHUB_OUTPUT"
+          echo "count=$AI_COUNT" >> "$GITHUB_OUTPUT"
+          echo "total=$TOTAL" >> "$GITHUB_OUTPUT"
+          if [[ ! "$HTTP" =~ ^2 ]] || [ "$AI_COUNT" -lt 1 ]; then
+            echo "::error::La veille combinée ne contient aucune contribution OpenAI vérifiable (HTTP=$HTTP, total=$TOTAL)."
+            exit 1
+          fi
+
       - name: Enforce critical AI dependency health
         if: always()
         shell: bash
@@ -131,7 +157,7 @@ jobs:
         run: |
           TITLE="[Angel OS] Journal incidents production"
           ISSUE="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$TITLE in:title" --limit 1 --json number --jq '.[0].number // empty')"
-          BODY="Incident observabilité · $(date -u +%FT%TZ) · dépendances=${{ steps.probe.outputs.failures }} · critiques=${{ steps.probe.outputs.critical_failures }} · site=${{ steps.ai_smoke.outputs.site_http }}/${{ steps.ai_smoke.outputs.site_reason }} · contact=${{ steps.ai_smoke.outputs.contact_http }}/${{ steps.ai_smoke.outputs.contact_reason }} · contexte=${{ steps.ai_smoke.outputs.context_http }}/${{ steps.ai_smoke.outputs.context_reason }} · run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          BODY="Incident observabilité · $(date -u +%FT%TZ) · dépendances=${{ steps.probe.outputs.failures }} · critiques=${{ steps.probe.outputs.critical_failures }} · site=${{ steps.ai_smoke.outputs.site_http }}/${{ steps.ai_smoke.outputs.site_reason }} · contact=${{ steps.ai_smoke.outputs.contact_http }}/${{ steps.ai_smoke.outputs.contact_reason }} · contexte=${{ steps.ai_smoke.outputs.context_http }}/${{ steps.ai_smoke.outputs.context_reason }} · veille_openai=${{ steps.news_ai.outputs.count }}/${{ steps.news_ai.outputs.total }} · run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           if [ -z "$ISSUE" ]; then
             gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --body "$BODY" >/dev/null
           else
@@ -148,7 +174,8 @@ jobs:
           echo "- IA site : ${{ steps.ai_smoke.outputs.site_http }} / ${{ steps.ai_smoke.outputs.site_reason }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- IA contact : ${{ steps.ai_smoke.outputs.contact_http }} / ${{ steps.ai_smoke.outputs.contact_reason }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- IA contexte : ${{ steps.ai_smoke.outputs.context_http }} / ${{ steps.ai_smoke.outputs.context_reason }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Réponse vide/fallback interdite pour les trois scénarios" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Veille IA OpenAI : ${{ steps.news_ai.outputs.count }} contribution(s) sur ${{ steps.news_ai.outputs.total }} élément(s)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Réponse vide/fallback interdite pour les scénarios conversationnels" >> "$GITHUB_STEP_SUMMARY"
           echo "- Dépendances optionnelles en échec : ${{ steps.probe.outputs.failures }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Dépendances critiques en échec : ${{ steps.probe.outputs.critical_failures }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Configuration manquante : ${{ steps.probe.outputs.missing }}" >> "$GITHUB_STEP_SUMMARY"
