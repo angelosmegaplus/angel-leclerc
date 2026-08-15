@@ -1,15 +1,8 @@
 {
-  "version": 1,
-  "updatedAt": "2026-08-15T08:35:00Z",
+  "version": 2,
+  "updatedAt": "2026-08-15T08:38:00Z",
   "source": "github",
   "current": [
-    {
-      "id": "ai-memory-and-queue",
-      "title": "Mémoire Angel AI et file de travail ChatGPT",
-      "status": "done",
-      "detail": "Mémoire publique/privée, contexte OpenAI et file technique ajoutés au code sur main.",
-      "commit": "11aefe34db53ce248e9395f1c90088d7841fdddf"
-    },
     {
       "id": "publication-consolidation",
       "title": "Publication consolidée depuis main",
@@ -26,5 +19,27 @@
       "detail": "En attente de disponibilité du quota de build Vercel. La prochaine publication doit utiliser le HEAD le plus récent de main."
     }
   ],
-  "done": []
+  "done": [
+    {
+      "id": "live-modification-queue-status",
+      "title": "Afficher toutes les demandes de modification en direct",
+      "status": "done",
+      "detail": "La file d'accueil affiche maintenant les demandes en attente avec deux points jaunes et les demandes terminées en vert, avec synchronisation fréquente.",
+      "commit": "1200dd3c4fa54b7adebd137084524d03e92350bd"
+    },
+    {
+      "id": "admin-refresh-to-chatgpt",
+      "title": "Relier les boutons Actualiser à la file ChatGPT",
+      "status": "done",
+      "detail": "Les demandes refresh_check, chatgpt_task et operator_request sont affichées sur l'accueil et relues automatiquement.",
+      "commit": "25249019e3c485fb47d2dad71f0da7861903516c"
+    },
+    {
+      "id": "ai-memory-and-queue",
+      "title": "Mémoire Angel AI et file de travail ChatGPT",
+      "status": "done",
+      "detail": "Mémoire publique/privée, contexte OpenAI et file technique ajoutés au code sur main.",
+      "commit": "11aefe34db53ce248e9395f1c90088d7841fdddf"
+    }
+  ]
 }
