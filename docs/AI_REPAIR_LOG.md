@@ -20,8 +20,9 @@ Ce journal ne contient aucun secret. Il distingue explicitement le code présent
 - La panne historique de `/api/assistant` avant l’appel OpenAI venait de la mémoire Supabase obligatoire. Le correctif `729d7e957a195acb11347550774f04ac17bedd97` rend cette mémoire optionnelle afin qu’une dépendance secondaire ne fasse plus tomber la conversation principale.
 - Le cœur conversationnel en production répond désormais réellement via OpenAI. Trois scénarios distincts ont été validés, pas seulement un endpoint de santé ou une interface visuelle.
 - OpenAI est configuré et joignable sur la release testée.
-- TMDB est actuellement configuré mais renvoie `401`. Ce problème est indépendant du cœur conversationnel et ne doit jamais empêcher les tests IA de s’exécuter.
-- Le contrôle d’observabilité a été durci : une vraie génération est obligatoire et les dépendances secondaires sont contrôlées après le smoke test IA afin d’éviter les faux négatifs/faux positifs.
+- TMDB est actuellement configuré mais renvoie `401`. Ce problème est indépendant du cœur conversationnel et ne doit jamais empêcher les tests IA de s’exécuter ni mettre l’observabilité IA en échec.
+- Le contrôle d’observabilité exige une vraie génération sur les modes site, contact et contexte multi-tour. Depuis `7b9511d1620234a6a9f0610424d91720a923cc36`, seules les dépendances IA critiques peuvent faire échouer ce contrôle ; TMDB et les autres dépendances optionnelles restent visibles comme avertissements.
+- Le workflow `Observabilité Angel OS` exécuté sur `7b9511d1620234a6a9f0610424d91720a923cc36` est passé au vert après cette séparation critique/optionnel. Le CI correspondant est également passé au vert.
 
 ## Correctifs de ce cycle
 
@@ -29,13 +30,25 @@ Ce journal ne contient aucun secret. Il distingue explicitement le code présent
 - `8d8cd1aa72c16ca885364e6dedb1ae9a3d5137de` — les erreurs secondaires ne peuvent plus empêcher le smoke test IA ; journal d’incident corrigé.
 - `ad21776c99fdc256f84bf1c4a193cb1f7709d75a` — couverture du mode Contact et du contexte multi-tour.
 - `4b0ecc0bef40371c4630790baa9c3e3678324f8d` — ajout d’un contrôle non sensible de la disponibilité de Supabase Auth, prérequis du chat privé.
+- `7b9511d1620234a6a9f0610424d91720a923cc36` — l’observabilité ne transforme plus un échec TMDB optionnel en panne générale Angel OS IA ; OpenAI reste la dépendance critique contrôlée.
+
+## État production observé lors du dernier contrôle
+
+- Release servie par le domaine public : `27af9ecc3eb9d505245b3a631ffa364ef991dada`, déploiement Vercel `READY`.
+- `POST /api/assistant` mode site : HTTP 200, `source=openai`, réponse exploitable.
+- `POST /api/assistant` mode contact : HTTP 200, `source=openai`, réponse exploitable.
+- Contexte multi-tour : HTTP 200, restitution correcte de `ORION`.
+- `/api/angel-os/health` : `healthy=true`, OpenAI configuré et joignable ; TMDB `http_401` reste un incident secondaire.
+- Erreurs runtime récentes distinctes du cœur conversationnel : configuration Supabase serveur absente sur certains chemins et timeouts `ai-news-search`. Ces erreurs doivent rester isolées du chat principal.
 
 ## Blocages / vérifications restantes
 
-1. La production sert encore `27af9ecc3eb9d505245b3a631ffa364ef991dada`, tandis que les nouveaux contrôles sont plus récents sur `main`. Ils doivent être publiés avant d’être considérés comme actifs en production.
-2. Le workflow de publication GitHub nécessite `VERCEL_TOKEN`. La dernière exécution vérifiée l’avait absent ; aucune clé ne doit être inventée ou contournée.
+1. La production sert encore `27af9ecc3eb9d505245b3a631ffa364ef991dada`, tandis que `main` contient des changements plus récents. Les modifications applicatives plus récentes doivent être publiées avant d’être considérées comme actives en production ; le correctif d’observabilité lui-même est un workflow GitHub et est déjà actif côté Actions.
+2. Le workflow de publication GitHub nécessite `VERCEL_TOKEN` lorsqu’il tente une publication via API. Aucune clé ne doit être inventée ou contournée. L’intégration Git native Vercel reste distincte et doit être vérifiée selon le commit concerné.
 3. Le chat privé nécessite une vraie session administrateur Supabase pour un test end-to-end. Ne jamais fabriquer de JWT de test.
 4. La veille IA et la génération d’article doivent encore être validées de façon à prouver la réponse du moteur IA lui-même, et pas seulement un fallback RSS/cache ou une file d’attente.
+5. Les chemins serveur qui exigent `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` doivent afficher une panne propre lorsqu’ils ne sont pas configurés et ne jamais faire tomber le cœur conversationnel.
+6. Les timeouts `ai-news-search` doivent rester bornés et récupérables ; ils ne doivent pas contaminer les conversations qui n’exigent pas explicitement la recherche web.
 
 ## Règle anti-régression
 
