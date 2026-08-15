@@ -11,7 +11,7 @@ const contextSchema = z.object({
 });
 
 export const getFeedbackContext = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => contextSchema.parse(data))
+  .validator((data: unknown) => contextSchema.parse(data))
   .handler(async ({ data }): Promise<FeedbackContext> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { toPublicSettings, disabledPathsOf } = await import("./feedback.server");
@@ -51,7 +51,7 @@ const submitSchema = z.object({
 });
 
 export const submitFeedback = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => submitSchema.parse(data))
+  .validator((data: unknown) => submitSchema.parse(data))
   .handler(async ({ data }) => {
     if (data.website) return { ok: true as const, id: null };
 
@@ -129,7 +129,7 @@ const supportSchema = z.object({
 });
 
 export const startSupport = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => supportSchema.parse(data))
+  .validator((data: unknown) => supportSchema.parse(data))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { linksOf } = await import("./feedback.server");
@@ -193,7 +193,7 @@ const paymentSchema = z.object({
 
 export const updateFeedbackPayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => paymentSchema.parse(data))
+  .validator((data: unknown) => paymentSchema.parse(data))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -211,7 +211,7 @@ export const updateFeedbackPayment = createServerFn({ method: "POST" })
 
 export const deleteFeedback = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => z.object({ id: z.string().uuid() }).parse(data))
+  .validator((data: unknown) => z.object({ id: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -235,7 +235,7 @@ const settingsSchema = z.object({
 
 export const saveFeedbackSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => settingsSchema.parse(data))
+  .validator((data: unknown) => settingsSchema.parse(data))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

@@ -91,7 +91,7 @@ function analyticsRowFromInput(data: ReturnType<typeof trackSchema.parse>, event
 }
 
 export const trackEvent = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => trackSchema.parse(data))
+  .validator((data: unknown) => trackSchema.parse(data))
   .handler(async ({ data }) => {
     const ua = getRequestHeader("user-agent") ?? "";
     if (/bot|crawler|spider|preview|headless|lighthouse/i.test(ua)) {
@@ -103,7 +103,7 @@ export const trackEvent = createServerFn({ method: "POST" })
 
 /** Compatibilité : ancien point d'entrée de suivi de page. */
 export const trackPageView = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => trackSchema.parse(data))
+  .validator((data: unknown) => trackSchema.parse(data))
   .handler(async ({ data }) => {
     const ua = getRequestHeader("user-agent") ?? "";
     if (/bot|crawler|spider|preview|headless|lighthouse/i.test(ua)) return { ok: true as const };
@@ -113,7 +113,7 @@ export const trackPageView = createServerFn({ method: "POST" })
 
 export const getSiteStats = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => statsInputSchema.parse(data ?? {}))
+  .validator((data: unknown) => statsInputSchema.parse(data ?? {}))
   .handler(async ({ context, data }): Promise<SiteStats> => {
     const { data: adminRole } = await context.supabase
       .from("user_roles")
@@ -199,7 +199,7 @@ export const getRealtimeActivity = createServerFn({ method: "GET" })
 
 export const exportAnalyticsCsv = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => statsInputSchema.parse(data ?? {}))
+  .validator((data: unknown) => statsInputSchema.parse(data ?? {}))
   .handler(async ({ context, data }) => {
     const { data: adminRole } = await context.supabase
       .from("user_roles")

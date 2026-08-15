@@ -43,24 +43,25 @@ export function InstallPrompt() {
   }, []);
 
   const showInstall = !installed && !dismissed && Boolean(deferred || ios);
-
   if (!showInstall) return null;
 
   return (
-    <div className="mb-4 flex items-center gap-3 rounded-[1.75rem] bg-[#d3e3fd] p-3 text-[#15345f] shadow-sm">
-      {ios && !deferred ? <Share className="h-5 w-5 shrink-0" /> : <Download className="h-5 w-5 shrink-0" />}
+    <div className="mb-4 flex items-center gap-3 rounded-2xl border border-red-500/15 bg-red-500/[.055] p-3 text-white shadow-[0_12px_35px_rgba(0,0,0,.24)]">
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-300">
+        {ios && !deferred ? <Share className="h-5 w-5" /> : <Download className="h-5 w-5" />}
+      </span>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold">Installer Angel OS</p>
-        <p className="text-xs text-[#49617f]">
+        <p className="mt-0.5 text-xs leading-relaxed text-white/50">
           {ios && !deferred
             ? "Sur iPhone ou iPad : ouvrez Partager puis choisissez « Sur l’écran d’accueil »."
-            : "Ajoutez le centre de contrôle à votre appareil."}
+            : "Ajoutez le centre de contrôle à votre appareil pour un accès direct."}
         </p>
       </div>
       {deferred ? (
         <Button
           size="sm"
-          className="min-h-10 shrink-0 rounded-full"
+          className="min-h-10 shrink-0 rounded-xl bg-red-600 text-white hover:bg-red-500"
           onClick={async () => {
             await deferred.prompt();
             const choice = await deferred.userChoice;
@@ -74,7 +75,7 @@ export function InstallPrompt() {
       <button
         type="button"
         aria-label="Masquer la proposition d'installation"
-        className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-[#49617f] hover:bg-white/30"
+        className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[.035] text-white/50 transition hover:text-white"
         onClick={() => {
           localStorage.setItem(DISMISS_KEY, "1");
           setDismissed(true);

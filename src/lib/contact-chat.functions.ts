@@ -94,4 +94,4 @@ export async function processConversationalContact(data: ConversationalContactIn
   return { ok: true as const };
 }
 
-export const submitConversationalContact = createServerFn({ method: "POST" }).inputValidator((data: unknown) => conversationalContactSchema.parse(data)).handler(async ({ data }) => processConversationalContact(data));
+export const submitConversationalContact = createServerFn({ method: "POST" }).validator((data: unknown) => conversationalContactSchema.parse(data)).handler(async ({ data }) => processConversationalContact(data));

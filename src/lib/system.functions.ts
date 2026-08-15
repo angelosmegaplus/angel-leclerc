@@ -54,7 +54,7 @@ const providerInput = z.object({ provider: z.string().min(1).max(30) });
 /** Returns the provider consent URL. The browser only ever sees this URL, never a token. */
 export const startOAuthConnection = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => providerInput.parse(data))
+  .validator((data: unknown) => providerInput.parse(data))
   .handler(async ({ context, data }): Promise<{ url: string }> => {
     await assertAdmin(context);
     const { isProviderId } = await import("./oauth/providers");
@@ -66,7 +66,7 @@ export const startOAuthConnection = createServerFn({ method: "POST" })
 
 export const disconnectOAuthConnection = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => providerInput.parse(data))
+  .validator((data: unknown) => providerInput.parse(data))
   .handler(async ({ context, data }): Promise<{ ok: true }> => {
     await assertAdmin(context);
     const { isProviderId } = await import("./oauth/providers");

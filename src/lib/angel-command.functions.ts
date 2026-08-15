@@ -159,7 +159,7 @@ function candidatureAnswer(state: Awaited<ReturnType<typeof counts>>) {
 
 export const runAngelCommand = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => CommandSchema.parse(input))
+  .validator((input: unknown) => CommandSchema.parse(input))
   .handler(async ({ context, data }): Promise<AngelCommandResult> => {
     await assertAdmin(context);
     const db = context.supabase as Db;

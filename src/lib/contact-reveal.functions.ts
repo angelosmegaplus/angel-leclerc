@@ -11,7 +11,7 @@ const schema = z.object({
 });
 
 export const revealDirectContact = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => schema.parse(data))
+  .validator((data: unknown) => schema.parse(data))
   .handler(async ({ data }) => {
     if (data.website && data.website.length > 0) {
       throw new Error("Vérification impossible pour le moment.");

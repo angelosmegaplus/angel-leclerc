@@ -145,7 +145,7 @@ export const getShopCatalog = createServerFn({ method: "GET" }).handler(
 );
 
 export const getShopProduct = createServerFn({ method: "GET" })
-  .inputValidator((data: { slug: string }) => {
+  .validator((data: { slug: string }) => {
     if (!/^[a-z0-9-]{1,80}$/.test(data.slug)) throw new Error("Référence invalide");
     return data;
   })
@@ -200,7 +200,7 @@ function validateDestination(d: Destination): Destination {
  * Repli sur un tarif forfaitaire si Printful est indisponible.
  */
 export const estimateShippingRates = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     (data: {
       items: Array<{ slug: string; quantity: number }>;
       destination: Destination;
@@ -221,7 +221,7 @@ export const estimateShippingRates = createServerFn({ method: "POST" })
   });
 
 export const createShopCheckout = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     (data: {
       items: Array<{ slug: string; quantity: number }>;
       returnUrl: string;
@@ -357,7 +357,7 @@ export interface PublicOrderTracking {
 }
 
 export const getCheckoutStatus = createServerFn({ method: "POST" })
-  .inputValidator((data: { sessionId: string; environment: StripeEnv }) => {
+  .validator((data: { sessionId: string; environment: StripeEnv }) => {
     if (!/^cs_[A-Za-z0-9_]+$/.test(data.sessionId)) throw new Error("Session invalide");
     return data;
   })
@@ -407,7 +407,7 @@ async function assertAdmin(context: any) {
 /** Rembourse (totalement ou partiellement) une commande et annule la production. */
 export const refundShopOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { orderId: string; amountCents?: number }) => {
+  .validator((data: { orderId: string; amountCents?: number }) => {
     if (!/^[0-9a-f-]{36}$/i.test(data.orderId)) throw new Error("Commande invalide");
     if (
       data.amountCents !== undefined &&
@@ -487,7 +487,7 @@ export const refundShopOrder = createServerFn({ method: "POST" })
 /** Rafraîchit le statut Printful d'une commande à la demande. */
 export const syncPrintfulOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { orderId: string }) => {
+  .validator((data: { orderId: string }) => {
     if (!/^[0-9a-f-]{36}$/i.test(data.orderId)) throw new Error("Commande invalide");
     return data;
   })
@@ -535,7 +535,7 @@ export const syncPrintfulOrder = createServerFn({ method: "POST" })
 /** Enregistre l'URL de webhook Printful pour la mise à jour automatique. */
 export const configurePrintfulWebhook = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { baseUrl: string }) => {
+  .validator((data: { baseUrl: string }) => {
     if (!/^https:\/\/[a-z0-9.-]+$/i.test(data.baseUrl)) throw new Error("URL invalide");
     return data;
   })
@@ -670,7 +670,7 @@ export const checkPrintfulSetup = createServerFn({ method: "POST" })
  * (non devinable) transmis au client après paiement.
  */
 export const trackShopOrder = createServerFn({ method: "POST" })
-  .inputValidator((data: { sessionId: string }) => {
+  .validator((data: { sessionId: string }) => {
     if (!/^cs_[A-Za-z0-9_]+$/.test(data.sessionId)) throw new Error("Référence invalide");
     return data;
   })
@@ -804,7 +804,7 @@ export type { PrintfulSyncReport } from "@/lib/shop-catalog.server";
 /** Synchronise la boutique Printful vers la table locale (sans doublon). */
 export const syncPrintfulCatalog = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { baseUrl?: string } | undefined) => data ?? {})
+  .validator((data: { baseUrl?: string } | undefined) => data ?? {})
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { syncPrintfulCatalogToDb } = await import("@/lib/shop-catalog.server");

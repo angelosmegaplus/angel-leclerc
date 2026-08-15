@@ -54,7 +54,7 @@ export function isArticleCommand(command: string) {
 
 export const runArticleCommand = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => Schema.parse(input))
+  .validator((input: unknown) => Schema.parse(input))
   .handler(async ({ context, data }): Promise<ArticleCommandResult> => {
     await assertAdmin(context);
     const db = context.supabase as Db;

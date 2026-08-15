@@ -30,7 +30,7 @@ export const mailboxStatus = createServerFn({ method: "GET" })
 
 export const mailboxList = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { folder: MailFolder; search: string }) => input)
+  .validator((input: { folder: MailFolder; search: string }) => input)
   .handler(async ({ data, context }): Promise<MailSummary[]> => {
     await assertAdmin(context);
     const { listMail } = await import("./mailbox.server");
@@ -39,7 +39,7 @@ export const mailboxList = createServerFn({ method: "POST" })
 
 export const mailboxRead = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { id: string }) => input)
+  .validator((input: { id: string }) => input)
   .handler(async ({ data, context }): Promise<MailDetail> => {
     await assertAdmin(context);
     const { readMail, actOnMail } = await import("./mailbox.server");
@@ -50,7 +50,7 @@ export const mailboxRead = createServerFn({ method: "POST" })
 
 export const mailboxAct = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { id: string; action: MailAction }) => input)
+  .validator((input: { id: string; action: MailAction }) => input)
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { actOnMail } = await import("./mailbox.server");
@@ -60,7 +60,7 @@ export const mailboxAct = createServerFn({ method: "POST" })
 
 export const mailboxSend = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
+  .validator(
     (input: { to: string; subject: string; body: string; threadId?: string }) => {
       const to = input.to?.trim() ?? "";
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) throw new Error("Adresse invalide.");

@@ -114,7 +114,7 @@ export const getAiMemoryState = createServerFn({ method: "GET" })
 
 export const addAiMemory = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => AddMemorySchema.parse(input))
+  .validator((input: unknown) => AddMemorySchema.parse(input))
   .handler(async ({ context, data }) => {
     await assertAdmin(context);
     const { data: row, error } = await context.supabase
@@ -136,7 +136,7 @@ export const addAiMemory = createServerFn({ method: "POST" })
 
 export const archiveAiMemory = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => IdSchema.parse(input))
+  .validator((input: unknown) => IdSchema.parse(input))
   .handler(async ({ context, data }) => {
     await assertAdmin(context);
     const { error } = await context.supabase
@@ -150,7 +150,7 @@ export const archiveAiMemory = createServerFn({ method: "POST" })
 
 export const addChatGptTask = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => AddTaskSchema.parse(input))
+  .validator((input: unknown) => AddTaskSchema.parse(input))
   .handler(async ({ context, data }) => {
     await assertAdmin(context);
 
@@ -187,7 +187,7 @@ export const addChatGptTask = createServerFn({ method: "POST" })
 
 export const resolveChatGptTask = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => IdSchema.parse(input))
+  .validator((input: unknown) => IdSchema.parse(input))
   .handler(async ({ context, data }) => {
     await assertAdmin(context);
     const { error } = await context.supabase

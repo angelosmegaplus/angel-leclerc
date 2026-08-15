@@ -3,7 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 const ADMIN_PIN = "2005";
 
 export const verifyAdminPinCode = createServerFn({ method: "POST" })
-  .inputValidator((input: { pin: string }) => ({
+  .validator((input: { pin: string }) => ({
     pin: String(input?.pin ?? "").trim().slice(0, 8),
   }))
   .handler(async ({ data }) => {

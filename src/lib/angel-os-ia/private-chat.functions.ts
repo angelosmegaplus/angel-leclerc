@@ -80,7 +80,7 @@ export type PrivateAngelOsIaResult = {
 
 export const runPrivateAngelOsIaChat = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => InputSchema.parse(input))
+  .validator((input: unknown) => InputSchema.parse(input))
   .handler(async ({ context, data }): Promise<PrivateAngelOsIaResult> => {
     const db = context.supabase as Db;
     await assertAdmin(db, context.userId);

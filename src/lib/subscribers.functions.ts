@@ -14,7 +14,7 @@ const emailSchema = z.object({
 });
 
 export const subscribeToBlog = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => emailSchema.parse(data))
+  .validator((data: unknown) => emailSchema.parse(data))
   .handler(async ({ data }) => {
     if (data.website && data.website.length > 0) return { ok: true as const };
 
@@ -72,7 +72,7 @@ export const subscribeToBlog = createServerFn({ method: "POST" })
 const tokenSchema = z.object({ token: z.string().uuid() });
 
 export const confirmSubscription = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => tokenSchema.parse(data))
+  .validator((data: unknown) => tokenSchema.parse(data))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: updated, error } = await supabaseAdmin
@@ -86,7 +86,7 @@ export const confirmSubscription = createServerFn({ method: "POST" })
   });
 
 export const unsubscribeFromBlog = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => tokenSchema.parse(data))
+  .validator((data: unknown) => tokenSchema.parse(data))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
