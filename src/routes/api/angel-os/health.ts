@@ -47,6 +47,24 @@ async function checkTmdb(): Promise<DependencyHealth> {
   }
 }
 
+async function checkSupabaseAuth(): Promise<DependencyHealth> {
+  const url = process.env.SUPABASE_URL?.trim();
+  const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY?.trim();
+  if (!url || !publishableKey) {
+    const missing = [!url ? "SUPABASE_URL" : null, !publishableKey ? "SUPABASE_PUBLISHABLE_KEY" : null].filter(Boolean).join(",");
+    return { configured: false, reachable: null, source: "env", reason: `missing:${missing}` };
+  }
+  try {
+    const response = await withTimeout((signal) => fetch(`${url.replace(/\/$/, "")}/auth/v1/settings`, {
+      signal,
+      headers: { apikey: publishableKey },
+    }));
+    return { configured: true, reachable: response.ok, source: "env", reason: response.ok ? null : `http_${response.status}` };
+  } catch (error) {
+    return { configured: true, reachable: false, source: "env", reason: error instanceof Error ? error.name : "request_failed" };
+  }
+}
+
 export const Route = createFileRoute("/api/angel-os/health")({
   server: {
     handlers: {
@@ -54,7 +72,7 @@ export const Route = createFileRoute("/api/angel-os/health")({
         const now = new Date().toISOString();
         const node = angelNodeGateway.select();
         const gmail = readIntegrations().find((item) => item.key === "google");
-        const [openai, tmdb] = await Promise.all([checkOpenAI(), checkTmdb()]);
+        const [openai, tmdb, supabaseAuth] = await Promise.all([checkOpenAI(), checkTmdb(), checkSupabaseAuth()]);
         return Response.json(
           {
             service: "angel-os",
@@ -70,6 +88,7 @@ export const Route = createFileRoute("/api/angel-os/health")({
             dependencies: {
               openai,
               tmdb,
+              supabaseAuth,
               gmail: {
                 configured: gmail?.status === "ready",
                 reachable: null,
