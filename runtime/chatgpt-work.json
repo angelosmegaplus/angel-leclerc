@@ -1,30 +1,199 @@
 {
-  "version": 2,
-  "updatedAt": "2026-08-15T08:38:00Z",
+  "version": 3,
+  "updatedAt": "2026-08-15T09:32:54Z",
   "source": "github",
   "current": [
     {
-      "id": "publication-consolidation",
-      "title": "Publication consolidée depuis main",
-      "status": "waiting_publish",
-      "detail": "Toujours publier la version la plus récente de main afin d'inclure les demandes précédentes compatibles.",
-      "commit": "b2880be7269a21412ed76c024e274569e497dcd9"
+      "id": "angel-ai-end-to-end",
+      "title": "Corriger et vérifier Angel AI de bout en bout",
+      "status": "running",
+      "detail": "Traitement prioritaire du plus ancien point du backlog. Le gateway OpenAI, le routage, l'historique et le fallback ont été relus sur main ; la vérification runtime complète accueil admin / recherche universelle / autres entrées IA reste à terminer avant validation.",
+      "commit": "f1fada869c315b3a6ec5920ae92f2a9d8267e701"
     }
   ],
   "waiting": [
     {
-      "id": "vercel-latest-main",
-      "title": "Publier la dernière version de main",
+      "id": "angel-ai-failed-question-recovery",
+      "title": "Récupérer automatiquement les questions IA échouées",
+      "status": "waiting",
+      "detail": "Vérifier qu'une question sans vraie réponse peut être reprise sans doublon puis que la cause technique est diagnostiquée."
+    },
+    {
+      "id": "admin-weather-news-home",
+      "title": "Afficher météo et actualités fraîches sur l’accueil admin",
+      "status": "waiting",
+      "detail": "Vérifier les données réelles, l'affichage et l'actualisation automatique."
+    },
+    {
+      "id": "admin-universal-search",
+      "title": "Maintenir la recherche universelle Pixel/Google-like",
+      "status": "waiting",
+      "detail": "Vérifier présence globale, destinations et absence de doublons."
+    },
+    {
+      "id": "angel-ai-home-thread",
+      "title": "Angel AI très haut sur l’accueil avec fil partagé",
+      "status": "waiting",
+      "detail": "Le composant compact doit réutiliser le même fil que « Demander à l’IA »."
+    },
+    {
+      "id": "pwa-intro-lifecycle",
+      "title": "Corriger le cycle du générique PWA/admin",
+      "status": "waiting",
+      "detail": "Démarrage immédiat à l'ouverture fraîche, sans relance pendant la navigation normale."
+    },
+    {
+      "id": "admin-calendar-home",
+      "title": "Afficher le prochain rendez-vous Google Calendar",
+      "status": "waiting",
+      "detail": "Afficher le prochain événement et un résumé utile à partir de données réelles."
+    },
+    {
+      "id": "admin-mail-summary",
+      "title": "Afficher les mails importants et propositions de réponse",
+      "status": "waiting",
+      "detail": "Lecture réelle, résumé des autres mails et propositions non envoyées sauf workflow autorisé."
+    },
+    {
+      "id": "applications-dashboard",
+      "title": "Compléter le bilan réel des candidatures",
+      "status": "waiting",
+      "detail": "Passé, présent, futur, réponses, refus, entretiens, relances dues et prochaines actions."
+    },
+    {
+      "id": "admin-general-summary",
+      "title": "Bilan général compact sur l’accueil admin",
+      "status": "waiting",
+      "detail": "Synthétiser publications, modifications, agenda, mails, candidatures, tâches et blocages réels."
+    },
+    {
+      "id": "admin-news-page-summary",
+      "title": "Bilan Angel OS IA sur la page Actualités",
+      "status": "waiting",
+      "detail": "Conserver un fil détaillé réellement actualisé et un bilan général utile."
+    },
+    {
+      "id": "contact-form-no-chat",
+      "title": "Séparer totalement le formulaire Contact du chat",
+      "status": "waiting",
+      "detail": "Aucun historique, question ou texte moteur IA dans le formulaire public."
+    },
+    {
+      "id": "contact-question-thread",
+      "title": "Maintenir le fil de questions séparé sous Contact",
+      "status": "waiting",
+      "detail": "Conserver historique et réponses sans exposer fournisseur, fallback ou logique interne."
+    },
+    {
+      "id": "contact-cache-regression",
+      "title": "Vérifier l’ancien ContactChat après cache/session",
+      "status": "waiting",
+      "detail": "Contrôle production mobile et desktop requis avant validation."
+    },
+    {
+      "id": "admin-files",
+      "title": "Ajout de fichiers variés dans l’admin",
+      "status": "waiting",
+      "detail": "PDF, documents, images, stockage persistant et copie simple du lien."
+    },
+    {
+      "id": "articles-edit-delete",
+      "title": "Garantir édition et suppression des articles admin",
+      "status": "waiting",
+      "detail": "Vérifier les articles générés et ajoutés manuellement."
+    },
+    {
+      "id": "cms-advanced",
+      "title": "Finaliser les fonctions avancées du CMS",
+      "status": "waiting",
+      "detail": "Catégories multiples, couverture URL/upload, images internes éditables et Sources/crédits."
+    },
+    {
+      "id": "angel-os-page-visuals",
+      "title": "Corriger les textes masqués de la page Angel OS IA",
+      "status": "waiting",
+      "detail": "Conserver animations utiles et effet typewriter/hacker lisible et responsive."
+    },
+    {
+      "id": "angel-os-page-official-tone",
+      "title": "Maintenir la présentation Angel OS officielle et technique",
+      "status": "waiting",
+      "detail": "Architecture, noyau, tâches, connecteurs, GitHub, CI/CD et déploiement sans formulation en « je »."
+    },
+    {
+      "id": "angel-os-powered-badge",
+      "title": "Vérifier le badge Propulsé par Angel OS",
+      "status": "waiting",
+      "detail": "Doit pointer vers /angel-os-ia, rester cohérent avec le logo et ne pas gêner l'interface."
+    },
+    {
+      "id": "native-connectors",
+      "title": "Continuer la migration vers les APIs et OAuth natifs",
+      "status": "waiting",
+      "detail": "Google, Microsoft et futurs connecteurs via voies officielles serveur."
+    },
+    {
+      "id": "admin-connections-status",
+      "title": "Afficher l’état réel des connexions",
+      "status": "waiting",
+      "detail": "Connecté, reconnexion, activation serveur, scopes et dernière synchro si disponible."
+    },
+    {
+      "id": "connector-open-source-review",
+      "title": "Rechercher des implémentations open source compatibles",
+      "status": "waiting",
+      "detail": "Vérifier licence, attribution, sécurité et compatibilité avant réutilisation."
+    },
+    {
+      "id": "licenses-public-page",
+      "title": "Maintenir la page Logiciels, licences et crédits",
+      "status": "waiting",
+      "detail": "Page publique liée depuis les mentions légales."
+    },
+    {
+      "id": "publication-latest-main",
+      "title": "Publier le dernier main en production",
       "status": "blocked",
-      "detail": "En attente de disponibilité du quota de build Vercel. La prochaine publication doit utiliser le HEAD le plus récent de main."
+      "detail": "Le workflow Publication Angel OS a vérifié le HEAD f1fada8. Vercel n'a pas lancé de déploiement car VERCEL_TOKEN est absent dans l'environnement GitHub ; main reste la cible officielle et le workflow réessaiera sans build artificiel.",
+      "commit": "f1fada869c315b3a6ec5920ae92f2a9d8267e701"
+    },
+    {
+      "id": "hosting-provider-check",
+      "title": "Vérifier le fournisseur d’hébergement réellement actif",
+      "status": "waiting",
+      "detail": "Adapter la publication au mécanisme officiel réellement disponible."
+    },
+    {
+      "id": "duplicate-maintenance",
+      "title": "Contrôler les vrais doublons admin et site public",
+      "status": "waiting",
+      "detail": "Fusionner vers une version canonique en conservant toutes les informations uniques."
+    },
+    {
+      "id": "continuous-regression-checks",
+      "title": "Contrôler mobile, PWA, auth, recherche et régressions",
+      "status": "waiting",
+      "detail": "Inclut statistiques, formulaires, liens, assets et thèmes clair/sombre."
+    },
+    {
+      "id": "no-fake-state",
+      "title": "Garantir l’absence de données ou succès simulés",
+      "status": "waiting",
+      "detail": "Ne jamais fabriquer statistiques, statuts, mails, rendez-vous ou succès de déploiement."
     }
   ],
   "done": [
     {
+      "id": "admin-news-freshness",
+      "title": "Actualités admin fraîches et diversifiées",
+      "status": "done",
+      "detail": "Le backlog marque ce point comme vérifié : « À la une » privilégie les dernières heures et évite le recyclage inutile."
+    },
+    {
       "id": "live-modification-queue-status",
       "title": "Afficher toutes les demandes de modification en direct",
       "status": "done",
-      "detail": "La file d'accueil affiche maintenant les demandes en attente avec deux points jaunes et les demandes terminées en vert, avec synchronisation fréquente.",
+      "detail": "La file d'accueil affiche les demandes en attente avec deux points jaunes et les demandes terminées en vert, avec synchronisation fréquente.",
       "commit": "1200dd3c4fa54b7adebd137084524d03e92350bd"
     },
     {
