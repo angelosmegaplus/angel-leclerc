@@ -14,6 +14,81 @@ const AddTaskSchema = z.object({
   sensitive: z.boolean().optional(),
 });
 
+const GITHUB_COMMITS_API = "https://api.github.com/repos/angelosmegaplus/angel-leclerc/commits?sha=main&per_page=50";
+
+function normalizeText(value: string | null | undefined) {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function meaningfulTokens(value: string) {
+  const ignored = new Set(["a", "au", "aux", "avec", "de", "des", "du", "en", "et", "la", "le", "les", "pour", "sur", "un", "une", "the", "to", "and", "fix", "feat", "chore"]);
+  return normalizeText(value).split(" ").filter((token) => token.length >= 3 && !ignored.has(token));
+}
+
+function looksEquivalent(a: string, b: string) {
+  const left = normalizeText(a);
+  const right = normalizeText(b);
+  if (!left || !right) return false;
+  if (left === right) return true;
+  if (left.length >= 18 && right.includes(left)) return true;
+  if (right.length >= 18 && left.includes(right)) return true;
+
+  const leftTokens = new Set(meaningfulTokens(left));
+  const rightTokens = new Set(meaningfulTokens(right));
+  if (leftTokens.size < 3 || rightTokens.size < 3) return false;
+  let common = 0;
+  leftTokens.forEach((token) => {
+    if (rightTokens.has(token)) common += 1;
+  });
+  return common / Math.min(leftTokens.size, rightTokens.size) >= 0.8;
+}
+
+async function findExistingModification(context: any, title: string, description?: string) {
+  const candidate = `${title} ${description ?? ""}`.trim();
+  const { data, error } = await context.supabase
+    .from("ai_actions")
+    .select("id, title, description, status, created_at, updated_at")
+    .in("kind", ["chatgpt_task", "operator_request"])
+    .in("status", ["pending", "running", "awaiting_operator", "completed"])
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (error) throw error;
+  const duplicateAction = (data ?? []).find((row: any) =>
+    looksEquivalent(candidate, `${row.title ?? ""} ${row.description ?? ""}`),
+  );
+  if (duplicateAction) {
+    return {
+      source: duplicateAction.status === "completed" ? "already_completed" : "already_queued",
+      reference: duplicateAction.id,
+      status: duplicateAction.status,
+    } as const;
+  }
+
+  try {
+    const response = await fetch(GITHUB_COMMITS_API, {
+      headers: { Accept: "application/vnd.github+json", "User-Agent": "Angel-OS" },
+      cache: "no-store",
+    });
+    if (!response.ok) return null;
+    const commits = (await response.json()) as Array<{ sha?: string; commit?: { message?: string } }>;
+    const duplicateCommit = commits.find((commit) => looksEquivalent(candidate, commit.commit?.message ?? ""));
+    if (duplicateCommit) {
+      return { source: "already_published", reference: duplicateCommit.sha ?? "main", status: "published" } as const;
+    }
+  } catch (error) {
+    console.warn("[queue-dedup] GitHub publication check unavailable", error);
+  }
+
+  return null;
+}
+
 async function assertAdmin(context: any) {
   const { data, error } = await context.supabase
     .from("user_roles")
@@ -78,13 +153,28 @@ export const addChatGptTask = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => AddTaskSchema.parse(input))
   .handler(async ({ context, data }) => {
     await assertAdmin(context);
+
+    const existing = await findExistingModification(context, data.title, data.description);
+    if (existing) {
+      if (existing.source === "already_published" || existing.source === "already_completed") {
+        return { id: existing.reference, accepted: false as const, blocked: true as const, reason: "already_published" as const };
+      }
+      return { id: existing.reference, accepted: false as const, blocked: true as const, reason: "already_queued" as const };
+    }
+
     const { data: row, error } = await context.supabase
       .from("ai_actions")
       .insert({
         kind: "chatgpt_task",
         title: data.title,
         description: data.description || "Tâche à traiter depuis ChatGPT avec les connecteurs Angel OS.",
-        payload: { source: "angel_ai", execution: "chatgpt_operator" },
+        payload: {
+          source: "angel_ai",
+          execution: "chatgpt_operator",
+          publication_check: "passed",
+          validation: "accepted",
+          checked_at: new Date().toISOString(),
+        },
         status: "pending",
         target_type: "chatgpt",
         sensitive: Boolean(data.sensitive),
@@ -92,7 +182,7 @@ export const addChatGptTask = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw error;
-    return { id: row.id };
+    return { id: row.id, accepted: true as const, blocked: false as const, reason: "validated_and_queued" as const };
   });
 
 export const resolveChatGptTask = createServerFn({ method: "POST" })
