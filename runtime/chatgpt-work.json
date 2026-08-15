@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "updatedAt": "2026-08-15T08:35:00Z",
+  "source": "github",
+  "current": [
+    {
+      "id": "ai-memory-and-queue",
+      "title": "Mémoire Angel AI et file de travail ChatGPT",
+      "status": "done",
+      "detail": "Mémoire publique/privée, contexte OpenAI et file technique ajoutés au code sur main.",
+      "commit": "11aefe34db53ce248e9395f1c90088d7841fdddf"
+    },
+    {
+      "id": "publication-consolidation",
+      "title": "Publication consolidée depuis main",
+      "status": "waiting_publish",
+      "detail": "Toujours publier la version la plus récente de main afin d'inclure les demandes précédentes compatibles.",
+      "commit": "b2880be7269a21412ed76c024e274569e497dcd9"
+    }
+  ],
+  "waiting": [
+    {
+      "id": "vercel-latest-main",
+      "title": "Publier la dernière version de main",
+      "status": "blocked",
+      "detail": "En attente de disponibilité du quota de build Vercel. La prochaine publication doit utiliser le HEAD le plus récent de main."
+    }
+  ],
+  "done": []
+}
