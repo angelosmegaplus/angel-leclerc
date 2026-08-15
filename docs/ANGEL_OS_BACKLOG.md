@@ -25,6 +25,9 @@ Ce fichier sert de file durable pour les demandes validées qui ne doivent pas d
 ## Priorité haute
 
 - [ ] Corriger et vérifier de bout en bout Angel AI dans tout l’espace administrateur : les vraies questions doivent appeler le moteur IA principal, conserver le contexte et afficher une réponse conversationnelle ; le moteur local ne doit intervenir qu’en secours réel. Contrôler les logs, erreurs OpenAI, timeouts, quotas, anciens messages locaux parasites, routage des commandes et réponses persistées. Tester sur l’accueil admin, la recherche universelle et tout autre point d’entrée IA avant de considérer ce point terminé.
+  - Diagnostic production du 15 août 2026 : `/api/assistant` renvoyait 500 avant tout appel OpenAI, car `aiMemoryPrompt()` déclenchait la création du client Supabase admin alors que `SUPABASE_URL` et `SUPABASE_SERVICE_ROLE_KEY` ne sont pas configurées dans le runtime Vercel.
+  - Correctif sur `main` : commit `729d7e957a195acb11347550774f04ac17bedd97` rend la mémoire IA optionnelle ; une panne/absence Supabase ne doit plus empêcher le cœur OpenAI de répondre.
+  - Validation production encore requise : le correctif n’est pas considéré terminé tant qu’une vraie réponse OpenAI n’a pas été obtenue après publication. Le déploiement du commit est actuellement en attente à cause du `build-rate-limit` Vercel ; ne pas contourner cette limite.
 - [ ] Vérifier que la récupération automatique des questions échouées fonctionne : une question laissée sans vraie réponse par l’IA embarquée doit pouvoir être reprise par la maintenance ChatGPT existante, sans doublon, puis la cause technique doit être diagnostiquée et corrigée quand c’est sûr.
 - [ ] Vérifier que météo et actualités apparaissent réellement sur l’accueil admin et se mettent à jour automatiquement.
 - [ ] Ajouter/maintenir une barre de recherche universelle Pixel/Google-like dans tout l’espace admin, sans doublons de destinations.
