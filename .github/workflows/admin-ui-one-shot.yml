@@ -1,0 +1,57 @@
+name: Admin UI one-shot cleanup
+
+on:
+  push:
+    branches: [angel-admin-polish]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: admin-ui-one-shot
+  cancel-in-progress: true
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: angel-admin-polish
+          fetch-depth: 0
+      - name: Apply targeted admin cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          admin = Path('src/routes/admin.tsx')
+          text = admin.read_text()
+          old = 'className="mt-10 space-y-5 rounded-xl border border-border bg-card p-6"'
+          new = 'className="mt-4 space-y-5 rounded-[1.5rem] border border-[#E6DED2] bg-[#FFFDF9] p-4 text-[#181716] shadow-[0_20px_70px_rgba(0,0,0,.22)] sm:p-6 [&_.text-muted-foreground]:!text-[#6F6B65] [&_.text-foreground]:!text-[#181716] [&_.bg-background]:!bg-[#FFFDF9] [&_.bg-card]:!bg-[#FFFDF9] [&_.border-border]:!border-[#E6DED2] [&_input]:!border-[#D9D0C4] [&_input]:!bg-white [&_input]:!text-[#181716] [&_textarea]:!border-[#D9D0C4] [&_textarea]:!bg-white [&_textarea]:!text-[#181716] [&_select]:!border-[#D9D0C4] [&_select]:!bg-white [&_select]:!text-[#181716]"'
+          if old not in text:
+              raise SystemExit('Article editor wrapper not found')
+          admin.write_text(text.replace(old, new, 1))
+
+          movix = Path('src/routes/admin-movix.tsx')
+          text = movix.read_text()
+          text, count = re.subn(r'\n\s*<footer className="mt-10[^>]*>.*?</footer>', '', text, count=1, flags=re.S)
+          if count != 1:
+              raise SystemExit('Movix footer not found')
+          text = text.replace('title="Aimé" className={`flex min-h-10', 'title="Aimé" aria-label={`Marquer ${candidate.title} comme aimé`} aria-pressed={signal?.liked === true} className={`flex min-h-11', 1)
+          text = text.replace('title="Pas aimé" className={`flex min-h-10', 'title="Pas aimé" aria-label={`Marquer ${candidate.title} comme pas aimé`} aria-pressed={Boolean(signal?.rejected)} className={`flex min-h-11', 1)
+          text = text.replace('title="Déjà vu" className={`flex min-h-10', 'title="Déjà vu" aria-label={`Marquer ${candidate.title} comme déjà vu`} aria-pressed={Boolean(signal?.completion && signal.completion >= 0.9)} className={`flex min-h-11', 1)
+          movix.write_text(text)
+          PY
+      - name: Commit cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'Angel OS'
+          git config user.email 'angelleclerc2006@gmail.com'
+          git add src/routes/admin.tsx src/routes/admin-movix.tsx
+          git diff --cached --quiet && exit 0
+          git commit -m 'polish(admin): finish editor and films UI cleanup'
+          git push origin HEAD:angel-admin-polish
