@@ -9,20 +9,22 @@ import { useAuth } from "@/hooks/useAuth";
 import { FILM_CATALOG, coverFor } from "@/lib/film-catalog";
 import { getFilmCatalogMetadata, tmdbImage } from "@/lib/film-tmdb.functions";
 import { selectDailyRecommendations, type RecommendationCandidate, type ViewingSignal } from "@/lib/film-recommendations";
+import { rememberMediaPreference } from "@/lib/angel-os-ia/media-preferences.functions";
 
 export const Route = createFileRoute("/admin-movix")({
-  head: () => ({ meta: [{ title: "Films et séries | Angel OS" }, { name: "robots", content: "noindex, nofollow" }] }),
+  head: () => ({ meta: [{ title: "Films et séries | Angel OS IA" }, { name: "robots", content: "noindex, nofollow" }] }),
   component: FilmsSeriesPage,
 });
 
 const SIGNALS_KEY = "angel-os-film-series-signals-v2";
-const POSTER_FALLBACK = `data:image/svg+xml,${encodeURIComponent('<svg width="500" height="750" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#111318"/><text x="50%" y="48%" fill="#d1d5db" font-size="32" font-family="sans-serif" text-anchor="middle">ANGEL OS</text><text x="50%" y="54%" fill="#71717a" font-size="20" font-family="sans-serif" text-anchor="middle">FILMS &amp; SERIES</text></svg>')}`;
+const POSTER_FALLBACK = `data:image/svg+xml,${encodeURIComponent('<svg width="500" height="750" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#111318"/><text x="50%" y="48%" fill="#d1d5db" font-size="32" font-family="sans-serif" text-anchor="middle">ANGEL OS IA</text><text x="50%" y="54%" fill="#71717a" font-size="20" font-family="sans-serif" text-anchor="middle">FILMS &amp; SERIES</text></svg>')}`;
 
 function FilmsSeriesPage() {
   const navigate = useNavigate();
   const { session, isAdmin, loading } = useAuth();
   const [signals, setSignals] = useState<ViewingSignal[]>([]);
   const fetchMetadata = useServerFn(getFilmCatalogMetadata);
+  const rememberMedia = useServerFn(rememberMediaPreference);
 
   useEffect(() => { if (!loading && (!session || !isAdmin)) void navigate({ to: "/auth" }); }, [isAdmin, loading, navigate, session]);
   useEffect(() => { try { setSignals(JSON.parse(localStorage.getItem(SIGNALS_KEY) ?? "[]")); } catch { /* optional */ } }, []);
@@ -42,6 +44,19 @@ function FilmsSeriesPage() {
     const existing = signals.find((signal) => signal.candidateId === candidate.id);
     const nextSignal: ViewingSignal = { candidateId: candidate.id, mediaType: candidate.mediaType, genreIds: candidate.genreIds, keywords: candidate.keywords, people: candidate.people, director: candidate.director, year: candidate.year, completion: existing?.completion ?? 0, liked: existing?.liked, rejected: existing?.rejected, ...patch };
     saveSignals([nextSignal, ...signals.filter((signal) => signal.candidateId !== candidate.id)]);
+    void rememberMedia({ data: {
+      candidateId: candidate.id,
+      title: candidate.title,
+      mediaType: candidate.mediaType,
+      year: candidate.year,
+      liked: nextSignal.liked,
+      rejected: nextSignal.rejected,
+      completion: nextSignal.completion,
+      genreIds: candidate.genreIds,
+      keywords: candidate.keywords,
+      people: candidate.people,
+      director: candidate.director,
+    } }).catch(() => undefined);
   };
 
   if (loading || !session || !isAdmin) return <main className="grid min-h-screen place-items-center bg-[#050607] text-white"><Loader2 className="h-6 w-6 animate-spin" /></main>;
@@ -51,9 +66,9 @@ function FilmsSeriesPage() {
       <div className="mx-auto max-w-[1380px]">
         <header className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-red-300"><Film className="h-5 w-5" /><span className="font-mono text-xs uppercase tracking-[.18em]">Angel OS · Cinéthèque</span></div>
+            <div className="flex items-center gap-2 text-red-300"><Film className="h-5 w-5" /><span className="font-mono text-xs uppercase tracking-[.18em]">Angel OS IA · Cinéthèque</span></div>
             <h1 className="mt-2 text-4xl font-semibold tracking-[-.05em] sm:text-5xl">Films et séries</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/50">Sélection personnalisée quotidienne, fiches enrichies et accès aux plateformes. Les abonnements légaux restent prioritaires ; le Movix Link Launcher est disponible plus bas comme raccourci secondaire.</p>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/50">Sélection personnelle quotidienne, fiches enrichies et recommandations apprenantes. Les abonnements légaux restent prioritaires ; le Movix Link Launcher est disponible plus bas comme raccourci secondaire.</p>
           </div>
           <Link to="/admin" className="rounded-xl border border-white/10 bg-white/[.04] px-4 py-2 text-sm text-white/70 transition hover:bg-white/[.08]">Retour à Angel OS</Link>
         </header>
@@ -88,7 +103,7 @@ function FilmsSeriesPage() {
 
         <MovixLauncherPanel />
 
-        <footer className="mt-10 border-t border-white/10 py-5 text-[11px] leading-relaxed text-white/30">Patterns et architecture média adaptés de MovixOpenSource (movixcorp), CC BY-NC 4.0. Métadonnées cinéma : TMDB lorsque configuré. Disponibilités légales : données fournisseurs TMDB/JustWatch.</footer>
+        <footer className="mt-10 border-t border-white/10 py-5 text-[11px] leading-relaxed text-white/30">Patterns et architecture média adaptés de MovixOpenSource (movixcorp), CC BY-NC 4.0. Métadonnées cinéma : TMDB lorsque configuré. Disponibilités légales : données fournisseurs TMDB/JustWatch. Les préférences personnelles sont mémorisées par Angel OS IA, tandis qu’Angel OS fournit les primitives système.</footer>
       </div>
     </main>
   </MotionConfig>;
