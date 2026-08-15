@@ -1,5 +1,5 @@
 import type { NewsCategory, NewsItem } from "./news.functions";
-import { getOpenAiCredential } from "./vercel-connect-credentials.server";
+import { getAiGatewayCredential, getOpenAiCredential } from "./vercel-connect-credentials.server";
 
 type SearchState = { expiresAt: number; items: NewsItem[]; failureUntil: number };
 const state: SearchState = { expiresAt: 0, items: [], failureUntil: 0 };
@@ -41,6 +41,7 @@ function webModels() {
   return Array.from(new Set([primary, fallback].filter(Boolean)));
 }
 function shouldTryFallback(status: number, body: string) { return (status === 400 || status === 403 || status === 404) && /model_not_found|model[^\n]*(?:unavailable|access|verified|verification)|organization must be verified/i.test(body); }
+function gatewayModel(model: string) { return model.includes("/") ? model : `openai/${model}`; }
 
 function requestBody(model: string) {
   return {
@@ -72,34 +73,57 @@ Réponds UNIQUEMENT avec un tableau JSON valide, sans markdown. Chaque objet doi
   };
 }
 
+async function runProvider(endpoint: string, token: string, model: string, controller: AbortController) {
+  return fetch(endpoint, {
+    method: "POST",
+    signal: controller.signal,
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify(requestBody(model)),
+  });
+}
+
 export async function searchNewsWithOpenAI(): Promise<NewsItem[]> {
   const now = Date.now();
   if (state.items.length && state.expiresAt > now) return state.items;
   if (state.failureUntil > now) return state.items;
   if (["0", "false", "off", "disabled"].includes(String(process.env["ANGEL_AI_ENABLED"] ?? "true").toLowerCase())) return [];
 
-  const credential = await getOpenAiCredential();
-  if (!credential) return [];
+  const [credential, gatewayCredential] = await Promise.all([getOpenAiCredential(), Promise.resolve(getAiGatewayCredential())]);
+  if (!credential && !gatewayCredential) return [];
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 28_000);
+  const timeout = setTimeout(() => controller.abort(), 32_000);
   try {
     const models = webModels();
     for (let index = 0; index < models.length; index += 1) {
       const model = models[index];
-      const response = await fetch("https://api.openai.com/v1/responses", {
-        method: "POST", signal: controller.signal,
-        headers: { Authorization: `Bearer ${credential.value}`, "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody(model)),
-      });
-      if (!response.ok) {
-        const body = await response.text();
-        console.error("[ai-news-search] OpenAI web search", response.status, { model, credentialSource: credential.source, body });
-        const hasFallback = index < models.length - 1;
-        if (hasFallback && shouldTryFallback(response.status, body)) continue;
-        state.failureUntil = now + FAILURE_COOLDOWN_MS;
-        return state.items;
+      let response: Response | null = null;
+
+      if (credential) {
+        response = await runProvider("https://api.openai.com/v1/responses", credential.value, model, controller);
+        if (!response.ok) {
+          const body = await response.text();
+          console.warn("[ai-news-search] direct OpenAI web search failed", response.status, { model, credentialSource: credential.source, body: body.slice(0, 1200) });
+          const hasFallbackModel = index < models.length - 1;
+          if (hasFallbackModel && shouldTryFallback(response.status, body)) continue;
+          response = null;
+        }
       }
+
+      if (!response && gatewayCredential) {
+        const routedModel = gatewayModel(model);
+        response = await runProvider("https://ai-gateway.vercel.sh/v1/responses", gatewayCredential.value, routedModel, controller);
+        if (!response.ok) {
+          const body = await response.text();
+          console.error("[ai-news-search] Vercel AI Gateway web search failed", response.status, { model: routedModel, credentialSource: gatewayCredential.source, body: body.slice(0, 1200) });
+          const hasFallbackModel = index < models.length - 1;
+          if (hasFallbackModel && shouldTryFallback(response.status, body)) continue;
+          state.failureUntil = now + FAILURE_COOLDOWN_MS;
+          return state.items;
+        }
+      }
+
+      if (!response) continue;
       const json = await response.json();
       const items = parseJsonArray(responseText(json)).map(cleanItem).filter((item): item is NewsItem => Boolean(item)).slice(0, 40);
       if (items.length > 0) { state.items = items; state.expiresAt = now + TTL_MS; state.failureUntil = 0; }
