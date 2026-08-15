@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import persistedCinemaSource from "../../runtime/cinema-source.json";
 
 const UPSTREAM_RAW =
   "https://raw.githubusercontent.com/movixcorp/MovixOpenSource/main/src/pages/help/MiroirsPage.tsx";
@@ -17,7 +18,7 @@ let lastKnownGoodUrl: string | null = null;
 export type MovixOfficialSource = {
   url: string;
   checkedAt: string;
-  source: "last_known" | "movix_online" | "github" | "fallback";
+  source: "persisted" | "last_known" | "movix_online" | "github" | "fallback";
   upstreamSha: string | null;
   chain: string[];
 };
@@ -120,6 +121,24 @@ async function resolveMovixSource(): Promise<MovixOfficialSource> {
   if (cache && cache.expiresAt > now) return cache.value;
   const chain: string[] = [];
 
+  const persisted = normalizeUrl(String(persistedCinemaSource?.url ?? ""));
+  if (persisted) {
+    chain.push("persisted");
+    const probe = await probeUrl(persisted);
+    if (probe) {
+      lastKnownGoodUrl = probe.finalUrl;
+      const value: MovixOfficialSource = {
+        url: probe.finalUrl,
+        checkedAt: new Date(now).toISOString(),
+        source: "persisted",
+        upstreamSha: null,
+        chain,
+      };
+      cache = { expiresAt: now + 30 * 60_000, value };
+      return value;
+    }
+  }
+
   if (lastKnownGoodUrl) {
     chain.push("last_known");
     const probe = await probeUrl(lastKnownGoodUrl);
@@ -179,8 +198,9 @@ async function resolveMovixSource(): Promise<MovixOfficialSource> {
     console.error("[movix-source] github resolution failed", error);
   }
 
+  const fallback = persisted || lastKnownGoodUrl || REFERENCE_URL;
   const value: MovixOfficialSource = {
-    url: REFERENCE_URL,
+    url: fallback,
     checkedAt: new Date(now).toISOString(),
     source: "fallback",
     upstreamSha: null,

@@ -13,6 +13,7 @@ import { Analytics } from "@vercel/analytics/react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { bootAngelOS } from "../lib/angel-os-runtime";
+import { supabase } from "../integrations/supabase/client";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { ApprenticeshipBanner } from "../components/ApprenticeshipBanner";
@@ -123,17 +124,57 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+const CINEMA_ISOLATION_KEY = "angel-os-cinema-isolation-v1";
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const isAngelOSPage = pathname === "/angel-os-ia";
   const isAdminPage = pathname === "/admin" || pathname.startsWith("/admin/") || pathname.startsWith("/admin-");
+  const isCinemaPage = pathname === "/films-series";
+  const isStandalonePage = isAngelOSPage || isAdminPage || isCinemaPage;
 
   useEffect(() => {
     void bootAngelOS().catch((error) => {
       console.warn("Angel OS passive runtime unavailable", error);
     });
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if (isCinemaPage) {
+      try {
+        window.sessionStorage.setItem(CINEMA_ISOLATION_KEY, "1");
+      } catch {
+        // sessionStorage is an optimisation, not the only access control.
+      }
+
+      // Ne laisse aucune donnée privée de l'administration dans le cache React Query du même onglet.
+      queryClient.removeQueries({
+        predicate: (query) => String(query.queryKey[0] ?? "").startsWith("admin-"),
+      });
+      return;
+    }
+
+    if (!isAdminPage) return;
+
+    let cameFromCinema = false;
+    try {
+      cameFromCinema = window.sessionStorage.getItem(CINEMA_ISOLATION_KEY) === "1";
+      if (cameFromCinema) window.sessionStorage.removeItem(CINEMA_ISOLATION_KEY);
+    } catch {
+      cameFromCinema = false;
+    }
+
+    if (!cameFromCinema) return;
+
+    // Un onglet passé par l'espace cinéma n'hérite jamais silencieusement d'une session admin.
+    // Il faut une authentification fraîche avant de revenir dans le centre de contrôle.
+    void supabase.auth.signOut().finally(() => {
+      window.location.replace("/auth?reason=cinema-isolation");
+    });
+  }, [isAdminPage, isCinemaPage, queryClient]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -142,7 +183,7 @@ function RootComponent() {
         <AngelOSCardStyle />
         <PageViewTracker />
         <PwaRegistrar />
-        {isAngelOSPage || isAdminPage ? (
+        {isStandalonePage ? (
           <main className="min-h-screen [&_footer]:hidden">
             <Outlet />
           </main>
@@ -156,7 +197,7 @@ function RootComponent() {
             <Footer />
           </div>
         )}
-        {!isAngelOSPage && !isAdminPage && <CartDrawer />}
+        {!isStandalonePage && <CartDrawer />}
         <Toaster position="top-center" />
         <Analytics />
       </MaintenanceGate>
