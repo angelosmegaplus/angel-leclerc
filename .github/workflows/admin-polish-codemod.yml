@@ -1,0 +1,46 @@
+name: Admin polish codemod
+
+on:
+  push:
+    branches: [angel-admin-polish]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: admin-polish-codemod
+  cancel-in-progress: true
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: angel-admin-polish
+          fetch-depth: 0
+      - name: Migrate deprecated TanStack server validators
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(grep -RIl --include='*.ts' --include='*.tsx' '\.inputValidator(' src || true)
+          if [ "${#files[@]}" -gt 0 ]; then
+            perl -pi -e 's/\.inputValidator\(/.validator(/g' "${files[@]}"
+          fi
+          if grep -RIn --include='*.ts' --include='*.tsx' '\.inputValidator(' src; then
+            echo '::error::Deprecated inputValidator calls remain.'
+            exit 1
+          fi
+      - name: Commit migration if needed
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo 'No migration needed.'
+            exit 0
+          fi
+          git config user.name 'Angel OS'
+          git config user.email 'angelleclerc2006@gmail.com'
+          git add src
+          git commit -m 'chore(tanstack): migrate deprecated server validators'
+          git push origin HEAD:angel-admin-polish
