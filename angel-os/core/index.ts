@@ -10,3 +10,7 @@ export * from './native-services';
 export * from './native-api-router';
 export * from './native-realtime';
 export * from './hybrid-orchestrator';
+export * from './event-log';
+export * from './observability';
+export * from './memory-index';
+export * from './durable-workflow';
