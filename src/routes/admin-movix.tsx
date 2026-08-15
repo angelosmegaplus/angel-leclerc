@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Check, Film, Loader2, Moon, Star } from "lucide-react";
 import { motion, MotionConfig } from "framer-motion";
+import { MovixLauncherPanel } from "@/components/admin/MovixLauncherPanel";
 import { useAuth } from "@/hooks/useAuth";
 import { FILM_CATALOG, coverFor } from "@/lib/film-catalog";
 import { getFilmCatalogMetadata, tmdbImage } from "@/lib/film-tmdb.functions";
@@ -52,7 +53,7 @@ function FilmsSeriesPage() {
           <div>
             <div className="flex items-center gap-2 text-red-300"><Film className="h-5 w-5" /><span className="font-mono text-xs uppercase tracking-[.18em]">Angel OS · Cinéthèque</span></div>
             <h1 className="mt-2 text-4xl font-semibold tracking-[-.05em] sm:text-5xl">Films et séries</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/50">Sélection personnalisée + données cinéma enrichies. Affiches, synopsis, casting, bande-annonce et disponibilité légale sont regroupés dans la fiche.</p>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/50">Sélection personnalisée quotidienne, fiches enrichies et accès aux plateformes. Les abonnements légaux restent prioritaires ; le Movix Link Launcher est disponible plus bas comme raccourci secondaire.</p>
           </div>
           <Link to="/admin" className="rounded-xl border border-white/10 bg-white/[.04] px-4 py-2 text-sm text-white/70 transition hover:bg-white/[.08]">Retour à Angel OS</Link>
         </header>
@@ -84,6 +85,9 @@ function FilmsSeriesPage() {
             })}
           </div>
         </section>
+
+        <MovixLauncherPanel />
+
         <footer className="mt-10 border-t border-white/10 py-5 text-[11px] leading-relaxed text-white/30">Patterns et architecture média adaptés de MovixOpenSource (movixcorp), CC BY-NC 4.0. Métadonnées cinéma : TMDB lorsque configuré. Disponibilités légales : données fournisseurs TMDB/JustWatch.</footer>
       </div>
     </main>
