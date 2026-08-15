@@ -127,7 +127,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const isAngelOSPage = pathname === "/angel-os-ia";
-  const isAdminPage = pathname === "/admin" || pathname.startsWith("/admin/");
+  const isAdminPage = pathname === "/admin" || pathname.startsWith("/admin/") || pathname.startsWith("/admin-");
 
   useEffect(() => {
     void bootAngelOS().catch((error) => {
