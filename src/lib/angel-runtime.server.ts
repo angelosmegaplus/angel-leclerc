@@ -12,10 +12,10 @@ import {
   DurableWorkflowEngine,
   HybridOrchestrator,
   MemoryCache,
-  MemoryWorkflowStateStore,
   NativeTaskWorker,
 } from "../../angel-os/core";
 import { getOpenAiCredential } from "./vercel-connect-credentials.server";
+import { SupabaseWorkflowStateStore } from "./supabase-workflow-state.server";
 
 // Angel OS system runtime. These are system services, not Angel OS IA services.
 // External providers remain complementary and are attached through adapters.
@@ -24,7 +24,7 @@ export const angelTelemetry = new AngelTelemetry();
 export const angelMemoryIndex = new AngelMemoryIndex();
 export const angelCache = new MemoryCache();
 export const angelNativeWorker = new NativeTaskWorker();
-export const angelWorkflowEngine = new DurableWorkflowEngine(new MemoryWorkflowStateStore(), angelEventLog, angelTelemetry);
+export const angelWorkflowEngine = new DurableWorkflowEngine(new SupabaseWorkflowStateStore(), angelEventLog, angelTelemetry);
 export const angelHybridOrchestrator = new HybridOrchestrator(angelCache, [angelNativeWorker], angelEventLog, angelTelemetry);
 export const angelReleaseManager = new AngelReleaseManager();
 export const angelDeployEngine = new AngelDeployEngine(angelReleaseManager, angelEventLog, angelTelemetry);
