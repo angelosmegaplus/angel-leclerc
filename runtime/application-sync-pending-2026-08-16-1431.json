@@ -1,0 +1,30 @@
+{
+  "created_at": "2026-08-16T14:34:02+02:00",
+  "source": "alternance-automation",
+  "sync_status": "blocked",
+  "sync_error": "GitHub Actions production environment has no SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY available; native applications table update could not run.",
+  "actions": [
+    {
+      "company": "SARL Maxima",
+      "city": "Sarlat-la-Canéda",
+      "position": "Alternance BTS Communication",
+      "email": "info@sarlmaxima.com",
+      "status": "relance",
+      "initial_sent_at": "2026-07-30",
+      "last_action_at": "2026-08-16T14:31:00+02:00",
+      "next_action": null,
+      "summary": "Relance de rattrapage unique envoyée après lecture du fil Gmail complet. Aucun retour, refus, absence ou relance antérieure. Adresse revérifiée sur le site officiel Maxima. Ne pas relancer automatiquement une seconde fois."
+    },
+    {
+      "company": "Negocom Atlantique",
+      "city": "Périgueux",
+      "position": "Contrat d’apprentissage en Web Marketing",
+      "email": "contact@negocom-atlantique.com",
+      "status": "action_manuelle",
+      "last_action_at": "2026-08-16T14:31:00+02:00",
+      "next_action": "Candidature manuelle avec CV et lettre de motivation si souhaité",
+      "source_url": "https://www.negocom-atlantique.com/fr/rejoignez-nous/",
+      "summary": "Piste directe vérifiée sur le site officiel. Missions web marketing, réseaux sociaux et tourisme, très compatibles. Aucun doublon Gmail. Aucun envoi automatique car l'employeur demande explicitement CV + lettre de motivation."
+    }
+  ]
+}
