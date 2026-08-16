@@ -1,78 +1,21 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { KeyRound, Loader2, LogIn, Mail, RefreshCw, ShieldAlert, ShieldCheck, Terminal, TriangleAlert } from "lucide-react";
+import { KeyRound, Loader2, LogIn, Mail, ShieldCheck, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { claimOwnerAdminAccess } from "@/lib/admin-owner-recovery.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AdminPurposeIntro } from "@/components/admin/AdminPurposeIntro";
 
-const INTRO_SESSION_KEY = "angel-os-admin-purpose-approved";
-const HUMAN_SESSION_KEY = "angel-os-admin-human-ok";
 const ADMIN_BOOT_PENDING_KEY = "angel-os:admin-boot-pending";
-const HUMAN_ATTEMPTS_KEY = "angel-os-admin-human-attempts";
-const HUMAN_LOCK_UNTIL_KEY = "angel-os-admin-human-lock-until";
-const MAX_HUMAN_ATTEMPTS = 5;
-const HUMAN_LOCK_MS = 15 * 60 * 1000;
-const MIN_CHALLENGE_MS = 900;
-const SECURITY_SCREEN_MS = 1800;
-
-type ChallengeItem = { id: string; icon: string; label: string; tags: string[] };
-type ChallengeDefinition = { id: string; prompt: string; targetTag: string };
-type ActiveChallenge = ChallengeDefinition & { items: ChallengeItem[] };
-type AuthMode = "login" | "forgot" | "recovery";
-
-const CHALLENGE_POOL: ChallengeItem[] = [
-  { id: "pizza", icon: "🍕", label: "Pizza", tags: ["food"] },
-  { id: "apple", icon: "🍎", label: "Pomme", tags: ["food", "nature"] },
-  { id: "bread", icon: "🥖", label: "Pain", tags: ["food"] },
-  { id: "cheese", icon: "🧀", label: "Fromage", tags: ["food"] },
-  { id: "burger", icon: "🍔", label: "Burger", tags: ["food"] },
-  { id: "carrot", icon: "🥕", label: "Carotte", tags: ["food", "nature"] },
-  { id: "cake", icon: "🍰", label: "Gâteau", tags: ["food"] },
-  { id: "car", icon: "🚗", label: "Voiture", tags: ["transport"] },
-  { id: "bus", icon: "🚌", label: "Bus", tags: ["transport"] },
-  { id: "bike", icon: "🚲", label: "Vélo", tags: ["transport"] },
-  { id: "train", icon: "🚆", label: "Train", tags: ["transport"] },
-  { id: "phone", icon: "📱", label: "Téléphone", tags: ["tech"] },
-  { id: "laptop", icon: "💻", label: "Ordinateur", tags: ["tech"] },
-  { id: "camera", icon: "📷", label: "Appareil photo", tags: ["tech"] },
-  { id: "keyboard", icon: "⌨️", label: "Clavier", tags: ["tech"] },
-  { id: "tree", icon: "🌳", label: "Arbre", tags: ["nature"] },
-  { id: "flower", icon: "🌻", label: "Fleur", tags: ["nature"] },
-  { id: "leaf", icon: "🍃", label: "Feuille", tags: ["nature"] },
-  { id: "mountain", icon: "⛰️", label: "Montagne", tags: ["nature"] },
-  { id: "key", icon: "🔑", label: "Clé", tags: ["object"] },
-  { id: "ball", icon: "⚽", label: "Ballon", tags: ["object"] },
-  { id: "book", icon: "📚", label: "Livres", tags: ["object"] },
-  { id: "clock", icon: "⏰", label: "Réveil", tags: ["object"] },
-];
-
-const CHALLENGE_DEFINITIONS: ChallengeDefinition[] = [
-  { id: "food", prompt: "Sélectionnez toutes les icônes liées à la nourriture", targetTag: "food" },
-  { id: "transport", prompt: "Sélectionnez tous les moyens de transport", targetTag: "transport" },
-  { id: "tech", prompt: "Sélectionnez toutes les icônes liées à la technologie", targetTag: "tech" },
-  { id: "nature", prompt: "Sélectionnez toutes les icônes liées à la nature", targetTag: "nature" },
-];
-
-function shuffle<T>(items: T[]) { return [...items].sort(() => Math.random() - 0.5); }
-function makeChallenge(): ActiveChallenge {
-  const definition = CHALLENGE_DEFINITIONS[Math.floor(Math.random() * CHALLENGE_DEFINITIONS.length)] ?? CHALLENGE_DEFINITIONS[0];
-  const targets = shuffle(CHALLENGE_POOL.filter((item) => item.tags.includes(definition.targetTag))).slice(0, 4);
-  const decoys = shuffle(CHALLENGE_POOL.filter((item) => !item.tags.includes(definition.targetTag))).slice(0, 5);
-  const items = shuffle([...targets, ...decoys]);
-  const uniqueIds = new Set(items.map((item) => item.id));
-  const validTargets = items.filter((item) => item.tags.includes(definition.targetTag)).length;
-  if (items.length !== 9 || uniqueIds.size !== 9 || validTargets !== 4) return makeChallenge();
-  return { ...definition, items };
-}
+type AuthMode = "login" | "signup" | "forgot" | "recovery" | "owner";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Connexion Angel OS | Angel Leclerc Communication" },
-      { name: "description", content: "Connexion et récupération sécurisées de l’espace administrateur Angel OS." },
+      { name: "description", content: "Connexion, création de compte et récupération sécurisée de l’espace administrateur Angel OS." },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
@@ -81,137 +24,94 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { session, loading } = useAuth();
-  const [introApproved, setIntroApproved] = useState(false);
-  const [humanUnlocked, setHumanUnlocked] = useState(false);
-  const [securityScreen, setSecurityScreen] = useState(false);
-  const [challenge, setChallenge] = useState<ActiveChallenge>(() => makeChallenge());
-  const [selected, setSelected] = useState<string[]>([]);
-  const [challengeStartedAt, setChallengeStartedAt] = useState(() => Date.now());
-  const [humanError, setHumanError] = useState<string | null>(null);
-  const [humanAttempts, setHumanAttempts] = useState(0);
-  const [lockUntil, setLockUntil] = useState(0);
-  const [now, setNow] = useState(Date.now());
+  const { session, isAdmin, loading } = useAuth();
+  const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [mode, setMode] = useState<AuthMode>("login");
+  const [ownerCode, setOwnerCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    setIntroApproved(sessionStorage.getItem(INTRO_SESSION_KEY) === "1");
-    setHumanUnlocked(sessionStorage.getItem(HUMAN_SESSION_KEY) === "1");
-    setHumanAttempts(Number(localStorage.getItem(HUMAN_ATTEMPTS_KEY) ?? "0") || 0);
-    setLockUntil(Number(localStorage.getItem(HUMAN_LOCK_UNTIL_KEY) ?? "0") || 0);
     const query = new URLSearchParams(window.location.search);
     if (query.get("mode") === "recovery") setMode("recovery");
 
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") {
-        setMode("recovery");
-        setIntroApproved(true);
-        setHumanUnlocked(true);
-        sessionStorage.setItem(INTRO_SESSION_KEY, "1");
-        sessionStorage.setItem(HUMAN_SESSION_KEY, "1");
-      }
+      if (event === "PASSWORD_RECOVERY") setMode("recovery");
     });
     return () => listener.subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
-    if (mode === "recovery") return;
-    if (!loading && session && introApproved && humanUnlocked && !securityScreen) {
+    if (!loading && session && isAdmin && mode !== "recovery") {
       sessionStorage.setItem(ADMIN_BOOT_PENDING_KEY, "1");
       navigate({ to: "/admin" });
     }
-  }, [loading, session, introApproved, humanUnlocked, securityScreen, mode, navigate]);
+  }, [loading, session, isAdmin, mode, navigate]);
 
-  useEffect(() => {
-    if (lockUntil <= Date.now()) return;
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(timer);
-  }, [lockUntil]);
+  function resetMessages() {
+    setError(null);
+    setNotice(null);
+  }
 
-  const remainingLockSeconds = useMemo(() => Math.max(0, Math.ceil((lockUntil - now) / 1000)), [lockUntil, now]);
-  const humanLocked = remainingLockSeconds > 0;
+  function switchMode(next: AuthMode) {
+    resetMessages();
+    setMode(next);
+    setPassword("");
+    setConfirmPassword("");
+    setOwnerCode("");
+  }
 
-  function approveIntro() {
-    sessionStorage.setItem(INTRO_SESSION_KEY, "1");
-    setIntroApproved(true);
-    refreshChallenge();
-  }
-  function refreshChallenge() {
-    setChallenge(makeChallenge());
-    setSelected([]);
-    setHumanError(null);
-    setChallengeStartedAt(Date.now());
-  }
-  function toggleItem(id: string) {
-    setSelected((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
-  }
-  function onHumanSubmit(e: React.FormEvent) {
+  async function login(e: React.FormEvent) {
     e.preventDefault();
-    if (humanLocked) return;
-    const expected = challenge.items.filter((item) => item.tags.includes(challenge.targetTag)).map((item) => item.id).sort();
-    const answer = [...selected].sort();
-    const correct = expected.length === answer.length && expected.every((id, index) => id === answer[index]);
-    const plausibleTiming = Date.now() - challengeStartedAt >= MIN_CHALLENGE_MS;
-    if (correct && plausibleTiming) {
-      localStorage.removeItem(HUMAN_ATTEMPTS_KEY);
-      localStorage.removeItem(HUMAN_LOCK_UNTIL_KEY);
-      sessionStorage.setItem(HUMAN_SESSION_KEY, "1");
-      setHumanAttempts(0);
-      setHumanError(null);
-      setSecurityScreen(true);
-      setHumanUnlocked(true);
-      window.setTimeout(() => setSecurityScreen(false), SECURITY_SCREEN_MS);
-      return;
-    }
-    const nextAttempts = humanAttempts + 1;
-    if (nextAttempts >= MAX_HUMAN_ATTEMPTS) {
-      const nextLockUntil = Date.now() + HUMAN_LOCK_MS;
-      localStorage.setItem(HUMAN_ATTEMPTS_KEY, "0");
-      localStorage.setItem(HUMAN_LOCK_UNTIL_KEY, String(nextLockUntil));
-      setHumanAttempts(0);
-      setLockUntil(nextLockUntil);
-      setNow(Date.now());
-      setHumanError("Trop de vérifications incorrectes. Accès temporairement bloqué pendant 15 minutes.");
-    } else {
-      localStorage.setItem(HUMAN_ATTEMPTS_KEY, String(nextAttempts));
-      setHumanAttempts(nextAttempts);
-      setHumanError(`Sélection incorrecte. ${MAX_HUMAN_ATTEMPTS - nextAttempts} tentative(s) restante(s).`);
-    }
-    refreshChallenge();
-  }
-
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setBusy(true); setError(null); setNotice(null);
+    setBusy(true); resetMessages();
     try {
       const { error: err } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (err) throw err;
       setPassword("");
-      sessionStorage.setItem(ADMIN_BOOT_PENDING_KEY, "1");
-      navigate({ to: "/admin" });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Une erreur est survenue.";
-      setError(message.includes("Invalid login credentials") ? "Identifiants incorrects. Si ce mot de passe fonctionnait auparavant, utilisez « Mot de passe oublié » : le compte actif peut avoir changé de projet d’authentification." : message);
+      const message = err instanceof Error ? err.message : "Connexion impossible.";
+      setError(message.includes("Invalid login credentials") ? "E-mail ou mot de passe incorrect." : message);
+    } finally { setBusy(false); }
+  }
+
+  async function signup(e: React.FormEvent) {
+    e.preventDefault();
+    resetMessages();
+    if (password.length < 8) return setError("Le mot de passe doit contenir au moins 8 caractères.");
+    if (password !== confirmPassword) return setError("Les deux mots de passe ne correspondent pas.");
+    setBusy(true);
+    try {
+      const redirectTo = `${window.location.origin}/auth`;
+      const { data, error: err } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: { emailRedirectTo: redirectTo },
+      });
+      if (err) throw err;
+      setPassword(""); setConfirmPassword("");
+      if (data.session) {
+        setNotice("Compte créé. Vous êtes connecté ; utilisez « Accès de secours » pour prouver l’identité propriétaire.");
+        setMode("owner");
+      } else {
+        setNotice("Compte créé. Confirmez l’adresse e-mail avec le lien reçu, puis reconnectez-vous.");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Impossible de créer le compte.");
     } finally { setBusy(false); }
   }
 
   async function sendRecovery(e: React.FormEvent) {
     e.preventDefault();
-    const target = email.trim();
-    if (!target) return;
-    setBusy(true); setError(null); setNotice(null);
+    setBusy(true); resetMessages();
     try {
       const redirectTo = `${window.location.origin}/auth?mode=recovery`;
-      const { error: err } = await supabase.auth.resetPasswordForEmail(target, { redirectTo });
+      const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo });
       if (err) throw err;
-      setNotice("Si ce compte existe dans le projet d’authentification actuel, un e-mail de récupération vient d’être envoyé. Ouvrez le lien reçu sur cet appareil.");
+      setNotice("Si ce compte existe, un lien de récupération vient d’être envoyé par e-mail.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Impossible d’envoyer le lien de récupération.");
     } finally { setBusy(false); }
@@ -219,51 +119,119 @@ function AuthPage() {
 
   async function updatePassword(e: React.FormEvent) {
     e.preventDefault();
-    setError(null); setNotice(null);
-    if (password.length < 8) { setError("Le nouveau mot de passe doit contenir au moins 8 caractères."); return; }
-    if (password !== confirmPassword) { setError("Les deux mots de passe ne correspondent pas."); return; }
+    resetMessages();
+    if (password.length < 8) return setError("Le nouveau mot de passe doit contenir au moins 8 caractères.");
+    if (password !== confirmPassword) return setError("Les deux mots de passe ne correspondent pas.");
     setBusy(true);
     try {
       const { error: err } = await supabase.auth.updateUser({ password });
       if (err) throw err;
+      setNotice("Mot de passe modifié. Vous pouvez maintenant continuer.");
       setPassword(""); setConfirmPassword("");
-      setNotice("Mot de passe mis à jour. Vous allez pouvoir accéder à l’espace administrateur avec cette session.");
-      sessionStorage.setItem(INTRO_SESSION_KEY, "1");
-      sessionStorage.setItem(HUMAN_SESSION_KEY, "1");
-      sessionStorage.setItem(ADMIN_BOOT_PENDING_KEY, "1");
       window.history.replaceState({}, "", "/auth");
-      window.setTimeout(() => navigate({ to: "/admin" }), 500);
+      setMode("owner");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Impossible de modifier le mot de passe.";
-      setError(/session|jwt|auth/i.test(message) ? "Le lien de récupération est invalide ou expiré. Demandez un nouveau lien." : message);
+      setError(err instanceof Error ? err.message : "Impossible de modifier le mot de passe.");
     } finally { setBusy(false); }
   }
 
-  if (loading && mode !== "recovery") return <section className="flex min-h-[70vh] items-center justify-center bg-background"><Loader2 className="h-6 w-6 animate-spin text-primary" /></section>;
-
-  if (mode === "recovery") {
-    return <section className="min-h-screen bg-background py-16 md:py-24"><div className="mx-auto w-full max-w-md px-5 sm:px-6">
-      <div className="flex items-center gap-3"><img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-11 w-11 rounded-xl object-contain" /><div><p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">Récupération sécurisée</p><h1 className="mt-1 font-display text-2xl font-bold text-foreground">Nouveau mot de passe</h1></div></div>
-      <p className="mt-3 text-sm text-muted-foreground">Définissez un nouveau mot de passe pour le compte ouvert par le lien de récupération.</p>
-      <form onSubmit={updatePassword} className="mt-8 space-y-4 rounded-xl border border-border bg-card p-6">
-        <div className="space-y-2"><Label htmlFor="new-password">Nouveau mot de passe</Label><Input id="new-password" type="password" autoComplete="new-password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} /></div>
-        <div className="space-y-2"><Label htmlFor="confirm-password">Confirmer</Label><Input id="confirm-password" type="password" autoComplete="new-password" required minLength={8} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} /></div>
-        {error && <p className="text-sm text-destructive">{error}</p>}{notice && <p className="text-sm text-primary">{notice}</p>}
-        <Button type="submit" disabled={busy} className="w-full">{busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <KeyRound className="mr-2 h-4 w-4" />}Enregistrer le nouveau mot de passe</Button>
-        <Button type="button" variant="ghost" className="w-full" onClick={() => { setMode("forgot"); setError(null); setNotice(null); }}>Demander un nouveau lien</Button>
-      </form>
-    </div></section>;
+  async function claimOwner(e: React.FormEvent) {
+    e.preventDefault();
+    resetMessages();
+    if (!session) return setError("Connectez-vous d’abord avec votre compte Angel.");
+    setBusy(true);
+    try {
+      await claimOwnerAdminAccess({ data: { code: ownerCode.trim() } });
+      setNotice("Identité propriétaire validée. Accès administrateur activé.");
+      setOwnerCode("");
+      sessionStorage.setItem(ADMIN_BOOT_PENDING_KEY, "1");
+      window.setTimeout(() => window.location.assign("/admin"), 300);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Impossible de valider le code de secours.");
+    } finally { setBusy(false); }
   }
 
-  if (!introApproved) return <section className="min-h-screen bg-background py-12 md:py-20"><div className="mx-auto w-full max-w-3xl px-5 sm:px-6"><AdminPurposeIntro /><Button type="button" onClick={approveIntro} className="h-12 w-full rounded-full text-base font-semibold">J’ai compris · Continuer</Button><p className="mt-3 text-center text-xs text-muted-foreground">Étape suivante : vérification anti-robot, puis connexion à l’espace administrateur.</p></div></section>;
+  async function logout() {
+    await supabase.auth.signOut();
+    switchMode("login");
+  }
 
-  if (securityScreen) return <section className="relative flex min-h-screen overflow-hidden bg-black px-6 py-12 font-mono text-green-400"><div className="relative mx-auto flex w-full max-w-4xl flex-col justify-center"><div className="mb-6 flex items-center gap-3 text-red-500"><TriangleAlert className="h-7 w-7 animate-pulse" /><p className="text-sm font-bold uppercase tracking-[0.28em]">Zone sécurisée — accès surveillé</p></div><div className="space-y-2 text-xs leading-6 sm:text-sm"><p>&gt; ANGEL_OS SECURITY GATEWAY v4.8</p><p>&gt; HUMAN_CHALLENGE ............ <span className="text-white">VERIFIED</span></p><p>&gt; AUTHENTICATION_CHANNEL .... <span className="animate-pulse text-white">OPENING</span></p></div><div className="mt-8 border-l-2 border-red-500 pl-4 text-red-400"><p className="flex items-center gap-2 text-sm font-bold"><Terminal className="h-4 w-4" /> AVERTISSEMENT DE SÉCURITÉ</p><p className="mt-2 text-xs">Espace privé. Toute tentative d’accès non autorisée peut être journalisée.</p></div></div></section>;
+  if (loading) return <section className="flex min-h-screen items-center justify-center bg-background"><Loader2 className="h-6 w-6 animate-spin text-primary" /></section>;
 
-  if (!humanUnlocked) return <section className="min-h-[70vh] bg-background py-16 md:py-24"><div className="mx-auto w-full max-w-md px-5 sm:px-6"><div className="mb-6 flex items-center gap-3"><img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-12 w-12 rounded-xl object-contain" /><div><p className="text-xs font-semibold text-muted-foreground">Angel OS · étape 2/3</p><h1 className="font-display text-2xl font-bold text-foreground">Vérification anti-robot</h1></div></div><form onSubmit={onHumanSubmit} className="space-y-5 rounded-3xl border border-border bg-card p-6 shadow-sm">{humanLocked ? <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-sm"><ShieldAlert className="mb-2 h-5 w-5 text-destructive" /><p>Accès temporairement bloqué. Nouvelle tentative dans {Math.ceil(remainingLockSeconds / 60)} min.</p></div> : <><p className="flex items-center gap-2 text-sm font-semibold"><ShieldCheck className="h-4 w-4 text-primary" />{challenge.prompt}</p><div className="grid grid-cols-3 gap-3">{challenge.items.map((item) => { const active = selected.includes(item.id); return <button key={item.id} type="button" aria-pressed={active} aria-label={item.label} onClick={() => toggleItem(item.id)} className={`flex aspect-square items-center justify-center rounded-2xl border text-4xl ${active ? "border-primary bg-primary/10 ring-2 ring-primary/30" : "border-border bg-background"}`}>{item.icon}</button>; })}</div><Button type="button" variant="ghost" size="sm" className="w-full" onClick={refreshChallenge}><RefreshCw className="mr-2 h-4 w-4" />Nouveau défi</Button></>}{humanError && <p className="text-sm text-destructive">{humanError}</p>}{!humanLocked && <Button type="submit" disabled={selected.length === 0} className="h-12 w-full rounded-full"><ShieldCheck className="mr-2 h-4 w-4" />Valider la vérification</Button>}</form></div></section>;
+  const title = mode === "signup" ? "Créer mon compte" : mode === "forgot" ? "Mot de passe oublié" : mode === "recovery" ? "Nouveau mot de passe" : mode === "owner" ? "Accès propriétaire" : "Connexion";
 
-  if (session && mode === "login") return <section className="flex min-h-[70vh] items-center justify-center bg-background"><Loader2 className="h-6 w-6 animate-spin text-primary" /></section>;
+  return (
+    <section className="min-h-screen bg-background px-4 py-10 sm:py-16">
+      <div className="mx-auto w-full max-w-md">
+        <div className="mb-6 flex items-center gap-3">
+          <img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-12 w-12 rounded-2xl object-contain" />
+          <div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Angel OS · espace privé</p><h1 className="mt-1 text-3xl font-bold tracking-tight text-foreground">{title}</h1></div>
+        </div>
 
-  return <section className="bg-background py-16 md:py-24"><div className="mx-auto w-full max-w-md px-5 sm:px-6"><div className="flex items-center gap-3"><img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-11 w-11 rounded-xl object-contain" /><div><p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">Étape 3/3 · Accès réservé</p><h1 className="mt-1 font-display text-2xl font-bold text-foreground sm:text-3xl">{mode === "forgot" ? "Récupérer l’accès" : "Connexion Angel OS"}</h1></div></div>
-    {mode === "forgot" ? <><p className="mt-3 text-sm text-muted-foreground">Entrez l’adresse e-mail du compte administrateur. Le lien reçu permettra de choisir un nouveau mot de passe.</p><form onSubmit={sendRecovery} className="mt-8 space-y-4 rounded-xl border border-border bg-card p-6"><div className="space-y-2"><Label htmlFor="recovery-email">E-mail</Label><Input id="recovery-email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>{error && <p className="text-sm text-destructive">{error}</p>}{notice && <p className="text-sm text-primary">{notice}</p>}<Button type="submit" disabled={busy} className="w-full">{busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Mail className="mr-2 h-4 w-4" />}Envoyer le lien de récupération</Button><Button type="button" variant="ghost" className="w-full" onClick={() => { setMode("login"); setError(null); setNotice(null); }}>Retour à la connexion</Button></form></> : <><p className="mt-3 text-sm text-muted-foreground">Connectez-vous avec le compte administrateur autorisé.</p><form onSubmit={onSubmit} className="mt-8 space-y-4 rounded-xl border border-border bg-card p-6"><div className="space-y-2"><Label htmlFor="email">E-mail</Label><Input id="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div><div className="space-y-2"><div className="flex items-center justify-between"><Label htmlFor="password">Mot de passe</Label><button type="button" onClick={() => { setMode("forgot"); setError(null); setNotice(null); }} className="text-xs font-medium text-primary hover:underline">Mot de passe oublié ?</button></div><Input id="password" type="password" autoComplete="current-password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} /></div>{error && <p className="text-sm text-destructive">{error}</p>}<Button type="submit" disabled={busy} className="w-full">{busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LogIn className="mr-2 h-4 w-4" />}Me connecter</Button></form></>}
-  </div></section>;
+        <div className="mb-4 grid grid-cols-3 gap-2 rounded-2xl border border-border bg-card p-2">
+          <button type="button" onClick={() => switchMode("login")} className={`rounded-xl px-3 py-2 text-sm font-medium ${mode === "login" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>Connexion</button>
+          <button type="button" onClick={() => switchMode("signup")} className={`rounded-xl px-3 py-2 text-sm font-medium ${mode === "signup" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>Créer un compte</button>
+          <button type="button" onClick={() => switchMode("owner")} className={`rounded-xl px-3 py-2 text-sm font-medium ${mode === "owner" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>Secours</button>
+        </div>
+
+        <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+          {mode === "login" && <form onSubmit={login} className="space-y-4">
+            <p className="text-sm text-muted-foreground">Connectez-vous simplement avec votre compte. Plus de parcours de sécurité en trois écrans.</p>
+            <FieldEmail value={email} onChange={setEmail} />
+            <FieldPassword label="Mot de passe" value={password} onChange={setPassword} autoComplete="current-password" />
+            <button type="button" onClick={() => switchMode("forgot")} className="text-sm font-medium text-primary hover:underline">Mot de passe oublié ?</button>
+            <Messages error={error} notice={notice} />
+            <Button type="submit" disabled={busy} className="h-12 w-full rounded-xl">{busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LogIn className="mr-2 h-4 w-4" />}Me connecter</Button>
+          </form>}
+
+          {mode === "signup" && <form onSubmit={signup} className="space-y-4">
+            <p className="text-sm text-muted-foreground">Créez votre compte Angel OS. Un compte neuf n’obtient jamais les droits administrateur automatiquement.</p>
+            <FieldEmail value={email} onChange={setEmail} />
+            <FieldPassword label="Mot de passe" value={password} onChange={setPassword} autoComplete="new-password" />
+            <FieldPassword label="Confirmer le mot de passe" value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" />
+            <Messages error={error} notice={notice} />
+            <Button type="submit" disabled={busy} className="h-12 w-full rounded-xl">{busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}Créer mon compte</Button>
+          </form>}
+
+          {mode === "forgot" && <form onSubmit={sendRecovery} className="space-y-4">
+            <p className="text-sm text-muted-foreground">Recevez un lien pour choisir un nouveau mot de passe.</p>
+            <FieldEmail value={email} onChange={setEmail} />
+            <Messages error={error} notice={notice} />
+            <Button type="submit" disabled={busy} className="h-12 w-full rounded-xl">{busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Mail className="mr-2 h-4 w-4" />}Envoyer le lien</Button>
+          </form>}
+
+          {mode === "recovery" && <form onSubmit={updatePassword} className="space-y-4">
+            <FieldPassword label="Nouveau mot de passe" value={password} onChange={setPassword} autoComplete="new-password" />
+            <FieldPassword label="Confirmer" value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" />
+            <Messages error={error} notice={notice} />
+            <Button type="submit" disabled={busy} className="h-12 w-full rounded-xl"><KeyRound className="mr-2 h-4 w-4" />Enregistrer</Button>
+          </form>}
+
+          {mode === "owner" && <form onSubmit={claimOwner} className="space-y-4">
+            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+              <div className="flex items-center gap-2 font-semibold"><ShieldCheck className="h-5 w-5 text-primary" />Preuve propriétaire</div>
+              <p className="mt-2 text-sm text-muted-foreground">Le code de secours est vérifié côté serveur. Il n’est pas stocké dans le navigateur ni exposé dans le code public.</p>
+            </div>
+            {!session ? <p className="text-sm text-muted-foreground">Vous devez d’abord vous connecter ou créer votre compte, puis revenir ici.</p> : <p className="text-sm text-muted-foreground">Compte connecté : <span className="font-medium text-foreground">{session.user.email}</span></p>}
+            <div className="space-y-2"><Label htmlFor="owner-code">Code de secours</Label><Input id="owner-code" inputMode="numeric" autoComplete="one-time-code" value={ownerCode} onChange={(e) => setOwnerCode(e.target.value)} placeholder="••••" required /></div>
+            <Messages error={error} notice={notice} />
+            <Button type="submit" disabled={busy || !session || ownerCode.length < 4} className="h-12 w-full rounded-xl">{busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}Prouver que je suis Angel</Button>
+            {session && <Button type="button" variant="ghost" onClick={logout} className="w-full">Changer de compte</Button>}
+          </form>}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FieldEmail({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  return <div className="space-y-2"><Label htmlFor="auth-email">E-mail</Label><Input id="auth-email" type="email" autoComplete="email" required value={value} onChange={(e) => onChange(e.target.value)} /></div>;
+}
+
+function FieldPassword({ label, value, onChange, autoComplete }: { label: string; value: string; onChange: (value: string) => void; autoComplete: string }) {
+  return <div className="space-y-2"><Label>{label}</Label><Input type="password" autoComplete={autoComplete} required minLength={8} value={value} onChange={(e) => onChange(e.target.value)} /></div>;
+}
+
+function Messages({ error, notice }: { error: string | null; notice: string | null }) {
+  return <>{error ? <p className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive">{error}</p> : null}{notice ? <p className="rounded-xl bg-primary/10 p-3 text-sm text-foreground">{notice}</p> : null}</>;
 }
