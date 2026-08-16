@@ -2,6 +2,7 @@
 
 import type { AngelEventLog } from './event-log';
 import type { AngelTelemetry } from './observability';
+import type { AngelIssueRegistry, IssuePriority } from './issue-registry';
 
 export type GuardianSeverity = 'info' | 'warning' | 'critical';
 export type GuardianFinding = {
@@ -15,9 +16,19 @@ export type GuardianFinding = {
 
 export type RecoveryAction = 'retry' | 'fallback' | 'rollback' | 'resync' | 'invalidate-cache' | 'isolate-provider' | 'restore-checkpoint' | 'none';
 
+function priorityForSeverity(severity: GuardianSeverity): IssuePriority {
+  if (severity === 'critical') return 'P1';
+  if (severity === 'warning') return 'P2';
+  return 'P3';
+}
+
 export class AngelGuardian {
   private findings: GuardianFinding[] = [];
-  constructor(private readonly eventLog?: AngelEventLog, private readonly telemetry?: AngelTelemetry) {}
+  constructor(
+    private readonly eventLog?: AngelEventLog,
+    private readonly telemetry?: AngelTelemetry,
+    private readonly issueRegistry?: AngelIssueRegistry,
+  ) {}
 
   async report(input: Omit<GuardianFinding, 'id' | 'at'>) {
     const finding: GuardianFinding = { ...input, id: crypto.randomUUID(), at: Date.now() };
@@ -25,6 +36,16 @@ export class AngelGuardian {
     if (this.findings.length > 2000) this.findings.splice(0, this.findings.length - 2000);
     this.telemetry?.increment('guardian.finding', 1, { severity: finding.severity, type: finding.type });
     await this.eventLog?.append('guardian.finding', finding);
+    await this.issueRegistry?.report({
+      title: finding.message,
+      type: finding.type,
+      priority: priorityForSeverity(finding.severity),
+      evidence: {
+        source: 'guardian',
+        message: finding.message,
+        data: finding.data,
+      },
+    });
     return finding;
   }
 
