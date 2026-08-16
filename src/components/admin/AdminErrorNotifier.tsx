@@ -16,47 +16,84 @@ function rawReason(value: unknown): string {
   try { return JSON.stringify(value); } catch { return String(value ?? ""); }
 }
 
-function compactRaw(value: unknown): string {
-  return rawReason(value)
-    .replace(/<!doctype[\s\S]*/i, "")
+function isHtmlPayload(value: string) {
+  return /<!doctype\s+html|<html[\s>]|<head[\s>]|<body[\s>]/i.test(value);
+}
+
+function stripHtml(value: string): string {
+  return value
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&amp;/gi, "&")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function compactRaw(value: unknown): string {
+  const raw = rawReason(value);
+  const text = isHtmlPayload(raw) ? stripHtml(raw) : raw;
+  return text.replace(/\s+/g, " ").trim();
+}
+
+function isInternalServerFn(value: string) {
+  return /\/_serverFn\//i.test(value) || /server function/i.test(value);
 }
 
 function cleanReason(value: unknown): string {
   const compact = compactRaw(value);
   if (!compact) return "Une opération n’a pas pu être terminée.";
-  if (/failed to fetch|networkerror|network request failed/i.test(compact)) return "Connexion au service impossible.";
+  if (/failed to fetch|networkerror|network request failed/i.test(compact)) return "Connexion réseau momentanément impossible.";
   if (/401|unauthori[sz]ed|non autoris/i.test(compact)) return "La session ou l’autorisation n’est plus valide.";
-  if (/403|forbidden|accès refusé/i.test(compact)) return "Le service a refusé l’accès.";
+  if (/403|forbidden|accès refusé/i.test(compact)) return "L’accès à cette opération a été refusé.";
   if (/404|not found|introuvable/i.test(compact)) return "La ressource demandée est introuvable.";
-  if (/429|too many requests|rate limit/i.test(compact)) return "Le service reçoit trop de demandes pour le moment.";
-  if (/500|502|503|504|internal server|service unavailable|bad gateway|gateway timeout/i.test(compact)) return "Un service distant est momentanément indisponible.";
+  if (/429|too many requests|rate limit/i.test(compact)) return "Trop de demandes en même temps. Angel OS va devoir ralentir brièvement.";
+  if (/500|502|503|504|internal server|service unavailable|bad gateway|gateway timeout/i.test(compact)) {
+    return isInternalServerFn(compact)
+      ? "Une fonction interne d’Angel OS n’a pas terminé correctement l’opération."
+      : "Le serveur n’a pas pu terminer cette opération pour le moment.";
+  }
+  if (/^error:?$/i.test(compact)) return "Une opération interne a échoué sans message exploitable.";
   return compact.length > 120 ? `${compact.slice(0, 117)}…` : compact;
 }
 
 function summarizeProblem(value: unknown): string {
   const compact = compactRaw(value);
   if (!compact) return "Angel OS n’a pas reçu assez d’informations pour identifier précisément la cause.";
-  if (/failed to fetch|networkerror|network request failed/i.test(compact)) return "La requête n’a pas réussi à joindre le service attendu. Cela peut venir d’une coupure réseau, d’un service hors ligne ou d’un blocage temporaire.";
-  if (/401|unauthori[sz]ed|non autoris/i.test(compact)) return "Le service demande une authentification valide. La session a pu expirer ou le jeton d’accès n’est plus accepté.";
-  if (/403|forbidden|accès refusé/i.test(compact)) return "La requête est arrivée au service, mais celui-ci refuse l’opération avec les droits actuellement disponibles.";
-  if (/404|not found|introuvable/i.test(compact)) return "Angel OS a demandé une ressource ou une route qui n’existe pas, a été déplacée ou n’est plus disponible à cette adresse.";
-  if (/429|too many requests|rate limit/i.test(compact)) return "Le fournisseur limite temporairement le nombre de requêtes. Il faut attendre avant de réessayer ou réduire la fréquence des appels.";
-  if (/500|502|503|504|internal server|service unavailable|bad gateway|gateway timeout/i.test(compact)) return "Le problème vient probablement du service distant ou de son infrastructure. Angel OS a bien lancé l’opération, mais le serveur n’a pas pu la terminer normalement.";
+  if (/failed to fetch|networkerror|network request failed/i.test(compact)) return "La requête n’a pas pu atteindre sa destination. Angel OS peut réessayer sans considérer automatiquement qu’une API est mal configurée.";
+  if (/401|unauthori[sz]ed|non autoris/i.test(compact)) return "L’autorisation n’est plus valable ou ne couvre pas l’opération demandée. Une reconnexion peut être nécessaire.";
+  if (/403|forbidden|accès refusé/i.test(compact)) return "L’opération a atteint le service mais les droits actuels ne permettent pas de la terminer.";
+  if (/404|not found|introuvable/i.test(compact)) return "La route ou la ressource demandée n’existe pas à l’adresse utilisée.";
+  if (/429|too many requests|rate limit/i.test(compact)) return "Une limite de débit a été atteinte. Les appels doivent être regroupés, mis en cache ou retentés après un court délai.";
+  if (/500|502|503|504|internal server|service unavailable|bad gateway|gateway timeout/i.test(compact)) {
+    return isInternalServerFn(compact)
+      ? "Une fonction serveur interne d’Angel OS a échoué. Cela ne signifie pas automatiquement qu’un fournisseur externe est en panne ; le journal serveur doit identifier la vraie cause."
+      : "Le serveur a reçu la demande mais n’a pas pu l’achever normalement. Angel OS doit utiliser son repli lorsqu’il existe et conserver l’interface utilisable.";
+  }
+  if (isHtmlPayload(rawReason(value))) return "Le serveur a renvoyé une page HTML d’erreur à la place d’une réponse applicative. Angel OS masque désormais ce contenu technique et conserve seulement un diagnostic utile.";
   return `L’opération a échoué avec le message suivant : ${compact.slice(0, 260)}${compact.length > 260 ? "…" : ""}`;
 }
 
+function technicalDetail(value: unknown): string {
+  const raw = rawReason(value).replace(/\s+$/g, "");
+  if (!raw) return "Aucun détail technique supplémentaire n’a été fourni.";
+  if (isHtmlPayload(raw)) {
+    const compact = stripHtml(raw);
+    const title = compact.match(/(?:This page didn'?t load|Internal Server Error|Service Unavailable|Bad Gateway)/i)?.[0];
+    return title ? `Réponse HTML serveur masquée · ${title}` : "Réponse HTML serveur masquée pour éviter d’afficher une page d’erreur brute.";
+  }
+  return raw.slice(0, 1600);
+}
+
 function makeNotice(value: unknown, id: number): AdminErrorNotice {
-  const detail = rawReason(value).replace(/\s+$/g, "").slice(0, 3000) || "Aucun détail technique supplémentaire n’a été fourni.";
   return {
     id,
     reason: cleanReason(value),
     summary: summarizeProblem(value),
-    detail,
+    detail: technicalDetail(value),
   };
 }
 
@@ -84,7 +121,7 @@ function playAlertTone() {
     osc.stop(ctx.currentTime + 0.3);
     window.setTimeout(() => void ctx.close(), 450);
   } catch {
-    // Browsers can block audio before the first user interaction. The visual alert still works.
+    // L’alerte visuelle reste disponible si le navigateur bloque l’audio.
   }
 }
 
@@ -116,9 +153,11 @@ export function AdminErrorNotifier() {
     window.fetch = async (...args) => {
       try {
         const response = await originalFetch(...args);
-        if (!response.ok && response.status >= 400) {
-          const url = typeof args[0] === "string" ? args[0] : args[0] instanceof Request ? args[0].url : "service";
-          show(`HTTP ${response.status} — ${new URL(url, window.location.href).pathname}`);
+        if (!response.ok && response.status >= 500) {
+          const rawUrl = typeof args[0] === "string" ? args[0] : args[0] instanceof Request ? args[0].url : "";
+          const url = new URL(rawUrl || window.location.href, window.location.href);
+          const internal = url.origin === window.location.origin;
+          show(`HTTP ${response.status} — ${internal ? "Angel OS" : url.hostname} — ${url.pathname}`);
         }
         return response;
       } catch (error) {
@@ -149,44 +188,18 @@ export function AdminErrorNotifier() {
 
   return (
     <div className="pointer-events-none fixed inset-x-0 top-[calc(.75rem+env(safe-area-inset-top))] z-[100] flex justify-center px-3 sm:top-[calc(1rem+env(safe-area-inset-top))]">
-      <div
-        key={notice.id}
-        role="alert"
-        aria-live="assertive"
-        className="pointer-events-auto w-full max-w-md animate-in slide-in-from-top-4 fade-in duration-300 overflow-hidden rounded-[1.35rem] border border-red-500/35 bg-[#0b0d10]/96 shadow-[0_24px_80px_rgba(0,0,0,.55)] backdrop-blur-xl"
-      >
+      <div key={notice.id} role="alert" aria-live="assertive" className="pointer-events-auto w-full max-w-md animate-in slide-in-from-top-4 fade-in duration-300 overflow-hidden rounded-[1.35rem] border border-red-500/35 bg-[#0b0d10]/96 shadow-[0_24px_80px_rgba(0,0,0,.55)] backdrop-blur-xl">
         <div className="flex items-start gap-3 p-3.5 sm:p-4">
-          <div className="relative shrink-0">
-            <img src="/angel-os/logo.png" alt="Angel OS" className="h-11 w-11 rounded-xl border border-red-500/25 object-cover shadow-[0_0_28px_rgba(239,68,68,.18)]" />
-            <span className="absolute -bottom-1 -right-1 grid h-5 w-5 place-items-center rounded-full border border-red-400/30 bg-red-500 text-white">
-              <AlertTriangle className="h-3 w-3" />
-            </span>
-          </div>
+          <div className="relative shrink-0"><img src="/angel-os/logo.png" alt="Angel OS" className="h-11 w-11 rounded-xl border border-red-500/25 object-cover shadow-[0_0_28px_rgba(239,68,68,.18)]" /><span className="absolute -bottom-1 -right-1 grid h-5 w-5 place-items-center rounded-full border border-red-400/30 bg-red-500 text-white"><AlertTriangle className="h-3 w-3" /></span></div>
           <button type="button" onClick={() => setExpanded((value) => !value)} className="min-w-0 flex-1 text-left" aria-expanded={expanded}>
             <p className="font-mono text-[9px] font-bold uppercase tracking-[.18em] text-red-300">Angel OS · alerte</p>
             <p className="mt-1 text-sm font-semibold text-white">Il y a un problème.</p>
             <p className="mt-1 text-xs leading-relaxed text-white/62">{notice.reason}</p>
-            <span className="mt-2 inline-flex items-center gap-1 text-[10px] font-semibold text-red-200/75">
-              {expanded ? "Masquer les détails" : "Voir le problème"}
-              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${expanded ? "rotate-180" : ""}`} />
-            </span>
+            <span className="mt-2 inline-flex items-center gap-1 text-[10px] font-semibold text-red-200/75">{expanded ? "Masquer les détails" : "Voir le problème"}<ChevronDown className={`h-3.5 w-3.5 transition-transform ${expanded ? "rotate-180" : ""}`} /></span>
           </button>
-          <button type="button" onClick={() => setNotice(null)} aria-label="Fermer l’alerte" className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/[.04] text-white/55 transition hover:text-white">
-            <X className="h-4 w-4" />
-          </button>
+          <button type="button" onClick={() => setNotice(null)} aria-label="Fermer l’alerte" className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/[.04] text-white/55 transition hover:text-white"><X className="h-4 w-4" /></button>
         </div>
-
-        {expanded ? (
-          <div className="border-t border-white/10 bg-black/25 px-4 pb-4 pt-3">
-            <p className="font-mono text-[9px] font-bold uppercase tracking-[.14em] text-white/35">Résumé du problème</p>
-            <p className="mt-2 text-xs leading-5 text-white/72">{notice.summary}</p>
-            <details className="mt-3 rounded-xl border border-white/10 bg-black/25 p-3">
-              <summary className="cursor-pointer text-[10px] font-semibold text-white/45">Détail technique</summary>
-              <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words font-mono text-[9px] leading-4 text-white/35">{notice.detail}</pre>
-            </details>
-          </div>
-        ) : null}
-
+        {expanded ? <div className="border-t border-white/10 bg-black/25 px-4 pb-4 pt-3"><p className="font-mono text-[9px] font-bold uppercase tracking-[.14em] text-white/35">Résumé du problème</p><p className="mt-2 text-xs leading-5 text-white/72">{notice.summary}</p><details className="mt-3 rounded-xl border border-white/10 bg-black/25 p-3"><summary className="cursor-pointer text-[10px] font-semibold text-white/45">Détail technique</summary><pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words font-mono text-[9px] leading-4 text-white/35">{notice.detail}</pre></details></div> : null}
         {!expanded ? <div className="h-0.5 w-full origin-left animate-[adminErrorLife_7s_linear_forwards] bg-red-400/80" /> : null}
       </div>
       <style>{`@keyframes adminErrorLife { from { transform: scaleX(1) } to { transform: scaleX(0) } }`}</style>
