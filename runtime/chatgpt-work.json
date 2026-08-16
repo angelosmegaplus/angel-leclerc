@@ -1,13 +1,13 @@
 {
   "version": 4,
-  "updatedAt": "2026-08-16T01:31:00Z",
+  "updatedAt": "2026-08-16T03:30:10Z",
   "source": "github",
   "current": [
     {
       "id": "angel-ai-end-to-end",
       "title": "Maintenir Angel AI OpenAI validée de bout en bout",
       "status": "running",
-      "detail": "La production courante f702ef4c75a6c140cab6251fa1770c3908c45159 est READY. Le health réel /api/angel-os/health vérifié le 16 août 2026 à 01:29Z renvoie healthy=true, release=f702ef4c75a6c140cab6251fa1770c3908c45159 et OpenAI configured=true/reachable=true. Le dernier workflow Maintenance exécuté avant la correction du health a validé avec succès les scénarios réels /api/assistant : message court, question normale, Contact, contexte multi-tour et échec contrôlé ; son seul échec venait de l'ancien chemin JSON du health, corrigé depuis sur main. Aucun cluster d'erreur runtime Vercel n'est observé sur les 6 dernières heures. Le chemin privé Angel OS IA et la génération d'article restent à valider avec un contexte authentifié autorisé ; ne pas créer de route publique de test ni simuler une session admin."
+      "detail": "La production courante 0fc937f381307d5e259b3f9e294663616891906e est servie et vérifiée. Le workflow Observabilité Angel OS du 16 août 2026 à 03:29Z a validé en production /api/angel-os/health avec healthy=true, release=0fc937f381307d5e259b3f9e294663616891906e et OpenAI configured=true/reachable=true. Trois requêtes réelles /api/assistant ont réussi avec HTTP 200 et source=openai : site, Contact et contexte multi-tour ; aucune réponse vide, JSON brut ou fallback local n'a été acceptée. La veille /api/admin/news a également répondu HTTP 200 avec phase=combined, 68 éléments dont 10 contributions OpenAI vérifiables. Le chemin privé Angel OS IA et la génération d'article restent à valider avec un contexte administrateur authentifié autorisé ; ne pas créer de route publique de test ni simuler une session admin."
     },
     {
       "id": "data-sync-secrets",
@@ -45,7 +45,7 @@
       "id": "admin-news-production-check",
       "title": "Vérifier toutes les rubriques Actualités en production",
       "status": "waiting_live_data",
-      "detail": "Le correctif de parsing structuré des actualités est publié et /api/admin/news a déjà répondu HTTP 200. Il reste à contrôler dans l'interface que chaque rubrique reçoit effectivement des contenus récents et que À la une reste fraîche et personnalisée."
+      "detail": "Le correctif de parsing structuré des actualités est publié et /api/admin/news répond désormais HTTP 200 avec phase=combined ; le contrôle du 16 août 2026 à 03:30Z a observé 68 éléments, dont 10 issus de la recherche OpenAI. Il reste à contrôler dans l'interface que chaque rubrique reçoit effectivement des contenus récents et que À la une reste fraîche et personnalisée."
     }
   ],
   "done": [
@@ -53,15 +53,15 @@
       "id": "publication-production",
       "title": "Synchroniser main et production",
       "status": "done",
-      "detail": "Le dernier main f702ef4c75a6c140cab6251fa1770c3908c45159 est servi par un déploiement Vercel production READY. L'ancien état waiting_publish du panneau était obsolète et a été retiré de la file active.",
-      "commit": "f702ef4c75a6c140cab6251fa1770c3908c45159"
+      "detail": "Le commit 0fc937f381307d5e259b3f9e294663616891906e a été vérifié comme release de production et le déploiement GitHub/Vercel associé est en succès. L'ancien état waiting_publish a été retiré de la file active.",
+      "commit": "0fc937f381307d5e259b3f9e294663616891906e"
     },
     {
       "id": "angel-ai-public-production-validation",
       "title": "Valider Angel AI publique OpenAI en production",
       "status": "done",
-      "detail": "Le workflow Maintenance Angel OS a exécuté plusieurs POST réels vers /api/assistant ; les scénarios message court, question normale, Contact, contexte multi-tour et erreur contrôlée ont réussi. Le health de la release courante confirme OpenAI configuré et joignable.",
-      "commit": "51c2451232084abe61341ff05f7a85e7cb7191d5"
+      "detail": "Le workflow Observabilité Angel OS a exécuté des POST réels vers /api/assistant ; les scénarios site, Contact et contexte multi-tour ont reçu HTTP 200 avec source=openai et texte exploitable. Le health de la release 0fc937f381307d5e259b3f9e294663616891906e confirme OpenAI configuré et joignable.",
+      "commit": "0fc937f381307d5e259b3f9e294663616891906e"
     },
     {
       "id": "maintenance-secondary-dependency",
