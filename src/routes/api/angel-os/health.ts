@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { angelEventLog, angelMemoryIndex, angelNodeGateway } from "@/lib/angel-runtime.server";
 import { getOpenAiCredential, getTmdbCredential } from "@/lib/vercel-connect-credentials.server";
+import { getVaultSecretSync, getVaultSecretSource, warmVaultSecrets } from "@/lib/angel-vault.server";
 import { readIntegrations } from "@/lib/system.server";
 
 type DependencyHealth = {
@@ -8,60 +9,67 @@ type DependencyHealth = {
   reachable: boolean | null;
   source?: string | null;
   reason?: string | null;
+  latencyMs?: number | null;
 };
 
-async function withTimeout<T>(work: (signal: AbortSignal) => Promise<T>, timeoutMs = 4500): Promise<T> {
+async function timed<T>(work: (signal: AbortSignal) => Promise<T>, timeoutMs = 2800): Promise<{ value: T; latencyMs: number }> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try { return await work(controller.signal); } finally { clearTimeout(timer); }
+  const started = performance.now();
+  try {
+    const value = await work(controller.signal);
+    return { value, latencyMs: Math.round((performance.now() - started) * 10) / 10 };
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 async function checkOpenAI(): Promise<DependencyHealth> {
   const credential = await getOpenAiCredential();
-  if (!credential) return { configured: false, reachable: null, reason: "credential_missing" };
+  if (!credential) return { configured: false, reachable: null, reason: "credential_missing", latencyMs: null };
   try {
-    const response = await withTimeout((signal) => fetch("https://api.openai.com/v1/models", {
+    const { value: response, latencyMs } = await timed((signal) => fetch("https://api.openai.com/v1/models", {
       signal,
       headers: { Authorization: `Bearer ${credential.value}` },
     }));
-    return { configured: true, reachable: response.ok, source: credential.source, reason: response.ok ? null : `http_${response.status}` };
+    return { configured: true, reachable: response.ok, source: credential.source, latencyMs, reason: response.ok ? null : `http_${response.status}` };
   } catch (error) {
-    return { configured: true, reachable: false, source: credential.source, reason: error instanceof Error ? error.name : "request_failed" };
+    return { configured: true, reachable: false, source: credential.source, latencyMs: null, reason: error instanceof Error ? error.name : "request_failed" };
   }
 }
 
 async function checkTmdb(): Promise<DependencyHealth> {
   const credential = await getTmdbCredential();
-  if (!credential) return { configured: false, reachable: null, reason: "credential_missing" };
+  if (!credential) return { configured: false, reachable: null, reason: "credential_missing", latencyMs: null };
   try {
     const url = credential.kind === "api-key"
       ? `https://api.themoviedb.org/3/configuration?api_key=${encodeURIComponent(credential.value)}`
       : "https://api.themoviedb.org/3/configuration";
-    const response = await withTimeout((signal) => fetch(url, {
+    const { value: response, latencyMs } = await timed((signal) => fetch(url, {
       signal,
-      headers: credential.kind === "bearer" ? { Authorization: `Bearer ${credential.value}` } : undefined,
+      headers: credential.kind === "bearer" ? { Authorization: `Bearer ${credential.value}`, Accept: "application/json" } : { Accept: "application/json" },
     }));
-    return { configured: true, reachable: response.ok, source: credential.source, reason: response.ok ? null : `http_${response.status}` };
+    return { configured: true, reachable: response.ok, source: credential.source, latencyMs, reason: response.ok ? null : `http_${response.status}` };
   } catch (error) {
-    return { configured: true, reachable: false, source: credential.source, reason: error instanceof Error ? error.name : "request_failed" };
+    return { configured: true, reachable: false, source: credential.source, latencyMs: null, reason: error instanceof Error ? error.name : "request_failed" };
   }
 }
 
 async function checkSupabaseAuth(): Promise<DependencyHealth> {
-  const runtimeUrl = process.env.SUPABASE_URL?.trim();
-  const runtimeKey = process.env.SUPABASE_PUBLISHABLE_KEY?.trim();
-  const url = runtimeUrl || import.meta.env.VITE_SUPABASE_URL?.trim();
-  const publishableKey = runtimeKey || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
-  const source = runtimeUrl && runtimeKey ? "runtime-env" : "bundled-public-config";
-  if (!url || !publishableKey) return { configured: false, reachable: null, source, reason: "public_config_missing" };
+  const url = getVaultSecretSync("SUPABASE_URL") || import.meta.env.VITE_SUPABASE_URL?.trim();
+  const publishableKey = getVaultSecretSync("SUPABASE_PUBLISHABLE_KEY") || getVaultSecretSync("SUPABASE_ANON_KEY") || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
+  const source = getVaultSecretSync("SUPABASE_URL")
+    ? `${getVaultSecretSource("SUPABASE_URL")}+${getVaultSecretSource("SUPABASE_PUBLISHABLE_KEY")}`
+    : "bundled-public-config";
+  if (!url || !publishableKey) return { configured: false, reachable: null, source, reason: "public_config_missing", latencyMs: null };
   try {
-    const response = await withTimeout((signal) => fetch(`${url.replace(/\/$/, "")}/auth/v1/settings`, {
+    const { value: response, latencyMs } = await timed((signal) => fetch(`${url.replace(/\/$/, "")}/auth/v1/settings`, {
       signal,
       headers: { apikey: publishableKey },
     }));
-    return { configured: true, reachable: response.ok, source, reason: response.ok ? null : `http_${response.status}` };
+    return { configured: true, reachable: response.ok, source, latencyMs, reason: response.ok ? null : `http_${response.status}` };
   } catch (error) {
-    return { configured: true, reachable: false, source, reason: error instanceof Error ? error.name : "request_failed" };
+    return { configured: true, reachable: false, source, latencyMs: null, reason: error instanceof Error ? error.name : "request_failed" };
   }
 }
 
@@ -71,7 +79,17 @@ export const Route = createFileRoute("/api/angel-os/health")({
       GET: async () => {
         const now = new Date().toISOString();
         const node = angelNodeGateway.select();
-        const gmail = readIntegrations().find((item) => item.key === "google");
+        const prewarm = warmVaultSecrets([
+          "SUPABASE_URL",
+          "SUPABASE_PUBLISHABLE_KEY",
+          "SUPABASE_SERVICE_ROLE_KEY",
+          "OPENAI_API_KEY",
+          "TMDB_READ_TOKEN",
+          "TMDB_API_KEY",
+          "GOOGLE_CLIENT_ID",
+          "GOOGLE_CLIENT_SECRET",
+        ]);
+        const google = readIntegrations().find((item) => item.key === "google");
         const [openai, tmdb, supabaseAuth] = await Promise.all([checkOpenAI(), checkTmdb(), checkSupabaseAuth()]);
         return Response.json(
           {
@@ -80,6 +98,12 @@ export const Route = createFileRoute("/api/angel-os/health")({
             healthy: openai.reachable !== false && tmdb.reachable !== false && supabaseAuth.reachable !== false,
             checkedAt: now,
             release: process.env["VERCEL_GIT_COMMIT_SHA"] ?? process.env["GITHUB_SHA"] ?? null,
+            vault: {
+              configured: Boolean(process.env.ANGEL_OS_VAULT_KEY?.trim()),
+              warmupMs: prewarm.durationMs,
+              loadedCount: prewarm.loaded.length,
+              missing: prewarm.missing,
+            },
             runtime: {
               memoryDocuments: angelMemoryIndex.stats().total,
               recentEvents: angelEventLog.list({ limit: 20 }).length,
@@ -89,11 +113,12 @@ export const Route = createFileRoute("/api/angel-os/health")({
               openai,
               tmdb,
               supabaseAuth,
-              gmail: {
-                configured: gmail?.status === "ready",
+              google: {
+                configured: google?.status === "ready",
                 reachable: null,
-                source: "oauth-server-config",
-                reason: gmail?.status === "ready" ? "oauth_account_checked_in_admin" : `missing:${gmail?.missing.join(",") || "configuration"}`,
+                source: "oauth-google-general",
+                reason: google?.status === "ready" ? "oauth_account_tested_after_connection" : `missing:${google?.missing.join(",") || "configuration"}`,
+                latencyMs: null,
               } satisfies DependencyHealth,
             },
             angelOsIaRequired: false,
