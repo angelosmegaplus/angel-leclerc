@@ -1,10 +1,8 @@
-import { getVaultSecretSync } from "./angel-vault.server";
-
 export type CredentialCandidate = {
   value: string;
   name: string;
   slot: number;
-  source: "env" | "angel-vault";
+  source: "env";
 };
 
 export type CredentialPairCandidate = {
@@ -25,10 +23,8 @@ function variants(base: string, slots = 5) {
 
 function read(name: string): CredentialCandidate | null {
   const env = process.env[name]?.trim();
-  if (env) return { value: env, name, slot: slotFromName(name), source: "env" };
-  const vault = getVaultSecretSync(name)?.trim();
-  if (vault) return { value: vault, name, slot: slotFromName(name), source: "angel-vault" };
-  return null;
+  if (!env) return null;
+  return { value: env, name, slot: slotFromName(name), source: "env" };
 }
 
 function slotFromName(name: string) {
