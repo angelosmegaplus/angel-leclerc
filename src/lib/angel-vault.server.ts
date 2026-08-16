@@ -1,5 +1,5 @@
-import { createDecipheriv } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { createDecipheriv, createHmac } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 type VaultEntry = {
@@ -17,9 +17,9 @@ type VaultFile = {
 
 let cache: VaultFile | null = null;
 
-async function loadVault(): Promise<VaultFile> {
+function loadVaultSync(): VaultFile {
   if (cache) return cache;
-  const raw = await readFile(resolve(process.cwd(), "config/angel-os-secrets.enc.json"), "utf8");
+  const raw = readFileSync(resolve(process.cwd(), "config/angel-os-secrets.enc.json"), "utf8");
   cache = JSON.parse(raw) as VaultFile;
   return cache;
 }
@@ -32,9 +32,16 @@ function masterKey(): Buffer {
   return key;
 }
 
-export async function getVaultSecret(name: string): Promise<string | undefined> {
-  if (process.env[name]) return process.env[name];
-  const vault = await loadVault();
+/**
+ * Retourne un secret depuis l'environnement puis, en repli, depuis Angel Vault.
+ * Cette variante synchrone permet aux clients serveur initialisés au chargement
+ * (Supabase/OAuth notamment) de profiter du coffre sans exposer les valeurs.
+ */
+export function getVaultSecretSync(name: string): string | undefined {
+  const envValue = process.env[name]?.trim();
+  if (envValue) return envValue;
+
+  const vault = loadVaultSync();
   const entry = vault.entries[name];
   if (!entry) return undefined;
 
@@ -48,14 +55,38 @@ export async function getVaultSecret(name: string): Promise<string | undefined> 
   return Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString("utf8");
 }
 
+export async function getVaultSecret(name: string): Promise<string | undefined> {
+  return getVaultSecretSync(name);
+}
+
+export function hasVaultSecretSync(name: string): boolean {
+  if (process.env[name]?.trim()) return true;
+  if (!process.env.ANGEL_OS_VAULT_KEY?.trim()) return false;
+  try {
+    return Boolean(loadVaultSync().entries[name]);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Sous-clé déterministe dérivée de la clé maître. Cela évite de multiplier les
+ * secrets racine dans Vercel tout en séparant cryptographiquement les usages.
+ */
+export function deriveVaultKeySync(purpose: string): Buffer {
+  return createHmac("sha256", masterKey())
+    .update(`angel-os:derived:${purpose}:v1`, "utf8")
+    .digest();
+}
+
 export async function requireVaultSecret(name: string): Promise<string> {
-  const value = await getVaultSecret(name);
+  const value = getVaultSecretSync(name);
   if (!value) throw new Error(`Secret ${name} introuvable dans l'environnement ou Angel Vault.`);
   return value;
 }
 
 export async function getVaultStatus() {
-  const vault = await loadVault();
+  const vault = loadVaultSync();
   return {
     configured: Boolean(process.env.ANGEL_OS_VAULT_KEY),
     cipher: vault.cipher,
