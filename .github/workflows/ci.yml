@@ -72,6 +72,17 @@ jobs:
         run: |
           test -d dist || test -d .output || { echo "::error::Aucun bundle de production généré"; exit 1; }
 
+      - name: Preserve verified production artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: angel-os-build-${{ github.sha }}
+          path: |
+            dist
+            .output
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 6
+
       - name: CI summary
         if: always()
         run: |
@@ -81,3 +92,4 @@ jobs:
           echo "- Build production + génération des types de routes bloquants" >> "$GITHUB_STEP_SUMMARY"
           echo "- TypeScript après génération TanStack bloquant" >> "$GITHUB_STEP_SUMMARY"
           echo "- Hygiène des secrets sensibles bloquante" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Artefact exact du SHA conservé 7 jours" >> "$GITHUB_STEP_SUMMARY"
