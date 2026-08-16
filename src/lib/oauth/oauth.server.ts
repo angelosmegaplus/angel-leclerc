@@ -1,6 +1,12 @@
 import { createCipheriv, createDecipheriv, createHmac, randomBytes, createHash, timingSafeEqual } from "node:crypto";
 import { PROVIDERS, type ProviderConfig, type ProviderId } from "./providers";
 import { deriveVaultKeySync, getVaultSecretSync } from "../angel-vault.server";
+import {
+  getCredentialPairPoolSync,
+  markCredentialHealthy,
+  quarantineCredential,
+  type CredentialPairCandidate,
+} from "../credential-pool.server";
 
 export type TokenPayload = {
   access_token: string;
@@ -8,10 +14,10 @@ export type TokenPayload = {
   token_type?: string;
   scope?: string;
   code_verifier?: string;
+  client_slot?: number;
 };
 
 export type ConnectionStatus = "connected" | "reconnect_required" | "disconnected";
-
 export type ConnectionInfo = {
   provider: ProviderId;
   accountLabel: string | null;
@@ -21,18 +27,12 @@ export type ConnectionInfo = {
   lastSyncAt: string | null;
 };
 
-/* ---------------------------------------------------------------- crypto */
-
 function keyFrom(secretName: string): Buffer {
   const raw = getVaultSecretSync(secretName);
   if (raw) return createHash("sha256").update(raw).digest();
-
-  // Les deux secrets internes OAuth peuvent être dérivés de la clé maître du
-  // coffre. Ils restent distincts et ne sont jamais persistés dans GitHub.
   if (secretName === "OAUTH_TOKEN_SECRET" || secretName === "OAUTH_STATE_SECRET") {
     return deriveVaultKeySync(secretName);
   }
-
   throw new Error(`${secretName} is not configured`);
 }
 
@@ -57,13 +57,8 @@ export function decryptTokens(stored: string): TokenPayload {
   return JSON.parse(out) as TokenPayload;
 }
 
-/* ----------------------------------------------------------- CSRF state */
-
-type StatePayload = { p: ProviderId; u: string; n: string; exp: number; v?: string };
-
-function b64url(input: Buffer | string): string {
-  return Buffer.from(input).toString("base64url");
-}
+type StatePayload = { p: ProviderId; u: string; n: string; exp: number; v?: string; c?: number };
+function b64url(input: Buffer | string): string { return Buffer.from(input).toString("base64url"); }
 
 function sealState(payload: StatePayload): string {
   const iv = randomBytes(12);
@@ -76,8 +71,7 @@ function openState(sealed: string): StatePayload {
   const buf = Buffer.from(sealed, "base64url");
   const decipher = createDecipheriv("aes-256-gcm", keyFrom("OAUTH_STATE_SECRET"), buf.subarray(0, 12));
   decipher.setAuthTag(buf.subarray(12, 28));
-  const out = Buffer.concat([decipher.update(buf.subarray(28)), decipher.final()]).toString("utf8");
-  return JSON.parse(out) as StatePayload;
+  return JSON.parse(Buffer.concat([decipher.update(buf.subarray(28)), decipher.final()]).toString("utf8")) as StatePayload;
 }
 
 export function signState(payload: StatePayload): string {
@@ -95,19 +89,28 @@ export function verifyState(state: string): StatePayload | null {
   if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
   try {
     const payload = openState(body);
-    if (payload.exp < Date.now()) return null;
-    return payload;
-  } catch {
-    return null;
-  }
+    return payload.exp < Date.now() ? null : payload;
+  } catch { return null; }
 }
 
-/* ------------------------------------------------------------- helpers */
+function providerPool(config: ProviderConfig) {
+  return getCredentialPairPoolSync(`oauth:${config.id}`, config.clientIdEnv, config.clientSecretEnv, 5);
+}
 
-export function providerCredentials(config: ProviderConfig) {
-  const clientId = getVaultSecretSync(config.clientIdEnv);
-  const clientSecret = getVaultSecretSync(config.clientSecretEnv);
-  return { clientId, clientSecret, configured: Boolean(clientId && clientSecret) };
+function pairFor(config: ProviderConfig, slot?: number): CredentialPairCandidate | null {
+  const pool = providerPool(config);
+  if (!pool.length) return null;
+  return (slot ? pool.find((item) => item.slot === slot) : null) ?? pool[0] ?? null;
+}
+
+export function providerCredentials(config: ProviderConfig, slot?: number) {
+  const pair = pairFor(config, slot);
+  return {
+    clientId: pair?.first.value ?? null,
+    clientSecret: pair?.second.value ?? null,
+    configured: Boolean(pair),
+    slot: pair?.slot ?? null,
+  };
 }
 
 function endpoint(url: string): string {
@@ -118,24 +121,23 @@ export function redirectUri(origin: string, provider: ProviderId): string {
   return `${origin}/oauth/${provider}/callback`;
 }
 
-/** Builds the provider authorization URL. Throws when credentials are missing. */
 export function buildAuthorizeUrl(provider: ProviderId, origin: string, userId: string) {
   const config = PROVIDERS[provider];
-  const { clientId, configured } = providerCredentials(config);
-  if (!configured || !clientId) {
-    throw new Error(`Activation serveur requise pour ${config.name}.`);
-  }
+  const pair = pairFor(config);
+  if (!pair) throw new Error(`Activation serveur requise pour ${config.name}.`);
+
   const verifier = config.usePkce ? b64url(randomBytes(48)) : undefined;
   const state = signState({
     p: provider,
     u: userId,
     n: b64url(randomBytes(12)),
     exp: Date.now() + 10 * 60 * 1000,
+    c: pair.slot,
     ...(verifier ? { v: verifier } : {}),
   });
 
   const url = new URL(endpoint(config.authorizeUrl));
-  url.searchParams.set("client_id", clientId);
+  url.searchParams.set("client_id", pair.first.value);
   url.searchParams.set("redirect_uri", redirectUri(origin, provider));
   url.searchParams.set("response_type", "code");
   url.searchParams.set("scope", config.scopes.join(" "));
@@ -156,55 +158,67 @@ async function postToken(config: ProviderConfig, body: URLSearchParams) {
   });
   const text = await response.text();
   let json: Record<string, unknown>;
-  try {
-    json = JSON.parse(text) as Record<string, unknown>;
-  } catch {
-    json = Object.fromEntries(new URLSearchParams(text));
-  }
+  try { json = JSON.parse(text) as Record<string, unknown>; }
+  catch { json = Object.fromEntries(new URLSearchParams(text)); }
   if (!response.ok || typeof json["access_token"] !== "string") {
     throw new Error(`Échec de l'échange de jeton (${config.name}) : ${text.slice(0, 200)}`);
   }
   return json;
 }
 
-export async function exchangeCode(
-  provider: ProviderId,
-  code: string,
-  origin: string,
-  codeVerifier?: string,
-) {
+export async function exchangeCode(provider: ProviderId, code: string, origin: string, codeVerifier?: string, slot?: number) {
   const config = PROVIDERS[provider];
-  const { clientId, clientSecret } = providerCredentials(config);
+  const pair = pairFor(config, slot);
+  if (!pair) throw new Error(`Identifiants OAuth indisponibles pour ${config.name}.`);
   const body = new URLSearchParams({
     grant_type: "authorization_code",
     code,
     redirect_uri: redirectUri(origin, provider),
-    client_id: clientId ?? "",
-    client_secret: clientSecret ?? "",
+    client_id: pair.first.value,
+    client_secret: pair.second.value,
   });
   if (codeVerifier) body.set("code_verifier", codeVerifier);
-  return postToken(config, body);
+  try {
+    const json = await postToken(config, body);
+    markCredentialHealthy(`oauth:${config.id}`, pair);
+    json["_angel_client_slot"] = pair.slot;
+    return json;
+  } catch (error) {
+    quarantineCredential(pair);
+    throw error;
+  }
 }
 
-export async function refreshAccessToken(provider: ProviderId, refreshToken: string) {
+export async function refreshAccessToken(provider: ProviderId, refreshToken: string, slot?: number) {
   const config = PROVIDERS[provider];
-  const { clientId, clientSecret } = providerCredentials(config);
-  return postToken(
-    config,
-    new URLSearchParams({
-      grant_type: "refresh_token",
-      refresh_token: refreshToken,
-      client_id: clientId ?? "",
-      client_secret: clientSecret ?? "",
-    }),
-  );
+  const requested = pairFor(config, slot);
+  const pool = providerPool(config);
+  const ordered = requested
+    ? [requested, ...pool.filter((item) => item.slot !== requested.slot)]
+    : pool;
+  let lastError: unknown = null;
+
+  for (const pair of ordered) {
+    try {
+      const json = await postToken(config, new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
+        client_id: pair.first.value,
+        client_secret: pair.second.value,
+      }));
+      markCredentialHealthy(`oauth:${config.id}`, pair);
+      json["_angel_client_slot"] = pair.slot;
+      return json;
+    } catch (error) {
+      lastError = error;
+      quarantineCredential(pair);
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error(`Aucun client OAuth valide pour ${config.name}.`);
 }
 
 function pick(source: unknown, path: string): string | undefined {
-  const value = path.split(".").reduce<unknown>((acc, key) => {
-    if (acc && typeof acc === "object") return (acc as Record<string, unknown>)[key];
-    return undefined;
-  }, source);
+  const value = path.split(".").reduce<unknown>((acc, key) => acc && typeof acc === "object" ? (acc as Record<string, unknown>)[key] : undefined, source);
   return typeof value === "string" ? value : undefined;
 }
 
@@ -212,22 +226,16 @@ export async function fetchAccountLabel(provider: ProviderId, accessToken: strin
   const config = PROVIDERS[provider];
   if (!config.identity) return null;
   try {
-    const response = await fetch(config.identity.url, {
-      headers: { Authorization: `Bearer ${accessToken}`, accept: "application/json" },
-    });
+    const response = await fetch(config.identity.url, { headers: { Authorization: `Bearer ${accessToken}`, accept: "application/json" } });
     if (!response.ok) return null;
     const json = (await response.json()) as unknown;
     for (const field of config.identity.field) {
       const value = pick(json, field);
       if (value) return value;
     }
-  } catch {
-    /* label is best-effort only */
-  }
+  } catch { /* best effort */ }
   return null;
 }
-
-/* -------------------------------------------------------------- storage */
 
 async function admin() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -243,27 +251,23 @@ export async function saveConnection(params: {
   expiresAt: string | null;
 }) {
   const db = await admin();
-  const { error } = await db.from("oauth_connections").upsert(
-    {
-      provider: params.provider,
-      user_id: params.userId,
-      ...(params.accountLabel ? { account_label: params.accountLabel } : {}),
-      token_ciphertext: encryptTokens(params.tokens),
-      scopes: params.scopes,
-      status: "connected",
-      expires_at: params.expiresAt,
-      last_sync_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    } as never,
-    { onConflict: "user_id,provider" },
-  );
+  const { error } = await db.from("oauth_connections").upsert({
+    provider: params.provider,
+    user_id: params.userId,
+    ...(params.accountLabel ? { account_label: params.accountLabel } : {}),
+    token_ciphertext: encryptTokens(params.tokens),
+    scopes: params.scopes,
+    status: "connected",
+    expires_at: params.expiresAt,
+    last_sync_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  } as never, { onConflict: "user_id,provider" });
   if (error) throw error;
 }
 
 export async function listConnections(userId: string): Promise<ConnectionInfo[]> {
   const db = await admin();
-  const { data, error } = await db
-    .from("oauth_connections")
+  const { data, error } = await db.from("oauth_connections")
     .select("provider, account_label, scopes, status, expires_at, last_sync_at")
     .eq("user_id", userId);
   if (error) throw error;
@@ -279,35 +283,22 @@ export async function listConnections(userId: string): Promise<ConnectionInfo[]>
 
 export async function deleteConnection(userId: string, provider: ProviderId) {
   const db = await admin();
-  const { error } = await db
-    .from("oauth_connections")
-    .delete()
-    .eq("user_id", userId)
-    .eq("provider", provider);
+  const { error } = await db.from("oauth_connections").delete().eq("user_id", userId).eq("provider", provider);
   if (error) throw error;
 }
 
 async function markReconnectRequired(userId: string, provider: ProviderId) {
   const db = await admin();
-  await db
-    .from("oauth_connections")
+  await db.from("oauth_connections")
     .update({ status: "reconnect_required", updated_at: new Date().toISOString() } as never)
-    .eq("user_id", userId)
-    .eq("provider", provider);
+    .eq("user_id", userId).eq("provider", provider);
 }
 
-/**
- * Returns a valid access token for the provider, refreshing it when needed.
- * Never expose the result to the browser.
- */
 export async function getAccessToken(userId: string, provider: ProviderId): Promise<string | null> {
   const db = await admin();
-  const { data } = await db
-    .from("oauth_connections")
+  const { data } = await db.from("oauth_connections")
     .select("token_ciphertext, expires_at, scopes")
-    .eq("user_id", userId)
-    .eq("provider", provider)
-    .maybeSingle();
+    .eq("user_id", userId).eq("provider", provider).maybeSingle();
   if (!data) return null;
 
   const row = data as Record<string, unknown>;
@@ -320,10 +311,12 @@ export async function getAccessToken(userId: string, provider: ProviderId): Prom
     await markReconnectRequired(userId, provider);
     return null;
   }
+
   try {
-    const refreshed = await refreshAccessToken(provider, tokens.refresh_token);
+    const refreshed = await refreshAccessToken(provider, tokens.refresh_token, tokens.client_slot);
     const accessToken = refreshed["access_token"] as string;
     const expiresIn = Number(refreshed["expires_in"] ?? 0);
+    const clientSlot = Number(refreshed["_angel_client_slot"] ?? tokens.client_slot ?? 1);
     await saveConnection({
       provider,
       userId,
@@ -332,6 +325,7 @@ export async function getAccessToken(userId: string, provider: ProviderId): Prom
         refresh_token: (refreshed["refresh_token"] as string) ?? tokens.refresh_token,
         token_type: refreshed["token_type"] as string | undefined,
         scope: refreshed["scope"] as string | undefined,
+        client_slot: clientSlot,
       },
       scopes: (row["scopes"] as string[] | null) ?? [],
       accountLabel: null,
