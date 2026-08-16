@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { angelEventLog, angelMemoryIndex, angelNodeGateway } from "@/lib/angel-runtime.server";
-import { getOpenAiCredential, getTmdbCredential } from "@/lib/vercel-connect-credentials.server";
+import { getTmdbCredential, getOpenAiCredentials } from "@/lib/vercel-connect-credentials.server";
+import { probeOpenAiHealth } from "@/lib/ai-gateway.server";
 import { readIntegrations } from "@/lib/system.server";
 
 type DependencyHealth = {
@@ -34,17 +35,19 @@ function projectRef(url: string | undefined | null) {
 }
 
 async function checkOpenAI(): Promise<DependencyHealth> {
-  const credential = await getOpenAiCredential();
-  if (!credential) return { configured: false, reachable: false, source: "env:OPENAI_API_KEY", reason: "credential_missing", latencyMs: null };
-  try {
-    const { value: response, latencyMs } = await timed((signal) => fetch("https://api.openai.com/v1/models", {
-      signal,
-      headers: { Authorization: `Bearer ${credential.value}` },
-    }));
-    return { configured: true, reachable: response.ok, source: credential.source, latencyMs, reason: response.ok ? null : `http_${response.status}` };
-  } catch (error) {
-    return { configured: true, reachable: false, source: credential.source, latencyMs: null, reason: error instanceof Error ? error.name : "request_failed" };
-  }
+  const configuredCredentials = await getOpenAiCredentials();
+  const gatewayConfigured = Boolean(process.env.AI_GATEWAY_API_KEY?.trim());
+  const configured = configuredCredentials.length > 0 || gatewayConfigured;
+  if (!configured) return { configured: false, reachable: false, source: null, reason: "credential_missing", latencyMs: null };
+  const started = performance.now();
+  const probe = await probeOpenAiHealth(true);
+  return {
+    configured: true,
+    reachable: probe.healthy,
+    source: probe.source,
+    reason: probe.healthy ? null : probe.detail || "provider_unreachable",
+    latencyMs: Math.round((performance.now() - started) * 10) / 10,
+  };
 }
 
 async function checkTmdb(): Promise<DependencyHealth> {
@@ -95,7 +98,6 @@ async function checkSupabaseServer(): Promise<DependencyHealth> {
   const { url } = publicSupabaseConfig();
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || process.env.SUPABASE_SECRET_KEY?.trim();
   if (!url || !serviceKey) return { configured: false, reachable: false, source: "vercel-environment", reason: "server_config_missing", latencyMs: null };
-
   const headers = new Headers({ apikey: serviceKey, Accept: "application/json" });
   if (!serviceKey.startsWith("sb_secret_")) headers.set("Authorization", `Bearer ${serviceKey}`);
   try {
@@ -103,13 +105,7 @@ async function checkSupabaseServer(): Promise<DependencyHealth> {
       signal,
       headers,
     }));
-    return {
-      configured: true,
-      reachable: response.ok,
-      source: "vercel-environment",
-      latencyMs,
-      reason: response.ok ? null : `user_roles_http_${response.status}`,
-    };
+    return { configured: true, reachable: response.ok, source: "vercel-environment", latencyMs, reason: response.ok ? null : `user_roles_http_${response.status}` };
   } catch (error) {
     return { configured: true, reachable: false, source: "vercel-environment", latencyMs: null, reason: error instanceof Error ? error.name : "request_failed" };
   }
@@ -129,45 +125,35 @@ export const Route = createFileRoute("/api/angel-os/health")({
         ]);
 
         const { serverUrl, buildUrl, url: publicUrl, publishableKey } = publicSupabaseConfig();
-        const tmdbConfigured = Boolean(
-          process.env.TMDB_READ_TOKEN?.trim()
-          || process.env.TMDB_READ_ACCESS_TOKEN?.trim()
-          || process.env.TMDB_API_KEY?.trim()
-          || import.meta.env.VITE_TMDB_API_KEY?.trim(),
-        );
         const serverProjectRef = projectRef(serverUrl);
         const buildProjectRef = projectRef(buildUrl);
         const supabaseProjectAligned = !serverProjectRef || !buildProjectRef || serverProjectRef === buildProjectRef;
         const supabasePublicConfigured = Boolean(publicUrl && publishableKey);
+        const googleConfigured = google?.status === "ready";
         const checks = {
-          OPENAI_API_KEY: Boolean(process.env.OPENAI_API_KEY?.trim()),
-          TMDB: tmdbConfigured,
+          ANGEL_AI_PROVIDER: openai.configured,
+          TMDB: tmdb.configured,
           SUPABASE_PUBLIC: supabasePublicConfigured,
           SUPABASE_SERVICE_ROLE_KEY: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || process.env.SUPABASE_SECRET_KEY?.trim()),
           SUPABASE_PROJECT_ALIGNED: supabaseProjectAligned,
           GOOGLE_CLIENT_ID: Boolean(process.env.GOOGLE_CLIENT_ID?.trim()),
           GOOGLE_CLIENT_SECRET: Boolean(process.env.GOOGLE_CLIENT_SECRET?.trim()),
+          OAUTH_STATE_SECRET: Boolean(process.env.OAUTH_STATE_SECRET?.trim() || process.env.ANGEL_VAULT_MASTER_KEY?.trim()),
+          OAUTH_TOKEN_SECRET: Boolean(process.env.OAUTH_TOKEN_SECRET?.trim() || process.env.ANGEL_VAULT_MASTER_KEY?.trim()),
         };
         const missingEnvironment = Object.entries(checks).filter(([, present]) => !present).map(([name]) => name);
-        const googleConfigured = google?.status === "ready";
-
-        // `healthy` represents the critical AI runtime used by publication gates and the
-        // conversation surfaces. Optional integrations must never make the core AI look
-        // unavailable: TMDB, Google OAuth and the Supabase service role are reported as
-        // degraded dependencies instead. Public Supabase auth remains critical because
-        // the private Angel OS IA surface depends on authenticated sessions.
         const criticalMissing = [
-          !checks.OPENAI_API_KEY ? "OPENAI_API_KEY" : null,
+          !checks.ANGEL_AI_PROVIDER ? "ANGEL_AI_PROVIDER" : null,
           !checks.SUPABASE_PUBLIC ? "SUPABASE_PUBLIC" : null,
           !checks.SUPABASE_PROJECT_ALIGNED ? "SUPABASE_PROJECT_ALIGNED" : null,
         ].filter((value): value is string => Boolean(value));
-        const healthy = criticalMissing.length === 0
-          && openai.reachable === true
-          && supabaseAuth.reachable === true;
+        const healthy = criticalMissing.length === 0 && openai.reachable === true && supabaseAuth.reachable === true;
         const degradedReasons = [
           tmdb.reachable !== true ? `tmdb:${tmdb.reason || "unreachable"}` : null,
           supabaseServer.reachable !== true ? `supabaseServer:${supabaseServer.reason || "unreachable"}` : null,
           !googleConfigured ? `google:${google?.missing.join(",") || "configuration"}` : null,
+          !checks.OAUTH_STATE_SECRET ? "oauth:state_secret_missing" : null,
+          !checks.OAUTH_TOKEN_SECRET ? "oauth:token_secret_missing" : null,
         ].filter((value): value is string => Boolean(value));
 
         return Response.json({
@@ -181,11 +167,7 @@ export const Route = createFileRoute("/api/angel-os/health")({
             missing: missingEnvironment,
             criticalMissing,
             degradedReasons,
-            supabase: {
-              projectAligned: supabaseProjectAligned,
-              serverProjectRef,
-              buildProjectRef,
-            },
+            supabase: { projectAligned: supabaseProjectAligned, serverProjectRef, buildProjectRef },
           },
           runtime: {
             memoryDocuments: angelMemoryIndex.stats().total,
@@ -199,9 +181,9 @@ export const Route = createFileRoute("/api/angel-os/health")({
             supabaseServer,
             google: {
               configured: googleConfigured,
-              reachable: googleConfigured ? null : false,
+              reachable: null,
               source: "oauth-google",
-              reason: googleConfigured ? "ready_for_oauth" : `missing:${google?.missing.join(",") || "configuration"}`,
+              reason: googleConfigured ? "oauth_client_ready_connection_checked_in_admin" : `missing:${google?.missing.join(",") || "configuration"}`,
               latencyMs: null,
             } satisfies DependencyHealth,
           },
