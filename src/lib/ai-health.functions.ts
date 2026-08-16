@@ -16,6 +16,11 @@ export type AdminAiHealth = {
   providerConfigured: boolean;
   healthy: boolean;
   lastReason: string;
+  circuitOpen: boolean;
+  retryAt: number | null;
+  consecutiveFailures: number;
+  lastFailureAt: number | null;
+  lastSuccessAt: number | null;
 };
 
 export const getAdminAiHealth = createServerFn({ method: "GET" })
@@ -29,5 +34,10 @@ export const getAdminAiHealth = createServerFn({ method: "GET" })
       providerConfigured: status.providerConfigured,
       healthy: status.healthy,
       lastReason: status.lastReason,
+      circuitOpen: status.circuitOpen,
+      retryAt: status.retryAt,
+      consecutiveFailures: status.consecutiveFailures,
+      lastFailureAt: status.lastFailureAt,
+      lastSuccessAt: status.lastSuccessAt,
     };
   });
