@@ -1,11 +1,3 @@
-import { getToken } from "@vercel/connect";
-import { getCookie } from "@tanstack/react-start/server";
-
-const CONNECTORS = {
-  tmdb: "tmdb_api_key/tmdb-angel-os",
-  openai: "api.openai.com/canary-xylophone",
-} as const;
-
 export const TMDB_READ_TOKEN_COOKIE = "angel_tmdb_read_token";
 export const TMDB_API_KEY_COOKIE = "angel_tmdb_api_key";
 export const OPENAI_API_KEY_COOKIE = "angel_openai_api_key";
@@ -38,54 +30,24 @@ function uniqueByValue<T extends { value: string }>(items: T[]) {
   });
 }
 
-async function connectToken(connector: string) {
-  try {
-    const token = await getToken(connector, { subject: { type: "app" } });
-    return typeof token === "string" && token.trim() ? token.trim() : null;
-  } catch (error) {
-    console.warn("[vercel-connect] credential unavailable", { connector, error });
-    return null;
-  }
-}
-
-function requestCookie(name: string) {
-  try {
-    const value = getCookie(name);
-    return typeof value === "string" && value.trim() ? value.trim() : null;
-  } catch {
-    return null;
-  }
-}
-
 function namedSecrets(names: string[]) {
-  const values: Array<{ name: string; value: string; source: "env" }> = [];
+  const values: Array<{ name: string; value: string }> = [];
   for (const name of names) {
-    const env = process.env[name]?.trim();
-    if (env) values.push({ name, value: env, source: "env" });
+    const value = process.env[name]?.trim();
+    if (value) values.push({ name, value });
   }
   return values;
 }
 
 async function openAiCandidates(): Promise<OpenAiCredential[]> {
-  const slots = namedSecrets([
+  return uniqueByValue(namedSecrets([
     "OPENAI_API_KEY",
     "OPENAI_API_KEY_2",
     "OPENAI_API_KEY_3",
     "OPENAI_API_KEY_4",
     "OPENAI_API_KEY_5",
     "OPENAI_SECONDARY_KEY",
-  ]);
-  const out: OpenAiCredential[] = slots.map((item) => ({
-    value: item.value,
-    source: `${item.source}:${item.name}`,
-  }));
-
-  const connected = await connectToken(CONNECTORS.openai);
-  if (connected) out.push({ value: connected, source: "vercel-connect" });
-
-  const browserKey = requestCookie(OPENAI_API_KEY_COOKIE);
-  if (browserKey) out.push({ value: browserKey, source: "admin-site-api-key" });
-  return uniqueByValue(out);
+  ]).map((item) => ({ value: item.value, source: `env:${item.name}` })));
 }
 
 async function tmdbCandidates(): Promise<TmdbCredential[]> {
@@ -104,19 +66,10 @@ async function tmdbCandidates(): Promise<TmdbCredential[]> {
     "TMDB_API_KEY_4",
     "TMDB_API_KEY_5",
   ]);
-  const out: TmdbCredential[] = [
-    ...readSlots.map((item) => ({ value: item.value, source: `${item.source}:${item.name}`, kind: "bearer" as const })),
-    ...apiSlots.map((item) => ({ value: item.value, source: `${item.source}:${item.name}`, kind: "api-key" as const })),
-  ];
-
-  const connected = await connectToken(CONNECTORS.tmdb);
-  if (connected) out.push({ value: connected, source: "vercel-connect-api-key", kind: "api-key" });
-
-  const browserReadToken = requestCookie(TMDB_READ_TOKEN_COOKIE);
-  if (browserReadToken) out.push({ value: browserReadToken, source: "admin-site-read-token", kind: "bearer" });
-  const browserApiKey = requestCookie(TMDB_API_KEY_COOKIE);
-  if (browserApiKey) out.push({ value: browserApiKey, source: "admin-site-api-key", kind: "api-key" });
-  return uniqueByValue(out);
+  return uniqueByValue([
+    ...readSlots.map((item) => ({ value: item.value, source: `env:${item.name}`, kind: "bearer" as const })),
+    ...apiSlots.map((item) => ({ value: item.value, source: `env:${item.name}`, kind: "api-key" as const })),
+  ]);
 }
 
 async function probe(service: PoolService, credential: OpenAiCredential | TmdbCredential): Promise<boolean> {
@@ -204,4 +157,6 @@ export function getAiGatewayCredential() {
   return null;
 }
 
-export const VERCEL_CONNECTOR_IDS = CONNECTORS;
+// Kept only for backwards-compatible imports. Credentials are no longer loaded
+// from Vercel Connect; Vercel Environment Variables are the single source.
+export const VERCEL_CONNECTOR_IDS = { tmdb: "disabled", openai: "disabled" } as const;
