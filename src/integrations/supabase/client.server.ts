@@ -1,54 +1,85 @@
-// Server-side Supabase client with service role key - bypasses RLS.
-// Use this for trusted server operations only.
+// Server-side Supabase client with service-role/secret-key failover.
+// Trusted server operations only.
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { getVaultSecretSync } from '@/lib/angel-vault.server';
+import {
+  getCredentialPoolSync,
+  markCredentialHealthy,
+  quarantineCredential,
+  type CredentialCandidate,
+} from '@/lib/credential-pool.server';
 
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
 }
 
-function createSupabaseFetch(supabaseKey: string): typeof fetch {
-  return (input, init) => {
-    const headers = new Headers(
-      typeof Request !== 'undefined' && input instanceof Request ? input.headers : undefined,
-    );
+function serviceKeyPool() {
+  return getCredentialPoolSync(
+    'supabase-service',
+    ['SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_SECRET_KEY'],
+  );
+}
 
-    if (init?.headers) {
-      new Headers(init.headers).forEach((value, key) => headers.set(key, value));
+function createSupabaseFetch(initial: CredentialCandidate): typeof fetch {
+  let active = initial;
+
+  return async (input, init) => {
+    const pool = serviceKeyPool();
+    const ordered = [active, ...pool.filter((candidate) => candidate.value !== active.value)];
+    let lastResponse: Response | null = null;
+    let lastError: unknown = null;
+
+    for (const candidate of ordered) {
+      const headers = new Headers(
+        typeof Request !== 'undefined' && input instanceof Request ? input.headers : undefined,
+      );
+      if (init?.headers) new Headers(init.headers).forEach((value, key) => headers.set(key, value));
+
+      headers.set('apikey', candidate.value);
+      if (isNewSupabaseApiKey(candidate.value)) headers.delete('Authorization');
+      else headers.set('Authorization', `Bearer ${candidate.value}`);
+
+      try {
+        const response = await fetch(input, { ...init, headers });
+        lastResponse = response;
+        if (response.ok || ![401, 403, 429, 500, 502, 503, 504].includes(response.status)) {
+          active = candidate;
+          markCredentialHealthy('supabase-service', candidate);
+          return response;
+        }
+        quarantineCredential(candidate);
+      } catch (error) {
+        lastError = error;
+        quarantineCredential(candidate);
+      }
     }
 
-    if (isNewSupabaseApiKey(supabaseKey) && headers.get('Authorization') === `Bearer ${supabaseKey}`) {
-      headers.delete('Authorization');
-    }
-
-    headers.set('apikey', supabaseKey);
-    return fetch(input, { ...init, headers });
+    if (lastResponse) return lastResponse;
+    throw lastError instanceof Error ? lastError : new Error('Supabase indisponible après test des clés de secours.');
   };
 }
 
 function createSupabaseAdminClient() {
   const SUPABASE_URL = getVaultSecretSync('SUPABASE_URL');
-  const SUPABASE_SERVICE_ROLE_KEY =
-    getVaultSecretSync('SUPABASE_SERVICE_ROLE_KEY') ?? getVaultSecretSync('SUPABASE_SECRET_KEY');
+  const keys = serviceKeyPool();
+  const first = keys[0];
 
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+  if (!SUPABASE_URL || !first) {
     const missing = [
       ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
-      ...(!SUPABASE_SERVICE_ROLE_KEY ? ['SUPABASE_SERVICE_ROLE_KEY'] : []),
+      ...(!first ? ['SUPABASE_SERVICE_ROLE_KEY'] : []),
     ];
     throw new Error(`Missing Supabase server credential(s): ${missing.join(', ')}. Configure them in the environment or Angel Vault.`);
   }
 
-  return createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-    global: {
-      fetch: createSupabaseFetch(SUPABASE_SERVICE_ROLE_KEY),
-    },
+  return createClient<Database>(SUPABASE_URL, first.value, {
+    global: { fetch: createSupabaseFetch(first) },
     auth: {
       storage: undefined,
       persistSession: false,
       autoRefreshToken: false,
-    }
+    },
   });
 }
 
