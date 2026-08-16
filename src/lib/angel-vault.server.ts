@@ -15,31 +15,40 @@ type VaultFile = {
   entries: Record<string, VaultEntry>;
 };
 
-let cache: VaultFile | null = null;
+let vaultCache: VaultFile | null = null;
+let masterKeyCache: Buffer | null = null;
+const decryptedCache = new Map<string, string>();
+const derivedKeyCache = new Map<string, Buffer>();
 
 function loadVaultSync(): VaultFile {
-  if (cache) return cache;
+  if (vaultCache) return vaultCache;
   const raw = readFileSync(resolve(process.cwd(), "config/angel-os-secrets.enc.json"), "utf8");
-  cache = JSON.parse(raw) as VaultFile;
-  return cache;
+  vaultCache = JSON.parse(raw) as VaultFile;
+  return vaultCache;
 }
 
 function masterKey(): Buffer {
+  if (masterKeyCache) return masterKeyCache;
   const encoded = process.env.ANGEL_OS_VAULT_KEY?.trim();
   if (!encoded) throw new Error("ANGEL_OS_VAULT_KEY manquante.");
   const key = Buffer.from(encoded, "base64");
   if (key.length !== 32) throw new Error("ANGEL_OS_VAULT_KEY doit contenir exactement 32 octets en base64.");
+  masterKeyCache = key;
   return key;
 }
 
 /**
- * Retourne un secret depuis l'environnement puis, en repli, depuis Angel Vault.
- * Cette variante synchrone permet aux clients serveur initialisés au chargement
- * (Supabase/OAuth notamment) de profiter du coffre sans exposer les valeurs.
+ * Résolution serveur ultra-courte :
+ * 1. variable d'environnement directe ;
+ * 2. secret déjà déchiffré en mémoire ;
+ * 3. déchiffrement AES-256-GCM une seule fois par instance serveur.
  */
 export function getVaultSecretSync(name: string): string | undefined {
   const envValue = process.env[name]?.trim();
   if (envValue) return envValue;
+
+  const cached = decryptedCache.get(name);
+  if (cached) return cached;
 
   const vault = loadVaultSync();
   const entry = vault.entries[name];
@@ -52,7 +61,9 @@ export function getVaultSecretSync(name: string): string | undefined {
   const decipher = createDecipheriv("aes-256-gcm", masterKey(), Buffer.from(entry.nonce, "base64"));
   decipher.setAAD(Buffer.from(entry.aad, "utf8"));
   decipher.setAuthTag(tag);
-  return Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString("utf8");
+  const value = Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString("utf8");
+  decryptedCache.set(name, value);
+  return value;
 }
 
 export async function getVaultSecret(name: string): Promise<string | undefined> {
@@ -60,7 +71,7 @@ export async function getVaultSecret(name: string): Promise<string | undefined> 
 }
 
 export function hasVaultSecretSync(name: string): boolean {
-  if (process.env[name]?.trim()) return true;
+  if (process.env[name]?.trim() || decryptedCache.has(name)) return true;
   if (!process.env.ANGEL_OS_VAULT_KEY?.trim()) return false;
   try {
     return Boolean(loadVaultSync().entries[name]);
@@ -69,20 +80,42 @@ export function hasVaultSecretSync(name: string): boolean {
   }
 }
 
-/**
- * Sous-clé déterministe dérivée de la clé maître. Cela évite de multiplier les
- * secrets racine dans Vercel tout en séparant cryptographiquement les usages.
- */
+export function getVaultSecretSource(name: string): "env" | "vault" | "missing" {
+  if (process.env[name]?.trim()) return "env";
+  if (hasVaultSecretSync(name)) return "vault";
+  return "missing";
+}
+
+/** Sous-clés séparées, calculées une seule fois par instance serveur. */
 export function deriveVaultKeySync(purpose: string): Buffer {
-  return createHmac("sha256", masterKey())
+  const cached = derivedKeyCache.get(purpose);
+  if (cached) return cached;
+  const key = createHmac("sha256", masterKey())
     .update(`angel-os:derived:${purpose}:v1`, "utf8")
     .digest();
+  derivedKeyCache.set(purpose, key);
+  return key;
 }
 
 export async function requireVaultSecret(name: string): Promise<string> {
   const value = getVaultSecretSync(name);
   if (!value) throw new Error(`Secret ${name} introuvable dans l'environnement ou Angel Vault.`);
   return value;
+}
+
+export function warmVaultSecrets(names: string[]): { loaded: string[]; missing: string[]; durationMs: number } {
+  const started = performance.now();
+  const loaded: string[] = [];
+  const missing: string[] = [];
+  for (const name of names) {
+    try {
+      if (getVaultSecretSync(name)) loaded.push(name);
+      else missing.push(name);
+    } catch {
+      missing.push(name);
+    }
+  }
+  return { loaded, missing, durationMs: Math.round((performance.now() - started) * 100) / 100 };
 }
 
 export async function getVaultStatus() {
@@ -92,5 +125,6 @@ export async function getVaultStatus() {
     cipher: vault.cipher,
     version: vault.version,
     entries: Object.keys(vault.entries),
+    cachedSecrets: decryptedCache.size,
   };
 }
