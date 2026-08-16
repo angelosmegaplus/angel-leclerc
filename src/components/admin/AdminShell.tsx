@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Bell, Grid2X2, X, type LucideIcon } from "lucide-react";
-import { NewsPanel } from "@/components/admin/NewsPanel";
 import { PixelWidgets } from "@/components/admin/PixelWidgets";
 import { AngelCommandCenter } from "@/components/admin/AngelCommandCenter";
 import { AINotificationMonitor } from "@/components/admin/AINotificationMonitor";
@@ -17,19 +16,47 @@ export type AdminNavItem = {
 type CompactDefinition = {
   key: string;
   label: string;
+  description: string;
   source: string;
   children: string[];
 };
 
 const COMPACT_NAV: CompactDefinition[] = [
-  { key: "dashboard", label: "Accueil", source: "dashboard", children: ["dashboard"] },
-  { key: "mail", label: "Mail", source: "boite-mail", children: ["boite-mail", "messages"] },
-  { key: "agenda", label: "Agenda", source: "agenda", children: ["agenda"] },
-  { key: "fichiers", label: "Fichiers", source: "fichiers", children: ["fichiers"] },
-  { key: "studio", label: "Studio", source: "articles", children: ["articles", "studio", "projets", "contenus", "boutique"] },
-  { key: "candidatures", label: "Candidatures", source: "candidatures", children: ["candidatures"] },
-  { key: "communaute", label: "Communauté", source: "abonnes", children: ["abonnes", "avis", "stats"] },
-  { key: "parametres", label: "Paramètres", source: "connexions", children: ["connexions", "notifications", "automatisation", "activite"] },
+  {
+    key: "dashboard",
+    label: "Accueil",
+    description: "Vue d'ensemble et priorités",
+    source: "dashboard",
+    children: ["dashboard"],
+  },
+  {
+    key: "travail",
+    label: "Travail",
+    description: "Candidatures, projets, agenda et échanges",
+    source: "candidatures",
+    children: ["candidatures", "projets", "agenda", "messages", "boite-mail"],
+  },
+  {
+    key: "studio",
+    label: "Studio",
+    description: "CMS, articles, médias, fichiers et services",
+    source: "articles",
+    children: ["articles", "studio", "contenus", "fichiers", "boutique"],
+  },
+  {
+    key: "pilotage",
+    label: "Pilotage IA",
+    description: "ChatGPT, automatisations et activité technique",
+    source: "angel-ai",
+    children: ["angel-ai", "automatisation", "activite"],
+  },
+  {
+    key: "systeme",
+    label: "Système",
+    description: "Connexions, statistiques, notifications et communauté",
+    source: "connexions",
+    children: ["connexions", "stats", "notifications", "abonnes", "avis"],
+  },
 ];
 
 export function AdminShell({
@@ -64,7 +91,9 @@ export function AdminShell({
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [open]);
 
   useEffect(() => {
@@ -98,7 +127,11 @@ export function AdminShell({
     return COMPACT_NAV.map((definition) => {
       const source = items.find((item) => item.key === definition.source) ?? items[0];
       const badges = definition.children.map((key) => items.find((item) => item.key === key)?.badge ?? 0);
-      return { ...definition, icon: source?.icon, badge: badges.reduce((sum, value) => sum + value, 0) };
+      return {
+        ...definition,
+        icon: source?.icon,
+        badge: badges.reduce((sum, value) => sum + value, 0),
+      };
     }).filter((item) => item.icon);
   }, [items]);
 
@@ -119,21 +152,26 @@ export function AdminShell({
   };
 
   const appGrid = (
-    <div className="grid grid-cols-2 gap-2">
-      {compactItems.map(({ key, label, source, icon: Icon, badge }) => {
+    <div className="grid gap-2">
+      {compactItems.map(({ key, label, description, source, icon: Icon, badge }) => {
         const isActive = activeGroup === key;
         return (
           <button
             type="button"
             key={key}
             onClick={() => selectCompact(source)}
-            className={`group relative min-h-24 overflow-hidden rounded-[1.65rem] border p-4 text-left transition-all duration-300 active:scale-[0.98] ${isActive ? "border-red-500/30 bg-red-500/10 text-red-100 shadow-[0_0_40px_rgba(239,68,68,.06)]" : "border-white/10 bg-white/[.025] text-white/70 hover:border-red-500/20 hover:bg-red-500/[.04]"}`}
+            className={`group relative min-h-[5.2rem] overflow-hidden rounded-[1.35rem] border p-3.5 text-left transition-all duration-300 active:scale-[0.985] ${isActive ? "border-red-500/30 bg-red-500/10 text-red-100 shadow-[0_0_40px_rgba(239,68,68,.06)]" : "border-white/10 bg-white/[.025] text-white/70 hover:border-red-500/20 hover:bg-red-500/[.04]"}`}
           >
-            <span className={`grid h-10 w-10 place-items-center rounded-xl border transition ${isActive ? "border-red-500/25 bg-red-500/15 text-red-300" : "border-white/10 bg-black/30 text-white/55 group-hover:text-red-200"}`}>
-              <Icon className="h-5 w-5 stroke-[1.8]" />
-            </span>
-            <span className="absolute inset-x-4 bottom-3 truncate text-[13px] font-semibold">{label}</span>
-            {badge > 0 ? <span className="absolute right-3 top-3 grid min-h-6 min-w-6 place-items-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">{badge}</span> : null}
+            <div className="flex items-center gap-3">
+              <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition ${isActive ? "border-red-500/25 bg-red-500/15 text-red-300" : "border-white/10 bg-black/30 text-white/55 group-hover:text-red-200"}`}>
+                <Icon className="h-5 w-5 stroke-[1.8]" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[13px] font-semibold">{label}</span>
+                <span className="mt-0.5 block truncate text-[11px] text-white/35">{description}</span>
+              </span>
+              {badge > 0 ? <span className="grid min-h-6 min-w-6 shrink-0 place-items-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">{badge}</span> : null}
+            </div>
           </button>
         );
       })}
@@ -148,12 +186,17 @@ export function AdminShell({
             <img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-8 w-8 rounded-lg object-cover" />
             <p className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-red-300">Angel OS</p>
           </div>
-          <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.04em] text-white">Applications</p>
+          <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.04em] text-white">Centre de contrôle</p>
+          <p className="mt-1 text-xs text-white/35">5 pôles au lieu d'une liste d'applications</p>
         </div>
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-300 shadow-[0_0_35px_rgba(239,68,68,.08)]"><Grid2X2 className="h-5 w-5" /></span>
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-300 shadow-[0_0_35px_rgba(239,68,68,.08)]">
+          <Grid2X2 className="h-5 w-5" />
+        </span>
       </div>
       {appGrid}
-      <div className="mt-5 flex items-center gap-2 px-1 font-mono text-[10px] uppercase tracking-[.16em] text-white/35"><span className="h-2 w-2 animate-pulse rounded-full bg-red-400" /> angel.os.online</div>
+      <div className="mt-5 flex items-center gap-2 px-1 font-mono text-[10px] uppercase tracking-[.16em] text-white/35">
+        <span className="h-2 w-2 animate-pulse rounded-full bg-red-400" /> angel.os.online
+      </div>
     </>
   );
 
@@ -171,7 +214,11 @@ export function AdminShell({
       {open ? (
         <div className="fixed inset-0 z-50 h-[100dvh] bg-black/70 backdrop-blur-md lg:hidden">
           <div className="ml-auto flex h-full w-full max-w-md flex-col border-l border-white/10 bg-[#090b0d]/97 px-3 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-[calc(1rem+env(safe-area-inset-top))] shadow-2xl sm:rounded-l-[2rem] sm:px-4">
-            <div className="mb-3 flex justify-end"><button type="button" aria-label="Fermer" onClick={() => setOpen(false)} className="grid h-12 w-12 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white transition hover:border-red-500/25 hover:text-red-200"><X className="h-6 w-6" /></button></div>
+            <div className="mb-3 flex justify-end">
+              <button type="button" aria-label="Fermer" onClick={() => setOpen(false)} className="grid h-12 w-12 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white transition hover:border-red-500/25 hover:text-red-200">
+                <X className="h-6 w-6" />
+              </button>
+            </div>
             <div className="min-h-0 flex-1 overflow-y-auto pb-4">{menuContents}</div>
           </div>
         </div>
@@ -217,8 +264,30 @@ export function AdminShell({
         <main className="mx-auto w-full min-w-0 max-w-[1500px] px-2.5 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-3 sm:px-7 sm:pb-24 sm:pt-4 lg:px-10">
           {isDashboard ? (
             <div className="mb-5 space-y-4 sm:space-y-5" data-admin-dashboard-glance>
+              <section className="rounded-[1.5rem] border border-white/10 bg-[#090b0d]/95 p-3.5 shadow-[0_18px_60px_rgba(0,0,0,.28)] sm:p-5">
+                <div className="flex flex-wrap items-end justify-between gap-3">
+                  <div>
+                    <p className="font-mono text-[9px] font-semibold uppercase tracking-[.18em] text-red-300 sm:text-[10px]">Missions prioritaires</p>
+                    <h2 className="mt-1.5 text-xl font-semibold tracking-[-0.03em] text-white sm:text-2xl">Tout piloter depuis cinq pôles</h2>
+                    <p className="mt-1 max-w-2xl text-xs leading-relaxed text-white/40 sm:text-sm">Mobile et installation, CMS et suivi métier, assistance éditoriale, programmation assistée ChatGPT/Codex et connexions vérifiables.</p>
+                  </div>
+                  <button type="button" onClick={() => setOpen(true)} className="min-h-10 rounded-xl border border-white/10 bg-white/[.04] px-3 text-xs font-semibold text-white/70 lg:hidden">Ouvrir les pôles</button>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {[
+                    ["Travail", "candidatures"],
+                    ["Studio", "articles"],
+                    ["Pilotage IA", "angel-ai"],
+                    ["Système", "connexions"],
+                  ].map(([label, target]) => (
+                    <button key={target} type="button" onClick={() => onSelect(target)} className="min-h-12 rounded-xl border border-white/10 bg-black/25 px-3 text-left text-xs font-semibold text-white/70 transition hover:border-red-500/20 hover:bg-red-500/[.04] hover:text-white sm:text-sm">
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-3 font-mono text-[9px] uppercase tracking-[.12em] text-white/25">ChatGPT · Codex · React · TanStack Start · Supabase · GitHub · Lovable · Vercel</p>
+              </section>
               <PixelWidgets />
-              <NewsPanel />
             </div>
           ) : null}
           <div key={active} className="min-w-0 max-w-full animate-in fade-in zoom-in-[.985] duration-300 [&_.bg-card]:bg-[#090b0d]/95 [&_.bg-background]:bg-[#050607]/92 [&_.bg-muted]:bg-white/[.04] [&_.border-border]:border-white/10 [&_.text-foreground]:text-white [&_.text-muted-foreground]:text-white/45 [&_.rounded-xl]:rounded-[1.25rem] [&_.rounded-2xl]:rounded-[1.75rem] [&_.rounded-lg]:rounded-xl [&_.shadow-sm]:shadow-[0_18px_60px_rgba(0,0,0,.28)] [&_img]:max-w-full [&_input]:max-w-full [&_textarea]:max-w-full [&_select]:max-w-full [&_input]:border-white/10 [&_textarea]:border-white/10 [&_select]:border-white/10 [&_input]:bg-black/30 [&_textarea]:bg-black/30 [&_select]:bg-black/30 [&_input]:text-white [&_textarea]:text-white [&_select]:text-white max-sm:[&_form]:!mt-2 max-sm:[&_form]:!space-y-4 max-sm:[&_form]:!rounded-2xl max-sm:[&_form]:!p-3 max-sm:[&_input]:min-h-11 max-sm:[&_select]:min-h-11 max-sm:[&_input]:text-base max-sm:[&_textarea]:text-base max-sm:[&_select]:text-base max-sm:[&_table]:text-xs max-sm:[&_label]:leading-snug">
