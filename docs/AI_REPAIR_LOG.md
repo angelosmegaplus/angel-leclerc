@@ -1,6 +1,6 @@
 # Angel OS IA — journal de réparation
 
-Dernière mise à jour : 16 août 2026, 00:34 UTC.
+Dernière mise à jour : 16 août 2026, 08:34 UTC.
 
 Ce journal ne contient aucun secret. Il distingue explicitement le code présent sur `main`, la release réellement servie en production et les validations fonctionnelles.
 
@@ -8,23 +8,25 @@ Ce journal ne contient aucun secret. Il distingue explicitement le code présent
 
 | Surface | Chemin principal | Dernière validation réelle | HTTP | Résultat réel | État |
 |---|---|---:|---:|---|---|
-| Assistant public | `POST /api/assistant`, mode `site` | release `52e09ac6135927b1062427f29dba8a2995d0b0c9` | 200 | réponse textuelle réelle, `source=openai`, `reason=ok`, modèle observé `gpt-4.1-mini` | validé en production |
-| Contact IA | `POST /api/assistant`, mode `contact` | release `52e09ac6135927b1062427f29dba8a2995d0b0c9` | 200 | réponse textuelle réelle, `source=openai`, `reason=ok` | validé en production |
-| Contexte multi-tour | `POST /api/assistant` avec `history` | release `52e09ac6135927b1062427f29dba8a2995d0b0c9` | 200 | le mot témoin fourni dans l’historique est correctement restitué | validé en production |
-| Échec contrôlé assistant | `POST /api/assistant` avec question invalide | release `46745e35d9dc5220764b4ca5460335626da98ef4` | 400 | `reason=invalid_question`, pas de faux succès | validé en production |
-| Angel OS IA privé | `runPrivateAngelOsIaChat` + auth Supabase + OpenAI | code `main` inspecté | — | Supabase Auth est joignable et le fournisseur commun OpenAI est validé ; le chemin authentifié doit encore être testé avec une vraie session admin | validation authentifiée restante |
-| Recherche/veille IA | `searchNewsWithOpenAI` puis fusion Google News | release `52e09ac6135927b1062427f29dba8a2995d0b0c9` | 200 | endpoint combiné `phase=combined`, 68 éléments dont 5 identifiés `openai-web-*` | validé en production |
-| Génération d’article | `generateArticleDraft` | code `main` inspecté | — | architecture OpenAI direct → AI Gateway + web search, modèles de repli et parsing JSON ; aucun faux article n’est créé si le moteur échoue | test réel restant |
+| Assistant public | `POST /api/assistant`, mode `site` | production, 16 août 07:50 UTC | 200 | réponse textuelle réelle, `source=openai`, `reason=ok`, modèle observé `gpt-4.1-mini` | validé en production |
+| Contact IA | `POST /api/assistant`, mode `contact` | production, 16 août 07:50 UTC | 200 | réponse textuelle réelle, `source=openai`, `reason=ok` | validé en production |
+| Contexte multi-tour | `POST /api/assistant` avec `history` | production, 16 août 07:50 UTC | 200 | le mot témoin transmis dans l’historique est correctement restitué | validé en production |
+| Échec contrôlé assistant | `POST /api/assistant` avec question invalide | production, 16 août 07:19 UTC | 400 | `reason=invalid_question`, pas de faux succès | validé en production |
+| Angel OS IA privé | `runPrivateAngelOsIaChat` + auth Supabase + `resilientAngelAi` | code `main` + build production inspectés | — | chemin authentifié, persistance `ai_messages`, aucun fallback conversationnel local autorisé | validation authentifiée restante |
+| Recherche/veille IA | `searchNewsWithOpenAI` puis fusion Google News | production, 16 août 07:50 UTC | 200 | `phase=combined`, 66 éléments dont 1 contribution `openai-web-*` vérifiable | validé en production |
+| Génération d’article | `generateArticleDraft` | code `main` + bundle production inspectés | — | OpenAI direct → AI Gateway, web search, modèles de repli, parsing JSON et refus de créer un article vide | test réel autorisé restant |
+| Santé fournisseur | `/api/angel-os/health` | production, 16 août 07:50 UTC | 200 | `healthy=true`, OpenAI configuré et joignable, credential serveur `env` | validé en production |
+| Déploiement du dernier `main` | Vercel / GitHub deployment | commit `4c083a8c9012c0514c717924b37b56b499f6bd73`, 16 août 08:02 UTC | — | statut final Vercel `success`, environnement production | validé |
 
-## Diagnostic confirmé
+## Diagnostic actuel
 
-- La panne historique de `/api/assistant` avant l’appel OpenAI venait de la mémoire Supabase obligatoire. Le correctif `729d7e957a195acb11347550774f04ac17bedd97` rend cette mémoire optionnelle afin qu’une dépendance secondaire ne fasse plus tomber la conversation principale.
-- Le cœur conversationnel en production répond réellement via OpenAI. Les modes site, contact, contexte multi-tour et l’échec contrôlé sont validés avec du contenu réel.
-- Les derniers logs runtime observés montrent des succès `angel-ai-gateway` via OpenAI `gpt-4.1-mini`, credential serveur `env`, sans récupération depuis un échec direct.
-- La veille IA est désormais prouvée par le workflow d’observabilité : le dernier contrôle réussi a trouvé 5 contributions OpenAI sur 68 éléments du flux combiné.
-- Les anciens incidents `insufficient_quota`, modèle nécessitant une organisation vérifiée, timeouts web et mémoire Supabase obligatoire restent des événements historiques ; aucun nouvel échec conversationnel critique n’a été observé après les correctifs actuels.
-- Les erreurs `ai-news-search` par timeout restent bornées et récupérables ; elles ne font pas tomber la conversation principale.
-- Supabase Auth est joignable depuis la production ; cela confirme le prérequis du chat privé sans fabriquer de session administrateur.
+- Le cœur conversationnel public fonctionne réellement en production. Les scénarios court, normal, Contact et multi-tour produisent des réponses OpenAI exploitables ; le scénario invalide échoue proprement.
+- Les logs runtime Vercel observés jusqu’au 16 août 08:32 UTC ne montrent aucune nouvelle erreur de production sur la période récente. Les derniers appels observés passent par OpenAI `gpt-4.1-mini`, credential serveur `env`, sans récupération depuis un échec direct.
+- La panne historique de `/api/assistant` avant l’appel OpenAI venait de la mémoire Supabase obligatoire. Le correctif `729d7e957a195acb11347550774f04ac17bedd97` garde cette mémoire optionnelle afin qu’une dépendance secondaire ne fasse plus tomber la conversation principale.
+- Les anciens incidents `insufficient_quota`, accès modèle/organisation vérifiée, timeouts web et mémoire Supabase obligatoire restent historiques : aucun nouvel échec conversationnel critique correspondant n’a été observé après les correctifs actuels.
+- La veille IA est prouvée par deux contrôles distincts : `Maintenance Angel OS` a validé les scénarios conversationnels à 07:19 UTC et `Observabilité Angel OS` a validé assistant/Contact/contexte ainsi qu’une contribution OpenAI réelle dans le flux actualités à 07:50 UTC.
+- Le dernier `main` contient uniquement un snapshot mails supplémentaire par rapport au code IA validé et a reçu un déploiement production Vercel réussi à 08:02 UTC.
+- L’échec du workflow de synchronisation de données au même commit vient de secrets de synchronisation GitHub absents ; il est distinct du runtime IA et n’a pas empêché le déploiement Vercel, qui est passé au statut `success`.
 
 ## Correctifs et validations récents
 
@@ -33,27 +35,19 @@ Ce journal ne contient aucun secret. Il distingue explicitement le code présent
 - `ad21776c99fdc256f84bf1c4a193cb1f7709d75a` — couverture du mode Contact et du contexte multi-tour.
 - `a408ed7b44ccc55f17b864d5b0145fac797b8dc1` — veille web structurée fiabilisée.
 - `3c95f67ae8f53a7723ce05455d9db330c75d1797` — scénarios end-to-end renforcés : message court, question normale, Contact, contexte, échec contrôlé.
-- `51c2451232084abe61341ff05f7a85e7cb7191d5` — correction d’un faux échec de maintenance : le workflow lisait encore `.openai.*` alors que le health endpoint expose désormais `.dependencies.openai.*`. CI complet réussi et déploiement Vercel READY.
+- `51c2451232084abe61341ff05f7a85e7cb7191d5` — correction du chemin JSON du health endpoint dans la maintenance.
+- `8a911ba3f4b87f6fd2eb0b29c588b9e7076fbb03` — notification admin immédiate en cas d’arrêt de réponse de l’IA intégrée ; maintenance et observabilité suivantes réussies.
 
-## État production observé lors du dernier contrôle fonctionnel
+## Contrôle global du cycle
 
-- `/api/angel-os/health` : `healthy=true`.
-- OpenAI : configuré et joignable.
-- TMDB : configuré et joignable.
-- Supabase Auth : configuré et joignable via la configuration publique prévue pour l’authentification.
-- `POST /api/assistant` mode site : HTTP 200, `source=openai`, réponse exploitable.
-- `POST /api/assistant` mode contact : HTTP 200, `source=openai`, réponse exploitable.
-- Contexte multi-tour : HTTP 200, historique effectivement utilisé.
-- Veille : HTTP 200, `phase=combined`, contribution OpenAI vérifiable.
-- Le dernier `main` après correction du workflow est `51c2451232084abe61341ff05f7a85e7cb7191d5`; son déploiement production est READY. Cette modification ne touche pas au runtime IA applicatif.
+Le dernier workflow `Maintenance Angel OS` réussi a exécuté lint, build, TypeScript, scénarios IA réels, health OpenAI, inventaire dynamique des routes depuis `src/routes` + sitemap, contrôle HTTP de 26 URL concrètes, sonde 404, météo et actualités. Toutes les pages concrètes contrôlées répondaient en HTTP 2xx et la 404 renvoyait bien 404. Le lint reste à 0 erreur avec des avertissements non bloquants existants.
 
-## Blocages / vérifications restantes
+## Vérifications restantes sans contournement
 
-1. Le chat privé nécessite une vraie session administrateur Supabase pour un test end-to-end. Ne jamais fabriquer de JWT ni contourner l’authentification. Le code privé interdit explicitement le fallback conversationnel local et utilise le même `resilientAngelAi` que les chemins validés.
-2. La génération d’article doit encore être invoquée réellement dans un contexte autorisé pour vérifier OpenAI + web search + parsing + résultat structuré. Ne pas créer un article public juste pour un test si aucune voie de prévisualisation sûre n’est disponible.
-3. Les chemins serveur nécessitant `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` doivent continuer à échouer proprement lorsqu’ils ne sont pas configurés et ne jamais faire tomber le cœur conversationnel.
-4. Surveiller les timeouts de `ai-news-search`; ils doivent rester bornés et récupérables.
-5. Le workflow `Maintenance Angel OS` doit être revalidé au prochain passage avec le nouveau chemin JSON du health endpoint ; son précédent échec était un faux négatif après des scénarios IA eux-mêmes réussis.
+1. **Chat privé authentifié** : le test end-to-end exige une vraie session administrateur Supabase. Ne jamais fabriquer de JWT, contourner l’auth ou exposer une route de diagnostic publique pour simuler ce test. Aucun log `angel-os-ia.private-chat` n’a été trouvé sur les dernières 24 h ; cela signifie « pas de preuve d’invocation récente », pas « panne ».
+2. **Génération d’article** : aucune invocation `article-ai` récente n’apparaît dans les logs. Le chemin est présent dans le bundle production et le code refuse les faux brouillons, mais une invocation réelle dans un contexte admin autorisé reste nécessaire pour valider OpenAI + web search + parsing + résultat structuré. Ne pas publier un article juste pour un test.
+3. **Timeouts veille web** : continuer à les surveiller. Ils doivent rester bornés et récupérables et ne jamais faire tomber la conversation principale.
+4. **Dépendances de données** : `SUPABASE_SERVICE_ROLE_KEY` / secrets de synchronisation GitHub manquants peuvent bloquer certaines écritures automatisées, mais ne doivent pas être confondus avec la santé du moteur conversationnel OpenAI.
 
 ## Règle anti-régression
 
