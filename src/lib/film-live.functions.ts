@@ -114,19 +114,24 @@ export const getLiveFilmCatalog = createServerFn({ method: "GET" })
       }
 
       const settled = await Promise.allSettled(pages);
-      const normalized = settled.flatMap((entry) => {
-        if (entry.status !== "fulfilled") return [];
-        return (entry.value.page.results ?? [])
+      const fulfilled = settled.filter((entry): entry is PromiseFulfilledResult<{ mediaType: MediaType; page: Page }> => entry.status === "fulfilled");
+      const normalized = fulfilled.flatMap((entry) =>
+        (entry.value.page.results ?? [])
           .map((raw) => normalize(raw, entry.value.mediaType))
-          .filter((item): item is RecommendationCandidate => Boolean(item));
-      });
+          .filter((item): item is RecommendationCandidate => Boolean(item)),
+      );
       const items = dedupe(normalized).slice(0, data.query ? 40 : 100);
-      if (!items.length) {
-        const failure = settled.find((entry): entry is PromiseRejectedResult => entry.status === "rejected");
-        const diagnostic = failure ? (failure.reason instanceof Error ? failure.reason.message : String(failure.reason)) : "TMDB_EMPTY_RESULT";
-        return { items: [], source: "unavailable", diagnostic };
-      }
-      return { items, source: "tmdb", diagnostic: null };
+
+      // A valid TMDB response with zero matches is still a successful TMDB search.
+      // Only fall back locally when every requested TMDB call actually failed.
+      if (fulfilled.length > 0) return { items, source: "tmdb", diagnostic: null };
+
+      const failure = settled.find((entry): entry is PromiseRejectedResult => entry.status === "rejected");
+      return {
+        items: [],
+        source: "unavailable",
+        diagnostic: failure ? (failure.reason instanceof Error ? failure.reason.message : String(failure.reason)) : "TMDB_NO_RESPONSE",
+      };
     } catch (error) {
       return {
         items: [],
