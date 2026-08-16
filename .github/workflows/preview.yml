@@ -57,7 +57,7 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: bunx vercel@latest pull --yes --environment=preview --token="$VERCEL_TOKEN" --scope=angel-os2
 
-      - name: Deploy preview
+      - name: Deploy isolated preview
         id: deploy
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -67,20 +67,33 @@ jobs:
           URL="$(bunx vercel@latest deploy --token="$VERCEL_TOKEN" --scope=angel-os2)"
           echo "url=$URL" >> "$GITHUB_OUTPUT"
 
-      - name: Smoke-test preview
+      - name: Digital-twin smoke gate
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           DEPLOY_URL: ${{ steps.deploy.outputs.url }}
         shell: bash
         run: |
           set -euo pipefail
-          bunx vercel@latest curl /api/angel-os/health --deployment "$DEPLOY_URL" --token="$VERCEL_TOKEN" --scope=angel-os2 --fail --silent --show-error >/dev/null
+          routes=(
+            "/api/angel-os/health"
+            "/"
+            "/parcours"
+            "/articles"
+          )
+          for route in "${routes[@]}"; do
+            echo "Checking $route"
+            bunx vercel@latest curl "$route" \
+              --deployment "$DEPLOY_URL" \
+              --token="$VERCEL_TOKEN" \
+              --scope=angel-os2 \
+              --fail --silent --show-error >/dev/null
+          done
 
-      - name: Comment preview URL
+      - name: Comment verified preview URL
         env:
           GH_TOKEN: ${{ github.token }}
           DEPLOY_URL: ${{ steps.deploy.outputs.url }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         shell: bash
         run: |
-          gh pr comment "$PR_NUMBER" --body "Preview Angel OS vérifiée : $DEPLOY_URL"
+          gh pr comment "$PR_NUMBER" --body "Digital twin Angel OS vérifié (health + accueil + parcours + articles) : $DEPLOY_URL"
