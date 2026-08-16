@@ -6,7 +6,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AdminPurposeIntro } from "@/components/admin/AdminPurposeIntro";
 
+const INTRO_SESSION_KEY = "angel-os-admin-purpose-approved";
 const HUMAN_SESSION_KEY = "angel-os-admin-human-ok";
 const ADMIN_BOOT_PENDING_KEY = "angel-os:admin-boot-pending";
 const HUMAN_ATTEMPTS_KEY = "angel-os-admin-human-attempts";
@@ -63,12 +65,9 @@ function makeChallenge(): ActiveChallenge {
   const decoys = shuffle(CHALLENGE_POOL.filter((item) => !item.tags.includes(definition.targetTag))).slice(0, 5);
   const items = shuffle([...targets, ...decoys]);
 
-  // Contrôle d'intégrité à chaque génération : 9 cases, 4 bonnes réponses, aucun doublon.
   const uniqueIds = new Set(items.map((item) => item.id));
   const validTargets = items.filter((item) => item.tags.includes(definition.targetTag)).length;
-  if (items.length !== 9 || uniqueIds.size !== 9 || validTargets !== 4) {
-    return makeChallenge();
-  }
+  if (items.length !== 9 || uniqueIds.size !== 9 || validTargets !== 4) return makeChallenge();
 
   return { ...definition, items };
 }
@@ -77,12 +76,12 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Connexion Angel OS | Angel Leclerc Communication" },
-      { name: "description", content: "Accès réservé à l'espace administrateur Angel OS." },
+      { name: "description", content: "Angel OS centralise l’assistance IA, l’administration du site, les communications, les automatisations et les connecteurs dans un espace privé." },
       { name: "robots", content: "noindex, nofollow" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { property: "og:title", content: "Connexion Angel OS" },
-      { property: "og:description", content: "Accès réservé à l'espace administrateur Angel OS." },
+      { property: "og:description", content: "Centre de contrôle privé pour l’intelligence artificielle, le site, les communications, les automatisations et les intégrations." },
     ],
   }),
   component: AuthPage,
@@ -91,6 +90,7 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const { session, loading } = useAuth();
+  const [introApproved, setIntroApproved] = useState(false);
   const [humanUnlocked, setHumanUnlocked] = useState(false);
   const [securityScreen, setSecurityScreen] = useState(false);
   const [challenge, setChallenge] = useState<ActiveChallenge>(() => makeChallenge());
@@ -107,17 +107,18 @@ function AuthPage() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    setIntroApproved(sessionStorage.getItem(INTRO_SESSION_KEY) === "1");
     setHumanUnlocked(sessionStorage.getItem(HUMAN_SESSION_KEY) === "1");
     setHumanAttempts(Number(localStorage.getItem(HUMAN_ATTEMPTS_KEY) ?? "0") || 0);
     setLockUntil(Number(localStorage.getItem(HUMAN_LOCK_UNTIL_KEY) ?? "0") || 0);
   }, []);
 
   useEffect(() => {
-    if (!loading && session && humanUnlocked && !securityScreen) {
+    if (!loading && session && introApproved && humanUnlocked && !securityScreen) {
       sessionStorage.setItem(ADMIN_BOOT_PENDING_KEY, "1");
       navigate({ to: "/admin" });
     }
-  }, [loading, session, humanUnlocked, securityScreen, navigate]);
+  }, [loading, session, introApproved, humanUnlocked, securityScreen, navigate]);
 
   useEffect(() => {
     if (lockUntil <= Date.now()) return;
@@ -127,6 +128,12 @@ function AuthPage() {
 
   const remainingLockSeconds = useMemo(() => Math.max(0, Math.ceil((lockUntil - now) / 1000)), [lockUntil, now]);
   const humanLocked = remainingLockSeconds > 0;
+
+  function approveIntro() {
+    sessionStorage.setItem(INTRO_SESSION_KEY, "1");
+    setIntroApproved(true);
+    refreshChallenge();
+  }
 
   function refreshChallenge() {
     setChallenge(makeChallenge());
@@ -199,6 +206,20 @@ function AuthPage() {
     return <section className="flex min-h-[70vh] items-center justify-center bg-background"><Loader2 className="h-6 w-6 animate-spin text-primary" /></section>;
   }
 
+  if (!introApproved) {
+    return (
+      <section className="min-h-screen bg-background py-12 md:py-20">
+        <div className="mx-auto w-full max-w-3xl px-5 sm:px-6">
+          <AdminPurposeIntro />
+          <Button type="button" onClick={approveIntro} className="h-12 w-full rounded-full text-base font-semibold">
+            J’ai compris · Continuer
+          </Button>
+          <p className="mt-3 text-center text-xs text-muted-foreground">Étape suivante : vérification anti-robot, puis connexion à l’espace administrateur.</p>
+        </div>
+      </section>
+    );
+  }
+
   if (securityScreen) {
     return (
       <section className="relative flex min-h-screen overflow-hidden bg-black px-6 py-12 font-mono text-green-400">
@@ -231,7 +252,7 @@ function AuthPage() {
         <div className="mx-auto w-full max-w-md px-5 sm:px-6">
           <div className="mb-6 flex items-center gap-3">
             <img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-12 w-12 rounded-xl object-contain" />
-            <div><p className="text-xs font-semibold text-muted-foreground">Angel OS</p><h1 className="font-display text-2xl font-bold tracking-tight text-foreground">Vérification anti-robot</h1></div>
+            <div><p className="text-xs font-semibold text-muted-foreground">Angel OS · étape 2/3</p><h1 className="font-display text-2xl font-bold tracking-tight text-foreground">Vérification anti-robot</h1></div>
           </div>
           <form onSubmit={onHumanSubmit} className="space-y-5 rounded-3xl border border-border bg-card p-6 shadow-sm">
             {humanLocked ? (
@@ -265,9 +286,9 @@ function AuthPage() {
       <div className="mx-auto w-full max-w-md px-5 sm:px-6">
         <div className="flex items-center gap-3">
           <img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-11 w-11 rounded-xl object-contain" />
-          <div><p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">Accès réservé</p><h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Connexion Angel OS</h1></div>
+          <div><p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">Étape 3/3 · Accès réservé</p><h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Connexion Angel OS</h1></div>
         </div>
-        <p className="mt-3 text-sm text-muted-foreground">Vérification humaine validée. Connectez-vous avec le compte administrateur autorisé.</p>
+        <p className="mt-3 text-sm text-muted-foreground">Présentation approuvée et vérification humaine validée. Connectez-vous avec le compte administrateur autorisé.</p>
         <form onSubmit={onSubmit} className="mt-8 space-y-4 rounded-xl border border-border bg-card p-6">
           <div className="space-y-2"><Label htmlFor="email">E-mail</Label><Input id="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
           <div className="space-y-2"><Label htmlFor="password">Mot de passe</Label><Input id="password" type="password" autoComplete="current-password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} /></div>
