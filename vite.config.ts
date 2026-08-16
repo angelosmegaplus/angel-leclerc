@@ -50,7 +50,7 @@ export default defineConfig({
             { name: "Tableau de bord", short_name: "Dashboard", url: "/admin?tab=dashboard" },
             { name: "Studio / Journalisme", short_name: "Studio", url: "/admin?tab=studio" },
             { name: "Articles", short_name: "Articles", url: "/admin?tab=articles" },
-            { name: "Connexions", short_name: "Connexions", url: "/admin?tab=connexions" },
+            { name: "Connexions", short_name: "Connexions", url: "/admin-integrations" },
           ],
         },
         workbox: {
