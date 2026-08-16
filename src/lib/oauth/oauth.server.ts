@@ -1,12 +1,6 @@
 import { createCipheriv, createDecipheriv, createHmac, randomBytes, createHash, timingSafeEqual } from "node:crypto";
 import { PROVIDERS, type ProviderConfig, type ProviderId } from "./providers";
 import { deriveVaultKeySync, getVaultSecretSync } from "../angel-vault.server";
-import {
-  getCredentialPairPoolSync,
-  markCredentialHealthy,
-  quarantineCredential,
-  type CredentialPairCandidate,
-} from "../credential-pool.server";
 
 export type TokenPayload = {
   access_token: string;
@@ -14,7 +8,6 @@ export type TokenPayload = {
   token_type?: string;
   scope?: string;
   code_verifier?: string;
-  client_slot?: number;
 };
 
 export type ConnectionStatus = "connected" | "reconnect_required" | "disconnected";
@@ -30,9 +23,7 @@ export type ConnectionInfo = {
 function keyFrom(secretName: string): Buffer {
   const raw = getVaultSecretSync(secretName);
   if (raw) return createHash("sha256").update(raw).digest();
-  if (secretName === "OAUTH_TOKEN_SECRET" || secretName === "OAUTH_STATE_SECRET") {
-    return deriveVaultKeySync(secretName);
-  }
+  if (secretName === "OAUTH_TOKEN_SECRET" || secretName === "OAUTH_STATE_SECRET") return deriveVaultKeySync(secretName);
   throw new Error(`${secretName} is not configured`);
 }
 
@@ -57,7 +48,7 @@ export function decryptTokens(stored: string): TokenPayload {
   return JSON.parse(out) as TokenPayload;
 }
 
-type StatePayload = { p: ProviderId; u: string; n: string; exp: number; v?: string; c?: number };
+type StatePayload = { p: ProviderId; u: string; n: string; exp: number; v?: string };
 function b64url(input: Buffer | string): string { return Buffer.from(input).toString("base64url"); }
 
 function sealState(payload: StatePayload): string {
@@ -93,28 +84,19 @@ export function verifyState(state: string): StatePayload | null {
   } catch { return null; }
 }
 
-function providerPool(config: ProviderConfig) {
-  return getCredentialPairPoolSync(`oauth:${config.id}`, config.clientIdEnv, config.clientSecretEnv, 5);
+function providerPair(config: ProviderConfig) {
+  const clientId = process.env[config.clientIdEnv]?.trim();
+  const clientSecret = process.env[config.clientSecretEnv]?.trim();
+  return clientId && clientSecret ? { clientId, clientSecret } : null;
 }
 
-function pairFor(config: ProviderConfig, slot?: number): CredentialPairCandidate | null {
-  const pool = providerPool(config);
-  if (!pool.length) return null;
-  return (slot ? pool.find((item) => item.slot === slot) : null) ?? pool[0] ?? null;
-}
-
-export function providerCredentials(config: ProviderConfig, slot?: number) {
-  const pair = pairFor(config, slot);
-  return {
-    clientId: pair?.first.value ?? null,
-    clientSecret: pair?.second.value ?? null,
-    configured: Boolean(pair),
-    slot: pair?.slot ?? null,
-  };
+export function providerCredentials(config: ProviderConfig) {
+  const pair = providerPair(config);
+  return { clientId: pair?.clientId ?? null, clientSecret: pair?.clientSecret ?? null, configured: Boolean(pair) };
 }
 
 function endpoint(url: string): string {
-  return url.replace("{tenant}", getVaultSecretSync("MS_TENANT_ID") ?? "common");
+  return url.replace("{tenant}", process.env.MS_TENANT_ID?.trim() || "common");
 }
 
 export function redirectUri(origin: string, provider: ProviderId): string {
@@ -123,24 +105,17 @@ export function redirectUri(origin: string, provider: ProviderId): string {
 
 export function buildAuthorizeUrl(provider: ProviderId, origin: string, userId: string) {
   const config = PROVIDERS[provider];
-  const pair = pairFor(config);
+  const pair = providerPair(config);
   if (!pair) throw new Error(`Activation serveur requise pour ${config.name}.`);
 
   const verifier = config.usePkce ? b64url(randomBytes(48)) : undefined;
-  const state = signState({
-    p: provider,
-    u: userId,
-    n: b64url(randomBytes(12)),
-    exp: Date.now() + 10 * 60 * 1000,
-    c: pair.slot,
-    ...(verifier ? { v: verifier } : {}),
-  });
+  const state = signState({ p: provider, u: userId, n: b64url(randomBytes(12)), exp: Date.now() + 10 * 60 * 1000, ...(verifier ? { v: verifier } : {}) });
 
   const url = new URL(endpoint(config.authorizeUrl));
-  url.searchParams.set("client_id", pair.first.value);
+  url.searchParams.set("client_id", pair.clientId);
   url.searchParams.set("redirect_uri", redirectUri(origin, provider));
   url.searchParams.set("response_type", "code");
-  url.searchParams.set("scope", config.scopes.join(" "));
+  url.searchParams.set("scope", [...config.scopes, ...(config.optionalScopes ?? [])].join(" "));
   url.searchParams.set("state", state);
   for (const [k, v] of Object.entries(config.extraAuthParams ?? {})) url.searchParams.set(k, v);
   if (verifier) {
@@ -161,60 +136,36 @@ async function postToken(config: ProviderConfig, body: URLSearchParams) {
   try { json = JSON.parse(text) as Record<string, unknown>; }
   catch { json = Object.fromEntries(new URLSearchParams(text)); }
   if (!response.ok || typeof json["access_token"] !== "string") {
-    throw new Error(`Échec de l'échange de jeton (${config.name}) : ${text.slice(0, 200)}`);
+    throw new Error(`Échec de l'échange de jeton (${config.name}) : ${response.status}`);
   }
   return json;
 }
 
-export async function exchangeCode(provider: ProviderId, code: string, origin: string, codeVerifier?: string, slot?: number) {
+export async function exchangeCode(provider: ProviderId, code: string, origin: string, codeVerifier?: string) {
   const config = PROVIDERS[provider];
-  const pair = pairFor(config, slot);
+  const pair = providerPair(config);
   if (!pair) throw new Error(`Identifiants OAuth indisponibles pour ${config.name}.`);
   const body = new URLSearchParams({
     grant_type: "authorization_code",
     code,
     redirect_uri: redirectUri(origin, provider),
-    client_id: pair.first.value,
-    client_secret: pair.second.value,
+    client_id: pair.clientId,
+    client_secret: pair.clientSecret,
   });
   if (codeVerifier) body.set("code_verifier", codeVerifier);
-  try {
-    const json = await postToken(config, body);
-    markCredentialHealthy(`oauth:${config.id}`, pair);
-    json["_angel_client_slot"] = pair.slot;
-    return json;
-  } catch (error) {
-    quarantineCredential(pair);
-    throw error;
-  }
+  return postToken(config, body);
 }
 
-export async function refreshAccessToken(provider: ProviderId, refreshToken: string, slot?: number) {
+export async function refreshAccessToken(provider: ProviderId, refreshToken: string) {
   const config = PROVIDERS[provider];
-  const requested = pairFor(config, slot);
-  const pool = providerPool(config);
-  const ordered = requested
-    ? [requested, ...pool.filter((item) => item.slot !== requested.slot)]
-    : pool;
-  let lastError: unknown = null;
-
-  for (const pair of ordered) {
-    try {
-      const json = await postToken(config, new URLSearchParams({
-        grant_type: "refresh_token",
-        refresh_token: refreshToken,
-        client_id: pair.first.value,
-        client_secret: pair.second.value,
-      }));
-      markCredentialHealthy(`oauth:${config.id}`, pair);
-      json["_angel_client_slot"] = pair.slot;
-      return json;
-    } catch (error) {
-      lastError = error;
-      quarantineCredential(pair);
-    }
-  }
-  throw lastError instanceof Error ? lastError : new Error(`Aucun client OAuth valide pour ${config.name}.`);
+  const pair = providerPair(config);
+  if (!pair) throw new Error(`Identifiants OAuth indisponibles pour ${config.name}.`);
+  return postToken(config, new URLSearchParams({
+    grant_type: "refresh_token",
+    refresh_token: refreshToken,
+    client_id: pair.clientId,
+    client_secret: pair.clientSecret,
+  }));
 }
 
 function pick(source: unknown, path: string): string | undefined {
@@ -233,7 +184,7 @@ export async function fetchAccountLabel(provider: ProviderId, accessToken: strin
       const value = pick(json, field);
       if (value) return value;
     }
-  } catch { /* best effort */ }
+  } catch {}
   return null;
 }
 
@@ -313,10 +264,9 @@ export async function getAccessToken(userId: string, provider: ProviderId): Prom
   }
 
   try {
-    const refreshed = await refreshAccessToken(provider, tokens.refresh_token, tokens.client_slot);
+    const refreshed = await refreshAccessToken(provider, tokens.refresh_token);
     const accessToken = refreshed["access_token"] as string;
     const expiresIn = Number(refreshed["expires_in"] ?? 0);
-    const clientSlot = Number(refreshed["_angel_client_slot"] ?? tokens.client_slot ?? 1);
     await saveConnection({
       provider,
       userId,
@@ -325,7 +275,6 @@ export async function getAccessToken(userId: string, provider: ProviderId): Prom
         refresh_token: (refreshed["refresh_token"] as string) ?? tokens.refresh_token,
         token_type: refreshed["token_type"] as string | undefined,
         scope: refreshed["scope"] as string | undefined,
-        client_slot: clientSlot,
       },
       scopes: (row["scopes"] as string[] | null) ?? [],
       accountLabel: null,
