@@ -1,0 +1,106 @@
+name: Sync candidatures 2026-08-16
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/sync-applications-2026-08-16.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 5
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - name: Apply verified candidature updates
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_URL:-}" || { echo "::error::SUPABASE_URL absent"; exit 1; }
+          test -n "${SUPABASE_SERVICE_ROLE_KEY:-}" || { echo "::error::SUPABASE_SERVICE_ROLE_KEY absent"; exit 1; }
+          node <<'NODE'
+          const base = process.env.SUPABASE_URL.replace(/\/$/, '');
+          const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+          const headers = {
+            apikey: key,
+            Authorization: `Bearer ${key}`,
+            'Content-Type': 'application/json',
+            Prefer: 'return=representation',
+          };
+          async function req(path, options={}) {
+            const r = await fetch(`${base}/rest/v1/${path}`, { ...options, headers: { ...headers, ...(options.headers||{}) } });
+            const text = await r.text();
+            if (!r.ok) throw new Error(`${path}: HTTP ${r.status} ${text.slice(0,800)}`);
+            return text ? JSON.parse(text) : null;
+          }
+          async function findByEmail(email) {
+            return await req(`applications?select=*&email=eq.${encodeURIComponent(email)}&order=sent_at.desc&limit=1`);
+          }
+          async function upsertByEmail(email, row, {insertIfMissing=true}={}) {
+            const found = await findByEmail(email);
+            if (found?.length) {
+              const id = found[0].id;
+              const updated = await req(`applications?id=eq.${encodeURIComponent(id)}`, { method:'PATCH', body: JSON.stringify(row) });
+              console.log('updated', email, updated?.[0]?.id || id);
+              return;
+            }
+            if (!insertIfMissing) { console.log('skip missing', email); return; }
+            const inserted = await req('applications', { method:'POST', body: JSON.stringify({ email, ...row }) });
+            console.log('inserted', email, inserted?.[0]?.id || 'ok');
+          }
+          (async () => {
+            await upsertByEmail('bonjour@perimomes.com', {
+              company: 'Périmômes',
+              city: 'Périgueux',
+              position: 'Alternance BTS Communication',
+              status: 'refusee',
+              response: "Bonjour Angel, Merci pour votre message et pour l'intérêt que vous portez à Périmômes. Votre parcours et votre démarche sont intéressants, mais je ne suis malheureusement pas en mesure d'…",
+              follow_up_at: null,
+              notes: 'Réponse Gmail vérifiée le 16/08/2026. Faux contenu HTML antérieur à ignorer.'
+            });
+
+            await upsertByEmail('job-ref-qpw3l6xdcn@emploi.beetween.com', {
+              company: 'Université de Bordeaux',
+              city: 'Bordeaux',
+              position: 'Chargé(e) de communication en alternance',
+              status: 'envoyee',
+              sent_at: '2026-08-15',
+              response: "Candidature reçue par l'Université de Bordeaux ; dossier en cours d'étude.",
+              follow_up_at: '2026-08-29',
+              notes: 'Accusé de réception Gmail vérifié le 16/08/2026.'
+            });
+
+            await upsertByEmail('monsieurcharles@alioki.fr', {
+              company: 'ALIOKI',
+              city: 'Sarlat-la-Canéda',
+              position: 'Alternance BTS Communication',
+              status: 'envoyee',
+              sent_at: '2026-08-16',
+              follow_up_at: '2026-08-30',
+              response: null,
+              notes: 'Candidature envoyée et vérifiée dans Gmail le 16/08/2026.'
+            });
+
+            for (const [email, company, city] of [
+              ['contact@pepper-and-salt.fr','Pepper & Salt','Sarlat-la-Canéda'],
+              ['biocoopsarlat.contact@gmail.com','Biocoop Sarlat','Sarlat-la-Canéda'],
+              ['rvv@radiovalleevezere.com','Radio Vallée Vézère',null],
+              ['contact@lesarenes-brive.fr','Les Arènes de Brive','Brive-la-Gaillarde'],
+            ]) {
+              await upsertByEmail(email, {
+                company,
+                ...(city ? { city } : {}),
+                position: 'Alternance BTS Communication',
+                status: 'relance',
+                follow_up_at: '2026-08-30',
+                notes: 'Relance Gmail vérifiée le 16/08/2026.'
+              }, {insertIfMissing:false});
+            }
+          })().catch(e => { console.error(e); process.exit(1); });
+          NODE
