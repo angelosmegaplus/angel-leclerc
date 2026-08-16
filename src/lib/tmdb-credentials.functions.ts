@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getCookie, setCookie } from "@tanstack/react-start/server";
 import { TMDB_API_KEY_COOKIE, TMDB_READ_TOKEN_COOKIE } from "./vercel-connect-credentials.server";
+import { hasVaultSecretSync } from "./angel-vault.server";
 
 const BASE = "https://api.themoviedb.org/3";
 const COOKIE_OPTIONS = {
@@ -37,6 +38,8 @@ async function validateCredential(value: string, kind: "api-key" | "read-token")
 export const getTmdbCredentialStatus = createServerFn({ method: "GET" }).handler(async () => {
   const envReadToken = Boolean(process.env["TMDB_READ_ACCESS_TOKEN"]?.trim());
   const envApiKey = Boolean(process.env["TMDB_API_KEY"]?.trim());
+  const vaultReadToken = !envReadToken && hasVaultSecretSync("TMDB_READ_TOKEN");
+  const vaultApiKey = !envApiKey && hasVaultSecretSync("TMDB_API_KEY");
   const cookieReadToken = Boolean(getCookie(TMDB_READ_TOKEN_COOKIE));
   const cookieApiKey = Boolean(getCookie(TMDB_API_KEY_COOKIE));
 
@@ -48,7 +51,7 @@ export const getTmdbCredentialStatus = createServerFn({ method: "GET" }).handler
     activeSource = null;
   }
 
-  return { envReadToken, envApiKey, cookieReadToken, cookieApiKey, activeSource };
+  return { envReadToken, envApiKey, vaultReadToken, vaultApiKey, cookieReadToken, cookieApiKey, activeSource };
 });
 
 export const saveTmdbCredentials = createServerFn({ method: "POST" })
