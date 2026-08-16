@@ -2,7 +2,7 @@
 
 import type { AngelEventLog } from './event-log';
 import type { AngelTelemetry } from './observability';
-import type { AngelIssueRegistry, IssuePriority } from './issue-registry';
+import type { AngelIssueRegistry, IssueJsonValue, IssuePriority } from './issue-registry';
 
 export type GuardianSeverity = 'info' | 'warning' | 'critical';
 export type GuardianFinding = {
@@ -11,7 +11,7 @@ export type GuardianFinding = {
   severity: GuardianSeverity;
   message: string;
   at: number;
-  data?: Record<string, unknown>;
+  data?: { [key: string]: IssueJsonValue };
 };
 
 export type RecoveryAction = 'retry' | 'fallback' | 'rollback' | 'resync' | 'invalidate-cache' | 'isolate-provider' | 'restore-checkpoint' | 'none';
