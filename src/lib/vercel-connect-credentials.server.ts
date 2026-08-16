@@ -1,5 +1,6 @@
 import { getToken } from "@vercel/connect";
 import { getCookie } from "@tanstack/react-start/server";
+import { getVaultSecret } from "./angel-vault.server";
 
 const CONNECTORS = {
   tmdb: "tmdb_api_key/tmdb-angel-os",
@@ -30,11 +31,11 @@ function requestCookie(name: string) {
 }
 
 export async function getTmdbCredential() {
-  const readToken = process.env["TMDB_READ_ACCESS_TOKEN"];
-  if (readToken?.trim()) return { value: readToken.trim(), source: "env-read-token" as const, kind: "bearer" as const };
+  const readToken = process.env["TMDB_READ_ACCESS_TOKEN"]?.trim() || (await getVaultSecret("TMDB_READ_TOKEN"))?.trim();
+  if (readToken) return { value: readToken, source: process.env["TMDB_READ_ACCESS_TOKEN"] ? "env-read-token" as const : "angel-vault-read-token" as const, kind: "bearer" as const };
 
-  const apiKey = process.env["TMDB_API_KEY"];
-  if (apiKey?.trim()) return { value: apiKey.trim(), source: "env-api-key" as const, kind: "api-key" as const };
+  const apiKey = process.env["TMDB_API_KEY"]?.trim() || (await getVaultSecret("TMDB_API_KEY"))?.trim();
+  if (apiKey) return { value: apiKey, source: process.env["TMDB_API_KEY"] ? "env-api-key" as const : "angel-vault-api-key" as const, kind: "api-key" as const };
 
   const connected = await connectToken(CONNECTORS.tmdb);
   if (connected) return { value: connected, source: "vercel-connect-api-key" as const, kind: "api-key" as const };
@@ -49,8 +50,8 @@ export async function getTmdbCredential() {
 }
 
 export async function getOpenAiCredential() {
-  const serverKey = process.env["OPENAI_API_KEY"];
-  if (serverKey?.trim()) return { value: serverKey.trim(), source: "env" as const };
+  const serverKey = process.env["OPENAI_API_KEY"]?.trim() || (await getVaultSecret("OPENAI_API_KEY"))?.trim();
+  if (serverKey) return { value: serverKey, source: process.env["OPENAI_API_KEY"] ? "env" as const : "angel-vault" as const };
 
   const connected = await connectToken(CONNECTORS.openai);
   if (connected) return { value: connected, source: "vercel-connect" as const };
