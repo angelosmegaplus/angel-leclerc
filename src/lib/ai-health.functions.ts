@@ -29,15 +29,28 @@ export const getAdminAiHealth = createServerFn({ method: "GET" })
     await assertAdmin(context);
     const { angelAiSupervisorSnapshot } = await import("./ai-gateway.server");
     const status = angelAiSupervisorSnapshot();
+    const lastFailureAt = status.lastFailureAt ?? null;
+    const lastSuccessAt = status.lastSuccessAt ?? null;
+    const unresolvedFailure = Boolean(
+      lastFailureAt &&
+      (!lastSuccessAt || lastFailureAt > lastSuccessAt) &&
+      status.lastReason !== "ok",
+    );
+    const retryAt = status.circuitOpenUntil
+      ? status.circuitOpenUntil
+      : unresolvedFailure && lastFailureAt
+        ? lastFailureAt + 60_000
+        : null;
+
     return {
       enabled: status.enabled,
       providerConfigured: status.providerConfigured,
-      healthy: status.healthy,
+      healthy: status.healthy && !unresolvedFailure,
       lastReason: status.lastReason,
       circuitOpen: status.circuitOpen,
-      retryAt: status.retryAt,
+      retryAt,
       consecutiveFailures: status.consecutiveFailures,
-      lastFailureAt: status.lastFailureAt,
-      lastSuccessAt: status.lastSuccessAt,
+      lastFailureAt,
+      lastSuccessAt,
     };
   });
