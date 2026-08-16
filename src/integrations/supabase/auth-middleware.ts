@@ -27,8 +27,12 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 }
 
 function publicSupabaseConfig() {
-  const url = process.env.SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL;
-  const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  // The browser creates the session with the VITE_* public project. ServerFn
+  // authentication must validate that bearer token against the exact same
+  // project; a stale server-only SUPABASE_URL must not override the browser
+  // issuer and make every authenticated admin function reject a valid token.
+  const url = import.meta.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+  const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
   return { url: url?.trim(), publishableKey: publishableKey?.trim() };
 }
 
