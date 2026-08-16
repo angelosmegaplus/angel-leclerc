@@ -95,11 +95,16 @@ jobs:
           DEPLOY_URL: ${{ steps.deploy.outputs.url }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         shell: bash
-        run: gh pr comment "$PR_NUMBER" --body "Digital twin Angel OS vérifié (health + accueil + parcours + articles) : $DEPLOY_URL"
+        run: |
+          gh pr comment "$PR_NUMBER" --body "Digital twin Angel OS vérifié (health + accueil + parcours + articles) : $DEPLOY_URL"
 
       - name: Preview summary
         if: always()
         run: |
           echo "## Preview Angel OS" >> "$GITHUB_STEP_SUMMARY"
           echo "- Lint/build/typecheck : obligatoires" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Preview Vercel : ${{ steps.preview_auth.outputs.available == 'true' && 'active' || 'non configurée, sans faux échec' }}" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ steps.preview_auth.outputs.available }}" = "true" ]; then
+            echo "- Preview Vercel : active" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- Preview Vercel : non configurée, sans faux échec" >> "$GITHUB_STEP_SUMMARY"
+          fi
