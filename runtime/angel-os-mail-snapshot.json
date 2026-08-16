@@ -1,8 +1,8 @@
 {
-  "fetchedAt": "2026-08-16T00:00:00Z",
+  "fetchedAt": "2026-08-16T00:59:43Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-16T00:00:00Z",
+      "fetchedAt": "2026-08-16T00:59:43Z",
       "important": [
         {
           "subject": "Complétez votre dossier de candidature",
@@ -13,15 +13,15 @@
           "suggestedReply": ""
         },
         {
-          "subject": "Échecs techniques Angel OS / GitHub",
+          "subject": "Alertes techniques Angel OS / GitHub suivies d'un rétablissement CI",
           "from": "GitHub Actions notifications",
-          "date": "2026-08-15T23:38:25Z",
-          "summary": "Deux nouvelles alertes techniques sont arrivées depuis le précédent rapport : un nouvel échec du workflow Synchronisation données Angel OS à 23:05:45Z et un nouvel échec du workflow Maintenance Angel OS à 23:38:25Z. Aucun nouveau message de candidature n'est arrivé pendant cette période.",
-          "reason": "La chaîne technique reste dégradée ; cette routine consigne les alertes et laisse la maintenance technique traiter la cause afin d'éviter des correctifs concurrents.",
+          "date": "2026-08-16T00:35:42Z",
+          "summary": "Deux alertes techniques ont été reçues juste après minuit UTC : échec de Synchronisation données Angel OS à 00:01:25Z puis échec de Maintenance Angel OS à 00:01:40Z. Depuis, le dépôt a reçu un correctif de maintenance à 00:32:56Z et le dernier main 17511f9 a terminé son workflow CI avec succès à 00:35:42Z ; le statut Vercel du même commit est également success. Aucun nouveau message de candidature n'est arrivé pendant cette période.",
+          "reason": "La panne signalée en début de période semble au moins partiellement résolue côté build/déploiement ; la routine consigne l'évolution sans lancer de correctif concurrent.",
           "suggestedReply": ""
         }
       ],
-      "otherSummary": "Depuis le précédent rapport, deux nouveaux messages entrants ont été reçus, tous deux des alertes techniques GitHub liées à angel-leclerc. Aucun nouveau mail de candidature, refus, acceptation, entretien, demande de CV, demande d'information ou redirection professionnelle n'a été reçu. Gmail n'a subi aucune modification.",
+      "otherSummary": "Depuis le précédent rapport, deux nouveaux messages entrants ont été reçus, tous deux des alertes GitHub liées à angel-leclerc. Aucun nouveau mail de candidature, refus, acceptation, entretien, demande de CV, demande d'information ou redirection professionnelle n'a été reçu. Le dernier main observé a ensuite passé CI et affiche un statut Vercel success. Gmail n'a subi aucune modification.",
       "counts": {
         "new_since_last_run": 2,
         "incoming": 2,
@@ -38,9 +38,9 @@
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-15T23:04:13Z",
-    "period_end": "2026-08-16T00:00:00Z",
-    "summary": "Deux nouveaux messages ont été reçus sur la période, tous deux techniques et liés à angel-leclerc : un nouvel échec de Synchronisation données Angel OS à 23:05:45Z et un nouvel échec de Maintenance Angel OS à 23:38:25Z. Aucun nouveau mail de candidature, refus, acceptation, proposition d'entretien, demande de CV, demande d'information ou redirection professionnelle n'a été reçu. Aucun email n'a été envoyé, modifié, classé ou marqué lu par cette routine. La source native `ai_actions` n'est toujours pas directement interrogeable avec les connecteurs disponibles pendant cette exécution ; aucune action `awaiting_operator` n'a donc été exécutée ou modifiée.",
+    "period_start": "2026-08-16T00:00:00Z",
+    "period_end": "2026-08-16T00:59:43Z",
+    "summary": "Deux nouveaux messages ont été reçus sur la période, tous deux techniques et liés à angel-leclerc : un échec de Synchronisation données Angel OS à 00:01:25Z et un échec de Maintenance Angel OS à 00:01:40Z. Aucun nouveau mail de candidature, refus, acceptation, proposition d'entretien, demande de CV, demande d'information ou redirection professionnelle n'a été reçu. Aucun email n'a été envoyé, modifié, classé ou marqué lu par cette routine. Après ces alertes, un correctif de maintenance a été poussé et le dernier main 17511f9 a terminé CI avec succès ; son statut Vercel est également success. La source native `ai_actions` n'est toujours pas directement interrogeable avec les connecteurs disponibles pendant cette exécution ; aucune action `awaiting_operator` n'a donc été exécutée ou modifiée.",
     "counts": {
       "total_messages": 2,
       "incoming": 2,
@@ -56,22 +56,22 @@
     },
     "items": [
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Synchronisation données Angel OS - main (6e16227)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Synchronisation données Angel OS - main (46745e3)",
         "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T23:05:45Z",
-        "reason": "Nouvel échec de synchronisation des données Angel OS ; à laisser à la maintenance technique."
+        "date": "2026-08-16T00:01:25Z",
+        "reason": "Nouvel échec de synchronisation des données Angel OS ; aucune action mail à effectuer."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Maintenance Angel OS - main (52e09ac)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Maintenance Angel OS - main (46745e3)",
         "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-15T23:38:25Z",
-        "reason": "Nouvel échec du workflow de maintenance Angel OS."
+        "date": "2026-08-16T00:01:40Z",
+        "reason": "Nouvel échec du workflow de maintenance, suivi plus tard d'un correctif et d'un CI réussi sur le dernier main."
       }
     ],
     "recommendations": [
       "Aucune action mail n'est requise sur cette période.",
       "Conserver le questionnaire Université de Bordeaux comme action candidature encore pertinente issue d'un cycle précédent.",
-      "Laisser la maintenance technique traiter les échecs GitHub afin d'éviter des correctifs concurrents.",
+      "Ne pas lancer de correctif technique concurrent : le dernier main observé a passé CI et Vercel avec succès après le correctif de maintenance.",
       "Ne pas simuler l'exécution d'actions `awaiting_operator` tant que `ai_actions` n'est pas accessible par une voie serveur authentifiée."
     ],
     "source": "chatgpt-hourly-direct"
