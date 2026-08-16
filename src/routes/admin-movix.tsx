@@ -51,9 +51,12 @@ function FilmsSeriesPage() {
   });
 
   const fallback = useMemo(() => localFallback(filter, query), [filter, query]);
-  const catalog = useMemo<RecommendationCandidate[]>(() => data?.items?.length ? data.items : fallback, [data?.items, fallback]);
+  const usingTmdb = data?.source === "tmdb";
+  const catalog = useMemo<RecommendationCandidate[]>(
+    () => data?.source === "tmdb" ? data.items : fallback,
+    [data, fallback],
+  );
   const picks = useMemo(() => selectDailyRecommendations(catalog, []).slice(0, 5), [catalog]);
-  const usingTmdb = data?.source === "tmdb" && Boolean(data.items.length);
 
   if (loading || !session || !isAdmin) {
     return <main className="grid min-h-screen place-items-center bg-[#050607] text-white"><Loader2 className="h-6 w-6 animate-spin" /></main>;
@@ -66,7 +69,7 @@ function FilmsSeriesPage() {
           <div>
             <div className="flex items-center gap-2 text-red-300"><Film className="h-5 w-5" /><span className="font-mono text-[10px] uppercase tracking-[.18em]">Angel OS IA · cinéma personnel</span></div>
             <h1 className="mt-2 text-4xl font-semibold tracking-[-.055em] sm:text-5xl">Films et séries</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/45">TMDB alimente maintenant directement le catalogue, les affiches, les notes et la recherche. Le catalogue Angel OS local ne sert qu’en secours.</p>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/45">TMDB alimente directement le catalogue, les affiches, les notes et la recherche. Le catalogue Angel OS local n’est utilisé que si TMDB est réellement indisponible.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className={`rounded-full border px-3 py-1.5 text-xs ${usingTmdb ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-200" : "border-amber-400/25 bg-amber-400/10 text-amber-100"}`}>{usingTmdb ? "TMDB connecté" : "Secours local"}</span>
@@ -86,12 +89,13 @@ function FilmsSeriesPage() {
           </div>
         </section>
 
-        {!query && picks.length > 0 ? <section className="mt-9"><div className="flex items-end justify-between gap-3"><div><h2 className="text-2xl font-semibold tracking-[-.04em]">À regarder aujourd’hui</h2><p className="mt-1 text-xs text-white/35">Sélection calculée à partir du catalogue TMDB disponible.</p></div>{isLoading || isFetching ? <span className="inline-flex items-center gap-1.5 text-xs text-white/35"><Loader2 className="h-3.5 w-3.5 animate-spin" />TMDB</span> : null}</div><div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">{picks.map(({ candidate }) => <MediaCard key={`pick-${candidate.id}`} item={candidate} />)}</div></section> : null}
+        {!query && picks.length > 0 ? <section className="mt-9"><div className="flex items-end justify-between gap-3"><div><h2 className="text-2xl font-semibold tracking-[-.04em]">À regarder aujourd’hui</h2><p className="mt-1 text-xs text-white/35">{usingTmdb ? "Sélection calculée à partir du catalogue TMDB disponible." : "Sélection locale temporaire pendant l’indisponibilité de TMDB."}</p></div>{isLoading || isFetching ? <span className="inline-flex items-center gap-1.5 text-xs text-white/35"><Loader2 className="h-3.5 w-3.5 animate-spin" />TMDB</span> : null}</div><div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">{picks.map(({ candidate }) => <MediaCard key={`pick-${candidate.id}`} item={candidate} />)}</div></section> : null}
 
         <section className="mt-10 border-t border-white/10 pt-7">
           <div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-2xl font-semibold tracking-[-.04em]">{query ? `Résultats pour « ${query} »` : "Catalogue pour toi"}</h2><p className="mt-1 text-xs text-white/35">{catalog.length} titre{catalog.length > 1 ? "s" : ""} · source {usingTmdb ? "TMDB" : "locale de secours"}</p></div></div>
           {data?.source === "unavailable" ? <div className="mt-4 rounded-xl border border-amber-400/20 bg-amber-400/[.06] px-4 py-3 text-xs leading-5 text-amber-100/75">TMDB n’a pas répondu correctement. Angel OS utilise temporairement son catalogue local et retentera au prochain chargement.</div> : null}
-          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">{catalog.map((item) => <MediaCard key={item.id} item={item} />)}</div>
+          {usingTmdb && query && catalog.length === 0 ? <div className="mt-5 rounded-xl border border-white/10 bg-white/[.03] px-4 py-5 text-sm text-white/55">Aucun résultat TMDB pour « {query} ». Essaie un titre plus précis ou une autre orthographe.</div> : null}
+          {catalog.length > 0 ? <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">{catalog.map((item) => <MediaCard key={item.id} item={item} />)}</div> : null}
         </section>
 
         <MovixLauncherPanel />
