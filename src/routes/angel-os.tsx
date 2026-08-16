@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import {
   Activity,
   ArrowRight,
@@ -11,8 +12,6 @@ import {
   GitBranch,
   Globe2,
   HardDrive,
-  HeartPulse,
-  Layers3,
   Network,
   RefreshCcw,
   ServerCog,
@@ -122,7 +121,7 @@ const principles = [
   },
 ] as const;
 
-function StatusBadge({ children }: { children: React.ReactNode }) {
+function StatusBadge({ children }: { children: ReactNode }) {
   return (
     <span className="inline-flex items-center rounded-full border border-border bg-background/70 px-3 py-1 text-xs font-semibold text-muted-foreground backdrop-blur">
       {children}
