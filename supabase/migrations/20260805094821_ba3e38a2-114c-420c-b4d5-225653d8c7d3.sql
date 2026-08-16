@@ -1,10 +1,11 @@
-select cron.alter_job(
-  1,
-  command := $cmd$
-  select net.http_post(
-    url:='https://project--5bca9ec4-6763-4641-aa6d-439dc0e8bfc8.lovable.app/api/public/hooks/newsletter',
-    headers:='{"Content-Type": "application/json", "x-newsletter-token": "bfc220e1a5fb5106b6763c677b1f9b0b3aa23fef7f42615ff64a308049f12fdb"}'::jsonb,
-    body:='{}'::jsonb
-  ) as request_id;
-  $cmd$
-);
+-- Legacy newsletter cron migration intentionally disabled.
+--
+-- This migration previously attempted to alter a pg_cron job and call a
+-- Lovable endpoint with an embedded credential. That design is no longer part
+-- of Angel OS: GitHub/native server integrations are the source of truth, and
+-- secrets must never be committed to migrations.
+--
+-- Keep this historical migration as an explicit no-op so fresh/preview
+-- Supabase environments can replay the migration chain even when pg_cron is
+-- unavailable, without recreating the obsolete external job.
+select 1;
