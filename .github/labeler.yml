@@ -1,0 +1,44 @@
+risk-high:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/workflows/**'
+          - 'src/**/auth*'
+          - 'src/**/oauth*'
+          - 'src/integrations/**'
+          - 'supabase/**'
+          - 'vercel.json'
+
+risk-medium:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/lib/**'
+          - 'src/routes/**'
+          - 'angel-os/**'
+          - 'package.json'
+          - 'bun.lock'
+
+area-ai:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/lib/ai-*'
+          - 'src/lib/angel-os-ia/**'
+          - 'src/**/ai/**'
+
+area-admin:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/routes/admin*'
+          - 'src/components/admin/**'
+
+area-infra:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**'
+          - 'vercel.json'
+          - 'supabase/**'
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.md'
+          - 'docs/**'
