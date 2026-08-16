@@ -89,10 +89,14 @@ export const syncGoogleApplications = createServerFn({ method: "POST" })
     return result;
   });
 
+// Runtime data intentionally lives on a branch that never deploys. Keeping
+// these JSON snapshots away from main prevents every research cycle from
+// triggering CI, previews and production builds while preserving a temporary
+// migration fallback until all writers use the native Angel OS cache.
 const ALTERNANCE_RUNTIME_URL =
-  "https://raw.githubusercontent.com/angelosmegaplus/angel-leclerc/main/runtime/alternance-urgent-latest.json";
+  "https://raw.githubusercontent.com/angelosmegaplus/angel-leclerc/runtime-data/runtime/alternance-urgent-latest.json";
 const ALTERNANCE_HISTORY_URL =
-  "https://raw.githubusercontent.com/angelosmegaplus/angel-leclerc/main/runtime/alternance-research-history.json";
+  "https://raw.githubusercontent.com/angelosmegaplus/angel-leclerc/runtime-data/runtime/alternance-research-history.json";
 
 async function fetchAdminJson(url: string) {
   const response = await fetch(`${url}?t=${Date.now()}`, {
@@ -125,8 +129,6 @@ export const getAlternanceResearchSnapshot = createServerFn({ method: "POST" })
           : [];
         payload.historyUpdatedAt = history.updatedAt;
 
-        // The dashboard consumes screenedLeads. Put the durable history first,
-        // then the latest cycle so current statuses overwrite older information.
         payload.screenedLeads = [
           ...(payload.history || []),
           ...(payload.screenedLeads || []),
