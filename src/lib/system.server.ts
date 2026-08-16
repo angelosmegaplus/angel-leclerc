@@ -1,4 +1,5 @@
 import type { ProviderId } from "./oauth/providers";
+import { hasVaultSecretSync } from "./angel-vault.server";
 
 export type IntegrationStatus = "ready" | "server_setup";
 
@@ -13,9 +14,7 @@ export type IntegrationReadiness = {
   missing: string[];
   connectPath?: string;
   reconnectPath?: string;
-  /** OAuth provider handled directly by the Angel OS web app, when applicable. */
   provider?: ProviderId;
-  /** Real account state, filled by the server function for direct OAuth providers. */
   connection?: ConnectionState;
   accountLabel?: string | null;
   lastSyncAt?: string | null;
@@ -31,11 +30,11 @@ const DEFINITIONS: Definition[] = [
     provider: "google",
     name: "Google Workspace",
     category: "Bureautique & mail",
-    description: "Connexion OAuth Google pour Gmail et, lorsque les scopes correspondants sont activés, Agenda et Drive.",
-    env: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "OAUTH_TOKEN_SECRET", "OAUTH_STATE_SECRET"],
+    description: "Connexion OAuth Google pour Gmail, Google Calendar et les fichiers Drive explicitement autorisés.",
+    env: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
     connectPath: "/oauth/google/start",
     reconnectPath: "/oauth/google/start?prompt=consent",
-    note: "GOOGLE_API_KEY et GOOGLE_CLOUD_PROJECT_ID peuvent être ajoutés pour les API qui les utilisent, mais ne remplacent pas le client OAuth. Les secrets de chiffrement OAuth doivent rester exclusivement côté serveur.",
+    note: "Les clés OAuth sont lues depuis l’environnement ou Angel Vault. Les clés internes de chiffrement OAuth sont dérivées côté serveur de la clé maître du coffre si elles ne sont pas définies séparément.",
   },
   {
     key: "microsoft",
@@ -62,8 +61,8 @@ const DEFINITIONS: Definition[] = [
   },
   {
     key: "youtube", provider: "youtube", name: "YouTube", category: "Réseaux sociaux",
-    description: "Mise en ligne des reportages vidéo via le compte Google.",
-    env: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "OAUTH_TOKEN_SECRET", "OAUTH_STATE_SECRET"],
+    description: "Mise en ligne des reportages vidéo via le même client OAuth Google.",
+    env: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
     connectPath: "/oauth/youtube/start",
   },
   {
@@ -74,19 +73,19 @@ const DEFINITIONS: Definition[] = [
   {
     key: "angel-ai", name: "OpenAI · Angel OS IA", category: "Intelligence artificielle",
     description: "Moteur d’intelligence artificielle externe utilisé par Angel OS IA.", env: ["OPENAI_API_KEY"],
-    note: "Les éventuelles clés secondaires ou administrateur ne sont pas nécessaires au fonctionnement normal du site et ne doivent pas être exposées au navigateur.",
+    note: "OPENAI_API_KEY peut être fournie par Vercel ou par Angel Vault. Les clés administrateur/secondaires restent réservées aux opérations serveur explicites.",
   },
   {
     key: "site", name: "Supabase · angel-leclerc.fr", category: "Site & contenus",
     description: "Base de données, authentification, stockage et traitements serveur du site.",
-    env: ["SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY", "SUPABASE_SERVICE_ROLE_KEY"],
-    note: "La clé publishable peut être utilisée côté client lorsque prévu. SUPABASE_SERVICE_ROLE_KEY est strictement serveur et ne doit jamais être incluse dans le bundle public.",
+    env: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+    note: "Le client serveur sait maintenant ouvrir directement ces identifiants depuis Angel Vault. La clé publishable reste disponible séparément pour les usages publics prévus.",
   },
   {
     key: "tmdb", name: "TMDB", category: "Films & séries",
     description: "Métadonnées, affiches, recherche et informations Films & séries.",
     env: ["TMDB_READ_TOKEN"],
-    note: "TMDB_API_KEY peut aussi être configurée comme solution de repli. Le jeton Read Access est prioritaire.",
+    note: "TMDB_API_KEY reste une solution de repli. Les deux peuvent être lus depuis Angel Vault.",
   },
   {
     key: "stripe", name: "Stripe", category: "Site & contenus", description: "Paiements de la boutique.", env: ["STRIPE_SECRET_KEY"],
@@ -109,7 +108,7 @@ const DEFINITIONS: Definition[] = [
 
 export function readIntegrations(): IntegrationReadiness[] {
   return DEFINITIONS.map(({ env, ...rest }) => {
-    const missing = env.filter((name) => !process.env[name]);
+    const missing = env.filter((name) => !hasVaultSecretSync(name));
     return { ...rest, missing, status: missing.length === 0 ? "ready" : "server_setup" } satisfies IntegrationReadiness;
   });
 }
