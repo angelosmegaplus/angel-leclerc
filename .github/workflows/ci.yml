@@ -64,6 +64,9 @@ jobs:
       - name: Build production bundle and generate route types
         run: bun run build
 
+      - name: Verify critical route contract
+        run: node scripts/verify-critical-routes.mjs
+
       - name: Type-check generated application
         run: bun run typecheck
 
@@ -90,6 +93,7 @@ jobs:
           echo "- Installation reproductible + cache Bun" >> "$GITHUB_STEP_SUMMARY"
           echo "- Lint bloquant" >> "$GITHUB_STEP_SUMMARY"
           echo "- Build production + génération des types de routes bloquants" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Contrat des routes critiques bloquant" >> "$GITHUB_STEP_SUMMARY"
           echo "- TypeScript après génération TanStack bloquant" >> "$GITHUB_STEP_SUMMARY"
           echo "- Hygiène des secrets sensibles bloquante" >> "$GITHUB_STEP_SUMMARY"
           echo "- Artefact exact du SHA conservé 7 jours" >> "$GITHUB_STEP_SUMMARY"
