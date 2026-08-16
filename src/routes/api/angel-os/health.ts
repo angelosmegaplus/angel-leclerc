@@ -150,21 +150,37 @@ export const Route = createFileRoute("/api/angel-os/health")({
         };
         const missingEnvironment = Object.entries(checks).filter(([, present]) => !present).map(([name]) => name);
         const googleConfigured = google?.status === "ready";
-        const healthy = missingEnvironment.length === 0
+
+        // `healthy` represents the critical AI runtime used by publication gates and the
+        // conversation surfaces. Optional integrations must never make the core AI look
+        // unavailable: TMDB, Google OAuth and the Supabase service role are reported as
+        // degraded dependencies instead. Public Supabase auth remains critical because
+        // the private Angel OS IA surface depends on authenticated sessions.
+        const criticalMissing = [
+          !checks.OPENAI_API_KEY ? "OPENAI_API_KEY" : null,
+          !checks.SUPABASE_PUBLIC ? "SUPABASE_PUBLIC" : null,
+          !checks.SUPABASE_PROJECT_ALIGNED ? "SUPABASE_PROJECT_ALIGNED" : null,
+        ].filter((value): value is string => Boolean(value));
+        const healthy = criticalMissing.length === 0
           && openai.reachable === true
-          && tmdb.reachable === true
-          && supabaseAuth.reachable === true
-          && supabaseServer.reachable === true
-          && googleConfigured;
+          && supabaseAuth.reachable === true;
+        const degradedReasons = [
+          tmdb.reachable !== true ? `tmdb:${tmdb.reason || "unreachable"}` : null,
+          supabaseServer.reachable !== true ? `supabaseServer:${supabaseServer.reason || "unreachable"}` : null,
+          !googleConfigured ? `google:${google?.missing.join(",") || "configuration"}` : null,
+        ].filter((value): value is string => Boolean(value));
 
         return Response.json({
           service: "angel-os",
           healthy,
+          degraded: degradedReasons.length > 0,
           checkedAt: new Date().toISOString(),
           release: process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.GITHUB_SHA ?? null,
           configuration: {
             source: "vercel-environment+build",
             missing: missingEnvironment,
+            criticalMissing,
+            degradedReasons,
             supabase: {
               projectAligned: supabaseProjectAligned,
               serverProjectRef,
