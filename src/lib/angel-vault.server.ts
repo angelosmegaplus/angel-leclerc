@@ -28,7 +28,7 @@ function legacyOAuthRoot(): Buffer | null {
   let encoded = process.env.ANGEL_OS_VAULT_KEY?.trim();
   if (!encoded) return null;
   if (encoded.startsWith("ANGEL_OS_VAULT_KEY=")) encoded = encoded.slice("ANGEL_OS_VAULT_KEY=".length).trim();
-  encoded = encoded.replace(/^['\"]|['\"]$/g, "");
+  encoded = encoded.replace(/^['"]|['"]$/g, "");
   const key = Buffer.from(encoded, "base64");
   return key.length === 32 ? key : null;
 }
