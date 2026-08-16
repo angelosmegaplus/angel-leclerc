@@ -1,0 +1,35 @@
+name: Runtime data guard
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: runtime-main-guard-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  protect-main:
+    name: Keep live data out of main
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Reject live runtime state in code PRs
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- 'runtime/*.json' 'runtime/*.txt' || true)"
+          if [ -n "$changed" ]; then
+            printf '%s\n' "$changed"
+            echo "::error::Les données runtime vivantes ne doivent plus être modifiées sur main. Utiliser le stockage natif Angel OS/Supabase, ou temporairement la branche runtime-data non déployée."
+            exit 1
+          fi
+          echo "Aucune donnée runtime vivante ajoutée ou modifiée sur main."
