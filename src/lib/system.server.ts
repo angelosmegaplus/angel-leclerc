@@ -40,7 +40,7 @@ const DEFINITIONS: Definition[] = [
   { key: "github", provider: "github", name: "GitHub", category: "Développement", description: "Synchronisation du code du site et suivi des évolutions.", env: ["GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET"] },
   { key: "angel-ai", name: "OpenAI · Angel OS IA", category: "Intelligence artificielle", description: "Moteur d’intelligence artificielle externe utilisé par Angel OS IA.", env: ["OPENAI_API_KEY"], note: "Une seule clé OpenAI est utilisée : OPENAI_API_KEY." },
   { key: "site", name: "Supabase · angel-leclerc.fr", category: "Site & contenus", description: "Base de données, authentification, stockage et traitements serveur du site.", env: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"], note: "Une seule clé serveur Supabase est utilisée." },
-  { key: "tmdb", name: "TMDB", category: "Films & séries", description: "Métadonnées, affiches, recherche et informations Films & séries.", env: ["TMDB_READ_TOKEN"], note: "Un seul jeton TMDB est utilisé. TMDB_API_KEY reste un secours de configuration simple si le read token n’est pas présent." },
+  { key: "tmdb", name: "TMDB", category: "Films & séries", description: "Métadonnées, affiches, recherche et informations Films & séries.", env: ["TMDB_READ_TOKEN"], note: "TMDB utilise un identifiant unique : variable serveur si disponible, sinon la clé v3 intégrée au build." },
   { key: "stripe", name: "Stripe", category: "Site & contenus", description: "Paiements de la boutique.", env: ["STRIPE_SECRET_KEY"] },
   { key: "printful", name: "Printful", category: "Site & contenus", description: "Catalogue, impression et expédition des produits.", env: ["PRINTFUL_API_KEY"] },
   { key: "canva", provider: "canva", name: "Canva", category: "Création visuelle", description: "Visuels et gabarits de la marque.", env: ["CANVA_CLIENT_ID", "CANVA_CLIENT_SECRET"] },
@@ -51,10 +51,19 @@ function hasEnv(name: string) {
   return Boolean(process.env[name]?.trim());
 }
 
+function hasTmdbCredential() {
+  return Boolean(
+    process.env.TMDB_READ_TOKEN?.trim()
+    || process.env.TMDB_READ_ACCESS_TOKEN?.trim()
+    || process.env.TMDB_API_KEY?.trim()
+    || import.meta.env.VITE_TMDB_API_KEY?.trim(),
+  );
+}
+
 export function readIntegrations(): IntegrationReadiness[] {
   return DEFINITIONS.map(({ env, ...rest }) => {
     let missing = env.filter((name) => !hasEnv(name));
-    if (rest.key === "tmdb" && !hasEnv("TMDB_READ_TOKEN") && hasEnv("TMDB_API_KEY")) missing = [];
+    if (rest.key === "tmdb" && hasTmdbCredential()) missing = [];
     return { ...rest, missing, status: missing.length === 0 ? "ready" : "server_setup" } satisfies IntegrationReadiness;
   });
 }
