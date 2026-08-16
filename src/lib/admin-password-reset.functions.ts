@@ -17,8 +17,8 @@ const resetSchema = z.object({
 type ResetResult = { ok: true; adminRestored: boolean } | { ok: false; error: string };
 
 function adminClient() {
-  const url = process.env.SUPABASE_URL?.trim();
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || process.env.SUPABASE_SECRET_KEY?.trim();
+  const url = String(process.env.SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL || "").trim();
+  const key = String(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || "").trim();
   if (!url || !key) throw new Error("Configuration d’authentification serveur incomplète.");
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
@@ -89,7 +89,6 @@ export const resetOwnerPasswordWithEmergencyCode = createServerFn({ method: "POS
       }, { onConflict: "user_id,role" });
       if (roleError) adminRestored = false;
 
-      // La journalisation ne doit jamais empêcher la récupération d'accès.
       try {
         await client.from("admin_owner_recovery_attempts").upsert({
           user_id: user.id,
@@ -98,7 +97,7 @@ export const resetOwnerPasswordWithEmergencyCode = createServerFn({ method: "POS
           updated_at: new Date().toISOString(),
         }, { onConflict: "user_id" });
       } catch {
-        // best effort only
+        // La journalisation ne doit jamais bloquer la récupération du propriétaire.
       }
 
       return { ok: true, adminRestored };
