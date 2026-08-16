@@ -1,0 +1,69 @@
+name: PR risk score
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review, edited]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: pr-risk-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  score:
+    name: Risk-aware change gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Compute risk score
+        id: risk
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          files="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
+          score=0
+          reasons=()
+
+          add_risk() {
+            local points="$1" reason="$2"
+            score=$((score + points))
+            reasons+=("$reason (+$points)")
+          }
+
+          if printf '%s\n' "$files" | grep -Eq '^\.github/workflows/|^vercel\.json$'; then add_risk 35 "delivery/production"; fi
+          if printf '%s\n' "$files" | grep -Eiq '(^|/)(auth|oauth|security)(/|\.|-)'; then add_risk 35 "auth/security"; fi
+          if printf '%s\n' "$files" | grep -Eq '^supabase/.*(migration|migrations)|^supabase/migrations/'; then add_risk 40 "database migration"; fi
+          if printf '%s\n' "$files" | grep -Eq '^src/integrations/|^src/lib/ai-|^src/lib/angel-os-ia/'; then add_risk 20 "external integration/AI"; fi
+          if printf '%s\n' "$files" | grep -Eq '^src/routes/api/|^src/lib/.*\.server\.'; then add_risk 15 "server runtime"; fi
+          if printf '%s\n' "$files" | grep -Eq '(^|/)(package\.json|bun\.lock)$'; then add_risk 15 "dependencies"; fi
+          if printf '%s\n' "$files" | grep -Eq '^angel-os/core/'; then add_risk 20 "Angel OS core"; fi
+          if [ "$score" -gt 100 ]; then score=100; fi
+
+          if [ "$score" -ge 70 ]; then level=high; elif [ "$score" -ge 30 ]; then level=medium; else level=low; fi
+          echo "score=$score" >> "$GITHUB_OUTPUT"
+          echo "level=$level" >> "$GITHUB_OUTPUT"
+          echo "## Risk score: $score/100 ($level)" >> "$GITHUB_STEP_SUMMARY"
+          printf -- '- %s\n' "${reasons[@]:-No elevated-risk surface detected}" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          printf '%s\n' "$files" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Require validation plan for high-risk changes
+        if: steps.risk.outputs.level == 'high'
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s' "$BODY" | grep -qi '## Validation' || { echo "::error::Une PR à risque élevé doit contenir une section Validation."; exit 1; }
+          printf '%s' "$BODY" | grep -qi '## Production' || { echo "::error::Une PR à risque élevé doit contenir une section Production."; exit 1; }
