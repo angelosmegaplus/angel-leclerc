@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getCookie, setCookie } from "@tanstack/react-start/server";
 import { OPENAI_API_KEY_COOKIE } from "./vercel-connect-credentials.server";
+import { hasVaultSecretSync } from "./angel-vault.server";
 
 const COOKIE_OPTIONS = {
   path: "/",
@@ -35,6 +36,7 @@ async function validateOpenAiKey(value: string) {
 
 export const getOpenAiCredentialStatus = createServerFn({ method: "GET" }).handler(async () => {
   const envApiKey = Boolean(process.env["OPENAI_API_KEY"]?.trim());
+  const vaultApiKey = !envApiKey && hasVaultSecretSync("OPENAI_API_KEY");
   const cookieApiKey = Boolean(getCookie(OPENAI_API_KEY_COOKIE));
 
   let activeSource: string | null = null;
@@ -45,7 +47,7 @@ export const getOpenAiCredentialStatus = createServerFn({ method: "GET" }).handl
     activeSource = null;
   }
 
-  return { envApiKey, cookieApiKey, activeSource };
+  return { envApiKey, vaultApiKey, cookieApiKey, activeSource };
 });
 
 export const saveOpenAiCredential = createServerFn({ method: "POST" })
