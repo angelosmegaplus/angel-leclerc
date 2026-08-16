@@ -9,6 +9,9 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit --pretty false",
+    "check": "bun run lint && bun run build && bun run typecheck",
+    "ci": "bun run check",
     "format": "prettier --write ."
   },
   "dependencies": {
