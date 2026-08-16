@@ -1,8 +1,8 @@
 {
-  "fetchedAt": "2026-08-16T00:59:43Z",
+  "fetchedAt": "2026-08-16T05:58:57Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-16T00:59:43Z",
+      "fetchedAt": "2026-08-16T05:58:57Z",
       "important": [
         {
           "subject": "Complétez votre dossier de candidature",
@@ -13,20 +13,28 @@
           "suggestedReply": ""
         },
         {
-          "subject": "Alertes techniques Angel OS / GitHub suivies d'un rétablissement CI",
+          "subject": "Quota Codex atteint sur plusieurs revues de code Angel OS",
+          "from": "chatgpt-codex-connector[bot] <notifications@github.com>",
+          "date": "2026-08-16T04:48:30Z",
+          "summary": "Trois notifications GitHub indiquent que la limite d'utilisation Codex pour les revues de code est atteinte sur les PR #15, #16 et #27. Aucun email de candidature n'est concerné et aucune réponse mail n'est requise.",
+          "reason": "Blocage technique temporaire pour les revues Codex, à consigner sans lancer de réponse ou de correctif concurrent depuis cette routine.",
+          "suggestedReply": ""
+        },
+        {
+          "subject": "Synchronisation Angel OS échouée puis état GitHub/Vercel redevenu sain",
           "from": "GitHub Actions notifications",
-          "date": "2026-08-16T00:35:42Z",
-          "summary": "Deux alertes techniques ont été reçues juste après minuit UTC : échec de Synchronisation données Angel OS à 00:01:25Z puis échec de Maintenance Angel OS à 00:01:40Z. Depuis, le dépôt a reçu un correctif de maintenance à 00:32:56Z et le dernier main 17511f9 a terminé son workflow CI avec succès à 00:35:42Z ; le statut Vercel du même commit est également success. Aucun nouveau message de candidature n'est arrivé pendant cette période.",
-          "reason": "La panne signalée en début de période semble au moins partiellement résolue côté build/déploiement ; la routine consigne l'évolution sans lancer de correctif concurrent.",
+          "date": "2026-08-16T01:01:42Z",
+          "summary": "Le workflow Synchronisation données Angel OS a échoué sur le commit f702ef4. Depuis, plusieurs commits ont été ajoutés ; le dernier main observé est b77023c et son statut Vercel est success. Aucun nouveau mail de candidature, refus, entretien, demande de CV ou redirection professionnelle n'a été reçu sur la période.",
+          "reason": "L'alerte technique reste pertinente pour l'historique, mais le dernier état de déploiement observé est sain ; aucune action mail à effectuer.",
           "suggestedReply": ""
         }
       ],
-      "otherSummary": "Depuis le précédent rapport, deux nouveaux messages entrants ont été reçus, tous deux des alertes GitHub liées à angel-leclerc. Aucun nouveau mail de candidature, refus, acceptation, entretien, demande de CV, demande d'information ou redirection professionnelle n'a été reçu. Le dernier main observé a ensuite passé CI et affiche un statut Vercel success. Gmail n'a subi aucune modification.",
+      "otherSummary": "Depuis le précédent rapport, quatre nouveaux messages entrants ont été reçus : un échec de Synchronisation données Angel OS et trois notifications de quota Codex atteint sur des revues de code. Aucun nouveau mail de candidature, refus, acceptation, entretien, demande de CV, demande d'information ou redirection professionnelle n'a été reçu. Le dernier main observé est b77023c et son statut Vercel est success. Gmail n'a subi aucune modification.",
       "counts": {
-        "new_since_last_run": 2,
-        "incoming": 2,
+        "new_since_last_run": 4,
+        "incoming": 4,
         "outgoing": 0,
-        "technical_incoming": 2,
+        "technical_incoming": 4,
         "employment_or_application_incoming": 0,
         "outgoing_applications": 0,
         "application_action_required": 0,
@@ -38,14 +46,14 @@
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-16T00:00:00Z",
-    "period_end": "2026-08-16T00:59:43Z",
-    "summary": "Deux nouveaux messages ont été reçus sur la période, tous deux techniques et liés à angel-leclerc : un échec de Synchronisation données Angel OS à 00:01:25Z et un échec de Maintenance Angel OS à 00:01:40Z. Aucun nouveau mail de candidature, refus, acceptation, proposition d'entretien, demande de CV, demande d'information ou redirection professionnelle n'a été reçu. Aucun email n'a été envoyé, modifié, classé ou marqué lu par cette routine. Après ces alertes, un correctif de maintenance a été poussé et le dernier main 17511f9 a terminé CI avec succès ; son statut Vercel est également success. La source native `ai_actions` n'est toujours pas directement interrogeable avec les connecteurs disponibles pendant cette exécution ; aucune action `awaiting_operator` n'a donc été exécutée ou modifiée.",
+    "period_start": "2026-08-16T00:59:43Z",
+    "period_end": "2026-08-16T05:58:57Z",
+    "summary": "Quatre nouveaux messages ont été reçus depuis le précédent rapport, tous techniques et liés à angel-leclerc : un échec du workflow Synchronisation données Angel OS à 01:01:42Z, puis trois notifications à 04:48Z indiquant que la limite Codex pour les revues de code est atteinte sur les PR #15, #16 et #27. Aucun nouveau mail de candidature, refus, acceptation, proposition d'entretien, demande de CV, demande d'information ou redirection professionnelle n'a été reçu. Aucun email n'a été envoyé, modifié, classé ou marqué lu par cette routine. Le dernier main observé est b77023c et son statut Vercel est success. La source native `ai_actions` n'est toujours pas directement interrogeable avec les connecteurs disponibles pendant cette exécution ; aucune action `awaiting_operator` n'a donc été exécutée ou modifiée.",
     "counts": {
-      "total_messages": 2,
-      "incoming": 2,
+      "total_messages": 4,
+      "incoming": 4,
       "outgoing": 0,
-      "technical_incoming": 2,
+      "technical_incoming": 4,
       "employment_or_application_incoming": 0,
       "outgoing_applications": 0,
       "application_action_required": 0,
@@ -56,22 +64,35 @@
     },
     "items": [
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Synchronisation données Angel OS - main (46745e3)",
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Synchronisation données Angel OS - main (f702ef4)",
         "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-16T00:01:25Z",
+        "date": "2026-08-16T01:01:42Z",
         "reason": "Nouvel échec de synchronisation des données Angel OS ; aucune action mail à effectuer."
       },
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Maintenance Angel OS - main (46745e3)",
-        "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-16T00:01:40Z",
-        "reason": "Nouvel échec du workflow de maintenance, suivi plus tard d'un correctif et d'un CI réussi sur le dernier main."
+        "subject": "Re: [angelosmegaplus/angel-leclerc] Préparer la migration Google Cloud (PR #27)",
+        "from": "chatgpt-codex-connector[bot] <notifications@github.com>",
+        "date": "2026-08-16T04:48:23Z",
+        "reason": "Quota Codex atteint pour la revue de code ; blocage technique temporaire, aucune action mail."
+      },
+      {
+        "subject": "Re: [angelosmegaplus/angel-leclerc] Angel OS: adaptateurs fonctionnels et orchestration du site (PR #15)",
+        "from": "chatgpt-codex-connector[bot] <notifications@github.com>",
+        "date": "2026-08-16T04:48:26Z",
+        "reason": "Quota Codex atteint pour la revue de code ; blocage technique temporaire, aucune action mail."
+      },
+      {
+        "subject": "Re: [angelosmegaplus/angel-leclerc] Angel OS totalement autonome : Linux + services natifs (PR #16)",
+        "from": "chatgpt-codex-connector[bot] <notifications@github.com>",
+        "date": "2026-08-16T04:48:30Z",
+        "reason": "Quota Codex atteint pour la revue de code ; blocage technique temporaire, aucune action mail."
       }
     ],
     "recommendations": [
       "Aucune action mail n'est requise sur cette période.",
       "Conserver le questionnaire Université de Bordeaux comme action candidature encore pertinente issue d'un cycle précédent.",
-      "Ne pas lancer de correctif technique concurrent : le dernier main observé a passé CI et Vercel avec succès après le correctif de maintenance.",
+      "Ne pas lancer de correctif technique concurrent depuis cette routine : le dernier main observé b77023c a un statut Vercel success.",
+      "Attendre le rétablissement du quota Codex pour les revues de code plutôt que multiplier les tentatives.",
       "Ne pas simuler l'exécution d'actions `awaiting_operator` tant que `ai_actions` n'est pas accessible par une voie serveur authentifiée."
     ],
     "source": "chatgpt-hourly-direct"
