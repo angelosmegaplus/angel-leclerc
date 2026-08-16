@@ -21,36 +21,40 @@ export type AdminAiHealth = {
   consecutiveFailures: number;
   lastFailureAt: number | null;
   lastSuccessAt: number | null;
+  credentialCount: number;
+  availableCredentialCount: number;
+  probeSource: string | null;
+  probeDetail: string | null;
 };
 
 export const getAdminAiHealth = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<AdminAiHealth> => {
     await assertAdmin(context);
-    const { angelAiSupervisorSnapshot } = await import("./ai-gateway.server");
+    const { angelAiSupervisorSnapshot, probeOpenAiHealth } = await import("./ai-gateway.server");
+    const probe = await probeOpenAiHealth();
     const status = angelAiSupervisorSnapshot();
     const lastFailureAt = status.lastFailureAt ?? null;
     const lastSuccessAt = status.lastSuccessAt ?? null;
-    const unresolvedFailure = Boolean(
-      lastFailureAt &&
-      (!lastSuccessAt || lastFailureAt > lastSuccessAt) &&
-      status.lastReason !== "ok",
-    );
     const retryAt = status.circuitOpenUntil
       ? status.circuitOpenUntil
-      : unresolvedFailure && lastFailureAt
-        ? lastFailureAt + 60_000
+      : !probe.healthy
+        ? Date.now() + 45_000
         : null;
 
     return {
       enabled: status.enabled,
       providerConfigured: status.providerConfigured,
-      healthy: status.healthy && !unresolvedFailure,
-      lastReason: status.lastReason,
+      healthy: status.enabled && status.providerConfigured && probe.healthy,
+      lastReason: probe.healthy ? "ok" : status.lastReason === "ok" ? "provider" : status.lastReason,
       circuitOpen: status.circuitOpen,
       retryAt,
       consecutiveFailures: status.consecutiveFailures,
       lastFailureAt,
       lastSuccessAt,
+      credentialCount: status.credentialCount,
+      availableCredentialCount: status.availableCredentialCount,
+      probeSource: probe.source,
+      probeDetail: probe.detail,
     };
   });
