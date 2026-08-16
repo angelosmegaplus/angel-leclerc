@@ -140,27 +140,94 @@ jobs:
       - name: Type-check
         run: bunx tsc --noEmit --pretty false
 
-      - name: Check critical public pages
+      - name: Audit all concrete production pages
         shell: bash
         run: |
           set -euo pipefail
-          pages=(
-            "https://www.angel-leclerc.fr/"
-            "https://www.angel-leclerc.fr/parcours"
-            "https://www.angel-leclerc.fr/articles"
-            "https://www.angel-leclerc.fr/contact"
-            "https://www.angel-leclerc.fr/admin"
-            "https://www.angel-leclerc.fr/angel-os-ia"
-          )
+          base="https://www.angel-leclerc.fr"
+          sitemap_file="$(mktemp)"
+          urls_file="$(mktemp)"
+          templates_file="$(mktemp)"
 
-          for url in "${pages[@]}"; do
-            code="$(curl -L --silent --show-error --output /dev/null --write-out '%{http_code}' --max-time 20 "$url")"
+          sitemap_code="$(curl --silent --show-error --output "$sitemap_file" --write-out '%{http_code}' --max-time 25 "$base/sitemap.xml")"
+          if [ "$sitemap_code" != "200" ]; then
+            echo "::error::Sitemap indisponible (HTTP $sitemap_code)."
+            exit 1
+          fi
+
+          python3 - "$sitemap_file" "$urls_file" "$templates_file" <<'PY'
+          from pathlib import Path
+          import sys
+          import xml.etree.ElementTree as ET
+
+          sitemap_path, urls_path, templates_path = sys.argv[1:]
+          base = "https://www.angel-leclerc.fr"
+          urls = set()
+          dynamic_templates = []
+
+          # Les URL concrètes publiées (notamment articles/routes dynamiques) viennent du sitemap réel.
+          try:
+              root = ET.parse(sitemap_path).getroot()
+              for node in root.iter():
+                  if node.tag.endswith("loc") and node.text:
+                      url = node.text.strip()
+                      if url.startswith(base):
+                          urls.add(url)
+          except ET.ParseError as exc:
+              raise SystemExit(f"Sitemap XML invalide: {exc}")
+
+          # Les pages statiques sont inventoriées depuis le routeur fichier, pas depuis une liste figée.
+          routes_root = Path("src/routes")
+          for file in sorted(routes_root.rglob("*")):
+              if not file.is_file() or file.suffix not in {".ts", ".tsx"}:
+                  continue
+              rel = file.relative_to(routes_root).as_posix()
+              if rel == "__root.tsx" or rel.startswith(("api/", "lovable/", "oauth/")):
+                  continue
+              if "$" in rel:
+                  dynamic_templates.append(rel)
+                  continue
+
+              route = rel
+              for suffix in (".tsx", ".ts"):
+                  if route.endswith(suffix):
+                      route = route[:-len(suffix)]
+                      break
+              route = route.replace("[.]", ".")
+              if route == "index":
+                  route = ""
+              elif route.endswith("/index"):
+                  route = route[:-len("/index")]
+              urls.add(base + "/" + route.lstrip("/"))
+
+          Path(urls_path).write_text("\n".join(sorted(urls)) + "\n", encoding="utf-8")
+          Path(templates_path).write_text("\n".join(dynamic_templates) + ("\n" if dynamic_templates else ""), encoding="utf-8")
+          PY
+
+          checked=0
+          while IFS= read -r url; do
+            [ -n "$url" ] || continue
+            code="$(curl -L --silent --show-error --output /dev/null --write-out '%{http_code}' --max-time 25 "$url")"
             if [ "$code" -lt 200 ] || [ "$code" -ge 400 ]; then
               echo "::error::Page indisponible ou en erreur: $url (HTTP $code)"
               exit 1
             fi
             echo "OK $code $url"
-          done
+            checked=$((checked + 1))
+          done < "$urls_file"
+
+          echo "Pages concrètes contrôlées : $checked"
+          if [ -s "$templates_file" ]; then
+            echo "Templates dynamiques sans identifiant sûr, couverts lorsqu'une URL concrète existe dans le sitemap :"
+            sed 's/^/- /' "$templates_file"
+          fi
+
+          not_found_code="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' --max-time 20 "$base/__angel_os_404_probe_$(date +%s)")"
+          if [ "$not_found_code" != "404" ]; then
+            echo "::warning::La route 404 de contrôle renvoie HTTP $not_found_code au lieu de 404."
+          else
+            echo "404 HTTP sémantique : OK"
+          fi
 
       - name: Check public weather endpoint
         shell: bash
@@ -200,7 +267,7 @@ jobs:
             echo "- Angel OS IA privé : chemin de code contrôlé séparément ; validation end-to-end nécessite une session admin authentifiée et ne doit pas être simulée"
             echo "- Candidatures : synchronisation Gmail tentée si le secret serveur est configuré ; un blocage de cette dépendance secondaire n'interrompt plus les contrôles principaux"
             echo "- Lint + build + TypeScript : exécutés sur GitHub Actions"
-            echo "- Pages critiques : contrôlées"
+            echo "- Pages : inventaire dynamique depuis les routes + sitemap réel, avec contrôle HTTP des URL concrètes et sonde 404"
             echo "- API météo : contrôlée"
             echo "- API actualités : contrôlée"
           } >> "$GITHUB_STEP_SUMMARY"
