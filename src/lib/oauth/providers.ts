@@ -18,6 +18,7 @@ export type ProviderConfig = {
   authorizeUrl: string;
   tokenUrl: string;
   scopes: string[];
+  optionalScopes?: string[];
   usePkce?: boolean;
   extraAuthParams?: Record<string, string>;
   /** Optional endpoint used to label the connected account. */
@@ -33,11 +34,15 @@ export const PROVIDERS: Record<ProviderId, ProviderConfig> = {
     clientSecretEnv: "GOOGLE_CLIENT_SECRET",
     authorizeUrl: "https://accounts.google.com/o/oauth2/v2/auth",
     tokenUrl: "https://oauth2.googleapis.com/token",
+    // Gmail is the mandatory core connection. Calendar/Drive are additive so a
+    // change in their consent/verification does not break the mailbox.
     scopes: [
       "openid",
       "email",
       "profile",
       "https://www.googleapis.com/auth/gmail.modify",
+    ],
+    optionalScopes: [
       "https://www.googleapis.com/auth/calendar.events",
       "https://www.googleapis.com/auth/drive.file",
     ],
