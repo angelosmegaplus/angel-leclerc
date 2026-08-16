@@ -4,6 +4,7 @@ export const OPENAI_API_KEY_COOKIE = "disabled";
 
 type OpenAiCredential = { value: string; source: string };
 type TmdbCredential = { value: string; source: string; kind: "bearer" | "api-key" };
+type LegacyAiGatewayCredential = { value: string; source: string };
 
 function env(name: string) {
   const value = process.env[name]?.trim();
@@ -49,7 +50,9 @@ export async function getTmdbCredential(): Promise<TmdbCredential | null> {
 export function markApiCredentialFailure() {}
 export function markApiCredentialHealthy() {}
 
-// Kept only for old imports. Angel OS IA no longer uses AI Gateway/OIDC fallback.
-export function getAiGatewayCredential() { return null; }
+// Compatibility only. Angel OS IA uses OpenAI directly and never returns a gateway credential.
+export function getAiGatewayCredential(): LegacyAiGatewayCredential | null {
+  return null;
+}
 
 export const VERCEL_CONNECTOR_IDS = { tmdb: "disabled", openai: "disabled" } as const;
