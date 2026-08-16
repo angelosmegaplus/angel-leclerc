@@ -22,17 +22,17 @@ export const integrationReadiness = createServerFn({ method: "GET" })
     await assertAdmin(context);
     const { readIntegrations } = await import("./system.server");
     const { PROVIDERS } = await import("./oauth/providers");
+    const oauth = await import("./oauth/oauth.server");
     const services = readIntegrations();
 
-    const { listConnections } = await import("./oauth/oauth.server");
-    let connections: Awaited<ReturnType<typeof listConnections>> = [];
+    let connections: Awaited<ReturnType<typeof oauth.listConnections>> = [];
     try {
-      connections = await listConnections(context.userId);
+      connections = await oauth.listConnections(context.userId);
     } catch (error) {
       console.error("[integrations] lecture des connexions impossible", error);
     }
 
-    return services.map((service) => {
+    return Promise.all(services.map(async (service) => {
       if (!service.provider) return service;
       const provider = PROVIDERS[service.provider];
       const row = connections.find((c) => c.provider === service.provider);
@@ -42,27 +42,54 @@ export const integrationReadiness = createServerFn({ method: "GET" })
       const optionalMissing = row
         ? (provider.optionalScopes ?? []).filter((scope) => !granted.has(scope))
         : [];
-      const connection: ConnectionState = !row
+
+      let connection: ConnectionState = !row
         ? "not_connected"
         : row.status === "reconnect_required" || missingScopes.length > 0
           ? "reconnect_required"
           : "connected";
+      let accountLabel = row?.accountLabel ?? null;
+      let liveProbeNote = "";
+
+      // A database row is not proof that OAuth still works. Force the same token path
+      // used by Gmail/Calendar/Drive and, where possible, validate it against the
+      // provider identity endpoint. Revoked/expired credentials are therefore exposed
+      // as reconnect_required instead of the misleading "Connecté" state.
+      if (row && connection === "connected") {
+        try {
+          const token = await oauth.getAccessToken(context.userId, service.provider);
+          if (!token) {
+            connection = "reconnect_required";
+            liveProbeNote = "Le jeton enregistré n’est plus exploitable. Une reconnexion est nécessaire.";
+          } else if (provider.identity) {
+            const label = await oauth.fetchAccountLabel(service.provider, token);
+            if (!label) {
+              connection = "reconnect_required";
+              liveProbeNote = "Le fournisseur refuse le jeton enregistré ou ne répond plus correctement. Reconnexion recommandée.";
+            } else {
+              accountLabel = label;
+            }
+          }
+        } catch (error) {
+          connection = "reconnect_required";
+          liveProbeNote = `Contrôle réel de la connexion impossible : ${error instanceof Error ? error.message.slice(0, 160) : "erreur inconnue"}.`;
+        }
+      }
+
       const optionalNote = optionalMissing.length > 0
-        ? `Fonctions Google optionnelles non encore autorisées : ${optionalMissing.join(", ")}. Gmail reste actif.`
+        ? `Fonctions optionnelles non encore autorisées : ${optionalMissing.join(", ")}.`
         : "";
+      const noteParts = [service.note, missingScopes.length > 0 ? `Reconnexion requise pour autoriser : ${missingScopes.join(", ")}.` : "", optionalNote, liveProbeNote].filter(Boolean);
+
       return {
         ...service,
         connection,
-        accountLabel: row?.accountLabel ?? null,
+        accountLabel,
         lastSyncAt: row?.lastSyncAt ?? null,
         scopes: row?.scopes ?? [],
-        ...(missingScopes.length > 0
-          ? { note: `${service.note ? `${service.note} ` : ""}Reconnexion requise pour autoriser : ${missingScopes.join(", ")}.` }
-          : optionalNote
-            ? { note: `${service.note ? `${service.note} ` : ""}${optionalNote}` }
-            : {}),
+        ...(noteParts.length ? { note: noteParts.join(" ") } : {}),
       };
-    });
+    }));
   });
 
 const providerInput = z.object({ provider: z.string().min(1).max(30) });
@@ -76,7 +103,9 @@ export const startOAuthConnection = createServerFn({ method: "POST" })
     const { isProviderId } = await import("./oauth/providers");
     if (!isProviderId(data.provider)) throw new Error("Fournisseur inconnu.");
     const { buildAuthorizeUrl } = await import("./oauth/oauth.server");
-    const origin = new URL(getRequest().url).origin;
+    const requestOrigin = new URL(getRequest().url).origin;
+    const canonicalOrigin = process.env.PUBLIC_SITE_URL?.trim() || process.env.SITE_URL?.trim() || requestOrigin;
+    const origin = canonicalOrigin.replace(/\/$/, "");
     return { url: buildAuthorizeUrl(data.provider, origin, context.userId) };
   });
 
