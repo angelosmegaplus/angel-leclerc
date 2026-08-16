@@ -2,8 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { isProviderId, PROVIDERS } from "@/lib/oauth/providers";
 
 function redirectToAdmin(origin: string, params: Record<string, string>) {
-  const url = new URL("/admin", origin);
-  url.searchParams.set("tab", "connexions");
+  const url = new URL("/admin-integrations", origin);
   for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
   return new Response(null, { status: 302, headers: { location: url.toString() } });
 }
@@ -13,7 +12,7 @@ export const Route = createFileRoute("/api/public/oauth/$provider/callback")({
     handlers: {
       GET: async ({ request, params }) => {
         const url = new URL(request.url);
-        const origin = url.origin;
+        const origin = (process.env.PUBLIC_SITE_URL?.trim() || process.env.SITE_URL?.trim() || url.origin).replace(/\/$/, "");
         const provider = params.provider;
 
         if (!isProviderId(provider)) return redirectToAdmin(origin, { oauth_error: "provider_inconnu" });
@@ -53,7 +52,7 @@ export const Route = createFileRoute("/api/public/oauth/$provider/callback")({
 
           return redirectToAdmin(origin, { oauth_connected: provider });
         } catch (error) {
-          console.error("[oauth callback]", error);
+          console.error("[oauth legacy callback]", error);
           return redirectToAdmin(origin, { oauth_error: "echec_echange" });
         }
       },
