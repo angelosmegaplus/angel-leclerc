@@ -5,8 +5,6 @@ on:
   workflow_run:
     workflows: ["CI"]
     types: [completed]
-  schedule:
-    - cron: "7,37 * * * *"
 
 permissions:
   contents: read
@@ -15,7 +13,7 @@ permissions:
 
 concurrency:
   group: publication-angel-os-production
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 env:
   VERCEL_ORG_ID: team_V2zZ6Gj9Vt3ULjCO6ssDbqwM
