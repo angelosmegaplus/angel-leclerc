@@ -19,6 +19,16 @@ function contentFromPayload(payload: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function compactText(value: unknown, max = 500) {
+  if (typeof value !== "string") return "";
+  return value.replace(/\s+/g, " ").trim().slice(0, max);
+}
+
+function stringList(value: unknown, maxItems = 8) {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === "string" && Boolean(item.trim())).slice(0, maxItems);
+}
+
 export async function readAiMemory(scope: AiMemoryScope | "all" = "all", limit = 80): Promise<AiMemoryItem[]> {
   if (!hasSupabaseAdminConfig()) return [];
   const kinds = scope === "public" ? ["memory_public"] : scope === "private" ? ["memory_private"] : ["memory_public", "memory_private"];
@@ -40,6 +50,54 @@ export async function readAiMemory(scope: AiMemoryScope | "all" = "all", limit =
     content: contentFromPayload(row.payload),
     updatedAt: row.updated_at,
   }));
+}
+
+async function publicContentSnapshot() {
+  if (!hasSupabaseAdminConfig()) return "";
+  const { data, error } = await supabaseAdmin
+    .from("content_items")
+    .select("section, title, subtitle, description, period, bullets, tags, extra_label, extra_value, url, updated_at, sort_order")
+    .eq("published", true)
+    .order("section", { ascending: true })
+    .order("sort_order", { ascending: true })
+    .limit(120);
+
+  if (error) {
+    console.warn("[ai-memory] public content snapshot unavailable", error.message);
+    return "";
+  }
+  if (!data?.length) return "";
+
+  const sectionLabels: Record<string, string> = {
+    experience: "EXPÉRIENCES PUBLIÉES",
+    formation: "FORMATIONS PUBLIÉES",
+    certification: "CERTIFICATIONS PUBLIÉES",
+    engagement: "ENGAGEMENTS PUBLIÉS",
+    projet: "PROJETS ET RÉALISATIONS PUBLIÉS",
+    service: "SERVICES PRINCIPAUX PUBLIÉS",
+    service_extra: "SERVICES COMPLÉMENTAIRES PUBLIÉS",
+  };
+
+  const groups = new Map<string, string[]>();
+  for (const item of data) {
+    const section = String(item.section || "autre");
+    const details = [
+      compactText(item.subtitle, 180),
+      compactText(item.period, 100),
+      compactText(item.description, 420),
+      ...stringList(item.bullets, 8).map((value) => compactText(value, 220)),
+      ...stringList(item.tags, 8).map((value) => `tag: ${compactText(value, 80)}`),
+      item.extra_label && item.extra_value ? `${compactText(item.extra_label, 80)}: ${compactText(item.extra_value, 180)}` : "",
+    ].filter(Boolean);
+    const url = compactText(item.url, 220);
+    const line = `- ${compactText(item.title, 180)}${details.length ? ` — ${details.join(" ; ")}` : ""}${url ? ` — ${url}` : ""}`;
+    const current = groups.get(section) ?? [];
+    current.push(line);
+    groups.set(section, current);
+  }
+
+  const blocks = [...groups.entries()].map(([section, lines]) => `${sectionLabels[section] ?? `CONTENU PUBLIC — ${section.toUpperCase()}`}\n${lines.join("\n")}`);
+  return `\n\nCONTENU PUBLIC ACTUEL DU SITE — SYNCHRONISÉ AUTOMATIQUEMENT\n${blocks.join("\n\n")}`;
 }
 
 async function publicSiteUpdates() {
@@ -65,9 +123,12 @@ async function publicSiteUpdates() {
 export async function aiMemoryPrompt(scope: AiMemoryScope | "all") {
   try {
     const items = await readAiMemory(scope);
-    const lines = items.map((item) => `- ${item.title}: ${item.content || "(aucun détail supplémentaire)"}`);
-    const memory = lines.length ? `\n\nMÉMOIRE ANGEL OS ACTUALISÉE\n${lines.join("\n")}` : "";
-    if (scope === "public") return `${memory}${await publicSiteUpdates()}`;
+    const lines = items.map((item) => `- ${item.title}: ${item.content || "(aucun détail supplémentaire)"} [mise à jour ${item.updatedAt}]`);
+    const memory = lines.length ? `\n\nMÉMOIRE ANGEL OS ACTUALISÉE\nRègle : les éléments les plus récents priment en cas de contradiction avec une information plus ancienne.\n${lines.join("\n")}` : "";
+    if (scope === "public") {
+      const [contentSnapshot, siteUpdates] = await Promise.all([publicContentSnapshot(), publicSiteUpdates()]);
+      return `${memory}${contentSnapshot}${siteUpdates}`;
+    }
     return memory;
   } catch (error) {
     console.warn("[ai-memory] unavailable; continuing without memory", error instanceof Error ? error.message : String(error));
