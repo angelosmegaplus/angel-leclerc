@@ -16,15 +16,30 @@ type VaultFile = {
 };
 
 let vaultCache: VaultFile | null = null;
+let vaultUnavailable = false;
 let masterKeyCache: Buffer | null = null;
 const decryptedCache = new Map<string, string>();
 const derivedKeyCache = new Map<string, Buffer>();
 
-function loadVaultSync(): VaultFile {
+function loadVaultSync(): VaultFile | null {
   if (vaultCache) return vaultCache;
-  const raw = readFileSync(resolve(process.cwd(), "config/angel-os-secrets.enc.json"), "utf8");
-  vaultCache = JSON.parse(raw) as VaultFile;
-  return vaultCache;
+  if (vaultUnavailable) return null;
+
+  try {
+    const raw = readFileSync(resolve(process.cwd(), "config/angel-os-secrets.enc.json"), "utf8");
+    vaultCache = JSON.parse(raw) as VaultFile;
+    return vaultCache;
+  } catch (error) {
+    const code = typeof error === "object" && error && "code" in error ? String((error as { code?: unknown }).code ?? "") : "";
+    if (code === "ENOENT") {
+      // Vercel/Nitro can omit non-imported config files from the server bundle.
+      // Direct environment variables remain the primary runtime source, so a
+      // missing optional vault file must never crash unrelated integrations.
+      vaultUnavailable = true;
+      return null;
+    }
+    throw error;
+  }
 }
 
 function masterKey(): Buffer {
@@ -51,6 +66,7 @@ export function getVaultSecretSync(name: string): string | undefined {
   if (cached) return cached;
 
   const vault = loadVaultSync();
+  if (!vault) return undefined;
   const entry = vault.entries[name];
   if (!entry) return undefined;
 
@@ -74,7 +90,7 @@ export function hasVaultSecretSync(name: string): boolean {
   if (process.env[name]?.trim() || decryptedCache.has(name)) return true;
   if (!process.env.ANGEL_OS_VAULT_KEY?.trim()) return false;
   try {
-    return Boolean(loadVaultSync().entries[name]);
+    return Boolean(loadVaultSync()?.entries[name]);
   } catch {
     return false;
   }
@@ -122,9 +138,10 @@ export async function getVaultStatus() {
   const vault = loadVaultSync();
   return {
     configured: Boolean(process.env.ANGEL_OS_VAULT_KEY),
-    cipher: vault.cipher,
-    version: vault.version,
-    entries: Object.keys(vault.entries),
+    available: Boolean(vault),
+    cipher: vault?.cipher ?? null,
+    version: vault?.version ?? null,
+    entries: vault ? Object.keys(vault.entries) : [],
     cachedSecrets: decryptedCache.size,
   };
 }
