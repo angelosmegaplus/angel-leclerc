@@ -102,7 +102,7 @@ function LandingPage() {
           <section className="mt-8 rounded-3xl border border-primary/25 bg-card p-8 md:p-10" aria-labelledby="angel-os-home-title">
             <div className="flex items-center gap-3"><img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-12 w-12 rounded-xl object-contain" /><div><p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">Application personnelle</p><h2 id="angel-os-home-title" className="font-display text-2xl font-bold text-foreground md:text-3xl">Angel OS</h2></div></div>
             <p className="mt-5 max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">Angel OS centralise dans une interface privée l'administration du site, l'assistance par intelligence artificielle, les communications, l'agenda, les candidatures, les fichiers, les API et les automatisations. Des services externes comme Gmail, Google Calendar ou Google Drive peuvent être connectés volontairement via OAuth afin de fournir uniquement les fonctions autorisées par l'utilisateur.</p>
-            <div className="mt-6 flex flex-wrap gap-3"><Button asChild><Link to="/angel-os"><ShieldCheck className="mr-2 h-4 w-4" />Découvrir Angel OS</Link></Button><Button asChild variant="outline"><Link to="/politique-confidentialite">Politique de confidentialité</Link></Button></div>
+            <div className="mt-6 flex flex-wrap gap-3"><Button asChild><Link to="/angel-os-ia"><ShieldCheck className="mr-2 h-4 w-4" />Découvrir Angel OS</Link></Button><Button asChild variant="outline"><Link to="/politique-confidentialite">Politique de confidentialité</Link></Button></div>
           </section>
         </div>
       </section>
