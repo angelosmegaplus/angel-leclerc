@@ -1,0 +1,29 @@
+# Angel OS ownership map
+
+# Default owner for the repository.
+* @angelosmegaplus
+
+# Delivery and repository governance.
+/.github/ @angelosmegaplus
+/package.json @angelosmegaplus
+/bun.lock @angelosmegaplus
+/vercel.json @angelosmegaplus
+
+# Security, authentication and external integrations require explicit attention.
+/src/integrations/ @angelosmegaplus
+/src/lib/*auth* @angelosmegaplus
+/src/lib/*oauth* @angelosmegaplus
+/src/lib/*security* @angelosmegaplus
+/src/lib/ai-* @angelosmegaplus
+/src/lib/angel-os-ia/ @angelosmegaplus
+/src/routes/auth.tsx @angelosmegaplus
+/src/routes/oauth/ @angelosmegaplus
+/src/routes/api/ @angelosmegaplus
+
+# Angel OS layers.
+/angel-os/ @angelosmegaplus
+/src/components/admin/ @angelosmegaplus
+/src/routes/admin* @angelosmegaplus
+
+# Data model and migrations are high-risk surfaces.
+/supabase/ @angelosmegaplus
