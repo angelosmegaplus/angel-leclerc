@@ -21,6 +21,7 @@ export const integrationReadiness = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<IntegrationReadiness[]> => {
     await assertAdmin(context);
     const { readIntegrations } = await import("./system.server");
+    const { PROVIDERS } = await import("./oauth/providers");
     const services = readIntegrations();
 
     const { listConnections } = await import("./oauth/oauth.server");
@@ -34,9 +35,12 @@ export const integrationReadiness = createServerFn({ method: "GET" })
     return services.map((service) => {
       if (!service.provider) return service;
       const row = connections.find((c) => c.provider === service.provider);
+      const requiredScopes = PROVIDERS[service.provider].scopes;
+      const granted = new Set(row?.scopes ?? []);
+      const missingScopes = row ? requiredScopes.filter((scope) => !granted.has(scope)) : [];
       const connection: ConnectionState = !row
         ? "not_connected"
-        : row.status === "reconnect_required"
+        : row.status === "reconnect_required" || missingScopes.length > 0
           ? "reconnect_required"
           : "connected";
       return {
@@ -45,6 +49,9 @@ export const integrationReadiness = createServerFn({ method: "GET" })
         accountLabel: row?.accountLabel ?? null,
         lastSyncAt: row?.lastSyncAt ?? null,
         scopes: row?.scopes ?? [],
+        ...(missingScopes.length > 0
+          ? { note: `${service.note ? `${service.note} ` : ""}Reconnexion requise pour autoriser : ${missingScopes.join(", ")}.` }
+          : {}),
       };
     });
   });
