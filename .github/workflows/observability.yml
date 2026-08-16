@@ -6,10 +6,13 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/observability.yml"
+      - "src/routes/api/angel-os/health.ts"
       - "src/routes/api/assistant.ts"
       - "src/lib/ai-*.server.ts"
       - "src/lib/news.functions.ts"
       - "src/lib/vercel-connect-credentials.server.ts"
+      - "src/lib/system.server.ts"
+      - "src/lib/tmdb.server.ts"
   schedule:
     - cron: "23 * * * *"
 
@@ -23,131 +26,75 @@ concurrency:
 
 jobs:
   health:
-    name: Contrôle production
+    name: Contrôle production complet
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
-      - name: Probe Angel OS production
+      - name: Probe all production dependencies
         id: probe
         shell: bash
         run: |
           set -euo pipefail
-          RESPONSE="$(curl --fail --silent --show-error --max-time 20 https://www.angel-leclerc.fr/api/angel-os/health)"
-          printf '%s' "$RESPONSE" > /tmp/health.json
-          jq . /tmp/health.json
-          test "$(jq -r '.healthy // false' /tmp/health.json)" = "true"
-
-          FAILURES="$(jq -r '
-            [.dependencies // {} | to_entries[]
-              | select(.value.configured == true and .value.reachable == false)
-              | .key + ":" + (.value.reason // "unreachable")]
-            | join(",")
-          ' /tmp/health.json)"
-          CRITICAL_FAILURES="$(jq -r '
-            [.dependencies // {} | to_entries[]
-              | select(.key == "openai")
-              | select(.value.configured != true or .value.reachable == false)
-              | .key + ":" + (.value.reason // (if .value.configured == true then "unreachable" else "not_configured" end))]
-            | join(",")
-          ' /tmp/health.json)"
-          MISSING="$(jq -r '
-            [.dependencies // {} | to_entries[]
-              | select(.value.configured == false)
-              | .key]
-            | join(",")
-          ' /tmp/health.json)"
-          echo "failures=$FAILURES" >> "$GITHUB_OUTPUT"
-          echo "critical_failures=$CRITICAL_FAILURES" >> "$GITHUB_OUTPUT"
-          echo "missing=$MISSING" >> "$GITHUB_OUTPUT"
-          if [ -n "$FAILURES" ]; then
-            echo "::warning::Dépendances configurées mais injoignables : $FAILURES"
+          HTTP="$(curl --silent --show-error --max-time 20 -o /tmp/health.json -w '%{http_code}' https://www.angel-leclerc.fr/api/angel-os/health)"
+          if ! jq -e . /tmp/health.json >/dev/null 2>&1; then
+            echo "::error::Health non JSON (HTTP=$HTTP)"
+            head -c 1000 /tmp/health.json || true
+            exit 1
           fi
+          jq . /tmp/health.json
+          FAILURES="$(jq -r '[.dependencies // {} | to_entries[] | select(.value.reachable == false) | .key + ":" + (.value.reason // "unreachable")] | join(",")' /tmp/health.json)"
+          MISSING="$(jq -r '(.configuration.missing // []) | join(",")' /tmp/health.json)"
+          CRITICAL="$(jq -r '[.dependencies // {} | to_entries[] | select(.key == "openai" or .key == "supabaseAuth" or .key == "supabaseServer" or .key == "tmdb") | select(.value.configured != true or .value.reachable == false) | .key + ":" + (.value.reason // "not_ready")] | join(",")' /tmp/health.json)"
+          echo "http=$HTTP" >> "$GITHUB_OUTPUT"
+          echo "healthy=$(jq -r '.healthy // false' /tmp/health.json)" >> "$GITHUB_OUTPUT"
+          echo "release=$(jq -r '.release // empty' /tmp/health.json)" >> "$GITHUB_OUTPUT"
+          echo "failures=$FAILURES" >> "$GITHUB_OUTPUT"
+          echo "missing=$MISSING" >> "$GITHUB_OUTPUT"
+          echo "critical=$CRITICAL" >> "$GITHUB_OUTPUT"
+          [ -z "$FAILURES" ] || echo "::warning::Dépendances en échec : $FAILURES"
+          [ -z "$MISSING" ] || echo "::warning::Configuration manquante : $MISSING"
 
-      - name: Verify real AI generation in production
+      - name: Verify real AI conversations
         id: ai_smoke
         shell: bash
         run: |
           set -euo pipefail
-
           probe_ai() {
-            local name="$1"
-            local payload="$2"
-            local file="/tmp/assistant-${name}.json"
-            local http_code
-            http_code="$(curl --silent --show-error --max-time 40 \
-              -o "$file" -w '%{http_code}' \
-              -X POST https://www.angel-leclerc.fr/api/assistant \
-              -H 'Content-Type: application/json' \
-              --data "$payload")"
-
-            if ! jq -e . "$file" >/dev/null 2>&1; then
-              echo "::error::[$name] réponse non JSON, HTTP $http_code"
-              head -c 500 "$file" || true
-              return 1
-            fi
-
-            local text source reason request_id
-            text="$(jq -r '.text // empty' "$file")"
-            source="$(jq -r '.source // empty' "$file")"
-            reason="$(jq -r '.reason // empty' "$file")"
-            request_id="$(jq -r '.requestId // empty' "$file")"
-            echo "[$name] HTTP=$http_code source=$source reason=$reason requestId=$request_id"
+            local name="$1" payload="$2" file="/tmp/assistant-${1}.json" code text source reason
+            code="$(curl --silent --show-error --max-time 40 -o "$file" -w '%{http_code}' -X POST https://www.angel-leclerc.fr/api/assistant -H 'Content-Type: application/json' --data "$payload")"
+            if ! jq -e . "$file" >/dev/null 2>&1; then echo "::error::[$name] réponse non JSON HTTP=$code"; head -c 500 "$file" || true; return 1; fi
+            text="$(jq -r '.text // empty' "$file")"; source="$(jq -r '.source // empty' "$file")"; reason="$(jq -r '.reason // empty' "$file")"
+            echo "[$name] HTTP=$code source=$source reason=$reason"
             jq '{text,source,reason,requestId}' "$file"
-
-            if [[ ! "$http_code" =~ ^2 ]] || [ -z "$text" ] || [ "$source" != "openai" ]; then
-              echo "::error::[$name] génération IA inexploitable (HTTP=$http_code, source=$source, reason=$reason, requestId=$request_id)."
-              return 1
-            fi
-            if printf '%s' "$text" | grep -Eiq '^\s*<(html|!doctype)|^\s*\{'; then
-              echo "::error::[$name] réponse IA brute/invalide (requestId=$request_id)."
-              return 1
-            fi
-
-            echo "${name}_http=$http_code" >> "$GITHUB_OUTPUT"
-            echo "${name}_source=$source" >> "$GITHUB_OUTPUT"
-            echo "${name}_reason=$reason" >> "$GITHUB_OUTPUT"
+            [[ "$code" =~ ^2 ]] && [ -n "$text" ] && [ "$source" = "openai" ] || return 1
+            ! printf '%s' "$text" | grep -Eiq '^\s*<(html|!doctype)|^\s*\{' || return 1
+            echo "${name}_http=$code" >> "$GITHUB_OUTPUT"; echo "${name}_reason=$reason" >> "$GITHUB_OUTPUT"
           }
+          probe_ai site '{"question":"Réponds en une phrase très courte pour confirmer que le moteur IA fonctionne réellement.","mode":"site","history":[]}'
+          probe_ai contact '{"question":"Je voudrais savoir comment prendre contact pour une demande de communication. Réponds brièvement.","mode":"contact","history":[]}'
+          probe_ai context '{"question":"Quel mot t’ai-je demandé de retenir ?","mode":"site","history":[{"role":"user","content":"Retiens le mot ORION pour le prochain message."},{"role":"assistant","content":"D’accord, je retiens ORION."}]}'
 
-          probe_ai "site" '{"question":"Réponds en une phrase très courte pour confirmer que le moteur IA fonctionne réellement.","mode":"site","history":[]}'
-          probe_ai "contact" '{"question":"Je voudrais savoir comment prendre contact pour une demande de communication. Réponds brièvement.","mode":"contact","history":[]}'
-          probe_ai "context" '{"question":"Quel mot t’ai-je demandé de retenir ?","mode":"site","history":[{"role":"user","content":"Retiens le mot ORION pour le prochain message."},{"role":"assistant","content":"D’accord, je retiens ORION."}]}'
-
-      - name: Verify OpenAI contribution to news watch
+      - name: Verify OpenAI news contribution
         id: news_ai
         shell: bash
         run: |
           set -euo pipefail
-          HTTP="$(curl --silent --show-error --max-time 35 \
-            -o /tmp/news.json -w '%{http_code}' \
-            https://www.angel-leclerc.fr/api/admin/news)"
-          if ! jq -e . /tmp/news.json >/dev/null 2>&1; then
-            echo "::error::Veille : réponse non JSON, HTTP $HTTP"
-            head -c 500 /tmp/news.json || true
-            exit 1
-          fi
-          AI_COUNT="$(jq '[.items[]? | select(((.id // "") | tostring) | contains("openai-web-"))] | length' /tmp/news.json)"
+          HTTP="$(curl --silent --show-error --max-time 35 -o /tmp/news.json -w '%{http_code}' https://www.angel-leclerc.fr/api/admin/news)"
+          jq -e . /tmp/news.json >/dev/null 2>&1 || { echo "::error::Veille non JSON HTTP=$HTTP"; head -c 500 /tmp/news.json || true; exit 1; }
+          COUNT="$(jq '[.items[]? | select(((.id // "") | tostring) | contains("openai-web-"))] | length' /tmp/news.json)"
           TOTAL="$(jq '[.items[]?] | length' /tmp/news.json)"
-          PHASE="$(jq -r '.phase // empty' /tmp/news.json)"
-          echo "Veille HTTP=$HTTP phase=$PHASE total=$TOTAL openai=$AI_COUNT"
-          echo "http=$HTTP" >> "$GITHUB_OUTPUT"
-          echo "count=$AI_COUNT" >> "$GITHUB_OUTPUT"
-          echo "total=$TOTAL" >> "$GITHUB_OUTPUT"
-          if [[ ! "$HTTP" =~ ^2 ]] || [ "$AI_COUNT" -lt 1 ]; then
-            echo "::error::La veille combinée ne contient aucune contribution OpenAI vérifiable (HTTP=$HTTP, total=$TOTAL)."
-            exit 1
-          fi
+          echo "http=$HTTP" >> "$GITHUB_OUTPUT"; echo "count=$COUNT" >> "$GITHUB_OUTPUT"; echo "total=$TOTAL" >> "$GITHUB_OUTPUT"
+          [[ "$HTTP" =~ ^2 ]] && [ "$COUNT" -ge 1 ] || { echo "::error::Veille OpenAI absente (HTTP=$HTTP, $COUNT/$TOTAL)"; exit 1; }
 
-      - name: Enforce critical AI dependency health
+      - name: Enforce core production health
         if: always()
         shell: bash
         run: |
           set -euo pipefail
-          CRITICAL_FAILURES='${{ steps.probe.outputs.critical_failures }}'
-          if [ -n "$CRITICAL_FAILURES" ]; then
-            echo "::error::Dépendance IA critique indisponible : $CRITICAL_FAILURES"
-            exit 1
-          fi
+          CRITICAL='${{ steps.probe.outputs.critical }}'
+          if [ -n "$CRITICAL" ]; then echo "::error::Dépendances critiques : $CRITICAL"; exit 1; fi
+          if [ '${{ steps.probe.outputs.healthy }}' != 'true' ]; then echo "::error::Health global rouge malgré dépendances critiques disponibles"; exit 1; fi
 
       - name: Record production incident
         if: failure()
@@ -157,25 +104,16 @@ jobs:
         run: |
           TITLE="[Angel OS] Journal incidents production"
           ISSUE="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$TITLE in:title" --limit 1 --json number --jq '.[0].number // empty')"
-          BODY="Incident observabilité · $(date -u +%FT%TZ) · dépendances=${{ steps.probe.outputs.failures }} · critiques=${{ steps.probe.outputs.critical_failures }} · site=${{ steps.ai_smoke.outputs.site_http }}/${{ steps.ai_smoke.outputs.site_reason }} · contact=${{ steps.ai_smoke.outputs.contact_http }}/${{ steps.ai_smoke.outputs.contact_reason }} · contexte=${{ steps.ai_smoke.outputs.context_http }}/${{ steps.ai_smoke.outputs.context_reason }} · veille_openai=${{ steps.news_ai.outputs.count }}/${{ steps.news_ai.outputs.total }} · run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          if [ -z "$ISSUE" ]; then
-            gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --body "$BODY" >/dev/null
-          else
-            gh issue comment --repo "$GITHUB_REPOSITORY" "$ISSUE" --body "$BODY" >/dev/null
-          fi
+          BODY="Incident observabilité · $(date -u +%FT%TZ) · release=${{ steps.probe.outputs.release }} · dépendances=${{ steps.probe.outputs.failures }} · manque=${{ steps.probe.outputs.missing }} · critiques=${{ steps.probe.outputs.critical }} · IA site=${{ steps.ai_smoke.outputs.site_http }}/${{ steps.ai_smoke.outputs.site_reason }} · contact=${{ steps.ai_smoke.outputs.contact_http }}/${{ steps.ai_smoke.outputs.contact_reason }} · contexte=${{ steps.ai_smoke.outputs.context_http }}/${{ steps.ai_smoke.outputs.context_reason }} · veille=${{ steps.news_ai.outputs.count }}/${{ steps.news_ai.outputs.total }} · run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          if [ -z "$ISSUE" ]; then gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --body "$BODY" >/dev/null; else gh issue comment --repo "$GITHUB_REPOSITORY" "$ISSUE" --body "$BODY" >/dev/null; fi
 
       - name: Health summary
         if: always()
-        shell: bash
         run: |
           echo "## Observabilité Angel OS" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Production : https://www.angel-leclerc.fr" >> "$GITHUB_STEP_SUMMARY"
-          echo "- OpenAI/TMDB : test réseau réel quand configurés" >> "$GITHUB_STEP_SUMMARY"
-          echo "- IA site : ${{ steps.ai_smoke.outputs.site_http }} / ${{ steps.ai_smoke.outputs.site_reason }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- IA contact : ${{ steps.ai_smoke.outputs.contact_http }} / ${{ steps.ai_smoke.outputs.contact_reason }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- IA contexte : ${{ steps.ai_smoke.outputs.context_http }} / ${{ steps.ai_smoke.outputs.context_reason }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Veille IA OpenAI : ${{ steps.news_ai.outputs.count }} contribution(s) sur ${{ steps.news_ai.outputs.total }} élément(s)" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Réponse vide/fallback interdite pour les scénarios conversationnels" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Dépendances optionnelles en échec : ${{ steps.probe.outputs.failures }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Dépendances critiques en échec : ${{ steps.probe.outputs.critical_failures }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Configuration manquante : ${{ steps.probe.outputs.missing }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Release : ${{ steps.probe.outputs.release }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Health : ${{ steps.probe.outputs.healthy }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Échecs : ${{ steps.probe.outputs.failures }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Manquants : ${{ steps.probe.outputs.missing }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- IA site/contact/contexte : ${{ steps.ai_smoke.outputs.site_http }} / ${{ steps.ai_smoke.outputs.contact_http }} / ${{ steps.ai_smoke.outputs.context_http }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Veille OpenAI : ${{ steps.news_ai.outputs.count }}/${{ steps.news_ai.outputs.total }}" >> "$GITHUB_STEP_SUMMARY"
