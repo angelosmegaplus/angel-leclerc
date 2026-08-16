@@ -1,19 +1,25 @@
 User-agent: *
 Allow: /
+Disallow: /angel-os$
 
 User-agent: Googlebot
 Allow: /
+Disallow: /angel-os$
 
 User-agent: Bingbot
 Allow: /
+Disallow: /angel-os$
 
 User-agent: Yandex
 Allow: /
+Disallow: /angel-os$
 
 User-agent: Qwantify
 Allow: /
+Disallow: /angel-os$
 
 User-agent: DuckDuckBot
 Allow: /
+Disallow: /angel-os$
 
-Sitemap: https://angel-leclerc.lovable.app/sitemap.xml
+Sitemap: https://www.angel-leclerc.fr/sitemap.xml
