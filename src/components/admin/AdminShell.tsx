@@ -32,9 +32,9 @@ const COMPACT_NAV: CompactDefinition[] = [
   {
     key: "travail",
     label: "Travail",
-    description: "Candidatures, projets, agenda et échanges",
+    description: "Candidatures, projets, agenda, échanges et statistiques",
     source: "candidatures",
-    children: ["candidatures", "projets", "agenda", "messages", "boite-mail"],
+    children: ["candidatures", "projets", "agenda", "messages", "boite-mail", "stats"],
   },
   {
     key: "studio",
@@ -53,9 +53,9 @@ const COMPACT_NAV: CompactDefinition[] = [
   {
     key: "systeme",
     label: "Système",
-    description: "Connexions, statistiques, notifications et communauté",
+    description: "Connexions, notifications et communauté",
     source: "connexions",
-    children: ["connexions", "stats", "notifications", "abonnes", "avis"],
+    children: ["connexions", "notifications", "abonnes", "avis"],
   },
 ];
 
@@ -264,29 +264,6 @@ export function AdminShell({
         <main className="mx-auto w-full min-w-0 max-w-[1500px] px-2.5 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-3 sm:px-7 sm:pb-24 sm:pt-4 lg:px-10">
           {isDashboard ? (
             <div className="mb-5 space-y-4 sm:space-y-5" data-admin-dashboard-glance>
-              <section className="rounded-[1.5rem] border border-white/10 bg-[#090b0d]/95 p-3.5 shadow-[0_18px_60px_rgba(0,0,0,.28)] sm:p-5">
-                <div className="flex flex-wrap items-end justify-between gap-3">
-                  <div>
-                    <p className="font-mono text-[9px] font-semibold uppercase tracking-[.18em] text-red-300 sm:text-[10px]">Missions prioritaires</p>
-                    <h2 className="mt-1.5 text-xl font-semibold tracking-[-0.03em] text-white sm:text-2xl">Tout piloter depuis cinq pôles</h2>
-                    <p className="mt-1 max-w-2xl text-xs leading-relaxed text-white/40 sm:text-sm">Mobile et installation, CMS et suivi métier, assistance éditoriale, programmation assistée ChatGPT/Codex et connexions vérifiables.</p>
-                  </div>
-                  <button type="button" onClick={() => setOpen(true)} className="min-h-10 rounded-xl border border-white/10 bg-white/[.04] px-3 text-xs font-semibold text-white/70 lg:hidden">Ouvrir les pôles</button>
-                </div>
-                <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {[
-                    ["Travail", "candidatures"],
-                    ["Studio", "articles"],
-                    ["Pilotage IA", "angel-ai"],
-                    ["Système", "connexions"],
-                  ].map(([label, target]) => (
-                    <button key={target} type="button" onClick={() => onSelect(target)} className="min-h-12 rounded-xl border border-white/10 bg-black/25 px-3 text-left text-xs font-semibold text-white/70 transition hover:border-red-500/20 hover:bg-red-500/[.04] hover:text-white sm:text-sm">
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                <p className="mt-3 font-mono text-[9px] uppercase tracking-[.12em] text-white/25">ChatGPT · Codex · React · TanStack Start · Supabase · GitHub · Lovable · Vercel</p>
-              </section>
               <PixelWidgets />
             </div>
           ) : null}
