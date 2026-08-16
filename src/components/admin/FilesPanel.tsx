@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import {
   Copy,
   FileArchive,
@@ -15,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AdminCard } from "./AdminShell";
+import { listGoogleDriveFiles } from "@/lib/google-workspace.functions";
 
 type Item = {
   id: string;
@@ -35,6 +37,13 @@ function kindOf(value: string) {
   if (/\.(mp3|wav|ogg|m4a|aac|flac|webm)(\?|$)/i.test(value)) return "audio";
   if (/\.(zip|rar|7z|tar|gz)(\?|$)/i.test(value)) return "archive";
   return "fichier";
+}
+
+function kindOfMime(mime: string, name: string) {
+  if (mime.startsWith("image/")) return "image";
+  if (mime.startsWith("audio/")) return "audio";
+  if (mime.includes("zip") || mime.includes("compressed") || mime.includes("archive")) return "archive";
+  return kindOf(name);
 }
 
 function formatSize(bytes?: number | null) {
@@ -164,9 +173,27 @@ export function FilesPanel() {
   const [query, setQuery] = useState("");
   const [uploading, setUploading] = useState(false);
   const queryClient = useQueryClient();
+  const loadDrive = useServerFn(listGoogleDriveFiles);
   const { data = [], isLoading } = useQuery({
-    queryKey: ["angel", "files"],
-    queryFn: loadFiles,
+    queryKey: ["angel", "files", "google-drive"],
+    queryFn: async () => {
+      const [local, drive] = await Promise.all([
+        loadFiles(),
+        loadDrive().catch(() => []),
+      ]);
+      const driveItems: Item[] = drive
+        .filter((file) => Boolean(file.webViewLink))
+        .map((file) => ({
+          id: `drive-${file.id}`,
+          name: file.name,
+          url: file.webViewLink!,
+          origin: "Google Drive",
+          type: kindOfMime(file.mimeType, file.name),
+          size: file.size,
+        }));
+      return [...local, ...driveItems];
+    },
+    staleTime: 2 * 60 * 1000,
   });
 
   const visible = useMemo(() => {
@@ -185,6 +212,7 @@ export function FilesPanel() {
       let latestUrl = "";
       for (const file of files) latestUrl = await uploadLibraryFile(file);
       await queryClient.invalidateQueries({ queryKey: ["angel", "files"] });
+      await queryClient.invalidateQueries({ queryKey: ["angel", "files", "google-drive"] });
       toast.success(
         files.length === 1 ? "Fichier ajouté à la bibliothèque." : `${files.length} fichiers ajoutés.`,
       );
@@ -207,7 +235,7 @@ export function FilesPanel() {
     <div className="space-y-4">
       <AdminCard
         title="Fichiers"
-        description="Bibliothèque réutilisable Angel OS : importez un PDF, document, image, archive, audio ou autre fichier puis copiez son lien pour l'utiliser plus tard dans un article, un mail ou un autre contenu."
+        description="Bibliothèque Angel OS et fichiers Google Drive accessibles : importez un document localement ou ouvrez les fichiers autorisés via Google Workspace."
       >
         <div className="grid gap-3 md:grid-cols-[1fr_auto]">
           <div className="relative">
@@ -249,7 +277,7 @@ export function FilesPanel() {
           </div>
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
-          Aucun format n'est filtré par Angel OS. La limite réelle dépend uniquement du stockage configuré côté serveur.
+          Les fichiers importés restent dans la bibliothèque Angel OS. Google Drive est lu côté serveur via OAuth et aucun jeton Google n'est exposé au navigateur.
         </p>
       </AdminCard>
 
