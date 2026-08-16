@@ -3,6 +3,7 @@ import {
   AngelDeployEngine,
   AngelEventLog,
   AngelGuardian,
+  AngelIssueRegistry,
   AngelMemoryIndex,
   AngelNodeGateway,
   AngelRecovery,
@@ -13,6 +14,7 @@ import {
   HybridOrchestrator,
   MemoryCache,
   NativeTaskWorker,
+  type IssuePriority,
 } from "../../angel-os/core";
 import { getOpenAiCredential } from "./vercel-connect-credentials.server";
 import { SupabaseWorkflowStateStore } from "./supabase-workflow-state.server";
@@ -23,16 +25,17 @@ export const angelEventLog = new AngelEventLog(5000);
 export const angelTelemetry = new AngelTelemetry();
 export const angelMemoryIndex = new AngelMemoryIndex();
 export const angelCache = new MemoryCache();
+export const angelIssueRegistry = new AngelIssueRegistry(angelCache, angelEventLog, angelTelemetry);
 export const angelNativeWorker = new NativeTaskWorker();
 export const angelWorkflowEngine = new DurableWorkflowEngine(new SupabaseWorkflowStateStore(), angelEventLog, angelTelemetry);
 export const angelHybridOrchestrator = new HybridOrchestrator(angelCache, [angelNativeWorker], angelEventLog, angelTelemetry);
 export const angelReleaseManager = new AngelReleaseManager();
 export const angelDeployEngine = new AngelDeployEngine(angelReleaseManager, angelEventLog, angelTelemetry);
 export const angelNodeGateway = new AngelNodeGateway();
-export const angelGuardian = new AngelGuardian(angelEventLog, angelTelemetry);
+export const angelGuardian = new AngelGuardian(angelEventLog, angelTelemetry, angelIssueRegistry);
 export const angelRecovery = new AngelRecovery();
 export const angelSyncEngine = new AngelSyncEngine();
-export const angelApplicationRuntime = new AngelApplicationRuntime();
+export const angelApplicationRuntime = new AngelApplicationRuntime(angelIssueRegistry);
 
 angelApplicationRuntime.register({
   id: "angel-os-ia",
@@ -60,6 +63,13 @@ angelApplicationRuntime.register({
 
 angelNodeGateway.upsert({ id: "vercel-web", kind: "vercel", priority: 50, state: "unknown" });
 
+function operationPriority(input: { type: string; source: string }): IssuePriority {
+  const signature = `${input.type} ${input.source}`;
+  if (/auth|security|database|production|deploy/i.test(signature)) return "P0";
+  if (/ai|openai|gemini|serverfn|admin|workflow/i.test(signature)) return "P1";
+  return "P2";
+}
+
 export async function recordAngelOperation(input: {
   type: string;
   source: string;
@@ -83,4 +93,25 @@ export async function recordAngelOperation(input: {
       type: input.type,
     });
   }
+
+  if (!input.ok) {
+    await angelIssueRegistry.report({
+      title: `${input.source} · ${input.type} failed`,
+      type: `operation-failure:${input.type}`,
+      priority: operationPriority(input),
+      evidence: {
+        source: input.source,
+        message: `Angel OS recorded a failed ${input.type} operation`,
+        data: typeof input.durationMs === "number" ? { durationMs: input.durationMs } : undefined,
+      },
+    });
+  }
+}
+
+export async function getAngelMaintenanceSnapshot() {
+  return angelIssueRegistry.maintenanceSnapshot();
+}
+
+export async function getAngelMaintenanceMarkdown() {
+  return angelIssueRegistry.exportMaintenanceMarkdown();
 }
