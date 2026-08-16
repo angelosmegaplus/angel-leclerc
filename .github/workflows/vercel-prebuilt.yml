@@ -2,6 +2,9 @@ name: Publication Angel OS
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
   schedule:
     - cron: "7,37 * * * *"
 
