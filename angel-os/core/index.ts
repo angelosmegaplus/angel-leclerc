@@ -19,6 +19,7 @@ export * from './system-contract';
 export * from './release-manager';
 export * from './deploy-engine';
 export * from './node-gateway';
+export * from './issue-registry';
 export * from './guardian-recovery';
 export * from './sync-engine';
 export * from './application-runtime';
