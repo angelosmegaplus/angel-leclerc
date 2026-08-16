@@ -28,17 +28,18 @@ export type ProviderConfig = {
 export const PROVIDERS: Record<ProviderId, ProviderConfig> = {
   google: {
     id: "google",
-    name: "Gmail",
+    name: "Google Workspace",
     clientIdEnv: "GOOGLE_CLIENT_ID",
     clientSecretEnv: "GOOGLE_CLIENT_SECRET",
     authorizeUrl: "https://accounts.google.com/o/oauth2/v2/auth",
     tokenUrl: "https://oauth2.googleapis.com/token",
-    // Cette connexion Google est volontairement limitée à Gmail.
-    // Drive et Agenda seront activés séparément lorsqu'ils auront leur propre configuration fonctionnelle.
     scopes: [
       "openid",
       "email",
+      "profile",
       "https://www.googleapis.com/auth/gmail.modify",
+      "https://www.googleapis.com/auth/calendar.events",
+      "https://www.googleapis.com/auth/drive.file",
     ],
     extraAuthParams: { access_type: "offline", prompt: "consent", include_granted_scopes: "true" },
     identity: { url: "https://openidconnect.googleapis.com/v1/userinfo", field: ["email", "name"] },
@@ -52,7 +53,7 @@ export const PROVIDERS: Record<ProviderId, ProviderConfig> = {
     authorizeUrl: "https://accounts.google.com/o/oauth2/v2/auth",
     tokenUrl: "https://oauth2.googleapis.com/token",
     scopes: ["openid", "email", "https://www.googleapis.com/auth/youtube.upload"],
-    extraAuthParams: { access_type: "offline", prompt: "consent" },
+    extraAuthParams: { access_type: "offline", prompt: "consent", include_granted_scopes: "true" },
     identity: { url: "https://openidconnect.googleapis.com/v1/userinfo", field: ["email", "name"] },
     supportsRefresh: true,
   },
