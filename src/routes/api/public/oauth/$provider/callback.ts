@@ -16,35 +16,25 @@ export const Route = createFileRoute("/api/public/oauth/$provider/callback")({
         const origin = url.origin;
         const provider = params.provider;
 
-        if (!isProviderId(provider)) {
-          return redirectToAdmin(origin, { oauth_error: "provider_inconnu" });
-        }
+        if (!isProviderId(provider)) return redirectToAdmin(origin, { oauth_error: "provider_inconnu" });
         const providerError = url.searchParams.get("error");
-        if (providerError) {
-          return redirectToAdmin(origin, { oauth_error: providerError.slice(0, 80) });
-        }
+        if (providerError) return redirectToAdmin(origin, { oauth_error: providerError.slice(0, 80) });
         const code = url.searchParams.get("code");
         const state = url.searchParams.get("state");
-        if (!code || !state) {
-          return redirectToAdmin(origin, { oauth_error: "reponse_incomplete" });
-        }
+        if (!code || !state) return redirectToAdmin(origin, { oauth_error: "reponse_incomplete" });
 
         const oauth = await import("@/lib/oauth/oauth.server");
         const verified = oauth.verifyState(state);
-        if (!verified || verified.p !== provider) {
-          return redirectToAdmin(origin, { oauth_error: "state_invalide" });
-        }
+        if (!verified || verified.p !== provider) return redirectToAdmin(origin, { oauth_error: "state_invalide" });
 
         try {
-          const tokens = await oauth.exchangeCode(provider, code, origin, verified.v);
+          const tokens = await oauth.exchangeCode(provider, code, origin, verified.v, verified.c);
           const accessToken = tokens["access_token"] as string;
           const expiresIn = Number(tokens["expires_in"] ?? 0);
           const scope = tokens["scope"];
-          const scopes =
-            typeof scope === "string" && scope.length > 0
-              ? scope.split(/[\s,]+/)
-              : PROVIDERS[provider].scopes;
+          const scopes = typeof scope === "string" && scope.length > 0 ? scope.split(/[\s,]+/) : PROVIDERS[provider].scopes;
           const accountLabel = await oauth.fetchAccountLabel(provider, accessToken);
+          const clientSlot = Number(tokens["_angel_client_slot"] ?? verified.c ?? 1);
 
           await oauth.saveConnection({
             provider,
@@ -54,6 +44,7 @@ export const Route = createFileRoute("/api/public/oauth/$provider/callback")({
               refresh_token: tokens["refresh_token"] as string | undefined,
               token_type: tokens["token_type"] as string | undefined,
               scope: typeof scope === "string" ? scope : undefined,
+              client_slot: clientSlot,
             },
             scopes,
             accountLabel,
