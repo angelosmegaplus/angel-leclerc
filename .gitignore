@@ -22,6 +22,15 @@ dist-ssr
 !.env.example
 !.env.*.example
 
+# Angel OS Vault: encrypted files may be committed; decrypted/plaintext files must never be committed.
+*.decrypted
+*.plaintext
+*.secret.clear
+config/*.clear.json
+config/*.decrypted.json
+secrets/*.clear
+secrets/*.decrypted
+
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
