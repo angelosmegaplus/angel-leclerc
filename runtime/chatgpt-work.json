@@ -1,25 +1,19 @@
 {
   "version": 4,
-  "updatedAt": "2026-08-15T23:30:00Z",
+  "updatedAt": "2026-08-16T01:31:00Z",
   "source": "github",
   "current": [
     {
       "id": "angel-ai-end-to-end",
       "title": "Maintenir Angel AI OpenAI validée de bout en bout",
       "status": "running",
-      "detail": "Le test réel de production /api/assistant a encore réussi le 15 août 2026 à 22:00:57Z avec HTTP 200, source=openai et texte ANGEL_AI_OK. Le workflow Maintenance Angel OS a été renforcé sur main par le commit 3c95f67ae8f53a7723ce05455d9db330c75d1797 : il doit désormais tester à chaque cycle un message court, une question normale, le mode Contact, un contexte multi-tour, un échec contrôlé et le health OpenAI. Le chemin privé Angel OS IA utilise le même resilientAngelAi et interdit le fallback local, mais sa validation end-to-end reste impossible sans session administrateur authentifiée de test."
+      "detail": "La production courante f702ef4c75a6c140cab6251fa1770c3908c45159 est READY. Le health réel /api/angel-os/health vérifié le 16 août 2026 à 01:29Z renvoie healthy=true, release=f702ef4c75a6c140cab6251fa1770c3908c45159 et OpenAI configured=true/reachable=true. Le dernier workflow Maintenance exécuté avant la correction du health a validé avec succès les scénarios réels /api/assistant : message court, question normale, Contact, contexte multi-tour et échec contrôlé ; son seul échec venait de l'ancien chemin JSON du health, corrigé depuis sur main. Aucun cluster d'erreur runtime Vercel n'est observé sur les 6 dernières heures. Le chemin privé Angel OS IA et la génération d'article restent à valider avec un contexte authentifié autorisé ; ne pas créer de route publique de test ni simuler une session admin."
     },
     {
       "id": "data-sync-secrets",
       "title": "Rétablir la synchronisation native des caches Angel OS",
       "status": "blocked_secret",
-      "detail": "Le workflow Synchronisation données Angel OS échoue avant écriture : le run 31913819272 du 15 août 2026 à 23:05Z confirme que SUPABASE_URL est absent des secrets GitHub de l'environnement production ; SUPABASE_SERVICE_ROLE_KEY/SUPABASE_PUBLISHABLE_KEY et NEWSLETTER_CRON_SECRET ne sont pas injectés non plus. Aucun contournement ni secret inventé : les snapshots GitHub restent conservés jusqu'à configuration serveur."
-    },
-    {
-      "id": "publication-production",
-      "title": "Garder main et production synchronisés",
-      "status": "waiting_publish",
-      "detail": "La dernière CI de code observée sur 76ba8a66010f376d9427aeef3bbf0a531cde4a57 est verte et Publication Angel OS a réussi à 22:54Z. Le commit 3c95f67ae8f53a7723ce05455d9db330c75d1797 ne modifie que le workflow de maintenance ; son statut Vercel est actuellement pending. Ne pas fabriquer de commit ou de build concurrent : vérifier le prochain état officiel."
+      "detail": "Le workflow Synchronisation données Angel OS continue d'échouer avant écriture faute de configuration serveur Supabase exploitable dans GitHub Actions. Aucun contournement ni secret inventé : les snapshots GitHub restent conservés jusqu'à configuration officielle des secrets nécessaires. Cette panne secondaire ne doit pas faire tomber le cœur conversationnel IA."
     },
     {
       "id": "movix-max-port",
@@ -36,6 +30,12 @@
       "detail": "Le code privé runPrivateAngelOsIaChat est présent sur main, impose requireSupabaseAuth + rôle admin, utilise resilientAngelAi et échoue explicitement plutôt que de substituer un moteur local. Une vraie validation production de la persistance ai_messages, de l'accueil admin, de la recherche universelle et du contexte nécessite une session administrateur authentifiée ; elle ne doit pas être simulée par une route publique."
     },
     {
+      "id": "article-ai-production-check",
+      "title": "Valider la génération d'article IA sans publication forcée",
+      "status": "blocked_auth",
+      "detail": "generateArticleDraft utilise OpenAI direct puis AI Gateway avec web_search, modèles de repli, parsing JSON, sources vérifiées et couverture Wikimedia. runArticleCommand est protégé par Supabase Auth + rôle admin et crée seulement un brouillon non publié lorsque la génération réussit. Un test end-to-end réel doit passer par un contexte admin autorisé ou une voie de prévisualisation sécurisée existante ; ne pas exposer un endpoint public coûteux juste pour le test."
+    },
+    {
       "id": "admin-auth-production-check",
       "title": "Vérifier le nouveau parcours d’accès administrateur",
       "status": "waiting_manual_session",
@@ -50,17 +50,24 @@
   ],
   "done": [
     {
+      "id": "publication-production",
+      "title": "Synchroniser main et production",
+      "status": "done",
+      "detail": "Le dernier main f702ef4c75a6c140cab6251fa1770c3908c45159 est servi par un déploiement Vercel production READY. L'ancien état waiting_publish du panneau était obsolète et a été retiré de la file active.",
+      "commit": "f702ef4c75a6c140cab6251fa1770c3908c45159"
+    },
+    {
       "id": "angel-ai-public-production-validation",
       "title": "Valider Angel AI publique OpenAI en production",
       "status": "done",
-      "detail": "Le workflow Maintenance Angel OS a exécuté plusieurs POST réels vers /api/assistant ; le contrôle du 15 août 2026 à 22:00:57Z a renvoyé HTTP 200, source=openai et ANGEL_AI_OK en environ 1,6 seconde.",
-      "commit": "76ba8a66010f376d9427aeef3bbf0a531cde4a57"
+      "detail": "Le workflow Maintenance Angel OS a exécuté plusieurs POST réels vers /api/assistant ; les scénarios message court, question normale, Contact, contexte multi-tour et erreur contrôlée ont réussi. Le health de la release courante confirme OpenAI configuré et joignable.",
+      "commit": "51c2451232084abe61341ff05f7a85e7cb7191d5"
     },
     {
       "id": "maintenance-secondary-dependency",
       "title": "Empêcher Gmail non configuré de masquer l'état IA",
       "status": "done",
-      "detail": "Le workflow Maintenance Angel OS ignore désormais proprement la synchronisation candidatures lorsque NEWSLETTER_CRON_SECRET est absent et poursuit lint, build, TypeScript et contrôles de pages au lieu d'échouer avant eux.",
+      "detail": "Le workflow Maintenance Angel OS ignore désormais proprement la synchronisation candidatures lorsque le secret requis est absent et poursuit les contrôles principaux.",
       "commit": "76ba8a66010f376d9427aeef3bbf0a531cde4a57"
     },
     {
