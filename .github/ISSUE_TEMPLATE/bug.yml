@@ -1,0 +1,47 @@
+name: Incident / régression
+about: Signaler un comportement cassé ou incohérent dans Angel OS
+labels: [bug]
+body:
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Gravité
+      options:
+        - P0 — accès, données ou production indisponibles
+        - P1 — fonction critique fortement dégradée
+        - P2 — fonction secondaire dégradée
+        - P3 — défaut mineur
+    validations:
+      required: true
+  - type: input
+    id: surface
+    attributes:
+      label: Surface
+      placeholder: /admin, Angel OS IA, TMDB, OAuth Google, articles…
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Comportement observé
+      description: Décrire le résultat réel sans coller de secret, token ou mot de passe.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportement attendu
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Preuves reproductibles
+      description: Route, heure, statut HTTP, commit/déploiement, étapes de reproduction, capture sans donnée sensible.
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Sécurité
+      options:
+        - label: J’ai vérifié que ce ticket ne contient aucun secret ou identifiant sensible.
+          required: true
