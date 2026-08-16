@@ -39,6 +39,20 @@ function cleanApplicationText(value: string) {
     .trim();
 }
 
+function cleanSyncError(value: unknown) {
+  const raw = value instanceof Error ? value.message : String(value ?? "");
+  if (/<!doctype html|<html|this page didn't load|something went wrong on our end|id-preview-|lovable\.app/i.test(raw)) {
+    return "Le service de synchronisation est momentanément indisponible. Les candidatures déjà enregistrées restent intactes. Réessaie dans quelques instants.";
+  }
+  const cleaned = raw
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return cleaned.slice(0, 280) || "La synchronisation des candidatures a échoué. Réessaie dans quelques instants.";
+}
+
 export function ApplicationsPanel() {
   const queryClient = useQueryClient();
   const syncApplications = useServerFn(syncGoogleApplications);
@@ -76,7 +90,7 @@ export function ApplicationsPanel() {
       await queryClient.refetchQueries({ queryKey: ["angel", "applications"], type: "active" });
 
       if (result.status === "not_connected") {
-        setSyncError(result.message || "La source Gmail n’est pas connectée au serveur.");
+        setSyncError(cleanSyncError(result.message || "La source Gmail n’est pas connectée au serveur."));
       } else {
         const details = [
           result.imported ? `${result.imported} ajoutée${result.imported > 1 ? "s" : ""}` : null,
@@ -86,7 +100,7 @@ export function ApplicationsPanel() {
         setSyncMessage(details || result.message || "Candidatures synchronisées.");
       }
     } catch (error) {
-      setSyncError(error instanceof Error ? error.message : "La synchronisation des candidatures a échoué.");
+      setSyncError(cleanSyncError(error));
       await queryClient.invalidateQueries({ queryKey: ["angel", "applications"] });
     } finally {
       setSyncing(false);
