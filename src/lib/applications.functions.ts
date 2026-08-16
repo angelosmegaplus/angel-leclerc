@@ -124,6 +124,13 @@ export const getAlternanceResearchSnapshot = createServerFn({ method: "POST" })
           ? (history.items as AlternanceResearchLead[])
           : [];
         payload.historyUpdatedAt = history.updatedAt;
+
+        // The dashboard consumes screenedLeads. Put the durable history first,
+        // then the latest cycle so current statuses overwrite older information.
+        payload.screenedLeads = [
+          ...(payload.history || []),
+          ...(payload.screenedLeads || []),
+        ];
       }
 
       return Object.keys(payload).length > 0 ? payload : null;
