@@ -61,11 +61,11 @@ jobs:
       - name: Lint
         run: bun run lint
 
-      - name: Type-check
-        run: bun run typecheck
-
-      - name: Build production bundle
+      - name: Build production bundle and generate route types
         run: bun run build
+
+      - name: Type-check generated application
+        run: bun run typecheck
 
       - name: Verify generated production output
         shell: bash
@@ -78,6 +78,6 @@ jobs:
           echo "## Angel OS quality gate" >> "$GITHUB_STEP_SUMMARY"
           echo "- Installation reproductible + cache Bun" >> "$GITHUB_STEP_SUMMARY"
           echo "- Lint bloquant" >> "$GITHUB_STEP_SUMMARY"
-          echo "- TypeScript bloquant" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Build production bloquant" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Build production + génération des types de routes bloquants" >> "$GITHUB_STEP_SUMMARY"
+          echo "- TypeScript après génération TanStack bloquant" >> "$GITHUB_STEP_SUMMARY"
           echo "- Hygiène des secrets sensibles bloquante" >> "$GITHUB_STEP_SUMMARY"
