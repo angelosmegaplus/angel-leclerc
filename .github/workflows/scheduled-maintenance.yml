@@ -85,7 +85,7 @@ jobs:
             echo "::error::Health Angel OS indisponible (HTTP $code)."
             exit 1
           fi
-          jq -e '.openai.configured == true and .openai.reachable == true' "$tmp" >/dev/null
+          jq -e '.dependencies.openai.configured == true and .dependencies.openai.reachable == true' "$tmp" >/dev/null
           echo "Health OpenAI : configuré et joignable"
 
       - name: Synchroniser les candidatures avec Gmail
