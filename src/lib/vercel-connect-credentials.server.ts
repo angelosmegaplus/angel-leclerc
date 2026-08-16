@@ -22,12 +22,12 @@ function tmdbCredential(): TmdbCredential | null {
   const apiKey = env("TMDB_API_KEY");
   if (apiKey) return { value: apiKey, source: "env:TMDB_API_KEY", kind: "api-key" };
 
+  const bundledApiKey = import.meta.env.VITE_TMDB_API_KEY?.trim();
+  if (bundledApiKey) return { value: bundledApiKey, source: "build:VITE_TMDB_API_KEY", kind: "api-key" };
+
   return null;
 }
 
-// Compatibility exports: callers that previously expected a pool now receive
-// either one configured credential or an empty array. There is no retry pool,
-// quarantine, preferred slot, cookie fallback, vault fallback or Vercel Connect.
 export async function getOpenAiCredentials(): Promise<OpenAiCredential[]> {
   const credential = openAiCredential();
   return credential ? [credential] : [];
@@ -46,18 +46,10 @@ export async function getTmdbCredential(): Promise<TmdbCredential | null> {
   return tmdbCredential();
 }
 
-// Kept as no-ops for backwards-compatible imports in API clients.
 export function markApiCredentialFailure() {}
 export function markApiCredentialHealthy() {}
 
-export function getAiGatewayCredential() {
-  const gatewayKey = env("AI_GATEWAY_API_KEY");
-  if (gatewayKey) return { value: gatewayKey, source: "ai-gateway-key" as const };
-
-  const oidc = env("VERCEL_OIDC_TOKEN");
-  if (oidc) return { value: oidc, source: "vercel-oidc" as const };
-
-  return null;
-}
+// Kept only for old imports. Angel OS IA no longer uses AI Gateway/OIDC fallback.
+export function getAiGatewayCredential() { return null; }
 
 export const VERCEL_CONNECTOR_IDS = { tmdb: "disabled", openai: "disabled" } as const;
