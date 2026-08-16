@@ -5,7 +5,7 @@ const derivedKeyCache = new Map<string, Buffer>();
 /**
  * Couche de compatibilité historique.
  * Angel OS ne lit plus aucun coffre ni fichier chiffré : toutes les valeurs
- * viennent directement des variables d'environnement du serveur.
+ * d'API viennent directement des variables d'environnement du serveur.
  */
 export function getVaultSecretSync(name: string): string | undefined {
   const value = process.env[name]?.trim();
@@ -24,14 +24,31 @@ export function getVaultSecretSource(name: string): "env" | "missing" {
   return getVaultSecretSync(name) ? "env" : "missing";
 }
 
+function legacyOAuthRoot(): Buffer | null {
+  let encoded = process.env.ANGEL_OS_VAULT_KEY?.trim();
+  if (!encoded) return null;
+  if (encoded.startsWith("ANGEL_OS_VAULT_KEY=")) encoded = encoded.slice("ANGEL_OS_VAULT_KEY=".length).trim();
+  encoded = encoded.replace(/^['\"]|['\"]$/g, "");
+  const key = Buffer.from(encoded, "base64");
+  return key.length === 32 ? key : null;
+}
+
 /**
- * Les jetons OAuth restent chiffrés en base de données, mais leur clé de
- * chiffrement est dérivée directement d'un secret serveur déjà présent.
- * Aucune clé maître de coffre supplémentaire n'est nécessaire.
+ * Compatibilité OAuth uniquement : l'ancienne clé maître peut encore relire
+ * les jetons OAuth existants. Elle n'est jamais utilisée pour charger une API.
  */
 export function deriveVaultKeySync(purpose: string): Buffer {
   const cached = derivedKeyCache.get(purpose);
   if (cached) return cached;
+
+  const legacy = legacyOAuthRoot();
+  if (legacy) {
+    const key = createHmac("sha256", legacy)
+      .update(`angel-os:derived:${purpose}:v1`, "utf8")
+      .digest();
+    derivedKeyCache.set(purpose, key);
+    return key;
+  }
 
   const explicit = process.env[purpose]?.trim();
   const base = explicit
