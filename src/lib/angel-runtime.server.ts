@@ -15,6 +15,7 @@ import {
   HybridOrchestrator,
   MemoryCache,
   NativeTaskWorker,
+  createDefaultAngelGuard,
   type HealthProbeResult,
   type IssuePriority,
 } from "../../angel-os/core";
@@ -22,8 +23,6 @@ import { getOpenAiCredential } from "./vercel-connect-credentials.server";
 import { SupabaseKeyValueCache } from "./supabase-key-value-cache.server";
 import { SupabaseWorkflowStateStore } from "./supabase-workflow-state.server";
 
-// Angel OS system runtime. These are system services, not Angel OS IA services.
-// External providers remain complementary and are attached through adapters.
 export const angelEventLog = new AngelEventLog(5000);
 export const angelTelemetry = new AngelTelemetry();
 export const angelMemoryIndex = new AngelMemoryIndex();
@@ -41,6 +40,7 @@ export const angelRecovery = new AngelRecovery();
 export const angelSyncEngine = new AngelSyncEngine();
 export const angelApplicationRuntime = new AngelApplicationRuntime(angelIssueRegistry);
 export const angelAutonomousCore = new AngelAutonomousCore({ memory: angelMemoryIndex });
+export const angelGuardOS = createDefaultAngelGuard();
 
 angelApplicationRuntime.register({
   id: "angel-os-ia",
@@ -62,7 +62,7 @@ angelApplicationRuntime.register({
   version: process.env["VERCEL_GIT_COMMIT_SHA"]?.slice(0, 8) ?? "development",
   layer: "application",
   requires: ["angel-os"],
-  provides: ["website", "admin", "blog", "movix"],
+  provides: ["website", "admin", "blog", "movix", "angel-guard-os"],
   health: async () => true,
 });
 
@@ -70,30 +70,13 @@ function applicationHealthProbe(id: string): Promise<HealthProbeResult> {
   const startedAt = performance.now();
   return angelApplicationRuntime.checkHealth(id).then((healthy) => ({
     state: healthy ? "healthy" : "down",
-    evidence: {
-      checkedAt: Date.now(),
-      latencyMs: Math.round(performance.now() - startedAt),
-      message: healthy ? "Application health check passed" : "Application health check failed",
-      details: { applicationId: id },
-    },
+    evidence: { checkedAt: Date.now(), latencyMs: Math.round(performance.now() - startedAt), message: healthy ? "Application health check passed" : "Application health check failed", details: { applicationId: id } },
   }));
 }
 
 angelAutonomousCore
-  .registerHealthProbe({
-    id: "application:angel-os-ia",
-    label: "Angel OS IA",
-    critical: true,
-    run: () => applicationHealthProbe("angel-os-ia"),
-    recover: () => applicationHealthProbe("angel-os-ia"),
-  })
-  .registerHealthProbe({
-    id: "application:angel-leclerc-web",
-    label: "angel-leclerc.fr",
-    critical: true,
-    run: () => applicationHealthProbe("angel-leclerc-web"),
-    recover: () => applicationHealthProbe("angel-leclerc-web"),
-  });
+  .registerHealthProbe({ id: "application:angel-os-ia", label: "Angel OS IA", critical: true, run: () => applicationHealthProbe("angel-os-ia"), recover: () => applicationHealthProbe("angel-os-ia") })
+  .registerHealthProbe({ id: "application:angel-leclerc-web", label: "angel-leclerc.fr", critical: true, run: () => applicationHealthProbe("angel-leclerc-web"), recover: () => applicationHealthProbe("angel-leclerc-web") });
 
 angelNodeGateway.upsert({ id: "vercel-web", kind: "vercel", priority: 50, state: "unknown" });
 
@@ -104,40 +87,27 @@ function operationPriority(input: { type: string; source: string }): IssuePriori
   return "P2";
 }
 
-export async function recordAngelOperation(input: {
-  type: string;
-  source: string;
-  ok: boolean;
-  durationMs?: number;
-  payload?: unknown;
-}) {
-  await angelEventLog.append(input.type, {
-    source: input.source,
-    ok: input.ok,
-    durationMs: input.durationMs,
-    payload: input.payload,
-  });
-  angelTelemetry.increment(input.ok ? "angel.operation.success" : "angel.operation.failure", 1, {
-    source: input.source,
-    type: input.type,
-  });
-  if (typeof input.durationMs === "number") {
-    angelTelemetry.observe("angel.operation.duration_ms", input.durationMs, {
-      source: input.source,
-      type: input.type,
-    });
-  }
+export async function recordAngelOperation(input: { type: string; source: string; ok: boolean; durationMs?: number; payload?: unknown; }) {
+  await angelEventLog.append(input.type, { source: input.source, ok: input.ok, durationMs: input.durationMs, payload: input.payload });
+  angelTelemetry.increment(input.ok ? "angel.operation.success" : "angel.operation.failure", 1, { source: input.source, type: input.type });
+  if (typeof input.durationMs === "number") angelTelemetry.observe("angel.operation.duration_ms", input.durationMs, { source: input.source, type: input.type });
 
   if (!input.ok) {
+    const priority = operationPriority(input);
+    angelGuardOS.evaluate({
+      id: crypto.randomUUID(),
+      source: input.source,
+      type: input.type,
+      severity: priority === "P0" ? "critical" : priority === "P1" ? "warning" : "info",
+      at: Date.now(),
+      message: `Angel OS recorded a failed ${input.type} operation`,
+      metadata: typeof input.durationMs === "number" ? { durationMs: input.durationMs } : undefined,
+    });
     await angelIssueRegistry.report({
       title: `${input.source} · ${input.type} failed`,
       type: `operation-failure:${input.type}`,
-      priority: operationPriority(input),
-      evidence: {
-        source: input.source,
-        message: `Angel OS recorded a failed ${input.type} operation`,
-        data: typeof input.durationMs === "number" ? { durationMs: input.durationMs } : undefined,
-      },
+      priority,
+      evidence: { source: input.source, message: `Angel OS recorded a failed ${input.type} operation`, data: typeof input.durationMs === "number" ? { durationMs: input.durationMs } : undefined },
     });
   }
 }
@@ -147,6 +117,4 @@ export async function getAngelMaintenanceSnapshot() {
   return angelIssueRegistry.maintenanceSnapshot();
 }
 
-export async function getAngelMaintenanceMarkdown() {
-  return angelIssueRegistry.exportMaintenanceMarkdown();
-}
+export async function getAngelMaintenanceMarkdown() { return angelIssueRegistry.exportMaintenanceMarkdown(); }

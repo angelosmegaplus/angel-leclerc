@@ -27,3 +27,4 @@ export * from './agent-runtime';
 export * from './mission-engine';
 export * from './control-plane';
 export * from './autonomous-core';
+export * from './angel-guard';
