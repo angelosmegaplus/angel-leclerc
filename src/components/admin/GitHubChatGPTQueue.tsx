@@ -8,11 +8,11 @@ type WorkPayload = { version: number; updatedAt: string; source: string; current
 type Commit = { sha: string; html_url: string; commit: { message: string; author?: { date?: string } } };
 type LiveAction = { id: string; kind: string; title: string; description: string | null; status: string; created_at: string; updated_at?: string | null };
 type FeedItem = { key: string; title: string; detail?: string; status: string; kind: "queue" | "commit" | "action"; timestamp: number; label: string; href?: string; commit?: string };
-type ProductionRelease = { sha?: string };
+type ProductionHealth = { release?: string | null; healthy?: boolean };
 
 const RAW_QUEUE = "https://raw.githubusercontent.com/angelosmegaplus/angel-leclerc/main/runtime/chatgpt-work.json";
 const COMMITS_API = "https://api.github.com/repos/angelosmegaplus/angel-leclerc/commits?sha=main&per_page=8";
-const RELEASE_URL = "/angel-release.json";
+const RELEASE_URL = "/api/angel-os/health";
 const LIVE_REFRESH_MS = 5_000;
 const COMMITS_REFRESH_MS = 90_000;
 const MAX_VISIBLE_ITEMS = 5;
@@ -49,6 +49,7 @@ export function GitHubChatGPTQueue() {
   const [commits, setCommits] = useState<Commit[]>([]);
   const [liveActions, setLiveActions] = useState<LiveAction[]>([]);
   const [productionSha, setProductionSha] = useState<string | null>(null);
+  const [productionHealthy, setProductionHealthy] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
@@ -79,10 +80,11 @@ export function GitHubChatGPTQueue() {
   async function refreshProduction() {
     try {
       const response = await fetch(bust(RELEASE_URL), { cache: "no-store", headers: { Accept: "application/json" } });
-      if (!response.ok) { setProductionSha(null); return; }
-      const release = (await response.json()) as ProductionRelease;
-      setProductionSha(typeof release.sha === "string" && release.sha ? release.sha : null);
-    } catch { setProductionSha(null); }
+      if (!response.ok) { setProductionSha(null); setProductionHealthy(false); return; }
+      const health = (await response.json()) as ProductionHealth;
+      setProductionSha(typeof health.release === "string" && health.release ? health.release : null);
+      setProductionHealthy(typeof health.healthy === "boolean" ? health.healthy : null);
+    } catch { setProductionSha(null); setProductionHealthy(false); }
   }
 
   async function refreshAll() {
@@ -134,7 +136,7 @@ export function GitHubChatGPTQueue() {
 
   return <section className="rounded-[1.75rem] border border-white/10 bg-[#090b0d] p-4 sm:p-5" aria-label="Activité ChatGPT GitHub" data-no-refresh-queue="true">
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <div className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white"><Github className="h-5 w-5" /></span><div><h2 className="font-semibold text-white">ChatGPT · GitHub</h2><p className="text-xs text-white/45">États GitHub et production réelle, sans faux « Publié ».</p><p className="mt-1 text-[10px] text-white/30">Production {productionSha ? shortSha(productionSha) : "non vérifiée"} · actualisation 5 s{lastSyncAt ? ` · ${timeLabel(lastSyncAt)}` : ""}</p></div></div>
+      <div className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white"><Github className="h-5 w-5" /></span><div><h2 className="font-semibold text-white">ChatGPT · GitHub</h2><p className="text-xs text-white/45">États GitHub et production réelle, sans faux « Publié ».</p><p className="mt-1 text-[10px] text-white/30">Production {productionSha ? shortSha(productionSha) : "non vérifiée"}{productionHealthy === false ? " · santé rouge" : productionHealthy === true ? " · santé verte" : ""} · actualisation 5 s{lastSyncAt ? ` · ${timeLabel(lastSyncAt)}` : ""}</p></div></div>
       <button type="button" onClick={() => void refreshAll()} className="flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[.04] px-3 text-xs text-white/65">{refreshing || loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}<span className="hidden sm:inline">Actualiser</span></button>
     </div>
     {error ? <div className="mt-4"><AdminStatus tone="error" compact>{error}</AdminStatus></div> : null}
