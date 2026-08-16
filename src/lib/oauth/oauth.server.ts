@@ -1,5 +1,6 @@
 import { createCipheriv, createDecipheriv, createHmac, randomBytes, createHash, timingSafeEqual } from "node:crypto";
 import { PROVIDERS, type ProviderConfig, type ProviderId } from "./providers";
+import { deriveVaultKeySync, getVaultSecretSync } from "../angel-vault.server";
 
 export type TokenPayload = {
   access_token: string;
@@ -22,10 +23,23 @@ export type ConnectionInfo = {
 
 /* ---------------------------------------------------------------- crypto */
 
-function keyFrom(envName: string): Buffer {
-  const raw = process.env[envName];
-  if (!raw) throw new Error(`${envName} is not set`);
-  return createHash("sha256").update(raw).digest();
+function keyFrom(secretName: string): Buffer {
+  const raw = getVaultSecretSync(secretName);
+  if (raw) return createHash("sha256").update(raw).digest();
+
+  // Les deux secrets internes OAuth peuvent être dérivés de la clé maître du
+  // coffre. Ils restent distincts et ne sont jamais persistés dans GitHub.
+  if (secretName === "OAUTH_TOKEN_SECRET" || secretName === "OAUTH_STATE_SECRET") {
+    return deriveVaultKeySync(secretName);
+  }
+
+  throw new Error(`${secretName} is not configured`);
+}
+
+function stateHmacKey(): Buffer {
+  return createHmac("sha256", keyFrom("OAUTH_STATE_SECRET"))
+    .update("angel-os:oauth-state-hmac:v1")
+    .digest();
 }
 
 export function encryptTokens(payload: TokenPayload): string {
@@ -68,14 +82,14 @@ function openState(sealed: string): StatePayload {
 
 export function signState(payload: StatePayload): string {
   const body = sealState(payload);
-  const sig = createHmac("sha256", process.env["OAUTH_STATE_SECRET"] ?? "").update(body).digest("base64url");
+  const sig = createHmac("sha256", stateHmacKey()).update(body).digest("base64url");
   return `${body}.${sig}`;
 }
 
 export function verifyState(state: string): StatePayload | null {
   const [body, sig] = state.split(".");
   if (!body || !sig) return null;
-  const expected = createHmac("sha256", process.env["OAUTH_STATE_SECRET"] ?? "").update(body).digest("base64url");
+  const expected = createHmac("sha256", stateHmacKey()).update(body).digest("base64url");
   const a = Buffer.from(sig);
   const b = Buffer.from(expected);
   if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
@@ -91,13 +105,13 @@ export function verifyState(state: string): StatePayload | null {
 /* ------------------------------------------------------------- helpers */
 
 export function providerCredentials(config: ProviderConfig) {
-  const clientId = process.env[config.clientIdEnv];
-  const clientSecret = process.env[config.clientSecretEnv];
+  const clientId = getVaultSecretSync(config.clientIdEnv);
+  const clientSecret = getVaultSecretSync(config.clientSecretEnv);
   return { clientId, clientSecret, configured: Boolean(clientId && clientSecret) };
 }
 
 function endpoint(url: string): string {
-  return url.replace("{tenant}", process.env["MS_TENANT_ID"] ?? "common");
+  return url.replace("{tenant}", getVaultSecretSync("MS_TENANT_ID") ?? "common");
 }
 
 export function redirectUri(origin: string, provider: ProviderId): string {
