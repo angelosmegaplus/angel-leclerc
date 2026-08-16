@@ -7,20 +7,26 @@ import { AngelMissionEngine, type MissionPlanner, type MissionPriority, type Mis
 
 export type AngelCoreOptions = {
   planner?: MissionPlanner;
+  memory?: AngelMemoryIndex;
+  agents?: AngelAgentRuntime;
+  health?: AngelControlPlane;
 };
 
 /**
- * AngelAutonomousCore is the single coordination point for goal-driven work.
- * It intentionally keeps execution, health and memory separate internally,
- * while exposing one API to the rest of Angel OS.
+ * Single coordination point for goal-driven Angel OS work.
+ * Existing runtime services can be injected so the control plane never creates
+ * a second, divergent source of truth.
  */
 export class AngelAutonomousCore {
-  readonly agents = new AngelAgentRuntime();
-  readonly health = new AngelControlPlane();
-  readonly memory = new AngelMemoryIndex();
+  readonly agents: AngelAgentRuntime;
+  readonly health: AngelControlPlane;
+  readonly memory: AngelMemoryIndex;
   readonly missions: AngelMissionEngine;
 
   constructor(options: AngelCoreOptions = {}) {
+    this.agents = options.agents ?? new AngelAgentRuntime();
+    this.health = options.health ?? new AngelControlPlane();
+    this.memory = options.memory ?? new AngelMemoryIndex();
     this.missions = new AngelMissionEngine(options.planner);
   }
 
