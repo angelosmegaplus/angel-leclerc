@@ -1,8 +1,14 @@
 {
-  "version": 4,
-  "updatedAt": "2026-08-16T03:30:10Z",
+  "version": 5,
+  "updatedAt": "2026-08-16T14:12:00Z",
   "source": "github",
   "current": [
+    {
+      "id": "autonomous-issue-repair-loop",
+      "title": "Traiter automatiquement le registre d’incidents Angel OS",
+      "status": "running",
+      "detail": "À chaque maintenance, lire en priorité le registre persistant Angel OS stocké dans angel_os_cache sous la clé maintenance:angel-os:issue-registry:v1, ou via getAngelMaintenanceSnapshot()/getMaintenanceIssues lorsqu’une voie serveur authentifiée est disponible. Traiter les incidents ouverts par priorité P0 puis P1, P2 et P3 ; fusionner les doublons par fingerprint ; analyser leurs preuves, fréquence, composant, route, cause probable et fichiers concernés. Corriger automatiquement uniquement les défauts techniques non sensibles, réversibles et confirmés. Après correction, lancer les vérifications disponibles, pousser un correctif propre sur main, attendre le déploiement Vercel correspondant et retester réellement la production. Ne passer un incident à verified qu’après réussite du contrôle production via angelIssueRegistry.verifyProduction(..., true). Un commit, un build ou un statut READY seuls ne suffisent jamais. Si le contrôle production échoue, remettre l’incident en detected et poursuivre au cycle suivant. Ne jamais journaliser de secret ni auto-modifier DNS, paiement, secrets, OAuth/scopes, permissions sensibles ou suppressions irréversibles."
+    },
     {
       "id": "angel-ai-end-to-end",
       "title": "Maintenir Angel AI OpenAI validée de bout en bout",
