@@ -1,6 +1,5 @@
 import { getToken } from "@vercel/connect";
 import { getCookie } from "@tanstack/react-start/server";
-import { getVaultSecret } from "./angel-vault.server";
 
 const CONNECTORS = {
   tmdb: "tmdb_api_key/tmdb-angel-os",
@@ -58,22 +57,17 @@ function requestCookie(name: string) {
   }
 }
 
-async function namedSecrets(names: string[]) {
-  const values: Array<{ name: string; value: string; source: "env" | "angel-vault" }> = [];
+function namedSecrets(names: string[]) {
+  const values: Array<{ name: string; value: string; source: "env" }> = [];
   for (const name of names) {
     const env = process.env[name]?.trim();
-    if (env) {
-      values.push({ name, value: env, source: "env" });
-      continue;
-    }
-    const vault = (await getVaultSecret(name))?.trim();
-    if (vault) values.push({ name, value: vault, source: "angel-vault" });
+    if (env) values.push({ name, value: env, source: "env" });
   }
   return values;
 }
 
 async function openAiCandidates(): Promise<OpenAiCredential[]> {
-  const slots = await namedSecrets([
+  const slots = namedSecrets([
     "OPENAI_API_KEY",
     "OPENAI_API_KEY_2",
     "OPENAI_API_KEY_3",
@@ -95,7 +89,7 @@ async function openAiCandidates(): Promise<OpenAiCredential[]> {
 }
 
 async function tmdbCandidates(): Promise<TmdbCredential[]> {
-  const readSlots = await namedSecrets([
+  const readSlots = namedSecrets([
     "TMDB_READ_ACCESS_TOKEN",
     "TMDB_READ_TOKEN",
     "TMDB_READ_TOKEN_2",
@@ -103,7 +97,7 @@ async function tmdbCandidates(): Promise<TmdbCredential[]> {
     "TMDB_READ_TOKEN_4",
     "TMDB_READ_TOKEN_5",
   ]);
-  const apiSlots = await namedSecrets([
+  const apiSlots = namedSecrets([
     "TMDB_API_KEY",
     "TMDB_API_KEY_2",
     "TMDB_API_KEY_3",
@@ -173,10 +167,6 @@ async function selectHealthy<T extends OpenAiCredential | TmdbCredential>(servic
   return null;
 }
 
-/**
- * Signale qu'une clé a échoué pendant un vrai appel API. Le prochain accès
- * saute immédiatement cette clé et teste la suivante selon l'ordre de priorité.
- */
 export function markApiCredentialFailure(service: PoolService, credential: OpenAiCredential | TmdbCredential) {
   failedUntil.set(credentialId(service, credential), Date.now() + FAILED_TTL_MS);
   const cached = healthy.get(service);
