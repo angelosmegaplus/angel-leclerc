@@ -1,8 +1,8 @@
-name: Historique recherche alternance
+name: Historique recherche alternance — runtime data
 
 on:
   push:
-    branches: [main]
+    branches: [runtime-data]
     paths:
       - runtime/alternance-urgent-latest.json
   workflow_dispatch:
@@ -11,31 +11,33 @@ permissions:
   contents: write
 
 concurrency:
-  group: alternance-history-main
-  cancel-in-progress: false
+  group: alternance-history-runtime-data
+  cancel-in-progress: true
 
 jobs:
   update-history:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
+      - name: Check out runtime data branch
+        uses: actions/checkout@v5
         with:
-          ref: main
-          fetch-depth: 0
+          ref: runtime-data
+          fetch-depth: 1
 
       - name: Merge latest research into cumulative history
         run: node .github/scripts/update-alternance-history.mjs
 
-      - name: Commit history when it changed
+      - name: Commit history only on runtime-data
+        shell: bash
         run: |
+          set -euo pipefail
           if git diff --quiet -- runtime/alternance-research-history.json; then
             echo "No history change."
             exit 0
           fi
-          git config user.name "Angel OS"
+          git config user.name "Angel OS Runtime"
           git config user.email "actions@users.noreply.github.com"
           git add runtime/alternance-research-history.json
-          git commit -m "Update alternance research history"
-          git pull --rebase origin main
-          git push origin main
+          git commit -m "runtime: update alternance research history"
+          git pull --rebase origin runtime-data
+          git push origin HEAD:runtime-data
