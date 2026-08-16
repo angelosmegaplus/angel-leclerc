@@ -1,15 +1,31 @@
 {
-  "fetchedAt": "2026-08-16T08:59:46Z",
+  "fetchedAt": "2026-08-16T14:01:13Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-16T08:59:46Z",
+      "fetchedAt": "2026-08-16T14:01:13Z",
       "important": [
         {
-          "subject": "[angelosmegaplus/angel-leclerc] Run failed: Synchronisation données Angel OS - main (4c083a8)",
+          "subject": "Alerte de sécurité",
+          "from": "Google <no-reply@accounts.google.com>",
+          "date": "2026-08-16T12:43:21Z",
+          "summary": "Google signale une nouvelle connexion au compte principal. Le message précise qu'aucune action n'est nécessaire si cette connexion était bien celle d'Angel.",
+          "reason": "Alerte de sécurité récente concernant directement le compte Google principal.",
+          "suggestedReply": ""
+        },
+        {
+          "subject": "Votre compte Google a bien été récupéré",
+          "from": "Google <no-reply@accounts.google.com>",
+          "date": "2026-08-16T12:43:21Z",
+          "summary": "Google confirme que le compte principal a été récupéré. Ce message est cohérent avec l'alerte de nouvelle connexion reçue au même moment.",
+          "reason": "Événement de sécurité important à conserver dans le cockpit, sans action automatique sur Gmail.",
+          "suggestedReply": ""
+        },
+        {
+          "subject": "[angelosmegaplus/angel-leclerc] Run failed: Publication Angel OS - main (53c1522)",
           "from": "Angel OS <notifications@github.com>",
-          "date": "2026-08-16T08:02:36Z",
-          "summary": "Le workflow GitHub de synchronisation des données Angel OS a échoué. La routine mail ne lance pas de correctif concurrent et laisse ce diagnostic à la maintenance technique.",
-          "reason": "Échec technique concernant directement la synchronisation des données Angel OS.",
+          "date": "2026-08-16T12:39:40Z",
+          "summary": "Le dernier email GitHub de la période signale encore un échec du workflow Publication Angel OS. De nombreux échecs CI, observabilité, maintenance, publication et synchronisation ont été reçus depuis le précédent rapport ; cette routine ne lance aucun correctif concurrent.",
+          "reason": "Série d'échecs techniques concernant directement Angel OS et son pipeline de publication.",
           "suggestedReply": ""
         },
         {
@@ -21,16 +37,18 @@
           "suggestedReply": ""
         }
       ],
-      "otherSummary": "Depuis le précédent rapport, 2 messages nouveaux ont été observés : 1 entrant technique et 1 sortant. Le message sortant est une nouvelle candidature BTS Communication envoyée à Bataillon Frères à Sarlat. Aucun nouveau refus, entretien, acceptation, demande de CV, demande d'information ou redirection professionnelle n'a été reçu. Gmail n'a subi aucune modification par cette routine.",
+      "otherSummary": "Depuis le précédent rapport, 42 messages ont été observés : 36 entrants et 6 sortants. Les entrants sont presque entièrement techniques (34 notifications GitHub d'échec) auxquels s'ajoutent 2 messages Google liés à la récupération et à une nouvelle connexion au compte. Côté candidatures, aucun nouveau message entrant, refus, entretien, demande de CV, demande d'information ou redirection n'a été reçu. Trois messages sortants concernent la recherche d'alternance : une nouvelle candidature à SIFT Studio et deux relances vers le Château de Castelnaud et Sarl Maxima. Trois autres messages sortants sont des désabonnements GitHub générés par Gmail. Cette routine n'a envoyé, classé, marqué lu ni modifié aucun email.",
       "counts": {
-        "new_since_last_run": 2,
-        "incoming": 1,
-        "outgoing": 1,
-        "technical_incoming": 1,
-        "security_incoming": 0,
+        "new_since_last_run": 42,
+        "incoming": 36,
+        "outgoing": 6,
+        "technical_incoming": 34,
+        "security_incoming": 2,
         "secondary_incoming": 0,
         "employment_or_application_incoming": 0,
-        "outgoing_applications": 1,
+        "outgoing_new_applications": 1,
+        "outgoing_followups": 2,
+        "outgoing_unsubscribe": 3,
         "application_action_required": 0,
         "explicit_rejections": 0,
         "positive_or_interview": 0,
@@ -40,18 +58,19 @@
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-16T08:00:37Z",
-    "period_end": "2026-08-16T08:59:46Z",
-    "summary": "Depuis le précédent rapport, 2 messages nouveaux ont été observés : un email GitHub signalant l'échec du workflow de synchronisation des données Angel OS et une nouvelle candidature BTS Communication envoyée à Bataillon Frères à Sarlat. Aucun nouveau refus explicite, acceptation, proposition d'entretien, demande de CV, demande d'information ou redirection professionnelle n'a été reçu. Aucun email n'a été envoyé, modifié, classé ou marqué lu par cette routine. La file `ai_actions` nécessite toujours un accès serveur Supabase authentifié par `SUPABASE_SERVICE_ROLE_KEY`; les connecteurs disponibles dans cette exécution ne donnent pas cet accès, donc aucune action `awaiting_operator` n'a été exécutée ou modifiée et aucune réussite n'a été simulée.",
+    "period_start": "2026-08-16T08:59:46Z",
+    "period_end": "2026-08-16T14:01:13Z",
+    "summary": "Depuis le précédent rapport, 42 messages ont été observés. Aucun nouveau mail entrant lié à une candidature n'a été reçu : aucun refus explicite, acceptation, entretien, demande de CV, demande d'information ou redirection professionnelle. Trois envois liés à l'alternance ont été effectués en dehors de cette routine : une nouvelle candidature à SIFT Studio et deux relances vers le Château de Castelnaud et Sarl Maxima. Les nouveaux entrants sont surtout techniques : 34 notifications GitHub signalent des échecs répétés de CI, publication, observabilité, maintenance ou synchronisation Angel OS. Deux messages Google reçus à 12:43 UTC confirment la récupération du compte principal et signalent une nouvelle connexion. Cette routine n'a envoyé ni modifié aucun email. La file `ai_actions` reste inaccessible sans une voie serveur Supabase authentifiée ; aucune action `awaiting_operator` n'a donc été exécutée, modifiée ou simulée.",
     "counts": {
-      "total_messages": 2,
-      "incoming": 1,
-      "outgoing": 1,
-      "technical_incoming": 1,
-      "security_incoming": 0,
-      "secondary_incoming": 0,
+      "total_messages": 42,
+      "incoming": 36,
+      "outgoing": 6,
+      "technical_incoming": 34,
+      "security_incoming": 2,
       "employment_or_application_incoming": 0,
-      "outgoing_applications": 1,
+      "outgoing_new_applications": 1,
+      "outgoing_followups": 2,
+      "outgoing_unsubscribe": 3,
       "application_action_required": 0,
       "explicit_rejections": 0,
       "positive_or_interview": 0,
@@ -60,23 +79,48 @@
     },
     "items": [
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Synchronisation données Angel OS - main (4c083a8)",
-        "from": "Angel OS <notifications@github.com>",
-        "date": "2026-08-16T08:02:36Z",
-        "reason": "Échec du workflow de synchronisation des données Angel OS ; à laisser à la routine de maintenance technique afin d'éviter un correctif concurrent."
+        "subject": "Alerte de sécurité",
+        "from": "Google <no-reply@accounts.google.com>",
+        "date": "2026-08-16T12:43:21Z",
+        "reason": "Nouvelle connexion au compte Google principal ; à vérifier uniquement si elle n'était pas attendue."
       },
       {
-        "subject": "Candidature BTS Communication en alternance – Sarlat",
+        "subject": "Votre compte Google a bien été récupéré",
+        "from": "Google <no-reply@accounts.google.com>",
+        "date": "2026-08-16T12:43:21Z",
+        "reason": "Confirmation de récupération du compte Google principal, cohérente avec l'alerte de sécurité simultanée."
+      },
+      {
+        "subject": "[angelosmegaplus/angel-leclerc] Run failed: Publication Angel OS - main (53c1522)",
+        "from": "Angel OS <notifications@github.com>",
+        "date": "2026-08-16T12:39:40Z",
+        "reason": "Dernier d'une série de 34 emails techniques d'échec reçus depuis le précédent rapport ; diagnostic à laisser à la maintenance technique pour éviter les corrections concurrentes."
+      },
+      {
+        "subject": "Candidature BTS Communication en alternance – Sarlat / Vitrac",
         "from": "Angel LECLERC <angelleclerc2006@gmail.com>",
-        "date": "2026-08-16T08:28:20Z",
-        "reason": "Nouvelle candidature sortante envoyée à Bataillon Frères (imprimerie@bataillon.fr) ; à intégrer au suivi candidatures sans créer de doublon."
+        "date": "2026-08-16T10:34:06Z",
+        "reason": "Nouvelle candidature sortante envoyée à SIFT Studio ; à intégrer au suivi candidatures sans créer de doublon."
+      },
+      {
+        "subject": "Re: Candidature pour un BTS Communication en alternance",
+        "from": "Angel LECLERC <angelleclerc2006@gmail.com>",
+        "date": "2026-08-16T10:34:10Z",
+        "reason": "Relance sortante envoyée au Château de Castelnaud."
+      },
+      {
+        "subject": "Re: Candidature BTS Communication en alternance – Sarlat",
+        "from": "Angel LECLERC <angelleclerc2006@gmail.com>",
+        "date": "2026-08-16T12:33:22Z",
+        "reason": "Relance sortante envoyée à Sarl Maxima."
       }
     ],
     "recommendations": [
-      "Laisser l'échec du workflow de synchronisation Angel OS à la routine de maintenance technique.",
-      "Intégrer Bataillon Frères au suivi candidatures uniquement si cette candidature n'y figure pas déjà.",
-      "Aucune réponse automatique de refus à envoyer : aucun nouveau refus explicite n'a été reçu sur la période.",
-      "Ne pas simuler l'exécution d'actions `awaiting_operator` tant que `ai_actions` n'est pas accessible par une voie serveur authentifiée."
+      "Ne créer aucune réponse automatique de refus : aucun nouveau refus explicite n'a été reçu sur la période.",
+      "Laisser les échecs GitHub à la routine de maintenance technique afin d'éviter un correctif concurrent depuis la veille mail.",
+      "Conserver l'alerte Google dans le cockpit sécurité ; aucune action Gmail automatique n'est autorisée par cette routine.",
+      "Intégrer SIFT Studio et les deux relances au suivi candidatures uniquement si ces éléments ne sont pas déjà présents.",
+      "Ne pas simuler l'exécution d'actions `awaiting_operator` tant que `ai_actions` n'est pas accessible par une voie serveur Supabase authentifiée."
     ],
     "source": "chatgpt-hourly-direct"
   }
