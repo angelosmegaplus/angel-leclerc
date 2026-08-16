@@ -41,7 +41,7 @@ export function ApprenticeshipBanner() {
             Recherche urgente d’alternance BTS Communication — septembre 2026
           </span>
           <span className="hidden sm:inline text-muted-foreground">
-            · Bordeaux · Périgueux · Bergerac · Brive · Sarlat
+            · Sarlat · Périgueux · Bergerac · Brive · Bordeaux · Toulouse
           </span>
         </Link>
 
