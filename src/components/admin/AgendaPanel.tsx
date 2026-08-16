@@ -1,8 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { CalendarDays, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminCard } from "./AdminShell";
 import { fmtDate } from "@/lib/angelos";
+import { listGoogleCalendarEvents } from "@/lib/google-workspace.functions";
 
 type Entry = {
   id: string;
@@ -21,14 +23,13 @@ function localDateKey(date = new Date()) {
   return `${year}-${month}-${day}`;
 }
 
-async function loadAgenda(): Promise<Entry[]> {
-  const [articles, projects, tasks, applications, interviews, googleCache] = await Promise.all([
+async function loadLocalAgenda(): Promise<Entry[]> {
+  const [articles, projects, tasks, applications, interviews] = await Promise.all([
     supabase.from("articles").select("id,title,scheduled_at").not("scheduled_at", "is", null),
     anyDb.from("projects").select("id,title,due_date,client_name").not("due_date", "is", null),
     anyDb.from("project_tasks").select("id,title,due_date").not("due_date", "is", null),
     anyDb.from("applications").select("id,company,follow_up_at").not("follow_up_at", "is", null),
     anyDb.from("interviews").select("id,title,person,scheduled_at").not("scheduled_at", "is", null),
-    anyDb.from("angel_os_cache").select("payload").eq("key", "google_calendar_dashboard").maybeSingle(),
   ]);
 
   const out: Entry[] = [];
@@ -37,24 +38,28 @@ async function loadAgenda(): Promise<Entry[]> {
   for (const task of (tasks.data ?? []) as any[]) out.push({ id: `tsk-${task.id}`, date: task.due_date, label: task.title, detail: "Tâche", kind: "Tâche" });
   for (const application of (applications.data ?? []) as any[]) out.push({ id: `can-${application.id}`, date: application.follow_up_at, label: application.company, detail: "Relance de candidature", kind: "Alternance" });
   for (const interview of (interviews.data ?? []) as any[]) out.push({ id: `itw-${interview.id}`, date: interview.scheduled_at, label: interview.title, detail: interview.person ? `Interview · ${interview.person}` : "Interview", kind: "Studio" });
-  for (const event of ((googleCache.data?.payload?.events ?? []) as any[])) {
-    if (!event.start || !event.title) continue;
-    out.push({
-      id: `google-${event.id ?? event.url ?? event.start}`,
-      date: event.start,
-      label: event.title,
-      detail: [event.location, event.advice ? `Conseil : ${event.advice}` : ""].filter(Boolean).join(" · ") || "Google Agenda",
-      kind: "Google",
-    });
-  }
-
-  return out.sort((a, b) => a.date.localeCompare(b.date));
+  return out;
 }
 
 export function AgendaPanel() {
+  const loadGoogleCalendar = useServerFn(listGoogleCalendarEvents);
   const { data = [], isLoading } = useQuery({
-    queryKey: ["angel", "agenda"],
-    queryFn: loadAgenda,
+    queryKey: ["angel", "agenda", "live-google"],
+    queryFn: async () => {
+      const [local, google] = await Promise.all([
+        loadLocalAgenda(),
+        loadGoogleCalendar().catch(() => []),
+      ]);
+      const googleEntries: Entry[] = google.map((event) => ({
+        id: `google-${event.id}`,
+        date: event.start,
+        label: event.title,
+        detail: event.location ? `Google Agenda · ${event.location}` : "Google Agenda",
+        kind: "Google",
+      }));
+      return [...local, ...googleEntries].sort((a, b) => a.date.localeCompare(b.date));
+    },
+    staleTime: 2 * 60 * 1000,
   });
 
   const today = localDateKey();
@@ -82,7 +87,7 @@ export function AgendaPanel() {
 
   return (
     <div className="space-y-4">
-      <AdminCard title="Agenda" description="Publications, missions, tâches, relances et rendez-vous réunis au même endroit.">
+      <AdminCard title="Agenda" description="Publications, missions, tâches, relances et Google Calendar réunis au même endroit, avec lecture directe lorsque Google Workspace est connecté.">
         {isLoading ? (
           <p className="flex items-center gap-2 text-sm text-white/45"><Loader2 className="h-4 w-4 animate-spin" /> Chargement…</p>
         ) : upcoming.length === 0 ? (
