@@ -1,7 +1,15 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "git": {
-    "deploymentEnabled": true
+    "deploymentEnabled": {
+      "runtime-data": false,
+      "optimize/*": false,
+      "fix-*": false,
+      "chore-*": false,
+      "refactor-*": false,
+      "dependabot/*": false,
+      "preview-*": true
+    }
   },
   "headers": [
     {
