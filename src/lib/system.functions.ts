@@ -34,15 +34,22 @@ export const integrationReadiness = createServerFn({ method: "GET" })
 
     return services.map((service) => {
       if (!service.provider) return service;
+      const provider = PROVIDERS[service.provider];
       const row = connections.find((c) => c.provider === service.provider);
-      const requiredScopes = PROVIDERS[service.provider].scopes;
+      const requiredScopes = provider.scopes;
       const granted = new Set(row?.scopes ?? []);
       const missingScopes = row ? requiredScopes.filter((scope) => !granted.has(scope)) : [];
+      const optionalMissing = row
+        ? (provider.optionalScopes ?? []).filter((scope) => !granted.has(scope))
+        : [];
       const connection: ConnectionState = !row
         ? "not_connected"
         : row.status === "reconnect_required" || missingScopes.length > 0
           ? "reconnect_required"
           : "connected";
+      const optionalNote = optionalMissing.length > 0
+        ? `Fonctions Google optionnelles non encore autorisées : ${optionalMissing.join(", ")}. Gmail reste actif.`
+        : "";
       return {
         ...service,
         connection,
@@ -51,7 +58,9 @@ export const integrationReadiness = createServerFn({ method: "GET" })
         scopes: row?.scopes ?? [],
         ...(missingScopes.length > 0
           ? { note: `${service.note ? `${service.note} ` : ""}Reconnexion requise pour autoriser : ${missingScopes.join(", ")}.` }
-          : {}),
+          : optionalNote
+            ? { note: `${service.note ? `${service.note} ` : ""}${optionalNote}` }
+            : {}),
       };
     });
   });
