@@ -26,6 +26,8 @@ export type AlternanceResearchLead = {
   reason?: string;
   visualStatus?: string;
   gmailThreadId?: string;
+  firstSeenAt?: string;
+  lastSeenAt?: string;
 };
 
 export type AlternanceResearchSnapshot = {
@@ -35,6 +37,8 @@ export type AlternanceResearchSnapshot = {
   newApplication?: AlternanceResearchLead | null;
   gmailActions?: AlternanceResearchLead[];
   screenedLeads?: AlternanceResearchLead[];
+  history?: AlternanceResearchLead[];
+  historyUpdatedAt?: string;
   angelOsSync?: {
     status?: string;
     visualStatus?: string;
@@ -87,6 +91,17 @@ export const syncGoogleApplications = createServerFn({ method: "POST" })
 
 const ALTERNANCE_RUNTIME_URL =
   "https://raw.githubusercontent.com/angelosmegaplus/angel-leclerc/main/runtime/alternance-urgent-latest.json";
+const ALTERNANCE_HISTORY_URL =
+  "https://raw.githubusercontent.com/angelosmegaplus/angel-leclerc/main/runtime/alternance-research-history.json";
+
+async function fetchAdminJson(url: string) {
+  const response = await fetch(`${url}?t=${Date.now()}`, {
+    cache: "no-store",
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) return null;
+  return response.json() as Promise<unknown>;
+}
 
 export const getAlternanceResearchSnapshot = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -94,14 +109,24 @@ export const getAlternanceResearchSnapshot = createServerFn({ method: "POST" })
     await assertAdmin(context);
 
     try {
-      const response = await fetch(`${ALTERNANCE_RUNTIME_URL}?t=${Date.now()}`, {
-        cache: "no-store",
-        headers: { Accept: "application/json" },
-      });
-      if (!response.ok) return null;
+      const [latestRaw, historyRaw] = await Promise.all([
+        fetchAdminJson(ALTERNANCE_RUNTIME_URL),
+        fetchAdminJson(ALTERNANCE_HISTORY_URL),
+      ]);
 
-      const payload = (await response.json()) as AlternanceResearchSnapshot;
-      return payload && typeof payload === "object" ? payload : null;
+      const payload = latestRaw && typeof latestRaw === "object"
+        ? { ...(latestRaw as AlternanceResearchSnapshot) }
+        : ({} as AlternanceResearchSnapshot);
+
+      if (historyRaw && typeof historyRaw === "object") {
+        const history = historyRaw as { updatedAt?: string; items?: unknown };
+        payload.history = Array.isArray(history.items)
+          ? (history.items as AlternanceResearchLead[])
+          : [];
+        payload.historyUpdatedAt = history.updatedAt;
+      }
+
+      return Object.keys(payload).length > 0 ? payload : null;
     } catch {
       return null;
     }
