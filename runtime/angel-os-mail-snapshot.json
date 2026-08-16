@@ -1,9 +1,17 @@
 {
-  "fetchedAt": "2026-08-16T16:02:15Z",
+  "fetchedAt": "2026-08-16T17:02:44Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-16T16:02:15Z",
+      "fetchedAt": "2026-08-16T17:02:44Z",
       "important": [
+        {
+          "subject": "[angelosmegaplus/angel-leclerc] Generic High Entropy Secret exposed on GitHub",
+          "from": "GitGuardian <security@getgitguardian.com>",
+          "date": "2026-08-16T16:49:05Z",
+          "summary": "GitGuardian signale la détection d'un secret générique à forte entropie exposé dans le dépôt angelosmegaplus/angel-leclerc. Cette routine n'a répondu à aucun message et n'a modifié aucun secret.",
+          "reason": "Alerte de sécurité récente concernant directement le dépôt principal Angel OS ; elle doit être rapprochée des corrections de sécurité déjà en cours et traitée par la maintenance technique.",
+          "suggestedReply": ""
+        },
         {
           "subject": "Confirm your email address",
           "from": "Supabase Auth <noreply@mail.app.supabase.io>",
@@ -24,7 +32,7 @@
           "subject": "[angelosmegaplus/angel-leclerc] Run failed: Publication Angel OS - main (53c1522)",
           "from": "Angel OS <notifications@github.com>",
           "date": "2026-08-16T12:39:40Z",
-          "summary": "Le dernier rapport précédent signalait une série d'échecs des workflows CI, publication, observabilité, maintenance ou synchronisation Angel OS. Aucun nouveau mail GitHub n'est arrivé pendant cette période horaire.",
+          "summary": "Des échecs répétés de workflows CI, publication, observabilité, maintenance ou synchronisation Angel OS restent présents parmi les non-lus récents. Aucun nouvel échec GitHub n'est arrivé pendant cette dernière période horaire.",
           "reason": "Blocage technique antérieur encore utile au cockpit tant que la maintenance n'a pas confirmé sa résolution.",
           "suggestedReply": ""
         },
@@ -37,12 +45,12 @@
           "suggestedReply": ""
         }
       ],
-      "otherSummary": "Depuis le précédent rapport à 14:01 UTC, un seul nouveau message a été observé : un email Supabase Auth reçu à 15:44 UTC demandant de confirmer l'adresse email pour terminer une inscription. Aucun nouveau mail entrant lié à une candidature, aucun refus, entretien, demande de CV, demande d'information, redirection professionnelle ou nouvel email technique GitHub n'a été reçu sur cette période. Cette routine n'a envoyé, classé, marqué lu ni modifié aucun email.",
+      "otherSummary": "Depuis le précédent rapport à 16:02 UTC, un seul nouveau message pertinent a été reçu : GitGuardian a signalé à 16:49 UTC un secret générique à forte entropie exposé dans le dépôt angelosmegaplus/angel-leclerc. Aucun nouveau mail de candidature, refus, entretien, demande de CV, demande d'information ou redirection professionnelle n'a été reçu sur cette période. Aucun email n'a été envoyé, classé, marqué lu ou modifié par cette routine.",
       "counts": {
         "new_since_last_run": 1,
         "incoming": 1,
         "outgoing": 0,
-        "technical_incoming": 0,
+        "technical_incoming": 1,
         "security_or_account_incoming": 1,
         "secondary_incoming": 0,
         "employment_or_application_incoming": 0,
@@ -55,14 +63,14 @@
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-16T14:01:13Z",
-    "period_end": "2026-08-16T16:02:15Z",
-    "summary": "Un seul nouveau message a été reçu depuis le précédent rapport : Supabase Auth demande à 15:44 UTC de confirmer l'adresse email afin de terminer une inscription. Aucun nouveau mail de candidature n'a été reçu : aucun refus explicite, acceptation, entretien, demande de CV, demande d'information ou redirection professionnelle. Aucun nouvel email GitHub d'échec n'est arrivé pendant cette période. Cette routine n'a envoyé ni modifié aucun email. La file `ai_actions` n'est toujours pas accessible depuis les connecteurs disponibles sans voie serveur Supabase authentifiée ; aucune action `awaiting_operator` n'a donc été exécutée, modifiée ou simulée.",
+    "period_start": "2026-08-16T16:02:15Z",
+    "period_end": "2026-08-16T17:02:44Z",
+    "summary": "Un seul nouveau message pertinent a été reçu depuis le précédent rapport : GitGuardian signale à 16:49 UTC un Generic High Entropy Secret exposé dans le dépôt angelosmegaplus/angel-leclerc. Aucun nouveau mail lié à une candidature n'a été reçu : aucun refus explicite, acceptation, entretien, demande de CV, demande d'information ou redirection professionnelle. Cette routine n'a envoyé ni modifié aucun email. La file `ai_actions` n'est pas accessible depuis les connecteurs disponibles sans voie serveur Supabase authentifiée ; aucune action `awaiting_operator` n'a donc été exécutée, modifiée ou simulée.",
     "counts": {
       "total_messages": 1,
       "incoming": 1,
       "outgoing": 0,
-      "technical_incoming": 0,
+      "technical_incoming": 1,
       "security_or_account_incoming": 1,
       "employment_or_application_incoming": 0,
       "application_action_required": 0,
@@ -73,15 +81,15 @@
     },
     "items": [
       {
-        "subject": "Confirm your email address",
-        "from": "Supabase Auth <noreply@mail.app.supabase.io>",
-        "date": "2026-08-16T15:44:48Z",
-        "reason": "Demande de confirmation d'adresse pour terminer une inscription Supabase ; aucune action automatique n'a été effectuée."
+        "subject": "[angelosmegaplus/angel-leclerc] Generic High Entropy Secret exposed on GitHub",
+        "from": "GitGuardian <security@getgitguardian.com>",
+        "date": "2026-08-16T16:49:05Z",
+        "reason": "Alerte de sécurité récente sur le dépôt principal ; à rapprocher des corrections de sécurité déjà en cours et à laisser à la maintenance technique."
       }
     ],
     "recommendations": [
       "Ne créer aucune réponse automatique de refus : aucun nouveau refus explicite n'a été reçu sur la période.",
-      "Ne cliquer ni confirmer automatiquement l'email Supabase Auth ; conserver seulement l'information dans le cockpit.",
+      "Faire traiter l'alerte GitGuardian par la maintenance technique : vérifier si le secret signalé correspond au credential historique déjà retiré, puis confirmer sa révocation/rotation si nécessaire sans exposer sa valeur.",
       "Ne pas simuler l'exécution d'actions `awaiting_operator` tant que `ai_actions` n'est pas accessible par une voie serveur Supabase authentifiée."
     ],
     "source": "chatgpt-hourly-direct"
