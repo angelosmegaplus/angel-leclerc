@@ -6,6 +6,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 const OWNER_EMAILS = new Set([
   "contact@angel-leclerc.fr",
   "angel.leclerc@icloud.com",
+  "angelleclerc2006@gmail.com",
 ]);
 
 const inputSchema = z.object({
@@ -26,7 +27,7 @@ function configuredOwnerEmails() {
 }
 
 function getAdminClient() {
-  const url = String(process.env.SUPABASE_URL ?? "").trim();
+  const url = String(process.env.SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL || "").trim();
   const key = String(process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SECRET_KEY ?? "").trim();
   if (!url || !key) throw new Error("Les identifiants serveur Supabase sont absents.");
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
