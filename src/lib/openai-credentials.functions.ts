@@ -1,78 +1,59 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getCookie, setCookie } from "@tanstack/react-start/server";
-import { OPENAI_API_KEY_COOKIE } from "./vercel-connect-credentials.server";
-import { hasVaultSecretSync } from "./angel-vault.server";
-
-const COOKIE_OPTIONS = {
-  path: "/",
-  httpOnly: true,
-  secure: true,
-  sameSite: "strict" as const,
-  maxAge: 60 * 60 * 24 * 180,
-};
+import { getOpenAiCredential } from "./vercel-connect-credentials.server";
 
 async function validateOpenAiKey(value: string) {
-  const response = await fetch("https://api.openai.com/v1/models", {
-    headers: {
-      Authorization: `Bearer ${value}`,
-      Accept: "application/json",
-    },
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 3000);
+  try {
+    const response = await fetch("https://api.openai.com/v1/models", {
+      signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${value}`,
+        Accept: "application/json",
+      },
+    });
 
-  if (!response.ok) {
-    let detail = "";
-    try {
-      const body = await response.json() as { error?: { message?: string; type?: string; code?: string | null } };
-      const message = body.error?.message?.trim();
-      const code = body.error?.code || body.error?.type;
-      detail = message ? ` — ${message}${code ? ` (${code})` : ""}` : "";
-    } catch {
-      // no-op
+    if (!response.ok) {
+      let detail = "";
+      try {
+        const body = await response.json() as { error?: { message?: string; type?: string; code?: string | null } };
+        const message = body.error?.message?.trim();
+        const code = body.error?.code || body.error?.type;
+        detail = message ? ` — ${message}${code ? ` (${code})` : ""}` : "";
+      } catch {
+        // Keep the public error concise when the provider returns a non-JSON body.
+      }
+      throw new Error(`OPENAI_API_KEY_INVALID_${response.status}${detail}`);
     }
-    throw new Error(`OPENAI_API_KEY_INVALID_${response.status}${detail}`);
+    return true;
+  } finally {
+    clearTimeout(timer);
   }
-  return true;
 }
 
 export const getOpenAiCredentialStatus = createServerFn({ method: "GET" }).handler(async () => {
-  const envApiKey = Boolean(process.env["OPENAI_API_KEY"]?.trim());
-  const vaultApiKey = !envApiKey && hasVaultSecretSync("OPENAI_API_KEY");
-  const cookieApiKey = Boolean(getCookie(OPENAI_API_KEY_COOKIE));
-
-  let activeSource: string | null = null;
-  try {
-    const { getOpenAiCredential } = await import("./vercel-connect-credentials.server");
-    activeSource = (await getOpenAiCredential())?.source ?? null;
-  } catch {
-    activeSource = null;
-  }
-
-  return { envApiKey, vaultApiKey, cookieApiKey, activeSource };
+  const credential = await getOpenAiCredential();
+  return {
+    envApiKey: Boolean(process.env.OPENAI_API_KEY?.trim()),
+    vaultApiKey: false,
+    cookieApiKey: false,
+    activeSource: credential?.source ?? null,
+  };
 });
 
+// Legacy admin actions kept only so old imports cannot crash a build.
+// Credentials are configured exclusively in Vercel Environment Variables.
 export const saveOpenAiCredential = createServerFn({ method: "POST" })
-  .validator((input: { apiKey?: string }) => ({
-    apiKey: String(input?.apiKey ?? "").trim().slice(0, 4096),
-  }))
-  .handler(async ({ data }) => {
-    if (!data.apiKey) throw new Error("Renseigne une clé API OpenAI.");
-    await validateOpenAiKey(data.apiKey);
-    setCookie(OPENAI_API_KEY_COOKIE, data.apiKey, COOKIE_OPTIONS);
-    return {
-      ok: true as const,
-      message: "Clé OpenAI vérifiée et enregistrée côté serveur pour ce navigateur.",
-    };
+  .validator((input: { apiKey?: string }) => ({ apiKey: String(input?.apiKey ?? "").trim() }))
+  .handler(async () => {
+    throw new Error("La configuration OpenAI se fait uniquement dans les variables d’environnement Vercel.");
   });
 
-export const clearOpenAiCredential = createServerFn({ method: "POST" }).handler(async () => {
-  setCookie(OPENAI_API_KEY_COOKIE, "", { ...COOKIE_OPTIONS, maxAge: 0 });
-  return { ok: true as const };
-});
+export const clearOpenAiCredential = createServerFn({ method: "POST" }).handler(async () => ({ ok: true as const }));
 
 export const testActiveOpenAiCredential = createServerFn({ method: "GET" }).handler(async () => {
-  const { getOpenAiCredential } = await import("./vercel-connect-credentials.server");
   const credential = await getOpenAiCredential();
-  if (!credential) return { ok: false as const, source: null, error: "Aucun identifiant OpenAI disponible." };
+  if (!credential) return { ok: false as const, source: null, error: "OPENAI_API_KEY absente des variables Vercel." };
 
   try {
     await validateOpenAiKey(credential.value);
