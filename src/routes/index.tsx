@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { ArrowRight, Briefcase, User, Sparkles, FileText, Mail, ShieldCheck } from "lucide-react";
+import { ArrowRight, Briefcase, User, Sparkles, FileText, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.svg";
 import { LatestArticles } from "@/components/LatestArticles";
@@ -8,17 +8,17 @@ import { LatestArticles } from "@/components/LatestArticles";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Angel Leclerc — Entreprise, Parcours & Angel OS" },
+      { title: "Angel Leclerc — Entreprise & Parcours" },
       {
         name: "description",
         content:
-          "Découvrez Angel Leclerc Communication, mon parcours et Angel OS, application personnelle de centralisation, d'assistance et d'automatisation connectée à des services externes autorisés.",
+          "Découvrez Angel Leclerc Communication, mon parcours, mes compétences, mes réalisations et mes projets.",
       },
-      { property: "og:title", content: "Angel Leclerc — Entreprise, Parcours & Angel OS" },
+      { property: "og:title", content: "Angel Leclerc — Entreprise & Parcours" },
       {
         property: "og:description",
         content:
-          "Angel Leclerc Communication, parcours personnel et présentation publique de l'application Angel OS.",
+          "Angel Leclerc Communication, parcours personnel, compétences, réalisations et projets.",
       },
       { property: "og:url", content: "https://www.angel-leclerc.fr/" },
     ],
@@ -72,7 +72,7 @@ function LandingPage() {
             <motion.span initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.35 }} className="mt-10 inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-muted-foreground backdrop-blur"><Sparkles size={12} className="text-primary" />Bienvenue</motion.span>
             <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.45, ease: [0.22, 1, 0.36, 1] }} className="mt-5 font-display text-5xl font-bold leading-[1.02] tracking-tight text-foreground md:text-6xl lg:text-7xl">Angel <span className="italic text-primary">Leclerc</span></motion.h1>
             <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.6 }} className="mt-4 font-display text-base tracking-wide text-primary md:text-lg">« Donner du souffle à vos idées. »</motion.p>
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.75 }} className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg">Ce site présente mon activité professionnelle, mon parcours personnel et Angel OS, mon application privée de centralisation et d'automatisation.</motion.p>
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.75 }} className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg">Ce site présente mon activité professionnelle, mon parcours, mes compétences, mes réalisations et mes projets.</motion.p>
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.9 }} className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
               <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90"><Link to="/parcours"><FileText size={18} />Voir mon CV</Link></Button>
               <Button asChild size="lg" variant="outline"><Link to="/contact"><Mail size={18} />Me contacter</Link></Button>
@@ -98,12 +98,6 @@ function LandingPage() {
               );
             })}
           </div>
-
-          <section className="mt-8 rounded-3xl border border-primary/25 bg-card p-8 md:p-10" aria-labelledby="angel-os-home-title">
-            <div className="flex items-center gap-3"><img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-12 w-12 rounded-xl object-contain" /><div><p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">Application personnelle</p><h2 id="angel-os-home-title" className="font-display text-2xl font-bold text-foreground md:text-3xl">Angel OS</h2></div></div>
-            <p className="mt-5 max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">Angel OS centralise dans une interface privée l'administration du site, l'assistance par intelligence artificielle, les communications, l'agenda, les candidatures, les fichiers, les API et les automatisations. Des services externes comme Gmail, Google Calendar ou Google Drive peuvent être connectés volontairement via OAuth afin de fournir uniquement les fonctions autorisées par l'utilisateur.</p>
-            <div className="mt-6 flex flex-wrap gap-3"><Button asChild><Link to="/angel-os-ia"><ShieldCheck className="mr-2 h-4 w-4" />Découvrir Angel OS</Link></Button><Button asChild variant="outline"><Link to="/politique-confidentialite">Politique de confidentialité</Link></Button></div>
-          </section>
         </div>
       </section>
       <LatestArticles />
