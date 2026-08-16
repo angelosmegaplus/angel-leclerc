@@ -2,6 +2,7 @@ import { createMiddleware } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from './types'
+import { supabase as browserSupabase } from './client'
 
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
@@ -36,8 +37,27 @@ function publicSupabaseConfig() {
   return { url: url?.trim(), publishableKey: publishableKey?.trim() };
 }
 
-export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server(
-  async ({ next }) => {
+export const requireSupabaseAuth = createMiddleware({ type: 'function' })
+  .client(async ({ next }) => {
+    // TanStack server functions do not automatically inherit Supabase's
+    // local-storage session. Attach the current access token to every RPC that
+    // uses this middleware so the server can authenticate the actual browser
+    // session instead of failing before the protected handler is reached.
+    const { data, error } = await browserSupabase.auth.getSession();
+    const token = data.session?.access_token?.trim();
+
+    if (error || !token) {
+      // Let the server middleware return the canonical Unauthorized error.
+      return next();
+    }
+
+    return next({
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  })
+  .server(async ({ next }) => {
     const { url: SUPABASE_URL, publishableKey: SUPABASE_PUBLISHABLE_KEY } = publicSupabaseConfig();
 
     if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
@@ -78,5 +98,4 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
         claims: data.claims,
       },
     });
-  },
-);
+  });
