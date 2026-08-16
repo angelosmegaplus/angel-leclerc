@@ -1,5 +1,6 @@
 import {
   AngelApplicationRuntime,
+  AngelAutonomousCore,
   AngelDeployEngine,
   AngelEventLog,
   AngelGuardian,
@@ -14,6 +15,7 @@ import {
   HybridOrchestrator,
   MemoryCache,
   NativeTaskWorker,
+  type HealthProbeResult,
   type IssuePriority,
 } from "../../angel-os/core";
 import { getOpenAiCredential } from "./vercel-connect-credentials.server";
@@ -38,11 +40,12 @@ export const angelGuardian = new AngelGuardian(angelEventLog, angelTelemetry, an
 export const angelRecovery = new AngelRecovery();
 export const angelSyncEngine = new AngelSyncEngine();
 export const angelApplicationRuntime = new AngelApplicationRuntime(angelIssueRegistry);
+export const angelAutonomousCore = new AngelAutonomousCore({ memory: angelMemoryIndex });
 
 angelApplicationRuntime.register({
   id: "angel-os-ia",
   name: "Angel OS IA",
-  version: "0.2.1",
+  version: "0.3.0",
   layer: "angel-os-ia",
   requires: ["angel-os", "events", "memory", "workflows", "hybrid-orchestrator"],
   provides: ["ai-providers", "conversation", "analysis", "generation", "agents", "intelligent-automation"],
@@ -62,6 +65,35 @@ angelApplicationRuntime.register({
   provides: ["website", "admin", "blog", "movix"],
   health: async () => true,
 });
+
+function applicationHealthProbe(id: string): Promise<HealthProbeResult> {
+  const startedAt = performance.now();
+  return angelApplicationRuntime.checkHealth(id).then((healthy) => ({
+    state: healthy ? "healthy" : "down",
+    evidence: {
+      checkedAt: Date.now(),
+      latencyMs: Math.round(performance.now() - startedAt),
+      message: healthy ? "Application health check passed" : "Application health check failed",
+      details: { applicationId: id },
+    },
+  }));
+}
+
+angelAutonomousCore
+  .registerHealthProbe({
+    id: "application:angel-os-ia",
+    label: "Angel OS IA",
+    critical: true,
+    run: () => applicationHealthProbe("angel-os-ia"),
+    recover: () => applicationHealthProbe("angel-os-ia"),
+  })
+  .registerHealthProbe({
+    id: "application:angel-leclerc-web",
+    label: "angel-leclerc.fr",
+    critical: true,
+    run: () => applicationHealthProbe("angel-leclerc-web"),
+    recover: () => applicationHealthProbe("angel-leclerc-web"),
+  });
 
 angelNodeGateway.upsert({ id: "vercel-web", kind: "vercel", priority: 50, state: "unknown" });
 
@@ -111,6 +143,7 @@ export async function recordAngelOperation(input: {
 }
 
 export async function getAngelMaintenanceSnapshot() {
+  await angelAutonomousCore.inspect({ autoRecover: true });
   return angelIssueRegistry.maintenanceSnapshot();
 }
 

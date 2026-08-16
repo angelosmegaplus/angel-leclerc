@@ -6,6 +6,7 @@ import type { KeyValueCache } from './service-adapters';
 
 export type IssuePriority = 'P0' | 'P1' | 'P2' | 'P3';
 export type IssueStatus = 'detected' | 'triaged' | 'repairing' | 'fixed' | 'verified' | 'ignored';
+export type IssueJsonValue = string | number | boolean | null | IssueJsonValue[] | { [key: string]: IssueJsonValue };
 
 export type IssueEvidence = {
   source?: string;
@@ -13,7 +14,7 @@ export type IssueEvidence = {
   component?: string;
   message?: string;
   stack?: string;
-  data?: Record<string, unknown>;
+  data?: { [key: string]: IssueJsonValue };
 };
 
 export type AngelIssue = {

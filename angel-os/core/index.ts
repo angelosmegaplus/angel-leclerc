@@ -23,3 +23,7 @@ export * from './issue-registry';
 export * from './guardian-recovery';
 export * from './sync-engine';
 export * from './application-runtime';
+export * from './agent-runtime';
+export * from './mission-engine';
+export * from './control-plane';
+export * from './autonomous-core';
