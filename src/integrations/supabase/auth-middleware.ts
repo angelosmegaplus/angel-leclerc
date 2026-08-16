@@ -2,7 +2,7 @@ import { createMiddleware } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from './types'
-import { supabase as browserSupabase } from './client'
+import { getFreshSupabaseSession } from './client'
 
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
@@ -39,15 +39,18 @@ function publicSupabaseConfig() {
 
 export const requireSupabaseAuth = createMiddleware({ type: 'function' })
   .client(async ({ next }) => {
-    // TanStack server functions do not automatically inherit Supabase's
-    // local-storage session. Attach the current access token to every RPC that
-    // uses this middleware so the server can authenticate the actual browser
-    // session instead of failing before the protected handler is reached.
-    const { data, error } = await browserSupabase.auth.getSession();
-    const token = data.session?.access_token?.trim();
+    // Never forward a token merely because it exists in localStorage. Validate
+    // it first and, when required, perform one deduplicated refresh so a stale
+    // long-lived admin tab repairs itself before the server function runs.
+    const session = await getFreshSupabaseSession();
+    const token = session?.access_token?.trim();
 
-    if (error || !token) {
-      // Let the server middleware return the canonical Unauthorized error.
+    if (!token) {
+      if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')) {
+        const target = `/auth?reason=session-expired&returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+        window.location.replace(target);
+        throw new Error('AUTH_SESSION_EXPIRED');
+      }
       return next();
     }
 
@@ -71,7 +74,7 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' })
     if (!authHeader) throw new Error('Unauthorized: No authorization header provided');
     if (!authHeader.startsWith('Bearer ')) throw new Error('Unauthorized: Only Bearer tokens are supported');
 
-    const token = authHeader.replace('Bearer ', '');
+    const token = authHeader.replace('Bearer ', '').trim();
     if (!token) throw new Error('Unauthorized: No token provided');
     if (token.split('.').length !== 3) throw new Error('Unauthorized: Invalid token');
 
@@ -88,8 +91,7 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' })
     });
 
     const { data, error } = await supabase.auth.getClaims(token);
-    if (error || !data?.claims) throw new Error('Unauthorized: Invalid token');
-    if (!data.claims.sub) throw new Error('Unauthorized: No user ID found in token');
+    if (error || !data?.claims?.sub) throw new Error('Unauthorized: Invalid or expired session token');
 
     return next({
       context: {

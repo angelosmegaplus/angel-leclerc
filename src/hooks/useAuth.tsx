@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { getFreshSupabaseSession, supabase } from "@/integrations/supabase/client";
 
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
@@ -10,7 +10,7 @@ export function useAuth() {
   useEffect(() => {
     let active = true;
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
+    async function loadAdminRole(next: Session | null) {
       if (!active) return;
       setSession(next);
       if (!next) {
@@ -18,37 +18,27 @@ export function useAuth() {
         setLoading(false);
         return;
       }
-      // Defer the Supabase call: never await inside the auth callback.
-      setTimeout(async () => {
-        const { data } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", next.user.id)
-          .eq("role", "admin")
-          .maybeSingle();
-        if (!active) return;
-        setIsAdmin(Boolean(data));
-        setLoading(false);
-      }, 0);
-    });
 
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (!active) return;
-      setSession(data.session);
-      if (!data.session) {
-        setLoading(false);
-        return;
-      }
-      const { data: role } = await supabase
+      const { data } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", data.session.user.id)
+        .eq("user_id", next.user.id)
         .eq("role", "admin")
         .maybeSingle();
       if (!active) return;
-      setIsAdmin(Boolean(role));
+      setIsAdmin(Boolean(data));
       setLoading(false);
+    }
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
+      // Never await inside the auth callback. The SDK can hold an internal lock
+      // while this callback runs, so defer any database call to the next task.
+      window.setTimeout(() => void loadAdminRole(next), 0);
     });
+
+    void getFreshSupabaseSession()
+      .then((freshSession) => loadAdminRole(freshSession))
+      .catch(() => loadAdminRole(null));
 
     return () => {
       active = false;

@@ -20,6 +20,10 @@ function isHtmlPayload(value: string) {
   return /<!doctype\s+html|<html[\s>]|<head[\s>]|<body[\s>]|this page didn'?t load/i.test(value);
 }
 
+function isExpectedAuthRedirect(value: string) {
+  return /AUTH_SESSION_EXPIRED/i.test(value);
+}
+
 function stripHtml(value: string): string {
   return value
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
@@ -77,6 +81,10 @@ function makeNotice(value: unknown, id: number): AdminErrorNotice {
 export function reportAdminError(reason: unknown) {
   if (typeof window === "undefined") return;
   const raw = rawReason(reason);
+  // A stale session is handled by the auth middleware itself: it refreshes once
+  // and redirects to /auth only when recovery is impossible. Do not display a
+  // scary global alert during that expected navigation.
+  if (isExpectedAuthRedirect(raw)) return;
   // Les anciennes server functions peuvent encore renvoyer une page HTML pendant une
   // transition de déploiement. Ce bruit de fond ne doit jamais déclencher une alerte globale.
   if (isHtmlPayload(raw)) {
@@ -117,6 +125,7 @@ export function AdminErrorNotifier() {
   useEffect(() => {
     const show = (reason: unknown) => {
       const raw = rawReason(reason);
+      if (isExpectedAuthRedirect(raw)) return;
       // Une page HTML venant d’une server function est un incident de requête de fond,
       // pas une panne de toute l’administration.
       if (isHtmlPayload(raw)) {
