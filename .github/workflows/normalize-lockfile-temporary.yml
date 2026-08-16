@@ -1,0 +1,36 @@
+name: Normalize lockfile temporary
+
+on:
+  push:
+    branches: [optimize/github-industrial-v2]
+    paths:
+      - ".github/workflows/normalize-lockfile-temporary.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  normalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: optimize/github-industrial-v2
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - name: Normalize Bun lockfile
+        run: bun install
+      - name: Commit lockfile only when changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- bun.lock; then
+            echo "bun.lock already normalized"
+            exit 0
+          fi
+          git config user.name "Angel OS"
+          git config user.email "actions@users.noreply.github.com"
+          git add bun.lock
+          git commit -m "chore(deps): normalize bun lockfile"
+          git push origin HEAD:optimize/github-industrial-v2
