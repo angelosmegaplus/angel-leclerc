@@ -7,7 +7,7 @@ on:
     types: [completed]
 
 permissions:
-  contents: read
+  contents: write
   actions: read
   issues: write
 
@@ -39,7 +39,9 @@ jobs:
         shell: bash
         run: |
           SHA="$(git rev-parse HEAD)"
+          SHORT="${SHA:0:12}"
           echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "short=$SHORT" >> "$GITHUB_OUTPUT"
 
       - name: Require successful CI for this exact commit
         env:
@@ -161,12 +163,27 @@ jobs:
           echo "::error::La production n'a pas validé trois contrôles successifs du commit $SHA"
           exit 1
 
+      - name: Create immutable GitHub production release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ steps.current.outputs.sha }}
+          SHORT: ${{ steps.current.outputs.short }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="prod-$SHORT"
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $TAG already exists."
+            exit 0
+          fi
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --target "$SHA" --title "Production $SHORT" --generate-notes
+          echo "Release créée : $TAG"
+
       - name: Roll back automatically if token-based promotion failed
         if: failure() && steps.vercel_auth.outputs.available == 'true' && steps.staged.outputs.url != '' && steps.production.outputs.previous_url != ''
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           PREVIOUS_URL: ${{ steps.production.outputs.previous_url }}
-        shell: bash
         run: bunx vercel@latest rollback "$PREVIOUS_URL" --token="$VERCEL_TOKEN" --scope=angel-os2 || true
 
       - name: Append failure to incident journal
@@ -187,6 +204,6 @@ jobs:
           echo "## Publication Angel OS" >> "$GITHUB_STEP_SUMMARY"
           echo "- Cible : ${{ steps.current.outputs.sha }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- CI du SHA exact obligatoire : pas de double lint/build/typecheck" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Un seul artefact Vercel construit pour la publication" >> "$GITHUB_STEP_SUMMARY"
           echo "- Vérification finale : 3 contrôles consécutifs domaine réel + SHA exact + health=true" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Release GitHub immuable créée uniquement après validation production" >> "$GITHUB_STEP_SUMMARY"
           echo "- Rollback automatique disponible pour le chemin tokenisé" >> "$GITHUB_STEP_SUMMARY"
