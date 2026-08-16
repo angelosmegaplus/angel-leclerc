@@ -17,6 +17,7 @@ import {
   type IssuePriority,
 } from "../../angel-os/core";
 import { getOpenAiCredential } from "./vercel-connect-credentials.server";
+import { SupabaseKeyValueCache } from "./supabase-key-value-cache.server";
 import { SupabaseWorkflowStateStore } from "./supabase-workflow-state.server";
 
 // Angel OS system runtime. These are system services, not Angel OS IA services.
@@ -25,7 +26,8 @@ export const angelEventLog = new AngelEventLog(5000);
 export const angelTelemetry = new AngelTelemetry();
 export const angelMemoryIndex = new AngelMemoryIndex();
 export const angelCache = new MemoryCache();
-export const angelIssueRegistry = new AngelIssueRegistry(angelCache, angelEventLog, angelTelemetry);
+export const angelIssueStore = new SupabaseKeyValueCache("maintenance:");
+export const angelIssueRegistry = new AngelIssueRegistry(angelIssueStore, angelEventLog, angelTelemetry);
 export const angelNativeWorker = new NativeTaskWorker();
 export const angelWorkflowEngine = new DurableWorkflowEngine(new SupabaseWorkflowStateStore(), angelEventLog, angelTelemetry);
 export const angelHybridOrchestrator = new HybridOrchestrator(angelCache, [angelNativeWorker], angelEventLog, angelTelemetry);
