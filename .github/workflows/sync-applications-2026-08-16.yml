@@ -73,7 +73,7 @@ jobs:
               sent_at: '2026-08-15',
               response: "Candidature reçue par l'Université de Bordeaux ; dossier en cours d'étude.",
               follow_up_at: '2026-08-29',
-              notes: 'Accusé de réception Gmail vérifié le 16/08/2026.'
+              notes: 'Accusé de réception Gmail vérifié le 16/08/2026. Questionnaire complémentaire disponible : action manuelle, aucune réponse automatique.'
             });
 
             await upsertByEmail('monsieurcharles@alioki.fr', {
@@ -85,6 +85,48 @@ jobs:
               follow_up_at: '2026-08-30',
               response: null,
               notes: 'Candidature envoyée et vérifiée dans Gmail le 16/08/2026.'
+            });
+
+            await upsertByEmail('maxime@sift-studio.fr', {
+              company: 'SIFT Studio',
+              city: 'Vitrac / Sarlat-la-Canéda',
+              position: 'Alternance BTS Communication',
+              status: 'envoyee',
+              sent_at: '2026-08-16',
+              follow_up_at: '2026-08-30',
+              response: null,
+              notes: 'Candidature spontanée envoyée le 16/08/2026 à l’adresse professionnelle publiée sur le site officiel. Aucun CV joint ; lien parcours utilisé.'
+            });
+
+            await upsertByEmail('chateau@castelnaud.com', {
+              company: 'Château de Castelnaud',
+              city: 'Castelnaud-la-Chapelle',
+              position: 'Alternance BTS Communication',
+              status: 'relance',
+              sent_at: '2026-07-27',
+              follow_up_at: null,
+              notes: 'Relance de rattrapage unique envoyée le 16/08/2026 après vérification du fil Gmail complet et de l’adresse officielle actuelle. Ne pas relancer automatiquement de nouveau.'
+            });
+
+            await upsertByEmail('contact@lecomptoirauthentique.com', {
+              company: 'Le Comptoir Authentique',
+              city: 'Sarlat-la-Canéda',
+              position: 'Alternance BTS Communication',
+              status: 'refusee',
+              response: 'Refus explicite reçu le 15/08/2026 : la structure ne peut répondre positivement à la demande.',
+              follow_up_at: null,
+              notes: 'Fil Gmail complet vérifié le 16/08/2026. Réponse de remerciement déjà envoyée ; aucune relance future.'
+            });
+
+            await upsertByEmail('contact@sarlat-centreculturel.com', {
+              company: 'Centre culturel de Sarlat',
+              city: 'Sarlat-la-Canéda',
+              position: 'Alternance BTS Communication',
+              status: 'erreur',
+              sent_at: '2026-07-27',
+              follow_up_at: null,
+              response: 'Message non distribué : erreur serveur 554 5.7.1 Relay access denied.',
+              notes: '😞 Envoi impossible. Adresse exclue des futurs envois tant qu’un nouveau contact professionnel vérifié n’est pas trouvé.'
             });
 
             for (const [email, company, city] of [
