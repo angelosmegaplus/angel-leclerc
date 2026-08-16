@@ -21,6 +21,11 @@ dist-ssr
 .env.*
 !.env.example
 !.env.*.example
+ANGEL_OS_VAULT_KEY.txt
+*.vault-key
+config/*.dec.json
+config/*.plaintext.json
+config/*-decrypted.*
 
 # Wrangler / Cloudflare
 .wrangler/
