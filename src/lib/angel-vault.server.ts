@@ -1,6 +1,5 @@
 import { createDecipheriv, createHmac } from "node:crypto";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import encryptedVault from "../../config/angel-os-secrets.enc.json";
 
 type VaultEntry = {
   nonce: string;
@@ -16,36 +15,67 @@ type VaultFile = {
 };
 
 let vaultCache: VaultFile | null = null;
-let vaultUnavailable = false;
 let masterKeyCache: Buffer | null = null;
 const decryptedCache = new Map<string, string>();
 const derivedKeyCache = new Map<string, Buffer>();
 
+function isVaultFile(value: unknown): value is VaultFile {
+  if (!value || typeof value !== "object") return false;
+  const raw = value as Partial<VaultFile>;
+  return raw.version === 1
+    && raw.cipher === "AES-256-GCM"
+    && raw.kdf === "raw-base64-32"
+    && Boolean(raw.entries && typeof raw.entries === "object");
+}
+
+function parseVaultBundle(raw: string): VaultFile | null {
+  try {
+    const text = raw.trim().startsWith("{")
+      ? raw.trim()
+      : Buffer.from(raw.trim(), "base64").toString("utf8");
+    const parsed = JSON.parse(text) as unknown;
+    return isVaultFile(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 function loadVaultSync(): VaultFile | null {
   if (vaultCache) return vaultCache;
-  if (vaultUnavailable) return null;
 
-  try {
-    const raw = readFileSync(resolve(process.cwd(), "config/angel-os-secrets.enc.json"), "utf8");
-    vaultCache = JSON.parse(raw) as VaultFile;
-    return vaultCache;
-  } catch (error) {
-    const code = typeof error === "object" && error && "code" in error ? String((error as { code?: unknown }).code ?? "") : "";
-    if (code === "ENOENT") {
-      // Vercel/Nitro can omit non-imported config files from the server bundle.
-      // Direct environment variables remain the primary runtime source, so a
-      // missing optional vault file must never crash unrelated integrations.
-      vaultUnavailable = true;
-      return null;
+  // Override d'urgence possible sans nouveau build : JSON ou JSON encodé base64.
+  const runtimeBundle = process.env.ANGEL_OS_VAULT_BUNDLE?.trim();
+  if (runtimeBundle) {
+    const parsed = parseVaultBundle(runtimeBundle);
+    if (parsed) {
+      vaultCache = parsed;
+      return vaultCache;
     }
-    throw error;
+    console.warn("[angel-vault] ANGEL_OS_VAULT_BUNDLE invalide, utilisation du coffre embarqué.");
   }
+
+  // Import statique : Vite/Nitro est obligé d'embarquer ce JSON dans le bundle
+  // SSR. On ne dépend donc plus de /var/task/config ni de readFileSync().
+  const bundled = encryptedVault as unknown;
+  if (isVaultFile(bundled)) {
+    vaultCache = bundled;
+    return vaultCache;
+  }
+
+  console.error("[angel-vault] coffre embarqué invalide ou absent");
+  return null;
 }
 
 function masterKey(): Buffer {
   if (masterKeyCache) return masterKeyCache;
-  const encoded = process.env.ANGEL_OS_VAULT_KEY?.trim();
+  let encoded = process.env.ANGEL_OS_VAULT_KEY?.trim();
   if (!encoded) throw new Error("ANGEL_OS_VAULT_KEY manquante.");
+
+  // Accepte aussi par sécurité une valeur copiée depuis un fichier
+  // `ANGEL_OS_VAULT_KEY=...` au lieu de la seule valeur base64.
+  if (encoded.startsWith("ANGEL_OS_VAULT_KEY=")) encoded = encoded.slice("ANGEL_OS_VAULT_KEY=".length).trim();
+  encoded = encoded.replace(/^['\"]|['\"]$/g, "");
+
   const key = Buffer.from(encoded, "base64");
   if (key.length !== 32) throw new Error("ANGEL_OS_VAULT_KEY doit contenir exactement 32 octets en base64.");
   masterKeyCache = key;
@@ -139,6 +169,7 @@ export async function getVaultStatus() {
   return {
     configured: Boolean(process.env.ANGEL_OS_VAULT_KEY),
     available: Boolean(vault),
+    source: process.env.ANGEL_OS_VAULT_BUNDLE?.trim() ? "runtime-bundle" : "build-bundle",
     cipher: vault?.cipher ?? null,
     version: vault?.version ?? null,
     entries: vault ? Object.keys(vault.entries) : [],
