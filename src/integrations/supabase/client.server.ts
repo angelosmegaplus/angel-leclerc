@@ -2,7 +2,6 @@
 // Trusted server operations only.
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
-import { getVaultSecretSync } from '@/lib/angel-vault.server';
 import {
   getCredentialPoolSync,
   markCredentialHealthy,
@@ -61,7 +60,7 @@ function createSupabaseFetch(initial: CredentialCandidate): typeof fetch {
 }
 
 function createSupabaseAdminClient() {
-  const SUPABASE_URL = getVaultSecretSync('SUPABASE_URL');
+  const SUPABASE_URL = process.env.SUPABASE_URL?.trim();
   const keys = serviceKeyPool();
   const first = keys[0];
 
@@ -70,7 +69,7 @@ function createSupabaseAdminClient() {
       ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
       ...(!first ? ['SUPABASE_SERVICE_ROLE_KEY'] : []),
     ];
-    throw new Error(`Missing Supabase server credential(s): ${missing.join(', ')}. Configure them in the environment or Angel Vault.`);
+    throw new Error(`Missing Supabase server credential(s): ${missing.join(', ')}. Configure them in Vercel Environment Variables.`);
   }
 
   return createClient<Database>(SUPABASE_URL, first.value, {
