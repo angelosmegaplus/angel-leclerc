@@ -1,0 +1,14 @@
+html.admin-light[data-angel-os-ui="core"] { color-scheme: light; }
+html.admin-light[data-angel-os-ui="core"] body { background: #f7f8fa !important; color: #12151a !important; }
+html.admin-light[data-angel-os-ui="core"] [class*="bg-[#050607]"] { background-color: #f7f8fa !important; }
+html.admin-light[data-angel-os-ui="core"] [class*="bg-[#090b0d]"] { background-color: rgba(255,255,255,.95) !important; }
+html.admin-light[data-angel-os-ui="core"] [class*="bg-black/30"] { background-color: rgba(241,245,249,.92) !important; }
+html.admin-light[data-angel-os-ui="core"] [class*="bg-white/[.025]"], html.admin-light[data-angel-os-ui="core"] [class*="bg-white/[.04]"] { background-color: rgba(15,23,42,.035) !important; }
+html.admin-light[data-angel-os-ui="core"] [class*="border-white/10"] { border-color: rgba(15,23,42,.10) !important; }
+html.admin-light[data-angel-os-ui="core"] [class*="text-white"] { color: #12151a !important; }
+html.admin-light[data-angel-os-ui="core"] [class*="text-white/35"], html.admin-light[data-angel-os-ui="core"] [class*="text-white/45"], html.admin-light[data-angel-os-ui="core"] [class*="text-white/55"], html.admin-light[data-angel-os-ui="core"] [class*="text-white/60"], html.admin-light[data-angel-os-ui="core"] [class*="text-white/70"] { color: rgba(18,21,26,.56) !important; }
+html.admin-light[data-angel-os-ui="core"] [class*="bg-red-500"][class*="text-white"] { color: #fff !important; }
+html.admin-light[data-angel-os-ui="core"] input, html.admin-light[data-angel-os-ui="core"] textarea, html.admin-light[data-angel-os-ui="core"] select { background-color: #fff !important; color: #12151a !important; border-color: rgba(15,23,42,.12) !important; }
+.admin-theme-toggle { position: fixed; right: max(.75rem, env(safe-area-inset-right)); bottom: calc(5.15rem + env(safe-area-inset-bottom)); z-index: 45; display: inline-flex; height: 2.75rem; width: 2.75rem; align-items: center; justify-content: center; border-radius: .9rem; border: 1px solid rgba(148,163,184,.22); background: rgba(255,255,255,.9); color: #17191d; box-shadow: 0 12px 32px rgba(15,23,42,.12); backdrop-filter: blur(18px); }
+html:not(.admin-light) .admin-theme-toggle { background: rgba(9,11,13,.92); color: #fff; border-color: rgba(255,255,255,.12); }
+@media (min-width: 1024px) { .admin-theme-toggle { bottom: 1.25rem; } }
