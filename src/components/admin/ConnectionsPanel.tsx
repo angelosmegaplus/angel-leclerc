@@ -9,6 +9,8 @@ import {
   type IntegrationReadiness,
 } from "@/lib/system.functions";
 
+const GOOGLE_CALLBACK = "https://www.angel-leclerc.fr/oauth/google/callback";
+
 function humanError(error: unknown) {
   const raw = error instanceof Error ? error.message : String(error ?? "");
   if (/<!doctype|<html|<head|<body/i.test(raw)) return "Le service Google n’a pas répondu correctement. Réessayez.";
@@ -83,7 +85,11 @@ export function ConnectionsPanel() {
             <p className="mt-1 text-sm leading-relaxed text-white/50">
               Connecte ton compte Google directement à Angel OS. Une fois autorisé, Gmail, Agenda et Drive peuvent être lus côté serveur par les modules administrateur et par Angel OS IA quand ta demande en a besoin.
             </p>
-            {google?.accountLabel ? <p className="mt-2 text-sm font-medium text-white/75">{google.accountLabel}</p> : null}
+            {google?.accountLabel ? (
+              <p className="mt-2 text-sm font-medium text-white/75">
+                {connected ? "Compte connecté" : "Dernier compte autorisé"} : {google.accountLabel}
+              </p>
+            ) : null}
           </div>
           <span className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium ${connected ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-300" : reconnect ? "border-amber-500/20 bg-amber-500/10 text-amber-200" : "border-white/10 bg-white/[.04] text-white/55"}`}>
             {stateLabel(google)}
@@ -99,6 +105,13 @@ export function ConnectionsPanel() {
         </div>
 
         {google?.note ? <p className="mt-4 text-xs leading-5 text-white/40">{google.note}</p> : null}
+        {reconnect ? (
+          <div className="mt-4 rounded-xl border border-amber-500/15 bg-amber-500/[.05] px-3 py-3 text-xs leading-5 text-amber-100/70">
+            <p className="font-medium text-amber-100">Callback Google canonique</p>
+            <code className="mt-1 block break-all font-mono text-[11px] text-amber-100/70">{GOOGLE_CALLBACK}</code>
+            <p className="mt-1 text-amber-100/50">Cette adresse doit être enregistrée à l’identique dans les URI de redirection autorisées du client OAuth Google.</p>
+          </div>
+        ) : null}
         {error ? <div className="mt-4 flex gap-2 rounded-xl border border-red-500/25 bg-red-500/10 px-3 py-2.5 text-xs text-red-100"><CircleAlert className="h-4 w-4 shrink-0" />{error}</div> : null}
 
         <div className="mt-5 flex flex-wrap gap-2">
