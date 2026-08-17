@@ -20,6 +20,8 @@ export type ConnectionInfo = {
   lastSyncAt: string | null;
 };
 
+const PRODUCTION_OAUTH_ORIGIN = "https://www.angel-leclerc.fr";
+
 function keyFrom(secretName: string): Buffer {
   const raw = getVaultSecretSync(secretName);
   if (raw) return createHash("sha256").update(raw).digest();
@@ -48,7 +50,7 @@ export function decryptTokens(stored: string): TokenPayload {
   return JSON.parse(out) as TokenPayload;
 }
 
-type StatePayload = { p: ProviderId; u: string; n: string; exp: number; v?: string };
+type StatePayload = { p: ProviderId; u: string; n: string; exp: number; v?: string; o?: string };
 function b64url(input: Buffer | string): string { return Buffer.from(input).toString("base64url"); }
 
 function sealState(payload: StatePayload): string {
@@ -99,8 +101,28 @@ function endpoint(url: string): string {
   return url.replace("{tenant}", process.env.MS_TENANT_ID?.trim() || "common");
 }
 
+/**
+ * Returns the one public origin used by OAuth in production.
+ * Google requires an exact redirect URI match, including scheme, host and path.
+ * Requests reaching either angel-leclerc.fr, www.angel-leclerc.fr or a Vercel
+ * production host therefore converge on the stable canonical domain.
+ */
+export function canonicalOAuthOrigin(inputOrigin: string): string {
+  const configured = process.env.OAUTH_CANONICAL_ORIGIN?.trim();
+  const candidate = configured || inputOrigin;
+  try {
+    const url = new URL(candidate);
+    if (url.hostname === "angel-leclerc.fr" || url.hostname === "www.angel-leclerc.fr" || url.hostname.endsWith(".vercel.app")) {
+      return PRODUCTION_OAUTH_ORIGIN;
+    }
+    return url.origin.replace(/\/$/, "");
+  } catch {
+    return PRODUCTION_OAUTH_ORIGIN;
+  }
+}
+
 export function redirectUri(origin: string, provider: ProviderId): string {
-  return `${origin}/oauth/${provider}/callback`;
+  return `${canonicalOAuthOrigin(origin)}/oauth/${provider}/callback`;
 }
 
 export function buildAuthorizeUrl(provider: ProviderId, origin: string, userId: string) {
@@ -108,12 +130,20 @@ export function buildAuthorizeUrl(provider: ProviderId, origin: string, userId: 
   const pair = providerPair(config);
   if (!pair) throw new Error(`Activation serveur requise pour ${config.name}.`);
 
+  const canonicalOrigin = canonicalOAuthOrigin(origin);
   const verifier = config.usePkce ? b64url(randomBytes(48)) : undefined;
-  const state = signState({ p: provider, u: userId, n: b64url(randomBytes(12)), exp: Date.now() + 10 * 60 * 1000, ...(verifier ? { v: verifier } : {}) });
+  const state = signState({
+    p: provider,
+    u: userId,
+    n: b64url(randomBytes(12)),
+    exp: Date.now() + 10 * 60 * 1000,
+    o: canonicalOrigin,
+    ...(verifier ? { v: verifier } : {}),
+  });
 
   const url = new URL(endpoint(config.authorizeUrl));
   url.searchParams.set("client_id", pair.clientId);
-  url.searchParams.set("redirect_uri", redirectUri(origin, provider));
+  url.searchParams.set("redirect_uri", redirectUri(canonicalOrigin, provider));
   url.searchParams.set("response_type", "code");
   url.searchParams.set("scope", [...config.scopes, ...(config.optionalScopes ?? [])].join(" "));
   url.searchParams.set("state", state);
