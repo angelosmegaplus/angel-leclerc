@@ -11,6 +11,7 @@ import {
   PlugZap,
 } from "lucide-react";
 import { AdminCard } from "./AdminShell";
+import { GoogleServicesModules } from "./GoogleServicesModules";
 import {
   disconnectOAuthConnection,
   integrationReadiness,
@@ -184,6 +185,8 @@ export function ConnectionsPanel() {
           <p className="mt-1">Les autorisations sont ajoutées progressivement au même compte Google sans effacer les services déjà accordés.</p>
         </div>
       </AdminCard>
+
+      {oauthConnected ? <GoogleServicesModules grantedScopes={grantedScopes} /> : null}
 
       <AdminCard
         title="Accès de l’IA"
