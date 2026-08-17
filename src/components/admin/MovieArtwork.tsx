@@ -1,19 +1,52 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { RecommendationCandidate } from "@/lib/film-recommendations";
 
-const CACHE_KEY = "angel-os-movie-art-v1";
+const SOURCE_CACHE_KEY = "angel-os-movie-art-source-v2";
+const BINARY_CACHE_NAME = "angel-os-movie-art-v2";
 
-function readCache(): Record<string, string> {
-  try { return JSON.parse(localStorage.getItem(CACHE_KEY) ?? "{}"); } catch { return {}; }
+function readSourceCache(): Record<string, string> {
+  try { return JSON.parse(localStorage.getItem(SOURCE_CACHE_KEY) ?? "{}"); } catch { return {}; }
 }
 
-function writeCache(cache: Record<string, string>) {
-  try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch { /* optional cache */ }
+function writeSourceCache(cache: Record<string, string>) {
+  try { localStorage.setItem(SOURCE_CACHE_KEY, JSON.stringify(cache)); } catch { /* optional cache */ }
+}
+
+function binaryCacheKey(id: string) {
+  return `${window.location.origin}/__angel_os_movie_art_cache__/${encodeURIComponent(id)}`;
+}
+
+async function readBinaryCache(id: string) {
+  if (!("caches" in window)) return null;
+  try {
+    const cache = await caches.open(BINARY_CACHE_NAME);
+    const response = await cache.match(binaryCacheKey(id));
+    if (!response) return null;
+    return URL.createObjectURL(await response.blob());
+  } catch {
+    return null;
+  }
+}
+
+async function downloadAndCache(id: string, source: string) {
+  try {
+    const response = await fetch(source, { cache: "force-cache", mode: "cors" });
+    if (!response.ok) return null;
+    const contentType = response.headers.get("content-type") ?? "";
+    if (!contentType.startsWith("image/")) return null;
+    if ("caches" in window) {
+      const cache = await caches.open(BINARY_CACHE_NAME);
+      await cache.put(binaryCacheKey(id), response.clone());
+    }
+    return URL.createObjectURL(await response.blob());
+  } catch {
+    return null;
+  }
 }
 
 async function wikipediaArtwork(candidate: RecommendationCandidate) {
-  const cache = readCache();
-  if (cache[candidate.id]) return cache[candidate.id];
+  const sourceCache = readSourceCache();
+  if (sourceCache[candidate.id]) return sourceCache[candidate.id];
 
   const type = candidate.mediaType === "tv" ? "TV series" : "film";
   const query = `${candidate.title} ${candidate.year} ${type}`;
@@ -24,7 +57,7 @@ async function wikipediaArtwork(candidate: RecommendationCandidate) {
   endpoint.searchParams.set("gsrlimit", "3");
   endpoint.searchParams.set("prop", "pageimages");
   endpoint.searchParams.set("piprop", "thumbnail");
-  endpoint.searchParams.set("pithumbsize", "700");
+  endpoint.searchParams.set("pithumbsize", "900");
   endpoint.searchParams.set("format", "json");
   endpoint.searchParams.set("origin", "*");
 
@@ -36,26 +69,42 @@ async function wikipediaArtwork(candidate: RecommendationCandidate) {
   const best = pages.find((page) => page.thumbnail?.source && page.title?.toLowerCase().includes(title)) ?? pages.find((page) => page.thumbnail?.source);
   const source = best?.thumbnail?.source;
   if (!source) return null;
-  cache[candidate.id] = source;
-  writeCache(cache);
+  sourceCache[candidate.id] = source;
+  writeSourceCache(sourceCache);
   return source;
 }
 
+async function resolveArtwork(candidate: RecommendationCandidate, skipCandidatePoster = false) {
+  const cached = await readBinaryCache(candidate.id);
+  if (cached) return cached;
+
+  if (!skipCandidatePoster && candidate.posterUrl) {
+    const localOrRemote = await downloadAndCache(candidate.id, candidate.posterUrl);
+    if (localOrRemote) return localOrRemote;
+  }
+
+  const wikipedia = await wikipediaArtwork(candidate);
+  if (!wikipedia) return "";
+  return (await downloadAndCache(candidate.id, wikipedia)) || wikipedia;
+}
+
 export function useMovieArtwork(candidate: RecommendationCandidate) {
-  const [src, setSrc] = useState(candidate.posterUrl ?? "");
+  const [src, setSrc] = useState("");
+
+  const retryWithoutCandidatePoster = useCallback(() => {
+    void resolveArtwork(candidate, true).then(setSrc).catch(() => setSrc(""));
+  }, [candidate]);
 
   useEffect(() => {
     let cancelled = false;
-    setSrc(candidate.posterUrl ?? "");
-    if (candidate.posterUrl) return () => { cancelled = true; };
-    void wikipediaArtwork(candidate).then((value) => { if (!cancelled && value) setSrc(value); }).catch(() => undefined);
+    void resolveArtwork(candidate).then((value) => { if (!cancelled) setSrc(value); }).catch(() => { if (!cancelled) setSrc(""); });
     return () => { cancelled = true; };
-  }, [candidate.id, candidate.posterUrl, candidate.title, candidate.year, candidate.mediaType]);
+  }, [candidate]);
 
-  return src;
+  return { src, retryWithoutCandidatePoster };
 }
 
 export function MoviePoster({ candidate, className, eager = false }: { candidate: RecommendationCandidate; className?: string; eager?: boolean }) {
-  const src = useMovieArtwork(candidate);
-  return src ? <img src={src} alt={`Affiche de ${candidate.title}`} loading={eager ? "eager" : "lazy"} className={className} referrerPolicy="no-referrer" /> : <div className={`grid place-items-center bg-gradient-to-br from-[#181b22] via-[#0f1116] to-black p-4 text-center ${className ?? ""}`}><div><p className="text-xs uppercase tracking-[.18em] text-white/30">{candidate.mediaType === "movie" ? "Film" : "Série"}</p><p className="mt-3 text-lg font-semibold text-white/80">{candidate.title}</p><p className="mt-1 text-xs text-white/35">{candidate.year}</p></div></div>;
+  const { src, retryWithoutCandidatePoster } = useMovieArtwork(candidate);
+  return src ? <img src={src} alt={`Affiche de ${candidate.title}`} loading={eager ? "eager" : "lazy"} decoding="async" className={className} referrerPolicy="no-referrer" onError={retryWithoutCandidatePoster} /> : <div className={`grid place-items-center bg-gradient-to-br from-[#181b22] via-[#0f1116] to-black p-4 text-center ${className ?? ""}`}><div><p className="text-xs uppercase tracking-[.18em] text-white/30">{candidate.mediaType === "movie" ? "Film" : "Série"}</p><p className="mt-3 text-lg font-semibold text-white/80">{candidate.title}</p><p className="mt-1 text-xs text-white/35">{candidate.year}</p></div></div>;
 }
