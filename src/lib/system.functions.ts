@@ -43,15 +43,21 @@ export const integrationReadiness = createServerFn({ method: "GET" })
         ? (provider.optionalScopes ?? []).filter((scope) => !granted.has(scope))
         : [];
 
+      // A missing scope in Google's returned scope metadata is not proof that the
+      // token is invalid. Older code converted that metadata mismatch into
+      // reconnect_required forever, even immediately after a successful OAuth
+      // callback. Connection health is now based on the stored state + a real
+      // token/identity probe. Missing permissions remain visible as a capability
+      // note and can be requested again only when a feature actually needs them.
       let connection: ConnectionState = !row
         ? "not_connected"
-        : row.status === "reconnect_required" || missingScopes.length > 0
+        : row.status === "reconnect_required"
           ? "reconnect_required"
           : "connected";
       let accountLabel = row?.accountLabel ?? null;
       let liveProbeNote = "";
 
-      if (row && connection === "connected") {
+      if (row) {
         try {
           const token = await oauth.getAccessToken(context.userId, service.provider);
           if (!token) {
@@ -63,8 +69,11 @@ export const integrationReadiness = createServerFn({ method: "GET" })
               connection = "reconnect_required";
               liveProbeNote = "Le fournisseur refuse le jeton enregistré ou ne répond plus correctement. Reconnexion recommandée.";
             } else {
+              connection = "connected";
               accountLabel = label;
             }
+          } else {
+            connection = "connected";
           }
         } catch (error) {
           connection = "reconnect_required";
@@ -72,10 +81,13 @@ export const integrationReadiness = createServerFn({ method: "GET" })
         }
       }
 
+      const missingNote = missingScopes.length > 0
+        ? `Connexion valide, mais certaines permissions demandées ne figurent pas encore dans le jeton : ${missingScopes.join(", ")}.`
+        : "";
       const optionalNote = optionalMissing.length > 0
         ? `Fonctions optionnelles non encore autorisées : ${optionalMissing.join(", ")}.`
         : "";
-      const noteParts = [service.note, missingScopes.length > 0 ? `Reconnexion requise pour autoriser : ${missingScopes.join(", ")}.` : "", optionalNote, liveProbeNote].filter(Boolean);
+      const noteParts = [service.note, missingNote, optionalNote, liveProbeNote].filter(Boolean);
 
       return {
         ...service,
