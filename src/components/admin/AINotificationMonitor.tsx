@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { AlertTriangle } from "lucide-react";
 import { refreshNotifications } from "@/lib/notifications.functions";
 import { getAdminAiHealth, type AdminAiHealth } from "@/lib/ai-health.functions";
-import { getAdminIntegritySnapshot, type AdminIntegritySnapshot } from "@/lib/admin-integrity.functions";
+import { getAdminIntegritySnapshot } from "@/lib/admin-integrity.functions";
 import { getServiceWorkerRegistration } from "@/lib/pwa";
 import { playRetroSound } from "@/lib/retro-sounds";
 import { queueAdminRefresh } from "@/lib/admin-refresh-queue";
@@ -69,7 +69,6 @@ export function AINotificationMonitor() {
   const readIntegrity = useServerFn(getAdminIntegritySnapshot);
   const running = useRef(false);
   const [aiHealth, setAiHealth] = useState<AdminAiHealth | null>(null);
-  const [integrity, setIntegrity] = useState<AdminIntegritySnapshot | null>(null);
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -83,9 +82,11 @@ export function AINotificationMonitor() {
       const [aiResult, integrityResult] = await Promise.allSettled([readAiHealth(), readIntegrity()]);
       if (cancelled) return;
       if (aiResult.status === "rejected") reportAdminError(aiResult.reason);
-      if (integrityResult.status === "rejected") reportAdminError(integrityResult.reason);
+      // Integrity still runs and records its real state for Maintenance/Angel OS,
+      // but a cache/schema problem is deliberately not rendered as a giant fixed
+      // homepage banner. It is infrastructure telemetry, not a user action.
+      if (integrityResult.status === "rejected") console.warn("[admin-integrity]", integrityResult.reason);
       setAiHealth(aiResult.status === "fulfilled" ? aiResult.value : null);
-      setIntegrity(integrityResult.status === "fulfilled" ? integrityResult.value : null);
     };
     void checkHealth();
     const interval = window.setInterval(() => void checkHealth(), AI_HEALTH_EVERY_MS);
@@ -169,9 +170,7 @@ export function AINotificationMonitor() {
     return () => document.removeEventListener("click", onClick, true);
   }, []);
 
-  const integrityBroken = Boolean(integrity?.warnings.length);
   const retryMinutes = minutesUntilRetry(aiHealth, now);
-
   let monitorAlert = null;
 
   if (aiBroken) {
@@ -194,19 +193,6 @@ export function AINotificationMonitor() {
             <p className="mt-1 text-sm text-red-100/95">Angel OS IA ne répond plus. La reprise par ChatGPT a été demandée automatiquement.</p>
             <p className="mt-1 text-sm font-semibold text-red-50">Nouvelle tentative automatique dans environ {retryMinutes} min.</p>
             <p className="mt-2 text-xs text-red-200/75">{cause} Aucun moteur local ne remplace silencieusement l’IA dans l’administration.</p>
-          </div>
-        </div>
-      </div>
-    );
-  } else if (integrityBroken) {
-    monitorAlert = (
-      <div className="fixed inset-x-3 top-3 z-[90] mx-auto max-w-3xl rounded-2xl border-2 border-amber-400 bg-amber-950/95 p-4 text-amber-50 shadow-[0_15px_60px_rgba(245,158,11,.28)] backdrop-blur-xl" role="status" aria-live="polite">
-        <div className="flex items-start gap-3">
-          <AlertTriangle className="mt-0.5 h-6 w-6 shrink-0 text-amber-300" />
-          <div>
-            <p className="font-bold">DONNÉES ADMIN À RESYNCHRONISER</p>
-            <p className="mt-1 text-sm text-amber-100/90">{integrity?.warnings.join(" · ")}</p>
-            {integrity?.staleCaches.length ? <p className="mt-1 text-xs text-amber-200/80">Snapshots concernés : {integrity.staleCaches.join(", ")}</p> : null}
           </div>
         </div>
       </div>
