@@ -117,10 +117,78 @@ async function recentConversation(db: Db, excludeId: string): Promise<ChatHistor
     .slice(-12);
 }
 
+async function googlePrivateContext(userId: string, command: string): Promise<string> {
+  const wantsMail = /\b(mail|mails|email|emails|e-mail|gmail|bo[iî]te|courriel|message reçu|messages reçus|non lu|non lus)\b/i.test(command);
+  const wantsCalendar = /\b(agenda|calendar|calendrier|rendez-vous|rdv|événement|evenement)\b/i.test(command);
+  const wantsDrive = /\b(drive|google drive|fichier|fichiers|document|documents)\b/i.test(command);
+  if (!wantsMail && !wantsCalendar && !wantsDrive) return "";
+
+  const sections: string[] = [];
+  try {
+    if (wantsMail) {
+      const { listMail } = await import("./mailbox.server");
+      const mails = (await listMail(userId, "inbox", "")).slice(0, 15).map((mail) => ({
+        id: mail.id,
+        from: mail.from,
+        subject: mail.subject,
+        snippet: mail.snippet,
+        date: mail.date,
+        unread: mail.unread,
+      }));
+      sections.push(`Gmail récent (lecture seule pour le contexte IA) : ${JSON.stringify(mails)}`);
+    }
+
+    if (wantsCalendar || wantsDrive) {
+      const { getAccessToken } = await import("./oauth/oauth.server");
+      const token = await getAccessToken(userId, "google");
+      if (!token) throw new Error("Google Workspace n’est pas connecté.");
+      const headers = { Authorization: `Bearer ${token}`, Accept: "application/json" };
+
+      if (wantsCalendar) {
+        const url = new URL("https://www.googleapis.com/calendar/v3/calendars/primary/events");
+        url.searchParams.set("timeMin", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+        url.searchParams.set("timeMax", new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString());
+        url.searchParams.set("singleEvents", "true");
+        url.searchParams.set("orderBy", "startTime");
+        url.searchParams.set("maxResults", "20");
+        const response = await fetch(url, { headers });
+        if (response.ok) {
+          const json = await response.json() as { items?: Array<Record<string, any>> };
+          const events = (json.items ?? []).map((event) => ({
+            title: event.summary ?? "Événement Google",
+            start: event.start?.dateTime ?? event.start?.date ?? null,
+            end: event.end?.dateTime ?? event.end?.date ?? null,
+            location: event.location ?? null,
+          }));
+          sections.push(`Agenda Google : ${JSON.stringify(events)}`);
+        }
+      }
+
+      if (wantsDrive) {
+        const url = new URL("https://www.googleapis.com/drive/v3/files");
+        url.searchParams.set("pageSize", "20");
+        url.searchParams.set("orderBy", "modifiedTime desc");
+        url.searchParams.set("q", "trashed = false");
+        url.searchParams.set("fields", "files(id,name,mimeType,modifiedTime,webViewLink)");
+        const response = await fetch(url, { headers });
+        if (response.ok) {
+          const json = await response.json() as { files?: Array<Record<string, any>> };
+          sections.push(`Google Drive récent : ${JSON.stringify(json.files ?? [])}`);
+        }
+      }
+    }
+  } catch (error) {
+    sections.push(`Google Workspace indisponible pour cette demande : ${error instanceof Error ? error.message : "erreur inconnue"}`);
+  }
+
+  return sections.length ? `\n\nContexte privé Google autorisé :\n${sections.join("\n")}` : "";
+}
+
 async function openAiAnswer(
   command: string,
   context: Awaited<ReturnType<typeof counts>>,
   history: ChatHistory,
+  googleContext: string,
 ) {
   const { aiMemoryPrompt } = await import("./ai-memory.server");
   const memory = await aiMemoryPrompt("all");
@@ -128,12 +196,12 @@ async function openAiAnswer(
     {
       role: "system",
       content:
-        "Tu es Angel AI, l'assistant principal de l'espace administrateur privé Angel OS. OpenAI est le moteur conversationnel principal. Le moteur local Angel OS ne sert qu'à exécuter des actions déterministes ou comme secours si OpenAI est indisponible. La conversation est continue : utilise les échanges précédents, comprends les pronoms et les références comme « ça », « lui », « continue », « développe », sans obliger l'administrateur à répéter le contexte. Réponds concrètement et avec suffisamment de détail. Utilise l'état JSON de l'administration et la mémoire Angel OS quand ils sont pertinents. Une question reste une question même si elle contient des mots comme corriger, modifier, publier ou programmer : n'interprète pas ces mots comme une action à exécuter sauf si l'utilisateur formule clairement un ordre. Si une information dépend de données absentes ou d'une actualité non fournie, dis-le. N'affirme jamais qu'une action a été exécutée si elle ne l'a pas été. Les emails, publications, paiements, suppressions et autres actions externes ou irréversibles nécessitent une validation finale. Quand une modification technique doit être faite par ChatGPT, indique clairement ce qui doit être placé dans la file À faire par ChatGPT.",
+        "Tu es Angel AI, l'assistant principal de l'espace administrateur privé Angel OS. OpenAI est le moteur conversationnel principal. Le moteur local Angel OS ne sert qu'à exécuter des actions déterministes ou comme secours si OpenAI est indisponible. La conversation est continue : utilise les échanges précédents, comprends les pronoms et les références comme « ça », « lui », « continue », « développe », sans obliger l'administrateur à répéter le contexte. Réponds concrètement et avec suffisamment de détail. Utilise l'état JSON de l'administration, la mémoire Angel OS et le contexte privé Google fourni quand ils sont pertinents. Le contexte Google ne doit être utilisé que dans cet espace administrateur privé. Une question reste une question même si elle contient des mots comme corriger, modifier, publier ou programmer : n'interprète pas ces mots comme une action à exécuter sauf si l'utilisateur formule clairement un ordre. Si une information dépend de données absentes ou d'une actualité non fournie, dis-le. N'affirme jamais qu'une action a été exécutée si elle ne l'a pas été. Les emails, publications, paiements, suppressions et autres actions externes ou irréversibles nécessitent une validation finale. Quand une modification technique doit être faite par ChatGPT, indique clairement ce qui doit être placé dans la file À faire par ChatGPT.",
     },
     ...history,
     {
       role: "user",
-      content: `Demande actuelle : ${command}\n\nContexte interne actuel : ${JSON.stringify(context)}${memory}`,
+      content: `Demande actuelle : ${command}\n\nContexte interne actuel : ${JSON.stringify(context)}${memory}${googleContext}`,
     },
   ];
   const result = await resilientAngelAi({
@@ -294,7 +362,8 @@ export const runAngelCommand = createServerFn({ method: "POST" })
           };
         } else {
           const history = await recentConversation(db, message.id);
-          const generated = await openAiAnswer(command, state, history);
+          const googleContext = await googlePrivateContext(context.userId, command);
+          const generated = await openAiAnswer(command, state, history, googleContext);
           if (generated) {
             result = {
               response: generated,
