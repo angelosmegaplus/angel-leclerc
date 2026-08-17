@@ -13,6 +13,7 @@ export type DirectTmdbDetail = {
   poster: string | null;
   backdrop: string | null;
   genres: string[];
+  genreIds: number[];
   trailerKey: string | null;
   cast: { id: number; name: string; character: string; photo: string | null }[];
   providers: { link: string | null; flatrate: { id: number; name: string; logo: string | null }[]; rent: { id: number; name: string; logo: string | null }[]; buy: { id: number; name: string; logo: string | null }[] };
@@ -33,7 +34,7 @@ type RawDetail = {
   number_of_seasons?: number;
   poster_path?: string | null;
   backdrop_path?: string | null;
-  genres?: { name: string }[];
+  genres?: { id: number; name: string }[];
   credits?: { cast?: { id: number; name: string; character?: string; profile_path: string | null }[] };
   videos?: { results?: { key: string; site: string; type: string }[] };
   "watch/providers"?: { results?: Record<string, { link?: string; flatrate?: { provider_id: number; provider_name: string; logo_path: string | null }[]; rent?: { provider_id: number; provider_name: string; logo_path: string | null }[]; buy?: { provider_id: number; provider_name: string; logo_path: string | null }[] }> };
@@ -76,6 +77,7 @@ export const getDirectTmdbDetail = createServerFn({ method: "GET" })
       poster: raw.poster_path ?? null,
       backdrop: raw.backdrop_path ?? null,
       genres: (raw.genres ?? []).map((genre) => genre.name),
+      genreIds: (raw.genres ?? []).map((genre) => genre.id),
       trailerKey: trailer?.key ?? null,
       cast: (raw.credits?.cast ?? []).slice(0, 14).map((person) => ({ id: person.id, name: person.name, character: person.character ?? "", photo: person.profile_path })),
       providers: { link: fr.link ?? null, flatrate: map(fr.flatrate), rent: map(fr.rent), buy: map(fr.buy) },
