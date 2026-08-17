@@ -22,20 +22,8 @@ import { Button } from "@/components/ui/button";
 import { AdminCard } from "./AdminShell";
 import { AdminStatus, type AdminStatusTone } from "./AdminStatus";
 
-function getApplicationStatus(status: string): { label: string; tone: AdminStatusTone } {
-  if (status === "refusee") return { label: "Refusée", tone: "error" };
-  if (status === "acceptee") return { label: "Acceptée", tone: "success" };
-  if (status === "entretien") return { label: "Entretien", tone: "info" };
-  if (status === "erreur") return { label: "Erreur 😞", tone: "neutral" };
-  if (status === "partiel") return { label: "Envoi partiel 😞", tone: "neutral" };
-  if (status === "relancee") return { label: "Relancée", tone: "info" };
-  if (status === "envoyee") return { label: "Mail envoyé", tone: "success" };
-  if (status === "action_manuelle") return { label: "Action requise", tone: "pending" };
-  if (status === "entretien" || status === "peut_etre") return { label: "Peut-être", tone: "pending" };
-  return { label: "En attente", tone: "pending" };
-}
-
-function sentMailOf(row: Row) {
+function sentMailOf(row?: Row) {
+  if (!row) return "";
   return (
     str(row, "sent_message") ||
     str(row, "email_body") ||
@@ -196,6 +184,13 @@ function completeStatus(item: CompleteItem): { label: string; tone: AdminStatusT
   return { label: "À étudier", tone: "pending", group: "other" };
 }
 
+function isRealFollowup(item: CompleteItem) {
+  const status = item.status.toLowerCase();
+  const history = `${item.action} ${item.lastAction} ${item.nextAction} ${item.reason}`.toLowerCase();
+  if (["envoyee", "relancee", "refusee", "acceptee", "entretien", "partiel", "erreur", "action_manuelle"].includes(status)) return true;
+  return /candidature envoy[eé]e|mail envoy[eé]|relance|refus|entretien|accept[eé]e|r[eé]ponse reçue|reponse recue|non distribu[eé]|adresse invalide/.test(history);
+}
+
 function shortDate(value: string) {
   if (!value) return "—";
   const parsed = new Date(value);
@@ -235,16 +230,6 @@ export function ApplicationsPanel() {
     staleTime: 15_000,
   });
 
-  const applications = useMemo(() => {
-    return [...rows]
-      .filter((row) => str(row, "status") !== "a_envoyer")
-      .sort((a, b) => {
-        const aDate = str(a, "sent_at") || str(a, "created_at") || str(a, "updated_at");
-        const bDate = str(b, "sent_at") || str(b, "created_at") || str(b, "updated_at");
-        return bDate.localeCompare(aDate);
-      });
-  }, [rows]);
-
   const completeItems = useMemo(() => {
     const merged = new Map<string, CompleteItem>();
     const upsert = (item: CompleteItem) => {
@@ -266,6 +251,20 @@ export function ApplicationsPanel() {
       return a.company.localeCompare(b.company, "fr");
     });
   }, [researchSnapshot, rows]);
+
+  const rowsByKey = useMemo(() => {
+    const map = new Map<string, Row>();
+    for (const row of rows) {
+      const item = rowToItem(row);
+      map.set(item.key, row);
+    }
+    return map;
+  }, [rows]);
+
+  const followupItems = useMemo(
+    () => completeItems.filter(isRealFollowup),
+    [completeItems],
+  );
 
   const completeCounts = useMemo(() => {
     return completeItems.reduce(
@@ -293,7 +292,10 @@ export function ApplicationsPanel() {
         queryClient.invalidateQueries({ queryKey: ["angel", "applications"] }),
         queryClient.invalidateQueries({ queryKey: ["angel", "applications", "research-snapshot"] }),
       ]);
-      await queryClient.refetchQueries({ queryKey: ["angel", "applications"], type: "active" });
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: ["angel", "applications"], type: "active" }),
+        queryClient.refetchQueries({ queryKey: ["angel", "applications", "research-snapshot"], type: "active" }),
+      ]);
 
       if (result.status === "not_connected") {
         setSyncError(cleanSyncError(result.message || "La source Gmail n’est pas connectée au serveur."));
@@ -307,7 +309,10 @@ export function ApplicationsPanel() {
       }
     } catch (error) {
       setSyncError(cleanSyncError(error));
-      await queryClient.invalidateQueries({ queryKey: ["angel", "applications"] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["angel", "applications"] }),
+        queryClient.invalidateQueries({ queryKey: ["angel", "applications", "research-snapshot"] }),
+      ]);
     } finally {
       setSyncing(false);
     }
@@ -364,17 +369,15 @@ export function ApplicationsPanel() {
 
         {view === "followup" ? (
           <div className="mt-4 divide-y divide-border">
-            {applications.length === 0 ? (
-              <p className="py-4 text-sm text-muted-foreground">Aucune candidature envoyée pour le moment.</p>
+            {followupItems.length === 0 ? (
+              <p className="py-4 text-sm text-muted-foreground">Aucune candidature réellement envoyée n’est encore disponible dans les sources synchronisées.</p>
             ) : (
-              applications.map((row, index) => {
-                const id = str(row, "id") || `application-${index}`;
-                const status = getApplicationStatus(str(row, "status"));
-                const company = str(row, "company") || "Candidature";
-                const position = str(row, "position");
-                const city = str(row, "city");
+              followupItems.map((item, index) => {
+                const row = rowsByKey.get(item.key);
+                const id = row ? str(row, "id") || item.key : item.key || `application-${index}`;
+                const status = completeStatus(item);
                 const mail = sentMailOf(row);
-                const response = cleanApplicationText(str(row, "response"));
+                const response = cleanApplicationText(row ? str(row, "response") : item.reason);
                 const isOpen = openId === id;
 
                 return (
@@ -386,12 +389,15 @@ export function ApplicationsPanel() {
                       onClick={() => setOpenId(isOpen ? null : id)}
                     >
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-foreground">{company}</p>
-                        {(position || city) && (
+                        <p className="truncate text-sm font-semibold text-foreground">{item.company}</p>
+                        {(item.position || item.city) && (
                           <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                            {[position, city].filter(Boolean).join(" · ")}
+                            {[item.position, item.city].filter(Boolean).join(" · ")}
                           </p>
                         )}
+                        {item.lastActionAt || item.freshness ? (
+                          <p className="mt-1 text-[11px] text-muted-foreground">Dernière activité : {shortDate(item.lastActionAt || item.freshness)}</p>
+                        ) : null}
                       </div>
                       <div className="flex shrink-0 items-center gap-3">
                         <AdminStatus tone={status.tone} compact>{status.label}</AdminStatus>
@@ -403,15 +409,22 @@ export function ApplicationsPanel() {
                       <div className="pb-4 pl-0 sm:pl-2">
                         <div className="grid gap-3 rounded-xl border border-border bg-background/60 p-4">
                           <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Dernière action</p>
+                            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                              {item.lastAction || item.action || "Candidature enregistrée dans l’historique."}
+                            </p>
+                            {item.nextAction ? <p className="mt-2 text-xs text-muted-foreground">À suivre : {item.nextAction}</p> : null}
+                          </div>
+                          <div className="border-t border-border pt-3">
                             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Mail envoyé</p>
                             <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-                              {mail || "Le contenu du mail n’est pas enregistré dans cette candidature."}
+                              {mail || "Le contenu du mail n’est pas enregistré dans cette source, mais l’envoi reste conservé dans le suivi."}
                             </p>
                           </div>
                           <div className="border-t border-border pt-3">
-                            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Réponse</p>
+                            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Réponse / état</p>
                             <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-                              {response || "Aucune réponse reçue pour le moment."}
+                              {response || item.reason || "Aucune réponse enregistrée pour le moment."}
                             </p>
                           </div>
                         </div>
