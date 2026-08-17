@@ -1,0 +1,126 @@
+name: Maintenance Candidatures Angel OS
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 * * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: maintenance-candidatures-angel-os
+  cancel-in-progress: true
+
+jobs:
+  refresh-applications:
+    name: Mettre à jour toute la partie Candidatures
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    environment: production
+    env:
+      NEWSLETTER_CRON_SECRET: ${{ secrets.NEWSLETTER_CRON_SECRET }}
+
+    steps:
+      - name: Synchroniser Gmail vers les candidatures Angel OS
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${NEWSLETTER_CRON_SECRET:-}" ]; then
+            echo "::warning::NEWSLETTER_CRON_SECRET absent : synchronisation Gmail impossible."
+          else
+            tmp="$(mktemp)"
+            code="$(curl -L --silent --show-error --output "$tmp" --write-out '%{http_code}' --max-time 90 \
+              -X POST \
+              -H "x-cron-token: ${NEWSLETTER_CRON_SECRET}" \
+              -H 'Content-Type: application/json' \
+              "https://www.angel-leclerc.fr/api/public/hooks/applications-sync")"
+            cat "$tmp"
+            echo
+            if [ "$code" != "200" ]; then
+              echo "::warning::Synchronisation Gmail/candidatures indisponible (HTTP $code)."
+            elif ! jq -e '.ok == true and (.syncedAt | type == "string")' "$tmp" >/dev/null; then
+              echo "::warning::Réponse de synchronisation candidatures inexploitable."
+            else
+              echo "Synchronisation Gmail/candidatures validée."
+            fi
+          fi
+
+      - name: Récupérer le code principal
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Charger les données runtime-data sans déclencher de déploiement
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin runtime-data:refs/remotes/origin/runtime-data
+          git show origin/runtime-data:runtime/alternance-urgent-latest.json > /tmp/alternance-urgent-latest.json
+          if git cat-file -e origin/runtime-data:runtime/alternance-research-history.json 2>/dev/null; then
+            git show origin/runtime-data:runtime/alternance-research-history.json > /tmp/alternance-research-history.json
+          else
+            printf '%s\n' '{"version":1,"updatedAt":null,"items":[]}' > /tmp/alternance-research-history.json
+          fi
+          mkdir -p runtime
+          cp /tmp/alternance-urgent-latest.json runtime/alternance-urgent-latest.json
+          cp /tmp/alternance-research-history.json runtime/alternance-research-history.json
+
+      - name: Reconstruire le tableau complet et l’historique
+        shell: bash
+        run: |
+          set -euo pipefail
+          node .github/scripts/update-alternance-history.mjs
+          jq -e '.items | type == "array"' runtime/alternance-research-history.json >/dev/null
+          total="$(jq '.items | length' runtime/alternance-research-history.json)"
+          echo "Historique candidatures recalculé : ${total} ligne(s)."
+
+      - name: Publier uniquement les données sur runtime-data
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp runtime/alternance-research-history.json /tmp/alternance-research-history.updated.json
+          git switch --detach origin/runtime-data
+          mkdir -p runtime
+          cp /tmp/alternance-research-history.updated.json runtime/alternance-research-history.json
+
+          if git diff --quiet -- runtime/alternance-research-history.json; then
+            echo "Aucune modification du tableau à enregistrer."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add runtime/alternance-research-history.json
+          git commit -m "chore(applications): hourly tracking refresh"
+          git push origin HEAD:runtime-data
+
+      - name: Vérifier que les sources du tableau sont publiées
+        shell: bash
+        run: |
+          set -euo pipefail
+          latest="$(mktemp)"
+          history="$(mktemp)"
+          curl --fail --silent --show-error --max-time 25 \
+            "https://raw.githubusercontent.com/angelosmegaplus/angel-leclerc/runtime-data/runtime/alternance-urgent-latest.json?t=$(date +%s)" > "$latest"
+          curl --fail --silent --show-error --max-time 25 \
+            "https://raw.githubusercontent.com/angelosmegaplus/angel-leclerc/runtime-data/runtime/alternance-research-history.json?t=$(date +%s)" > "$history"
+          jq -e 'type == "object"' "$latest" >/dev/null
+          jq -e '(.items | type == "array") and (.updatedAt != null)' "$history" >/dev/null
+          echo "Sources Tableau complet accessibles et valides."
+
+      - name: Résumé maintenance candidatures
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Maintenance Candidatures Angel OS"
+            echo ""
+            echo "- Fréquence : toutes les heures"
+            echo "- Gmail : synchronisation des candidatures et réponses"
+            echo "- Tableau complet : reconstruction depuis les pistes, candidatures, relances, erreurs et actions Gmail"
+            echo "- Historique : conservation des lignes déjà connues, sans disparition des pistes écartées"
+            echo "- Données runtime : publication sur la branche runtime-data pour éviter un redéploiement du site à chaque cycle"
+            echo "- Contrôle final : validation JSON et accessibilité des deux snapshots consommés par Angel OS"
+          } >> "$GITHUB_STEP_SUMMARY"
