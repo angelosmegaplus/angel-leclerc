@@ -24,6 +24,7 @@ jobs:
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
       SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
       NEWSLETTER_CRON_SECRET: ${{ secrets.NEWSLETTER_CRON_SECRET }}
 
@@ -47,7 +48,7 @@ jobs:
         shell: bash
         run: |
           test -n "${SUPABASE_URL:-}" || { echo "::error::SUPABASE_URL absent des secrets GitHub"; exit 1; }
-          if [ -z "${SUPABASE_SERVICE_ROLE_KEY:-}" ] && [ -z "${SUPABASE_PUBLISHABLE_KEY:-}" ]; then
+          if [ -z "${SUPABASE_SERVICE_ROLE_KEY:-}" ] && [ -z "${SUPABASE_SECRET_KEY:-}" ] && [ -z "${SUPABASE_PUBLISHABLE_KEY:-}" ]; then
             echo "::error::Aucune clé Supabase disponible dans les secrets GitHub"
             exit 1
           fi
@@ -60,8 +61,8 @@ jobs:
           const fs = require('fs');
           const snapshot = JSON.parse(fs.readFileSync(process.env.snapshot_file || 'runtime/angel-os-snapshot.json', 'utf8'));
           const base = process.env.SUPABASE_URL;
-          const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
-          const privileged = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+          const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
+          const privileged = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY);
           const headers = { apikey: key, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' };
           if (!key.startsWith('sb_secret_') && !key.startsWith('sb_publishable_')) headers.Authorization = `Bearer ${key}`;
           async function request(path, options = {}) {
@@ -75,7 +76,7 @@ jobs:
             const rows = Object.entries(snapshot.caches || {}).map(([cacheKey, payload]) => ({ key: cacheKey, payload, updated_at: payload?.fetchedAt || now }));
             if (rows.length) await request('angel_os_cache?on_conflict=key', { method: 'POST', body: JSON.stringify(rows) });
             if (snapshot.hourly_mail_report) await request('hourly_mail_reports', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(snapshot.hourly_mail_report) });
-            console.log(`Synchronisation terminée (${privileged ? 'service role' : 'publishable key'})`);
+            console.log(`Synchronisation terminée (${privileged ? 'privileged key' : 'publishable key'})`);
           })().catch((error) => { console.error(error.message); process.exit(1); });
           NODE
 
