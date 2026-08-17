@@ -76,7 +76,6 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' })
 
     const token = authHeader.replace('Bearer ', '').trim();
     if (!token) throw new Error('Unauthorized: No token provided');
-    if (token.split('.').length !== 3) throw new Error('Unauthorized: Invalid token');
 
     const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
       global: {
@@ -90,14 +89,28 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' })
       },
     });
 
-    const { data, error } = await supabase.auth.getClaims(token);
-    if (error || !data?.claims?.sub) throw new Error('Unauthorized: Invalid or expired session token');
+    // Do not assume a particular access-token serialization. Supabase Auth is
+    // the authority that issued the session, so validate the bearer directly
+    // against /auth/v1/user. This accepts the project's current token format
+    // and avoids rejecting a valid session locally before Supabase sees it.
+    const { data: userData, error: userError } = await supabase.auth.getUser(token);
+    const user = userData?.user;
+    if (userError || !user?.id) throw new Error('Unauthorized: Invalid or expired session token');
+
+    // Claims are useful to downstream functions but must not be a hard gate.
+    // Populate them when the token can be decoded/verified as a JWT; otherwise
+    // keep the authenticated user context valid based on getUser().
+    let claims: Record<string, unknown> = { sub: user.id, email: user.email ?? undefined };
+    if (token.split('.').length === 3) {
+      const { data: claimsData } = await supabase.auth.getClaims(token);
+      if (claimsData?.claims) claims = claimsData.claims as Record<string, unknown>;
+    }
 
     return next({
       context: {
         supabase,
-        userId: data.claims.sub,
-        claims: data.claims,
+        userId: user.id,
+        claims,
       },
     });
   });
