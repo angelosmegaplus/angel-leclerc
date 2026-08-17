@@ -94,7 +94,7 @@ export const getAdminAiSummary = createServerFn({ method: "GET" })
       rememberPersonalContext({ id: "mail-current", domain: "mail", title: "État actuel des mails", text: JSON.stringify(snapshot.mail), metadata: { important: snapshot.mail.important } }),
       rememberPersonalContext({ id: "agenda-current", domain: "agenda", title: "État actuel de l’agenda", text: JSON.stringify(snapshot.agenda) }),
       rememberPersonalContext({ id: "news-current", domain: "news", title: "Actualités personnalisées actuelles", text: JSON.stringify(snapshot.news), metadata: { count: snapshot.news.count } }),
-      rememberPersonalContext({ id: "angel-os-operational-current", domain: "angel-os", title: "Contexte opérationnel Angel OS", text: JSON.stringify(snapshot.operational ?? {}), metadata: { generatedAt: operational?.generatedAt ?? null } }),
+      rememberPersonalContext({ id: "angel-os-operational-current", domain: "system", title: "Contexte opérationnel Angel OS", text: JSON.stringify(snapshot.operational ?? {}), metadata: { generatedAt: operational?.generatedAt ?? null } }),
     ]);
 
     const ai = await resilientAngelAi({
