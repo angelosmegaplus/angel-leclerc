@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { angelMemoryIndex, recordAngelOperation } from "./angel-runtime.server";
 import { rememberPersonalContext } from "./angel-os-ia/personal-context.server";
 
@@ -37,6 +38,13 @@ export const getAdminIntegritySnapshot = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<AdminIntegritySnapshot> => {
     const startedAt = Date.now();
     const db = context.supabase as any;
+    const cacheDb = supabaseAdmin as any;
+
+    // Business tables keep the authenticated admin session. angel_os_cache is
+    // deliberately server-only (RLS + no anon/authenticated grants), therefore
+    // its health must be checked with the service-role client. Using the browser
+    // user's client here used to turn a correct security policy into a false
+    // "migration Supabase pending" warning.
     const [applications, projects, tasks, articles, actions, messages, cache] = await Promise.all([
       db.from("applications").select("id", { count: "exact", head: true }),
       db.from("projects").select("id", { count: "exact", head: true }),
@@ -44,7 +52,7 @@ export const getAdminIntegritySnapshot = createServerFn({ method: "GET" })
       db.from("articles").select("published"),
       db.from("ai_actions").select("id", { count: "exact", head: true }).eq("status", "pending"),
       db.from("contact_requests").select("id", { count: "exact", head: true }).eq("is_read", false),
-      db.from("angel_os_cache").select("key,payload,updated_at").in("key", [...EXPECTED_CACHE_KEYS]),
+      cacheDb.from("angel_os_cache").select("key,payload,updated_at").in("key", [...EXPECTED_CACHE_KEYS]),
     ]);
 
     const cacheErrorMessage = cache.error?.message as string | undefined;
@@ -70,9 +78,12 @@ export const getAdminIntegritySnapshot = createServerFn({ method: "GET" })
     for (const row of cacheRows) expected.delete(row.key);
     staleCaches.push(...expected);
 
+    // The fixed amber banner is reserved for a broken durable-cache
+    // infrastructure. Missing/old snapshots remain tracked in staleCaches and
+    // are refreshed by the normal jobs, but they no longer masquerade as a
+    // database migration failure or block the admin UI.
     const warnings: string[] = [];
-    if (cacheTablePending) warnings.push("Cache durable Angel OS en attente de migration Supabase ; fonctionnement temporaire sans snapshots persistants");
-    else if (staleCaches.length) warnings.push(`${staleCaches.length} snapshot(s) admin périmé(s) ou absent(s)`);
+    if (cacheTablePending) warnings.push("Cache durable Angel OS indisponible côté serveur ; vérifier la migration Supabase");
 
     const snapshot: AdminIntegritySnapshot = {
       checkedAt: new Date().toISOString(),
@@ -96,7 +107,7 @@ export const getAdminIntegritySnapshot = createServerFn({ method: "GET" })
       text: `Candidatures ${snapshot.counts.applications}; projets ${snapshot.counts.projects}; tâches ouvertes ${snapshot.counts.openTasks}; articles ${snapshot.counts.articles}; publiés ${snapshot.counts.publishedArticles}; actions en attente ${snapshot.counts.pendingActions}; messages non lus ${snapshot.counts.unreadMessages}. ${warnings.join(" ")}`,
       tags: ["admin", "integrity", "state"],
       updatedAt: now,
-      metadata: { ...snapshot.counts, staleCaches: snapshot.staleCaches },
+      metadata: { ...snapshot.counts, staleCaches: snapshot.staleCaches, durableCacheHealthy: !cacheTablePending },
     });
 
     const byKey = Object.fromEntries(cacheRows.map((row) => [row.key, row]));
@@ -111,7 +122,7 @@ export const getAdminIntegritySnapshot = createServerFn({ method: "GET" })
       source: "admin-integrity",
       ok: true,
       durationMs: Date.now() - startedAt,
-      payload: { counts: snapshot.counts, staleCaches: snapshot.staleCaches, cacheTablePending },
+      payload: { counts: snapshot.counts, staleCaches: snapshot.staleCaches, cacheTablePending, durableCacheHealthy: !cacheTablePending },
     });
 
     return snapshot;
