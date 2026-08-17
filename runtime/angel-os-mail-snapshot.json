@@ -1,8 +1,8 @@
 {
-  "fetchedAt": "2026-08-17T06:14:46Z",
+  "fetchedAt": "2026-08-17T07:13:10Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-17T06:14:46Z",
+      "fetchedAt": "2026-08-17T07:13:10Z",
       "important": [
         {
           "subject": "[angelosmegaplus/angel-leclerc] Generic High Entropy Secret exposed on GitHub",
@@ -45,14 +45,14 @@
           "suggestedReply": ""
         }
       ],
-      "otherSummary": "Depuis le précédent rapport à 02:02:51 UTC, un seul nouveau message a été reçu : une promotion DeviantArt reçue à 05:07:39 UTC. Ce message n'est ni professionnel, ni lié à une candidature, ni une alerte technique ou de sécurité pertinente pour Angel OS. Aucun nouveau refus, entretien, demande de CV, demande d'information, redirection professionnelle ou réponse d'entreprise n'a été reçu. Les anciennes alertes GitHub restent non lues mais aucune nouvelle alerte technique n'est arrivée sur la période. Aucun email n'a été envoyé, classé, marqué lu ou modifié par cette routine.",
+      "otherSummary": "Aucun nouveau message reçu depuis la fin du précédent rapport à 06:14:46 UTC. Les non-lus récents pertinents restent inchangés : anciennes alertes GitHub, sécurité/compte et dossier Université de Bordeaux. Aucun nouveau refus, entretien, demande de CV, demande d'information, redirection professionnelle, réponse d'entreprise ou alerte technique nouvelle n'a été reçu. Aucun email n'a été envoyé, classé, marqué lu ou modifié par cette routine.",
       "counts": {
-        "new_since_last_run": 1,
-        "incoming": 1,
+        "new_since_last_run": 0,
+        "incoming": 0,
         "outgoing": 0,
         "technical_incoming": 0,
         "security_or_account_incoming": 0,
-        "secondary_incoming": 1,
+        "secondary_incoming": 0,
         "employment_or_application_incoming": 0,
         "application_action_required": 0,
         "explicit_rejections": 0,
@@ -63,16 +63,16 @@
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-17T02:02:51Z",
-    "period_end": "2026-08-17T06:14:46Z",
-    "summary": "Un seul nouveau message a été reçu depuis le précédent rapport : une promotion DeviantArt sans pertinence professionnelle ou technique. Aucun nouveau mail de candidature n'a été reçu : aucun refus explicite, acceptation, entretien, demande de CV, demande d'information ou redirection professionnelle. Aucune nouvelle alerte technique n'est arrivée sur la période. Cette routine n'a envoyé ni modifié aucun email. Le code de production confirme que `ai_actions` est géré dans Supabase et que le client serveur dispose de `SUPABASE_SERVICE_ROLE_KEY`, mais les connecteurs de cette exécution ne fournissent toujours pas de voie authentifiée permettant de lire ou mettre à jour directement `public.ai_actions` ou `hourly_mail_reports`; aucune action `awaiting_operator` n'a donc été exécutée, modifiée ou simulée. Le cache Gmail de secours a été mis à jour sans écraser les données existantes.",
+    "period_start": "2026-08-17T06:14:46Z",
+    "period_end": "2026-08-17T07:13:10Z",
+    "summary": "Aucun nouveau mail pertinent n'a été reçu depuis le précédent rapport. Aucun refus explicite, acceptation, entretien, demande de CV, demande d'information, redirection professionnelle ou nouvelle alerte technique n'a été détecté. Cette routine n'a envoyé ni modifié aucun email. La file `public.ai_actions` et la table native `hourly_mail_reports` restent inaccessibles depuis les connecteurs de cette exécution faute de voie Supabase serveur authentifiée exposée ; aucune action `awaiting_operator` n'a été exécutée, modifiée ou simulée. Le cache Gmail de secours a été actualisé sans écraser les données existantes.",
     "counts": {
-      "total_messages": 1,
-      "incoming": 1,
+      "total_messages": 0,
+      "incoming": 0,
       "outgoing": 0,
       "technical_incoming": 0,
       "security_or_account_incoming": 0,
-      "secondary_incoming": 1,
+      "secondary_incoming": 0,
       "employment_or_application_incoming": 0,
       "application_action_required": 0,
       "explicit_rejections": 0,
@@ -82,18 +82,11 @@
       "awaiting_operator_executed": 0,
       "pending_actions_created": 0
     },
-    "items": [
-      {
-        "subject": "Gain access to the Core of DeviantArt",
-        "from": "DeviantArt <noreply@deviantart.com>",
-        "date": "2026-08-17T05:07:39Z",
-        "reason": "Promotion commerciale secondaire ; aucune action requise dans la routine professionnelle Angel OS."
-      }
-    ],
+    "items": [],
     "recommendations": [
-      "Ne créer aucune réponse ou action `pending` pour la promotion DeviantArt.",
       "Ne créer aucune réponse automatique de refus : aucun nouveau refus explicite n'a été reçu sur la période.",
-      "Ne pas simuler l'exécution d'actions `awaiting_operator` tant qu'une voie serveur Supabase authentifiée n'est pas exposée au connecteur de cette routine ; réessayer au prochain cycle."
+      "Ne créer aucune action `pending` : aucun nouvel email ne justifie d'action.",
+      "Réessayer au prochain cycle la lecture/écriture native Supabase si une voie serveur authentifiée devient disponible."
     ],
     "source": "chatgpt-hourly-direct"
   }
