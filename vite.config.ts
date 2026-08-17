@@ -27,18 +27,18 @@ export default defineConfig({
         manifestFilename: "manifest.webmanifest",
         includeAssets: ["favicon.png", "icons/apple-touch-icon.png", "offline.html"],
         manifest: {
-          name: "Angel OS IA — Angel Control Center",
-          short_name: "Angel OS IA",
-          description: "Centre de contrôle personnel, professionnel et journalistique d'Angel Leclerc.",
+          name: "Angel OS",
+          short_name: "Angel OS",
+          description: "Application privée Angel OS : administration, articles, candidatures, agenda, studio et intelligence artificielle.",
           lang: "fr",
           dir: "ltr",
           id: "/admin",
-          start_url: "/admin",
+          start_url: "/admin?source=pwa",
           scope: "/",
           display: "standalone",
-          orientation: "portrait-primary",
-          background_color: "#F6F1E8",
-          theme_color: "#181716",
+          orientation: "any",
+          background_color: "#050607",
+          theme_color: "#050607",
           categories: ["productivity", "business", "news"],
           icons: [
             { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
@@ -47,10 +47,12 @@ export default defineConfig({
             { src: "/icons/maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
           ],
           shortcuts: [
-            { name: "Tableau de bord", short_name: "Dashboard", url: "/admin?tab=dashboard" },
-            { name: "Studio / Journalisme", short_name: "Studio", url: "/admin?tab=studio" },
+            { name: "Accueil Angel OS", short_name: "Accueil", url: "/admin?tab=dashboard" },
             { name: "Articles", short_name: "Articles", url: "/admin?tab=articles" },
-            { name: "Connexions", short_name: "Connexions", url: "/admin-integrations" },
+            { name: "Candidatures", short_name: "Candidatures", url: "/admin?tab=candidatures" },
+            { name: "Agenda", short_name: "Agenda", url: "/admin?tab=agenda" },
+            { name: "Studio", short_name: "Studio", url: "/admin?tab=studio" },
+            { name: "Angel OS IA", short_name: "IA", url: "/admin?tab=angel-ai" },
           ],
         },
         workbox: {
@@ -61,7 +63,10 @@ export default defineConfig({
           navigateFallbackDenylist: [
             /^\/admin/,
             /^\/api\//,
+            /^\/_serverFn/,
+            /^\/__server/,
             /^\/~oauth/,
+            /^\/oauth\//,
             /^\/lovable\//,
           ],
           cleanupOutdatedCaches: true,
@@ -74,8 +79,10 @@ export default defineConfig({
                 url.pathname.startsWith("/admin") ||
                 url.pathname.startsWith("/api/") ||
                 url.pathname.startsWith("/_serverFn") ||
+                url.pathname.startsWith("/__server") ||
                 url.pathname.startsWith("/lovable/") ||
-                url.pathname.startsWith("/~oauth"),
+                url.pathname.startsWith("/~oauth") ||
+                url.pathname.startsWith("/oauth/"),
               handler: "NetworkOnly",
             },
             {
