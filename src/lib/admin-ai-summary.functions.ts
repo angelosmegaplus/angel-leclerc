@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { resilientAngelAi } from "./ai-resilient.server";
 import { aiMemoryPrompt } from "./ai-memory.server";
 import { operationalContextPrompt, readOperationalContext } from "./angel-os-ia/operational-context.server";
@@ -13,8 +14,20 @@ type AdminAiSummaryResult = {
   operationalContextAt?: string | null;
 };
 
+export type AdminCacheRow = {
+  key: string;
+  payload: Record<string, any>;
+  updated_at: string;
+};
+
 const SUMMARY_TTL_MS = 5 * 60_000;
 const CACHE_KEY = "admin_openai_summary";
+const ADMIN_SNAPSHOT_KEYS = [
+  "google_calendar_dashboard",
+  "gmail_dashboard",
+  "admin_cockpit_summary",
+  "news_dashboard",
+] as const;
 
 function clip(value: unknown, max = 1_200) {
   if (typeof value !== "string") return value;
@@ -28,14 +41,41 @@ function localDateKey(date = new Date()) {
   return `${year}-${month}-${day}`;
 }
 
+async function assertAdmin(context: any) {
+  const supabase = context.supabase as any;
+  const { data: role, error } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", context.userId)
+    .eq("role", "admin")
+    .maybeSingle();
+  if (error || !role) throw new Error("Accès réservé à l’administrateur.");
+  return supabase;
+}
+
+export const getAdminCacheSummaries = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<Record<string, AdminCacheRow>> => {
+    await assertAdmin(context);
+    const { data, error } = await (supabaseAdmin as any)
+      .from("angel_os_cache")
+      .select("key,payload,updated_at")
+      .in("key", [...ADMIN_SNAPSHOT_KEYS]);
+    if (error) throw new Error(`Cache Angel OS indisponible: ${error.message}`);
+    return Object.fromEntries(((data ?? []) as AdminCacheRow[]).map((row) => [row.key, row]));
+  });
+
 export const getAdminAiSummary = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<AdminAiSummaryResult> => {
-    const supabase = context.supabase as any;
-    const { data: role } = await supabase.from("user_roles").select("role").eq("user_id", context.userId).eq("role", "admin").maybeSingle();
-    if (!role) throw new Error("Accès réservé à l’administrateur.");
+    const supabase = await assertAdmin(context);
+    const cacheDb = supabaseAdmin as any;
 
-    const { data: cachedRow } = await supabase.from("angel_os_cache").select("payload,updated_at").eq("key", CACHE_KEY).maybeSingle();
+    const { data: cachedRow } = await cacheDb
+      .from("angel_os_cache")
+      .select("payload,updated_at")
+      .eq("key", CACHE_KEY)
+      .maybeSingle();
     const cachedPayload = cachedRow?.payload as AdminAiSummaryResult | undefined;
     const cachedAt = cachedRow?.updated_at ? new Date(cachedRow.updated_at).getTime() : 0;
     if (cachedPayload?.text && cachedPayload.source === "openai" && Date.now() - cachedAt < SUMMARY_TTL_MS) {
@@ -45,7 +85,7 @@ export const getAdminAiSummary = createServerFn({ method: "GET" })
     const [applicationsResult, reportsResult, cacheResult, actionsResult, operational, memory] = await Promise.all([
       supabase.from("applications").select("company,city,position,status,response,follow_up_at,sent_at").order("sent_at", { ascending: false }).limit(80),
       supabase.from("hourly_mail_reports").select("generated_at,summary,counts,recommendations").order("generated_at", { ascending: false }).limit(2),
-      supabase.from("angel_os_cache").select("key,payload,updated_at").in("key", ["gmail_dashboard", "google_calendar_dashboard", "news_dashboard", "admin_cockpit_summary"]),
+      cacheDb.from("angel_os_cache").select("key,payload,updated_at").in("key", [...ADMIN_SNAPSHOT_KEYS]),
       supabase.from("ai_actions").select("title,status,sensitive,created_at").in("status", ["pending", "awaiting_operator"]).order("created_at", { ascending: false }).limit(12),
       readOperationalContext({ refreshIfStale: true }),
       aiMemoryPrompt("private"),
@@ -130,6 +170,9 @@ export const getAdminAiSummary = createServerFn({ method: "GET" })
       stale: false,
       operationalContextAt: operational?.generatedAt ?? null,
     };
-    await supabase.from("angel_os_cache").upsert({ key: CACHE_KEY, payload, updated_at: payload.generatedAt }, { onConflict: "key" });
+    const { error: cacheWriteError } = await cacheDb
+      .from("angel_os_cache")
+      .upsert({ key: CACHE_KEY, payload, updated_at: payload.generatedAt }, { onConflict: "key" });
+    if (cacheWriteError) console.error("[admin summary cache]", cacheWriteError.message);
     return payload;
   });
