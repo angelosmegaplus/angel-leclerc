@@ -1,2 +1,2 @@
-Redeploy trigger — 2026-08-17 18:45 Europe/Paris
-Reason: publish Angel OS admin light mode redesign and mobile refinements.
+Redeploy trigger — 2026-08-17 18:52 Europe/Paris
+Reason: force CI and Publication Angel OS pipeline to publish the latest main after GitHub→Vercel auto-deploy stopped triggering.
