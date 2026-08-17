@@ -107,6 +107,38 @@ async function fetchAdminJson(url: string) {
   return response.json() as Promise<unknown>;
 }
 
+function normalizeDate(value?: string) {
+  if (!value?.trim()) return "";
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toISOString();
+}
+
+function normalizeLeadDates(lead: AlternanceResearchLead): AlternanceResearchLead {
+  return {
+    ...lead,
+    freshness: normalizeDate(lead.freshness),
+    lastActionAt: normalizeDate(lead.lastActionAt),
+    firstSeenAt: normalizeDate(lead.firstSeenAt),
+    lastSeenAt: normalizeDate(lead.lastSeenAt),
+  };
+}
+
+function leadTimestamp(lead: AlternanceResearchLead) {
+  const candidates = [lead.lastActionAt, lead.lastSeenAt, lead.freshness, lead.firstSeenAt]
+    .filter(Boolean) as string[];
+  for (const value of candidates) {
+    const parsed = new Date(value).getTime();
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return 0;
+}
+
+function newestFirst(items: AlternanceResearchLead[]) {
+  return items
+    .map(normalizeLeadDates)
+    .sort((a, b) => leadTimestamp(b) - leadTimestamp(a));
+}
+
 export const getAlternanceResearchSnapshot = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<AlternanceResearchSnapshot | null> => {
@@ -122,19 +154,26 @@ export const getAlternanceResearchSnapshot = createServerFn({ method: "POST" })
         ? { ...(latestRaw as AlternanceResearchSnapshot) }
         : ({} as AlternanceResearchSnapshot);
 
+      if (payload.newApplication) payload.newApplication = normalizeLeadDates(payload.newApplication);
+      payload.gmailActions = newestFirst(payload.gmailActions || []);
+      payload.screenedLeads = newestFirst(payload.screenedLeads || []);
+
       if (historyRaw && typeof historyRaw === "object") {
         const history = historyRaw as { updatedAt?: string; items?: unknown };
-        payload.history = Array.isArray(history.items)
-          ? (history.items as AlternanceResearchLead[])
-          : [];
-        payload.historyUpdatedAt = history.updatedAt;
+        payload.history = newestFirst(
+          Array.isArray(history.items)
+            ? (history.items as AlternanceResearchLead[])
+            : [],
+        );
+        payload.historyUpdatedAt = normalizeDate(history.updatedAt);
 
-        payload.screenedLeads = [
+        payload.screenedLeads = newestFirst([
           ...(payload.history || []),
           ...(payload.screenedLeads || []),
-        ];
+        ]);
       }
 
+      payload.updatedAt = normalizeDate(payload.updatedAt);
       return Object.keys(payload).length > 0 ? payload : null;
     } catch {
       return null;
