@@ -1,0 +1,46 @@
+name: Contexte horaire Angel OS IA
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "7 * * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: angel-os-ai-context-hourly
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: production
+    env:
+      NEWSLETTER_CRON_SECRET: ${{ secrets.NEWSLETTER_CRON_SECRET }}
+
+    steps:
+      - name: Rafraîchir le contexte opérationnel privé
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${NEWSLETTER_CRON_SECRET:-}" || { echo "::error::NEWSLETTER_CRON_SECRET absent"; exit 1; }
+          tmp="$(mktemp)"
+          code="$(curl -L --silent --show-error --output "$tmp" --write-out '%{http_code}' --max-time 60 \
+            -X POST \
+            -H "x-cron-token: ${NEWSLETTER_CRON_SECRET}" \
+            -H 'Content-Type: application/json' \
+            "https://www.angel-leclerc.fr/api/public/hooks/hourly-ai-context")"
+          cat "$tmp"
+          test "$code" = "200"
+          jq -e '.ok == true and (.generatedAt | type == "string") and (.overview | type == "object")' "$tmp" >/dev/null
+
+      - name: Résumé
+        if: always()
+        run: |
+          echo "## Contexte Angel OS IA" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Cadence : toutes les heures" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Stockage : cache runtime privé Supabase" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Lecture : chaque réponse Angel OS IA privée + accueil admin" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Auto-réparation : régénération à la demande si le contexte dépasse 65 minutes" >> "$GITHUB_STEP_SUMMARY"
