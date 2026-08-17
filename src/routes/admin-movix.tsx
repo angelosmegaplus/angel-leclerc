@@ -6,7 +6,7 @@ import { Film, Loader2, RefreshCw, Search, Star } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { FILM_CATALOG } from "@/lib/film-catalog";
 import { getLiveFilmCatalog } from "@/lib/film-live.functions";
-import { selectDailyRecommendations, type RecommendationCandidate } from "@/lib/film-recommendations";
+import { selectDailyRecommendations, type RecommendationCandidate, type ViewingSignal } from "@/lib/film-recommendations";
 import { MovixLauncherPanel } from "@/components/admin/MovixLauncherPanel";
 import { MoviePoster } from "@/components/admin/MovieArtwork";
 
@@ -15,6 +15,7 @@ export const Route = createFileRoute("/admin-movix")({
   component: FilmsSeriesPage,
 });
 
+const SIGNALS_KEY = "angel-os-film-series-signals-v2";
 type Filter = "all" | "movie" | "tv";
 
 function localFallback(filter: Filter, query: string) {
@@ -37,10 +38,29 @@ function FilmsSeriesPage() {
   const [draftQuery, setDraftQuery] = useState("");
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
+  const [signals, setSignals] = useState<ViewingSignal[]>([]);
 
   useEffect(() => {
     if (!loading && (!session || !isAdmin)) void navigate({ to: "/auth" });
   }, [isAdmin, loading, navigate, session]);
+
+  useEffect(() => {
+    const reloadPreferences = () => {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(SIGNALS_KEY) ?? "[]");
+        setSignals(Array.isArray(parsed) ? parsed : []);
+      } catch {
+        setSignals([]);
+      }
+    };
+    reloadPreferences();
+    window.addEventListener("focus", reloadPreferences);
+    window.addEventListener("storage", reloadPreferences);
+    return () => {
+      window.removeEventListener("focus", reloadPreferences);
+      window.removeEventListener("storage", reloadPreferences);
+    };
+  }, []);
 
   const { data, isLoading, isFetching, refetch } = useQuery({
     queryKey: ["admin-films-live-tmdb", query, filter],
@@ -57,7 +77,7 @@ function FilmsSeriesPage() {
     () => data?.source === "tmdb" ? data.items : fallback,
     [data, fallback],
   );
-  const picks = useMemo(() => selectDailyRecommendations(catalog, []).slice(0, 5), [catalog]);
+  const picks = useMemo(() => selectDailyRecommendations(catalog, signals).slice(0, 5), [catalog, signals]);
 
   if (loading || !session || !isAdmin) {
     return <main className="grid min-h-screen place-items-center bg-[#050607] text-white"><Loader2 className="h-6 w-6 animate-spin" /></main>;
@@ -70,10 +90,11 @@ function FilmsSeriesPage() {
           <div>
             <div className="flex items-center gap-2 text-red-300"><Film className="h-5 w-5" /><span className="font-mono text-[10px] uppercase tracking-[.18em]">Angel OS IA · cinéma personnel</span></div>
             <h1 className="mt-2 text-4xl font-semibold tracking-[-.055em] sm:text-5xl">Films et séries</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/45">TMDB alimente directement le catalogue, les affiches, les notes et la recherche. En secours, Angel OS conserve les fiches locales et met les affiches déjà récupérées en cache interne.</p>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/45">TMDB alimente directement le catalogue, les affiches, les notes et la recherche. Tes likes, dislikes et films déjà vus alimentent maintenant la sélection personnalisée.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className={`rounded-full border px-3 py-1.5 text-xs ${usingTmdb ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-200" : "border-amber-400/25 bg-amber-400/10 text-amber-100"}`}>{usingTmdb ? "TMDB connecté" : "Secours local"}</span>
+            <span className="rounded-full border border-white/10 bg-white/[.04] px-3 py-1.5 text-xs text-white/55">{signals.length} préférence{signals.length > 1 ? "s" : ""}</span>
             <Link to="/admin" className="rounded-xl border border-white/10 bg-white/[.04] px-4 py-2 text-sm text-white/70">Retour à Angel OS</Link>
           </div>
         </header>
@@ -90,7 +111,7 @@ function FilmsSeriesPage() {
           </div>
         </section>
 
-        {!query && picks.length > 0 ? <section className="mt-9"><div className="flex items-end justify-between gap-3"><div><h2 className="text-2xl font-semibold tracking-[-.04em]">À regarder aujourd’hui</h2><p className="mt-1 text-xs text-white/35">{usingTmdb ? "Sélection calculée à partir du catalogue TMDB disponible." : "Sélection locale temporaire pendant l’indisponibilité de TMDB."}</p></div>{isLoading || isFetching ? <span className="inline-flex items-center gap-1.5 text-xs text-white/35"><Loader2 className="h-3.5 w-3.5 animate-spin" />TMDB</span> : null}</div><div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">{picks.map(({ candidate }) => <MediaCard key={`pick-${candidate.id}`} item={candidate} />)}</div></section> : null}
+        {!query && picks.length > 0 ? <section className="mt-9"><div className="flex items-end justify-between gap-3"><div><h2 className="text-2xl font-semibold tracking-[-.04em]">À regarder aujourd’hui</h2><p className="mt-1 text-xs text-white/35">Sélection calculée avec ton historique de likes, dislikes, contenus vus et le profil cinéma de base.</p></div>{isLoading || isFetching ? <span className="inline-flex items-center gap-1.5 text-xs text-white/35"><Loader2 className="h-3.5 w-3.5 animate-spin" />TMDB</span> : null}</div><div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">{picks.map(({ candidate }) => <MediaCard key={`pick-${candidate.id}`} item={candidate} />)}</div></section> : null}
 
         <section className="mt-10 border-t border-white/10 pt-7">
           <div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-2xl font-semibold tracking-[-.04em]">{query ? `Résultats pour « ${query} »` : "Catalogue pour toi"}</h2><p className="mt-1 text-xs text-white/35">{catalog.length} titre{catalog.length > 1 ? "s" : ""} · source {usingTmdb ? "TMDB" : "locale de secours"}</p></div></div>
