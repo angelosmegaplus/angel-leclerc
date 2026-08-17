@@ -5,6 +5,19 @@ import type { Database } from './types';
 const PUBLIC_SUPABASE_URL = 'https://timygavajdestkbdzuyk.supabase.co';
 const PUBLIC_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_8IG8jsDj3yWH7u7urAQPig_r2V8Wd9s';
 
+// A few articles are still shipped from Git as a resilience fallback. They are
+// displayed in the same admin list as database articles, so deleting them by
+// `articles.id` cannot work: no matching row exists in public.articles. Keep a
+// small compatibility map here and turn that delete into a tombstone in
+// git_article_state. The article readers already honour those tombstones.
+const LEGACY_GIT_ARTICLE_BY_ID: Record<string, string> = {
+  'political-salaries-20260815': 'salaires-politiques-france-combien-coutent-elus',
+  '9b51d8a2-7cf4-4d9b-a9d0-202608131438':
+    'macron-2017-philippe-2027-reseaux-attali-president-par-defaut',
+  '4f948fd6-424d-4fc2-9d0b-202608131420':
+    'meilleurs-films-horreur-classement-allocine-avis',
+};
+
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
 }
@@ -43,9 +56,41 @@ let validatedToken: string | null = null;
 let validatedAt = 0;
 const VALIDATION_TTL_MS = 30_000;
 
+function proxiedFrom(table: string) {
+  if (!_supabase) _supabase = createSupabaseClient();
+  const query = (_supabase as any).from(table);
+  if (table !== 'articles') return query;
+
+  return new Proxy(query, {
+    get(target, prop, receiver) {
+      if (prop !== 'delete') return Reflect.get(target, prop, receiver);
+      return (...args: unknown[]) => {
+        const deleteQuery = target.delete(...args);
+        return new Proxy(deleteQuery, {
+          get(deleteTarget, deleteProp, deleteReceiver) {
+            if (deleteProp !== 'eq') return Reflect.get(deleteTarget, deleteProp, deleteReceiver);
+            return (column: string, value: unknown) => {
+              if (column === 'id' && typeof value === 'string') {
+                const slug = LEGACY_GIT_ARTICLE_BY_ID[value];
+                if (slug) {
+                  return (_supabase as any)
+                    .from('git_article_state')
+                    .upsert({ slug, deleted: true }, { onConflict: 'slug' });
+                }
+              }
+              return deleteTarget.eq(column, value);
+            };
+          },
+        });
+      };
+    },
+  });
+}
+
 export const supabase = new Proxy({} as ReturnType<typeof createSupabaseClient>, {
   get(_, prop, receiver) {
     if (!_supabase) _supabase = createSupabaseClient();
+    if (prop === 'from') return (table: string) => proxiedFrom(table);
     return Reflect.get(_supabase, prop, receiver);
   },
 });
