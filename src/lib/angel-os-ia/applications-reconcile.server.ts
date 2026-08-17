@@ -7,7 +7,40 @@ type Db = SupabaseClient<Database>;
 
 export type AngelOsIaApplicationReconcileResult = ApplicationSyncResult & {
   orchestrator: "angel-os-ia";
+  followUpsRepaired: number;
 };
+
+function plusFifteenDays(value: string) {
+  const date = new Date(value.length <= 10 ? `${value}T12:00:00Z` : value);
+  if (Number.isNaN(date.getTime())) return null;
+  date.setUTCDate(date.getUTCDate() + 15);
+  return date.toISOString().slice(0, 10);
+}
+
+async function enforceFollowUpPolicy(db: Db) {
+  const anyDb = db as unknown as { from: (table: string) => any };
+  const { data, error } = await anyDb
+    .from("applications")
+    .select("id,sent_at,follow_up_at,status,response")
+    .in("status", ["envoyee", "relance", "relancee"])
+    .is("response", null)
+    .not("sent_at", "is", null)
+    .limit(500);
+  if (error) throw error;
+
+  let repaired = 0;
+  for (const row of data ?? []) {
+    const expected = plusFifteenDays(String(row.sent_at ?? ""));
+    if (!expected || String(row.follow_up_at ?? "").slice(0, 10) === expected) continue;
+    const { error: updateError } = await anyDb
+      .from("applications")
+      .update({ follow_up_at: expected })
+      .eq("id", row.id);
+    if (updateError) throw updateError;
+    repaired += 1;
+  }
+  return repaired;
+}
 
 /**
  * Point d'entrée canonique pour la reconstruction des candidatures depuis la boîte mail.
@@ -22,9 +55,11 @@ export async function reconcileApplicationsFromMail(
 ): Promise<AngelOsIaApplicationReconcileResult> {
   const startedAt = Date.now();
   const result = await syncApplicationsForUser(userId, db);
+  const followUpsRepaired = result.status === "not_connected" ? 0 : await enforceFollowUpPolicy(db);
   const reconciled: AngelOsIaApplicationReconcileResult = {
     ...result,
     orchestrator: "angel-os-ia",
+    followUpsRepaired,
   };
 
   const anyDb = db as unknown as { from: (table: string) => any };
@@ -38,6 +73,7 @@ export async function reconcileApplicationsFromMail(
       imported: result.imported,
       updated: result.updated,
       skipped: result.skipped,
+      follow_ups_repaired: followUpsRepaired,
       synced_at: result.syncedAt,
       duration_ms: Date.now() - startedAt,
     },
@@ -54,6 +90,7 @@ export async function reconcileApplicationsFromMail(
       imported: result.imported,
       updated: result.updated,
       skipped: result.skipped,
+      followUpsRepaired,
       syncedAt: result.syncedAt,
     }),
     tags: ["angel-os-ia", "applications", "gmail", "reconciliation"],
@@ -62,6 +99,7 @@ export async function reconcileApplicationsFromMail(
       imported: result.imported,
       updated: result.updated,
       skipped: result.skipped,
+      followUpsRepaired,
       status: result.status,
     },
   }).catch(() => undefined);
