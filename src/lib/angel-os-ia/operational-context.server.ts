@@ -1,7 +1,8 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import contextFile from "../../../runtime/angel-os-ai-context.json";
 
 const CONTEXT_KEY = "angel_os_ai_context";
-const MAX_CONTEXT_AGE_MS = 65 * 60 * 1000;
+const MAX_CONTEXT_AGE_MS = Number(contextFile.staleAfterMinutes || 65) * 60 * 1000;
 
 type CacheRow = { key: string; payload: unknown; updated_at: string };
 
@@ -10,6 +11,12 @@ type OperationalContext = {
   generatedAt: string;
   validUntil: string;
   source: "angel-os-hourly-context";
+  knowledgeFile: {
+    name: string;
+    version: number;
+    refreshCadenceMinutes: number;
+    knowledgeAreas: string[];
+  };
   autonomy: {
     automatic: string[];
     approvalRequired: string[];
@@ -99,21 +106,15 @@ export async function refreshOperationalContext(): Promise<OperationalContext> {
     generatedAt: now.toISOString(),
     validUntil: new Date(now.getTime() + MAX_CONTEXT_AGE_MS).toISOString(),
     source: "angel-os-hourly-context",
+    knowledgeFile: {
+      name: contextFile.name,
+      version: contextFile.version,
+      refreshCadenceMinutes: contextFile.refreshCadenceMinutes,
+      knowledgeAreas: contextFile.knowledgeAreas,
+    },
     autonomy: {
-      automatic: [
-        "Lire et synthétiser les données internes disponibles.",
-        "Détecter les incohérences, retards, erreurs et sources périmées.",
-        "Prioriser les tâches et proposer les prochaines actions.",
-        "Préparer des brouillons, analyses, diagnostics et corrections techniques réversibles.",
-        "Actualiser ce contexte opérationnel et les indicateurs internes.",
-      ],
-      approvalRequired: [
-        "Envoyer un e-mail ou un message externe.",
-        "Publier un article ou un contenu public.",
-        "Supprimer des données ou effectuer une action destructive/irréversible.",
-        "Effectuer un paiement, achat ou opération financière.",
-        "Contourner une permission, un consentement ou une protection de sécurité.",
-      ],
+      automatic: contextFile.automaticActions,
+      approvalRequired: contextFile.approvalRequired,
     },
     overview: {
       applications: applicationRows.length,
@@ -149,7 +150,7 @@ export async function readOperationalContext(options: { refreshIfStale?: boolean
     return null;
   }
 
-  const stale = !data?.updated_at || ageMinutes(data.updated_at) > 65;
+  const stale = !data?.updated_at || ageMinutes(data.updated_at) > Number(contextFile.staleAfterMinutes || 65);
   if ((!data?.payload || stale) && options.refreshIfStale !== false) {
     try {
       return await refreshOperationalContext();
@@ -162,5 +163,5 @@ export async function readOperationalContext(options: { refreshIfStale?: boolean
 
 export function operationalContextPrompt(context: OperationalContext | null) {
   if (!context) return "";
-  return `\n\nCONTEXTE OPÉRATIONNEL ANGEL OS — ACTUALISÉ ${context.generatedAt}\nCe dossier est rafraîchi au moins toutes les heures et relu à chaque réponse privée. Les données récentes priment sur les anciennes.\nIndicateurs : ${JSON.stringify(context.overview)}\nPriorités : ${context.priorities.length ? context.priorities.join(" | ") : "aucune priorité explicite en attente"}\nAlertes : ${context.alerts.length ? context.alerts.join(" | ") : "aucune alerte détectée"}\nAutonomie sûre : ${context.autonomy.automatic.join(" ")}\nValidation obligatoire : ${context.autonomy.approvalRequired.join(" ")}\nMémoire récente : ${context.recentMemory.map((item) => `${item.title}: ${item.content}`).join(" | ") || "aucune"}`;
+  return `\n\nCONTEXTE OPÉRATIONNEL ANGEL OS — ACTUALISÉ ${context.generatedAt}\nFichier canonique : ${context.knowledgeFile.name} v${context.knowledgeFile.version}, cadence ${context.knowledgeFile.refreshCadenceMinutes} min. Ce dossier est relu à chaque réponse privée. Les données récentes priment sur les anciennes.\nDomaines suivis : ${context.knowledgeFile.knowledgeAreas.join(" | ")}\nIndicateurs : ${JSON.stringify(context.overview)}\nPriorités : ${context.priorities.length ? context.priorities.join(" | ") : "aucune priorité explicite en attente"}\nAlertes : ${context.alerts.length ? context.alerts.join(" | ") : "aucune alerte détectée"}\nAutonomie sûre : ${context.autonomy.automatic.join(" ")}\nValidation obligatoire : ${context.autonomy.approvalRequired.join(" ")}\nMémoire récente : ${context.recentMemory.map((item) => `${item.title}: ${item.content}`).join(" | ") || "aucune"}`;
 }
