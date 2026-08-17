@@ -92,7 +92,7 @@ function parseDate(value: string) {
   if (!value) return 0;
   const direct = Date.parse(value);
   if (Number.isFinite(direct)) return direct;
-  const fr = value.match(/(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})(?:\s+(\d{1,2}):?(\d{2})?)?/);
+  const fr = value.match(/(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})(?:\s+(\d{1,2}):?(\d{2})?)?/);
   if (!fr) return 0;
   const year = Number(fr[3]) < 100 ? 2000 + Number(fr[3]) : Number(fr[3]);
   return new Date(year, Number(fr[2]) - 1, Number(fr[1]), Number(fr[4] || 0), Number(fr[5] || 0)).getTime();
