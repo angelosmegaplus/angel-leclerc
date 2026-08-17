@@ -6,10 +6,8 @@ import {
   Briefcase,
   CheckCircle2,
   ChevronDown,
-  ClipboardList,
-  MailCheck,
+  Clock3,
   RefreshCw,
-  SearchCheck,
   XCircle,
 } from "lucide-react";
 import { listRows, str, type Row } from "@/lib/angelos";
@@ -24,19 +22,12 @@ import { AdminStatus, type AdminStatusTone } from "./AdminStatus";
 
 function sentMailOf(row?: Row) {
   if (!row) return "";
-  return (
-    str(row, "sent_message") ||
-    str(row, "email_body") ||
-    str(row, "mail_body") ||
-    str(row, "message_sent") ||
-    ""
-  );
+  return str(row, "sent_message") || str(row, "email_body") || str(row, "mail_body") || str(row, "message_sent") || "";
 }
 
 function cleanApplicationText(value: string) {
   if (!value) return "";
-  const looksLikeBrokenPage = /<!doctype html|this page didn't load|something went wrong on our end|lovable\.app|id-preview-/i.test(value);
-  if (looksLikeBrokenPage) return "";
+  if (/<!doctype html|this page didn't load|something went wrong on our end|lovable\.app|id-preview-/i.test(value)) return "";
   return value
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
@@ -50,15 +41,9 @@ function cleanApplicationText(value: string) {
 function cleanSyncError(value: unknown) {
   const raw = value instanceof Error ? value.message : String(value ?? "");
   if (/<!doctype html|<html|this page didn't load|something went wrong on our end|id-preview-|lovable\.app/i.test(raw)) {
-    return "Le service de synchronisation est momentanément indisponible. Les candidatures déjà enregistrées restent intactes. Réessaie dans quelques instants.";
+    return "Le service de synchronisation est momentanément indisponible. Les candidatures déjà enregistrées restent intactes.";
   }
-  const cleaned = raw
-    .replace(/<style[\s\S]*?<\/style>/gi, " ")
-    .replace(/<script[\s\S]*?<\/script>/gi, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  return cleaned.slice(0, 280) || "La synchronisation des candidatures a échoué. Réessaie dans quelques instants.";
+  return raw.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 280) || "La synchronisation des candidatures a échoué.";
 }
 
 type CompleteItem = {
@@ -81,13 +66,38 @@ type CompleteItem = {
   recipient: string;
 };
 
-function normalizedKey(company: string, city: string, position: string) {
-  return `${company}|${city}|${position}`
+function normalize(value: string) {
+  return value
     .toLocaleLowerCase("fr")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9@.]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function normalizedKey(company: string, city: string, position: string) {
+  return `${normalize(company)}|${normalize(city)}|${normalize(position)}`;
+}
+
+function companyKey(item: CompleteItem) {
+  const company = normalize(item.company);
+  const recipientDomain = item.recipient.includes("@") ? normalize(item.recipient.split("@").pop() || "") : "";
+  return company && company !== "candidature" && company !== "piste sans nom" ? company : recipientDomain || item.key;
+}
+
+function parseActivity(value: string) {
+  if (!value) return 0;
+  const direct = Date.parse(value);
+  if (Number.isFinite(direct)) return direct;
+  const fr = value.match(/(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})(?:\s+(\d{1,2}):?(\d{2})?)?/);
+  if (!fr) return 0;
+  const year = Number(fr[3]) < 100 ? 2000 + Number(fr[3]) : Number(fr[3]);
+  return new Date(year, Number(fr[2]) - 1, Number(fr[1]), Number(fr[4] || 0), Number(fr[5] || 0)).getTime();
+}
+
+function activityTime(item: CompleteItem) {
+  return parseActivity(item.lastActionAt) || parseActivity(item.freshness);
 }
 
 function leadToItem(lead: AlternanceResearchLead): CompleteItem {
@@ -119,21 +129,24 @@ function rowToItem(row: Row): CompleteItem {
   const company = str(row, "company") || "Candidature";
   const city = str(row, "city");
   const position = str(row, "position");
+  const sentAt = str(row, "sent_at");
   return {
     key: normalizedKey(company, city, position),
     company,
     city,
     position,
     source: str(row, "source"),
-    freshness: str(row, "sent_at") || str(row, "created_at"),
+    freshness: sentAt || str(row, "created_at"),
     missions: str(row, "missions"),
     level: str(row, "level"),
     contract: str(row, "contract"),
     fit: str(row, "fit"),
     action: str(row, "last_action"),
     status: str(row, "status"),
-    lastAction: str(row, "last_action") || (str(row, "sent_at") ? "Candidature enregistrée comme envoyée." : ""),
-    lastActionAt: str(row, "last_action_at") || str(row, "updated_at") || str(row, "sent_at"),
+    lastAction: str(row, "last_action") || (sentAt ? "Candidature enregistrée comme envoyée." : ""),
+    // sent_at est prioritaire sur updated_at : une resynchronisation technique ne doit jamais
+    // donner artificiellement la même « dernière activité » à des dizaines de candidatures.
+    lastActionAt: str(row, "last_action_at") || sentAt || str(row, "updated_at") || str(row, "created_at"),
     nextAction: str(row, "next_action") || (str(row, "follow_up_at") ? `Relance prévue : ${str(row, "follow_up_at")}` : ""),
     reason: str(row, "error_reason"),
     recipient: str(row, "recipient") || str(row, "email"),
@@ -141,54 +154,51 @@ function rowToItem(row: Row): CompleteItem {
 }
 
 function mergeItem(base: CompleteItem, incoming: CompleteItem): CompleteItem {
-  const prefer = (next: string, current: string) => next || current;
+  const incomingIsNewer = activityTime(incoming) >= activityTime(base);
+  const newest = incomingIsNewer ? incoming : base;
+  const oldest = incomingIsNewer ? base : incoming;
+  const prefer = (current: string, fallback: string) => current || fallback;
   return {
-    ...base,
-    company: prefer(incoming.company, base.company),
-    city: prefer(incoming.city, base.city),
-    position: prefer(incoming.position, base.position),
-    source: prefer(incoming.source, base.source),
-    freshness: prefer(incoming.freshness, base.freshness),
-    missions: prefer(incoming.missions, base.missions),
-    level: prefer(incoming.level, base.level),
-    contract: prefer(incoming.contract, base.contract),
-    fit: prefer(incoming.fit, base.fit),
-    action: prefer(incoming.action, base.action),
-    status: prefer(incoming.status, base.status),
-    lastAction: prefer(incoming.lastAction, base.lastAction),
-    lastActionAt: prefer(incoming.lastActionAt, base.lastActionAt),
-    nextAction: prefer(incoming.nextAction, base.nextAction),
-    reason: prefer(incoming.reason, base.reason),
-    recipient: prefer(incoming.recipient, base.recipient),
+    ...newest,
+    key: base.key,
+    company: prefer(newest.company, oldest.company),
+    city: prefer(newest.city, oldest.city),
+    position: prefer(newest.position, oldest.position),
+    source: prefer(newest.source, oldest.source),
+    freshness: prefer(newest.freshness, oldest.freshness),
+    missions: prefer(newest.missions, oldest.missions),
+    level: prefer(newest.level, oldest.level),
+    contract: prefer(newest.contract, oldest.contract),
+    fit: prefer(newest.fit, oldest.fit),
+    action: prefer(newest.action, oldest.action),
+    status: prefer(newest.status, oldest.status),
+    lastAction: prefer(newest.lastAction, oldest.lastAction),
+    lastActionAt: prefer(newest.lastActionAt, oldest.lastActionAt),
+    nextAction: prefer(newest.nextAction, oldest.nextAction),
+    reason: prefer(newest.reason, oldest.reason),
+    recipient: prefer(newest.recipient, oldest.recipient),
   };
 }
 
-function completeStatus(item: CompleteItem): { label: string; tone: AdminStatusTone; group: "sent" | "valid" | "rejected" | "other" } {
-  const status = item.status.toLowerCase();
-  const action = `${item.action} ${item.lastAction} ${item.fit} ${item.reason}`.toLowerCase();
-
-  if (status === "refusee") return { label: "Refusée", tone: "error", group: "rejected" };
-  if (status === "acceptee") return { label: "Acceptée", tone: "success", group: "valid" };
-  if (status === "entretien") return { label: "Entretien", tone: "info", group: "valid" };
-  if (status === "erreur") return { label: "Erreur 😞", tone: "neutral", group: "other" };
-  if (status === "partiel") return { label: "Envoi partiel 😞", tone: "neutral", group: "sent" };
-  if (status === "relancee" || /relance/.test(action)) return { label: "Relancée", tone: "info", group: "sent" };
-  if (status === "envoyee" || /candidature envoy[eé]e|mail envoy[eé]/.test(action)) return { label: "Mail envoyé", tone: "success", group: "sent" };
-  if (status === "action_manuelle") return { label: "Action requise", tone: "pending", group: "valid" };
-  if (/écart|ecart|ne correspond|incompatib|filtre école|filtre ecole|inscription .* impos/.test(action)) {
-    return { label: "Ne correspond pas", tone: "neutral", group: "rejected" };
-  }
-  if (/conserv[eé]e|tr[eè]s compatible|compatible|pertinent|priorit[eé]/.test(action)) {
-    return { label: "Validée", tone: "success", group: "valid" };
-  }
-  return { label: "À étudier", tone: "pending", group: "other" };
+function completeStatus(item: CompleteItem): { label: string; tone: AdminStatusTone } {
+  const status = normalize(item.status);
+  const action = normalize(`${item.action} ${item.lastAction} ${item.reason}`);
+  if (/refusee|refused|rejected/.test(status)) return { label: "Refusée", tone: "error" };
+  if (/acceptee|accepted|embauchee/.test(status)) return { label: "Acceptée", tone: "success" };
+  if (status === "entretien") return { label: "Entretien", tone: "info" };
+  if (status === "erreur") return { label: "Erreur 😞", tone: "neutral" };
+  if (status === "partiel") return { label: "Envoi partiel 😞", tone: "neutral" };
+  if (status === "relancee" || /relance/.test(action)) return { label: "Relancée", tone: "info" };
+  if (status === "envoyee" || /candidature envoyee|mail envoye/.test(action)) return { label: "Mail envoyé", tone: "success" };
+  if (status === "action manuelle" || status === "action_manuelle") return { label: "Action requise", tone: "pending" };
+  return { label: "En attente", tone: "pending" };
 }
 
 function isRealFollowup(item: CompleteItem) {
-  const status = item.status.toLowerCase();
-  const history = `${item.action} ${item.lastAction} ${item.nextAction} ${item.reason}`.toLowerCase();
-  if (["envoyee", "relancee", "refusee", "acceptee", "entretien", "partiel", "erreur", "action_manuelle"].includes(status)) return true;
-  return /candidature envoy[eé]e|mail envoy[eé]|relance|refus|entretien|accept[eé]e|r[eé]ponse reçue|reponse recue|non distribu[eé]|adresse invalide/.test(history);
+  const status = normalize(item.status);
+  const history = normalize(`${item.action} ${item.lastAction} ${item.nextAction} ${item.reason}`);
+  if (/envoyee|relancee|refusee|acceptee|entretien|partiel|erreur|action manuelle/.test(status)) return true;
+  return /candidature envoyee|mail envoye|relance|refus|entretien|acceptee|reponse recue|non distribue|adresse invalide/.test(history);
 }
 
 function shortDate(value: string) {
@@ -202,6 +212,29 @@ function shortDate(value: string) {
     hour: "2-digit",
     minute: "2-digit",
   }).format(parsed);
+}
+
+function dedupeAndSort(items: CompleteItem[]) {
+  const merged = new Map<string, CompleteItem>();
+  for (const item of items) {
+    const key = companyKey(item);
+    const previous = merged.get(key);
+    merged.set(key, previous ? mergeItem(previous, item) : item);
+  }
+  return [...merged.values()].sort((a, b) => {
+    const byTime = activityTime(b) - activityTime(a);
+    if (byTime) return byTime;
+    return a.company.localeCompare(b.company, "fr", { sensitivity: "base" });
+  });
+}
+
+function candidatureGroup(item: CompleteItem): "accepted" | "rejected" | "pending" | "technical" {
+  const status = normalize(item.status);
+  const text = normalize(`${item.status} ${item.lastAction} ${item.action} ${item.reason}`);
+  if (/acceptee|accepted|embauchee/.test(status)) return "accepted";
+  if (/refusee|refused|rejected/.test(status) || /refus explicite/.test(text)) return "rejected";
+  if (/erreur|partiel|non distribue|adresse invalide/.test(text)) return "technical";
+  return "pending";
 }
 
 export function ApplicationsPanel() {
@@ -230,89 +263,57 @@ export function ApplicationsPanel() {
     staleTime: 15_000,
   });
 
-  const completeItems = useMemo(() => {
-    const merged = new Map<string, CompleteItem>();
-    const upsert = (item: CompleteItem) => {
-      const existing = merged.get(item.key);
-      merged.set(item.key, existing ? mergeItem(existing, item) : item);
-    };
-
-    for (const lead of researchSnapshot?.screenedLeads || []) upsert(leadToItem(lead));
-    if (researchSnapshot?.newApplication) upsert(leadToItem(researchSnapshot.newApplication));
-    for (const lead of researchSnapshot?.gmailActions || []) upsert(leadToItem(lead));
-    for (const row of rows) upsert(rowToItem(row));
-
-    return [...merged.values()].sort((a, b) => {
-      const aDate = a.lastActionAt || a.freshness;
-      const bDate = b.lastActionAt || b.freshness;
-      if (aDate && bDate) return bDate.localeCompare(aDate);
-      if (aDate) return -1;
-      if (bDate) return 1;
-      return a.company.localeCompare(b.company, "fr");
-    });
+  const allItems = useMemo(() => {
+    const items: CompleteItem[] = [];
+    for (const lead of researchSnapshot?.screenedLeads || []) items.push(leadToItem(lead));
+    if (researchSnapshot?.newApplication) items.push(leadToItem(researchSnapshot.newApplication));
+    for (const lead of researchSnapshot?.gmailActions || []) items.push(leadToItem(lead));
+    for (const row of rows) items.push(rowToItem(row));
+    return dedupeAndSort(items);
   }, [researchSnapshot, rows]);
 
-  const rowsByKey = useMemo(() => {
+  const followupItems = useMemo(() => dedupeAndSort(allItems.filter(isRealFollowup)), [allItems]);
+
+  const rowsByCompany = useMemo(() => {
     const map = new Map<string, Row>();
     for (const row of rows) {
       const item = rowToItem(row);
-      map.set(item.key, row);
+      const key = companyKey(item);
+      const previous = map.get(key);
+      if (!previous || activityTime(item) >= activityTime(rowToItem(previous))) map.set(key, row);
     }
     return map;
   }, [rows]);
 
-  const followupItems = useMemo(
-    () => completeItems.filter(isRealFollowup),
-    [completeItems],
-  );
-
-  const completeCounts = useMemo(() => {
-    return completeItems.reduce(
+  const counts = useMemo(() => {
+    return followupItems.reduce(
       (acc, item) => {
-        const group = completeStatus(item).group;
+        const group = candidatureGroup(item);
         acc.total += 1;
-        if (group === "sent") acc.sent += 1;
-        if (group === "valid") acc.valid += 1;
-        if (group === "rejected") acc.rejected += 1;
+        if (group === "accepted") acc.accepted += 1;
+        else if (group === "rejected") acc.rejected += 1;
+        else if (group === "pending") acc.pending += 1;
         return acc;
       },
-      { total: 0, sent: 0, valid: 0, rejected: 0 },
+      { total: 0, accepted: 0, rejected: 0, pending: 0 },
     );
-  }, [completeItems]);
+  }, [followupItems]);
 
   const refresh = async () => {
     if (syncing) return;
     setSyncing(true);
     setSyncMessage(null);
     setSyncError(null);
-
     try {
       const result = await syncApplications();
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["angel", "applications"] }),
         queryClient.invalidateQueries({ queryKey: ["angel", "applications", "research-snapshot"] }),
       ]);
-      await Promise.all([
-        queryClient.refetchQueries({ queryKey: ["angel", "applications"], type: "active" }),
-        queryClient.refetchQueries({ queryKey: ["angel", "applications", "research-snapshot"], type: "active" }),
-      ]);
-
-      if (result.status === "not_connected") {
-        setSyncError(cleanSyncError(result.message || "La source Gmail n’est pas connectée au serveur."));
-      } else {
-        const details = [
-          result.imported ? `${result.imported} ajoutée${result.imported > 1 ? "s" : ""}` : null,
-          result.updated ? `${result.updated} mise${result.updated > 1 ? "s" : ""} à jour` : null,
-          result.skipped ? `${result.skipped} inchangée${result.skipped > 1 ? "s" : ""}` : null,
-        ].filter(Boolean).join(" · ");
-        setSyncMessage(details || result.message || "Candidatures synchronisées.");
-      }
+      if (result.status === "not_connected") setSyncError(cleanSyncError(result.message || "Gmail n’est pas connecté au serveur."));
+      else setSyncMessage(result.message || "Candidatures synchronisées.");
     } catch (error) {
       setSyncError(cleanSyncError(error));
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["angel", "applications"] }),
-        queryClient.invalidateQueries({ queryKey: ["angel", "applications", "research-snapshot"] }),
-      ]);
     } finally {
       setSyncing(false);
     }
@@ -337,193 +338,62 @@ export function ApplicationsPanel() {
           </Button>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-muted/45 p-1 sm:inline-grid sm:grid-cols-2">
-          <button
-            type="button"
-            onClick={() => setView("followup")}
-            className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${view === "followup" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-          >
-            Suivi des candidatures
-          </button>
-          <button
-            type="button"
-            onClick={() => setView("complete")}
-            className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${view === "complete" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-          >
-            Tableau complet
-          </button>
+        <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-muted/45 p-1 sm:inline-grid">
+          <button type="button" onClick={() => setView("followup")} className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${view === "followup" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"}`}>Suivi des candidatures</button>
+          <button type="button" onClick={() => setView("complete")} className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${view === "complete" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"}`}>Tableau complet</button>
         </div>
 
-        {syncMessage ? (
-          <div className="mt-3 flex items-start gap-2 rounded-lg border border-green-500/20 bg-green-500/10 px-3 py-2 text-xs text-green-700 dark:text-green-300">
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>{syncMessage}</span>
-          </div>
-        ) : null}
-        {syncError ? (
-          <div className="mt-3 flex items-start gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-700 dark:text-red-300">
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>{syncError}</span>
-          </div>
-        ) : null}
+        {syncMessage ? <div className="mt-3 flex items-start gap-2 rounded-lg border border-green-500/20 bg-green-500/10 px-3 py-2 text-xs"><CheckCircle2 className="mt-0.5 h-4 w-4" />{syncMessage}</div> : null}
+        {syncError ? <div className="mt-3 flex items-start gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs"><AlertTriangle className="mt-0.5 h-4 w-4" />{syncError}</div> : null}
 
         {view === "followup" ? (
-          <div className="mt-4 divide-y divide-border">
-            {followupItems.length === 0 ? (
-              <p className="py-4 text-sm text-muted-foreground">Aucune candidature réellement envoyée n’est encore disponible dans les sources synchronisées.</p>
-            ) : (
-              followupItems.map((item, index) => {
-                const row = rowsByKey.get(item.key);
+          <>
+            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <div className="rounded-xl border border-border bg-background/60 p-3"><p className="text-xs text-muted-foreground">Total</p><p className="mt-1 text-2xl font-bold">{counts.total}</p></div>
+              <div className="rounded-xl border border-border bg-background/60 p-3"><div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-500" /><p className="text-xs text-muted-foreground">Acceptées</p></div><p className="mt-1 text-2xl font-bold">{counts.accepted}</p></div>
+              <div className="rounded-xl border border-border bg-background/60 p-3"><div className="flex items-center gap-2"><XCircle className="h-4 w-4 text-red-500" /><p className="text-xs text-muted-foreground">Refusées</p></div><p className="mt-1 text-2xl font-bold">{counts.rejected}</p></div>
+              <div className="rounded-xl border border-border bg-background/60 p-3"><div className="flex items-center gap-2"><Clock3 className="h-4 w-4 text-amber-500" /><p className="text-xs text-muted-foreground">En attente</p></div><p className="mt-1 text-2xl font-bold">{counts.pending}</p></div>
+            </div>
+
+            <div className="mt-4 divide-y divide-border">
+              {followupItems.length === 0 ? <p className="py-4 text-sm text-muted-foreground">Aucune candidature envoyée disponible.</p> : followupItems.map((item, index) => {
+                const row = rowsByCompany.get(companyKey(item));
                 const id = row ? str(row, "id") || item.key : item.key || `application-${index}`;
                 const status = completeStatus(item);
                 const mail = sentMailOf(row);
                 const response = cleanApplicationText(row ? str(row, "response") : item.reason);
                 const isOpen = openId === id;
-
                 return (
-                  <div key={id}>
-                    <button
-                      type="button"
-                      className="flex w-full items-center justify-between gap-4 py-3 text-left"
-                      aria-expanded={isOpen}
-                      onClick={() => setOpenId(isOpen ? null : id)}
-                    >
+                  <div key={`${companyKey(item)}-${id}`}>
+                    <button type="button" className="flex w-full items-center justify-between gap-4 py-3 text-left" aria-expanded={isOpen} onClick={() => setOpenId(isOpen ? null : id)}>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-foreground">{item.company}</p>
-                        {(item.position || item.city) && (
-                          <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                            {[item.position, item.city].filter(Boolean).join(" · ")}
-                          </p>
-                        )}
-                        {item.lastActionAt || item.freshness ? (
-                          <p className="mt-1 text-[11px] text-muted-foreground">Dernière activité : {shortDate(item.lastActionAt || item.freshness)}</p>
-                        ) : null}
+                        {(item.position || item.city) ? <p className="mt-0.5 truncate text-xs text-muted-foreground">{[item.position, item.city].filter(Boolean).join(" · ")}</p> : null}
+                        {activityTime(item) ? <p className="mt-1 text-[11px] text-muted-foreground">Dernière activité : {shortDate(item.lastActionAt || item.freshness)}</p> : null}
                       </div>
-                      <div className="flex shrink-0 items-center gap-3">
-                        <AdminStatus tone={status.tone} compact>{status.label}</AdminStatus>
-                        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
-                      </div>
+                      <div className="flex shrink-0 items-center gap-3"><AdminStatus tone={status.tone} compact>{status.label}</AdminStatus><ChevronDown className={`h-4 w-4 transition ${isOpen ? "rotate-180" : ""}`} /></div>
                     </button>
-
-                    {isOpen && (
-                      <div className="pb-4 pl-0 sm:pl-2">
-                        <div className="grid gap-3 rounded-xl border border-border bg-background/60 p-4">
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Dernière action</p>
-                            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-                              {item.lastAction || item.action || "Candidature enregistrée dans l’historique."}
-                            </p>
-                            {item.nextAction ? <p className="mt-2 text-xs text-muted-foreground">À suivre : {item.nextAction}</p> : null}
-                          </div>
-                          <div className="border-t border-border pt-3">
-                            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Mail envoyé</p>
-                            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-                              {mail || "Le contenu du mail n’est pas enregistré dans cette source, mais l’envoi reste conservé dans le suivi."}
-                            </p>
-                          </div>
-                          <div className="border-t border-border pt-3">
-                            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Réponse / état</p>
-                            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-                              {response || item.reason || "Aucune réponse enregistrée pour le moment."}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                    {isOpen ? <div className="pb-4"><div className="grid gap-3 rounded-xl border border-border bg-background/60 p-4 text-sm">
+                      <div><p className="text-xs font-semibold uppercase text-muted-foreground">Dernière action</p><p className="mt-2 whitespace-pre-wrap">{item.lastAction || item.action || "Candidature enregistrée."}</p>{item.nextAction ? <p className="mt-2 text-xs text-muted-foreground">À suivre : {item.nextAction}</p> : null}</div>
+                      <div className="border-t border-border pt-3"><p className="text-xs font-semibold uppercase text-muted-foreground">Mail envoyé</p><p className="mt-2 whitespace-pre-wrap">{mail || "Contenu non enregistré dans cette source."}</p></div>
+                      <div className="border-t border-border pt-3"><p className="text-xs font-semibold uppercase text-muted-foreground">Réponse / état</p><p className="mt-2 whitespace-pre-wrap">{response || item.reason || "Aucune réponse enregistrée."}</p></div>
+                    </div></div> : null}
                   </div>
                 );
-              })
-            )}
-          </div>
+              })}
+            </div>
+          </>
         ) : (
-          <div className="mt-4 space-y-4">
-            <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-              <div className="rounded-xl border border-border bg-background/60 p-3">
-                <div className="flex items-center gap-2 text-muted-foreground"><ClipboardList className="h-4 w-4" /><span className="text-xs font-medium">Analysées</span></div>
-                <p className="mt-1 text-xl font-bold text-foreground">{completeCounts.total}</p>
-              </div>
-              <div className="rounded-xl border border-border bg-background/60 p-3">
-                <div className="flex items-center gap-2 text-emerald-500"><SearchCheck className="h-4 w-4" /><span className="text-xs font-medium text-muted-foreground">Validées</span></div>
-                <p className="mt-1 text-xl font-bold text-foreground">{completeCounts.valid}</p>
-              </div>
-              <div className="rounded-xl border border-border bg-background/60 p-3">
-                <div className="flex items-center gap-2 text-blue-500"><MailCheck className="h-4 w-4" /><span className="text-xs font-medium text-muted-foreground">Envoyées / relancées</span></div>
-                <p className="mt-1 text-xl font-bold text-foreground">{completeCounts.sent}</p>
-              </div>
-              <div className="rounded-xl border border-border bg-background/60 p-3">
-                <div className="flex items-center gap-2 text-muted-foreground"><XCircle className="h-4 w-4" /><span className="text-xs font-medium">Ne correspondent pas</span></div>
-                <p className="mt-1 text-xl font-bold text-foreground">{completeCounts.rejected}</p>
-              </div>
+          <div className="mt-4 rounded-xl border border-border bg-background/50">
+            <div className="border-b border-border px-3 py-2 text-xs text-muted-foreground">Historique complet · ordre strict du plus récent au plus ancien.</div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[950px] border-collapse text-left text-sm">
+                <thead className="bg-muted/40 text-xs text-muted-foreground"><tr><th className="px-3 py-3">Employeur</th><th className="px-3 py-3">Poste / ville</th><th className="px-3 py-3">Source</th><th className="px-3 py-3">Statut</th><th className="px-3 py-3">Dernière activité</th><th className="px-3 py-3">Prochaine action</th></tr></thead>
+                <tbody className="divide-y divide-border">
+                  {allItems.map((item) => { const status = completeStatus(item); return <tr key={companyKey(item)} className="align-top"><td className="px-3 py-3 font-semibold">{item.company}</td><td className="px-3 py-3"><p>{item.position || "—"}</p><p className="mt-1 text-xs text-muted-foreground">{item.city || "—"}</p></td><td className="px-3 py-3 text-xs">{item.source || "—"}</td><td className="px-3 py-3"><AdminStatus tone={status.tone} compact>{status.label}</AdminStatus></td><td className="px-3 py-3"><p className="max-w-[280px] text-xs">{item.lastAction || item.action || "—"}</p><p className="mt-1 text-xs text-muted-foreground">{activityTime(item) ? shortDate(item.lastActionAt || item.freshness) : "—"}</p></td><td className="px-3 py-3 text-xs">{item.nextAction || "—"}</td></tr>; })}
+                </tbody>
+              </table>
             </div>
-
-            <div className="rounded-xl border border-border bg-background/50">
-              <div className="border-b border-border px-3 py-2 text-xs text-muted-foreground">
-                Toutes les pistes conservées ou écartées par la recherche automatique, plus les candidatures réellement enregistrées. Les lignes rejetées restent visibles : elles ne disparaissent plus du suivi.
-                {researchSnapshot?.updatedAt ? ` · Recherche mise à jour ${shortDate(researchSnapshot.updatedAt)}` : ""}
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[1100px] border-collapse text-left text-sm">
-                  <thead className="bg-muted/40 text-xs text-muted-foreground">
-                    <tr>
-                      <th className="px-3 py-3 font-semibold">Employeur</th>
-                      <th className="px-3 py-3 font-semibold">Poste / ville</th>
-                      <th className="px-3 py-3 font-semibold">Source</th>
-                      <th className="px-3 py-3 font-semibold">Niveau / contrat</th>
-                      <th className="px-3 py-3 font-semibold">Évaluation</th>
-                      <th className="px-3 py-3 font-semibold">Statut</th>
-                      <th className="px-3 py-3 font-semibold">Dernière action</th>
-                      <th className="px-3 py-3 font-semibold">Prochaine action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {completeItems.length === 0 ? (
-                      <tr><td colSpan={8} className="px-3 py-6 text-center text-muted-foreground">Aucune piste de recherche enregistrée pour le moment.</td></tr>
-                    ) : (
-                      completeItems.map((item) => {
-                        const status = completeStatus(item);
-                        return (
-                          <tr key={item.key} className="align-top hover:bg-muted/20">
-                            <td className="px-3 py-3">
-                              <p className="font-semibold text-foreground">{item.company}</p>
-                              {item.recipient ? <p className="mt-1 max-w-[190px] break-all text-xs text-muted-foreground">{item.recipient}</p> : null}
-                            </td>
-                            <td className="px-3 py-3">
-                              <p className="max-w-[220px] text-foreground">{item.position || "—"}</p>
-                              <p className="mt-1 text-xs text-muted-foreground">{item.city || "—"}</p>
-                            </td>
-                            <td className="px-3 py-3">
-                              <p className="max-w-[180px] text-foreground">{item.source || "—"}</p>
-                              {item.freshness ? <p className="mt-1 max-w-[180px] text-xs text-muted-foreground">{item.freshness}</p> : null}
-                            </td>
-                            <td className="px-3 py-3">
-                              <p className="max-w-[190px] text-foreground">{item.level || "—"}</p>
-                              {item.contract ? <p className="mt-1 max-w-[190px] text-xs text-muted-foreground">{item.contract}</p> : null}
-                            </td>
-                            <td className="px-3 py-3">
-                              <p className="max-w-[240px] text-xs leading-relaxed text-foreground">{item.fit || item.missions || "—"}</p>
-                              {item.reason ? <p className="mt-1 max-w-[240px] text-xs leading-relaxed text-muted-foreground">{item.reason}</p> : null}
-                            </td>
-                            <td className="px-3 py-3"><AdminStatus tone={status.tone} compact>{status.label}</AdminStatus></td>
-                            <td className="px-3 py-3">
-                              <p className="max-w-[260px] text-xs leading-relaxed text-foreground">{item.lastAction || item.action || "—"}</p>
-                              {item.lastActionAt ? <p className="mt-1 text-xs text-muted-foreground">{shortDate(item.lastActionAt)}</p> : null}
-                            </td>
-                            <td className="px-3 py-3"><p className="max-w-[260px] text-xs leading-relaxed text-foreground">{item.nextAction || "—"}</p></td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {researchSnapshot?.angelOsSync?.status === "blocked" ? (
-              <div className="flex items-start gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>La dernière recherche a été journalisée dans GitHub mais sa synchronisation directe vers la base Angel OS était bloquée. Le tableau complet utilise ce journal afin de ne perdre aucune piste.</span>
-              </div>
-            ) : null}
           </div>
         )}
       </AdminCard>
