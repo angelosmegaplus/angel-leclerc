@@ -15,6 +15,14 @@ export const Route = createFileRoute("/api/angel-os/guard")({
             mode: "automatic",
             checkedAt: new Date().toISOString(),
             policies: guard.policies,
+            enforcement: {
+              recover: "automatic-control-plane",
+              observe: "automatic",
+              rateLimit: "policy-decision",
+              isolate: "policy-decision",
+              rollback: "policy-decision",
+              block: "policy-decision",
+            },
             activity: {
               recentSignals: guard.recentSignals.length,
               recentDecisions: guard.recentDecisions.length,
