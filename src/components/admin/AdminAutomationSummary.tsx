@@ -18,10 +18,9 @@ import {
   WandSparkles,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { getAdminAiSummary } from "@/lib/admin-ai-summary.functions";
+import { getAdminAiSummary, getAdminCacheSummaries } from "@/lib/admin-ai-summary.functions";
 import { AdminStatus } from "./AdminStatus";
 
-type CacheRow = { key: string; payload: Record<string, any>; updated_at: string };
 type ApplicationRow = {
   id: string;
   company: string | null;
@@ -56,15 +55,6 @@ type SummaryMode =
 
 const anyDb = supabase as unknown as { from: (table: string) => any };
 const summaryCard = "mb-4 rounded-[1.5rem] border border-white/10 bg-[#090b0d]/95 p-4 shadow-[0_18px_60px_rgba(0,0,0,.24)] sm:rounded-[1.75rem] sm:p-5";
-
-async function loadSummaries(): Promise<Record<string, CacheRow>> {
-  const { data, error } = await anyDb
-    .from("angel_os_cache")
-    .select("key,payload,updated_at")
-    .in("key", ["google_calendar_dashboard", "gmail_dashboard", "admin_cockpit_summary", "news_dashboard"]);
-  if (error) throw error;
-  return Object.fromEntries(((data ?? []) as CacheRow[]).map((row) => [row.key, row]));
-}
 
 async function loadApplications(): Promise<ApplicationRow[]> {
   const { data, error } = await anyDb
@@ -176,6 +166,7 @@ const pageConfig: Record<Exclude<SummaryMode, "dashboard" | "applications">, { t
 export function AdminAutomationSummary({ mode = "dashboard" }: { mode?: SummaryMode }) {
   const [detectedMode, setDetectedMode] = useState<SummaryMode>(mode);
   const runAiSummary = useServerFn(getAdminAiSummary);
+  const loadCacheSummaries = useServerFn(getAdminCacheSummaries);
 
   useEffect(() => {
     if (mode !== "dashboard") {
@@ -189,7 +180,7 @@ export function AdminAutomationSummary({ mode = "dashboard" }: { mode?: SummaryM
   const effectiveMode = mode === "dashboard" ? detectedMode : mode;
   const { data = {}, isLoading } = useQuery({
     queryKey: ["admin-automation-summaries"],
-    queryFn: loadSummaries,
+    queryFn: () => loadCacheSummaries(),
     refetchInterval: 5 * 60 * 1000,
     refetchOnWindowFocus: true,
   });
