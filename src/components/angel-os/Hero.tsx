@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Github, Sparkles, Terminal, Activity } from "lucide-react";
 
 function TypeLine({ text, delay = 0, speed = 24, className = "" }: { text: string; delay?: number; speed?: number; className?: string }) {
@@ -57,13 +56,21 @@ function RecentChanges() {
   );
 }
 
+function goBackToPreviousLocation() {
+  if (window.history.length > 1) {
+    window.history.back();
+    return;
+  }
+  window.location.assign("/parcours#realisations");
+}
+
 export function Hero() {
   return (
     <section className="relative isolate overflow-x-clip px-5 pb-20 pt-8 sm:px-8 lg:px-12">
       <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_18%_18%,rgba(225,55,55,.16),transparent_30%),linear-gradient(180deg,#0a0b0d_0%,#050607_76%)]" />
       <div aria-hidden className="absolute inset-0 -z-10 opacity-[.07] [background-image:linear-gradient(rgba(255,255,255,.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.12)_1px,transparent_1px)] [background-size:44px_44px]" />
       <div className="mx-auto max-w-6xl">
-        <div className="flex items-center justify-between gap-4"><Link to="/parcours" hash="realisations" className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/65 transition hover:text-white"><ArrowLeft size={15} /> Retour aux projets</Link><div className="hidden items-center gap-2 sm:flex"><img src="/angel-os/logo.png" alt="" className="h-8 w-8 rounded-lg object-cover" /><span className="text-sm font-semibold text-white/70">Angel OS</span></div></div>
+        <div className="flex items-center justify-between gap-4"><button type="button" onClick={goBackToPreviousLocation} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/65 transition hover:text-white" aria-label="Revenir exactement à la page précédente"><ArrowLeft size={15} /> Retour</button><div className="hidden items-center gap-2 sm:flex"><img src="/angel-os/logo.png" alt="" className="h-8 w-8 rounded-lg object-cover" /><span className="text-sm font-semibold text-white/70">Angel OS</span></div></div>
         <div className="grid items-start gap-10 pt-14 lg:grid-cols-[1.2fr_.8fr] lg:pt-20">
           <div className="min-w-0">
             <div className="inline-flex items-center gap-2 rounded-full border border-red-500/25 bg-red-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[.2em] text-red-300"><Sparkles size={13} /> Linux-ready orchestration core</div>
