@@ -87,6 +87,30 @@ function operationPriority(input: { type: string; source: string }): IssuePriori
   return "P2";
 }
 
+async function executeGuardDecision(decision: ReturnType<typeof angelGuardOS.evaluate>) {
+  await angelEventLog.append("angel-guard.decision", decision);
+  angelTelemetry.increment("angel.guard.decision", 1, { action: decision.action });
+
+  if (decision.action === "recover") {
+    const snapshot = await angelAutonomousCore.inspect({ autoRecover: true });
+    await angelEventLog.append("angel-guard.action.executed", {
+      signalId: decision.signalId,
+      action: decision.action,
+      result: snapshot.state,
+      generatedAt: snapshot.generatedAt,
+    });
+    angelTelemetry.increment("angel.guard.action.executed", 1, { action: decision.action, result: snapshot.state });
+    return { executed: true as const, result: snapshot.state };
+  }
+
+  await angelEventLog.append("angel-guard.action.decision-only", {
+    signalId: decision.signalId,
+    action: decision.action,
+    reason: "No safe generic executor is registered for this action yet",
+  });
+  return { executed: false as const, result: "decision-only" as const };
+}
+
 export async function recordAngelOperation(input: { type: string; source: string; ok: boolean; durationMs?: number; payload?: unknown; }) {
   await angelEventLog.append(input.type, { source: input.source, ok: input.ok, durationMs: input.durationMs, payload: input.payload });
   angelTelemetry.increment(input.ok ? "angel.operation.success" : "angel.operation.failure", 1, { source: input.source, type: input.type });
@@ -94,7 +118,7 @@ export async function recordAngelOperation(input: { type: string; source: string
 
   if (!input.ok) {
     const priority = operationPriority(input);
-    angelGuardOS.evaluate({
+    const decision = angelGuardOS.evaluate({
       id: crypto.randomUUID(),
       source: input.source,
       type: input.type,
@@ -103,6 +127,7 @@ export async function recordAngelOperation(input: { type: string; source: string
       message: `Angel OS recorded a failed ${input.type} operation`,
       metadata: typeof input.durationMs === "number" ? { durationMs: input.durationMs } : undefined,
     });
+    await executeGuardDecision(decision);
     await angelIssueRegistry.report({
       title: `${input.source} · ${input.type} failed`,
       type: `operation-failure:${input.type}`,
