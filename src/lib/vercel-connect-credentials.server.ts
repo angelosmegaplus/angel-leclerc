@@ -20,6 +20,10 @@ function env(name: string) {
   return value || null;
 }
 
+function normalizeBearerToken(value: string) {
+  return value.replace(/^Bearer\s+/i, "").trim();
+}
+
 function credentialId(credential: OpenAiCredential) {
   return credential.source;
 }
@@ -61,14 +65,14 @@ function collectOpenAiCredentials(): OpenAiCredential[] {
 }
 
 function tmdbCredential(): TmdbCredential | null {
-  const readToken = env("TMDB_READ_TOKEN") || env("TMDB_READ_ACCESS_TOKEN");
-  if (readToken) return { value: readToken, source: "env:TMDB_READ_TOKEN", kind: "bearer" };
+  const rawReadToken = env("TMDB_READ_TOKEN") || env("TMDB_READ_ACCESS_TOKEN");
+  if (rawReadToken) {
+    const readToken = normalizeBearerToken(rawReadToken);
+    if (readToken) return { value: readToken, source: "env:TMDB_READ_TOKEN", kind: "bearer" };
+  }
 
   const apiKey = env("TMDB_API_KEY");
   if (apiKey) return { value: apiKey, source: "env:TMDB_API_KEY", kind: "api-key" };
-
-  const bundledApiKey = import.meta.env.VITE_TMDB_API_KEY?.trim();
-  if (bundledApiKey) return { value: bundledApiKey, source: "build:VITE_TMDB_API_KEY", kind: "api-key" };
 
   return null;
 }
