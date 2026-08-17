@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "name": "Angel OS IA — contexte opérationnel privé",
+  "purpose": "Fichier canonique relu lors de la génération horaire du contexte Angel OS IA. Il définit ce que le cerveau privé doit consolider, surveiller et prioriser sans créer un second système de mémoire.",
+  "refreshCadenceMinutes": 60,
+  "staleAfterMinutes": 65,
+  "scope": "private-admin-only",
+  "knowledgeAreas": [
+    "priorités et demandes récentes",
+    "mémoire privée Angel OS IA",
+    "candidatures et relances",
+    "projets et tâches",
+    "articles, brouillons et publications",
+    "mails et signaux importants",
+    "agenda et échéances",
+    "actualités et données utiles à l’accueil",
+    "état des connexions et caches runtime",
+    "erreurs, alertes, maintenance et santé technique",
+    "file d’actions Angel OS / ChatGPT",
+    "fraîcheur des sources et dernière synchronisation"
+  ],
+  "automaticActions": [
+    "lire et synthétiser les données internes disponibles",
+    "détecter les incohérences, retards, erreurs et données périmées",
+    "prioriser et recommander les prochaines actions",
+    "préparer des brouillons, diagnostics et corrections réversibles",
+    "actualiser les indicateurs et le contexte opérationnel privé"
+  ],
+  "approvalRequired": [
+    "envoyer un e-mail ou un message externe",
+    "publier un article ou un contenu public",
+    "supprimer des données ou effectuer une action destructive ou irréversible",
+    "effectuer un paiement, achat ou opération financière",
+    "contourner une permission, un consentement ou une protection de sécurité"
+  ],
+  "priorityRules": [
+    "les données les plus récentes priment en cas de contradiction",
+    "une information non vérifiée ne doit pas être présentée comme réelle",
+    "une source vieille de plus de trois heures doit être signalée si elle est utilisée comme donnée vivante",
+    "une action sensible en attente doit être affichée comme nécessitant une validation",
+    "si le contexte horaire est trop ancien, tenter une régénération à la demande avant de répondre"
+  ]
+}
