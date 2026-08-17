@@ -58,6 +58,16 @@ jobs:
           done < <(git ls-files | grep -E '(^|/)\.env($|\.)' | grep -vE '\.example$' || true)
           test "$failed" -eq 0
 
+      - name: Enforce single API credential architecture
+        shell: bash
+        run: |
+          set -euo pipefail
+          forbidden='OPENAI_API_KEY_[2-9]|OPENAI_API_KEYS|OPENAI_SECONDARY_KEY|TMDB_API_KEY_[2-9]|TMDB_READ_TOKEN_[2-9]|TMDB_API_KEYS|TMDB_READ_TOKENS'
+          if grep -RInE "$forbidden" src --exclude='*.test.*' --exclude='*.spec.*'; then
+            echo "::error::Régression multi-clés détectée. Angel OS utilise une seule credential par service."
+            exit 1
+          fi
+
       - name: Lint
         run: bun run lint
 
@@ -91,6 +101,7 @@ jobs:
         run: |
           echo "## Angel OS quality gate" >> "$GITHUB_STEP_SUMMARY"
           echo "- Installation reproductible + cache Bun" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Architecture mono-clé OpenAI/TMDB bloquante" >> "$GITHUB_STEP_SUMMARY"
           echo "- Lint bloquant" >> "$GITHUB_STEP_SUMMARY"
           echo "- Build production + génération des types de routes bloquants" >> "$GITHUB_STEP_SUMMARY"
           echo "- Contrat des routes critiques bloquant" >> "$GITHUB_STEP_SUMMARY"
