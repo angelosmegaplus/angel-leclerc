@@ -1,8 +1,24 @@
 import type { KeyValueCache } from "../../angel-os/core";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
+let durableDisabledUntil = 0;
+let durableDisableReason = "";
+const SCHEMA_RETRY_MS = 5 * 60 * 1000;
+
 function hasDurableBackend() {
-  return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+  return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) && Date.now() >= durableDisabledUntil;
+}
+
+function isSchemaUnavailable(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  return /angel_os_cache|schema cache|PGRST\d+|relation .* does not exist|could not find the table/i.test(message);
+}
+
+function disableDurableBackend(error: unknown) {
+  if (!isSchemaUnavailable(error)) return;
+  durableDisabledUntil = Date.now() + SCHEMA_RETRY_MS;
+  durableDisableReason = error instanceof Error ? error.message : String(error ?? "schema unavailable");
+  console.warn("[angel-cache] durable cache schema unavailable; process fallback enabled for 5 minutes", durableDisableReason);
 }
 
 /** Durable key/value storage backed by angel_os_cache with a safe process fallback. */
@@ -33,6 +49,7 @@ export class SupabaseKeyValueCache implements KeyValueCache {
         return (data.payload as T | undefined) ?? null;
       }
     } catch (error) {
+      disableDurableBackend(error);
       console.warn("[angel-cache] durable read unavailable; using process fallback", error instanceof Error ? error.message : String(error));
     }
 
@@ -58,6 +75,7 @@ export class SupabaseKeyValueCache implements KeyValueCache {
       );
       if (error) throw new Error(error.message || "Supabase cache write failed");
     } catch (error) {
+      disableDurableBackend(error);
       console.warn("[angel-cache] durable write unavailable; value retained in process fallback", error instanceof Error ? error.message : String(error));
     }
   }
@@ -74,6 +92,7 @@ export class SupabaseKeyValueCache implements KeyValueCache {
       }).from("angel_os_cache").delete().eq("key", resolvedKey);
       if (error) throw new Error(error.message || "Supabase cache delete failed");
     } catch (error) {
+      disableDurableBackend(error);
       console.warn("[angel-cache] durable delete unavailable", error instanceof Error ? error.message : String(error));
     }
   }
