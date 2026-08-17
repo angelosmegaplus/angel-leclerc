@@ -43,12 +43,9 @@ export const integrationReadiness = createServerFn({ method: "GET" })
         ? (provider.optionalScopes ?? []).filter((scope) => !granted.has(scope))
         : [];
 
-      // A missing scope in Google's returned scope metadata is not proof that the
-      // token is invalid. Older code converted that metadata mismatch into
-      // reconnect_required forever, even immediately after a successful OAuth
-      // callback. Connection health is now based on the stored state + a real
-      // token/identity probe. Missing permissions remain visible as a capability
-      // note and can be requested again only when a feature actually needs them.
+      // Scope metadata is a capability hint, not connection health. Google may
+      // omit/reformat scope metadata and transient provider failures must never
+      // create an endless "reconnect" loop immediately after a valid callback.
       let connection: ConnectionState = !row
         ? "not_connected"
         : row.status === "reconnect_required"
@@ -63,21 +60,19 @@ export const integrationReadiness = createServerFn({ method: "GET" })
           if (!token) {
             connection = "reconnect_required";
             liveProbeNote = "Le jeton enregistré n’est plus exploitable. Une reconnexion est nécessaire.";
-          } else if (provider.identity) {
-            const label = await oauth.fetchAccountLabel(service.provider, token);
-            if (!label) {
-              connection = "reconnect_required";
-              liveProbeNote = "Le fournisseur refuse le jeton enregistré ou ne répond plus correctement. Reconnexion recommandée.";
-            } else {
-              connection = "connected";
-              accountLabel = label;
-            }
           } else {
             connection = "connected";
+            if (provider.identity) {
+              const label = await oauth.fetchAccountLabel(service.provider, token);
+              if (label) accountLabel = label;
+              else liveProbeNote = "Connexion OAuth active ; l’identité du compte n’a pas pu être revérifiée momentanément.";
+            }
           }
         } catch (error) {
-          connection = "reconnect_required";
-          liveProbeNote = `Contrôle réel de la connexion impossible : ${error instanceof Error ? error.message.slice(0, 160) : "erreur inconnue"}.`;
+          // getAccessToken already marks an actually unusable/refresh-failed token
+          // reconnect_required. A transient diagnostic failure is not enough to
+          // invalidate a connection that has just completed OAuth successfully.
+          liveProbeNote = `Contrôle Google temporairement indisponible : ${error instanceof Error ? error.message.slice(0, 160) : "erreur inconnue"}.`;
         }
       }
 
