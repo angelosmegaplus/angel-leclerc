@@ -1,0 +1,109 @@
+/* Angel OS admin — Lovable visual layer.
+   Scoped to the private control center: it never changes the public site. */
+html[data-angel-os-ui="core"] {
+  color-scheme: dark;
+}
+
+html[data-angel-os-ui="core"] body {
+  background: #050607 !important;
+}
+
+html[data-angel-os-ui="core"] main input:not([type="checkbox"]):not([type="radio"]),
+html[data-angel-os-ui="core"] main textarea,
+html[data-angel-os-ui="core"] main select {
+  background: rgba(0,0,0,.30) !important;
+  color: #fff !important;
+  border-color: rgba(255,255,255,.10) !important;
+  border-radius: .85rem !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+html[data-angel-os-ui="core"] main input::placeholder,
+html[data-angel-os-ui="core"] main textarea::placeholder {
+  color: rgba(255,255,255,.30) !important;
+}
+
+html[data-angel-os-ui="core"] main label,
+html[data-angel-os-ui="core"] main .text-foreground {
+  color: rgba(255,255,255,.90) !important;
+}
+
+html[data-angel-os-ui="core"] main .text-muted-foreground {
+  color: rgba(255,255,255,.45) !important;
+}
+
+html[data-angel-os-ui="core"] main .bg-card,
+html[data-angel-os-ui="core"] main section[class*="border"],
+html[data-angel-os-ui="core"] main div[class*="bg-card"] {
+  background-color: rgba(9,11,13,.95) !important;
+}
+
+html[data-angel-os-ui="core"] main .bg-background {
+  background-color: rgba(5,6,7,.92) !important;
+}
+
+html[data-angel-os-ui="core"] main .bg-muted,
+html[data-angel-os-ui="core"] main [class*="bg-muted/"] {
+  background-color: rgba(255,255,255,.04) !important;
+}
+
+html[data-angel-os-ui="core"] main .border-border,
+html[data-angel-os-ui="core"] main [class*="border-border"] {
+  border-color: rgba(255,255,255,.10) !important;
+}
+
+html[data-angel-os-ui="core"] main button[class*="border"],
+html[data-angel-os-ui="core"] main a[class*="border"] {
+  border-color: rgba(255,255,255,.10);
+}
+
+html[data-angel-os-ui="core"] main button:not([class*="bg-primary"]):not([class*="bg-red"]):not([class*="destructive"]) {
+  border-radius: .8rem;
+}
+
+html[data-angel-os-ui="core"] main input[type="checkbox"],
+html[data-angel-os-ui="core"] main input[type="radio"] {
+  accent-color: #ef4444;
+}
+
+/* Feedback / réglages and similar dense modules: keep the exact information,
+   but give it the compact Lovable control-center hierarchy. */
+html[data-angel-os-ui="core"] main .grid > .bg-card,
+html[data-angel-os-ui="core"] main .grid > [class*="bg-card"] {
+  border-radius: 1.25rem !important;
+  box-shadow: 0 18px 60px rgba(0,0,0,.22);
+}
+
+html[data-angel-os-ui="core"] main select option {
+  background: #090b0d;
+  color: #fff;
+}
+
+/* The writing canvas intentionally stays light, like Lovable's editor, while
+   the surrounding administration remains the dark Angel OS control center. */
+html[data-angel-os-ui="core"] form:has(#title):has(#category):has(#excerpt) {
+  color-scheme: light;
+}
+html[data-angel-os-ui="core"] form:has(#title):has(#category):has(#excerpt) input:not([type="checkbox"]):not([type="radio"]),
+html[data-angel-os-ui="core"] form:has(#title):has(#category):has(#excerpt) textarea,
+html[data-angel-os-ui="core"] form:has(#title):has(#category):has(#excerpt) select {
+  background: #fff !important;
+  color: #181716 !important;
+  border-color: #d9d0c4 !important;
+}
+html[data-angel-os-ui="core"] form:has(#title):has(#category):has(#excerpt) label,
+html[data-angel-os-ui="core"] form:has(#title):has(#category):has(#excerpt) .text-foreground {
+  color: #181716 !important;
+}
+html[data-angel-os-ui="core"] form:has(#title):has(#category):has(#excerpt) .text-muted-foreground {
+  color: #6f6b65 !important;
+}
+
+@media (max-width: 640px) {
+  html[data-angel-os-ui="core"] main input:not([type="checkbox"]):not([type="radio"]),
+  html[data-angel-os-ui="core"] main textarea,
+  html[data-angel-os-ui="core"] main select {
+    min-height: 44px;
+    font-size: 16px;
+  }
+}
