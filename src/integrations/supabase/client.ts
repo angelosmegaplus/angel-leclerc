@@ -2,10 +2,6 @@
 import { createClient, type Session } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-// These two values are intentionally public browser configuration, not privileged
-// credentials. Keep environment variables authoritative, but retain a stable
-// fallback so a Vercel build cannot make /auth or /admin crash merely because
-// VITE_* variables were omitted from the build environment.
 const PUBLIC_SUPABASE_URL = 'https://timygavajdestkbdzuyk.supabase.co';
 const PUBLIC_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_8IG8jsDj3yWH7u7urAQPig_r2V8Wd9s';
 
@@ -28,14 +24,8 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 }
 
 function createSupabaseClient() {
-  const url =
-    import.meta.env.VITE_SUPABASE_URL ||
-    process.env.SUPABASE_URL ||
-    PUBLIC_SUPABASE_URL;
-  const publishableKey =
-    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-    process.env.SUPABASE_PUBLISHABLE_KEY ||
-    PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  const url = import.meta.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || PUBLIC_SUPABASE_URL;
+  const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   return createClient<Database>(url, publishableKey, {
     global: { fetch: createSupabaseFetch(publishableKey) },
@@ -49,6 +39,9 @@ function createSupabaseClient() {
 
 let _supabase: ReturnType<typeof createSupabaseClient> | undefined;
 let refreshInFlight: Promise<Session | null> | null = null;
+let validatedToken: string | null = null;
+let validatedAt = 0;
+const VALIDATION_TTL_MS = 30_000;
 
 export const supabase = new Proxy({} as ReturnType<typeof createSupabaseClient>, {
   get(_, prop, receiver) {
@@ -57,10 +50,19 @@ export const supabase = new Proxy({} as ReturnType<typeof createSupabaseClient>,
   },
 });
 
+async function validateSession(session: Session): Promise<boolean> {
+  if (validatedToken === session.access_token && Date.now() - validatedAt < VALIDATION_TTL_MS) return true;
+  const { data, error } = await supabase.auth.getUser(session.access_token);
+  if (error || !data.user || data.user.id !== session.user.id) return false;
+  validatedToken = session.access_token;
+  validatedAt = Date.now();
+  return true;
+}
+
 /**
- * Return a session whose access token is actually usable, not merely present in
- * localStorage. This prevents TanStack server functions from receiving an old
- * Supabase JWT after a long-lived admin tab, sleep/resume or auth migration.
+ * Return a session whose access token is accepted by Supabase Auth itself.
+ * Signature-only claim validation is insufficient because a revoked/stale token
+ * can still be cryptographically valid while being rejected by authenticated RPCs.
  */
 export async function getFreshSupabaseSession(): Promise<Session | null> {
   if (typeof window === 'undefined') return null;
@@ -72,17 +74,13 @@ export async function getFreshSupabaseSession(): Promise<Session | null> {
   const nowSeconds = Math.floor(Date.now() / 1000);
   const expiresSoon = !session.expires_at || session.expires_at <= nowSeconds + 60;
 
-  if (!expiresSoon) {
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(session.access_token);
-    if (!claimsError && claimsData?.claims?.sub) return session;
-  }
+  if (!expiresSoon && await validateSession(session)) return session;
 
-  // Deduplicate simultaneous dashboard requests: one refresh should repair all
-  // server-function calls instead of racing several refresh-token rotations.
   if (!refreshInFlight) {
     refreshInFlight = supabase.auth.refreshSession()
-      .then(({ data: refreshed, error: refreshError }) => {
+      .then(async ({ data: refreshed, error: refreshError }) => {
         if (refreshError || !refreshed.session) return null;
+        if (!(await validateSession(refreshed.session))) return null;
         return refreshed.session;
       })
       .finally(() => {
@@ -90,5 +88,11 @@ export async function getFreshSupabaseSession(): Promise<Session | null> {
       });
   }
 
-  return refreshInFlight;
+  const refreshed = await refreshInFlight;
+  if (refreshed) return refreshed;
+
+  validatedToken = null;
+  validatedAt = 0;
+  await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
+  return null;
 }
