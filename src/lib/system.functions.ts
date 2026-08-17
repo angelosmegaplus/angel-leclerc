@@ -51,10 +51,6 @@ export const integrationReadiness = createServerFn({ method: "GET" })
       let accountLabel = row?.accountLabel ?? null;
       let liveProbeNote = "";
 
-      // A database row is not proof that OAuth still works. Force the same token path
-      // used by Gmail/Calendar/Drive and, where possible, validate it against the
-      // provider identity endpoint. Revoked/expired credentials are therefore exposed
-      // as reconnect_required instead of the misleading "Connecté" state.
       if (row && connection === "connected") {
         try {
           const token = await oauth.getAccessToken(context.userId, service.provider);
@@ -102,10 +98,13 @@ export const startOAuthConnection = createServerFn({ method: "POST" })
     await assertAdmin(context);
     const { isProviderId } = await import("./oauth/providers");
     if (!isProviderId(data.provider)) throw new Error("Fournisseur inconnu.");
-    const { buildAuthorizeUrl } = await import("./oauth/oauth.server");
+    const { buildAuthorizeUrl, canonicalOAuthOrigin } = await import("./oauth/oauth.server");
     const requestOrigin = new URL(getRequest().url).origin;
-    const canonicalOrigin = process.env.PUBLIC_SITE_URL?.trim() || process.env.SITE_URL?.trim() || requestOrigin;
-    const origin = canonicalOrigin.replace(/\/$/, "");
+    const configuredOrigin = process.env.OAUTH_CANONICAL_ORIGIN?.trim()
+      || process.env.PUBLIC_SITE_URL?.trim()
+      || process.env.SITE_URL?.trim()
+      || requestOrigin;
+    const origin = canonicalOAuthOrigin(configuredOrigin);
     return { url: buildAuthorizeUrl(data.provider, origin, context.userId) };
   });
 
