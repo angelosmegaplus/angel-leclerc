@@ -84,6 +84,7 @@ import { ConnectionsPanel } from "@/components/admin/ConnectionsPanel";
 import { NotificationsPanel } from "@/components/admin/NotificationsPanel";
 import { AutomationPanel } from "@/components/admin/AutomationPanel";
 import { InstallPrompt } from "@/components/admin/InstallPrompt";
+import { SettingsPanel } from "@/components/admin/SettingsPanel";
 import { ProjectsPanel } from "@/components/admin/ProjectsPanel";
 import { StudioPanel } from "@/components/admin/StudioPanel";
 import { AgendaPanel } from "@/components/admin/AgendaPanel";
@@ -180,6 +181,7 @@ type AdminTab =
   | "connexions"
   | "notifications"
   | "automatisation"
+  | "parametres"
   | "angel-ai";
 
 /** ISO -> valeur d'un <input type="datetime-local"> en heure locale. */
@@ -445,6 +447,7 @@ function AdminPage() {
     { key: "activite", label: "Activité", icon: Activity, group: "Système" },
     { key: "notifications", label: "Notifications", icon: Bell, group: "Système" },
     { key: "automatisation", label: "Automatisation", icon: Gauge, group: "Système" },
+    { key: "parametres", label: "Paramètres", icon: Settings, group: "Système" },
   ];
 
   const currentLabel =
@@ -1157,6 +1160,8 @@ function AdminPage() {
             {tab === "notifications" && <NotificationsPanel />}
 
             {tab === "automatisation" && <AutomationPanel />}
+
+            {tab === "parametres" && <SettingsPanel />}
 
             {tab === "projets" && (
               <div className="mt-6">
