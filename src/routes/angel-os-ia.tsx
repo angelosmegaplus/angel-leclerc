@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, BrainCircuit, ChevronDown, Cpu, Database, Network, ShieldCheck, Sparkles, Wrench } from "lucide-react";
+import { ArrowLeft, BrainCircuit, ChevronDown, Cpu, Database, ExternalLink, Network, ShieldCheck, Sparkles, Wrench } from "lucide-react";
 import { BootIntro } from "@/components/angel-os/BootIntro";
 
 export const Route = createFileRoute("/angel-os-ia")({
@@ -24,6 +24,8 @@ type Technology = {
   logo?: string;
   text: string;
   wordmark?: string;
+  href?: string;
+  actionLabel?: string;
 };
 
 const technologies: Technology[] = [
@@ -34,7 +36,7 @@ const technologies: Technology[] = [
   { name: "TanStack", logo: "https://cdn.simpleicons.org/tanstack/111111", text: "Gère le routage, les données asynchrones et une partie de l’architecture." },
   { name: "Tailwind CSS", logo: "https://cdn.simpleicons.org/tailwindcss/06B6D4", text: "Gère la mise en page responsive et l’identité visuelle." },
   { name: "Vite", logo: "https://cdn.simpleicons.org/vite/646CFF", text: "Construit l’application et fournit l’environnement de développement." },
-  { name: "GitHub", logo: "https://cdn.simpleicons.org/github/111111", text: "Centralise le code, l’historique des modifications et les versions." },
+  { name: "GitHub", logo: "https://cdn.simpleicons.org/github/111111", text: "Centralise le code source, l’historique des modifications et les versions publiques du projet.", href: "https://github.com/angelosmegaplus/angel-leclerc", actionLabel: "Voir le dépôt GitHub" },
   { name: "Vercel", logo: "https://cdn.simpleicons.org/vercel/111111", text: "Construit et publie l’application web à partir du code du projet." },
   { name: "Supabase", logo: "https://cdn.simpleicons.org/supabase/3FCF8E", text: "Gère la base de données, l’authentification et les données privées." },
   { name: "Gmail API", logo: "https://cdn.simpleicons.org/gmail/EA4335", text: "Relie les mails utiles à l’administration et au suivi des candidatures." },
@@ -82,6 +84,11 @@ function TechCard({ technology }: { technology: Technology }) {
         <h3 className="min-w-0 break-words font-semibold text-[#181614]">{technology.name}</h3>
       </div>
       <p className="mt-3 text-sm leading-6 text-[#6b655e]">{technology.text}</p>
+      {technology.href ? (
+        <a href={technology.href} target="_blank" rel="noreferrer" className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#d8d1c8] bg-[#faf8f4] px-3 py-2 text-xs font-bold text-[#181614] transition hover:bg-[#f1ede7]">
+          {technology.actionLabel || "Ouvrir"} <ExternalLink className="h-3.5 w-3.5" />
+        </a>
+      ) : null}
     </article>
   );
 }
@@ -164,6 +171,9 @@ function AngelOsIaPage() {
             <p className="mt-4 max-w-3xl text-sm leading-7 text-[#6b655e] sm:text-base sm:leading-8">
               Angel OS organise l’administration, les données, les applications, les connecteurs et les automatisations. Angel OS IA ajoute les capacités d’analyse et d’assistance. Angel Guard surveille l’ensemble et prend en charge les contrôles techniques, les incidents et la récupération.
             </p>
+            <a href="https://github.com/angelosmegaplus/angel-leclerc" target="_blank" rel="noreferrer" className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#181614] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#2a2724]">
+              Voir le code sur GitHub <ExternalLink className="h-4 w-4" />
+            </a>
           </div>
 
           <div className="mt-8 grid gap-3 lg:grid-cols-3">
