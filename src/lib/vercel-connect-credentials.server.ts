@@ -3,7 +3,7 @@ export const TMDB_API_KEY_COOKIE = "disabled";
 export const OPENAI_API_KEY_COOKIE = "disabled";
 
 export type OpenAiCredential = { value: string; source: string };
-type TmdbCredential = { value: string; source: string; kind: "bearer" | "api-key" };
+export type TmdbCredential = { value: string; source: string; kind: "bearer" | "api-key" };
 type LegacyAiGatewayCredential = { value: string; source: string };
 
 type CredentialHealth = {
@@ -24,17 +24,25 @@ function normalizeBearerToken(value: string) {
   return value.replace(/^Bearer\s+/i, "").trim();
 }
 
-function credentialId(credential: OpenAiCredential) {
-  return credential.source;
-}
-
-function stateFor(credential: OpenAiCredential): CredentialHealth {
-  const id = credentialId(credential);
-  const current = credentialHealth.get(id);
+function stateFor(credential: { source: string }): CredentialHealth {
+  const current = credentialHealth.get(credential.source);
   if (current) return current;
   const initial = { failures: 0, blockedUntil: 0, lastFailureAt: null, lastSuccessAt: null };
-  credentialHealth.set(id, initial);
+  credentialHealth.set(credential.source, initial);
   return initial;
+}
+
+function sortByHealth<T extends { source: string }>(credentials: T[]): T[] {
+  const now = Date.now();
+  return [...credentials].sort((a, b) => {
+    const aState = stateFor(a);
+    const bState = stateFor(b);
+    const aBlocked = aState.blockedUntil > now ? 1 : 0;
+    const bBlocked = bState.blockedUntil > now ? 1 : 0;
+    if (aBlocked !== bBlocked) return aBlocked - bBlocked;
+    if (aState.failures !== bState.failures) return aState.failures - bState.failures;
+    return (bState.lastSuccessAt ?? 0) - (aState.lastSuccessAt ?? 0);
+  });
 }
 
 function collectOpenAiCredentials(): OpenAiCredential[] {
@@ -64,31 +72,55 @@ function collectOpenAiCredentials(): OpenAiCredential[] {
   });
 }
 
-function tmdbCredential(): TmdbCredential | null {
-  const rawReadToken = env("TMDB_READ_TOKEN") || env("TMDB_READ_ACCESS_TOKEN");
-  if (rawReadToken) {
-    const readToken = normalizeBearerToken(rawReadToken);
-    if (readToken) return { value: readToken, source: "env:TMDB_READ_TOKEN", kind: "bearer" };
+function collectTmdbCredentials(): TmdbCredential[] {
+  const candidates: TmdbCredential[] = [];
+
+  const addBearer = (raw: string | null, source: string) => {
+    if (!raw) return;
+    const value = normalizeBearerToken(raw);
+    if (value) candidates.push({ value, source, kind: "bearer" });
+  };
+  const addApiKey = (value: string | null, source: string) => {
+    if (value) candidates.push({ value, source, kind: "api-key" });
+  };
+
+  addBearer(env("TMDB_READ_TOKEN") || env("TMDB_READ_ACCESS_TOKEN"), "env:TMDB_READ_TOKEN");
+  addApiKey(env("TMDB_API_KEY"), "env:TMDB_API_KEY");
+
+  for (let index = 2; index <= 10; index += 1) {
+    addBearer(env(`TMDB_READ_TOKEN_${index}`), `env:TMDB_READ_TOKEN_${index}`);
+    addApiKey(env(`TMDB_API_KEY_${index}`), `env:TMDB_API_KEY_${index}`);
   }
 
-  const apiKey = env("TMDB_API_KEY");
-  if (apiKey) return { value: apiKey, source: "env:TMDB_API_KEY", kind: "api-key" };
+  const pooledTokens = env("TMDB_READ_TOKENS");
+  if (pooledTokens) {
+    pooledTokens
+      .split(/[\n,;]+/)
+      .map((value) => normalizeBearerToken(value))
+      .filter(Boolean)
+      .forEach((value, index) => candidates.push({ value, source: `env:TMDB_READ_TOKENS#${index + 1}`, kind: "bearer" }));
+  }
 
-  return null;
+  const pooledKeys = env("TMDB_API_KEYS");
+  if (pooledKeys) {
+    pooledKeys
+      .split(/[\n,;]+/)
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .forEach((value, index) => candidates.push({ value, source: `env:TMDB_API_KEYS#${index + 1}`, kind: "api-key" }));
+  }
+
+  const seen = new Set<string>();
+  return candidates.filter((credential) => {
+    const id = `${credential.kind}:${credential.value}`;
+    if (seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
 }
 
 export async function getOpenAiCredentials(): Promise<OpenAiCredential[]> {
-  const now = Date.now();
-  const credentials = collectOpenAiCredentials();
-  return [...credentials].sort((a, b) => {
-    const aState = stateFor(a);
-    const bState = stateFor(b);
-    const aBlocked = aState.blockedUntil > now ? 1 : 0;
-    const bBlocked = bState.blockedUntil > now ? 1 : 0;
-    if (aBlocked !== bBlocked) return aBlocked - bBlocked;
-    if (aState.failures !== bState.failures) return aState.failures - bState.failures;
-    return (bState.lastSuccessAt ?? 0) - (aState.lastSuccessAt ?? 0);
-  });
+  return sortByHealth(collectOpenAiCredentials());
 }
 
 export async function getOpenAiCredential(): Promise<OpenAiCredential | null> {
@@ -97,7 +129,7 @@ export async function getOpenAiCredential(): Promise<OpenAiCredential | null> {
   return credentials.find((credential) => stateFor(credential).blockedUntil <= now) ?? credentials[0] ?? null;
 }
 
-export function markApiCredentialFailure(credential: OpenAiCredential, cooldownMs = 60_000) {
+export function markApiCredentialFailure(credential: { source: string }, cooldownMs = 60_000) {
   const state = stateFor(credential);
   state.failures += 1;
   state.lastFailureAt = Date.now();
@@ -105,7 +137,7 @@ export function markApiCredentialFailure(credential: OpenAiCredential, cooldownM
   state.blockedUntil = Date.now() + Math.min(15 * 60_000, cooldownMs * multiplier);
 }
 
-export function markApiCredentialHealthy(credential: OpenAiCredential) {
+export function markApiCredentialHealthy(credential: { source: string }) {
   const state = stateFor(credential);
   state.failures = 0;
   state.blockedUntil = 0;
@@ -133,12 +165,34 @@ export function getOpenAiCredentialHealthSnapshot() {
 }
 
 export async function getTmdbCredentials(): Promise<TmdbCredential[]> {
-  const credential = tmdbCredential();
-  return credential ? [credential] : [];
+  return sortByHealth(collectTmdbCredentials());
 }
 
 export async function getTmdbCredential(): Promise<TmdbCredential | null> {
-  return tmdbCredential();
+  const credentials = await getTmdbCredentials();
+  const now = Date.now();
+  return credentials.find((credential) => stateFor(credential).blockedUntil <= now) ?? credentials[0] ?? null;
+}
+
+export function getTmdbCredentialHealthSnapshot() {
+  const now = Date.now();
+  const credentials = collectTmdbCredentials();
+  return {
+    configured: credentials.length,
+    available: credentials.filter((credential) => stateFor(credential).blockedUntil <= now).length,
+    credentials: credentials.map((credential) => {
+      const state = stateFor(credential);
+      return {
+        source: credential.source,
+        kind: credential.kind,
+        failures: state.failures,
+        blockedUntil: state.blockedUntil || null,
+        healthy: state.blockedUntil <= now,
+        lastFailureAt: state.lastFailureAt,
+        lastSuccessAt: state.lastSuccessAt,
+      };
+    }),
+  };
 }
 
 // Compatibility only. Angel OS IA uses OpenAI directly and never returns a gateway credential.
