@@ -19,6 +19,18 @@ export type AdminIntegritySnapshot = {
 };
 
 const CACHE_MAX_AGE_MS = 20 * 60 * 1000;
+const EXPECTED_CACHE_KEYS = ["google_calendar_dashboard", "gmail_dashboard", "admin_cockpit_summary", "news_dashboard"] as const;
+
+function isMissingAngelOsCacheError(message: string | undefined) {
+  if (!message) return false;
+  const normalized = message.toLowerCase();
+  return normalized.includes("angel_os_cache") && (
+    normalized.includes("schema cache") ||
+    normalized.includes("could not find the table") ||
+    normalized.includes("does not exist") ||
+    normalized.includes("relation")
+  );
+}
 
 export const getAdminIntegritySnapshot = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -32,11 +44,15 @@ export const getAdminIntegritySnapshot = createServerFn({ method: "GET" })
       db.from("articles").select("published"),
       db.from("ai_actions").select("id", { count: "exact", head: true }).eq("status", "pending"),
       db.from("contact_requests").select("id", { count: "exact", head: true }).eq("is_read", false),
-      db.from("angel_os_cache").select("key,payload,updated_at").in("key", ["google_calendar_dashboard", "gmail_dashboard", "admin_cockpit_summary", "news_dashboard"]),
+      db.from("angel_os_cache").select("key,payload,updated_at").in("key", [...EXPECTED_CACHE_KEYS]),
     ]);
 
-    const results = [applications, projects, tasks, articles, actions, messages, cache];
-    const errors = results.map((result: any) => result.error?.message).filter(Boolean);
+    const cacheErrorMessage = cache.error?.message as string | undefined;
+    const cacheTablePending = isMissingAngelOsCacheError(cacheErrorMessage);
+    const criticalResults = [applications, projects, tasks, articles, actions, messages];
+    const errors = criticalResults.map((result: any) => result.error?.message).filter(Boolean);
+    if (cacheErrorMessage && !cacheTablePending) errors.push(cacheErrorMessage);
+
     if (errors.length) {
       await recordAngelOperation({ type: "admin.integrity.failed", source: "admin-integrity", ok: false, durationMs: Date.now() - startedAt, payload: { errors } });
       throw new Error(errors.join(" · "));
@@ -44,18 +60,19 @@ export const getAdminIntegritySnapshot = createServerFn({ method: "GET" })
 
     const articleRows = (articles.data ?? []) as Array<{ published?: boolean | null }>;
     const now = Date.now();
-    const cacheRows = (cache.data ?? []) as Array<{ key: string; payload?: unknown; updated_at: string }>;
+    const cacheRows = cacheTablePending ? [] : (cache.data ?? []) as Array<{ key: string; payload?: unknown; updated_at: string }>;
     const staleCaches = cacheRows.filter((row) => {
       const age = now - new Date(row.updated_at).getTime();
       return !Number.isFinite(age) || age > CACHE_MAX_AGE_MS;
     }).map((row) => row.key);
 
-    const expected = new Set(["google_calendar_dashboard", "gmail_dashboard", "admin_cockpit_summary", "news_dashboard"]);
+    const expected = new Set<string>(EXPECTED_CACHE_KEYS);
     for (const row of cacheRows) expected.delete(row.key);
     staleCaches.push(...expected);
 
     const warnings: string[] = [];
-    if (staleCaches.length) warnings.push(`${staleCaches.length} snapshot(s) admin périmé(s) ou absent(s)`);
+    if (cacheTablePending) warnings.push("Cache durable Angel OS en attente de migration Supabase ; fonctionnement temporaire sans snapshots persistants");
+    else if (staleCaches.length) warnings.push(`${staleCaches.length} snapshot(s) admin périmé(s) ou absent(s)`);
 
     const snapshot: AdminIntegritySnapshot = {
       checkedAt: new Date().toISOString(),
@@ -94,7 +111,7 @@ export const getAdminIntegritySnapshot = createServerFn({ method: "GET" })
       source: "admin-integrity",
       ok: true,
       durationMs: Date.now() - startedAt,
-      payload: { counts: snapshot.counts, staleCaches: snapshot.staleCaches },
+      payload: { counts: snapshot.counts, staleCaches: snapshot.staleCaches, cacheTablePending },
     });
 
     return snapshot;
