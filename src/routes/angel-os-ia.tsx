@@ -1,15 +1,15 @@
 import { useCallback, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, BrainCircuit, ChevronDown, Database, Network, ShieldCheck, Sparkles, Wrench } from "lucide-react";
+import { ArrowLeft, BrainCircuit, ChevronDown, Cpu, Database, Network, ShieldCheck, Sparkles, Wrench } from "lucide-react";
 import { BootIntro } from "@/components/angel-os/BootIntro";
 
 export const Route = createFileRoute("/angel-os-ia")({
   head: () => ({
     meta: [
-      { title: "Angel OS IA — intelligence, maintenance et supervision" },
+      { title: "Angel OS — système, intelligence et supervision" },
       {
         name: "description",
-        content: "Angel OS IA réunit l’intelligence artificielle de l’espace administrateur, la maintenance avec ChatGPT, les données connectées et la supervision Angel Guard.",
+        content: "Présentation de l’architecture Angel OS : le système central, Angel OS IA pour l’intelligence intégrée et Angel Guard pour la supervision technique.",
       },
       { name: "robots", content: "index,follow" },
       { name: "theme-color", content: "#f6f3ee" },
@@ -27,9 +27,9 @@ type Technology = {
 };
 
 const technologies: Technology[] = [
-  { name: "ChatGPT", logo: "/logos/chatgpt.com.svg", text: "Analyse les problèmes, aide aux corrections, au contrôle et à la maintenance du projet." },
-  { name: "OpenAI API", wordmark: "OpenAI", text: "Fournit les capacités d’intelligence artificielle utilisées directement dans Angel OS IA." },
-  { name: "React", logo: "https://cdn.simpleicons.org/react/149ECA", text: "Structure les interfaces et les composants interactifs." },
+  { name: "OpenAI API", wordmark: "OpenAI", text: "Fournit certaines capacités d’intelligence utilisées par Angel OS IA." },
+  { name: "ChatGPT", logo: "/logos/chatgpt.com.svg", text: "Intervient autour du projet pour l’analyse, les corrections, le contrôle et la maintenance." },
+  { name: "React", logo: "https://cdn.simpleicons.org/react/149ECA", text: "Structure les interfaces et les composants interactifs d’Angel OS." },
   { name: "TypeScript", logo: "https://cdn.simpleicons.org/typescript/3178C6", text: "Porte la logique applicative et sécurise le développement par le typage." },
   { name: "TanStack", logo: "https://cdn.simpleicons.org/tanstack/111111", text: "Gère le routage, les données asynchrones et une partie de l’architecture." },
   { name: "Tailwind CSS", logo: "https://cdn.simpleicons.org/tailwindcss/06B6D4", text: "Gère la mise en page responsive et l’identité visuelle." },
@@ -46,14 +46,14 @@ const technologies: Technology[] = [
 const card = "rounded-[1.35rem] border border-[#ded8cf] bg-white";
 
 const codeRows = [
-  "context.mail.sync()      // ready",
-  "agenda.next_event()      // connected",
-  "applications.reconcile() // active",
+  "angel_os.route()         // system",
+  "angel_os.data.sync()     // active",
+  "angel_os_ia.context()    // intelligence",
+  "angel_os_ia.assist()     // ready",
   "angel_guard.health()     // monitoring",
-  "ai.context.load()        // private",
+  "angel_guard.recover()    // standby",
   "deployment.main()        // production",
-  "drive.files.index()      // available",
-  "tmdb.catalog.fetch()     // online",
+  "connectors.refresh()     // available",
 ];
 
 function BackButton() {
@@ -149,76 +149,60 @@ function AngelOsIaPage() {
             <BackButton />
             <div className="flex items-center gap-2 rounded-full border border-[#ddd6ce] bg-white/90 px-3 py-2">
               <img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-7 w-7 rounded-lg object-cover" />
-              <span className="hidden text-xs font-semibold text-[#554e47] xs:inline sm:text-sm">Angel OS IA</span>
+              <span className="hidden text-xs font-semibold text-[#554e47] xs:inline sm:text-sm">Architecture Angel OS</span>
             </div>
           </div>
 
           <div className="max-w-4xl pt-10 sm:pt-14 lg:pt-16">
-            <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[#b44738] sm:text-xs">Intelligence artificielle intégrée</p>
-            <h1 className="mt-3 max-w-5xl font-display text-[clamp(3rem,12vw,7.4rem)] font-black leading-[.86] tracking-[-.065em] text-[#171513]">
-              Angel <span className="text-[#c54f41]">OS IA</span>
+            <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[#b44738] sm:text-xs">Système · intelligence · supervision</p>
+            <h1 className="mt-3 max-w-5xl font-display text-[clamp(3rem,11vw,7rem)] font-black leading-[.9] tracking-[-.06em] text-[#171513]">
+              Angel <span className="text-[#c54f41]">OS</span>
             </h1>
             <p className="mt-5 max-w-3xl text-lg font-semibold leading-snug text-[#37322d] sm:text-2xl lg:text-3xl">
-              Une couche d’intelligence reliée aux outils réels de l’administration.
+              Un système central, une couche d’intelligence et une couche de supervision.
             </p>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-[#6b655e] sm:text-base sm:leading-8">
-              Angel OS IA peut exploiter les données disponibles dans l’espace administrateur pour rechercher, analyser, résumer, rédiger, préparer des brouillons et assister certaines opérations, tout en restant séparé des fonctions de supervision d’Angel Guard.
+              Angel OS organise l’administration, les données, les applications, les connecteurs et les automatisations. Angel OS IA ajoute les capacités d’analyse et d’assistance. Angel Guard surveille l’ensemble et prend en charge les contrôles techniques, les incidents et la récupération.
             </p>
           </div>
 
-          <div className="mt-8 grid auto-rows-[minmax(9rem,auto)] grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-12 lg:gap-4">
-            <article className={`${card} relative overflow-hidden p-5 sm:p-6 lg:col-span-7 lg:row-span-2`}>
-              <div className="relative flex items-start gap-4">
-                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#c94f40] text-white"><BrainCircuit className="h-6 w-6" /></span>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#b44738]">Cœur IA</p>
-                  <h2 className="mt-1 text-2xl font-black tracking-[-.035em] sm:text-3xl">Comprendre le contexte, puis agir avec lui</h2>
-                </div>
-              </div>
-              <p className="relative mt-5 max-w-2xl text-sm leading-7 text-[#625b54] sm:text-base sm:leading-8">
-                Candidatures, mails, agenda, articles, projets, tâches et autres données de l’administration peuvent devenir un contexte exploitable. L’objectif n’est pas d’avoir un simple chatbot posé à côté du site, mais une IA capable de comprendre ce qui se passe réellement dans le système.
-              </p>
-              <div className="relative mt-6 flex flex-wrap gap-2">
-                {["Recherche", "Analyse", "Rédaction", "Résumés", "Brouillons", "Contexte"].map((item) => <span key={item} className="rounded-full border border-[#ded8cf] bg-[#faf8f4] px-3 py-1.5 text-xs font-semibold text-[#504941]">{item}</span>)}
+          <div className="mt-8 grid gap-3 lg:grid-cols-3">
+            <article className={`${card} border-[#d6d0c8] p-5 sm:p-6`}>
+              <span className="grid h-12 w-12 place-items-center rounded-xl bg-[#181614] text-white"><Cpu className="h-6 w-6" /></span>
+              <p className="mt-5 text-[10px] font-bold uppercase tracking-[.16em] text-[#6f675f]">Système central</p>
+              <h2 className="mt-1 text-2xl font-black tracking-[-.035em]">Angel OS</h2>
+              <p className="mt-3 text-sm leading-7 text-[#625b54]">Le noyau qui organise l’administration, les données, les applications, les connecteurs, les tâches et les automatisations.</p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {["Administration", "Données", "Applications", "Connecteurs", "Automatisations"].map((item) => <span key={item} className="rounded-full border border-[#ded8cf] bg-[#faf8f4] px-3 py-1.5 text-xs font-semibold text-[#504941]">{item}</span>)}
               </div>
             </article>
 
-            <article className={`${card} p-5 sm:p-6 lg:col-span-5`}>
-              <div className="flex items-start gap-3">
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#fff0e8] text-[#c2643c]"><ShieldCheck className="h-5 w-5" /></span>
-                <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#b9673d]">Angel Guard</p><h2 className="mt-1 text-xl font-black tracking-[-.03em]">Surveiller sans mélanger les rôles</h2></div>
+            <article className={`${card} border-[#e1b7b0] p-5 sm:p-6`}>
+              <span className="grid h-12 w-12 place-items-center rounded-xl bg-[#c94f40] text-white"><BrainCircuit className="h-6 w-6" /></span>
+              <p className="mt-5 text-[10px] font-bold uppercase tracking-[.16em] text-[#b44738]">Couche d’intelligence</p>
+              <h2 className="mt-1 text-2xl font-black tracking-[-.035em]">Angel OS IA</h2>
+              <p className="mt-3 text-sm leading-7 text-[#625b54]">Comprend le contexte fourni par Angel OS pour rechercher, analyser, résumer, rédiger, préparer des brouillons et assister certaines opérations.</p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {["Contexte", "Analyse", "Recherche", "Rédaction", "Assistance"].map((item) => <span key={item} className="rounded-full border border-[#ead1cc] bg-[#fff8f6] px-3 py-1.5 text-xs font-semibold text-[#8d4339]">{item}</span>)}
               </div>
-              <p className="mt-4 text-sm leading-7 text-[#6b655e]">Angel Guard reste le bloc de supervision : incidents, contrôles techniques, détection d’anomalies et récupération.</p>
             </article>
 
-            <article className={`${card} p-5 sm:p-6 lg:col-span-5`}>
-              <div className="flex items-start gap-3">
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#edf3ff] text-[#466fa8]"><Database className="h-5 w-5" /></span>
-                <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#5276a8]">Données</p><h2 className="mt-1 text-xl font-black tracking-[-.03em]">Connecté au réel</h2></div>
+            <article className={`${card} border-[#d9d2e6] p-5 sm:p-6`}>
+              <span className="grid h-12 w-12 place-items-center rounded-xl bg-[#65558f] text-white"><ShieldCheck className="h-6 w-6" /></span>
+              <p className="mt-5 text-[10px] font-bold uppercase tracking-[.16em] text-[#6f5c9a]">Couche de supervision</p>
+              <h2 className="mt-1 text-2xl font-black tracking-[-.035em]">Angel Guard</h2>
+              <p className="mt-3 text-sm leading-7 text-[#625b54]">Observe la santé du système, détecte les anomalies, suit les incidents et aide à déclencher les contrôles ou mécanismes de récupération.</p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {["Santé", "Incidents", "Anomalies", "Contrôles", "Récupération"].map((item) => <span key={item} className="rounded-full border border-[#ddd6eb] bg-[#faf8ff] px-3 py-1.5 text-xs font-semibold text-[#65558f]">{item}</span>)}
               </div>
-              <p className="mt-4 text-sm leading-7 text-[#6b655e]">Les réponses utiles doivent venir de données accessibles et de services réellement connectés, pas d’un décor qui prétend être connecté.</p>
             </article>
+          </div>
 
-            <article className={`${card} p-5 sm:col-span-2 sm:p-6 lg:col-span-4`}>
-              <Sparkles className="h-5 w-5 text-[#c54f41]" />
-              <p className="mt-4 text-[10px] font-bold uppercase tracking-[.16em] text-[#b44738]">Administration</p>
-              <h2 className="mt-1 text-xl font-black tracking-[-.03em]">Une IA dans le système, pas à côté</h2>
-              <p className="mt-3 text-sm leading-7 text-[#6b655e]">L’IA peut être appelée depuis les espaces où le contexte est déjà présent.</p>
-            </article>
-
-            <article className={`${card} p-5 sm:p-6 lg:col-span-4`}>
-              <Network className="h-5 w-5 text-[#5276a8]" />
-              <p className="mt-4 text-[10px] font-bold uppercase tracking-[.16em] text-[#5276a8]">Connecteurs</p>
-              <h2 className="mt-1 text-xl font-black tracking-[-.03em]">Google, données et API</h2>
-              <p className="mt-3 text-sm leading-7 text-[#6b655e]">Les services externes enrichissent Angel OS uniquement lorsqu’ils sont réellement disponibles.</p>
-            </article>
-
-            <article className={`${card} p-5 sm:p-6 lg:col-span-4`}>
-              <Wrench className="h-5 w-5 text-[#7867a9]" />
-              <p className="mt-4 text-[10px] font-bold uppercase tracking-[.16em] text-[#7867a9]">Maintenance</p>
-              <h2 className="mt-1 text-xl font-black tracking-[-.03em]">ChatGPT autour du projet</h2>
-              <p className="mt-3 text-sm leading-7 text-[#6b655e]">Analyse, corrections, contrôle du code et évolution des fonctionnalités restent distingués du moteur IA intégré.</p>
-            </article>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <article className={`${card} p-5`}><Database className="h-5 w-5 text-[#5276a8]" /><p className="mt-4 text-[10px] font-bold uppercase tracking-[.16em] text-[#5276a8]">Données</p><h3 className="mt-1 text-lg font-black">Le contexte vient du système</h3><p className="mt-2 text-sm leading-6 text-[#6b655e]">Mails, agenda, candidatures, articles, projets et autres données restent organisés par Angel OS.</p></article>
+            <article className={`${card} p-5`}><Network className="h-5 w-5 text-[#5276a8]" /><p className="mt-4 text-[10px] font-bold uppercase tracking-[.16em] text-[#5276a8]">Connecteurs</p><h3 className="mt-1 text-lg font-black">Les services enrichissent Angel OS</h3><p className="mt-2 text-sm leading-6 text-[#6b655e]">Google, API et autres services externes sont utilisés uniquement lorsqu’ils sont réellement disponibles.</p></article>
+            <article className={`${card} p-5`}><Sparkles className="h-5 w-5 text-[#c54f41]" /><p className="mt-4 text-[10px] font-bold uppercase tracking-[.16em] text-[#b44738]">Intelligence</p><h3 className="mt-1 text-lg font-black">L’IA n’est pas le système</h3><p className="mt-2 text-sm leading-6 text-[#6b655e]">Angel OS IA est une capacité intégrée à Angel OS, pas le noyau qui remplace tout le reste.</p></article>
+            <article className={`${card} p-5`}><Wrench className="h-5 w-5 text-[#7867a9]" /><p className="mt-4 text-[10px] font-bold uppercase tracking-[.16em] text-[#7867a9]">Maintenance</p><h3 className="mt-1 text-lg font-black">ChatGPT reste autour du projet</h3><p className="mt-2 text-sm leading-6 text-[#6b655e]">Développement, corrections, contrôle du code et maintenance restent distingués d’Angel OS IA.</p></article>
           </div>
         </div>
       </section>
@@ -227,8 +211,8 @@ function AngelOsIaPage() {
         <div className="mx-auto max-w-6xl">
           <div className="max-w-3xl">
             <p className="text-[11px] font-bold uppercase tracking-[.18em] text-[#b44738]">Infrastructure connectée</p>
-            <h2 className="mt-2 font-display text-3xl font-black tracking-[-.045em] sm:text-4xl">Les technologies derrière Angel OS IA</h2>
-            <p className="mt-3 text-sm leading-7 text-[#6b655e] sm:text-base">Des cartes plus plates, plus lisibles et plus techniques : moins d’effets décoratifs, davantage d’information utile et une hiérarchie visuelle nette.</p>
+            <h2 className="mt-2 font-display text-3xl font-black tracking-[-.045em] sm:text-4xl">Les technologies de l’écosystème Angel OS</h2>
+            <p className="mt-3 text-sm leading-7 text-[#6b655e] sm:text-base">Ces technologies servent différentes parties du système. OpenAI alimente certaines fonctions d’Angel OS IA ; les autres composants assurent l’interface, les données, les connexions, le code et le déploiement.</p>
           </div>
           <div className="mt-7 grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {technologies.map((technology) => <TechCard key={technology.name} technology={technology} />)}
@@ -238,24 +222,23 @@ function AngelOsIaPage() {
 
       <section className="px-4 pb-14 sm:px-7 sm:pb-20 lg:px-10">
         <div className="mx-auto grid max-w-6xl items-start gap-3 lg:grid-cols-2">
-          <ExpandableWidget eyebrow="Fonctionnement" title="Comment les rôles se répartissent" defaultOpen>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-xl border border-[#ebe5de] bg-[#faf8f4] p-4"><strong className="text-[#181614]">ChatGPT</strong><p className="mt-1">Développement, corrections, contrôle et maintenance.</p></div>
-              <div className="rounded-xl border border-[#ebe5de] bg-[#faf8f4] p-4"><strong className="text-[#181614]">Angel OS</strong><p className="mt-1">Organisation de l’administration, des données et des fonctions internes.</p></div>
-              <div className="rounded-xl border border-[#ebe5de] bg-[#faf8f4] p-4"><strong className="text-[#181614]">Angel OS IA</strong><p className="mt-1">Intelligence intégrée, analyse, rédaction et assistance.</p></div>
-              <div className="rounded-xl border border-[#ebe5de] bg-[#faf8f4] p-4"><strong className="text-[#181614]">Angel Guard</strong><p className="mt-1">Supervision, incidents et contrôles techniques.</p></div>
+          <ExpandableWidget eyebrow="Architecture" title="Comment les trois couches se répartissent" defaultOpen>
+            <div className="space-y-3">
+              <div className="rounded-xl border border-[#ded8cf] bg-[#faf8f4] p-4"><strong className="text-[#181614]">Angel OS — noyau</strong><p className="mt-1">Organise les données, les applications, les connecteurs, les fonctions internes et les automatisations.</p></div>
+              <div className="rounded-xl border border-[#ead1cc] bg-[#fff8f6] p-4"><strong className="text-[#181614]">Angel OS IA — intelligence</strong><p className="mt-1">Lit le contexte disponible dans Angel OS et ajoute analyse, recherche, rédaction et assistance.</p></div>
+              <div className="rounded-xl border border-[#ddd6eb] bg-[#faf8ff] p-4"><strong className="text-[#181614]">Angel Guard — supervision</strong><p className="mt-1">Surveille la santé technique, les anomalies, les incidents et les mécanismes de récupération.</p></div>
             </div>
           </ExpandableWidget>
 
-          <ExpandableWidget eyebrow="Principe" title="Une interface qui peut respirer">
-            <p>Les widgets ne sont plus enfermés dans une grille rigide. Une carte courte reste courte ; une carte qui a plus de contenu peut s’allonger naturellement. Les blocs détaillés peuvent aussi être ouverts ou repliés, ce qui évite les kilomètres de scroll sur téléphone.</p>
+          <ExpandableWidget eyebrow="Autour du système" title="Ce qui reste volontairement séparé">
+            <p><strong className="text-[#181614]">ChatGPT</strong> sert au développement, aux corrections, au contrôle et à la maintenance du projet. <strong className="text-[#181614]">OpenAI API</strong> peut fournir certaines capacités à Angel OS IA. Aucun de ces services ne remplace Angel OS lui-même ni Angel Guard.</p>
           </ExpandableWidget>
         </div>
 
         <div className="mx-auto mt-8 max-w-6xl rounded-[1.35rem] border border-[#2a2724] bg-[#181614] p-5 text-white sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-7">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[.18em] text-white/45">Espace privé</p>
-            <p className="mt-1 text-xl font-bold tracking-[-.03em] sm:text-2xl">Angel OS reste accessible depuis l’administration.</p>
+            <p className="mt-1 text-xl font-bold tracking-[-.03em] sm:text-2xl">Angel OS reste le système central de l’administration.</p>
           </div>
           <Link to="/auth" className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-bold text-[#181614] transition hover:bg-[#f1ede7] sm:mt-0 sm:w-auto">Accéder à l’administration</Link>
         </div>
