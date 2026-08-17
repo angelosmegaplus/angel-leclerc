@@ -7,6 +7,7 @@ export const Route = createFileRoute("/api/angel-os/guard")({
       GET: async () => {
         const guard = angelGuardOS.snapshot();
         const controlPlane = angelAutonomousCore.status().health;
+        const executableActions = new Set(guard.executors.map((executor) => executor.action));
 
         return Response.json(
           {
@@ -15,17 +16,22 @@ export const Route = createFileRoute("/api/angel-os/guard")({
             mode: "automatic",
             checkedAt: new Date().toISOString(),
             policies: guard.policies,
+            executors: guard.executors,
             enforcement: {
-              recover: "automatic-control-plane",
-              observe: "automatic",
-              rateLimit: "policy-decision",
-              isolate: "policy-decision",
-              rollback: "policy-decision",
-              block: "policy-decision",
+              recover: executableActions.has("recover") ? "automatic" : "unavailable",
+              observe: "automatic-noop",
+              rateLimit: executableActions.has("rate-limit") ? "automatic" : "unavailable",
+              isolate: executableActions.has("isolate") ? "automatic" : "unavailable",
+              rollback: executableActions.has("rollback") ? "automatic" : "unavailable",
+              block: executableActions.has("block") ? "automatic" : "unavailable",
             },
             activity: {
               recentSignals: guard.recentSignals.length,
               recentDecisions: guard.recentDecisions.length,
+              recentExecutions: guard.recentExecutions.length,
+              executed: guard.recentExecutions.filter((execution) => execution.status === "executed").length,
+              failed: guard.recentExecutions.filter((execution) => execution.status === "failed").length,
+              unavailable: guard.recentExecutions.filter((execution) => execution.status === "unavailable").length,
             },
             controlPlane,
             release: process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.GITHUB_SHA ?? null,

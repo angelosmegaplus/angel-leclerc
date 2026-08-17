@@ -16,6 +16,8 @@ import {
   MemoryCache,
   NativeTaskWorker,
   createDefaultAngelGuard,
+  type GuardDecision,
+  type GuardSignal,
   type HealthProbeResult,
   type IssuePriority,
 } from "../../angel-os/core";
@@ -41,6 +43,18 @@ export const angelSyncEngine = new AngelSyncEngine();
 export const angelApplicationRuntime = new AngelApplicationRuntime(angelIssueRegistry);
 export const angelAutonomousCore = new AngelAutonomousCore({ memory: angelMemoryIndex });
 export const angelGuardOS = createDefaultAngelGuard();
+
+angelGuardOS.registerExecutor({
+  id: "control-plane-auto-recovery",
+  action: "recover",
+  execute: async () => {
+    const snapshot = await angelAutonomousCore.inspect({ autoRecover: true });
+    return {
+      ok: snapshot.state !== "down",
+      detail: `Control plane recovery finished with state ${snapshot.state}`,
+    };
+  },
+});
 
 angelApplicationRuntime.register({
   id: "angel-os-ia",
@@ -87,28 +101,18 @@ function operationPriority(input: { type: string; source: string }): IssuePriori
   return "P2";
 }
 
-async function executeGuardDecision(decision: ReturnType<typeof angelGuardOS.evaluate>) {
+async function executeGuardDecision(signal: GuardSignal, decision: GuardDecision) {
   await angelEventLog.append("angel-guard.decision", decision);
   angelTelemetry.increment("angel.guard.decision", 1, { action: decision.action });
 
-  if (decision.action === "recover") {
-    const snapshot = await angelAutonomousCore.inspect({ autoRecover: true });
-    await angelEventLog.append("angel-guard.action.executed", {
-      signalId: decision.signalId,
-      action: decision.action,
-      result: snapshot.state,
-      generatedAt: snapshot.generatedAt,
-    });
-    angelTelemetry.increment("angel.guard.action.executed", 1, { action: decision.action, result: snapshot.state });
-    return { executed: true as const, result: snapshot.state };
-  }
-
-  await angelEventLog.append("angel-guard.action.decision-only", {
-    signalId: decision.signalId,
+  const execution = await angelGuardOS.enforce(signal, decision);
+  await angelEventLog.append(`angel-guard.action.${execution.status}`, execution);
+  angelTelemetry.increment("angel.guard.action", 1, {
     action: decision.action,
-    reason: "No safe generic executor is registered for this action yet",
+    status: execution.status,
+    executor: execution.executorId ?? "none",
   });
-  return { executed: false as const, result: "decision-only" as const };
+  return execution;
 }
 
 export async function recordAngelOperation(input: { type: string; source: string; ok: boolean; durationMs?: number; payload?: unknown; }) {
@@ -118,7 +122,7 @@ export async function recordAngelOperation(input: { type: string; source: string
 
   if (!input.ok) {
     const priority = operationPriority(input);
-    const decision = angelGuardOS.evaluate({
+    const signal: GuardSignal = {
       id: crypto.randomUUID(),
       source: input.source,
       type: input.type,
@@ -126,13 +130,23 @@ export async function recordAngelOperation(input: { type: string; source: string
       at: Date.now(),
       message: `Angel OS recorded a failed ${input.type} operation`,
       metadata: typeof input.durationMs === "number" ? { durationMs: input.durationMs } : undefined,
-    });
-    await executeGuardDecision(decision);
+    };
+    const decision = angelGuardOS.evaluate(signal);
+    const execution = await executeGuardDecision(signal, decision);
     await angelIssueRegistry.report({
       title: `${input.source} · ${input.type} failed`,
       type: `operation-failure:${input.type}`,
       priority,
-      evidence: { source: input.source, message: `Angel OS recorded a failed ${input.type} operation`, data: typeof input.durationMs === "number" ? { durationMs: input.durationMs } : undefined },
+      evidence: {
+        source: input.source,
+        message: `Angel OS recorded a failed ${input.type} operation`,
+        data: {
+          ...(typeof input.durationMs === "number" ? { durationMs: input.durationMs } : {}),
+          guardAction: decision.action,
+          guardExecutionStatus: execution.status,
+          guardExecutor: execution.executorId ?? null,
+        },
+      },
     });
   }
 }
