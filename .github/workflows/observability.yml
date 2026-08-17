@@ -6,8 +6,13 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/observability.yml"
+      - "src/routes/index.tsx"
+      - "src/routes/articles/**"
+      - "src/routes/parcours.tsx"
+      - "src/routes/contact.tsx"
       - "src/routes/api/angel-os/health.ts"
       - "src/routes/api/assistant.ts"
+      - "src/lib/articles*.ts"
       - "src/lib/ai-*.server.ts"
       - "src/lib/news.functions.ts"
       - "src/lib/vercel-connect-credentials.server.ts"
@@ -54,6 +59,29 @@ jobs:
           echo "critical=$CRITICAL" >> "$GITHUB_OUTPUT"
           [ -z "$FAILURES" ] || echo "::warning::Dépendances en échec : $FAILURES"
           [ -z "$MISSING" ] || echo "::warning::Configuration manquante : $MISSING"
+
+      - name: Verify public pages
+        id: public_smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          check_page() {
+            local name="$1" path="$2" marker="$3" file="/tmp/public-${1}.html" code
+            code="$(curl --silent --show-error --location --max-time 25 -o "$file" -w '%{http_code}' "https://www.angel-leclerc.fr${path}")"
+            echo "[$name] HTTP=$code path=$path"
+            [[ "$code" =~ ^2 ]] || { echo "::error::[$name] HTTP=$code"; head -c 800 "$file" || true; return 1; }
+            if grep -Eiq "This page didn.?t load|Something went wrong on our end|Internal Server Error|Service Unavailable|Bad Gateway" "$file"; then
+              echo "::error::[$name] page d'erreur détectée malgré HTTP=$code"
+              head -c 800 "$file" || true
+              return 1
+            fi
+            grep -Fqi "$marker" "$file" || { echo "::error::[$name] contenu attendu absent: $marker"; head -c 800 "$file" || true; return 1; }
+            echo "${name}_http=$code" >> "$GITHUB_OUTPUT"
+          }
+          check_page home / "Angel Leclerc"
+          check_page articles /articles "Mes articles"
+          check_page parcours /parcours "Parcours"
+          check_page contact /contact "Contact"
 
       - name: Verify real AI conversations
         id: ai_smoke
@@ -104,7 +132,7 @@ jobs:
         run: |
           TITLE="[Angel OS] Journal incidents production"
           ISSUE="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$TITLE in:title" --limit 1 --json number --jq '.[0].number // empty')"
-          BODY="Incident observabilité · $(date -u +%FT%TZ) · release=${{ steps.probe.outputs.release }} · dépendances=${{ steps.probe.outputs.failures }} · manque=${{ steps.probe.outputs.missing }} · critiques=${{ steps.probe.outputs.critical }} · IA site=${{ steps.ai_smoke.outputs.site_http }}/${{ steps.ai_smoke.outputs.site_reason }} · contact=${{ steps.ai_smoke.outputs.contact_http }}/${{ steps.ai_smoke.outputs.contact_reason }} · contexte=${{ steps.ai_smoke.outputs.context_http }}/${{ steps.ai_smoke.outputs.context_reason }} · veille=${{ steps.news_ai.outputs.count }}/${{ steps.news_ai.outputs.total }} · run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          BODY="Incident observabilité · $(date -u +%FT%TZ) · release=${{ steps.probe.outputs.release }} · public=${{ steps.public_smoke.outputs.home_http }}/${{ steps.public_smoke.outputs.articles_http }}/${{ steps.public_smoke.outputs.parcours_http }}/${{ steps.public_smoke.outputs.contact_http }} · dépendances=${{ steps.probe.outputs.failures }} · manque=${{ steps.probe.outputs.missing }} · critiques=${{ steps.probe.outputs.critical }} · IA site=${{ steps.ai_smoke.outputs.site_http }}/${{ steps.ai_smoke.outputs.site_reason }} · contact=${{ steps.ai_smoke.outputs.contact_http }}/${{ steps.ai_smoke.outputs.contact_reason }} · contexte=${{ steps.ai_smoke.outputs.context_http }}/${{ steps.ai_smoke.outputs.context_reason }} · veille=${{ steps.news_ai.outputs.count }}/${{ steps.news_ai.outputs.total }} · run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           if [ -z "$ISSUE" ]; then gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --body "$BODY" >/dev/null; else gh issue comment --repo "$GITHUB_REPOSITORY" "$ISSUE" --body "$BODY" >/dev/null; fi
 
       - name: Health summary
@@ -113,6 +141,7 @@ jobs:
           echo "## Observabilité Angel OS" >> "$GITHUB_STEP_SUMMARY"
           echo "- Release : ${{ steps.probe.outputs.release }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Health : ${{ steps.probe.outputs.healthy }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Public accueil/articles/parcours/contact : ${{ steps.public_smoke.outputs.home_http }} / ${{ steps.public_smoke.outputs.articles_http }} / ${{ steps.public_smoke.outputs.parcours_http }} / ${{ steps.public_smoke.outputs.contact_http }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Échecs : ${{ steps.probe.outputs.failures }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Manquants : ${{ steps.probe.outputs.missing }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- IA site/contact/contexte : ${{ steps.ai_smoke.outputs.site_http }} / ${{ steps.ai_smoke.outputs.contact_http }} / ${{ steps.ai_smoke.outputs.context_http }}" >> "$GITHUB_STEP_SUMMARY"
