@@ -9,17 +9,24 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SystemStatusRouteImport } from './routes/system-status'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PolitiqueCookiesRouteImport } from './routes/politique-cookies'
 import { Route as PolitiqueConfidentialiteRouteImport } from './routes/politique-confidentialite'
 import { Route as ParcoursRouteImport } from './routes/parcours'
 import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
+import { Route as FilmsSeriesRouteImport } from './routes/films-series'
 import { Route as EntrepriseRouteImport } from './routes/entreprise'
 import { Route as DesabonnementRouteImport } from './routes/desabonnement'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ConfirmationAbonnementRouteImport } from './routes/confirmation-abonnement'
+import { Route as ConditionsUtilisationRouteImport } from './routes/conditions-utilisation'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AngelOsIaRouteImport } from './routes/angel-os-ia'
+import { Route as AngelOsRouteImport } from './routes/angel-os'
+import { Route as AngelGuardOsRouteImport } from './routes/angel-guard-os'
+import { Route as AdminMovixRouteImport } from './routes/admin-movix'
+import { Route as AdminIntegrationsRouteImport } from './routes/admin-integrations'
 import { Route as AdminActualitesRouteImport } from './routes/admin-actualites'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -33,8 +40,15 @@ import { Route as BoutiqueCommandeRouteImport } from './routes/boutique/commande
 import { Route as BoutiqueHandleRouteImport } from './routes/boutique/$handle'
 import { Route as ArticlesReponseArticleChniTombolaPatrimoineRouteImport } from './routes/articles/reponse-article-chni-tombola-patrimoine'
 import { Route as ArticlesSlugRouteImport } from './routes/articles/$slug'
+import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
+import { Route as AdminMovixIdRouteImport } from './routes/admin-movix.$id'
 import { Route as ActualitesSlugRouteImport } from './routes/actualites/$slug'
+import { Route as OauthProviderCallbackRouteImport } from './routes/oauth/$provider/callback'
+import { Route as ApiPublicSiteStatusRouteImport } from './routes/api/public/site-status'
 import { Route as ApiPublicContactRouteImport } from './routes/api/public/contact'
+import { Route as ApiAngelOsStatusRouteImport } from './routes/api/angel-os/status'
+import { Route as ApiAngelOsHealthRouteImport } from './routes/api/angel-os/health'
+import { Route as ApiAngelOsGuardRouteImport } from './routes/api/angel-os/guard'
 import { Route as ApiAdminWeatherRouteImport } from './routes/api/admin/weather'
 import { Route as ApiAdminNewsRouteImport } from './routes/api/admin/news'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
@@ -43,9 +57,17 @@ import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/em
 import { Route as ApiPublicPrintfulWebhookRouteImport } from './routes/api/public/printful/webhook'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicHooksNewsletterRouteImport } from './routes/api/public/hooks/newsletter'
+import { Route as ApiPublicHooksHourlyAiContextRouteImport } from './routes/api/public/hooks/hourly-ai-context'
 import { Route as ApiPublicHooksDailyArticleRouteImport } from './routes/api/public/hooks/daily-article'
+import { Route as ApiPublicHooksApplicationsSyncRouteImport } from './routes/api/public/hooks/applications-sync'
+import { Route as AdminMovixTmdbMediaTypeTmdbIdRouteImport } from './routes/admin-movix.tmdb.$mediaType.$tmdbId'
 import { Route as ApiPublicOauthProviderCallbackRouteImport } from './routes/api/public/oauth/$provider/callback'
 
+const SystemStatusRoute = SystemStatusRouteImport.update({
+  id: '/system-status',
+  path: '/system-status',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -72,6 +94,11 @@ const MentionsLegalesRoute = MentionsLegalesRouteImport.update({
   path: '/mentions-legales',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FilmsSeriesRoute = FilmsSeriesRouteImport.update({
+  id: '/films-series',
+  path: '/films-series',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EntrepriseRoute = EntrepriseRouteImport.update({
   id: '/entreprise',
   path: '/entreprise',
@@ -92,6 +119,11 @@ const ConfirmationAbonnementRoute = ConfirmationAbonnementRouteImport.update({
   path: '/confirmation-abonnement',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConditionsUtilisationRoute = ConditionsUtilisationRouteImport.update({
+  id: '/conditions-utilisation',
+  path: '/conditions-utilisation',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -100,6 +132,26 @@ const AuthRoute = AuthRouteImport.update({
 const AngelOsIaRoute = AngelOsIaRouteImport.update({
   id: '/angel-os-ia',
   path: '/angel-os-ia',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AngelOsRoute = AngelOsRouteImport.update({
+  id: '/angel-os',
+  path: '/angel-os',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AngelGuardOsRoute = AngelGuardOsRouteImport.update({
+  id: '/angel-guard-os',
+  path: '/angel-guard-os',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminMovixRoute = AdminMovixRouteImport.update({
+  id: '/admin-movix',
+  path: '/admin-movix',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIntegrationsRoute = AdminIntegrationsRouteImport.update({
+  id: '/admin-integrations',
+  path: '/admin-integrations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminActualitesRoute = AdminActualitesRouteImport.update({
@@ -169,14 +221,49 @@ const ArticlesSlugRoute = ArticlesSlugRouteImport.update({
   path: '/articles/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAssistantRoute = ApiAssistantRouteImport.update({
+  id: '/api/assistant',
+  path: '/api/assistant',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminMovixIdRoute = AdminMovixIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AdminMovixRoute,
+} as any)
 const ActualitesSlugRoute = ActualitesSlugRouteImport.update({
   id: '/actualites/$slug',
   path: '/actualites/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OauthProviderCallbackRoute = OauthProviderCallbackRouteImport.update({
+  id: '/oauth/$provider/callback',
+  path: '/oauth/$provider/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicSiteStatusRoute = ApiPublicSiteStatusRouteImport.update({
+  id: '/api/public/site-status',
+  path: '/api/public/site-status',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicContactRoute = ApiPublicContactRouteImport.update({
   id: '/api/public/contact',
   path: '/api/public/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAngelOsStatusRoute = ApiAngelOsStatusRouteImport.update({
+  id: '/api/angel-os/status',
+  path: '/api/angel-os/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAngelOsHealthRoute = ApiAngelOsHealthRouteImport.update({
+  id: '/api/angel-os/health',
+  path: '/api/angel-os/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAngelOsGuardRoute = ApiAngelOsGuardRouteImport.update({
+  id: '/api/angel-os/guard',
+  path: '/api/angel-os/guard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminWeatherRoute = ApiAdminWeatherRouteImport.update({
@@ -223,11 +310,29 @@ const ApiPublicHooksNewsletterRoute =
     path: '/api/public/hooks/newsletter',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksHourlyAiContextRoute =
+  ApiPublicHooksHourlyAiContextRouteImport.update({
+    id: '/api/public/hooks/hourly-ai-context',
+    path: '/api/public/hooks/hourly-ai-context',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksDailyArticleRoute =
   ApiPublicHooksDailyArticleRouteImport.update({
     id: '/api/public/hooks/daily-article',
     path: '/api/public/hooks/daily-article',
     getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksApplicationsSyncRoute =
+  ApiPublicHooksApplicationsSyncRouteImport.update({
+    id: '/api/public/hooks/applications-sync',
+    path: '/api/public/hooks/applications-sync',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AdminMovixTmdbMediaTypeTmdbIdRoute =
+  AdminMovixTmdbMediaTypeTmdbIdRouteImport.update({
+    id: '/tmdb/$mediaType/$tmdbId',
+    path: '/tmdb/$mediaType/$tmdbId',
+    getParentRoute: () => AdminMovixRoute,
   } as any)
 const ApiPublicOauthProviderCallbackRoute =
   ApiPublicOauthProviderCallbackRouteImport.update({
@@ -240,18 +345,27 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/admin-actualites': typeof AdminActualitesRoute
+  '/admin-integrations': typeof AdminIntegrationsRoute
+  '/admin-movix': typeof AdminMovixRouteWithChildren
+  '/angel-guard-os': typeof AngelGuardOsRoute
+  '/angel-os': typeof AngelOsRoute
   '/angel-os-ia': typeof AngelOsIaRoute
   '/auth': typeof AuthRoute
+  '/conditions-utilisation': typeof ConditionsUtilisationRoute
   '/confirmation-abonnement': typeof ConfirmationAbonnementRoute
   '/contact': typeof ContactRoute
   '/desabonnement': typeof DesabonnementRoute
   '/entreprise': typeof EntrepriseRoute
+  '/films-series': typeof FilmsSeriesRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/parcours': typeof ParcoursRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/politique-cookies': typeof PolitiqueCookiesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/system-status': typeof SystemStatusRoute
   '/actualites/$slug': typeof ActualitesSlugRoute
+  '/admin-movix/$id': typeof AdminMovixIdRoute
+  '/api/assistant': typeof ApiAssistantRoute
   '/articles/$slug': typeof ArticlesSlugRoute
   '/articles/reponse-article-chni-tombola-patrimoine': typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
   '/boutique/$handle': typeof BoutiqueHandleRoute
@@ -264,8 +378,16 @@ export interface FileRoutesByFullPath {
   '/boutique/': typeof BoutiqueIndexRoute
   '/api/admin/news': typeof ApiAdminNewsRoute
   '/api/admin/weather': typeof ApiAdminWeatherRoute
+  '/api/angel-os/guard': typeof ApiAngelOsGuardRoute
+  '/api/angel-os/health': typeof ApiAngelOsHealthRoute
+  '/api/angel-os/status': typeof ApiAngelOsStatusRoute
   '/api/public/contact': typeof ApiPublicContactRoute
+  '/api/public/site-status': typeof ApiPublicSiteStatusRoute
+  '/oauth/$provider/callback': typeof OauthProviderCallbackRoute
+  '/admin-movix/tmdb/$mediaType/$tmdbId': typeof AdminMovixTmdbMediaTypeTmdbIdRoute
+  '/api/public/hooks/applications-sync': typeof ApiPublicHooksApplicationsSyncRoute
   '/api/public/hooks/daily-article': typeof ApiPublicHooksDailyArticleRoute
+  '/api/public/hooks/hourly-ai-context': typeof ApiPublicHooksHourlyAiContextRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/printful/webhook': typeof ApiPublicPrintfulWebhookRoute
@@ -278,18 +400,27 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/admin-actualites': typeof AdminActualitesRoute
+  '/admin-integrations': typeof AdminIntegrationsRoute
+  '/admin-movix': typeof AdminMovixRouteWithChildren
+  '/angel-guard-os': typeof AngelGuardOsRoute
+  '/angel-os': typeof AngelOsRoute
   '/angel-os-ia': typeof AngelOsIaRoute
   '/auth': typeof AuthRoute
+  '/conditions-utilisation': typeof ConditionsUtilisationRoute
   '/confirmation-abonnement': typeof ConfirmationAbonnementRoute
   '/contact': typeof ContactRoute
   '/desabonnement': typeof DesabonnementRoute
   '/entreprise': typeof EntrepriseRoute
+  '/films-series': typeof FilmsSeriesRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/parcours': typeof ParcoursRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/politique-cookies': typeof PolitiqueCookiesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/system-status': typeof SystemStatusRoute
   '/actualites/$slug': typeof ActualitesSlugRoute
+  '/admin-movix/$id': typeof AdminMovixIdRoute
+  '/api/assistant': typeof ApiAssistantRoute
   '/articles/$slug': typeof ArticlesSlugRoute
   '/articles/reponse-article-chni-tombola-patrimoine': typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
   '/boutique/$handle': typeof BoutiqueHandleRoute
@@ -302,8 +433,16 @@ export interface FileRoutesByTo {
   '/boutique': typeof BoutiqueIndexRoute
   '/api/admin/news': typeof ApiAdminNewsRoute
   '/api/admin/weather': typeof ApiAdminWeatherRoute
+  '/api/angel-os/guard': typeof ApiAngelOsGuardRoute
+  '/api/angel-os/health': typeof ApiAngelOsHealthRoute
+  '/api/angel-os/status': typeof ApiAngelOsStatusRoute
   '/api/public/contact': typeof ApiPublicContactRoute
+  '/api/public/site-status': typeof ApiPublicSiteStatusRoute
+  '/oauth/$provider/callback': typeof OauthProviderCallbackRoute
+  '/admin-movix/tmdb/$mediaType/$tmdbId': typeof AdminMovixTmdbMediaTypeTmdbIdRoute
+  '/api/public/hooks/applications-sync': typeof ApiPublicHooksApplicationsSyncRoute
   '/api/public/hooks/daily-article': typeof ApiPublicHooksDailyArticleRoute
+  '/api/public/hooks/hourly-ai-context': typeof ApiPublicHooksHourlyAiContextRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/printful/webhook': typeof ApiPublicPrintfulWebhookRoute
@@ -317,18 +456,27 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/admin-actualites': typeof AdminActualitesRoute
+  '/admin-integrations': typeof AdminIntegrationsRoute
+  '/admin-movix': typeof AdminMovixRouteWithChildren
+  '/angel-guard-os': typeof AngelGuardOsRoute
+  '/angel-os': typeof AngelOsRoute
   '/angel-os-ia': typeof AngelOsIaRoute
   '/auth': typeof AuthRoute
+  '/conditions-utilisation': typeof ConditionsUtilisationRoute
   '/confirmation-abonnement': typeof ConfirmationAbonnementRoute
   '/contact': typeof ContactRoute
   '/desabonnement': typeof DesabonnementRoute
   '/entreprise': typeof EntrepriseRoute
+  '/films-series': typeof FilmsSeriesRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/parcours': typeof ParcoursRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/politique-cookies': typeof PolitiqueCookiesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/system-status': typeof SystemStatusRoute
   '/actualites/$slug': typeof ActualitesSlugRoute
+  '/admin-movix/$id': typeof AdminMovixIdRoute
+  '/api/assistant': typeof ApiAssistantRoute
   '/articles/$slug': typeof ArticlesSlugRoute
   '/articles/reponse-article-chni-tombola-patrimoine': typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
   '/boutique/$handle': typeof BoutiqueHandleRoute
@@ -341,8 +489,16 @@ export interface FileRoutesById {
   '/boutique/': typeof BoutiqueIndexRoute
   '/api/admin/news': typeof ApiAdminNewsRoute
   '/api/admin/weather': typeof ApiAdminWeatherRoute
+  '/api/angel-os/guard': typeof ApiAngelOsGuardRoute
+  '/api/angel-os/health': typeof ApiAngelOsHealthRoute
+  '/api/angel-os/status': typeof ApiAngelOsStatusRoute
   '/api/public/contact': typeof ApiPublicContactRoute
+  '/api/public/site-status': typeof ApiPublicSiteStatusRoute
+  '/oauth/$provider/callback': typeof OauthProviderCallbackRoute
+  '/admin-movix/tmdb/$mediaType/$tmdbId': typeof AdminMovixTmdbMediaTypeTmdbIdRoute
+  '/api/public/hooks/applications-sync': typeof ApiPublicHooksApplicationsSyncRoute
   '/api/public/hooks/daily-article': typeof ApiPublicHooksDailyArticleRoute
+  '/api/public/hooks/hourly-ai-context': typeof ApiPublicHooksHourlyAiContextRoute
   '/api/public/hooks/newsletter': typeof ApiPublicHooksNewsletterRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/printful/webhook': typeof ApiPublicPrintfulWebhookRoute
@@ -357,18 +513,27 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/admin-actualites'
+    | '/admin-integrations'
+    | '/admin-movix'
+    | '/angel-guard-os'
+    | '/angel-os'
     | '/angel-os-ia'
     | '/auth'
+    | '/conditions-utilisation'
     | '/confirmation-abonnement'
     | '/contact'
     | '/desabonnement'
     | '/entreprise'
+    | '/films-series'
     | '/mentions-legales'
     | '/parcours'
     | '/politique-confidentialite'
     | '/politique-cookies'
     | '/sitemap.xml'
+    | '/system-status'
     | '/actualites/$slug'
+    | '/admin-movix/$id'
+    | '/api/assistant'
     | '/articles/$slug'
     | '/articles/reponse-article-chni-tombola-patrimoine'
     | '/boutique/$handle'
@@ -381,8 +546,16 @@ export interface FileRouteTypes {
     | '/boutique/'
     | '/api/admin/news'
     | '/api/admin/weather'
+    | '/api/angel-os/guard'
+    | '/api/angel-os/health'
+    | '/api/angel-os/status'
     | '/api/public/contact'
+    | '/api/public/site-status'
+    | '/oauth/$provider/callback'
+    | '/admin-movix/tmdb/$mediaType/$tmdbId'
+    | '/api/public/hooks/applications-sync'
     | '/api/public/hooks/daily-article'
+    | '/api/public/hooks/hourly-ai-context'
     | '/api/public/hooks/newsletter'
     | '/api/public/payments/webhook'
     | '/api/public/printful/webhook'
@@ -395,18 +568,27 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/admin-actualites'
+    | '/admin-integrations'
+    | '/admin-movix'
+    | '/angel-guard-os'
+    | '/angel-os'
     | '/angel-os-ia'
     | '/auth'
+    | '/conditions-utilisation'
     | '/confirmation-abonnement'
     | '/contact'
     | '/desabonnement'
     | '/entreprise'
+    | '/films-series'
     | '/mentions-legales'
     | '/parcours'
     | '/politique-confidentialite'
     | '/politique-cookies'
     | '/sitemap.xml'
+    | '/system-status'
     | '/actualites/$slug'
+    | '/admin-movix/$id'
+    | '/api/assistant'
     | '/articles/$slug'
     | '/articles/reponse-article-chni-tombola-patrimoine'
     | '/boutique/$handle'
@@ -419,8 +601,16 @@ export interface FileRouteTypes {
     | '/boutique'
     | '/api/admin/news'
     | '/api/admin/weather'
+    | '/api/angel-os/guard'
+    | '/api/angel-os/health'
+    | '/api/angel-os/status'
     | '/api/public/contact'
+    | '/api/public/site-status'
+    | '/oauth/$provider/callback'
+    | '/admin-movix/tmdb/$mediaType/$tmdbId'
+    | '/api/public/hooks/applications-sync'
     | '/api/public/hooks/daily-article'
+    | '/api/public/hooks/hourly-ai-context'
     | '/api/public/hooks/newsletter'
     | '/api/public/payments/webhook'
     | '/api/public/printful/webhook'
@@ -433,18 +623,27 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/admin-actualites'
+    | '/admin-integrations'
+    | '/admin-movix'
+    | '/angel-guard-os'
+    | '/angel-os'
     | '/angel-os-ia'
     | '/auth'
+    | '/conditions-utilisation'
     | '/confirmation-abonnement'
     | '/contact'
     | '/desabonnement'
     | '/entreprise'
+    | '/films-series'
     | '/mentions-legales'
     | '/parcours'
     | '/politique-confidentialite'
     | '/politique-cookies'
     | '/sitemap.xml'
+    | '/system-status'
     | '/actualites/$slug'
+    | '/admin-movix/$id'
+    | '/api/assistant'
     | '/articles/$slug'
     | '/articles/reponse-article-chni-tombola-patrimoine'
     | '/boutique/$handle'
@@ -457,8 +656,16 @@ export interface FileRouteTypes {
     | '/boutique/'
     | '/api/admin/news'
     | '/api/admin/weather'
+    | '/api/angel-os/guard'
+    | '/api/angel-os/health'
+    | '/api/angel-os/status'
     | '/api/public/contact'
+    | '/api/public/site-status'
+    | '/oauth/$provider/callback'
+    | '/admin-movix/tmdb/$mediaType/$tmdbId'
+    | '/api/public/hooks/applications-sync'
     | '/api/public/hooks/daily-article'
+    | '/api/public/hooks/hourly-ai-context'
     | '/api/public/hooks/newsletter'
     | '/api/public/payments/webhook'
     | '/api/public/printful/webhook'
@@ -472,18 +679,26 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AdminActualitesRoute: typeof AdminActualitesRoute
+  AdminIntegrationsRoute: typeof AdminIntegrationsRoute
+  AdminMovixRoute: typeof AdminMovixRouteWithChildren
+  AngelGuardOsRoute: typeof AngelGuardOsRoute
+  AngelOsRoute: typeof AngelOsRoute
   AngelOsIaRoute: typeof AngelOsIaRoute
   AuthRoute: typeof AuthRoute
+  ConditionsUtilisationRoute: typeof ConditionsUtilisationRoute
   ConfirmationAbonnementRoute: typeof ConfirmationAbonnementRoute
   ContactRoute: typeof ContactRoute
   DesabonnementRoute: typeof DesabonnementRoute
   EntrepriseRoute: typeof EntrepriseRoute
+  FilmsSeriesRoute: typeof FilmsSeriesRoute
   MentionsLegalesRoute: typeof MentionsLegalesRoute
   ParcoursRoute: typeof ParcoursRoute
   PolitiqueConfidentialiteRoute: typeof PolitiqueConfidentialiteRoute
   PolitiqueCookiesRoute: typeof PolitiqueCookiesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  SystemStatusRoute: typeof SystemStatusRoute
   ActualitesSlugRoute: typeof ActualitesSlugRoute
+  ApiAssistantRoute: typeof ApiAssistantRoute
   ArticlesSlugRoute: typeof ArticlesSlugRoute
   ArticlesReponseArticleChniTombolaPatrimoineRoute: typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
   BoutiqueHandleRoute: typeof BoutiqueHandleRoute
@@ -496,8 +711,15 @@ export interface RootRouteChildren {
   BoutiqueIndexRoute: typeof BoutiqueIndexRoute
   ApiAdminNewsRoute: typeof ApiAdminNewsRoute
   ApiAdminWeatherRoute: typeof ApiAdminWeatherRoute
+  ApiAngelOsGuardRoute: typeof ApiAngelOsGuardRoute
+  ApiAngelOsHealthRoute: typeof ApiAngelOsHealthRoute
+  ApiAngelOsStatusRoute: typeof ApiAngelOsStatusRoute
   ApiPublicContactRoute: typeof ApiPublicContactRoute
+  ApiPublicSiteStatusRoute: typeof ApiPublicSiteStatusRoute
+  OauthProviderCallbackRoute: typeof OauthProviderCallbackRoute
+  ApiPublicHooksApplicationsSyncRoute: typeof ApiPublicHooksApplicationsSyncRoute
   ApiPublicHooksDailyArticleRoute: typeof ApiPublicHooksDailyArticleRoute
+  ApiPublicHooksHourlyAiContextRoute: typeof ApiPublicHooksHourlyAiContextRoute
   ApiPublicHooksNewsletterRoute: typeof ApiPublicHooksNewsletterRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicPrintfulWebhookRoute: typeof ApiPublicPrintfulWebhookRoute
@@ -509,6 +731,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/system-status': {
+      id: '/system-status'
+      path: '/system-status'
+      fullPath: '/system-status'
+      preLoaderRoute: typeof SystemStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -544,6 +773,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MentionsLegalesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/films-series': {
+      id: '/films-series'
+      path: '/films-series'
+      fullPath: '/films-series'
+      preLoaderRoute: typeof FilmsSeriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/entreprise': {
       id: '/entreprise'
       path: '/entreprise'
@@ -572,6 +808,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConfirmationAbonnementRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/conditions-utilisation': {
+      id: '/conditions-utilisation'
+      path: '/conditions-utilisation'
+      fullPath: '/conditions-utilisation'
+      preLoaderRoute: typeof ConditionsUtilisationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -584,6 +827,34 @@ declare module '@tanstack/react-router' {
       path: '/angel-os-ia'
       fullPath: '/angel-os-ia'
       preLoaderRoute: typeof AngelOsIaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/angel-os': {
+      id: '/angel-os'
+      path: '/angel-os'
+      fullPath: '/angel-os'
+      preLoaderRoute: typeof AngelOsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/angel-guard-os': {
+      id: '/angel-guard-os'
+      path: '/angel-guard-os'
+      fullPath: '/angel-guard-os'
+      preLoaderRoute: typeof AngelGuardOsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin-movix': {
+      id: '/admin-movix'
+      path: '/admin-movix'
+      fullPath: '/admin-movix'
+      preLoaderRoute: typeof AdminMovixRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin-integrations': {
+      id: '/admin-integrations'
+      path: '/admin-integrations'
+      fullPath: '/admin-integrations'
+      preLoaderRoute: typeof AdminIntegrationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin-actualites': {
@@ -677,6 +948,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArticlesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/assistant': {
+      id: '/api/assistant'
+      path: '/api/assistant'
+      fullPath: '/api/assistant'
+      preLoaderRoute: typeof ApiAssistantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin-movix/$id': {
+      id: '/admin-movix/$id'
+      path: '/$id'
+      fullPath: '/admin-movix/$id'
+      preLoaderRoute: typeof AdminMovixIdRouteImport
+      parentRoute: typeof AdminMovixRoute
+    }
     '/actualites/$slug': {
       id: '/actualites/$slug'
       path: '/actualites/$slug'
@@ -684,11 +969,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ActualitesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/oauth/$provider/callback': {
+      id: '/oauth/$provider/callback'
+      path: '/oauth/$provider/callback'
+      fullPath: '/oauth/$provider/callback'
+      preLoaderRoute: typeof OauthProviderCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/site-status': {
+      id: '/api/public/site-status'
+      path: '/api/public/site-status'
+      fullPath: '/api/public/site-status'
+      preLoaderRoute: typeof ApiPublicSiteStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/contact': {
       id: '/api/public/contact'
       path: '/api/public/contact'
       fullPath: '/api/public/contact'
       preLoaderRoute: typeof ApiPublicContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/angel-os/status': {
+      id: '/api/angel-os/status'
+      path: '/api/angel-os/status'
+      fullPath: '/api/angel-os/status'
+      preLoaderRoute: typeof ApiAngelOsStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/angel-os/health': {
+      id: '/api/angel-os/health'
+      path: '/api/angel-os/health'
+      fullPath: '/api/angel-os/health'
+      preLoaderRoute: typeof ApiAngelOsHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/angel-os/guard': {
+      id: '/api/angel-os/guard'
+      path: '/api/angel-os/guard'
+      fullPath: '/api/angel-os/guard'
+      preLoaderRoute: typeof ApiAngelOsGuardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admin/weather': {
@@ -747,12 +1067,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksNewsletterRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/hourly-ai-context': {
+      id: '/api/public/hooks/hourly-ai-context'
+      path: '/api/public/hooks/hourly-ai-context'
+      fullPath: '/api/public/hooks/hourly-ai-context'
+      preLoaderRoute: typeof ApiPublicHooksHourlyAiContextRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/daily-article': {
       id: '/api/public/hooks/daily-article'
       path: '/api/public/hooks/daily-article'
       fullPath: '/api/public/hooks/daily-article'
       preLoaderRoute: typeof ApiPublicHooksDailyArticleRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/applications-sync': {
+      id: '/api/public/hooks/applications-sync'
+      path: '/api/public/hooks/applications-sync'
+      fullPath: '/api/public/hooks/applications-sync'
+      preLoaderRoute: typeof ApiPublicHooksApplicationsSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin-movix/tmdb/$mediaType/$tmdbId': {
+      id: '/admin-movix/tmdb/$mediaType/$tmdbId'
+      path: '/tmdb/$mediaType/$tmdbId'
+      fullPath: '/admin-movix/tmdb/$mediaType/$tmdbId'
+      preLoaderRoute: typeof AdminMovixTmdbMediaTypeTmdbIdRouteImport
+      parentRoute: typeof AdminMovixRoute
     }
     '/api/public/oauth/$provider/callback': {
       id: '/api/public/oauth/$provider/callback'
@@ -764,22 +1105,44 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminMovixRouteChildren {
+  AdminMovixIdRoute: typeof AdminMovixIdRoute
+  AdminMovixTmdbMediaTypeTmdbIdRoute: typeof AdminMovixTmdbMediaTypeTmdbIdRoute
+}
+
+const AdminMovixRouteChildren: AdminMovixRouteChildren = {
+  AdminMovixIdRoute: AdminMovixIdRoute,
+  AdminMovixTmdbMediaTypeTmdbIdRoute: AdminMovixTmdbMediaTypeTmdbIdRoute,
+}
+
+const AdminMovixRouteWithChildren = AdminMovixRoute._addFileChildren(
+  AdminMovixRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AdminActualitesRoute: AdminActualitesRoute,
+  AdminIntegrationsRoute: AdminIntegrationsRoute,
+  AdminMovixRoute: AdminMovixRouteWithChildren,
+  AngelGuardOsRoute: AngelGuardOsRoute,
+  AngelOsRoute: AngelOsRoute,
   AngelOsIaRoute: AngelOsIaRoute,
   AuthRoute: AuthRoute,
+  ConditionsUtilisationRoute: ConditionsUtilisationRoute,
   ConfirmationAbonnementRoute: ConfirmationAbonnementRoute,
   ContactRoute: ContactRoute,
   DesabonnementRoute: DesabonnementRoute,
   EntrepriseRoute: EntrepriseRoute,
+  FilmsSeriesRoute: FilmsSeriesRoute,
   MentionsLegalesRoute: MentionsLegalesRoute,
   ParcoursRoute: ParcoursRoute,
   PolitiqueConfidentialiteRoute: PolitiqueConfidentialiteRoute,
   PolitiqueCookiesRoute: PolitiqueCookiesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  SystemStatusRoute: SystemStatusRoute,
   ActualitesSlugRoute: ActualitesSlugRoute,
+  ApiAssistantRoute: ApiAssistantRoute,
   ArticlesSlugRoute: ArticlesSlugRoute,
   ArticlesReponseArticleChniTombolaPatrimoineRoute:
     ArticlesReponseArticleChniTombolaPatrimoineRoute,
@@ -794,8 +1157,15 @@ const rootRouteChildren: RootRouteChildren = {
   BoutiqueIndexRoute: BoutiqueIndexRoute,
   ApiAdminNewsRoute: ApiAdminNewsRoute,
   ApiAdminWeatherRoute: ApiAdminWeatherRoute,
+  ApiAngelOsGuardRoute: ApiAngelOsGuardRoute,
+  ApiAngelOsHealthRoute: ApiAngelOsHealthRoute,
+  ApiAngelOsStatusRoute: ApiAngelOsStatusRoute,
   ApiPublicContactRoute: ApiPublicContactRoute,
+  ApiPublicSiteStatusRoute: ApiPublicSiteStatusRoute,
+  OauthProviderCallbackRoute: OauthProviderCallbackRoute,
+  ApiPublicHooksApplicationsSyncRoute: ApiPublicHooksApplicationsSyncRoute,
   ApiPublicHooksDailyArticleRoute: ApiPublicHooksDailyArticleRoute,
+  ApiPublicHooksHourlyAiContextRoute: ApiPublicHooksHourlyAiContextRoute,
   ApiPublicHooksNewsletterRoute: ApiPublicHooksNewsletterRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicPrintfulWebhookRoute: ApiPublicPrintfulWebhookRoute,
