@@ -86,6 +86,19 @@ const RECIPIENT_COMPANIES: Record<string, string> = {
   "lesarenesdebriveloisirs@gmail.com": "Les Arènes de Brive",
 };
 
+const GENERIC_MAIL_DOMAINS = new Set([
+  "gmail.com",
+  "hotmail.com",
+  "hotmail.fr",
+  "outlook.com",
+  "outlook.fr",
+  "orange.fr",
+  "wanadoo.fr",
+  "yahoo.com",
+  "yahoo.fr",
+  "laposte.net",
+]);
+
 function header(message: GmailMessage, name: string): string {
   return (
     message.payload?.headers?.find((item) => item.name?.toLowerCase() === name.toLowerCase())
@@ -102,35 +115,68 @@ function cleanSubject(subject: string): string {
   return subject.replace(/^(re|tr|fwd?)\s*:\s*/i, "").trim();
 }
 
-function companyOf(subject: string, recipient: string | null): string {
-  if (recipient && RECIPIENT_COMPANIES[recipient]) return RECIPIENT_COMPANIES[recipient];
-  const cleaned = cleanSubject(subject)
-    .replace(/candidature\s+(?:spontanée\s+)?/gi, "")
-    .replace(/(?:pour|en vue d['’]une)\s+alternance/gi, "")
-    .replace(/bts\s+communication/gi, "")
-    .replace(/[–—|:]+/g, "-")
-    .replace(/^\s*-|\s*-\s*$/g, "")
+function normalizeText(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[’']/g, "'")
+    .replace(/\s+/g, " ")
     .trim();
-  const pieces = cleaned
-    .split(" - ")
-    .map((piece) => piece.trim())
-    .filter(Boolean);
-  const fromSubject = pieces.at(-1);
-  if (fromSubject && fromSubject.length > 2 && fromSubject.length < 90) return fromSubject;
-  if (!recipient) return "Entreprise à identifier";
-  const domain = recipient.split("@")[1]?.split(".")[0] ?? "Entreprise à identifier";
-  return domain
+}
+
+function looksLikeCompany(value: string): boolean {
+  const cleaned = value.replace(/^[-–—:|\s]+|[-–—:|\s]+$/g, "").trim();
+  if (cleaned.length < 3 || cleaned.length > 80) return false;
+  const normalized = normalizeText(cleaned);
+  if (/^a-?\d{4}-\d+$/i.test(cleaned)) return false;
+  if (/^(sarlat(?:-la-caneda)?|brive(?:-la-gaillarde)?|perigueux|bergerac|dordogne|marsac-sur-l'isle|monpazier)$/i.test(normalized)) return false;
+  if (/^(septembre|octobre|novembre|decembre|janvier|fevrier|mars|avril|mai|juin|juillet|aout)\s+20\d{2}$/i.test(normalized)) return false;
+  if (/^(candidature|alternance|candidature spontanee|retour concernant les offres d'alternance)$/i.test(normalized)) return false;
+  if (/^(animateur|animateur bafa|community manager|chargee? de communication(?: \/ graphisme)?|marketing(?: &| et)? communication)$/i.test(normalized)) return false;
+  if (/\b(bts communication|en alternance|alternance bts|candidature spontanee|offre d'alternance|contrat d'apprentissage)\b/i.test(normalized)) return false;
+  return true;
+}
+
+function companyFromDomain(recipient: string | null): string | null {
+  if (!recipient) return null;
+  const domain = recipient.split("@")[1]?.toLowerCase();
+  if (!domain || GENERIC_MAIL_DOMAINS.has(domain)) return null;
+  const root = domain.split(".")[0];
+  if (!root || /^(mail|email|contact|recrutement|info|bonjour|service)$/i.test(root)) return null;
+  return root
     .split(/[-_]/)
     .filter(Boolean)
     .map((piece) => piece.charAt(0).toUpperCase() + piece.slice(1))
     .join(" ");
 }
 
+function companyOf(subject: string, recipient: string | null): string {
+  if (recipient && RECIPIENT_COMPANIES[recipient]) return RECIPIENT_COMPANIES[recipient];
+
+  const cleaned = cleanSubject(subject)
+    .replace(/\b(?:objet\s*:\s*)?/gi, "")
+    .replace(/\bcandidature\s+(?:spontanée\s+)?(?:pour\s+)?/gi, "")
+    .replace(/\b(?:pour|en vue d['’]une)\s+alternance\b/gi, "")
+    .replace(/\bbts\s+communication\b/gi, "")
+    .replace(/\b(?:contrat d['’]apprentissage|apprentissage)\b/gi, "")
+    .replace(/[–—|:]+/g, " - ")
+    .replace(/\s+-\s+/g, " - ")
+    .trim();
+
+  const pieces = cleaned
+    .split(/\s+-\s+/)
+    .map((piece) => piece.trim())
+    .filter(Boolean);
+
+  const explicit = [...pieces].reverse().find(looksLikeCompany);
+  if (explicit) return explicit;
+
+  return companyFromDomain(recipient) ?? "Entreprise à identifier";
+}
+
 function cityOf(text: string): string | null {
-  const normalized = text
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
+  const normalized = normalizeText(text);
   if (normalized.includes("sarlat")) return "Sarlat-la-Canéda";
   if (normalized.includes("perigueux") || normalized.includes("marsac")) return "Périgueux";
   if (normalized.includes("brive")) return "Brive-la-Gaillarde";
@@ -229,6 +275,14 @@ function key(value: unknown): string {
     .toLowerCase();
 }
 
+function shouldRepairCompany(existingCompany: unknown, candidateCompany: string) {
+  const current = String(existingCompany ?? "").trim();
+  if (!current) return true;
+  if (!looksLikeCompany(current)) return true;
+  if (current === "Entreprise à identifier" && candidateCompany !== current) return true;
+  return false;
+}
+
 export type ApplicationSyncResult = {
   status: "completed" | "partial" | "not_connected";
   imported: number;
@@ -325,7 +379,7 @@ export async function syncApplicationsForUser(
 
   const { data: rows, error: readError } = await db
     .from("applications")
-    .select("id, company, email, sent_at, follow_up_at, status, response, notes");
+    .select("id, company, city, position, email, sent_at, follow_up_at, status, response, notes");
   if (readError) throw readError;
   const existing = (rows ?? []) as Array<Record<string, unknown>>;
   let imported = 0;
@@ -362,6 +416,11 @@ export async function syncApplicationsForUser(
       patch.status = "refusee";
       patch.follow_up_at = null;
     }
+    if (shouldRepairCompany(match.company, candidate.company) && key(match.company) !== key(candidate.company)) {
+      patch.company = candidate.company;
+    }
+    if (!match.city && candidate.city) patch.city = candidate.city;
+    if (!match.position || !String(match.position).trim()) patch.position = candidate.position;
     if (!match.notes) patch.notes = candidate.notes;
     if (Object.keys(patch).length === 0) {
       skipped += 1;
@@ -369,6 +428,7 @@ export async function syncApplicationsForUser(
     }
     const { error } = await db.from("applications").update(patch).eq("id", String(match.id));
     if (error) throw error;
+    Object.assign(match, patch);
     updated += 1;
   }
 
