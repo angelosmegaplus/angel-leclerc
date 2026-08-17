@@ -1,8 +1,12 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { SupabaseKeyValueCache } from "@/lib/supabase-key-value-cache.server";
 import contextFile from "../../../runtime/angel-os-ai-context.json";
 
 const CONTEXT_KEY = "angel_os_ai_context";
 const MAX_CONTEXT_AGE_MS = Number(contextFile.staleAfterMinutes || 65) * 60 * 1000;
+const CACHE_WARNING_INTERVAL_MS = 60 * 60 * 1000;
+const contextCache = new SupabaseKeyValueCache();
+let lastCacheWarningAt = 0;
 
 type CacheRow = { key: string; payload: unknown; updated_at: string };
 
@@ -36,8 +40,6 @@ type OperationalContext = {
 };
 
 function db() {
-  // angel_os_cache is an internal service-role table. Cast keeps this module
-  // compatible while generated Supabase types catch up with new migrations.
   return supabaseAdmin as any;
 }
 
@@ -55,21 +57,50 @@ function ageMinutes(date: string, now = Date.now()) {
   return Number.isFinite(timestamp) ? Math.max(0, Math.round((now - timestamp) / 60_000)) : 999999;
 }
 
+function warnCacheUnavailable(message: string) {
+  const now = Date.now();
+  if (now - lastCacheWarningAt < CACHE_WARNING_INTERVAL_MS) return;
+  lastCacheWarningAt = now;
+  console.warn("[angel-os-ai-context] durable cache unavailable; operational context continues in resilient mode", message);
+}
+
+async function readRecentCacheRows(): Promise<CacheRow[]> {
+  try {
+    const { data, error } = await db()
+      .from("angel_os_cache")
+      .select("key,payload,updated_at")
+      .neq("key", CONTEXT_KEY)
+      .order("updated_at", { ascending: false })
+      .limit(40);
+    if (error) {
+      warnCacheUnavailable(error.message || "schema unavailable");
+      return [];
+    }
+    return (data ?? []) as CacheRow[];
+  } catch (error) {
+    warnCacheUnavailable(error instanceof Error ? error.message : String(error));
+    return [];
+  }
+}
+
 export async function refreshOperationalContext(): Promise<OperationalContext> {
   const client = db();
   const now = new Date();
 
-  const [applications, projects, tasks, articles, actions, memories, caches] = await Promise.all([
+  // The durable runtime cache is secondary. Business sources must remain usable
+  // while a migration is pending, and a missing angel_os_cache table must never
+  // make private AI conversations fail.
+  const [applications, projects, tasks, articles, actions, memories, cacheRows] = await Promise.all([
     client.from("applications").select("id,status,company,city,position,follow_up_at").limit(250),
     client.from("projects").select("id,title,status").limit(200),
     client.from("project_tasks").select("id,title,status,due_date").limit(250),
     client.from("articles").select("id,title,published,scheduled_at").order("created_at", { ascending: false }).limit(150),
     client.from("ai_actions").select("id,title,status,sensitive,updated_at").in("status", ["pending", "running", "awaiting_operator"]).order("updated_at", { ascending: false }).limit(80),
     client.from("ai_actions").select("id,kind,title,payload,updated_at").in("kind", ["memory_public", "memory_private"]).eq("status", "active").order("updated_at", { ascending: false }).limit(40),
-    client.from("angel_os_cache").select("key,payload,updated_at").neq("key", CONTEXT_KEY).order("updated_at", { ascending: false }).limit(40),
+    readRecentCacheRows(),
   ]);
 
-  const firstError = [applications, projects, tasks, articles, actions, memories, caches].find((result) => result.error)?.error;
+  const firstError = [applications, projects, tasks, articles, actions, memories].find((result) => result.error)?.error;
   if (firstError) throw new Error(`Contexte opérationnel indisponible : ${firstError.message}`);
 
   const applicationRows = applications.data ?? [];
@@ -78,7 +109,6 @@ export async function refreshOperationalContext(): Promise<OperationalContext> {
   const articleRows = articles.data ?? [];
   const actionRows = actions.data ?? [];
   const memoryRows = memories.data ?? [];
-  const cacheRows = (caches.data ?? []) as CacheRow[];
 
   const openTasks = taskRows.filter((item: any) => !["done", "completed", "closed", "archived"].includes(String(item.status ?? "").toLowerCase()));
   const priorities = [
@@ -135,30 +165,24 @@ export async function refreshOperationalContext(): Promise<OperationalContext> {
     })),
   };
 
-  const { error } = await client
-    .from("angel_os_cache")
-    .upsert({ key: CONTEXT_KEY, payload: context, updated_at: context.generatedAt }, { onConflict: "key" });
-  if (error) throw new Error(`Impossible d’enregistrer le contexte opérationnel : ${error.message}`);
+  // SupabaseKeyValueCache always retains a process-local fallback, so an
+  // unapplied schema migration cannot break the main AI response path.
+  await contextCache.set(CONTEXT_KEY, context);
   return context;
 }
 
 export async function readOperationalContext(options: { refreshIfStale?: boolean } = {}): Promise<OperationalContext | null> {
-  const client = db();
-  const { data, error } = await client.from("angel_os_cache").select("payload,updated_at").eq("key", CONTEXT_KEY).maybeSingle();
-  if (error) {
-    console.warn("[angel-os-ai-context] read unavailable", error.message);
-    return null;
-  }
+  const cached = await contextCache.get<OperationalContext>(CONTEXT_KEY);
+  const stale = !cached?.generatedAt || ageMinutes(cached.generatedAt) > Number(contextFile.staleAfterMinutes || 65);
 
-  const stale = !data?.updated_at || ageMinutes(data.updated_at) > Number(contextFile.staleAfterMinutes || 65);
-  if ((!data?.payload || stale) && options.refreshIfStale !== false) {
+  if ((!cached || stale) && options.refreshIfStale !== false) {
     try {
       return await refreshOperationalContext();
     } catch (refreshError) {
       console.warn("[angel-os-ai-context] refresh unavailable", refreshError instanceof Error ? refreshError.message : String(refreshError));
     }
   }
-  return (data?.payload as OperationalContext | undefined) ?? null;
+  return cached ?? null;
 }
 
 export function operationalContextPrompt(context: OperationalContext | null) {
