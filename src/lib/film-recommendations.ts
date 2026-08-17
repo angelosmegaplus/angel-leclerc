@@ -54,20 +54,21 @@ function cloneProfile(profile: TasteProfile): TasteProfile {
 }
 function completionWeight(completion: number) { if (completion >= 0.9) return 3; if (completion >= 0.5) return 1.5; if (completion >= 0.2) return 1; return 0.3; }
 function decadeFor(year: number) { return `${Math.floor(year / 10) * 10}s`; }
+function adjust(record: Record<string | number, number>, key: string | number, delta: number) { record[key] = Math.max(0, (record[key] || 0) + delta); }
 
 export function buildTasteProfile(signals: ViewingSignal[]): TasteProfile {
   const profile = cloneProfile(BASE_PROFILE);
   for (const signal of signals) {
-    if (signal.rejected) continue;
     let weight = completionWeight(signal.completion);
-    if (signal.liked) weight *= 1.35;
-    for (const id of signal.genreIds) profile.genres[id] = (profile.genres[id] || 0) + weight;
-    for (const keyword of signal.keywords) profile.keywords[keyword] = (profile.keywords[keyword] || 0) + weight;
-    for (const person of signal.people.slice(0, 5)) profile.people[person] = (profile.people[person] || 0) + weight;
-    if (signal.director) profile.people[signal.director] = (profile.people[signal.director] || 0) + weight * 1.5;
+    if (signal.liked) weight *= 1.5;
+    if (signal.rejected) weight *= -1.35;
+    for (const id of signal.genreIds) adjust(profile.genres, id, weight);
+    for (const keyword of signal.keywords) adjust(profile.keywords, keyword, weight);
+    for (const person of signal.people.slice(0, 5)) adjust(profile.people, person, weight);
+    if (signal.director) adjust(profile.people, signal.director, weight * 1.5);
     const decade = decadeFor(signal.year);
-    profile.decades[decade] = (profile.decades[decade] || 0) + weight;
-    profile.formats[signal.mediaType] += weight;
+    adjust(profile.decades, decade, weight);
+    profile.formats[signal.mediaType] = Math.max(0.25, profile.formats[signal.mediaType] + weight);
   }
   return profile;
 }
@@ -98,7 +99,6 @@ export function selectDailyRecommendations(candidates: RecommendationCandidate[]
     return { candidate, score: Math.min(1, base + stableDailyJitter(candidate.id) * 0.025) };
   }).sort((a, b) => b.score - a.score);
 
-  // Cinq propositions maximum, tout en évitant un Top 5 trop répétitif.
   const selected: typeof ranked = [];
   const seenPrimaryGenres = new Set<number>();
   for (const item of ranked) {
