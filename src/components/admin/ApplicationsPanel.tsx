@@ -52,6 +52,7 @@ type CompleteItem = {
   city: string;
   position: string;
   source: string;
+  applicationDate: string;
   freshness: string;
   missions: string;
   level: string;
@@ -80,13 +81,14 @@ function normalizedKey(company: string, city: string, position: string) {
   return `${normalize(company)}|${normalize(city)}|${normalize(position)}`;
 }
 
-function companyKey(item: CompleteItem) {
+function candidatureKey(item: CompleteItem) {
   const company = normalize(item.company);
+  if (company && company !== "candidature" && company !== "piste sans nom") return item.key;
   const recipientDomain = item.recipient.includes("@") ? normalize(item.recipient.split("@").pop() || "") : "";
-  return company && company !== "candidature" && company !== "piste sans nom" ? company : recipientDomain || item.key;
+  return recipientDomain ? `${recipientDomain}|${normalize(item.city)}|${normalize(item.position)}` : item.key;
 }
 
-function parseActivity(value: string) {
+function parseDate(value: string) {
   if (!value) return 0;
   const direct = Date.parse(value);
   if (Number.isFinite(direct)) return direct;
@@ -96,20 +98,26 @@ function parseActivity(value: string) {
   return new Date(year, Number(fr[2]) - 1, Number(fr[1]), Number(fr[4] || 0), Number(fr[5] || 0)).getTime();
 }
 
+function applicationTime(item: CompleteItem) {
+  return parseDate(item.applicationDate) || parseDate(item.freshness);
+}
+
 function activityTime(item: CompleteItem) {
-  return parseActivity(item.lastActionAt) || parseActivity(item.freshness);
+  return parseDate(item.lastActionAt) || applicationTime(item);
 }
 
 function leadToItem(lead: AlternanceResearchLead): CompleteItem {
   const company = lead.employer || lead.company || "Piste sans nom";
   const city = lead.city || "";
   const position = lead.position || "";
+  const applicationDate = lead.freshness || lead.lastActionAt || "";
   return {
     key: normalizedKey(company, city, position),
     company,
     city,
     position,
     source: lead.source || "",
+    applicationDate,
     freshness: lead.freshness || "",
     missions: lead.missions || "",
     level: lead.level || "",
@@ -130,13 +138,16 @@ function rowToItem(row: Row): CompleteItem {
   const city = str(row, "city");
   const position = str(row, "position");
   const sentAt = str(row, "sent_at");
+  const createdAt = str(row, "created_at");
+  const applicationDate = sentAt || createdAt;
   return {
     key: normalizedKey(company, city, position),
     company,
     city,
     position,
     source: str(row, "source"),
-    freshness: sentAt || str(row, "created_at"),
+    applicationDate,
+    freshness: applicationDate,
     missions: str(row, "missions"),
     level: str(row, "level"),
     contract: str(row, "contract"),
@@ -144,9 +155,7 @@ function rowToItem(row: Row): CompleteItem {
     action: str(row, "last_action"),
     status: str(row, "status"),
     lastAction: str(row, "last_action") || (sentAt ? "Candidature enregistrée comme envoyée." : ""),
-    // sent_at est prioritaire sur updated_at : une resynchronisation technique ne doit jamais
-    // donner artificiellement la même « dernière activité » à des dizaines de candidatures.
-    lastActionAt: str(row, "last_action_at") || sentAt || str(row, "updated_at") || str(row, "created_at"),
+    lastActionAt: str(row, "last_action_at") || sentAt || str(row, "updated_at") || createdAt,
     nextAction: str(row, "next_action") || (str(row, "follow_up_at") ? `Relance prévue : ${str(row, "follow_up_at")}` : ""),
     reason: str(row, "error_reason"),
     recipient: str(row, "recipient") || str(row, "email"),
@@ -154,10 +163,13 @@ function rowToItem(row: Row): CompleteItem {
 }
 
 function mergeItem(base: CompleteItem, incoming: CompleteItem): CompleteItem {
-  const incomingIsNewer = activityTime(incoming) >= activityTime(base);
-  const newest = incomingIsNewer ? incoming : base;
-  const oldest = incomingIsNewer ? base : incoming;
+  const incomingActivityIsNewer = activityTime(incoming) >= activityTime(base);
+  const newest = incomingActivityIsNewer ? incoming : base;
+  const oldest = incomingActivityIsNewer ? base : incoming;
   const prefer = (current: string, fallback: string) => current || fallback;
+  const baseApplication = applicationTime(base);
+  const incomingApplication = applicationTime(incoming);
+  const applicationSource = incomingApplication > baseApplication ? incoming : base;
   return {
     ...newest,
     key: base.key,
@@ -165,7 +177,8 @@ function mergeItem(base: CompleteItem, incoming: CompleteItem): CompleteItem {
     city: prefer(newest.city, oldest.city),
     position: prefer(newest.position, oldest.position),
     source: prefer(newest.source, oldest.source),
-    freshness: prefer(newest.freshness, oldest.freshness),
+    applicationDate: prefer(applicationSource.applicationDate, prefer(base.applicationDate, incoming.applicationDate)),
+    freshness: prefer(applicationSource.freshness, prefer(base.freshness, incoming.freshness)),
     missions: prefer(newest.missions, oldest.missions),
     level: prefer(newest.level, oldest.level),
     contract: prefer(newest.contract, oldest.contract),
@@ -203,27 +216,29 @@ function isRealFollowup(item: CompleteItem) {
 
 function shortDate(value: string) {
   if (!value) return "—";
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return value;
+  const parsed = parseDate(value);
+  if (!parsed) return value;
   return new Intl.DateTimeFormat("fr-FR", {
     day: "2-digit",
     month: "2-digit",
     year: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
-  }).format(parsed);
+  }).format(new Date(parsed));
 }
 
 function dedupeAndSort(items: CompleteItem[]) {
   const merged = new Map<string, CompleteItem>();
   for (const item of items) {
-    const key = companyKey(item);
+    const key = candidatureKey(item);
     const previous = merged.get(key);
     merged.set(key, previous ? mergeItem(previous, item) : item);
   }
   return [...merged.values()].sort((a, b) => {
-    const byTime = activityTime(b) - activityTime(a);
-    if (byTime) return byTime;
+    const byApplicationDate = applicationTime(b) - applicationTime(a);
+    if (byApplicationDate) return byApplicationDate;
+    const byActivity = activityTime(b) - activityTime(a);
+    if (byActivity) return byActivity;
     return a.company.localeCompare(b.company, "fr", { sensitivity: "base" });
   });
 }
@@ -274,11 +289,11 @@ export function ApplicationsPanel() {
 
   const followupItems = useMemo(() => dedupeAndSort(allItems.filter(isRealFollowup)), [allItems]);
 
-  const rowsByCompany = useMemo(() => {
+  const rowsByApplication = useMemo(() => {
     const map = new Map<string, Row>();
     for (const row of rows) {
       const item = rowToItem(row);
-      const key = companyKey(item);
+      const key = candidatureKey(item);
       const previous = map.get(key);
       if (!previous || activityTime(item) >= activityTime(rowToItem(previous))) map.set(key, row);
     }
@@ -329,7 +344,7 @@ export function ApplicationsPanel() {
             <Briefcase className="h-5 w-5 text-primary" />
             <div>
               <h2 className="font-display font-bold text-foreground">Candidatures</h2>
-              <p className="text-xs text-muted-foreground">Suivi des envois et historique complet de la recherche d’alternance.</p>
+              <p className="text-xs text-muted-foreground">Suivi chronologique basé sur la date réelle d’envoi de chaque candidature.</p>
             </div>
           </div>
           <Button variant="outline" size="sm" disabled={busy} onClick={() => void refresh()}>
@@ -357,19 +372,20 @@ export function ApplicationsPanel() {
 
             <div className="mt-4 divide-y divide-border">
               {followupItems.length === 0 ? <p className="py-4 text-sm text-muted-foreground">Aucune candidature envoyée disponible.</p> : followupItems.map((item, index) => {
-                const row = rowsByCompany.get(companyKey(item));
+                const row = rowsByApplication.get(candidatureKey(item));
                 const id = row ? str(row, "id") || item.key : item.key || `application-${index}`;
                 const status = completeStatus(item);
                 const mail = sentMailOf(row);
                 const response = cleanApplicationText(row ? str(row, "response") : item.reason);
                 const isOpen = openId === id;
                 return (
-                  <div key={`${companyKey(item)}-${id}`}>
+                  <div key={`${candidatureKey(item)}-${id}`}>
                     <button type="button" className="flex w-full items-center justify-between gap-4 py-3 text-left" aria-expanded={isOpen} onClick={() => setOpenId(isOpen ? null : id)}>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-foreground">{item.company}</p>
                         {(item.position || item.city) ? <p className="mt-0.5 truncate text-xs text-muted-foreground">{[item.position, item.city].filter(Boolean).join(" · ")}</p> : null}
-                        {activityTime(item) ? <p className="mt-1 text-[11px] text-muted-foreground">Dernière activité : {shortDate(item.lastActionAt || item.freshness)}</p> : null}
+                        <p className="mt-1 text-[11px] font-medium text-foreground/70">Candidature : {applicationTime(item) ? shortDate(item.applicationDate || item.freshness) : "date inconnue"}</p>
+                        {activityTime(item) && activityTime(item) !== applicationTime(item) ? <p className="mt-0.5 text-[11px] text-muted-foreground">Dernière activité : {shortDate(item.lastActionAt || item.applicationDate)}</p> : null}
                       </div>
                       <div className="flex shrink-0 items-center gap-3"><AdminStatus tone={status.tone} compact>{status.label}</AdminStatus><ChevronDown className={`h-4 w-4 transition ${isOpen ? "rotate-180" : ""}`} /></div>
                     </button>
@@ -385,12 +401,12 @@ export function ApplicationsPanel() {
           </>
         ) : (
           <div className="mt-4 rounded-xl border border-border bg-background/50">
-            <div className="border-b border-border px-3 py-2 text-xs text-muted-foreground">Historique complet · ordre strict du plus récent au plus ancien.</div>
+            <div className="border-b border-border px-3 py-2 text-xs text-muted-foreground">Historique complet · trié par date de candidature, du plus récent au plus ancien.</div>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[950px] border-collapse text-left text-sm">
-                <thead className="bg-muted/40 text-xs text-muted-foreground"><tr><th className="px-3 py-3">Employeur</th><th className="px-3 py-3">Poste / ville</th><th className="px-3 py-3">Source</th><th className="px-3 py-3">Statut</th><th className="px-3 py-3">Dernière activité</th><th className="px-3 py-3">Prochaine action</th></tr></thead>
+              <table className="w-full min-w-[1050px] border-collapse text-left text-sm">
+                <thead className="bg-muted/40 text-xs text-muted-foreground"><tr><th className="px-3 py-3">Employeur</th><th className="px-3 py-3">Poste / ville</th><th className="px-3 py-3">Date candidature</th><th className="px-3 py-3">Source</th><th className="px-3 py-3">Statut</th><th className="px-3 py-3">Dernière activité</th><th className="px-3 py-3">Prochaine action</th></tr></thead>
                 <tbody className="divide-y divide-border">
-                  {allItems.map((item) => { const status = completeStatus(item); return <tr key={companyKey(item)} className="align-top"><td className="px-3 py-3 font-semibold">{item.company}</td><td className="px-3 py-3"><p>{item.position || "—"}</p><p className="mt-1 text-xs text-muted-foreground">{item.city || "—"}</p></td><td className="px-3 py-3 text-xs">{item.source || "—"}</td><td className="px-3 py-3"><AdminStatus tone={status.tone} compact>{status.label}</AdminStatus></td><td className="px-3 py-3"><p className="max-w-[280px] text-xs">{item.lastAction || item.action || "—"}</p><p className="mt-1 text-xs text-muted-foreground">{activityTime(item) ? shortDate(item.lastActionAt || item.freshness) : "—"}</p></td><td className="px-3 py-3 text-xs">{item.nextAction || "—"}</td></tr>; })}
+                  {allItems.map((item) => { const status = completeStatus(item); return <tr key={candidatureKey(item)} className="align-top"><td className="px-3 py-3 font-semibold">{item.company}</td><td className="px-3 py-3"><p>{item.position || "—"}</p><p className="mt-1 text-xs text-muted-foreground">{item.city || "—"}</p></td><td className="px-3 py-3 text-xs font-medium">{applicationTime(item) ? shortDate(item.applicationDate || item.freshness) : "—"}</td><td className="px-3 py-3 text-xs">{item.source || "—"}</td><td className="px-3 py-3"><AdminStatus tone={status.tone} compact>{status.label}</AdminStatus></td><td className="px-3 py-3"><p className="max-w-[280px] text-xs">{item.lastAction || item.action || "—"}</p><p className="mt-1 text-xs text-muted-foreground">{activityTime(item) ? shortDate(item.lastActionAt || item.applicationDate) : "—"}</p></td><td className="px-3 py-3 text-xs">{item.nextAction || "—"}</td></tr>; })}
                 </tbody>
               </table>
             </div>
