@@ -34,8 +34,9 @@ export const PROVIDERS: Record<ProviderId, ProviderConfig> = {
     clientSecretEnv: "GOOGLE_CLIENT_SECRET",
     authorizeUrl: "https://accounts.google.com/o/oauth2/v2/auth",
     tokenUrl: "https://oauth2.googleapis.com/token",
-    // Gmail is the mandatory core connection. Calendar/Drive are additive so a
-    // change in their consent/verification does not break the mailbox.
+    // Gmail is the mandatory core connection. Calendar/Drive are requested as
+    // additive read access so Angel OS IA can inspect the user's private Google
+    // context without giving itself unnecessary write permission.
     scopes: [
       "openid",
       "email",
@@ -43,8 +44,8 @@ export const PROVIDERS: Record<ProviderId, ProviderConfig> = {
       "https://www.googleapis.com/auth/gmail.modify",
     ],
     optionalScopes: [
-      "https://www.googleapis.com/auth/calendar.events",
-      "https://www.googleapis.com/auth/drive.file",
+      "https://www.googleapis.com/auth/calendar.readonly",
+      "https://www.googleapis.com/auth/drive.readonly",
     ],
     extraAuthParams: { access_type: "offline", prompt: "consent", include_granted_scopes: "true" },
     identity: { url: "https://openidconnect.googleapis.com/v1/userinfo", field: ["email", "name"] },
