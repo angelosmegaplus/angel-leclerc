@@ -5,7 +5,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import type { AiMessage } from "@/lib/ai-gateway.server";
 import { resilientAngelAi } from "@/lib/ai-resilient.server";
+import { aiMemoryPrompt } from "@/lib/ai-memory.server";
 import { searchPersonalContext } from "./personal-context.server";
+import { operationalContextPrompt, readOperationalContext } from "./operational-context.server";
 import { recordAngelOperation } from "@/lib/angel-runtime.server";
 
 const InputSchema = z.object({ command: z.string().trim().min(2).max(2_000) });
@@ -89,18 +91,24 @@ export const runPrivateAngelOsIaChat = createServerFn({ method: "POST" })
     if (insertError) throw insertError;
 
     try {
-      const [history, state] = await Promise.all([recentConversation(db), adminState(db)]);
+      const [history, state, memory, operational] = await Promise.all([
+        recentConversation(db),
+        adminState(db),
+        aiMemoryPrompt("private"),
+        readOperationalContext({ refreshIfStale: true }),
+      ]);
       const personal = searchPersonalContext(data.command, 8);
       const personalText = personal.length ? personal.map((hit) => `${hit.title}: ${hit.text.slice(0, 700)}`).join("\n") : "Aucun contexte personnel pertinent indexé.";
+      const operationalText = operationalContextPrompt(operational);
       const messages: AiMessage[] = [
         {
           role: "system",
-          content: "Tu es Angel OS IA, la distribution d’intelligence artificielle privée fonctionnant au-dessus d’Angel OS dans l’espace administrateur privé. Tu réponds uniquement via OpenAI dans cette interface. Il n’existe aucun moteur conversationnel local de secours ici : ne prétends jamais être un fallback local. Utilise le contexte fourni, garde la continuité de conversation, et dis clairement quand une information manque. Angel OS fournit les primitives système ; Angel OS IA interprète et converse. N’affirme jamais qu’une action externe a été exécutée si elle ne l’a pas réellement été.",
+          content: "Tu es Angel OS IA, la distribution d’intelligence artificielle privée fonctionnant au-dessus d’Angel OS dans l’espace administrateur privé. Tu réponds uniquement via OpenAI dans cette interface. Il n’existe aucun moteur conversationnel local de secours ici : ne prétends jamais être un fallback local. Utilise en priorité le contexte opérationnel horaire, la mémoire Angel OS et l’état privé fournis. Les informations les plus récentes priment en cas de contradiction. Tu peux être autonome pour lire, analyser, diagnostiquer, prioriser, préparer et effectuer les opérations techniques sûres et réversibles réellement disponibles. Tu dois conserver une validation explicite avant tout envoi externe, publication publique, suppression, paiement ou action destructive/irréversible. Garde la continuité de conversation et dis clairement quand une information manque. Angel OS fournit les primitives système ; Angel OS IA interprète et converse. N’affirme jamais qu’une action externe a été exécutée si elle ne l’a pas réellement été.",
         },
         ...history,
         {
           role: "user",
-          content: `Demande actuelle : ${data.command}\n\nÉtat privé : ${JSON.stringify(state)}\n\nMémoire personnelle Angel OS IA :\n${personalText}`,
+          content: `Demande actuelle : ${data.command}\n\nÉtat privé temps réel : ${JSON.stringify(state)}${memory}${operationalText}\n\nMémoire personnelle Angel OS IA :\n${personalText}`,
         },
       ];
       const ai = await resilientAngelAi({ messages, priority: "interactive", maxTokens: 1_400, temperature: 0.35, cacheTtlMs: 1 });
@@ -110,9 +118,9 @@ export const runPrivateAngelOsIaChat = createServerFn({ method: "POST" })
         throw new Error(`Angel OS IA est indisponible : ${technical} Aucun moteur local ne répond à sa place dans l’espace privé.`);
       }
       const response = candidate.slice(0, 5_000);
-      const { error: updateError } = await db.from("ai_messages").update({ response, status: "completed", context: { source: "openai", private: true, angel_os_ia: true } }).eq("id", stored.id);
+      const { error: updateError } = await db.from("ai_messages").update({ response, status: "completed", context: { source: "openai", private: true, angel_os_ia: true, operational_context_at: operational?.generatedAt ?? null } }).eq("id", stored.id);
       if (updateError) throw updateError;
-      await recordAngelOperation({ type: "angel-os-ia.private-chat.completed", source: "angel-os-ia", ok: true, durationMs: Date.now() - startedAt, payload: { messageId: stored.id } });
+      await recordAngelOperation({ type: "angel-os-ia.private-chat.completed", source: "angel-os-ia", ok: true, durationMs: Date.now() - startedAt, payload: { messageId: stored.id, operationalContextAt: operational?.generatedAt ?? null } });
       return { response, status: "completed", source: "openai", autoExecuted: false, actionId: null };
     } catch (error) {
       const rawDetail = error instanceof Error ? error.message : "Angel OS IA indisponible.";
