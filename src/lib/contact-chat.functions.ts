@@ -63,7 +63,10 @@ export async function processConversationalContact(data: ConversationalContactIn
   const userAgent = getRequestHeader("user-agent") ?? null;
   const projectType = TRACK_LABELS[data.track];
   const description = buildDescription(data);
-  const hasSupabaseAdmin = Boolean(process.env["SUPABASE_URL"] && process.env["SUPABASE_SERVICE_ROLE_KEY"]);
+  const hasSupabaseAdmin = Boolean(
+    process.env["SUPABASE_URL"] &&
+      (process.env["SUPABASE_SERVICE_ROLE_KEY"] || process.env["SUPABASE_SECRET_KEY"]),
+  );
   const hasLovableEmail = Boolean(process.env["LOVABLE_API_KEY"]);
 
   if (hasSupabaseAdmin) {
