@@ -44,6 +44,8 @@ export const angelApplicationRuntime = new AngelApplicationRuntime(angelIssueReg
 export const angelAutonomousCore = new AngelAutonomousCore({ memory: angelMemoryIndex });
 export const angelGuardOS = createDefaultAngelGuard();
 
+angelNodeGateway.upsert({ id: "vercel-web", kind: "vercel", priority: 50, state: "unknown" });
+
 angelGuardOS.registerExecutor({
   id: "control-plane-auto-recovery",
   action: "recover",
@@ -53,6 +55,27 @@ angelGuardOS.registerExecutor({
       ok: snapshot.state !== "down",
       detail: `Control plane recovery finished with state ${snapshot.state}`,
     };
+  },
+});
+
+angelGuardOS.registerExecutor({
+  id: "node-gateway-isolation",
+  action: "isolate",
+  execute: async (signal) => {
+    const targetId = typeof signal.metadata?.targetId === "string" ? signal.metadata.targetId : signal.source;
+    const target = angelNodeGateway.list().find((node) => node.id === targetId);
+    if (!target) {
+      return { ok: false, detail: `No registered Angel OS node matches isolation target ${targetId}` };
+    }
+    const isolated = angelNodeGateway.mark(target.id, "offline", {
+      metadata: {
+        ...target.metadata,
+        isolatedBy: "angel-guard-os",
+        isolationReason: signal.message,
+        isolatedAt: Date.now(),
+      },
+    });
+    return { ok: isolated.state === "offline", detail: `Node ${isolated.id} isolated from routing` };
   },
 });
 
@@ -92,8 +115,6 @@ angelAutonomousCore
   .registerHealthProbe({ id: "application:angel-os-ia", label: "Angel OS IA", critical: true, run: () => applicationHealthProbe("angel-os-ia"), recover: () => applicationHealthProbe("angel-os-ia") })
   .registerHealthProbe({ id: "application:angel-leclerc-web", label: "angel-leclerc.fr", critical: true, run: () => applicationHealthProbe("angel-leclerc-web"), recover: () => applicationHealthProbe("angel-leclerc-web") });
 
-angelNodeGateway.upsert({ id: "vercel-web", kind: "vercel", priority: 50, state: "unknown" });
-
 function operationPriority(input: { type: string; source: string }): IssuePriority {
   const signature = `${input.type} ${input.source}`;
   if (/auth|security|database|production|deploy/i.test(signature)) return "P0";
@@ -115,13 +136,16 @@ async function executeGuardDecision(signal: GuardSignal, decision: GuardDecision
   return execution;
 }
 
-export async function recordAngelOperation(input: { type: string; source: string; ok: boolean; durationMs?: number; payload?: unknown; }) {
-  await angelEventLog.append(input.type, { source: input.source, ok: input.ok, durationMs: input.durationMs, payload: input.payload });
+export async function recordAngelOperation(input: { type: string; source: string; ok: boolean; durationMs?: number; payload?: unknown; guardTargetId?: string; }) {
+  await angelEventLog.append(input.type, { source: input.source, ok: input.ok, durationMs: input.durationMs, payload: input.payload, guardTargetId: input.guardTargetId });
   angelTelemetry.increment(input.ok ? "angel.operation.success" : "angel.operation.failure", 1, { source: input.source, type: input.type });
   if (typeof input.durationMs === "number") angelTelemetry.observe("angel.operation.duration_ms", input.durationMs, { source: input.source, type: input.type });
 
   if (!input.ok) {
     const priority = operationPriority(input);
+    const signalMetadata: GuardSignal["metadata"] = {};
+    if (typeof input.durationMs === "number") signalMetadata.durationMs = input.durationMs;
+    if (input.guardTargetId) signalMetadata.targetId = input.guardTargetId;
     const signal: GuardSignal = {
       id: crypto.randomUUID(),
       source: input.source,
@@ -129,7 +153,7 @@ export async function recordAngelOperation(input: { type: string; source: string
       severity: priority === "P0" ? "critical" : priority === "P1" ? "warning" : "info",
       at: Date.now(),
       message: `Angel OS recorded a failed ${input.type} operation`,
-      metadata: typeof input.durationMs === "number" ? { durationMs: input.durationMs } : undefined,
+      metadata: Object.keys(signalMetadata).length ? signalMetadata : undefined,
     };
     const decision = angelGuardOS.evaluate(signal);
     const execution = await executeGuardDecision(signal, decision);
@@ -142,6 +166,7 @@ export async function recordAngelOperation(input: { type: string; source: string
         message: `Angel OS recorded a failed ${input.type} operation`,
         data: {
           ...(typeof input.durationMs === "number" ? { durationMs: input.durationMs } : {}),
+          ...(input.guardTargetId ? { guardTargetId: input.guardTargetId } : {}),
           guardAction: decision.action,
           guardExecutionStatus: execution.status,
           guardExecutor: execution.executorId ?? null,
