@@ -26,7 +26,7 @@ const COMPACT_NAV: CompactDefinition[] = [
   { key: "travail", label: "Travail", description: "Candidatures, projets, agenda et statistiques", source: "candidatures", children: ["candidatures", "projets", "agenda", "messages", "boite-mail", "stats"] },
   { key: "studio", label: "Studio", description: "Articles, médias, fichiers et services", source: "articles", children: ["articles", "studio", "contenus", "fichiers", "boutique"] },
   { key: "pilotage", label: "Pilotage IA", description: "ChatGPT, automatisations et activité", source: "angel-ai", children: ["angel-ai", "automatisation", "activite"] },
-  { key: "systeme", label: "Système", description: "Connexions, alertes et communauté", source: "connexions", children: ["connexions", "notifications", "abonnes", "avis"] },
+  { key: "systeme", label: "Système", description: "Connexions, alertes et communauté", source: "connexions", children: ["connexions", "notifications", "abonnes", "avis", "parametres"] },
 ];
 
 const lightActionScope = "[&_button]:rounded-xl [&_a]:rounded-xl [&_button]:border-[#dedbd4] [&_a]:border-[#dedbd4] [&_button]:bg-white [&_a]:bg-white [&_button]:text-[#202124] [&_a]:text-[#202124] [&_button]:shadow-sm [&_a]:shadow-sm [&_[aria-label='Recherche_globale']]:hidden";
