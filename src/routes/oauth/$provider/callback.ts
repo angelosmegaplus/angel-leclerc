@@ -34,7 +34,9 @@ export const Route = createFileRoute("/oauth/$provider/callback")({
           const scope = tokens["scope"];
           const scopes = typeof scope === "string" && scope.length > 0
             ? scope.split(/[\s,]+/)
-            : [...PROVIDERS[provider].scopes, ...(PROVIDERS[provider].optionalScopes ?? [])];
+            : verified.s?.length
+              ? verified.s
+              : [...PROVIDERS[provider].scopes, ...(PROVIDERS[provider].optionalScopes ?? [])];
           const accountLabel = await oauth.fetchAccountLabel(provider, accessToken);
 
           await oauth.saveConnection({
