@@ -2,6 +2,13 @@
 import { createClient, type Session } from '@supabase/supabase-js';
 import type { Database } from './types';
 
+// These two values are intentionally public browser configuration, not privileged
+// credentials. Keep environment variables authoritative, but retain a stable
+// fallback so a Vercel build cannot make /auth or /admin crash merely because
+// VITE_* variables were omitted from the build environment.
+const PUBLIC_SUPABASE_URL = 'https://timygavajdestkbdzuyk.supabase.co';
+const PUBLIC_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_8IG8jsDj3yWH7u7urAQPig_r2V8Wd9s';
+
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
 }
@@ -21,18 +28,14 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 }
 
 function createSupabaseClient() {
-  const url = import.meta.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-  const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
-
-  if (!url || !publishableKey) {
-    const missing = [
-      ...(!url ? ['VITE_SUPABASE_URL'] : []),
-      ...(!publishableKey ? ['VITE_SUPABASE_PUBLISHABLE_KEY'] : []),
-    ];
-    const message = `Configuration Supabase publique absente : ${missing.join(', ')}. Configure les variables d’environnement du déploiement.`;
-    console.error(`[Supabase] ${message}`);
-    throw new Error(message);
-  }
+  const url =
+    import.meta.env.VITE_SUPABASE_URL ||
+    process.env.SUPABASE_URL ||
+    PUBLIC_SUPABASE_URL;
+  const publishableKey =
+    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.SUPABASE_PUBLISHABLE_KEY ||
+    PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   return createClient<Database>(url, publishableKey, {
     global: { fetch: createSupabaseFetch(publishableKey) },
