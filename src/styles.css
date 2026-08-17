@@ -406,6 +406,112 @@ main article *,
   color-scheme: light;
 }
 
+/* Workspace d'édition d'article : une surface de rédaction à gauche et un
+   panneau de réglages à droite, sans modifier la logique React/Supabase. */
+form:has(#title):has(#category):has(#excerpt):has(#content) {
+  container-type: inline-size;
+}
+
+form:has(#title):has(#category):has(#excerpt):has(#content) > div,
+form:has(#title):has(#category):has(#excerpt):has(#content) > button,
+form:has(#title):has(#category):has(#excerpt):has(#content) > section {
+  break-inside: avoid;
+}
+
+@media (min-width: 1180px) {
+  form:has(#title):has(#category):has(#excerpt):has(#content) {
+    columns: 2;
+    column-gap: 2rem;
+    column-rule: 1px solid #E6DED2;
+    padding: 1.75rem;
+  }
+
+  form:has(#title):has(#category):has(#excerpt):has(#content) > * {
+    margin-bottom: 1.25rem;
+  }
+
+  form:has(#title):has(#category):has(#excerpt):has(#content) > button:first-child,
+  form:has(#title):has(#category):has(#excerpt):has(#content) > [role="alert"] {
+    column-span: all;
+    width: 100%;
+  }
+
+  form:has(#title):has(#category):has(#excerpt):has(#content) > div:has(button[aria-pressed]) {
+    break-before: column;
+    margin-top: 0;
+  }
+
+  form:has(#title):has(#category):has(#excerpt):has(#content) > div:has(button[aria-pressed]),
+  form:has(#title):has(#category):has(#excerpt):has(#content) > div:has(input[name="status"]),
+  form:has(#title):has(#category):has(#excerpt):has(#content) > div:has(input[type="checkbox"]):not(:has(#attachments)) {
+    border-radius: 1rem;
+    border: 1px solid #E6DED2;
+    background: #FFFDF9;
+    padding: 1rem;
+    box-shadow: 0 8px 24px rgba(24, 23, 22, 0.045);
+  }
+
+  form:has(#title):has(#category):has(#excerpt):has(#content) > div:has(#content) {
+    min-height: 36rem;
+  }
+
+  form:has(#title):has(#category):has(#excerpt):has(#content) > div:has(#content) [contenteditable="true"] {
+    min-height: 34rem;
+  }
+
+  form:has(#title):has(#category):has(#excerpt):has(#content) > div:has(#cover-upload) img {
+    max-height: 13rem;
+  }
+
+  form:has(#title):has(#category):has(#excerpt):has(#content) > div:last-child {
+    position: sticky;
+    bottom: 1rem;
+    z-index: 15;
+    margin-top: 1rem;
+    border: 1px solid #E6DED2;
+    border-radius: 1rem;
+    background: rgba(255, 253, 249, 0.96);
+    padding: 0.8rem;
+    box-shadow: 0 16px 40px rgba(24, 23, 22, 0.1);
+    backdrop-filter: blur(16px);
+  }
+}
+
+@media (max-width: 1179px) {
+  form:has(#title):has(#category):has(#excerpt):has(#content) > div:has(button[aria-pressed]),
+  form:has(#title):has(#category):has(#excerpt):has(#content) > div:has(input[name="status"]) {
+    border-radius: 1rem;
+  }
+}
+
+@media (max-width: 767px) {
+  form:has(#title):has(#category):has(#excerpt):has(#content) {
+    border-radius: 1rem !important;
+    padding: 0.8rem !important;
+  }
+
+  form:has(#title):has(#category):has(#excerpt):has(#content) > div:has(#content) [contenteditable="true"] {
+    min-height: 24rem;
+  }
+
+  form:has(#title):has(#category):has(#excerpt):has(#content) > div:last-child {
+    position: sticky;
+    bottom: calc(0.65rem + env(safe-area-inset-bottom));
+    z-index: 20;
+    margin-inline: -0.2rem;
+    border: 1px solid #E6DED2;
+    border-radius: 1rem;
+    background: rgba(255, 253, 249, 0.97);
+    padding: 0.65rem;
+    box-shadow: 0 14px 36px rgba(24, 23, 22, 0.14);
+    backdrop-filter: blur(16px);
+  }
+
+  form:has(#title):has(#category):has(#excerpt):has(#content) > div:last-child > button {
+    flex: 1 1 auto;
+  }
+}
+
 @media (display-mode: standalone) {
   body {
     padding-top: env(safe-area-inset-top);
