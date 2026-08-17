@@ -1,6 +1,6 @@
 import { angelMemoryIndex, recordAngelOperation } from "@/lib/angel-runtime.server";
 
-export type PersonalDomain = "applications" | "mail" | "agenda" | "news" | "media" | "preferences";
+export type PersonalDomain = "applications" | "mail" | "agenda" | "news" | "media" | "preferences" | "system";
 
 export type PersonalContextItem = {
   id: string;
