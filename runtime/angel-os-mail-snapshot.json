@@ -1,8 +1,8 @@
 {
-  "fetchedAt": "2026-08-17T02:02:51Z",
+  "fetchedAt": "2026-08-17T06:14:46Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-17T02:02:51Z",
+      "fetchedAt": "2026-08-17T06:14:46Z",
       "important": [
         {
           "subject": "[angelosmegaplus/angel-leclerc] Generic High Entropy Secret exposed on GitHub",
@@ -32,7 +32,7 @@
           "subject": "[angelosmegaplus/angel-leclerc] Run failed: Publication Angel OS - main (53c1522)",
           "from": "Angel OS <notifications@github.com>",
           "date": "2026-08-16T12:39:40Z",
-          "summary": "Des échecs répétés de workflows CI, publication, observabilité, maintenance ou synchronisation Angel OS restent présents parmi les non-lus récents. Aucun nouvel échec GitHub n'est arrivé pendant cette dernière période horaire.",
+          "summary": "Des échecs répétés de workflows CI, publication, observabilité, maintenance ou synchronisation Angel OS restent présents parmi les non-lus récents. Aucun nouvel échec GitHub n'est arrivé pendant cette période.",
           "reason": "Blocage technique antérieur encore utile au cockpit tant que la maintenance n'a pas confirmé sa résolution.",
           "suggestedReply": ""
         },
@@ -45,7 +45,7 @@
           "suggestedReply": ""
         }
       ],
-      "otherSummary": "Depuis le précédent rapport à 17:02 UTC, un seul nouveau message a été reçu : Google Business Profile signale qu'un avis a été laissé sur Prieuré Notre-Dame du Pointet. Ce message est secondaire pour Angel OS et ne nécessite aucune action automatique dans cette routine. Aucun nouveau mail de candidature, refus, entretien, demande de CV, demande d'information, redirection professionnelle ou alerte technique nouvelle n'a été reçu sur cette période. Aucun email n'a été envoyé, classé, marqué lu ou modifié par cette routine.",
+      "otherSummary": "Depuis le précédent rapport à 02:02:51 UTC, un seul nouveau message a été reçu : une promotion DeviantArt reçue à 05:07:39 UTC. Ce message n'est ni professionnel, ni lié à une candidature, ni une alerte technique ou de sécurité pertinente pour Angel OS. Aucun nouveau refus, entretien, demande de CV, demande d'information, redirection professionnelle ou réponse d'entreprise n'a été reçu. Les anciennes alertes GitHub restent non lues mais aucune nouvelle alerte technique n'est arrivée sur la période. Aucun email n'a été envoyé, classé, marqué lu ou modifié par cette routine.",
       "counts": {
         "new_since_last_run": 1,
         "incoming": 1,
@@ -63,9 +63,9 @@
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-16T17:02:44Z",
-    "period_end": "2026-08-17T02:02:51Z",
-    "summary": "Un seul nouveau message a été reçu depuis le précédent rapport : Google Business Profile indique qu'un avis a été laissé sur Prieuré Notre-Dame du Pointet. Il s'agit d'un message secondaire, sans action automatique requise ici. Aucun nouveau mail lié à une candidature n'a été reçu : aucun refus explicite, acceptation, entretien, demande de CV, demande d'information ou redirection professionnelle. Aucune nouvelle alerte technique n'est arrivée sur la période. Cette routine n'a envoyé ni modifié aucun email. La file `ai_actions` reste inaccessible depuis les connecteurs disponibles sans voie serveur Supabase authentifiée ; aucune action `awaiting_operator` n'a donc été exécutée, modifiée ou simulée.",
+    "period_start": "2026-08-17T02:02:51Z",
+    "period_end": "2026-08-17T06:14:46Z",
+    "summary": "Un seul nouveau message a été reçu depuis le précédent rapport : une promotion DeviantArt sans pertinence professionnelle ou technique. Aucun nouveau mail de candidature n'a été reçu : aucun refus explicite, acceptation, entretien, demande de CV, demande d'information ou redirection professionnelle. Aucune nouvelle alerte technique n'est arrivée sur la période. Cette routine n'a envoyé ni modifié aucun email. Le code de production confirme que `ai_actions` est géré dans Supabase et que le client serveur dispose de `SUPABASE_SERVICE_ROLE_KEY`, mais les connecteurs de cette exécution ne fournissent toujours pas de voie authentifiée permettant de lire ou mettre à jour directement `public.ai_actions` ou `hourly_mail_reports`; aucune action `awaiting_operator` n'a donc été exécutée, modifiée ou simulée. Le cache Gmail de secours a été mis à jour sans écraser les données existantes.",
     "counts": {
       "total_messages": 1,
       "incoming": 1,
@@ -78,20 +78,22 @@
       "explicit_rejections": 0,
       "positive_or_interview": 0,
       "professional_redirects": 0,
-      "already_sent_rejection_replies": 0
+      "already_sent_rejection_replies": 0,
+      "awaiting_operator_executed": 0,
+      "pending_actions_created": 0
     },
     "items": [
       {
-        "subject": "La Mosellane a laissé un avis sur Prieuré Notre-Dame du Pointet",
-        "from": "Google Business Profile <businessprofile-noreply@google.com>",
-        "date": "2026-08-16T20:22:29Z",
-        "reason": "Nouvel avis Google Business Profile ; information secondaire sans lien direct avec une candidature ou une action Angel OS validée."
+        "subject": "Gain access to the Core of DeviantArt",
+        "from": "DeviantArt <noreply@deviantart.com>",
+        "date": "2026-08-17T05:07:39Z",
+        "reason": "Promotion commerciale secondaire ; aucune action requise dans la routine professionnelle Angel OS."
       }
     ],
     "recommendations": [
+      "Ne créer aucune réponse ou action `pending` pour la promotion DeviantArt.",
       "Ne créer aucune réponse automatique de refus : aucun nouveau refus explicite n'a été reçu sur la période.",
-      "Ne créer aucune action `pending` pour l'avis Google Business Profile dans cette routine : il n'est pas prioritaire pour le suivi candidatures/mails Angel OS.",
-      "Ne pas simuler l'exécution d'actions `awaiting_operator` tant que `ai_actions` n'est pas accessible par une voie serveur Supabase authentifiée."
+      "Ne pas simuler l'exécution d'actions `awaiting_operator` tant qu'une voie serveur Supabase authentifiée n'est pas exposée au connecteur de cette routine ; réessayer au prochain cycle."
     ],
     "source": "chatgpt-hourly-direct"
   }
