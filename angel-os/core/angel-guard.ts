@@ -21,6 +21,15 @@ export type GuardDecision = {
   decidedAt: number;
 };
 
+export type GuardExecution = {
+  signalId: string;
+  action: GuardAction;
+  status: 'executed' | 'unavailable' | 'failed';
+  executorId?: string;
+  detail?: string;
+  executedAt: number;
+};
+
 export type GuardPolicy = {
   id: string;
   priority: number;
@@ -28,15 +37,30 @@ export type GuardPolicy = {
   decide: (signal: GuardSignal) => GuardDecision;
 };
 
+export type GuardExecutor = {
+  id: string;
+  action: GuardAction;
+  canExecute?: (signal: GuardSignal, decision: GuardDecision) => Promise<boolean> | boolean;
+  execute: (signal: GuardSignal, decision: GuardDecision) => Promise<{ ok: boolean; detail?: string }>;
+};
+
 /** Angel Guard OS is the autonomous security layer of Angel OS. */
 export class AngelGuardOS {
   private policies: GuardPolicy[] = [];
+  private executors: GuardExecutor[] = [];
   private signals: GuardSignal[] = [];
   private decisions: GuardDecision[] = [];
+  private executions: GuardExecution[] = [];
 
   register(policy: GuardPolicy) {
     this.policies.push(policy);
     this.policies.sort((a, b) => b.priority - a.priority);
+    return this;
+  }
+
+  registerExecutor(executor: GuardExecutor) {
+    this.executors = this.executors.filter((candidate) => candidate.id !== executor.id);
+    this.executors.push(executor);
     return this;
   }
 
@@ -52,12 +76,71 @@ export class AngelGuardOS {
     return decision;
   }
 
+  async enforce(signal: GuardSignal, decision: GuardDecision): Promise<GuardExecution> {
+    const candidates = this.executors.filter((executor) => executor.action === decision.action);
+    let selected: GuardExecutor | undefined;
+    for (const executor of candidates) {
+      try {
+        if (!executor.canExecute || await executor.canExecute(signal, decision)) {
+          selected = executor;
+          break;
+        }
+      } catch {
+        // A failing capability check must never be interpreted as permission to execute.
+      }
+    }
+
+    if (!selected) {
+      const execution: GuardExecution = {
+        signalId: signal.id,
+        action: decision.action,
+        status: 'unavailable',
+        detail: 'No verified executor is available for this action',
+        executedAt: Date.now(),
+      };
+      this.rememberExecution(execution);
+      return execution;
+    }
+
+    try {
+      const result = await selected.execute(signal, decision);
+      const execution: GuardExecution = {
+        signalId: signal.id,
+        action: decision.action,
+        status: result.ok ? 'executed' : 'failed',
+        executorId: selected.id,
+        detail: result.detail,
+        executedAt: Date.now(),
+      };
+      this.rememberExecution(execution);
+      return execution;
+    } catch (error) {
+      const execution: GuardExecution = {
+        signalId: signal.id,
+        action: decision.action,
+        status: 'failed',
+        executorId: selected.id,
+        detail: error instanceof Error ? error.message : 'Executor failed',
+        executedAt: Date.now(),
+      };
+      this.rememberExecution(execution);
+      return execution;
+    }
+  }
+
+  private rememberExecution(execution: GuardExecution) {
+    this.executions.unshift(execution);
+    this.executions = this.executions.slice(0, 1000);
+  }
+
   snapshot() {
     return {
       generatedAt: Date.now(),
       policies: this.policies.map(({ id, priority }) => ({ id, priority })),
+      executors: this.executors.map(({ id, action }) => ({ id, action })),
       recentSignals: this.signals.slice(0, 20),
       recentDecisions: this.decisions.slice(0, 20),
+      recentExecutions: this.executions.slice(0, 20),
       automation: true,
     };
   }
