@@ -135,7 +135,6 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
     mutationFn: (value: string) => executePrivateAi({ data: { command: value } }),
     onSuccess: () => {
       setCommand("");
-      toast.success("Réponse d’Angel OS IA reçue via OpenAI.");
       void queryClient.invalidateQueries({ queryKey: ["angel-ai-messages"] });
       void queryClient.invalidateQueries({ queryKey: ["angel-ai-health"] });
       void queryClient.invalidateQueries({ queryKey: ["angel"] });
