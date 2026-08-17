@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Film, Loader2, Search, ShieldCheck, Star } from "lucide-react";
+import { Film, Loader2, RefreshCw, Search, ShieldCheck, Star } from "lucide-react";
 import { Captcha, type CaptchaValue } from "@/components/Captcha";
 import { verifyCaptchaAnswer } from "@/lib/captcha.functions";
 import { FILM_CATALOG } from "@/lib/film-catalog";
+import { getFilmProviderHealth } from "@/lib/film-health.functions";
 import { getLiveFilmCatalog } from "@/lib/film-live.functions";
 import { selectDailyRecommendations, type RecommendationCandidate } from "@/lib/film-recommendations";
 
@@ -34,6 +35,7 @@ function localFallback(mediaType: Filter, query: string) {
 function FilmSeriesPrivateLinkPage() {
   const verify = useServerFn(verifyCaptchaAnswer);
   const loadCatalog = useServerFn(getLiveFilmCatalog);
+  const loadProviderHealth = useServerFn(getFilmProviderHealth);
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [unlocked, setUnlocked] = useState(false);
   const [captcha, setCaptcha] = useState<CaptchaValue>({ token: "", answer: "" });
@@ -62,8 +64,17 @@ function FilmSeriesPrivateLinkPage() {
     retry: 1,
   });
 
+  const { data: providerHealth, refetch: refetchProviderHealth, isFetching: checkingProvider } = useQuery({
+    queryKey: ["films-series-provider-health"],
+    queryFn: () => loadProviderHealth(),
+    enabled: unlocked,
+    staleTime: 60 * 1000,
+    retry: false,
+  });
+
   const fallback = useMemo(() => localFallback(mediaType, query), [mediaType, query]);
-  const catalog = useMemo<RecommendationCandidate[]>(() => data?.items?.length ? data.items : fallback, [data?.items, fallback]);
+  const usingLocalFallback = data?.source === "unavailable";
+  const catalog = useMemo<RecommendationCandidate[]>(() => usingLocalFallback ? fallback : (data?.items ?? []), [data?.items, fallback, usingLocalFallback]);
   const picks = useMemo(() => selectDailyRecommendations(catalog, []).slice(0, 5), [catalog]);
 
   async function unlock() {
@@ -84,6 +95,10 @@ function FilmSeriesPrivateLinkPage() {
   function submitSearch(event: React.FormEvent) {
     event.preventDefault();
     setQuery(draftQuery.trim());
+  }
+
+  async function retryTmdb() {
+    await Promise.all([refetchProviderHealth(), refetch()]);
   }
 
   if (checkingAccess) {
@@ -117,7 +132,7 @@ function FilmSeriesPrivateLinkPage() {
           <div>
             <div className="flex items-center gap-2 text-red-300"><Film className="h-5 w-5" /><span className="font-mono text-[10px] uppercase tracking-[.18em]">Angel OS IA · catalogue privé par lien</span></div>
             <h1 className="mt-2 text-4xl font-semibold tracking-[-.055em] sm:text-5xl">Films et séries</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/45">Catalogue alimenté côté serveur par TMDB. La clé API n’est jamais envoyée au navigateur.</p>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/45">TMDB alimente le catalogue, les affiches, les notes et la recherche. Le catalogue local n’est utilisé qu’en véritable secours.</p>
           </div>
           <form onSubmit={submitSearch} className="flex w-full max-w-md items-center gap-2 rounded-xl border border-white/10 bg-white/[.04] p-2">
             <Search className="ml-2 h-4 w-4 shrink-0 text-white/35" />
@@ -133,13 +148,23 @@ function FilmSeriesPrivateLinkPage() {
             </button>
           ))}
           {(isLoading || isFetching) ? <span className="ml-1 inline-flex items-center gap-1.5 text-xs text-white/35"><Loader2 className="h-3.5 w-3.5 animate-spin" />Actualisation TMDB</span> : null}
-          <button type="button" onClick={() => void refetch()} className="ml-auto text-xs text-white/35 hover:text-white/70">Actualiser</button>
+          <button type="button" onClick={() => void retryTmdb()} className="ml-auto inline-flex items-center gap-1.5 text-xs text-white/35 hover:text-white/70"><RefreshCw className={`h-3.5 w-3.5 ${checkingProvider || isFetching ? "animate-spin" : ""}`} />Tester TMDB</button>
         </div>
+
+        {providerHealth ? (
+          <div className={`mt-4 rounded-xl border px-4 py-3 text-xs leading-5 ${providerHealth.status === "ok" ? "border-emerald-400/20 bg-emerald-400/[.06] text-emerald-100/75" : "border-amber-400/20 bg-amber-400/[.06] text-amber-100/75"}`}>
+            {providerHealth.status === "ok"
+              ? `TMDB opérationnel · ${providerHealth.configuredCredentials} identifiant${providerHealth.configuredCredentials > 1 ? "s" : ""} configuré${providerHealth.configuredCredentials > 1 ? "s" : ""}.`
+              : providerHealth.status === "missing-credentials"
+                ? "TMDB indisponible : aucun identifiant n’est chargé dans l’environnement de production."
+                : `TMDB indisponible : ${providerHealth.configuredCredentials} identifiant${providerHealth.configuredCredentials > 1 ? "s" : ""} chargé${providerHealth.configuredCredentials > 1 ? "s" : ""}, mais aucun ne répond correctement.`}
+          </div>
+        ) : null}
 
         {!query && picks.length > 0 ? (
           <section className="mt-9">
             <h2 className="text-2xl font-semibold tracking-[-.04em]">À regarder aujourd’hui</h2>
-            <p className="mt-1 text-xs text-white/35">Cinq propositions calculées à partir du catalogue disponible.</p>
+            <p className="mt-1 text-xs text-white/35">{usingLocalFallback ? "Sélection locale temporaire pendant l’indisponibilité de TMDB." : "Cinq propositions calculées à partir du catalogue TMDB disponible."}</p>
             <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
               {picks.map(({ candidate }) => <MediaCard key={`pick-${candidate.id}`} item={candidate} />)}
             </div>
@@ -148,7 +173,7 @@ function FilmSeriesPrivateLinkPage() {
 
         <section className="mt-10 border-t border-white/10 pt-7">
           <div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-2xl font-semibold tracking-[-.04em]">{query ? `Résultats pour « ${query} »` : "Catalogue"}</h2><p className="mt-1 text-xs text-white/35">{catalog.length} titre{catalog.length > 1 ? "s" : ""} affiché{catalog.length > 1 ? "s" : ""}</p></div></div>
-          {data?.source === "unavailable" ? <div className="mt-4 rounded-xl border border-amber-400/20 bg-amber-400/[.06] px-4 py-3 text-xs leading-5 text-amber-100/75">TMDB n’est pas joignable depuis le serveur pour le moment. Le petit catalogue local est utilisé temporairement.</div> : null}
+          {usingLocalFallback ? <div className="mt-4 rounded-xl border border-amber-400/20 bg-amber-400/[.06] px-4 py-3 text-xs leading-5 text-amber-100/75">TMDB n’est pas joignable depuis le serveur. Le catalogue local est utilisé uniquement pour maintenir la page exploitable pendant le diagnostic.</div> : null}
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
             {catalog.map((item) => <MediaCard key={item.id} item={item} />)}
           </div>
