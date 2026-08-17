@@ -24,6 +24,22 @@ function isExpectedAuthRedirect(value: string) {
   return /AUTH_SESSION_EXPIRED/i.test(value);
 }
 
+function isRecoverableAuthFailure(value: string) {
+  return /401|unauthori[sz]ed|invalid or expired session token|invalid token|jwt expired|session token/i.test(value);
+}
+
+function recoverAdminSession(value: string) {
+  if (typeof window === "undefined" || !window.location.pathname.startsWith("/admin")) return false;
+  if (!isRecoverableAuthFailure(value)) return false;
+
+  const target = `/auth?reason=session-expired&returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+  // Replace instead of push so the broken authenticated page does not remain in
+  // browser history. The auth screen can restore a fresh Supabase session and
+  // then return to the exact admin route.
+  window.location.replace(target);
+  return true;
+}
+
 function stripHtml(value: string): string {
   return value
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
@@ -81,12 +97,8 @@ function makeNotice(value: unknown, id: number): AdminErrorNotice {
 export function reportAdminError(reason: unknown) {
   if (typeof window === "undefined") return;
   const raw = rawReason(reason);
-  // A stale session is handled by the auth middleware itself: it refreshes once
-  // and redirects to /auth only when recovery is impossible. Do not display a
-  // scary global alert during that expected navigation.
   if (isExpectedAuthRedirect(raw)) return;
-  // Les anciennes server functions peuvent encore renvoyer une page HTML pendant une
-  // transition de déploiement. Ce bruit de fond ne doit jamais déclencher une alerte globale.
+  if (recoverAdminSession(raw)) return;
   if (isHtmlPayload(raw)) {
     console.warn("[angel-os] background HTML error suppressed", stripHtml(raw).slice(0, 240));
     return;
@@ -126,8 +138,7 @@ export function AdminErrorNotifier() {
     const show = (reason: unknown) => {
       const raw = rawReason(reason);
       if (isExpectedAuthRedirect(raw)) return;
-      // Une page HTML venant d’une server function est un incident de requête de fond,
-      // pas une panne de toute l’administration.
+      if (recoverAdminSession(raw)) return;
       if (isHtmlPayload(raw)) {
         console.warn("[angel-os] unhandled background HTML error suppressed", stripHtml(raw).slice(0, 240));
         return;
