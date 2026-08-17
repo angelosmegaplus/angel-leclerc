@@ -43,9 +43,6 @@ export const integrationReadiness = createServerFn({ method: "GET" })
         ? (provider.optionalScopes ?? []).filter((scope) => !granted.has(scope))
         : [];
 
-      // Scope metadata is a capability hint, not connection health. Google may
-      // omit/reformat scope metadata and transient provider failures must never
-      // create an endless "reconnect" loop immediately after a valid callback.
       let connection: ConnectionState = !row
         ? "not_connected"
         : row.status === "reconnect_required"
@@ -69,9 +66,6 @@ export const integrationReadiness = createServerFn({ method: "GET" })
             }
           }
         } catch (error) {
-          // getAccessToken already marks an actually unusable/refresh-failed token
-          // reconnect_required. A transient diagnostic failure is not enough to
-          // invalidate a connection that has just completed OAuth successfully.
           liveProbeNote = `Contrôle Google temporairement indisponible : ${error instanceof Error ? error.message.slice(0, 160) : "erreur inconnue"}.`;
         }
       }
@@ -95,9 +89,11 @@ export const integrationReadiness = createServerFn({ method: "GET" })
     }));
   });
 
-const providerInput = z.object({ provider: z.string().min(1).max(30) });
+const providerInput = z.object({
+  provider: z.string().min(1).max(30),
+  service: z.string().min(1).max(40).optional(),
+});
 
-/** Returns the provider consent URL. The browser only ever sees this URL, never a token. */
 export const startOAuthConnection = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((data: unknown) => providerInput.parse(data))
@@ -112,12 +108,21 @@ export const startOAuthConnection = createServerFn({ method: "POST" })
       || process.env.SITE_URL?.trim()
       || requestOrigin;
     const origin = canonicalOAuthOrigin(configuredOrigin);
-    return { url: buildAuthorizeUrl(data.provider, origin, context.userId) };
+
+    let requestedScopes: string[] | undefined;
+    if (data.provider === "google" && data.service) {
+      const { getGoogleService } = await import("./oauth/google-services");
+      const service = getGoogleService(data.service);
+      if (!service) throw new Error("Service Google inconnu.");
+      requestedScopes = service.scopes;
+    }
+
+    return { url: buildAuthorizeUrl(data.provider, origin, context.userId, requestedScopes) };
   });
 
 export const disconnectOAuthConnection = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((data: unknown) => providerInput.parse(data))
+  .validator((data: unknown) => z.object({ provider: z.string().min(1).max(30) }).parse(data))
   .handler(async ({ context, data }): Promise<{ ok: true }> => {
     await assertAdmin(context);
     const { isProviderId } = await import("./oauth/providers");
