@@ -1,0 +1,2 @@
+2026-08-17T04:24:00Z
+Reason: reload production environment variables after TMDB_READ_TOKEN configuration.
