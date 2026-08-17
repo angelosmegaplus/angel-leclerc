@@ -21,13 +21,14 @@ export const Route = createFileRoute("/angel-os-ia")({
 
 type Technology = {
   name: string;
-  logo: string;
+  logo?: string;
   text: string;
+  wordmark?: string;
 };
 
 const technologies: Technology[] = [
   { name: "ChatGPT", logo: "/logos/chatgpt.com.svg", text: "Analyse les problèmes, aide aux corrections, au contrôle et à la maintenance du projet." },
-  { name: "OpenAI API", logo: "https://cdn.simpleicons.org/openai/111111", text: "Fournit les capacités d’intelligence artificielle utilisées directement dans Angel OS IA." },
+  { name: "OpenAI API", wordmark: "OpenAI", text: "Fournit les capacités d’intelligence artificielle utilisées directement dans Angel OS IA." },
   { name: "React", logo: "https://cdn.simpleicons.org/react/149ECA", text: "Structure les interfaces et les composants interactifs." },
   { name: "TypeScript", logo: "https://cdn.simpleicons.org/typescript/3178C6", text: "Porte la logique applicative et sécurise le développement par le typage." },
   { name: "TanStack", logo: "https://cdn.simpleicons.org/tanstack/111111", text: "Gère le routage, les données asynchrones et une partie de l’architecture." },
@@ -42,7 +43,18 @@ const technologies: Technology[] = [
   { name: "TMDB API", logo: "https://cdn.simpleicons.org/themoviedatabase/01B4E4", text: "Fournit les recherches, affiches et métadonnées de l’espace Films & séries." },
 ];
 
-const card = "rounded-[1.6rem] border border-[#ded8cf] bg-white shadow-[0_14px_45px_rgba(35,31,27,.06)]";
+const card = "rounded-[1.35rem] border border-[#ded8cf] bg-white";
+
+const codeRows = [
+  "context.mail.sync()      // ready",
+  "agenda.next_event()      // connected",
+  "applications.reconcile() // active",
+  "angel_guard.health()     // monitoring",
+  "ai.context.load()        // private",
+  "deployment.main()        // production",
+  "drive.files.index()      // available",
+  "tmdb.catalog.fetch()     // online",
+];
 
 function BackButton() {
   const goBack = () => {
@@ -50,7 +62,7 @@ function BackButton() {
     else window.location.href = "/parcours#realisations";
   };
   return (
-    <button onClick={goBack} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#d8d1c8] bg-white px-4 py-2 text-sm font-semibold text-[#34302c] shadow-sm transition hover:bg-[#f8f5f0]">
+    <button onClick={goBack} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#d8d1c8] bg-white px-4 py-2 text-sm font-semibold text-[#34302c] transition hover:bg-[#f8f5f0]">
       <ArrowLeft size={15} /> Retour
     </button>
   );
@@ -60,8 +72,12 @@ function TechCard({ technology }: { technology: Technology }) {
   return (
     <article className={`${card} min-w-0 p-4 sm:p-5`}>
       <div className="flex min-w-0 items-center gap-3">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[#e6e0d8] bg-[#faf8f4] p-2.5">
-          <img src={technology.logo} alt={`Logo ${technology.name}`} className="h-full w-full object-contain" loading="lazy" />
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#e6e0d8] bg-[#faf8f4] p-2.5">
+          {technology.logo ? (
+            <img src={technology.logo} alt={`Logo ${technology.name}`} className="h-full w-full object-contain" loading="lazy" />
+          ) : (
+            <span className="text-[10px] font-black tracking-[-.04em] text-[#111]">{technology.wordmark}</span>
+          )}
         </span>
         <h3 className="min-w-0 break-words font-semibold text-[#181614]">{technology.name}</h3>
       </div>
@@ -87,6 +103,19 @@ function ExpandableWidget({ title, eyebrow, children, defaultOpen = false }: { t
   );
 }
 
+function LiveCodeRail() {
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 hidden w-[44%] overflow-hidden lg:block">
+      <div className="absolute inset-0 bg-gradient-to-l from-[#f6f3ee]/30 via-[#f6f3ee]/72 to-[#f6f3ee]" />
+      <div className="angel-code-stream absolute right-0 top-0 w-full space-y-3 pr-8 pt-8 font-mono text-[11px] leading-6 text-[#665f57]/35">
+        {[...codeRows, ...codeRows, ...codeRows].map((row, index) => (
+          <div key={`${row}-${index}`} className="whitespace-nowrap border-l border-[#c54f41]/15 pl-3">{row}</div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function AngelOsIaPage() {
   const [booting, setBooting] = useState(true);
   const finishBoot = useCallback(() => setBooting(false), []);
@@ -101,20 +130,30 @@ function AngelOsIaPage() {
 
   return (
     <main className="min-h-screen overflow-x-clip bg-[#f6f3ee] text-[#181614]">
-      <section className="relative isolate overflow-hidden px-4 pb-10 pt-5 sm:px-7 sm:pb-14 sm:pt-7 lg:px-10 lg:pb-16">
-        <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_12%_8%,rgba(203,78,62,.12),transparent_28%),radial-gradient(circle_at_88%_12%,rgba(72,112,190,.09),transparent_24%),linear-gradient(180deg,#fbfaf8_0%,#f6f3ee_100%)]" />
-        <div aria-hidden className="absolute inset-0 -z-10 opacity-[.18] [background-image:linear-gradient(rgba(91,79,68,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(91,79,68,.08)_1px,transparent_1px)] [background-size:38px_38px]" />
+      <style>{`
+        @keyframes angelCodeFlow {
+          0% { transform: translateY(-22%); }
+          100% { transform: translateY(8%); }
+        }
+        .angel-code-stream { animation: angelCodeFlow 26s linear infinite alternate; }
+        @media (prefers-reduced-motion: reduce) { .angel-code-stream { animation: none; } }
+      `}</style>
 
-        <div className="mx-auto max-w-6xl">
+      <section className="relative isolate overflow-hidden px-4 pb-10 pt-5 sm:px-7 sm:pb-14 sm:pt-7 lg:px-10 lg:pb-16">
+        <div className="absolute inset-0 -z-20 bg-[linear-gradient(180deg,#fbfaf8_0%,#f6f3ee_100%)]" />
+        <div aria-hidden className="absolute inset-0 -z-10 opacity-[.14] [background-image:linear-gradient(rgba(91,79,68,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(91,79,68,.08)_1px,transparent_1px)] [background-size:38px_38px]" />
+        <LiveCodeRail />
+
+        <div className="relative mx-auto max-w-6xl">
           <div className="flex items-center justify-between gap-3">
             <BackButton />
-            <div className="flex items-center gap-2 rounded-full border border-[#ddd6ce] bg-white/80 px-3 py-2 shadow-sm backdrop-blur">
+            <div className="flex items-center gap-2 rounded-full border border-[#ddd6ce] bg-white/90 px-3 py-2">
               <img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-7 w-7 rounded-lg object-cover" />
               <span className="hidden text-xs font-semibold text-[#554e47] xs:inline sm:text-sm">Angel OS IA</span>
             </div>
           </div>
 
-          <div className="pt-10 sm:pt-14 lg:pt-16">
+          <div className="max-w-4xl pt-10 sm:pt-14 lg:pt-16">
             <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[#b44738] sm:text-xs">Intelligence artificielle intégrée</p>
             <h1 className="mt-3 max-w-5xl font-display text-[clamp(3rem,12vw,7.4rem)] font-black leading-[.86] tracking-[-.065em] text-[#171513]">
               Angel <span className="text-[#c54f41]">OS IA</span>
@@ -129,9 +168,8 @@ function AngelOsIaPage() {
 
           <div className="mt-8 grid auto-rows-[minmax(9rem,auto)] grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-12 lg:gap-4">
             <article className={`${card} relative overflow-hidden p-5 sm:p-6 lg:col-span-7 lg:row-span-2`}>
-              <div className="absolute -right-16 -top-20 h-56 w-56 rounded-full bg-[#c94f40]/10 blur-3xl" />
               <div className="relative flex items-start gap-4">
-                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#c94f40] text-white shadow-lg shadow-[#c94f40]/20"><BrainCircuit className="h-6 w-6" /></span>
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#c94f40] text-white"><BrainCircuit className="h-6 w-6" /></span>
                 <div className="min-w-0">
                   <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#b44738]">Cœur IA</p>
                   <h2 className="mt-1 text-2xl font-black tracking-[-.035em] sm:text-3xl">Comprendre le contexte, puis agir avec lui</h2>
@@ -147,7 +185,7 @@ function AngelOsIaPage() {
 
             <article className={`${card} p-5 sm:p-6 lg:col-span-5`}>
               <div className="flex items-start gap-3">
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#fff0e8] text-[#c2643c]"><ShieldCheck className="h-5 w-5" /></span>
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#fff0e8] text-[#c2643c]"><ShieldCheck className="h-5 w-5" /></span>
                 <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#b9673d]">Angel Guard</p><h2 className="mt-1 text-xl font-black tracking-[-.03em]">Surveiller sans mélanger les rôles</h2></div>
               </div>
               <p className="mt-4 text-sm leading-7 text-[#6b655e]">Angel Guard reste le bloc de supervision : incidents, contrôles techniques, détection d’anomalies et récupération.</p>
@@ -155,7 +193,7 @@ function AngelOsIaPage() {
 
             <article className={`${card} p-5 sm:p-6 lg:col-span-5`}>
               <div className="flex items-start gap-3">
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#edf3ff] text-[#466fa8]"><Database className="h-5 w-5" /></span>
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#edf3ff] text-[#466fa8]"><Database className="h-5 w-5" /></span>
                 <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#5276a8]">Données</p><h2 className="mt-1 text-xl font-black tracking-[-.03em]">Connecté au réel</h2></div>
               </div>
               <p className="mt-4 text-sm leading-7 text-[#6b655e]">Les réponses utiles doivent venir de données accessibles et de services réellement connectés, pas d’un décor qui prétend être connecté.</p>
@@ -190,7 +228,7 @@ function AngelOsIaPage() {
           <div className="max-w-3xl">
             <p className="text-[11px] font-bold uppercase tracking-[.18em] text-[#b44738]">Infrastructure connectée</p>
             <h2 className="mt-2 font-display text-3xl font-black tracking-[-.045em] sm:text-4xl">Les technologies derrière Angel OS IA</h2>
-            <p className="mt-3 text-sm leading-7 text-[#6b655e] sm:text-base">Sur mobile, les cartes restent lisibles et empilées. Sur écran plus large, elles se recomposent automatiquement sans imposer une hauteur identique.</p>
+            <p className="mt-3 text-sm leading-7 text-[#6b655e] sm:text-base">Des cartes plus plates, plus lisibles et plus techniques : moins d’effets décoratifs, davantage d’information utile et une hiérarchie visuelle nette.</p>
           </div>
           <div className="mt-7 grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {technologies.map((technology) => <TechCard key={technology.name} technology={technology} />)}
@@ -202,10 +240,10 @@ function AngelOsIaPage() {
         <div className="mx-auto grid max-w-6xl items-start gap-3 lg:grid-cols-2">
           <ExpandableWidget eyebrow="Fonctionnement" title="Comment les rôles se répartissent" defaultOpen>
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl bg-[#faf8f4] p-4"><strong className="text-[#181614]">ChatGPT</strong><p className="mt-1">Développement, corrections, contrôle et maintenance.</p></div>
-              <div className="rounded-2xl bg-[#faf8f4] p-4"><strong className="text-[#181614]">Angel OS</strong><p className="mt-1">Organisation de l’administration, des données et des fonctions internes.</p></div>
-              <div className="rounded-2xl bg-[#faf8f4] p-4"><strong className="text-[#181614]">Angel OS IA</strong><p className="mt-1">Intelligence intégrée, analyse, rédaction et assistance.</p></div>
-              <div className="rounded-2xl bg-[#faf8f4] p-4"><strong className="text-[#181614]">Angel Guard</strong><p className="mt-1">Supervision, incidents et contrôles techniques.</p></div>
+              <div className="rounded-xl border border-[#ebe5de] bg-[#faf8f4] p-4"><strong className="text-[#181614]">ChatGPT</strong><p className="mt-1">Développement, corrections, contrôle et maintenance.</p></div>
+              <div className="rounded-xl border border-[#ebe5de] bg-[#faf8f4] p-4"><strong className="text-[#181614]">Angel OS</strong><p className="mt-1">Organisation de l’administration, des données et des fonctions internes.</p></div>
+              <div className="rounded-xl border border-[#ebe5de] bg-[#faf8f4] p-4"><strong className="text-[#181614]">Angel OS IA</strong><p className="mt-1">Intelligence intégrée, analyse, rédaction et assistance.</p></div>
+              <div className="rounded-xl border border-[#ebe5de] bg-[#faf8f4] p-4"><strong className="text-[#181614]">Angel Guard</strong><p className="mt-1">Supervision, incidents et contrôles techniques.</p></div>
             </div>
           </ExpandableWidget>
 
@@ -214,7 +252,7 @@ function AngelOsIaPage() {
           </ExpandableWidget>
         </div>
 
-        <div className="mx-auto mt-8 max-w-6xl rounded-[1.8rem] bg-[#181614] p-5 text-white shadow-[0_20px_60px_rgba(24,22,20,.16)] sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-7">
+        <div className="mx-auto mt-8 max-w-6xl rounded-[1.35rem] border border-[#2a2724] bg-[#181614] p-5 text-white sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-7">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[.18em] text-white/45">Espace privé</p>
             <p className="mt-1 text-xl font-bold tracking-[-.03em] sm:text-2xl">Angel OS reste accessible depuis l’administration.</p>
