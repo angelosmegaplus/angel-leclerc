@@ -1,8 +1,8 @@
 {
-  "fetchedAt": "2026-08-16T17:02:44Z",
+  "fetchedAt": "2026-08-17T02:02:51Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-16T17:02:44Z",
+      "fetchedAt": "2026-08-17T02:02:51Z",
       "important": [
         {
           "subject": "[angelosmegaplus/angel-leclerc] Generic High Entropy Secret exposed on GitHub",
@@ -45,14 +45,14 @@
           "suggestedReply": ""
         }
       ],
-      "otherSummary": "Depuis le précédent rapport à 16:02 UTC, un seul nouveau message pertinent a été reçu : GitGuardian a signalé à 16:49 UTC un secret générique à forte entropie exposé dans le dépôt angelosmegaplus/angel-leclerc. Aucun nouveau mail de candidature, refus, entretien, demande de CV, demande d'information ou redirection professionnelle n'a été reçu sur cette période. Aucun email n'a été envoyé, classé, marqué lu ou modifié par cette routine.",
+      "otherSummary": "Depuis le précédent rapport à 17:02 UTC, un seul nouveau message a été reçu : Google Business Profile signale qu'un avis a été laissé sur Prieuré Notre-Dame du Pointet. Ce message est secondaire pour Angel OS et ne nécessite aucune action automatique dans cette routine. Aucun nouveau mail de candidature, refus, entretien, demande de CV, demande d'information, redirection professionnelle ou alerte technique nouvelle n'a été reçu sur cette période. Aucun email n'a été envoyé, classé, marqué lu ou modifié par cette routine.",
       "counts": {
         "new_since_last_run": 1,
         "incoming": 1,
         "outgoing": 0,
-        "technical_incoming": 1,
-        "security_or_account_incoming": 1,
-        "secondary_incoming": 0,
+        "technical_incoming": 0,
+        "security_or_account_incoming": 0,
+        "secondary_incoming": 1,
         "employment_or_application_incoming": 0,
         "application_action_required": 0,
         "explicit_rejections": 0,
@@ -63,15 +63,16 @@
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-16T16:02:15Z",
-    "period_end": "2026-08-16T17:02:44Z",
-    "summary": "Un seul nouveau message pertinent a été reçu depuis le précédent rapport : GitGuardian signale à 16:49 UTC un Generic High Entropy Secret exposé dans le dépôt angelosmegaplus/angel-leclerc. Aucun nouveau mail lié à une candidature n'a été reçu : aucun refus explicite, acceptation, entretien, demande de CV, demande d'information ou redirection professionnelle. Cette routine n'a envoyé ni modifié aucun email. La file `ai_actions` n'est pas accessible depuis les connecteurs disponibles sans voie serveur Supabase authentifiée ; aucune action `awaiting_operator` n'a donc été exécutée, modifiée ou simulée.",
+    "period_start": "2026-08-16T17:02:44Z",
+    "period_end": "2026-08-17T02:02:51Z",
+    "summary": "Un seul nouveau message a été reçu depuis le précédent rapport : Google Business Profile indique qu'un avis a été laissé sur Prieuré Notre-Dame du Pointet. Il s'agit d'un message secondaire, sans action automatique requise ici. Aucun nouveau mail lié à une candidature n'a été reçu : aucun refus explicite, acceptation, entretien, demande de CV, demande d'information ou redirection professionnelle. Aucune nouvelle alerte technique n'est arrivée sur la période. Cette routine n'a envoyé ni modifié aucun email. La file `ai_actions` reste inaccessible depuis les connecteurs disponibles sans voie serveur Supabase authentifiée ; aucune action `awaiting_operator` n'a donc été exécutée, modifiée ou simulée.",
     "counts": {
       "total_messages": 1,
       "incoming": 1,
       "outgoing": 0,
-      "technical_incoming": 1,
-      "security_or_account_incoming": 1,
+      "technical_incoming": 0,
+      "security_or_account_incoming": 0,
+      "secondary_incoming": 1,
       "employment_or_application_incoming": 0,
       "application_action_required": 0,
       "explicit_rejections": 0,
@@ -81,15 +82,15 @@
     },
     "items": [
       {
-        "subject": "[angelosmegaplus/angel-leclerc] Generic High Entropy Secret exposed on GitHub",
-        "from": "GitGuardian <security@getgitguardian.com>",
-        "date": "2026-08-16T16:49:05Z",
-        "reason": "Alerte de sécurité récente sur le dépôt principal ; à rapprocher des corrections de sécurité déjà en cours et à laisser à la maintenance technique."
+        "subject": "La Mosellane a laissé un avis sur Prieuré Notre-Dame du Pointet",
+        "from": "Google Business Profile <businessprofile-noreply@google.com>",
+        "date": "2026-08-16T20:22:29Z",
+        "reason": "Nouvel avis Google Business Profile ; information secondaire sans lien direct avec une candidature ou une action Angel OS validée."
       }
     ],
     "recommendations": [
       "Ne créer aucune réponse automatique de refus : aucun nouveau refus explicite n'a été reçu sur la période.",
-      "Faire traiter l'alerte GitGuardian par la maintenance technique : vérifier si le secret signalé correspond au credential historique déjà retiré, puis confirmer sa révocation/rotation si nécessaire sans exposer sa valeur.",
+      "Ne créer aucune action `pending` pour l'avis Google Business Profile dans cette routine : il n'est pas prioritaire pour le suivi candidatures/mails Angel OS.",
       "Ne pas simuler l'exécution d'actions `awaiting_operator` tant que `ai_actions` n'est pas accessible par une voie serveur Supabase authentifiée."
     ],
     "source": "chatgpt-hourly-direct"
