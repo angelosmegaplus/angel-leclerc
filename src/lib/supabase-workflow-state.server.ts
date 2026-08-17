@@ -2,16 +2,29 @@ import type { WorkflowSnapshot, WorkflowStateStore } from "../../angel-os/core";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const KEY_PREFIX = "workflow:";
+const SCHEMA_RETRY_MS = 5 * 60 * 1000;
+let durableDisabledUntil = 0;
 
 function hasDurableBackend() {
-  return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+  return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) && Date.now() >= durableDisabledUntil;
+}
+
+function isSchemaUnavailable(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  return /angel_os_cache|schema cache|PGRST\d+|relation .* does not exist|could not find the table/i.test(message);
+}
+
+function disableDurableBackend(error: unknown) {
+  if (!isSchemaUnavailable(error)) return;
+  durableDisabledUntil = Date.now() + SCHEMA_RETRY_MS;
+  console.warn("[angel-workflow] cache schema unavailable; process fallback enabled for 5 minutes", error instanceof Error ? error.message : String(error));
 }
 
 /**
  * Durable Angel OS workflow state backed by angel_os_cache when the server-side
- * Supabase credentials are available. The process-local map keeps the runtime
- * operational without generating false production errors when that optional
- * persistence backend is not configured.
+ * Supabase credentials and schema are available. The process-local map keeps
+ * the runtime operational while a migration is missing or the PostgREST schema
+ * cache is refreshing.
  */
 export class SupabaseWorkflowStateStore implements WorkflowStateStore {
   private readonly fallback = new Map<string, WorkflowSnapshot<unknown>>();
@@ -37,6 +50,7 @@ export class SupabaseWorkflowStateStore implements WorkflowStateStore {
         return snapshot;
       }
     } catch (error) {
+      disableDurableBackend(error);
       console.warn("[angel-workflow] durable read unavailable; using process fallback", error instanceof Error ? error.message : String(error));
     }
 
@@ -65,6 +79,7 @@ export class SupabaseWorkflowStateStore implements WorkflowStateStore {
       );
       if (error) throw new Error(error.message || "Supabase workflow write failed");
     } catch (error) {
+      disableDurableBackend(error);
       console.warn("[angel-workflow] durable write unavailable; snapshot retained in process fallback", error instanceof Error ? error.message : String(error));
     }
   }
