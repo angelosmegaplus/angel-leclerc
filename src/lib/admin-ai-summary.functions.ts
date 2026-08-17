@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { resilientAngelAi } from "./ai-resilient.server";
+import { aiMemoryPrompt } from "./ai-memory.server";
+import { operationalContextPrompt, readOperationalContext } from "./angel-os-ia/operational-context.server";
 import { rememberPersonalContext } from "./angel-os-ia/personal-context.server";
 
 type AdminAiSummaryResult = {
@@ -8,6 +10,7 @@ type AdminAiSummaryResult = {
   generatedAt: string;
   source: "openai" | "unavailable";
   stale: boolean;
+  operationalContextAt?: string | null;
 };
 
 const SUMMARY_TTL_MS = 5 * 60_000;
@@ -39,11 +42,13 @@ export const getAdminAiSummary = createServerFn({ method: "GET" })
       return { ...cachedPayload, stale: false };
     }
 
-    const [applicationsResult, reportsResult, cacheResult, actionsResult] = await Promise.all([
+    const [applicationsResult, reportsResult, cacheResult, actionsResult, operational, memory] = await Promise.all([
       supabase.from("applications").select("company,city,position,status,response,follow_up_at,sent_at").order("sent_at", { ascending: false }).limit(80),
       supabase.from("hourly_mail_reports").select("generated_at,summary,counts,recommendations").order("generated_at", { ascending: false }).limit(2),
       supabase.from("angel_os_cache").select("key,payload,updated_at").in("key", ["gmail_dashboard", "google_calendar_dashboard", "news_dashboard", "admin_cockpit_summary"]),
       supabase.from("ai_actions").select("title,status,sensitive,created_at").in("status", ["pending", "awaiting_operator"]).order("created_at", { ascending: false }).limit(12),
+      readOperationalContext({ refreshIfStale: true }),
+      aiMemoryPrompt("private"),
     ]);
 
     const applications = applicationsResult.data ?? [];
@@ -73,6 +78,14 @@ export const getAdminAiSummary = createServerFn({ method: "GET" })
         top: (Array.isArray(news.items) ? news.items : Array.isArray(news.top_stories) ? news.top_stories : []).slice(0, 6).map((item: any) => clip(item?.title ?? item, 180)),
       },
       actions: (actionsResult.data ?? []).map((item: any) => ({ title: clip(item.title, 180), status: item.status, sensitive: Boolean(item.sensitive) })),
+      operational: operational ? {
+        generatedAt: operational.generatedAt,
+        overview: operational.overview,
+        priorities: operational.priorities,
+        alerts: operational.alerts,
+        sourceFreshness: operational.liveSources.slice(0, 12),
+        autonomy: operational.autonomy,
+      } : null,
       previousCockpit: clip(existingCockpit.generalText ?? existingCockpit.summary, 700),
     };
 
@@ -81,20 +94,21 @@ export const getAdminAiSummary = createServerFn({ method: "GET" })
       rememberPersonalContext({ id: "mail-current", domain: "mail", title: "État actuel des mails", text: JSON.stringify(snapshot.mail), metadata: { important: snapshot.mail.important } }),
       rememberPersonalContext({ id: "agenda-current", domain: "agenda", title: "État actuel de l’agenda", text: JSON.stringify(snapshot.agenda) }),
       rememberPersonalContext({ id: "news-current", domain: "news", title: "Actualités personnalisées actuelles", text: JSON.stringify(snapshot.news), metadata: { count: snapshot.news.count } }),
+      rememberPersonalContext({ id: "angel-os-operational-current", domain: "angel-os", title: "Contexte opérationnel Angel OS", text: JSON.stringify(snapshot.operational ?? {}), metadata: { generatedAt: operational?.generatedAt ?? null } }),
     ]);
 
     const ai = await resilientAngelAi({
       priority: "important",
-      maxTokens: 420,
+      maxTokens: 520,
       temperature: 0.2,
       cacheKey: `angel-os-ia:admin-summary:${JSON.stringify(snapshot)}`,
       cacheTtlMs: SUMMARY_TTL_MS,
       messages: [
         {
           role: "system",
-          content: "Tu es la couche de synthèse personnelle d’Angel OS IA. Angel OS fournit les données et primitives système ; toi, tu interprètes uniquement le JSON fourni pour l’administration privée. N’invente aucun fait, chiffre, mail, rendez-vous ou statut. Écris en français naturel, clair et très concis, 3 à 6 phrases maximum. Commence directement par l’information utile. Priorise ce qui nécessite une action, puis candidatures, mails, agenda et actualités. Si rien n’est urgent, dis-le simplement. Aucun markdown, aucune liste, aucun jargon technique.",
+          content: "Tu es la couche de synthèse personnelle d’Angel OS IA sur la page d’accueil de l’administration privée. Angel OS fournit les données et primitives système ; toi, tu interprètes uniquement les données fournies. N’invente aucun fait, chiffre, mail, rendez-vous ou statut. Écris en français naturel, clair et concis, 4 à 7 phrases maximum. Commence directement par l’information utile. Priorise les alertes, échéances et actions réellement utiles, puis candidatures, mails, agenda, projets et actualités. Utilise le contexte opérationnel horaire pour signaler aussi une source périmée ou une action bloquée. Tu peux proposer spontanément une prochaine action sûre et réversible. Ne prétends jamais qu’une action sensible a été exécutée sans validation. Aucun markdown, aucune liste, aucun jargon technique.",
         },
-        { role: "user", content: JSON.stringify(snapshot) },
+        { role: "user", content: `${JSON.stringify(snapshot)}${memory}${operationalContextPrompt(operational)}` },
       ],
     });
 
@@ -105,14 +119,16 @@ export const getAdminAiSummary = createServerFn({ method: "GET" })
         generatedAt: new Date().toISOString(),
         source: "unavailable",
         stale: true,
+        operationalContextAt: operational?.generatedAt ?? null,
       };
     }
 
     const payload: AdminAiSummaryResult = {
-      text: ai.text.slice(0, 1_800),
+      text: ai.text.slice(0, 2_200),
       generatedAt: new Date().toISOString(),
       source: "openai",
       stale: false,
+      operationalContextAt: operational?.generatedAt ?? null,
     };
     await supabase.from("angel_os_cache").upsert({ key: CACHE_KEY, payload, updated_at: payload.generatedAt }, { onConflict: "key" });
     return payload;
