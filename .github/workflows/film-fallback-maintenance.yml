@@ -33,10 +33,10 @@ jobs:
         run: node scripts/check-film-fallback.mjs
       - name: Installer les dépendances
         run: bun install --frozen-lockfile
-      - name: Vérifier TypeScript
-        run: bun run typecheck
       - name: Construire l'application
         run: bun run build
+      - name: Vérifier TypeScript
+        run: bun run typecheck
       - name: Résumé
         if: always()
         run: |
@@ -48,5 +48,5 @@ jobs:
             echo "- secours d'affiche indépendant de TMDB contrôlé"
             echo "- synopsis complet et fiches détaillées contrôlés"
             echo "- disponibilité France / fournisseurs contrôlés"
-            echo "- TypeScript + build exécutés"
+            echo "- build + TypeScript exécutés dans l'ordre qui régénère le route tree"
           } >> "$GITHUB_STEP_SUMMARY"
