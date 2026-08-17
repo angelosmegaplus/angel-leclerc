@@ -63,8 +63,8 @@ export const syncGoogleApplications = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<ApplicationSyncResult> => {
     await assertAdmin(context);
-    const { syncApplicationsForUser } = await import("./applications.server");
-    const result = await syncApplicationsForUser(context.userId, context.supabase);
+    const { reconcileApplicationsFromMail } = await import("./angel-os-ia/applications-reconcile.server");
+    const result = await reconcileApplicationsFromMail(context.userId, context.supabase);
 
     const { data: recent } = await context.supabase
       .from("applications")
@@ -75,13 +75,15 @@ export const syncGoogleApplications = createServerFn({ method: "POST" })
     await rememberPersonalContext({
       id: "applications-sync",
       domain: "applications",
-      title: "Synchronisation candidatures et Gmail",
+      title: "Synchronisation candidatures · Angel OS IA",
       text: JSON.stringify({ result, recent: recent ?? [] }),
-      tags: ["gmail", "sync", "applications"],
+      tags: ["angel-os-ia", "gmail", "sync", "applications"],
       metadata: {
+        orchestrator: "angel-os-ia",
         imported: result.imported,
         updated: result.updated,
         skipped: result.skipped,
+        followUpsRepaired: result.followUpsRepaired,
         status: result.status,
       },
     });
@@ -89,10 +91,6 @@ export const syncGoogleApplications = createServerFn({ method: "POST" })
     return result;
   });
 
-// Runtime data intentionally lives on a branch that never deploys. Keeping
-// these JSON snapshots away from main prevents every research cycle from
-// triggering CI, previews and production builds while preserving a temporary
-// migration fallback until all writers use the native Angel OS cache.
 const ALTERNANCE_RUNTIME_URL =
   "https://raw.githubusercontent.com/angelosmegaplus/angel-leclerc/runtime-data/runtime/alternance-urgent-latest.json";
 const ALTERNANCE_HISTORY_URL =
