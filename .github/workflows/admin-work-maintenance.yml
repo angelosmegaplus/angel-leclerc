@@ -1,0 +1,81 @@
+name: Maintenance Travail Admin
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 * * * *"
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: maintenance-travail-admin
+  cancel-in-progress: true
+
+jobs:
+  refresh-work:
+    name: Mettre à jour toute la partie Travail
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    environment: production
+    env:
+      NEWSLETTER_CRON_SECRET: ${{ secrets.NEWSLETTER_CRON_SECRET }}
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Synchroniser les candidatures et réponses Gmail
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${NEWSLETTER_CRON_SECRET:-}" ]; then
+            echo "::warning::NEWSLETTER_CRON_SECRET absent : candidatures non synchronisées."
+          else
+            tmp="$(mktemp)"
+            code="$(curl -L --silent --show-error --output "$tmp" --write-out '%{http_code}' --max-time 90 \
+              -X POST \
+              -H "x-cron-token: ${NEWSLETTER_CRON_SECRET}" \
+              -H 'Content-Type: application/json' \
+              "https://www.angel-leclerc.fr/api/public/hooks/applications-sync")"
+            cat "$tmp"
+            echo
+            if [ "$code" != "200" ]; then
+              echo "::warning::Synchronisation candidatures indisponible (HTTP $code)."
+            else
+              jq -e '.ok == true' "$tmp" >/dev/null || echo "::warning::Réponse candidatures inexploitable."
+            fi
+          fi
+
+      - name: Resynchroniser les données Angel OS utilisées par Travail
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run angel-os-data-sync.yml --repo "$GITHUB_REPOSITORY"
+          echo "Synchronisation globale Angel OS demandée."
+
+      - name: Vérifier que l'espace administrateur reste accessible
+        shell: bash
+        run: |
+          set -euo pipefail
+          code="$(curl -L --silent --show-error --output /dev/null --write-out '%{http_code}' --max-time 30 \
+            "https://www.angel-leclerc.fr/admin")"
+          if [ "$code" -lt 200 ] || [ "$code" -ge 500 ]; then
+            echo "::error::Espace administrateur indisponible (HTTP $code)."
+            exit 1
+          fi
+          echo "Espace administrateur joignable : HTTP $code"
+
+      - name: Résumé Travail
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Maintenance Travail — toutes les heures"
+            echo ""
+            echo "- Candidatures : synchronisation Gmail et statuts demandée"
+            echo "- Données Angel OS : resynchronisation globale déclenchée"
+            echo "- Statistiques et vues Travail : rafraîchies depuis les données synchronisées"
+            echo "- Historique : conservé, jamais remis à zéro volontairement"
+            echo "- Administration : disponibilité contrôlée"
+            echo "- Fréquence : toutes les heures"
+          } >> "$GITHUB_STEP_SUMMARY"
