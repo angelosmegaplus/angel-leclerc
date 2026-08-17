@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { syncApplicationsForUser } from "@/lib/applications.server";
+import { reconcileApplicationsFromMail } from "@/lib/angel-os-ia/applications-reconcile.server";
 
 function safeEqual(a: string, b: string) {
   if (a.length !== b.length) return false;
@@ -41,10 +41,10 @@ export const Route = createFileRoute("/api/public/hooks/applications-sync")({
             return Response.json({ ok: false, error: "Aucun administrateur trouvé." }, { status: 404 });
           }
 
-          const result = await syncApplicationsForUser(adminRole.user_id, supabaseAdmin);
+          const result = await reconcileApplicationsFromMail(adminRole.user_id, supabaseAdmin);
           return Response.json({ ok: result.status !== "not_connected", ...result });
         } catch (error) {
-          console.error("[applications-sync] run failed", error);
+          console.error("[applications-sync] Angel OS IA reconciliation failed", error);
           return Response.json(
             { ok: false, error: error instanceof Error ? error.message : "Unknown error" },
             { status: 500 },
