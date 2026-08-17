@@ -1,6 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { CheckCircle2, CircleAlert, Database, Loader2, RefreshCw, ShieldCheck, Unplug } from "lucide-react";
+import {
+  CheckCircle2,
+  CircleAlert,
+  Database,
+  Loader2,
+  RefreshCw,
+  ShieldCheck,
+  Unplug,
+  PlugZap,
+} from "lucide-react";
 import { AdminCard } from "./AdminShell";
 import {
   disconnectOAuthConnection,
@@ -8,6 +17,11 @@ import {
   startOAuthConnection,
   type IntegrationReadiness,
 } from "@/lib/system.functions";
+import {
+  GOOGLE_SERVICES,
+  hasGoogleServiceScopes,
+  type GoogleServiceId,
+} from "@/lib/oauth/google-services";
 
 const GOOGLE_CALLBACK = "https://www.angel-leclerc.fr/oauth/google/callback";
 
@@ -17,22 +31,20 @@ function humanError(error: unknown) {
   return raw.replace(/\s+/g, " ").slice(0, 220) || "Connexion impossible.";
 }
 
-function stateLabel(item: IntegrationReadiness | undefined) {
-  if (!item) return "Vérification…";
-  if (item.connection === "connected") return "Connecté";
-  if (item.connection === "reconnect_required") return "Reconnexion requise";
-  return item.status === "ready" ? "Prêt à connecter" : "Configuration serveur requise";
-}
-
 export function ConnectionsPanel() {
   const getReadiness = useServerFn(integrationReadiness);
   const connect = useServerFn(startOAuthConnection);
   const disconnect = useServerFn(disconnectOAuthConnection);
   const [items, setItems] = useState<IntegrationReadiness[]>([]);
-  const [busy, setBusy] = useState(false);
+  const [busyService, setBusyService] = useState<GoogleServiceId | "all" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const google = useMemo(() => items.find((item) => item.key === "google"), [items]);
+  const grantedScopes = google?.scopes ?? [];
+  const connectedServices = GOOGLE_SERVICES.filter((service) => hasGoogleServiceScopes(grantedScopes, service));
+  const oauthConnected = google?.connection === "connected";
+  const reconnectRequired = google?.connection === "reconnect_required";
+  const canConnect = google?.status === "ready";
 
   const refresh = async () => {
     setError(null);
@@ -47,20 +59,20 @@ export function ConnectionsPanel() {
     void refresh();
   }, []);
 
-  const connectGoogle = async () => {
-    setBusy(true);
+  const connectService = async (service: GoogleServiceId) => {
+    setBusyService(service);
     setError(null);
     try {
-      const result = await connect({ data: { provider: "google" } });
+      const result = await connect({ data: { provider: "google", service } });
       window.location.assign(result.url);
     } catch (e) {
       setError(humanError(e));
-      setBusy(false);
+      setBusyService(null);
     }
   };
 
   const disconnectGoogle = async () => {
-    setBusy(true);
+    setBusyService("all");
     setError(null);
     try {
       await disconnect({ data: { provider: "google" } });
@@ -68,84 +80,125 @@ export function ConnectionsPanel() {
     } catch (e) {
       setError(humanError(e));
     } finally {
-      setBusy(false);
+      setBusyService(null);
     }
   };
 
-  const connected = google?.connection === "connected";
-  const reconnect = google?.connection === "reconnect_required";
-  const canConnect = google?.status === "ready";
-
   return (
     <div className="space-y-4">
-      <AdminCard className="border-red-500/15 bg-gradient-to-br from-red-500/[.06] via-[#090b0d] to-[#090b0d]">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <AdminCard
+        title="Google"
+        description="Un seul compte Google, mais des autorisations séparées. Active uniquement les services dont Angel OS a besoin."
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-background p-3">
           <div className="min-w-0">
-            <p className="text-base font-semibold text-white sm:text-lg">Google Workspace</p>
-            <p className="mt-1 text-sm leading-relaxed text-white/50">
-              Connecte ton compte Google directement à Angel OS. Une fois autorisé, Gmail, Agenda et Drive peuvent être lus côté serveur par les modules administrateur et par Angel OS IA quand ta demande en a besoin.
+            <p className="text-sm font-semibold text-foreground">
+              {google?.accountLabel || "Compte Google"}
             </p>
-            {google?.accountLabel ? (
-              <p className="mt-2 text-sm font-medium text-white/75">
-                {connected ? "Compte connecté" : "Dernier compte autorisé"} : {google.accountLabel}
-              </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {oauthConnected
+                ? `${connectedServices.length} service${connectedServices.length > 1 ? "s" : ""} autorisé${connectedServices.length > 1 ? "s" : ""}`
+                : reconnectRequired
+                  ? "Une nouvelle autorisation Google est nécessaire."
+                  : "Aucun service Google autorisé pour le moment."}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={Boolean(busyService)}
+              onClick={() => void refresh()}
+              className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border bg-background px-3 text-sm text-foreground disabled:opacity-40"
+            >
+              <RefreshCw className="h-4 w-4" /> Actualiser
+            </button>
+            {(oauthConnected || reconnectRequired) ? (
+              <button
+                type="button"
+                disabled={Boolean(busyService)}
+                onClick={() => void disconnectGoogle()}
+                className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border bg-background px-3 text-sm text-foreground disabled:opacity-40"
+              >
+                {busyService === "all" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Unplug className="h-4 w-4" />}
+                Tout déconnecter
+              </button>
             ) : null}
           </div>
-          <span className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium ${connected ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-300" : reconnect ? "border-amber-500/20 bg-amber-500/10 text-amber-200" : "border-white/10 bg-white/[.04] text-white/55"}`}>
-            {stateLabel(google)}
-          </span>
         </div>
 
-        <div className="mt-5 grid gap-2 sm:grid-cols-3">
-          {["Gmail · lecture et gestion", "Agenda · lecture", "Drive · lecture"].map((label) => (
-            <div key={label} className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm text-white/65">
-              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />{label}
-            </div>
-          ))}
+        <div className="mt-4 grid gap-3 lg:grid-cols-2">
+          {GOOGLE_SERVICES.map((service) => {
+            const connected = hasGoogleServiceScopes(grantedScopes, service);
+            const busy = busyService === service.id;
+            return (
+              <section key={service.id} className="rounded-2xl border border-border bg-background p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-foreground">{service.name}</p>
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${connected ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-300" : "bg-muted text-muted-foreground"}`}>
+                        {connected ? "Connecté" : "Non connecté"}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{service.description}</p>
+                    <p className="mt-2 font-mono text-[10px] uppercase tracking-[.12em] text-muted-foreground">{service.api}</p>
+                  </div>
+                  {connected ? (
+                    <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-500" />
+                  ) : (
+                    <PlugZap className="h-5 w-5 shrink-0 text-muted-foreground" />
+                  )}
+                </div>
+
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {service.features.map((feature) => (
+                    <span key={feature} className="rounded-lg border border-border bg-muted/50 px-2 py-1 text-[11px] text-muted-foreground">
+                      {feature}
+                    </span>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  disabled={!canConnect || Boolean(busyService)}
+                  onClick={() => void connectService(service.id)}
+                  className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-xl bg-foreground px-3.5 text-sm font-semibold text-background disabled:opacity-40"
+                >
+                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlugZap className="h-4 w-4" />}
+                  {connected ? "Réautoriser" : `Connecter ${service.name}`}
+                </button>
+              </section>
+            );
+          })}
         </div>
 
-        {google?.note ? <p className="mt-4 text-xs leading-5 text-white/40">{google.note}</p> : null}
-        {reconnect ? (
-          <div className="mt-4 rounded-xl border border-amber-500/15 bg-amber-500/[.05] px-3 py-3 text-xs leading-5 text-amber-100/70">
-            <p className="font-medium text-amber-100">Callback Google canonique</p>
-            <code className="mt-1 block break-all font-mono text-[11px] text-amber-100/70">{GOOGLE_CALLBACK}</code>
-            <p className="mt-1 text-amber-100/50">Cette adresse doit être enregistrée à l’identique dans les URI de redirection autorisées du client OAuth Google.</p>
+        {error ? (
+          <div className="mt-4 flex gap-2 rounded-xl border border-red-500/25 bg-red-500/10 px-3 py-2.5 text-xs text-red-700 dark:text-red-100">
+            <CircleAlert className="h-4 w-4 shrink-0" /> {error}
           </div>
         ) : null}
-        {error ? <div className="mt-4 flex gap-2 rounded-xl border border-red-500/25 bg-red-500/10 px-3 py-2.5 text-xs text-red-100"><CircleAlert className="h-4 w-4 shrink-0" />{error}</div> : null}
 
-        <div className="mt-5 flex flex-wrap gap-2">
-          <button
-            type="button"
-            disabled={busy || !canConnect}
-            onClick={() => void connectGoogle()}
-            className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-black disabled:opacity-40"
-          >
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            {connected ? "Reconnecter Google" : reconnect ? "Réautoriser Google" : "Se connecter avec Google"}
-          </button>
-          <button type="button" disabled={busy} onClick={() => void refresh()} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[.04] px-4 py-2.5 text-sm text-white/70 disabled:opacity-40">
-            <RefreshCw className="h-4 w-4" />Actualiser
-          </button>
-          {(connected || reconnect) ? (
-            <button type="button" disabled={busy} onClick={() => void disconnectGoogle()} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[.04] px-4 py-2.5 text-sm text-white/70 disabled:opacity-40">
-              <Unplug className="h-4 w-4" />Déconnecter
-            </button>
-          ) : null}
+        <div className="mt-4 rounded-xl border border-border bg-muted/30 px-3 py-3 text-xs leading-5 text-muted-foreground">
+          <p className="font-medium text-foreground">Callback OAuth Google</p>
+          <code className="mt-1 block break-all font-mono text-[11px]">{GOOGLE_CALLBACK}</code>
+          <p className="mt-1">Les autorisations sont ajoutées progressivement au même compte Google sans effacer les services déjà accordés.</p>
         </div>
       </AdminCard>
 
-      <AdminCard title="Accès de l’IA" description="L’autorisation Google reste liée à ton compte administrateur et les jetons ne sont jamais envoyés au navigateur.">
+      <AdminCard
+        title="Accès de l’IA"
+        description="Angel OS IA n’utilise que les services Google effectivement autorisés sur ton compte administrateur."
+      >
         <div className="flex items-start gap-3">
-          <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-red-300" />
-          <p className="text-xs leading-5 text-white/50">
-            Angel OS IA peut utiliser les données Google uniquement depuis le serveur et seulement pour répondre aux fonctions de l’espace privé. Les actions sensibles comme envoyer un mail restent séparées de la simple lecture.
+          <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />
+          <p className="text-xs leading-5 text-muted-foreground">
+            Les jetons OAuth restent côté serveur. Gmail, Agenda, Drive, Contacts et les services YouTube peuvent évoluer séparément sans donner automatiquement accès au reste de ton compte Google.
           </p>
         </div>
       </AdminCard>
 
-      <div className="flex items-center gap-2 px-1 font-mono text-[10px] uppercase tracking-[.14em] text-white/40">
-        <Database className="h-3.5 w-3.5 text-red-300" /> Google OAuth → Angel OS → modules privés / IA
+      <div className="flex items-center gap-2 px-1 font-mono text-[10px] uppercase tracking-[.14em] text-muted-foreground">
+        <Database className="h-3.5 w-3.5 text-red-500" /> Google OAuth modulaire → Angel OS → modules privés / IA
       </div>
     </div>
   );
