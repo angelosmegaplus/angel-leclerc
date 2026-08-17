@@ -12,19 +12,20 @@ export const Route = createFileRoute("/oauth/$provider/callback")({
     handlers: {
       GET: async ({ request, params }) => {
         const url = new URL(request.url);
-        const origin = (process.env.PUBLIC_SITE_URL?.trim() || process.env.SITE_URL?.trim() || url.origin).replace(/\/$/, "");
+        const oauth = await import("@/lib/oauth/oauth.server");
+        const requestOrigin = oauth.canonicalOAuthOrigin(url.origin);
         const provider = params.provider;
 
-        if (!isProviderId(provider)) return redirectToAdmin(origin, { oauth_error: "provider_inconnu" });
+        if (!isProviderId(provider)) return redirectToAdmin(requestOrigin, { oauth_error: "provider_inconnu" });
         const providerError = url.searchParams.get("error");
-        if (providerError) return redirectToAdmin(origin, { oauth_error: providerError.slice(0, 80) });
+        if (providerError) return redirectToAdmin(requestOrigin, { oauth_error: providerError.slice(0, 80) });
         const code = url.searchParams.get("code");
         const state = url.searchParams.get("state");
-        if (!code || !state) return redirectToAdmin(origin, { oauth_error: "reponse_incomplete" });
+        if (!code || !state) return redirectToAdmin(requestOrigin, { oauth_error: "reponse_incomplete" });
 
-        const oauth = await import("@/lib/oauth/oauth.server");
         const verified = oauth.verifyState(state);
-        if (!verified || verified.p !== provider) return redirectToAdmin(origin, { oauth_error: "state_invalide" });
+        if (!verified || verified.p !== provider) return redirectToAdmin(requestOrigin, { oauth_error: "state_invalide" });
+        const origin = oauth.canonicalOAuthOrigin(verified.o || requestOrigin);
 
         try {
           const tokens = await oauth.exchangeCode(provider, code, origin, verified.v);
