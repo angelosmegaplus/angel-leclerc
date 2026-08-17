@@ -9,6 +9,7 @@ type AdminErrorNotice = {
 };
 
 const ADMIN_ERROR_EVENT = "angel-os:admin-error";
+const SERVER_FN_RECOVERY_KEY = "angel-os:last-serverfn-recovery";
 
 function rawReason(value: unknown): string {
   if (value instanceof Error) return value.stack || value.message;
@@ -28,16 +29,39 @@ function isRecoverableAuthFailure(value: string) {
   return /401|unauthori[sz]ed|invalid or expired session token|invalid token|jwt expired|session token/i.test(value);
 }
 
+function isTransientNetworkFailure(value: string) {
+  return /failed to fetch|networkerror|network request failed/i.test(value);
+}
+
+function isOptionalCacheFailure(value: string) {
+  return /angel_os_cache.*schema cache|could not find the table ['"]?public\.angel_os_cache|relation ['"]?public\.angel_os_cache.*does not exist/i.test(value);
+}
+
 function recoverAdminSession(value: string) {
   if (typeof window === "undefined" || !window.location.pathname.startsWith("/admin")) return false;
   if (!isRecoverableAuthFailure(value)) return false;
 
   const target = `/auth?reason=session-expired&returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`;
-  // Replace instead of push so the broken authenticated page does not remain in
-  // browser history. The auth screen can restore a fresh Supabase session and
-  // then return to the exact admin route.
   window.location.replace(target);
   return true;
+}
+
+function recoverStaleServerFnClient(value: string) {
+  if (typeof window === "undefined" || !window.location.pathname.startsWith("/admin")) return false;
+  if (!isTransientNetworkFailure(value) || !/createServerFn|_serverFn|__server/i.test(value)) return false;
+  if (typeof navigator !== "undefined" && navigator.onLine === false) return false;
+
+  try {
+    const now = Date.now();
+    const previous = Number(window.sessionStorage.getItem(SERVER_FN_RECOVERY_KEY) || "0");
+    if (Number.isFinite(previous) && now - previous < 60_000) return true;
+    window.sessionStorage.setItem(SERVER_FN_RECOVERY_KEY, String(now));
+    console.warn("[angel-os] stale/transient server function client detected; reloading admin once");
+    window.setTimeout(() => window.location.reload(), 500);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function stripHtml(value: string): string {
@@ -94,11 +118,25 @@ function makeNotice(value: unknown, id: number): AdminErrorNotice {
   return { id, reason: cleanReason(value), summary: summarizeProblem(value), detail: technicalDetail(value) };
 }
 
+function suppressSecondaryFailure(raw: string) {
+  if (isOptionalCacheFailure(raw)) {
+    console.warn("[angel-os] optional durable cache unavailable; global alert suppressed");
+    return true;
+  }
+  if (recoverStaleServerFnClient(raw)) return true;
+  if (isTransientNetworkFailure(raw)) {
+    console.warn("[angel-os] transient network failure suppressed; local query retry/fallback remains active", raw.slice(0, 240));
+    return true;
+  }
+  return false;
+}
+
 export function reportAdminError(reason: unknown) {
   if (typeof window === "undefined") return;
   const raw = rawReason(reason);
   if (isExpectedAuthRedirect(raw)) return;
   if (recoverAdminSession(raw)) return;
+  if (suppressSecondaryFailure(raw)) return;
   if (isHtmlPayload(raw)) {
     console.warn("[angel-os] background HTML error suppressed", stripHtml(raw).slice(0, 240));
     return;
@@ -139,6 +177,7 @@ export function AdminErrorNotifier() {
       const raw = rawReason(reason);
       if (isExpectedAuthRedirect(raw)) return;
       if (recoverAdminSession(raw)) return;
+      if (suppressSecondaryFailure(raw)) return;
       if (isHtmlPayload(raw)) {
         console.warn("[angel-os] unhandled background HTML error suppressed", stripHtml(raw).slice(0, 240));
         return;
