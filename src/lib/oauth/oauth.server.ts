@@ -1,5 +1,6 @@
 import { createCipheriv, createDecipheriv, createHmac, randomBytes, createHash, timingSafeEqual } from "node:crypto";
 import { PROVIDERS, type ProviderConfig, type ProviderId } from "./providers";
+import { GOOGLE_IDENTITY_SCOPES } from "./google-services";
 import { deriveVaultKeySync, getVaultSecretSync } from "../angel-vault.server";
 
 export type TokenPayload = {
@@ -50,7 +51,7 @@ export function decryptTokens(stored: string): TokenPayload {
   return JSON.parse(out) as TokenPayload;
 }
 
-type StatePayload = { p: ProviderId; u: string; n: string; exp: number; v?: string; o?: string };
+type StatePayload = { p: ProviderId; u: string; n: string; exp: number; v?: string; o?: string; s?: string[] };
 function b64url(input: Buffer | string): string { return Buffer.from(input).toString("base64url"); }
 
 function sealState(payload: StatePayload): string {
@@ -101,12 +102,6 @@ function endpoint(url: string): string {
   return url.replace("{tenant}", process.env.MS_TENANT_ID?.trim() || "common");
 }
 
-/**
- * Returns the one public origin used by OAuth in production.
- * Google requires an exact redirect URI match, including scheme, host and path.
- * Requests reaching either angel-leclerc.fr, www.angel-leclerc.fr or a Vercel
- * production host therefore converge on the stable canonical domain.
- */
 export function canonicalOAuthOrigin(inputOrigin: string): string {
   const configured = process.env.OAUTH_CANONICAL_ORIGIN?.trim();
   const candidate = configured || inputOrigin;
@@ -125,19 +120,23 @@ export function redirectUri(origin: string, provider: ProviderId): string {
   return `${canonicalOAuthOrigin(origin)}/oauth/${provider}/callback`;
 }
 
-export function buildAuthorizeUrl(provider: ProviderId, origin: string, userId: string) {
+export function buildAuthorizeUrl(provider: ProviderId, origin: string, userId: string, requestedScopes?: string[]) {
   const config = PROVIDERS[provider];
   const pair = providerPair(config);
   if (!pair) throw new Error(`Activation serveur requise pour ${config.name}.`);
 
   const canonicalOrigin = canonicalOAuthOrigin(origin);
   const verifier = config.usePkce ? b64url(randomBytes(48)) : undefined;
+  const scopes = provider === "google" && requestedScopes?.length
+    ? Array.from(new Set([...GOOGLE_IDENTITY_SCOPES, ...requestedScopes]))
+    : [...config.scopes, ...(config.optionalScopes ?? [])];
   const state = signState({
     p: provider,
     u: userId,
     n: b64url(randomBytes(12)),
     exp: Date.now() + 10 * 60 * 1000,
     o: canonicalOrigin,
+    s: scopes,
     ...(verifier ? { v: verifier } : {}),
   });
 
@@ -145,9 +144,10 @@ export function buildAuthorizeUrl(provider: ProviderId, origin: string, userId: 
   url.searchParams.set("client_id", pair.clientId);
   url.searchParams.set("redirect_uri", redirectUri(canonicalOrigin, provider));
   url.searchParams.set("response_type", "code");
-  url.searchParams.set("scope", [...config.scopes, ...(config.optionalScopes ?? [])].join(" "));
+  url.searchParams.set("scope", scopes.join(" "));
   url.searchParams.set("state", state);
   for (const [k, v] of Object.entries(config.extraAuthParams ?? {})) url.searchParams.set(k, v);
+  if (provider === "google") url.searchParams.set("include_granted_scopes", "true");
   if (verifier) {
     url.searchParams.set("code_challenge", createHash("sha256").update(verifier).digest("base64url"));
     url.searchParams.set("code_challenge_method", "S256");
@@ -232,12 +232,30 @@ export async function saveConnection(params: {
   expiresAt: string | null;
 }) {
   const db = await admin();
+  const { data: existing } = await db.from("oauth_connections")
+    .select("token_ciphertext, scopes, account_label")
+    .eq("user_id", params.userId)
+    .eq("provider", params.provider)
+    .maybeSingle();
+
+  let previousTokens: TokenPayload | null = null;
+  if (existing && (existing as Record<string, unknown>)["token_ciphertext"]) {
+    try { previousTokens = decryptTokens((existing as Record<string, unknown>)["token_ciphertext"] as string); } catch {}
+  }
+  const previousScopes = existing ? (((existing as Record<string, unknown>)["scopes"] as string[] | null) ?? []) : [];
+  const mergedScopes = Array.from(new Set([...previousScopes, ...params.scopes]));
+  const mergedTokens: TokenPayload = {
+    ...params.tokens,
+    refresh_token: params.tokens.refresh_token ?? previousTokens?.refresh_token,
+  };
+  const existingLabel = existing ? ((existing as Record<string, unknown>)["account_label"] as string | null) : null;
+
   const { error } = await db.from("oauth_connections").upsert({
     provider: params.provider,
     user_id: params.userId,
-    ...(params.accountLabel ? { account_label: params.accountLabel } : {}),
-    token_ciphertext: encryptTokens(params.tokens),
-    scopes: params.scopes,
+    account_label: params.accountLabel ?? existingLabel,
+    token_ciphertext: encryptTokens(mergedTokens),
+    scopes: mergedScopes,
     status: "connected",
     expires_at: params.expiresAt,
     last_sync_at: new Date().toISOString(),
