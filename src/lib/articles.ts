@@ -48,5 +48,10 @@ export async function fetchArticleBySlug(slug: string): Promise<Article | null> 
 
 export async function fetchAllArticles(): Promise<Article[]> {
   const deleted = await fetchDeletedGitArticleSlugs();
-  return withoutDeleted(await base.fetchAllArticles(), deleted);
+  try {
+    const databaseArticles = withoutDeleted(await base.fetchAllArticles(), deleted);
+    return mergeLegacyGitArticles(databaseArticles, deleted);
+  } catch {
+    return mergeLegacyGitArticles([], deleted);
+  }
 }
