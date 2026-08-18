@@ -31,8 +31,6 @@ export function useAuth() {
     }
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
-      // Never await inside the auth callback. The SDK can hold an internal lock
-      // while this callback runs, so defer any database call to the next task.
       window.setTimeout(() => void loadAdminRole(next), 0);
     });
 
@@ -45,6 +43,14 @@ export function useAuth() {
       sub.subscription.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (loading || !session || isAdmin || typeof window === "undefined") return;
+    if (window.location.pathname !== "/auth") return;
+    const next = new URLSearchParams(window.location.search).get("next");
+    if (!next || !next.startsWith("/") || next.startsWith("//")) return;
+    window.location.replace(next);
+  }, [isAdmin, loading, session]);
 
   return { session, user: session?.user ?? null, isAdmin, loading };
 }
