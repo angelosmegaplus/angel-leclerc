@@ -359,25 +359,14 @@ export function RichTextEditor({ value, onChange }: Props) {
       setLoading(true);
       setError(null);
       try {
-        await loadEditorScripts();
+        const bundle = await loadEditorBundle();
         if (cancelled || !mountedRef.current) return;
-        if (!window.EditorJS) throw new Error("Le moteur Editor.js n’a pas pu démarrer.");
 
         const tools: Record<string, unknown> = {};
-        const header = resolveTool("Header");
-        const list = resolveTool("EditorjsList", "List");
-        const quote = resolveTool("Quote");
-        const image = resolveTool("ImageTool");
-        const checklist = resolveTool("Checklist");
-        const delimiter = resolveTool("Delimiter");
-        const raw = resolveTool("RawTool");
-        const table = resolveTool("Table");
-        const embed = resolveTool("Embed");
-        const marker = resolveTool("Marker");
-        const inlineCode = resolveTool("InlineCode");
-        const linkTool = resolveTool("LinkTool");
-        const code = resolveTool("CodeTool");
-        const warning = resolveTool("Warning");
+        const {
+          header, list, quote, image, checklist, delimiter, raw,
+          table, embed, marker, inlineCode, linkTool, code, warning,
+        } = bundle.tools;
 
         if (header) tools.header = { class: header, inlineToolbar: ["bold", "italic", "link", "marker"] };
         if (list) tools.list = { class: list, inlineToolbar: true };
@@ -417,7 +406,7 @@ export function RichTextEditor({ value, onChange }: Props) {
         if (code) tools.code = code;
         if (warning) tools.warning = warning;
 
-        const editor = new window.EditorJS({
+        const editor = new bundle.EditorJS({
           holder: holderId,
           autofocus: true,
           data: htmlToBlocks(value),
