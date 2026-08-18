@@ -688,7 +688,7 @@ export function ApplicationsPanel() {
           duplicateKeys={["company"]}
           filters={[
             { label: "Envoyées", test: (row) => str(row, "status") === "envoyee" },
-            { label: "Relancées", test: (row) => str(row, "status") === "relancee" },
+            { label: "Relancées", test: (row) => str(row, "status") === "relance" },
             { label: "Entretien", test: (row) => str(row, "status") === "entretien" },
             { label: "Refusées", test: (row) => str(row, "status") === "refusee" },
             { label: "Relance à faire", test: (row) => Boolean(str(row, "follow_up_at")) },
