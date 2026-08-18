@@ -38,6 +38,7 @@ import {
   Search,
   Settings,
 } from "lucide-react";
+import { Copy } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { ShopAdmin } from "@/components/ShopAdmin";
 import { toast } from "sonner";
