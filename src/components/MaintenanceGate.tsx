@@ -31,12 +31,8 @@ function MaintenancePage() {
           </p>
 
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-            On améliore le site.
+            angel-leclerc.fr revient bientôt
           </h1>
-
-          <p className="mx-auto mt-4 max-w-md text-base leading-7 text-muted-foreground">
-            Angel-leclerc.fr revient bientôt.
-          </p>
 
           <a
             href={TEMPORARY_SITE_URL}
@@ -44,11 +40,11 @@ function MaintenancePage() {
             rel="noreferrer"
             className="mt-8 inline-flex items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0"
           >
-            Voir le site temporaire →
+            Site temporaire →
           </a>
 
-          <p className="mt-4 text-xs text-muted-foreground">
-            Version de secours · elle peut contenir des bugs.
+          <p className="mx-auto mt-4 max-w-md text-xs leading-5 text-muted-foreground">
+            Attention : certaines informations peuvent être obsolètes et des bugs peuvent survenir.
           </p>
         </section>
       </div>
