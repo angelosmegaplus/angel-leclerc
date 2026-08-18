@@ -1,0 +1,19 @@
+Release Films & Séries unifiée — 2026-08-19
+
+Cette relance force Lovable à reprendre l’état complet de la fonctionnalité Films & Séries depuis main.
+
+Inclus :
+- TMDB serveur avec secret Lovable
+- cache, retry, déduplication et fallback
+- recommandations apprenantes
+- mémoire locale des goûts
+- vu / pas vu
+- aimé / pas aimé
+- style personnel
+- notation 1 à 5
+- synopsis et fiches TMDB détaillées
+- Canal+ et Netflix
+- lien Movix dynamique
+- suppression de l’ancienne interface concurrente /admin-movix : elle redirige désormais vers /films-series
+
+Ce fichier ne contient aucun secret et ne déclenche aucune publication automatique.
