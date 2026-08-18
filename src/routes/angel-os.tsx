@@ -24,7 +24,7 @@ type Tech = { name: string; description: string; logo?: string; mark?: string };
 
 const technologies: Tech[] = [
   { name: "ChatGPT", logo: "/logos/chatgpt.com.svg", description: "Intervient sur le développement, les corrections, la maintenance et certaines opérations automatisées autour d’Angel OS." },
-  { name: "Angel OS IA API", mark: "AI", description: "Fournit les capacités d’intelligence artificielle utilisées directement par Angel OS IA." },
+  { name: "Passerelle IA Lovable", mark: "AI", description: "Fournit les capacités d’intelligence artificielle (modèles Google Gemini) utilisées directement par Angel OS IA." },
   { name: "React", mark: "R", description: "Structure les interfaces et les composants de l’application." },
   { name: "TypeScript", mark: "TS", description: "Porte la logique applicative et une grande partie du fonctionnement du système." },
   { name: "GitHub", mark: "GH", description: "Centralise le code source, les versions et l’historique des modifications." },
