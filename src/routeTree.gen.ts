@@ -25,7 +25,6 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AngelOsIaRouteImport } from './routes/angel-os-ia'
 import { Route as AngelOsRouteImport } from './routes/angel-os'
 import { Route as AngelGuardOsRouteImport } from './routes/angel-guard-os'
-import { Route as AdminStartupRouteImport } from './routes/admin-startup'
 import { Route as AdminMovixRouteImport } from './routes/admin-movix'
 import { Route as AdminIntegrationsRouteImport } from './routes/admin-integrations'
 import { Route as AdminActualitesRouteImport } from './routes/admin-actualites'
@@ -144,11 +143,6 @@ const AngelOsRoute = AngelOsRouteImport.update({
 const AngelGuardOsRoute = AngelGuardOsRouteImport.update({
   id: '/angel-guard-os',
   path: '/angel-guard-os',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminStartupRoute = AdminStartupRouteImport.update({
-  id: '/admin-startup',
-  path: '/admin-startup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminMovixRoute = AdminMovixRouteImport.update({
@@ -359,7 +353,6 @@ export interface FileRoutesByFullPath {
   '/admin-actualites': typeof AdminActualitesRoute
   '/admin-integrations': typeof AdminIntegrationsRoute
   '/admin-movix': typeof AdminMovixRouteWithChildren
-  '/admin-startup': typeof AdminStartupRoute
   '/angel-guard-os': typeof AngelGuardOsRoute
   '/angel-os': typeof AngelOsRoute
   '/angel-os-ia': typeof AngelOsIaRoute
@@ -416,7 +409,6 @@ export interface FileRoutesByTo {
   '/admin-actualites': typeof AdminActualitesRoute
   '/admin-integrations': typeof AdminIntegrationsRoute
   '/admin-movix': typeof AdminMovixRouteWithChildren
-  '/admin-startup': typeof AdminStartupRoute
   '/angel-guard-os': typeof AngelGuardOsRoute
   '/angel-os': typeof AngelOsRoute
   '/angel-os-ia': typeof AngelOsIaRoute
@@ -474,7 +466,6 @@ export interface FileRoutesById {
   '/admin-actualites': typeof AdminActualitesRoute
   '/admin-integrations': typeof AdminIntegrationsRoute
   '/admin-movix': typeof AdminMovixRouteWithChildren
-  '/admin-startup': typeof AdminStartupRoute
   '/angel-guard-os': typeof AngelGuardOsRoute
   '/angel-os': typeof AngelOsRoute
   '/angel-os-ia': typeof AngelOsIaRoute
@@ -533,7 +524,6 @@ export interface FileRouteTypes {
     | '/admin-actualites'
     | '/admin-integrations'
     | '/admin-movix'
-    | '/admin-startup'
     | '/angel-guard-os'
     | '/angel-os'
     | '/angel-os-ia'
@@ -590,7 +580,6 @@ export interface FileRouteTypes {
     | '/admin-actualites'
     | '/admin-integrations'
     | '/admin-movix'
-    | '/admin-startup'
     | '/angel-guard-os'
     | '/angel-os'
     | '/angel-os-ia'
@@ -647,7 +636,6 @@ export interface FileRouteTypes {
     | '/admin-actualites'
     | '/admin-integrations'
     | '/admin-movix'
-    | '/admin-startup'
     | '/angel-guard-os'
     | '/angel-os'
     | '/angel-os-ia'
@@ -705,7 +693,6 @@ export interface RootRouteChildren {
   AdminActualitesRoute: typeof AdminActualitesRoute
   AdminIntegrationsRoute: typeof AdminIntegrationsRoute
   AdminMovixRoute: typeof AdminMovixRouteWithChildren
-  AdminStartupRoute: typeof AdminStartupRoute
   AngelGuardOsRoute: typeof AngelGuardOsRoute
   AngelOsRoute: typeof AngelOsRoute
   AngelOsIaRoute: typeof AngelOsIaRoute
@@ -867,13 +854,6 @@ declare module '@tanstack/react-router' {
       path: '/angel-guard-os'
       fullPath: '/angel-guard-os'
       preLoaderRoute: typeof AngelGuardOsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin-startup': {
-      id: '/admin-startup'
-      path: '/admin-startup'
-      fullPath: '/admin-startup'
-      preLoaderRoute: typeof AdminStartupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin-movix': {
@@ -1165,7 +1145,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminActualitesRoute: AdminActualitesRoute,
   AdminIntegrationsRoute: AdminIntegrationsRoute,
   AdminMovixRoute: AdminMovixRouteWithChildren,
-  AdminStartupRoute: AdminStartupRoute,
   AngelGuardOsRoute: AngelGuardOsRoute,
   AngelOsRoute: AngelOsRoute,
   AngelOsIaRoute: AngelOsIaRoute,
