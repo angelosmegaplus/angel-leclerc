@@ -1,20 +1,18 @@
-# Exécution hybride Vercel / Lovable
+# Ancienne architecture hybride — ARCHIVÉE
 
-Le domaine public `angel-leclerc.fr` est déployé sur Vercel. Les fonctions qui
-dépendent encore des connexions et secrets gérés par Lovable Cloud restent
-exécutées par le déploiement Lovable existant.
+Ce document décrit une architecture qui n'est plus utilisée.
 
-Vercel transmet côté serveur les routes suivantes, sans redirection visible et
-sans exposer de secret au navigateur :
+## Architecture active
 
-- `/_serverFn/*` : fonctions serveur TanStack utilisées par Angel OS ;
-- `/__server` : ancien point d'entrée TanStack conservé par compatibilité ;
-- `/~oauth/*` : démarrage et retours OAuth ;
-- `/api/public/*` : formulaires et webhooks publics ;
-- `/lovable/*` : routes de compatibilité Lovable.
+- **GitHub** est la source de vérité du code.
+- **Lovable** synchronise le dépôt, exécute le runtime nécessaire au site et publie `angel-leclerc.fr`.
+- **Aucun déploiement Vercel n'est requis ni utilisé par l'architecture active.**
+- Les secrets serveur (TMDB, IA, OAuth, etc.) sont lus depuis l'environnement du runtime actif via `src/lib/runtime-credentials.server.ts`.
 
-Le reste du site, ses assets et sa PWA sont servis directement par Vercel. Cette
-séparation permet de conserver les intégrations Lovable déjà fonctionnelles
-tout en gardant GitHub comme source de vérité et Vercel comme déploiement du
-site. Elle pourra être réduite route par route lorsque les connexions seront
-migrées officiellement vers une infrastructure indépendante.
+## Publication
+
+Le fonctionnement attendu est désormais :
+
+`modification GitHub → synchronisation Lovable → clic sur Publier → angel-leclerc.fr`
+
+Ce fichier est conservé uniquement comme trace historique afin d'éviter qu'une ancienne procédure hybride soit réintroduite par erreur.
