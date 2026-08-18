@@ -209,7 +209,30 @@ async function deleteViaSupabase(slug: string) {
 
   const { error } = await db.from("articles").upsert(tombstone as any, { onConflict: "slug" });
   if (error) throw error;
+  await markGitArticleState(slug, true);
   return { ok: true, slug, backend: "supabase-fallback" as const };
+}
+
+/**
+ * Marqueur de suppression permanent, indépendant de la ligne `articles`.
+ * C'est le seul garde-fou qui empêche une archive Lovable/Git de ressusciter
+ * un article après une purge définitive.
+ */
+async function markGitArticleState(slug: string, deleted: boolean) {
+  try {
+    const db = adminSupabase();
+    const { error } = await db
+      .from("git_article_state")
+      .upsert(
+        { slug, deleted, deleted_at: deleted ? new Date().toISOString() : null } as any,
+        { onConflict: "slug" },
+      );
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error("[article-api] git_article_state update failed", slug, error);
+    return false;
+  }
 }
 
 /**
