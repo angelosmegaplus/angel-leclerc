@@ -19,6 +19,16 @@ function deletedSlugs(extra: Set<string>) {
   return new Set([...githubDeletedArticleSlugs, ...extra]);
 }
 
+function isDatabaseDeletionSentinel(article: Article): boolean {
+  const badges = article.badges;
+  return Boolean(
+    badges &&
+      typeof badges === "object" &&
+      !Array.isArray(badges) &&
+      (badges as Record<string, unknown>).__angel_os_deleted === true,
+  );
+}
+
 /**
  * GitHub reste la source éditoriale de référence. Tant que Vercel ne possède pas
  * encore un token GitHub d'écriture, une ligne serveur Supabase peut toutefois
@@ -37,9 +47,17 @@ function mergeSources(databaseArticles: Article[], archive: Article[], deleted: 
   for (const article of githubNativeArticles) {
     if (!deleted.has(article.slug)) bySlug.set(article.slug, article);
   }
-  // Une ligne courante doit rester visible dans l'admin même si un tombstone
-  // masque sa version historique Git sur le site public.
-  for (const article of databaseArticles) bySlug.set(article.slug, article);
+
+  // Une ligne courante Supabase est prioritaire par slug. Un sentinel de
+  // suppression masque explicitement toutes les versions historiques sans être
+  // lui-même affiché dans le public ni dans Studio.
+  for (const article of databaseArticles) {
+    if (isDatabaseDeletionSentinel(article)) {
+      bySlug.delete(article.slug);
+      continue;
+    }
+    bySlug.set(article.slug, article);
+  }
 
   return [...bySlug.values()].sort((a, b) => {
     if (a.featured !== b.featured) return a.featured ? -1 : 1;
@@ -89,6 +107,7 @@ export async function fetchArticleBySlug(slug: string): Promise<Article | null> 
   const current = database.find((article) => article.slug === slug);
 
   if (current) {
+    if (isDatabaseDeletionSentinel(current)) return null;
     if (!current.published || current.is_private) return null;
     if (current.scheduled_at && new Date(current.scheduled_at).getTime() > Date.now()) return null;
     return current;
