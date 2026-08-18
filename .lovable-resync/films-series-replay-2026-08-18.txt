@@ -1,0 +1,17 @@
+Lovable resynchronisation marker
+
+Purpose: force a fresh GitHub -> Lovable synchronization pass after the Films & Series TMDB, recommendations, taste-memory and enriched-details changes were already committed to main.
+
+This file has no runtime effect and can remain in the repository safely.
+
+Replay source HEAD includes:
+- TMDB runtime integration and resilient cache/retry layer
+- Films & Series redesigned page
+- enriched TMDB details
+- personalized recommendation scoring
+- local taste/history memory
+- seen/liked/style/rating feedback
+- Canal+/Netflix availability links
+- Movix launcher integration
+
+Created: 2026-08-18
