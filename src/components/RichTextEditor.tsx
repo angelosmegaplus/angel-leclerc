@@ -173,7 +173,7 @@ function blocksToHtml(output: EditorOutput): string {
         case "embed": {
           const source = safeUrl(data.embed ?? data.source);
           if (!source) return "";
-          const caption = escapeHtml(String(data.caption ?? "Embedded media"));
+          const caption = escapeHtml(String(data.caption ?? "Média intégré"));
           return `<div class="video-embed"><iframe src="${escapeHtml(source)}" title="${caption}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`;
         }
         case "linkTool": {
@@ -293,8 +293,8 @@ function htmlToBlocks(html: string): EditorOutput {
 }
 
 async function uploadMedia(file: File): Promise<string> {
-  if (!file.type.startsWith("image/")) throw new Error("Only image files are accepted.");
-  if (file.size > 12 * 1024 * 1024) throw new Error("The image is too large (12 MB maximum).");
+  if (!file.type.startsWith("image/")) throw new Error("Seuls les fichiers image sont acceptés.");
+  if (file.size > 12 * 1024 * 1024) throw new Error("L’image est trop volumineuse (12 Mo maximum).");
 
   const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
   const path = `editor/${crypto.randomUUID()}.${ext}`;
@@ -306,7 +306,7 @@ async function uploadMedia(file: File): Promise<string> {
   const { data, error: signErr } = await supabase.storage
     .from("article-images")
     .createSignedUrl(path, TEN_YEARS);
-  if (signErr || !data) throw signErr ?? new Error("Unable to create the image URL.");
+  if (signErr || !data) throw signErr ?? new Error("Impossible de créer l’URL de l’image.");
   return data.signedUrl;
 }
 
@@ -316,7 +316,7 @@ function loadScript(url: string): Promise<void> {
     if (existing?.dataset.loaded === "true") return resolve();
     if (existing) {
       existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error(`Unable to load ${url}`)), { once: true });
+      existing.addEventListener("error", () => reject(new Error(`Impossible de charger ${url}`)), { once: true });
       return;
     }
 
@@ -332,7 +332,7 @@ function loadScript(url: string): Promise<void> {
       },
       { once: true },
     );
-    script.addEventListener("error", () => reject(new Error(`Unable to load ${url}`)), { once: true });
+    script.addEventListener("error", () => reject(new Error(`Impossible de charger ${url}`)), { once: true });
     document.head.appendChild(script);
   });
 }
@@ -372,7 +372,7 @@ export function RichTextEditor({ value, onChange }: Props) {
       try {
         await loadEditorScripts();
         if (cancelled || !mountedRef.current) return;
-        if (!window.EditorJS) throw new Error("Editor.js core did not initialise.");
+        if (!window.EditorJS) throw new Error("Le moteur Editor.js n’a pas pu démarrer.");
 
         const tools: Record<string, unknown> = {};
         const header = resolveTool("Header");
@@ -392,20 +392,20 @@ export function RichTextEditor({ value, onChange }: Props) {
 
         if (header) tools.header = { class: header, inlineToolbar: ["bold", "italic", "link", "marker"] };
         if (list) tools.list = { class: list, inlineToolbar: true };
-        if (quote) tools.quote = { class: quote, inlineToolbar: true, config: { quotePlaceholder: "Enter a quote", captionPlaceholder: "Quote author or source" } };
+        if (quote) tools.quote = { class: quote, inlineToolbar: true, config: { quotePlaceholder: "Saisissez une citation", captionPlaceholder: "Auteur ou source de la citation" } };
         if (image) {
           tools.image = {
             class: image,
             config: {
-              captionPlaceholder: "Image caption",
-              buttonContent: "Select an image",
+              captionPlaceholder: "Légende de l’image",
+              buttonContent: "Choisir une image",
               uploader: {
                 uploadByFile: async (file: File) => {
                   try {
                     const url = await uploadMedia(file);
                     return { success: 1, file: { url } };
                   } catch (uploadError) {
-                    toast.error(uploadError instanceof Error ? uploadError.message : "Image upload failed.");
+                    toast.error(uploadError instanceof Error ? uploadError.message : "Échec de l’import de l’image.");
                     return { success: 0 };
                   }
                 },
@@ -432,65 +432,65 @@ export function RichTextEditor({ value, onChange }: Props) {
           holder: holderId,
           autofocus: true,
           data: htmlToBlocks(value),
-          placeholder: "Start writing your article…",
+          placeholder: "Commencez à écrire votre article…",
           logLevel: "ERROR",
           inlineToolbar: ["bold", "italic", "link", "marker", "inlineCode"],
           tools,
           i18n: {
             messages: {
               ui: {
-                toolbar: { toolbox: { Add: "Add" } },
-                popover: { Filter: "Search", "Nothing found": "Nothing found", "Convert to": "Convert to" },
-                inlineToolbar: { converter: { "Convert to": "Convert to" } },
-                blockTunes: { toggler: { "Click to tune": "Block settings", "or drag to move": "or drag to move" } },
+                toolbar: { toolbox: { Add: "Ajouter" } },
+                popover: { Filter: "Rechercher", "Nothing found": "Aucun résultat", "Convert to": "Convertir en" },
+                inlineToolbar: { converter: { "Convert to": "Convertir en" } },
+                blockTunes: { toggler: { "Click to tune": "Paramètres du bloc", "or drag to move": "ou faites glisser pour déplacer" } },
               },
               toolNames: {
-                Text: "Text",
-                Heading: "Heading",
-                "Ordered List": "Ordered list",
-                "Unordered List": "Bullet list",
-                Checklist: "Checklist",
-                Quote: "Quote",
+                Text: "Texte",
+                Heading: "Titre",
+                "Ordered List": "Liste numérotée",
+                "Unordered List": "Liste à puces",
+                Checklist: "Liste de contrôle",
+                Quote: "Citation",
                 Code: "Code",
-                Delimiter: "Divider",
-                "Raw HTML": "Raw HTML",
-                Table: "Table",
-                Link: "Link",
-                Marker: "Highlight",
-                Bold: "Bold",
-                Italic: "Italic",
-                InlineCode: "Inline code",
+                Delimiter: "Séparateur",
+                "Raw HTML": "HTML brut",
+                Table: "Tableau",
+                Link: "Lien",
+                Marker: "Surlignage",
+                Bold: "Gras",
+                Italic: "Italique",
+                InlineCode: "Code intégré",
                 Image: "Image",
-                Warning: "Callout",
-                Embed: "Embed",
+                Warning: "Encadré",
+                Embed: "Intégration",
               },
               tools: {
                 image: {
-                  Caption: "Caption",
-                  "Select an Image": "Select an image",
-                  "With border": "Add border",
-                  "Stretch image": "Full width",
-                  "With background": "Add background",
+                  Caption: "Légende",
+                  "Select an Image": "Choisir une image",
+                  "With border": "Ajouter une bordure",
+                  "Stretch image": "Pleine largeur",
+                  "With background": "Ajouter un arrière-plan",
                 },
-                quote: { "Enter a quote": "Enter a quote", "Quote caption": "Quote author or source" },
-                link: { "Add a link": "Add a link" },
-                stub: { "The block can not be displayed correctly.": "This block cannot be displayed correctly." },
-                code: { "Enter a code": "Enter code" },
+                quote: { "Enter a quote": "Saisissez une citation", "Quote caption": "Auteur ou source de la citation" },
+                link: { "Add a link": "Ajouter un lien" },
+                stub: { "The block can not be displayed correctly.": "Ce bloc ne peut pas être affiché correctement." },
+                code: { "Enter a code": "Saisissez du code" },
                 header: {
-                  "Heading 1": "Heading 1",
-                  "Heading 2": "Heading 2",
-                  "Heading 3": "Heading 3",
-                  "Heading 4": "Heading 4",
-                  "Heading 5": "Heading 5",
-                  "Heading 6": "Heading 6",
+                  "Heading 1": "Titre 1",
+                  "Heading 2": "Titre 2",
+                  "Heading 3": "Titre 3",
+                  "Heading 4": "Titre 4",
+                  "Heading 5": "Titre 5",
+                  "Heading 6": "Titre 6",
                 },
-                paragraph: { "Enter something": "Start writing…" },
-                list: { Ordered: "Ordered", Unordered: "Bulleted", Checklist: "Checklist" },
+                paragraph: { "Enter something": "Commencez à écrire…" },
+                list: { Ordered: "Numérotée", Unordered: "À puces", Checklist: "Liste de contrôle" },
               },
               blockTunes: {
-                delete: { Delete: "Delete", "Click to delete": "Click again to delete" },
-                moveUp: { "Move up": "Move up" },
-                moveDown: { "Move down": "Move down" },
+                delete: { Delete: "Supprimer", "Click to delete": "Cliquez à nouveau pour supprimer" },
+                moveUp: { "Move up": "Déplacer vers le haut" },
+                moveDown: { "Move down": "Déplacer vers le bas" },
               },
             },
           },
@@ -525,7 +525,7 @@ export function RichTextEditor({ value, onChange }: Props) {
         console.error("Editor.js initialisation failed", initialiseError);
         if (!cancelled && mountedRef.current) {
           setLoading(false);
-          setError(initialiseError instanceof Error ? initialiseError.message : "Editor.js could not be initialised.");
+          setError(initialiseError instanceof Error ? initialiseError.message : "Editor.js n’a pas pu être initialisé.");
         }
       }
     };
@@ -554,7 +554,7 @@ export function RichTextEditor({ value, onChange }: Props) {
     setPreviewHtml(value);
     void editorRef.current.render(htmlToBlocks(value)).catch((renderError) => {
       console.error("Editor.js external content render failed", renderError);
-      setError("The article content could not be reloaded in Editor.js.");
+      setError("Le contenu de l’article n’a pas pu être rechargé dans Editor.js.");
     });
   }, [loading, value]);
 
@@ -569,7 +569,7 @@ export function RichTextEditor({ value, onChange }: Props) {
       setSaveState("saved");
     } catch (refreshError) {
       console.error("Editor.js preview refresh failed", refreshError);
-      toast.error("Unable to refresh the article preview.");
+      toast.error("Impossible d’actualiser l’aperçu de l’article.");
     }
   };
 
@@ -584,7 +584,7 @@ export function RichTextEditor({ value, onChange }: Props) {
         <div className="min-w-0">
           <p className="text-xs font-semibold text-foreground">Editor.js</p>
           <p className="truncate text-[11px] text-muted-foreground">
-            Block editor · autosave · images · tables · embeds · quotes · lists
+            Éditeur par blocs · sauvegarde automatique · images · tableaux · intégrations · citations · listes
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -594,12 +594,12 @@ export function RichTextEditor({ value, onChange }: Props) {
             }`}
           >
             {saveState === "saving"
-              ? "Saving…"
+              ? "Enregistrement…"
               : saveState === "saved"
-                ? "Saved"
+                ? "Enregistré"
                 : saveState === "error"
-                  ? "Autosave failed"
-                  : "Ready"}
+                  ? "Échec de la sauvegarde automatique"
+                  : "Prêt"}
           </span>
           <button
             type="button"
@@ -607,28 +607,28 @@ export function RichTextEditor({ value, onChange }: Props) {
             className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-border bg-background px-3 text-xs font-medium text-foreground transition hover:bg-muted"
           >
             {preview ? <Pencil className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-            {preview ? "Edit" : "Preview"}
+            {preview ? "Modifier" : "Aperçu"}
           </button>
         </div>
       </div>
 
       {error ? (
         <div className="space-y-3 p-4">
-          <p className="text-sm font-semibold text-destructive">Editor.js is unavailable</p>
+          <p className="text-sm font-semibold text-destructive">Editor.js est indisponible</p>
           <p className="text-xs leading-relaxed text-muted-foreground">{error}</p>
           <button
             type="button"
             onClick={() => window.location.reload()}
             className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-border px-3 text-xs font-medium"
           >
-            <RefreshCw className="h-3.5 w-3.5" /> Reload editor
+            <RefreshCw className="h-3.5 w-3.5" /> Recharger l’éditeur
           </button>
         </div>
       ) : (
         <>
           {loading && (
             <div className="flex min-h-52 items-center justify-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" /> Loading Editor.js…
+              <Loader2 className="h-4 w-4 animate-spin" /> Chargement d’Editor.js…
             </div>
           )}
           <div className={preview || loading ? "hidden" : "block"}>
