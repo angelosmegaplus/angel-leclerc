@@ -65,6 +65,7 @@ import {
 } from "@/lib/articles";
 import { MailboxAdmin } from "@/components/MailboxAdmin";
 import { describeDbError } from "@/lib/db-error";
+import { saveArticleViaApi, deleteArticleViaApi } from "@/lib/article-api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
