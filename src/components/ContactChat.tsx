@@ -348,6 +348,7 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
   }, [hydrated, track, index, answers, contact, messages]);
 
   useEffect(() => {
+    setAssistHints([]);
     if (track) headingRef.current?.focus({ preventScroll: true });
   }, [index, track]);
 
