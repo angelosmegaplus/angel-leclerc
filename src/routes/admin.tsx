@@ -65,7 +65,13 @@ import {
 } from "@/lib/articles";
 import { MailboxAdmin } from "@/components/MailboxAdmin";
 import { describeDbError } from "@/lib/db-error";
-import { saveArticleViaApi, deleteArticleViaApi } from "@/lib/article-api";
+import {
+  saveArticleViaApi,
+  deleteArticleViaApi,
+  restoreArticleViaApi,
+  purgeArticleViaApi,
+} from "@/lib/article-api";
+import { fetchTrashedArticles } from "@/lib/articles-trash";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -347,8 +353,9 @@ function AdminPage() {
       await deleteArticleViaApi(slug);
     },
     onSuccess: () => {
-      toast.success("Article supprimé");
+      toast.success("Article placé dans la corbeille");
       queryClient.invalidateQueries({ queryKey: ["admin-articles"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-articles-trash"] });
       queryClient.invalidateQueries({ queryKey: ["articles"] });
     },
     onError: (err: unknown) => {
@@ -357,6 +364,34 @@ function AdminPage() {
         duration: 12000,
       });
     },
+  });
+
+  const { data: trashed = [] } = useQuery({
+    queryKey: ["admin-articles-trash"],
+    queryFn: fetchTrashedArticles,
+    enabled: Boolean(session) && isAdmin,
+  });
+
+  const restore = useMutation({
+    mutationFn: (slug: string) => restoreArticleViaApi(slug),
+    onSuccess: () => {
+      toast.success("Article restauré en brouillon privé");
+      queryClient.invalidateQueries({ queryKey: ["admin-articles"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-articles-trash"] });
+      queryClient.invalidateQueries({ queryKey: ["articles"] });
+    },
+    onError: (err: unknown) =>
+      toast.error("Restauration impossible", { description: describeDbError(err), duration: 12000 }),
+  });
+
+  const purge = useMutation({
+    mutationFn: (slug: string) => purgeArticleViaApi(slug),
+    onSuccess: () => {
+      toast.success("Article supprimé définitivement");
+      queryClient.invalidateQueries({ queryKey: ["admin-articles-trash"] });
+    },
+    onError: (err: unknown) =>
+      toast.error("Suppression définitive impossible", { description: describeDbError(err), duration: 12000 }),
   });
 
   const previewSlug = useMemo(
