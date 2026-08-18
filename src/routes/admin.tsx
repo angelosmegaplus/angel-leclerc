@@ -46,7 +46,7 @@ import {
   ARTICLE_CATEGORIES,
   ARTICLE_TOPICS,
   getTopics,
-  fetchAllArticles,
+  fetchStudioArticles,
   formatDate,
   formatDateTime,
   getArticleStatus,
@@ -266,7 +266,7 @@ function AdminPage() {
 
   const { data: articles = [], isLoading } = useQuery({
     queryKey: ["admin-articles"],
-    queryFn: fetchAllArticles,
+    queryFn: fetchStudioArticles,
     enabled: Boolean(session) && isAdmin,
   });
 
