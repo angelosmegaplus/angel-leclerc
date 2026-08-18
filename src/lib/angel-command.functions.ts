@@ -377,7 +377,7 @@ export const runAngelCommand = createServerFn({ method: "POST" })
             result = {
               response:
                 localContext ??
-                "OpenAI est momentanément indisponible. Angel OS reste uniquement en secours et conserve les fonctions locales déterministes ; la conversation complète reprendra dès que le fournisseur IA répondra de nouveau.",
+                "Angel OS IA est momentanément indisponible. Angel OS reste uniquement en secours et conserve les fonctions locales déterministes ; la conversation complète reprendra dès que le fournisseur IA répondra de nouveau.",
               status: "partial",
               source: "local",
               autoExecuted: true,

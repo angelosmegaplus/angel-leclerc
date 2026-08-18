@@ -40,7 +40,7 @@ function SourceBadge({ message, forcedFailure = false }: { message: Message; for
   return (
     <span className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
       {failed ? <ShieldAlert className="h-3.5 w-3.5 text-destructive" /> : <CheckCircle2 className="h-3.5 w-3.5 text-primary" />}
-      <span>{failed ? "Angel OS IA indisponible" : "OpenAI · vérifié pour cette réponse"}</span>
+      <span>{failed ? "Angel OS IA indisponible" : "Angel OS IA · vérifié pour cette réponse"}</span>
       <span>·</span>
       <time>{new Date(message.created_at).toLocaleString("fr-FR")}</time>
     </span>
@@ -158,8 +158,8 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
   const healthLabel = !aiHealth
     ? "Vérification Angel OS IA…"
     : aiHealth.healthy
-      ? "OpenAI opérationnel"
-      : "OpenAI indisponible";
+      ? "Angel OS IA opérationnel"
+      : "Angel OS IA indisponible";
 
   const composer = (
     <div className={compact ? "shrink-0 border-t border-white/10 bg-[#090b0d] pt-3" : "space-y-2"}>

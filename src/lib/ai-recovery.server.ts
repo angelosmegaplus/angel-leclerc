@@ -23,7 +23,7 @@ export function chooseRecovery(input: {
       : { action: "wait", delayMs: 60_000, explanation: "Budget Angel OS IA atteint : pas de remplacement par une IA locale." };
   }
   if (input.reason === "disabled" || input.reason === "not_configured") {
-    return { action: "wait", delayMs: 60_000, explanation: "OpenAI n'est pas disponible : le système attend au lieu de produire une réponse IA locale." };
+    return { action: "wait", delayMs: 60_000, explanation: "Angel OS IA n'est pas disponible : le système attend au lieu de produire une réponse IA locale." };
   }
   if (input.reason === "circuit_open") {
     return input.hasStaleCache
@@ -38,7 +38,7 @@ export function chooseRecovery(input: {
     return { action: "use_fallback_model", explanation: "Le modèle Angel OS IA principal échoue : bascule vers le modèle Angel OS IA de secours." };
   }
   if (input.hasStaleCache) {
-    return { action: "use_cache", explanation: "OpenAI est momentanément indisponible : continuité via une réponse Angel OS IA récente." };
+    return { action: "use_cache", explanation: "Angel OS IA est momentanément indisponible : continuité via une réponse Angel OS IA récente." };
   }
   return { action: "wait", delayMs: 60_000, explanation: "Aucune réponse Angel OS IA disponible : la demande est différée, sans génération IA locale." };
 }

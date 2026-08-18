@@ -29,7 +29,7 @@ type Technology = {
 };
 
 const technologies: Technology[] = [
-  { name: "OpenAI API", wordmark: "OpenAI", text: "Fournit certaines capacités d’intelligence utilisées par Angel OS IA." },
+  { name: "Angel OS IA API", wordmark: "Angel OS IA", text: "Fournit certaines capacités d’intelligence utilisées par Angel OS IA." },
   { name: "ChatGPT", logo: "/logos/chatgpt.com.svg", text: "Intervient autour du projet pour l’analyse, les corrections, le contrôle et la maintenance." },
   { name: "React", logo: "https://cdn.simpleicons.org/react/149ECA", text: "Structure les interfaces et les composants interactifs d’Angel OS." },
   { name: "TypeScript", logo: "https://cdn.simpleicons.org/typescript/3178C6", text: "Porte la logique applicative et sécurise le développement par le typage." },
