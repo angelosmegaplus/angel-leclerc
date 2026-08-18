@@ -13,8 +13,6 @@ type ProductionHealth = { release?: string | null; healthy?: boolean };
 const RAW_QUEUE = "https://raw.githubusercontent.com/angelosmegaplus/angel-leclerc/main/runtime/chatgpt-work.json";
 const COMMITS_API = "https://api.github.com/repos/angelosmegaplus/angel-leclerc/commits?sha=main&per_page=8";
 const RELEASE_URL = "/api/angel-os/health";
-const LIVE_REFRESH_MS = 5_000;
-const COMMITS_REFRESH_MS = 90_000;
 const MAX_VISIBLE_ITEMS = 5;
 const MAX_ACTIVE_ITEMS = 4;
 
