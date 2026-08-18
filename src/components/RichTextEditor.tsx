@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
-const EDITOR_JS_VERSION = "2.31.6";
 const AUTOSAVE_DELAY = 1200;
 
 type Props = {
@@ -31,44 +30,65 @@ type EditorInstance = {
   destroy: () => void;
 };
 
-declare global {
-  interface Window {
-    EditorJS?: new (config: Record<string, unknown>) => EditorInstance;
-    Header?: unknown;
-    List?: unknown;
-    EditorjsList?: unknown;
-    Quote?: unknown;
-    ImageTool?: unknown;
-    Checklist?: unknown;
-    Delimiter?: unknown;
-    RawTool?: unknown;
-    Table?: unknown;
-    Embed?: unknown;
-    Marker?: unknown;
-    InlineCode?: unknown;
-    LinkTool?: unknown;
-    CodeTool?: unknown;
-    Warning?: unknown;
-  }
-}
+type EditorBundle = {
+  EditorJS: new (config: Record<string, unknown>) => EditorInstance;
+  tools: Record<string, unknown>;
+};
 
-const SCRIPT_URLS = [
-  `https://cdn.jsdelivr.net/npm/@editorjs/editorjs@${EDITOR_JS_VERSION}`,
-  "https://cdn.jsdelivr.net/npm/@editorjs/header@2.8.9",
-  "https://cdn.jsdelivr.net/npm/@editorjs/list@2.0.9",
-  "https://cdn.jsdelivr.net/npm/@editorjs/quote@2.7.6",
-  "https://cdn.jsdelivr.net/npm/@editorjs/image@2.10.3",
-  "https://cdn.jsdelivr.net/npm/@editorjs/checklist@1.6.0",
-  "https://cdn.jsdelivr.net/npm/@editorjs/delimiter@1.4.2",
-  "https://cdn.jsdelivr.net/npm/@editorjs/raw@2.5.1",
-  "https://cdn.jsdelivr.net/npm/@editorjs/table@2.4.6",
-  "https://cdn.jsdelivr.net/npm/@editorjs/embed@2.8.1",
-  "https://cdn.jsdelivr.net/npm/@editorjs/marker@1.4.0",
-  "https://cdn.jsdelivr.net/npm/@editorjs/inline-code@1.5.2",
-  "https://cdn.jsdelivr.net/npm/@editorjs/link@2.6.2",
-  "https://cdn.jsdelivr.net/npm/@editorjs/code@2.9.4",
-  "https://cdn.jsdelivr.net/npm/@editorjs/warning@1.4.1",
-] as const;
+let bundlePromise: Promise<EditorBundle> | null = null;
+
+/**
+ * L'éditeur est embarqué dans l'application (aucun CDN externe) :
+ * les modules sont installés localement et chargés à la demande côté navigateur.
+ */
+async function loadEditorBundle(): Promise<EditorBundle> {
+  bundlePromise ??= (async () => {
+    const [
+      editorjs, header, list, quote, image, checklist, delimiter,
+      raw, table, embed, marker, inlineCode, linkTool, code, warning,
+    ] = await Promise.all([
+      import("@editorjs/editorjs"),
+      import("@editorjs/header"),
+      import("@editorjs/list"),
+      import("@editorjs/quote"),
+      import("@editorjs/image"),
+      import("@editorjs/checklist"),
+      import("@editorjs/delimiter"),
+      import("@editorjs/raw"),
+      import("@editorjs/table"),
+      import("@editorjs/embed"),
+      import("@editorjs/marker"),
+      import("@editorjs/inline-code"),
+      import("@editorjs/link"),
+      import("@editorjs/code"),
+      import("@editorjs/warning"),
+    ]);
+    const pick = (mod: unknown) => (mod as { default?: unknown })?.default ?? mod;
+    return {
+      EditorJS: pick(editorjs) as EditorBundle["EditorJS"],
+      tools: {
+        header: pick(header),
+        list: pick(list),
+        quote: pick(quote),
+        image: pick(image),
+        checklist: pick(checklist),
+        delimiter: pick(delimiter),
+        raw: pick(raw),
+        table: pick(table),
+        embed: pick(embed),
+        marker: pick(marker),
+        inlineCode: pick(inlineCode),
+        linkTool: pick(linkTool),
+        code: pick(code),
+        warning: pick(warning),
+      },
+    };
+  })().catch((error) => {
+    bundlePromise = null;
+    throw error;
+  });
+  return bundlePromise;
+}
 
 export function parseYouTubeId(input: string): string | null {
   const value = input.trim();
@@ -319,46 +339,6 @@ async function uploadMedia(file: File): Promise<string> {
   return data.signedUrl;
 }
 
-function loadScript(url: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>(`script[data-editorjs-src="${url}"]`);
-    if (existing?.dataset.loaded === "true") return resolve();
-    if (existing) {
-      existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error(`Impossible de charger ${url}`)), { once: true });
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = url;
-    script.async = true;
-    script.dataset.editorjsSrc = url;
-    script.addEventListener(
-      "load",
-      () => {
-        script.dataset.loaded = "true";
-        resolve();
-      },
-      { once: true },
-    );
-    script.addEventListener("error", () => reject(new Error(`Impossible de charger ${url}`)), { once: true });
-    document.head.appendChild(script);
-  });
-}
-
-async function loadEditorScripts(): Promise<void> {
-  await loadScript(SCRIPT_URLS[0]);
-  await Promise.allSettled(SCRIPT_URLS.slice(1).map(loadScript));
-}
-
-function resolveTool(...names: string[]): unknown {
-  for (const name of names) {
-    const tool = (window as unknown as Record<string, unknown>)[name];
-    if (tool) return tool;
-  }
-  return undefined;
-}
-
 export function RichTextEditor({ value, onChange }: Props) {
   const holderId = useMemo(() => `editorjs-${crypto.randomUUID()}`, []);
   const editorRef = useRef<EditorInstance | null>(null);
@@ -379,25 +359,14 @@ export function RichTextEditor({ value, onChange }: Props) {
       setLoading(true);
       setError(null);
       try {
-        await loadEditorScripts();
+        const bundle = await loadEditorBundle();
         if (cancelled || !mountedRef.current) return;
-        if (!window.EditorJS) throw new Error("Le moteur Editor.js n’a pas pu démarrer.");
 
         const tools: Record<string, unknown> = {};
-        const header = resolveTool("Header");
-        const list = resolveTool("EditorjsList", "List");
-        const quote = resolveTool("Quote");
-        const image = resolveTool("ImageTool");
-        const checklist = resolveTool("Checklist");
-        const delimiter = resolveTool("Delimiter");
-        const raw = resolveTool("RawTool");
-        const table = resolveTool("Table");
-        const embed = resolveTool("Embed");
-        const marker = resolveTool("Marker");
-        const inlineCode = resolveTool("InlineCode");
-        const linkTool = resolveTool("LinkTool");
-        const code = resolveTool("CodeTool");
-        const warning = resolveTool("Warning");
+        const {
+          header, list, quote, image, checklist, delimiter, raw,
+          table, embed, marker, inlineCode, linkTool, code, warning,
+        } = bundle.tools;
 
         if (header) tools.header = { class: header, inlineToolbar: ["bold", "italic", "link", "marker"] };
         if (list) tools.list = { class: list, inlineToolbar: true };
@@ -437,7 +406,7 @@ export function RichTextEditor({ value, onChange }: Props) {
         if (code) tools.code = code;
         if (warning) tools.warning = warning;
 
-        const editor = new window.EditorJS({
+        const editor = new bundle.EditorJS({
           holder: holderId,
           autofocus: true,
           data: htmlToBlocks(value),

@@ -3,6 +3,7 @@ import { Bell, Grid2X2, Moon, Sun, X, type LucideIcon } from "lucide-react";
 import { PixelWidgets } from "@/components/admin/PixelWidgets";
 import { AngelCommandCenter } from "@/components/admin/AngelCommandCenter";
 import { AINotificationMonitor } from "@/components/admin/AINotificationMonitor";
+import { applyAdminTheme, clearAdminTheme, readAdminTheme, setAdminTheme, subscribeAdminTheme, type AdminTheme } from "@/lib/admin-theme";
 
 export type AdminNavItem = {
   key: string;
@@ -21,10 +22,6 @@ type CompactDefinition = {
   children: string[];
 };
 
-type AdminTheme = "light" | "dark";
-
-const THEME_STORAGE_KEY = "angel-os-admin-theme";
-
 const COMPACT_NAV: CompactDefinition[] = [
   { key: "dashboard", label: "Accueil", description: "Vue d'ensemble et priorités", source: "dashboard", children: ["dashboard"] },
   { key: "travail", label: "Travail", description: "Candidatures, projets, agenda et statistiques", source: "candidatures", children: ["candidatures", "projets", "agenda", "messages", "boite-mail", "stats"] },
@@ -32,13 +29,6 @@ const COMPACT_NAV: CompactDefinition[] = [
   { key: "pilotage", label: "Pilotage IA", description: "ChatGPT, automatisations et activité", source: "angel-ai", children: ["angel-ai", "automatisation", "activite"] },
   { key: "systeme", label: "Système", description: "Connexions, alertes et communauté", source: "connexions", children: ["connexions", "notifications", "abonnes", "avis", "parametres"] },
 ];
-
-function getInitialTheme(): AdminTheme {
-  if (typeof window === "undefined") return "light";
-  const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-  if (stored === "light" || stored === "dark") return stored;
-  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
 
 export function AdminShell({ items, active, onSelect, title, actions, children }: {
   items: AdminNavItem[];
@@ -51,17 +41,20 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
   const [open, setOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [theme, setTheme] = useState<AdminTheme>(getInitialTheme);
+  // Rendu SSR et première frame client identiques : le thème réel est appliqué
+  // après hydratation pour éviter tout écart de rendu.
+  const [theme, setTheme] = useState<AdminTheme>("light");
 
   useEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle("dark", theme === "dark");
-    root.dataset.angelOsUi = theme;
-    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+    const initial = readAdminTheme();
+    setTheme(initial);
+    applyAdminTheme(initial);
+    const unsubscribe = subscribeAdminTheme(setTheme);
     return () => {
-      delete root.dataset.angelOsUi;
+      unsubscribe();
+      clearAdminTheme();
     };
-  }, [theme]);
+  }, []);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -115,7 +108,7 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
     setAiOpen(false);
   };
 
-  const toggleTheme = () => setTheme((current) => current === "dark" ? "light" : "dark");
+  const toggleTheme = () => setAdminTheme(theme === "dark" ? "light" : "dark");
 
   const themeButton = (
     <button
