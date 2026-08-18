@@ -1520,6 +1520,55 @@ function AdminPage() {
                 </div>
               ))}
             </div>
+
+            <div className="mt-10">
+              <h3 className="text-sm font-semibold text-foreground">
+                Corbeille {trashed.length > 0 && `(${trashed.length})`}
+              </h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Les articles supprimés sont conservés ici. Une restauration les remet en brouillon privé.
+              </p>
+              <div className="mt-3 space-y-2">
+                {trashed.length === 0 && (
+                  <p className="text-sm text-muted-foreground">Corbeille vide.</p>
+                )}
+                {trashed.map((a) => (
+                  <div
+                    key={a.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-dashed border-border bg-muted/30 p-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-foreground">{a.title}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {a.slug}
+                        {a.deletedAt && ` · supprimé le ${formatDateTime(a.deletedAt)}`}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={restore.isPending}
+                        onClick={() => restore.mutate(a.slug)}
+                      >
+                        Restaurer
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={purge.isPending}
+                        onClick={() => {
+                          if (confirm(`Supprimer définitivement « ${a.title} » ? Cette action est irréversible.`))
+                            purge.mutate(a.slug);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
             </>
             )}
           </>
