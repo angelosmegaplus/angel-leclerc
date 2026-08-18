@@ -15,6 +15,10 @@ import {
   siteKnowledgePrompt,
   SITE_KNOWLEDGE_POLICY,
 } from "./site-knowledge.server";
+import {
+  recordMaintenanceReport,
+  tryExecuteExplicitAdminAction,
+} from "./admin-actions.server";
 import { recordAngelOperation } from "@/lib/angel-runtime.server";
 
 const InputSchema = z.object({ command: z.string().trim().min(2).max(2_000) });
@@ -60,9 +64,9 @@ async function recentConversation(db: Db) {
 export type PrivateAngelOsIaResult = {
   response: string;
   status: "completed";
-  source: "openai";
-  autoExecuted: false;
-  actionId: null;
+  source: "openai" | "angel-os";
+  autoExecuted: boolean;
+  actionId: string | null;
 };
 
 export const runPrivateAngelOsIaChat = createServerFn({ method: "POST" })
@@ -81,6 +85,51 @@ export const runPrivateAngelOsIaChat = createServerFn({ method: "POST" })
     if (insertError) throw insertError;
 
     try {
+      // Explicit, unambiguous admin commands are tools, not suggestions. The
+      // command itself is the authorization. Every execution is journaled in
+      // ai_actions + activity_log and is limited to a strict whitelist.
+      const explicitAction = await tryExecuteExplicitAdminAction(db, context.userId, data.command);
+      if (explicitAction.response) {
+        await db.from("ai_messages").update({
+          response: explicitAction.response,
+          status: "completed",
+          context: {
+            source: "angel-os",
+            private: true,
+            angel_os_ia: true,
+            auto_executed: explicitAction.executed,
+            action_id: explicitAction.actionId ?? null,
+            action_kind: explicitAction.kind ?? null,
+          },
+        }).eq("id", stored.id);
+
+        await recordAngelOperation({
+          type: "angel-os-ia.private-chat.action",
+          source: "angel-os-ia",
+          ok: true,
+          durationMs: Date.now() - startedAt,
+          payload: {
+            messageId: stored.id,
+            actionId: explicitAction.actionId ?? null,
+            actionKind: explicitAction.kind ?? null,
+            executed: explicitAction.executed,
+          },
+        });
+
+        return {
+          response: explicitAction.response,
+          status: "completed",
+          source: "angel-os",
+          autoExecuted: explicitAction.executed,
+          actionId: explicitAction.actionId ?? null,
+        };
+      }
+
+      // Bug/error reports are centralized even when the user only asks for an
+      // explanation. The report is evidence for maintenance, not permission for
+      // arbitrary self-modifying code.
+      const maintenanceActionId = await recordMaintenanceReport(db, data.command).catch(() => null);
+
       const [history, universe, memory, operational] = await Promise.all([
         recentConversation(db),
         readAdminUniverse(db, context.userId),
@@ -107,14 +156,16 @@ Tu disposes d’un index local du code du site, des routes, de la documentation 
 
 Tu peux également lire et croiser les données de l’ensemble de l’espace administrateur qui te sont fournies dans l’univers admin, notamment candidatures, projets, tâches, articles, messages du site, abonnés, actions, rapports, caches, Google Agenda et la boîte mail reçue/envoyée lorsqu’elle est connectée. Les mails envoyés sont une source opérationnelle de vérité : s’ils prouvent qu’une candidature a été envoyée, utilise la date, le destinataire, l’objet et le fil pour comprendre l’état réel, puis compare avec la base applications. Tu peux rédiger des brouillons de mail à partir des fils réels.
 
-Tu peux être autonome pour lire, analyser, diagnostiquer, prioriser et préparer les opérations internes sûres et réversibles. Une synchronisation interne factuelle et idempotente à partir d’une preuve certaine peut être proposée comme correction ; ne transforme jamais une inférence faible en fait. Tu dois conserver une validation explicite avant tout nouvel envoi externe depuis le chat, publication publique, suppression, paiement ou action destructive/irréversible. Garde la continuité de conversation et dis clairement quand une source est indisponible. Les informations les plus récentes et les preuves directes priment en cas de contradiction. N’affirme jamais qu’une action externe ou une synchronisation a été exécutée si elle ne l’a pas réellement été.
+Angel OS possède aussi une couche d’actions administrateur auditée. Les commandes explicites reconnues par cette couche sont exécutées avant de t’être envoyées ; si tu reçois la demande ici, n’invente donc jamais une exécution. Pour les bugs, erreurs ou anomalies, un rapport de maintenance peut déjà avoir été centralisé. Tu peux analyser et proposer une correction, mais tu ne dois jamais prétendre avoir modifié le code ou les données sans preuve d’une action réellement exécutée.
+
+Tu peux être autonome pour lire, analyser, diagnostiquer, prioriser et préparer les opérations internes sûres et réversibles. Une synchronisation interne factuelle et idempotente à partir d’une preuve certaine peut être proposée comme correction ; ne transforme jamais une inférence faible en fait. Un nouvel envoi externe, une publication publique, un paiement ou une opération destructive ambiguë nécessitent une demande explicite. Une commande destructive explicite et non ambiguë peut être exécutée par la couche d’actions whitelistée. Garde la continuité de conversation et dis clairement quand une source est indisponible. Les informations les plus récentes et les preuves directes priment en cas de contradiction. N’affirme jamais qu’une action externe ou une synchronisation a été exécutée si elle ne l’a pas réellement été.
 
 ${SITE_KNOWLEDGE_POLICY}`,
         },
         ...history,
         {
           role: "user",
-          content: `Demande actuelle : ${data.command}${memory}${operationalText}${universeText}${siteText}\n\nMémoire personnelle Angel OS IA :\n${personalText}`,
+          content: `Demande actuelle : ${data.command}${memory}${operationalText}${universeText}${siteText}\n\nMémoire personnelle Angel OS IA :\n${personalText}${maintenanceActionId ? `\n\nRapport maintenance centralisé : ${maintenanceActionId}` : ""}`,
         },
       ];
 
@@ -133,6 +184,8 @@ ${SITE_KNOWLEDGE_POLICY}`,
           source: "openai",
           private: true,
           angel_os_ia: true,
+          auto_executed: false,
+          maintenance_action_id: maintenanceActionId,
           operational_context_at: operational?.generatedAt ?? null,
           admin_universe_at: universe.generatedAt,
           site_knowledge_sources: siteHits.map((hit) => hit.source).slice(0, 14),
@@ -147,12 +200,13 @@ ${SITE_KNOWLEDGE_POLICY}`,
         durationMs: Date.now() - startedAt,
         payload: {
           messageId: stored.id,
+          maintenanceActionId,
           operationalContextAt: operational?.generatedAt ?? null,
           adminUniverseAt: universe.generatedAt,
           siteKnowledgeSources: siteHits.length,
         },
       });
-      return { response, status: "completed", source: "openai", autoExecuted: false, actionId: null };
+      return { response, status: "completed", source: "openai", autoExecuted: false, actionId: maintenanceActionId };
     } catch (error) {
       const rawDetail = error instanceof Error ? error.message : "Angel OS IA indisponible.";
       const detail = looksLikeHtml(rawDetail)
