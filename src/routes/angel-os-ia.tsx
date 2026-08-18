@@ -35,14 +35,14 @@ type Technology = {
 
 const technologies: Technology[] = [
   { name: "Passerelle IA Lovable", wordmark: "IA", text: "Fournit les capacités d’intelligence artificielle (modèles Google Gemini) utilisées par Angel OS IA.", href: "https://docs.lovable.dev/features/ai", actionLabel: "Documentation", state: "En service" },
-  { name: "ChatGPT", logo: "/logos/chatgpt.com.svg", text: "Intervient autour du projet pour l’analyse, les corrections, le contrôle et la maintenance.", href: "https://chatgpt.com", actionLabel: "Ouvrir le site", state: "Autour du projet" },
+  { name: "Angel Guard", wordmark: "AG", text: "Couche interne de supervision : santé technique, anomalies, incidents et récupération, développée dans Angel OS.", href: "/angel-guard-os", actionLabel: "Voir Angel Guard", state: "Interne" },
   { name: "React", logo: brandLogos.react, text: "Structure les interfaces et les composants interactifs d’Angel OS.", href: "https://react.dev", actionLabel: "Site officiel", state: "En service" },
   { name: "TypeScript", logo: brandLogos.typescript, text: "Porte la logique applicative et sécurise le développement par le typage.", href: "https://www.typescriptlang.org", actionLabel: "Site officiel", state: "En service" },
   { name: "TanStack", logo: brandLogos.tanstack, text: "Gère le routage, les données asynchrones et une partie de l’architecture.", href: "https://tanstack.com", actionLabel: "Site officiel", state: "En service" },
   { name: "Tailwind CSS", logo: brandLogos.tailwindcss, text: "Gère la mise en page responsive et l’identité visuelle.", href: "https://tailwindcss.com", actionLabel: "Site officiel", state: "En service" },
   { name: "Vite", logo: brandLogos.vite, text: "Construit l’application et fournit l’environnement de développement.", href: "https://vite.dev", actionLabel: "Site officiel", state: "En service" },
   { name: "GitHub", logo: brandLogos.github, text: "Centralise le code source, l’historique des modifications et les versions publiques du projet.", href: "https://github.com/angelosmegaplus/angel-leclerc", actionLabel: "Voir le dépôt GitHub", state: "En service" },
-  { name: "Vercel", logo: brandLogos.vercel, text: "Construit et publie l’application web à partir du code du projet.", href: "https://vercel.com", actionLabel: "Site officiel", state: "En service" },
+  { name: "Hébergement Lovable", wordmark: "LOV", text: "Construit et publie le site à partir du code du dépôt, puis le sert sur le domaine public.", href: "https://lovable.dev", actionLabel: "Site officiel", state: "En service" },
   { name: "Supabase", logo: brandLogos.supabase, text: "Gère la base de données, l’authentification et les données privées.", href: "https://supabase.com", actionLabel: "Site officiel", state: "En service" },
   { name: "Gmail API", logo: brandLogos.gmail, text: "Relie les mails utiles à l’administration et au suivi des candidatures.", href: "https://developers.google.com/gmail/api", actionLabel: "Documentation", state: "Espace privé" },
   { name: "Google Calendar API", logo: brandLogos.googlecalendar, text: "Relie l’agenda Google aux informations utilisées dans Angel OS.", href: "https://developers.google.com/calendar", actionLabel: "Documentation", state: "Espace privé" },
@@ -96,9 +96,15 @@ function TechCard({ technology }: { technology: Technology }) {
       ) : null}
       <p className="mt-3 text-sm leading-6 text-[#6b655e]">{technology.text}</p>
       {technology.href ? (
-        <a href={technology.href} target="_blank" rel="noreferrer" className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#d8d1c8] bg-[#faf8f4] px-3 py-2 text-xs font-bold text-[#181614] transition hover:bg-[#f1ede7]">
-          {technology.actionLabel || "Ouvrir"} <ExternalLink className="h-3.5 w-3.5" />
-        </a>
+        technology.href.startsWith("/") ? (
+          <Link to={technology.href} className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#d8d1c8] bg-[#faf8f4] px-3 py-2 text-xs font-bold text-[#181614] transition hover:bg-[#f1ede7]">
+            {technology.actionLabel || "Ouvrir"}
+          </Link>
+        ) : (
+          <a href={technology.href} target="_blank" rel="noreferrer" className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#d8d1c8] bg-[#faf8f4] px-3 py-2 text-xs font-bold text-[#181614] transition hover:bg-[#f1ede7]">
+            {technology.actionLabel || "Ouvrir"} <ExternalLink className="h-3.5 w-3.5" />
+          </a>
+        )
       ) : null}
     </article>
   );
@@ -226,6 +232,7 @@ function AngelOsIaPage() {
               <div className="mt-5 flex flex-wrap gap-2">
                 {["Santé", "Incidents", "Anomalies", "Contrôles", "Récupération"].map((item) => <span key={item} className="rounded-full border border-[#ddd6eb] bg-[#faf8ff] px-3 py-1.5 text-xs font-semibold text-[#65558f]">{item}</span>)}
               </div>
+              <Link to="/angel-guard-os" className="mt-5 inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#ddd6eb] bg-[#faf8ff] px-3 py-2 text-xs font-bold text-[#65558f] transition hover:bg-[#f3f0fb]">Voir Angel Guard</Link>
             </article>
           </div>
 
@@ -233,7 +240,7 @@ function AngelOsIaPage() {
             <article className={`${card} p-5`}><Database className="h-5 w-5 text-[#5276a8]" /><p className="mt-4 text-[10px] font-bold uppercase tracking-[.16em] text-[#5276a8]">Données</p><h3 className="mt-1 text-lg font-black">Le contexte vient du système</h3><p className="mt-2 text-sm leading-6 text-[#6b655e]">Mails, agenda, candidatures, articles, projets et autres données restent organisés par Angel OS.</p></article>
             <article className={`${card} p-5`}><Network className="h-5 w-5 text-[#5276a8]" /><p className="mt-4 text-[10px] font-bold uppercase tracking-[.16em] text-[#5276a8]">Connecteurs</p><h3 className="mt-1 text-lg font-black">Les services enrichissent Angel OS</h3><p className="mt-2 text-sm leading-6 text-[#6b655e]">Google, API et autres services externes sont utilisés uniquement lorsqu’ils sont réellement disponibles.</p></article>
             <article className={`${card} p-5`}><Sparkles className="h-5 w-5 text-[#c54f41]" /><p className="mt-4 text-[10px] font-bold uppercase tracking-[.16em] text-[#b44738]">Intelligence</p><h3 className="mt-1 text-lg font-black">L’IA n’est pas le système</h3><p className="mt-2 text-sm leading-6 text-[#6b655e]">Angel OS IA est une capacité intégrée à Angel OS, pas le noyau qui remplace tout le reste.</p></article>
-            <article className={`${card} p-5`}><Wrench className="h-5 w-5 text-[#7867a9]" /><p className="mt-4 text-[10px] font-bold uppercase tracking-[.16em] text-[#7867a9]">Maintenance</p><h3 className="mt-1 text-lg font-black">ChatGPT reste autour du projet</h3><p className="mt-2 text-sm leading-6 text-[#6b655e]">Développement, corrections, contrôle du code et maintenance restent distingués d’Angel OS IA.</p></article>
+            <article className={`${card} p-5`}><Wrench className="h-5 w-5 text-[#7867a9]" /><p className="mt-4 text-[10px] font-bold uppercase tracking-[.16em] text-[#7867a9]">Maintenance</p><h3 className="mt-1 text-lg font-black">La supervision reste interne</h3><p className="mt-2 text-sm leading-6 text-[#6b655e]">Contrôles techniques, incidents et récupération sont assurés par Angel Guard, développé dans Angel OS.</p></article>
           </div>
         </div>
       </section>
@@ -328,7 +335,7 @@ function AngelOsIaPage() {
           </ExpandableWidget>
 
           <ExpandableWidget eyebrow="Autour du système" title="Ce qui reste volontairement séparé">
-            <p><strong className="text-[#181614]">ChatGPT</strong> sert au développement, aux corrections, au contrôle et à la maintenance du projet. La <strong className="text-[#181614]">passerelle IA Lovable</strong> (modèles Google Gemini) fournit les capacités utilisées par Angel OS IA. Aucun de ces services ne remplace Angel OS lui-même ni Angel Guard.</p>
+            <p>La <strong className="text-[#181614]">passerelle IA Lovable</strong> (modèles Google Gemini) fournit uniquement les capacités d’intelligence utilisées par Angel OS IA. Les services Google connectés n’apportent que des données. Le reste — interface, éditeur, administration, supervision — est développé directement dans Angel OS et ne dépend d’aucun outil externe.</p>
           </ExpandableWidget>
         </div>
 
