@@ -2,24 +2,17 @@
 import { createClient, type Session } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { lovableArticleArchive } from '@/content/lovable-archive';
+import { deleteRecoveredArticle } from '@/lib/article-state.functions';
 
 const PUBLIC_SUPABASE_URL = 'https://timygavajdestkbdzuyk.supabase.co';
 const PUBLIC_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_8IG8jsDj3yWH7u7urAQPig_r2V8Wd9s';
 
-// Les articles récupérés depuis l'ancien site peuvent être affichés dans l'admin
-// avant leur restauration native dans public.articles. Dans ce cas un DELETE par
-// id toucherait zéro ligne et l'article réapparaîtrait via le fallback historique.
-// On transforme donc la suppression de TOUT article d'archive en tombstone
-// persistant dans git_article_state. Les lecteurs d'articles respectent déjà ces
-// tombstones, ce qui empêche toute résurrection involontaire.
 const RECOVERED_ARTICLE_BY_ID: Record<string, string> = Object.fromEntries(
   lovableArticleArchive
     .filter((article) => typeof article.id === 'string' && typeof article.slug === 'string')
     .map((article) => [article.id, article.slug]),
 );
 
-// Quelques articles historiques maintenus directement dans Git ne font pas
-// forcément partie du snapshot Lovable : conserver leur compatibilité explicite.
 Object.assign(RECOVERED_ARTICLE_BY_ID, {
   'political-salaries-20260815': 'salaires-politiques-france-combien-coutent-elus',
   '9b51d8a2-7cf4-4d9b-a9d0-202608131438':
@@ -79,16 +72,16 @@ function proxiedFrom(table: string) {
         return new Proxy(deleteQuery, {
           get(deleteTarget, deleteProp, deleteReceiver) {
             if (deleteProp !== 'eq') return Reflect.get(deleteTarget, deleteProp, deleteReceiver);
-            return (column: string, value: unknown) => {
+            return async (column: string, value: unknown) => {
               if (column === 'id' && typeof value === 'string') {
                 const slug = RECOVERED_ARTICLE_BY_ID[value];
                 if (slug) {
-                  return (_supabase as any)
-                    .from('git_article_state')
-                    .upsert(
-                      { slug, deleted: true, deleted_at: new Date().toISOString() },
-                      { onConflict: 'slug' },
-                    );
+                  try {
+                    await deleteRecoveredArticle({ data: { slug } });
+                    return { data: [{ slug, deleted: true }], error: null };
+                  } catch (error) {
+                    return { data: null, error };
+                  }
                 }
               }
               return deleteTarget.eq(column, value);
@@ -117,11 +110,6 @@ async function validateSession(session: Session): Promise<boolean> {
   return true;
 }
 
-/**
- * Return a session whose access token is accepted by Supabase Auth itself.
- * Signature-only claim validation is insufficient because a revoked/stale token
- * can still be cryptographically valid while being rejected by authenticated RPCs.
- */
 export async function getFreshSupabaseSession(): Promise<Session | null> {
   if (typeof window === 'undefined') return null;
 
