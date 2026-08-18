@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
+import type { Database, Json } from "@/integrations/supabase/types";
 import type { Article } from "@/lib/articles-types";
 import { fetchAllArticles } from "@/lib/articles";
 import { recordAngelOperation } from "@/lib/angel-runtime.server";
@@ -14,6 +14,28 @@ type ActionResult = {
 };
 
 function normalize(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[«»"']/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Les colonnes JSONB sont typées `Json` : on convertit explicitement. */
+function toJson(value: Record<string, unknown>): Json {
+  return value as Json;
+}
+
+/** `badges` peut être n'importe quelle valeur JSON : on ne spread qu'un objet. */
+function asJsonObject(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function unusedNormalize(value: string) {
   return value
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -67,7 +89,7 @@ async function writeAction(
       kind: input.kind,
       title: input.title.slice(0, 160),
       description: input.description.slice(0, 1200),
-      payload: input.payload,
+      payload: toJson(input.payload),
       status: input.status,
       target_type: input.targetType ?? null,
       sensitive: input.sensitive ?? false,
@@ -90,7 +112,7 @@ async function logActivity(
     action,
     entity_type: entityType,
     entity_id: entityId,
-    details,
+    details: toJson(details),
   });
 }
 
@@ -149,7 +171,7 @@ async function deleteArticle(db: Db, userId: string, target: string): Promise<Ac
       scheduled_at: null,
       is_private: true,
       featured: false,
-      badges: { ...(article.badges ?? {}), __angel_os_deleted: true, deleted_at: now, deleted_by: "angel-os-ia" },
+      badges: { ...asJsonObject(article.badges), __angel_os_deleted: true, deleted_at: now, deleted_by: "angel-os-ia" },
     });
     const { error } = await db.from("articles").upsert(override as any, { onConflict: "slug" });
     if (error) throw error;
