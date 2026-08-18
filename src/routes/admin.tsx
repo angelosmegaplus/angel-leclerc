@@ -1525,6 +1525,7 @@ function AdminPage() {
                       title="Dupliquer en brouillon"
                       onClick={() =>
                         setDraft({
+                          id: undefined,
                           title: `${a.title} (copie)`,
                           slug: `${a.slug}-copie`,
                           category: a.category,
