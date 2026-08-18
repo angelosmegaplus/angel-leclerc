@@ -500,7 +500,7 @@ export function ApplicationsPanel() {
           </div>
         ) : null}
 
-        {view === "followup" ? (
+        {view === "manage" ? null : view === "followup" ? (
           <>
             <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
               <div className="rounded-xl border border-border bg-background/60 p-3">
