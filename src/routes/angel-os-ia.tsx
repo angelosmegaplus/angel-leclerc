@@ -326,7 +326,7 @@ function AngelOsIaPage() {
           </ExpandableWidget>
 
           <ExpandableWidget eyebrow="Autour du système" title="Ce qui reste volontairement séparé">
-            <p><strong className="text-[#181614]">ChatGPT</strong> sert au développement, aux corrections, au contrôle et à la maintenance du projet. <strong className="text-[#181614]">Angel OS IA API</strong> peut fournir certaines capacités à Angel OS IA. Aucun de ces services ne remplace Angel OS lui-même ni Angel Guard.</p>
+            <p><strong className="text-[#181614]">ChatGPT</strong> sert au développement, aux corrections, au contrôle et à la maintenance du projet. La <strong className="text-[#181614]">passerelle IA Lovable</strong> (modèles Google Gemini) fournit les capacités utilisées par Angel OS IA. Aucun de ces services ne remplace Angel OS lui-même ni Angel Guard.</p>
           </ExpandableWidget>
         </div>
 
