@@ -115,8 +115,9 @@ function AuthPage() {
     if (!loading && session && isAdmin && !opening) {
       playAccessSound(true);
       setOpening(true);
+      void navigate({ to: "/admin" });
     }
-  }, [loading, session, isAdmin, opening]);
+  }, [loading, session, isAdmin, opening, navigate]);
 
   function resetMessages() { setError(null); setNotice(null); }
   function switchMode(next: AuthMode) {
@@ -194,7 +195,7 @@ function AuthPage() {
 
   async function logout() { await supabase.auth.signOut(); switchMode("login"); }
 
-  if (opening) return <SystemBootExperience done={() => void navigate({ to: "/admin" })} label="Ouverture de l'espace administrateur Angel OS" />;
+  if (opening) return <div className="fixed inset-0 z-[9999] bg-background" aria-label="Ouverture de l'espace administrateur" />;
   if (loading) return <section className="auth-shell"><Loader2 className="h-6 w-6 animate-spin text-[#3f78ff]" /></section>;
 
   const title = mode === "signup" ? "Créer mon compte" : mode === "forgot" ? "Récupérer mon accès" : mode === "owner" ? "Accès propriétaire" : "Connexion";
