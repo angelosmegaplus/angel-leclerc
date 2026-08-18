@@ -1,5 +1,37 @@
 import { useEffect, useState } from "react";
 
+let bootAudioContext: AudioContext | null = null;
+
+function playBootSound() {
+  if (typeof window === "undefined") return;
+  const AudioContextCtor = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  if (!AudioContextCtor) return;
+  bootAudioContext ??= new AudioContextCtor();
+  const context = bootAudioContext;
+  if (context.state === "suspended") void context.resume();
+
+  const notes = [
+    { frequency: 261.63, start: 0, duration: 0.42, gain: 0.018 },
+    { frequency: 392.0, start: 0.14, duration: 0.48, gain: 0.017 },
+    { frequency: 523.25, start: 0.3, duration: 0.72, gain: 0.015 },
+    { frequency: 659.25, start: 0.54, duration: 0.78, gain: 0.012 },
+  ];
+
+  for (const note of notes) {
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(note.frequency, context.currentTime + note.start);
+    gain.gain.setValueAtTime(0.0001, context.currentTime + note.start);
+    gain.gain.exponentialRampToValueAtTime(note.gain, context.currentTime + note.start + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + note.start + note.duration);
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start(context.currentTime + note.start);
+    oscillator.stop(context.currentTime + note.start + note.duration + 0.05);
+  }
+}
+
 export function SystemBootExperience({
   done,
   label = "Démarrage d'Angel OS",
@@ -10,6 +42,7 @@ export function SystemBootExperience({
   const [exiting, setExiting] = useState(false);
 
   useEffect(() => {
+    playBootSound();
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) {
       const timer = window.setTimeout(done, 500);
