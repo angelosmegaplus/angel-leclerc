@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { claimOwnerAdminAccess } from "@/lib/admin-owner-recovery.functions";
 import { resetOwnerPasswordWithEmergencyCode } from "@/lib/admin-password-reset.functions";
-import { SystemBootExperience } from "@/components/angel-os/SystemBootExperience";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
