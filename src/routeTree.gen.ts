@@ -25,9 +25,11 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AngelOsIaRouteImport } from './routes/angel-os-ia'
 import { Route as AngelOsRouteImport } from './routes/angel-os'
 import { Route as AngelGuardOsRouteImport } from './routes/angel-guard-os'
+import { Route as AdminStartupRouteImport } from './routes/admin-startup'
 import { Route as AdminMovixRouteImport } from './routes/admin-movix'
 import { Route as AdminIntegrationsRouteImport } from './routes/admin-integrations'
 import { Route as AdminActualitesRouteImport } from './routes/admin-actualites'
+import { Route as AdminAccessRouteImport } from './routes/admin-access'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BoutiqueIndexRouteImport } from './routes/boutique/index'
@@ -145,6 +147,11 @@ const AngelGuardOsRoute = AngelGuardOsRouteImport.update({
   path: '/angel-guard-os',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminStartupRoute = AdminStartupRouteImport.update({
+  id: '/admin-startup',
+  path: '/admin-startup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminMovixRoute = AdminMovixRouteImport.update({
   id: '/admin-movix',
   path: '/admin-movix',
@@ -158,6 +165,11 @@ const AdminIntegrationsRoute = AdminIntegrationsRouteImport.update({
 const AdminActualitesRoute = AdminActualitesRouteImport.update({
   id: '/admin-actualites',
   path: '/admin-actualites',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAccessRoute = AdminAccessRouteImport.update({
+  id: '/admin-access',
+  path: '/admin-access',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -350,9 +362,11 @@ const ApiPublicOauthProviderCallbackRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/admin-access': typeof AdminAccessRoute
   '/admin-actualites': typeof AdminActualitesRoute
   '/admin-integrations': typeof AdminIntegrationsRoute
   '/admin-movix': typeof AdminMovixRouteWithChildren
+  '/admin-startup': typeof AdminStartupRoute
   '/angel-guard-os': typeof AngelGuardOsRoute
   '/angel-os': typeof AngelOsRoute
   '/angel-os-ia': typeof AngelOsIaRoute
@@ -406,9 +420,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/admin-access': typeof AdminAccessRoute
   '/admin-actualites': typeof AdminActualitesRoute
   '/admin-integrations': typeof AdminIntegrationsRoute
   '/admin-movix': typeof AdminMovixRouteWithChildren
+  '/admin-startup': typeof AdminStartupRoute
   '/angel-guard-os': typeof AngelGuardOsRoute
   '/angel-os': typeof AngelOsRoute
   '/angel-os-ia': typeof AngelOsIaRoute
@@ -463,9 +479,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/admin-access': typeof AdminAccessRoute
   '/admin-actualites': typeof AdminActualitesRoute
   '/admin-integrations': typeof AdminIntegrationsRoute
   '/admin-movix': typeof AdminMovixRouteWithChildren
+  '/admin-startup': typeof AdminStartupRoute
   '/angel-guard-os': typeof AngelGuardOsRoute
   '/angel-os': typeof AngelOsRoute
   '/angel-os-ia': typeof AngelOsIaRoute
@@ -521,9 +539,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/admin-access'
     | '/admin-actualites'
     | '/admin-integrations'
     | '/admin-movix'
+    | '/admin-startup'
     | '/angel-guard-os'
     | '/angel-os'
     | '/angel-os-ia'
@@ -577,9 +597,11 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/admin-access'
     | '/admin-actualites'
     | '/admin-integrations'
     | '/admin-movix'
+    | '/admin-startup'
     | '/angel-guard-os'
     | '/angel-os'
     | '/angel-os-ia'
@@ -633,9 +655,11 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/admin-access'
     | '/admin-actualites'
     | '/admin-integrations'
     | '/admin-movix'
+    | '/admin-startup'
     | '/angel-guard-os'
     | '/angel-os'
     | '/angel-os-ia'
@@ -690,9 +714,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  AdminAccessRoute: typeof AdminAccessRoute
   AdminActualitesRoute: typeof AdminActualitesRoute
   AdminIntegrationsRoute: typeof AdminIntegrationsRoute
   AdminMovixRoute: typeof AdminMovixRouteWithChildren
+  AdminStartupRoute: typeof AdminStartupRoute
   AngelGuardOsRoute: typeof AngelGuardOsRoute
   AngelOsRoute: typeof AngelOsRoute
   AngelOsIaRoute: typeof AngelOsIaRoute
@@ -856,6 +882,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AngelGuardOsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin-startup': {
+      id: '/admin-startup'
+      path: '/admin-startup'
+      fullPath: '/admin-startup'
+      preLoaderRoute: typeof AdminStartupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin-movix': {
       id: '/admin-movix'
       path: '/admin-movix'
@@ -875,6 +908,13 @@ declare module '@tanstack/react-router' {
       path: '/admin-actualites'
       fullPath: '/admin-actualites'
       preLoaderRoute: typeof AdminActualitesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin-access': {
+      id: '/admin-access'
+      path: '/admin-access'
+      fullPath: '/admin-access'
+      preLoaderRoute: typeof AdminAccessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -1142,9 +1182,11 @@ const AdminMovixRouteWithChildren = AdminMovixRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  AdminAccessRoute: AdminAccessRoute,
   AdminActualitesRoute: AdminActualitesRoute,
   AdminIntegrationsRoute: AdminIntegrationsRoute,
   AdminMovixRoute: AdminMovixRouteWithChildren,
+  AdminStartupRoute: AdminStartupRoute,
   AngelGuardOsRoute: AngelGuardOsRoute,
   AngelOsRoute: AngelOsRoute,
   AngelOsIaRoute: AngelOsIaRoute,
