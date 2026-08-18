@@ -399,6 +399,8 @@ function AdminPage() {
     onSuccess: () => {
       toast.success("Article supprimé définitivement");
       queryClient.invalidateQueries({ queryKey: ["admin-articles-trash"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-articles"] });
+      queryClient.invalidateQueries({ queryKey: ["articles"] });
     },
     onError: (err: unknown) =>
       toast.error("Suppression définitive impossible", { description: describeDbError(err), duration: 12000 }),
