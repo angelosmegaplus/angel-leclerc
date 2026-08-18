@@ -275,7 +275,9 @@ function AngelOsIaPage() {
               <h3 className="mt-1 text-lg font-black">Contenus publiés</h3>
               <div className="mt-2 space-y-1 text-sm leading-6 text-[#6b655e]">
                 <p>Articles publiés : <strong className="text-[#181614]">{status?.database.publishedArticles ?? "—"}</strong></p>
-                <p>Projets référencés : <strong className="text-[#181614]">{status?.database.projects ?? "—"}</strong></p>
+                {status?.database.projects ? (
+                  <p>Projets référencés : <strong className="text-[#181614]">{status.database.projects}</strong></p>
+                ) : null}
                 <p>Base de données : {status?.database.available ? "accessible" : "non vérifiée"}</p>
               </div>
             </article>
