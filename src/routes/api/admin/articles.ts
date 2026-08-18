@@ -170,6 +170,7 @@ async function saveViaSupabase(raw: Record<string, unknown>, userId: string, slu
 
   const { error } = await db.from("articles").upsert(row as any, { onConflict: "slug" });
   if (error) throw error;
+  await markGitArticleState(slug, false);
 
   // The database row itself overrides any historical Lovable/Git fallback by slug.
   // Do not depend on the legacy git_article_state table: it is not present in every
