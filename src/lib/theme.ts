@@ -6,6 +6,7 @@ export const THEME_STORAGE_KEY = "alc-theme";
 export const THEME_INIT_SCRIPT = `(function(){try{var p=localStorage.getItem('${THEME_STORAGE_KEY}')||'system';var d=p==='dark'||(p!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);var r=document.documentElement;r.classList.toggle('dark',d);r.style.colorScheme=d?'dark':'light';r.dataset.angelOsUi=d?'dark':'light';}catch(e){}})();`;
 
 const ADMIN_DARK_STYLE_ID = "angel-os-admin-dark-overrides";
+const ADMIN_THEME_GUARD_KEY = "__angelOsThemeGuard";
 const ADMIN_DARK_CSS = `
 html[data-angel-os-ui="dark"] body { background:#111315; color:#f5f7f8; }
 html[data-angel-os-ui="dark"] .bg-white { background-color:#181b1f !important; }
@@ -62,6 +63,24 @@ export function resolveTheme(pref: ThemePreference): "light" | "dark" {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
+function ensureThemeGuard() {
+  if (typeof window === "undefined" || typeof document === "undefined") return;
+  const state = window as Window & { [ADMIN_THEME_GUARD_KEY]?: MutationObserver };
+  if (state[ADMIN_THEME_GUARD_KEY]) return;
+
+  const root = document.documentElement;
+  const observer = new MutationObserver(() => {
+    const expected = resolveTheme(readPreference());
+    const isDark = root.classList.contains("dark");
+    const ui = root.dataset.angelOsUi;
+    if ((expected === "dark" && (!isDark || ui !== "dark")) || (expected === "light" && (isDark || ui !== "light"))) {
+      queueMicrotask(() => applyTheme(readPreference()));
+    }
+  });
+  observer.observe(root, { attributes: true, attributeFilter: ["class", "data-angel-os-ui"] });
+  state[ADMIN_THEME_GUARD_KEY] = observer;
+}
+
 export function applyTheme(pref: ThemePreference) {
   const dark = resolveTheme(pref) === "dark";
   const root = document.documentElement;
@@ -69,6 +88,7 @@ export function applyTheme(pref: ThemePreference) {
   root.dataset.angelOsUi = dark ? "dark" : "light";
   root.style.colorScheme = dark ? "dark" : "light";
   ensureAdminThemeOverrides();
+  ensureThemeGuard();
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute("content", dark ? "#111315" : "#F6F1E8");
 }
