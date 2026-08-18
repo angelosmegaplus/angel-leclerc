@@ -9,18 +9,22 @@ import type { RecommendationCandidate, ViewingSignal } from "@/lib/film-recommen
 export function FilmDetailsModal({
   item,
   signals,
+  profileKey,
   onSignalsChange,
+  onPlay,
   onClose,
 }: {
   item: RecommendationCandidate;
   signals: ViewingSignal[];
+  profileKey?: string | null;
   onSignalsChange: (signals: ViewingSignal[]) => void;
+  onPlay?: (item: RecommendationCandidate) => void;
   onClose: () => void;
 }) {
   const loadDetails = useServerFn(getFilmDetails);
   const previous = useMemo(() => signals.find((signal) => signal.candidateId === item.id), [signals, item.id]);
   const { data: details, isLoading } = useQuery({
-    queryKey: ["film-details-v1", item.id],
+    queryKey: ["film-details-v2", item.id],
     queryFn: () => loadDetails({ data: { candidateId: item.id, fallbackTitle: item.title } }),
     enabled: item.id.startsWith("tmdb-"),
     staleTime: 6 * 60 * 60 * 1000,
@@ -36,7 +40,7 @@ export function FilmDetailsModal({
   function update(patch: Partial<ViewingSignal>) {
     const base = signalForCandidate(item, previous);
     const next: ViewingSignal = { ...base, ...patch, updatedAt: Date.now() };
-    onSignalsChange(upsertTasteSignal(signals, next));
+    onSignalsChange(upsertTasteSignal(signals, next, profileKey));
   }
 
   const title = details?.title || item.title;
@@ -65,6 +69,7 @@ export function FilmDetailsModal({
                 {runtime ? <><span>•</span><span>{runtime}</span></> : null}
                 {rating ? <><span>•</span><span className="inline-flex items-center gap-1"><Star className="h-3.5 w-3.5 fill-current text-amber-300" />{rating.toFixed(1)}</span></> : null}
               </div>
+              {onPlay && item.id.startsWith("tmdb-") ? <button type="button" onClick={() => { onPlay(item); onClose(); }} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-black"><Play className="h-4 w-4 fill-current" />Lecture dans Movix</button> : null}
             </div>
           </div>
         </div>
@@ -79,44 +84,12 @@ export function FilmDetailsModal({
 
             <section className="mt-8 rounded-2xl border border-white/10 bg-white/[.035] p-5">
               <div className="flex items-center gap-2"><Brain className="h-4 w-4 text-violet-300" /><h3 className="font-semibold">Apprendre mes goûts</h3></div>
-              <p className="mt-1 text-xs leading-5 text-white/40">Chaque réponse ajuste automatiquement les prochaines recommandations.</p>
-
+              <p className="mt-1 text-xs leading-5 text-white/40">Ces réponses sont enregistrées uniquement dans le profil cinéma actuellement actif.</p>
               <div className="mt-5 grid gap-4">
-                <div>
-                  <p className="text-xs font-semibold text-white/60">Tu l’as vu ?</p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <Choice active={previous?.seen === true} onClick={() => update({ seen: true, completion: 1 })} icon={<CheckCircle2 className="h-4 w-4" />} label="Oui, vu" />
-                    <Choice active={previous?.seen === false} onClick={() => update({ seen: false, completion: 0 })} label="Pas encore" />
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-xs font-semibold text-white/60">Tu as aimé ?</p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <Choice active={previous?.liked === true} onClick={() => update({ liked: true, rejected: false })} icon={<Heart className="h-4 w-4" />} label="J’ai aimé" />
-                    <Choice active={previous?.liked === false} onClick={() => update({ liked: false, rejected: true })} icon={<ThumbsDown className="h-4 w-4" />} label="Pas aimé" />
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-xs font-semibold text-white/60">C’est ton style ?</p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <Choice active={previous?.styleFit === "yes"} onClick={() => update({ styleFit: "yes" })} label="Carrément" />
-                    <Choice active={previous?.styleFit === "mixed"} onClick={() => update({ styleFit: "mixed" })} label="Moyen" />
-                    <Choice active={previous?.styleFit === "no"} onClick={() => update({ styleFit: "no" })} label="Pas mon style" />
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-xs font-semibold text-white/60">Ta note</p>
-                  <div className="mt-2 flex gap-1.5">
-                    {[1, 2, 3, 4, 5].map((value) => (
-                      <button key={value} type="button" onClick={() => update({ rating: value })} className={`grid h-9 w-9 place-items-center rounded-lg border transition ${previous?.rating === value ? "border-amber-300 bg-amber-300 text-black" : "border-white/10 bg-white/[.03] text-white/45 hover:text-amber-300"}`} aria-label={`${value} sur 5`}>
-                        <Star className="h-4 w-4 fill-current" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <div><p className="text-xs font-semibold text-white/60">Tu l’as vu ?</p><div className="mt-2 flex flex-wrap gap-2"><Choice active={previous?.seen === true} onClick={() => update({ seen: true, completion: 1 })} icon={<CheckCircle2 className="h-4 w-4" />} label="Oui, vu" /><Choice active={previous?.seen === false} onClick={() => update({ seen: false, completion: 0 })} label="Pas encore" /></div></div>
+                <div><p className="text-xs font-semibold text-white/60">Tu as aimé ?</p><div className="mt-2 flex flex-wrap gap-2"><Choice active={previous?.liked === true} onClick={() => update({ liked: true, rejected: false })} icon={<Heart className="h-4 w-4" />} label="J’ai aimé" /><Choice active={previous?.liked === false} onClick={() => update({ liked: false, rejected: true })} icon={<ThumbsDown className="h-4 w-4" />} label="Pas aimé" /></div></div>
+                <div><p className="text-xs font-semibold text-white/60">C’est ton style ?</p><div className="mt-2 flex flex-wrap gap-2"><Choice active={previous?.styleFit === "yes"} onClick={() => update({ styleFit: "yes" })} label="Carrément" /><Choice active={previous?.styleFit === "mixed"} onClick={() => update({ styleFit: "mixed" })} label="Moyen" /><Choice active={previous?.styleFit === "no"} onClick={() => update({ styleFit: "no" })} label="Pas mon style" /></div></div>
+                <div><p className="text-xs font-semibold text-white/60">Ta note</p><div className="mt-2 flex gap-1.5">{[1,2,3,4,5].map((value) => <button key={value} type="button" onClick={() => update({ rating: value })} className={`grid h-9 w-9 place-items-center rounded-lg border transition ${previous?.rating === value ? "border-amber-300 bg-amber-300 text-black" : "border-white/10 bg-white/[.03] text-white/45 hover:text-amber-300"}`} aria-label={`${value} sur 5`}><Star className="h-4 w-4 fill-current" /></button>)}</div></div>
               </div>
             </section>
 
@@ -124,24 +97,13 @@ export function FilmDetailsModal({
               <h3 className="text-sm font-semibold text-white/90">Où regarder</h3>
               {isLoading ? <div className="mt-3 inline-flex items-center gap-2 text-xs text-white/40"><Loader2 className="h-4 w-4 animate-spin" />Recherche des plateformes…</div> : null}
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                {(details?.watchLinks ?? []).filter((link) => link.provider !== "tmdb").map((link) => (
-                  <a key={link.provider} href={link.url} target="_blank" rel="noreferrer" className={`flex min-h-12 items-center justify-between rounded-xl border px-4 text-sm font-semibold transition ${link.provider === "movix" ? "border-violet-400/30 bg-violet-400/10 text-violet-100 hover:bg-violet-400/15" : link.available ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-100 hover:bg-emerald-400/15" : "border-white/10 bg-white/[.025] text-white/40 hover:text-white/70"}`}>
-                    <span className="inline-flex items-center gap-2">{link.provider === "movix" ? <Play className="h-4 w-4" /> : <ExternalLink className="h-4 w-4" />}{link.label}</span>
-                    {link.provider !== "movix" ? <span className="text-[10px] uppercase tracking-wider">{link.available ? "Disponible" : "Rechercher"}</span> : null}
-                  </a>
-                ))}
+                {(details?.watchLinks ?? []).filter((link) => link.provider !== "tmdb" && link.provider !== "movix").map((link) => <a key={link.provider} href={link.url} target="_blank" rel="noreferrer" className={`flex min-h-12 items-center justify-between rounded-xl border px-4 text-sm font-semibold transition ${link.available ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-100" : "border-white/10 bg-white/[.025] text-white/40"}`}><span className="inline-flex items-center gap-2"><ExternalLink className="h-4 w-4" />{link.label}</span><span className="text-[10px] uppercase tracking-wider">{link.available ? "Disponible" : "Rechercher"}</span></a>)}
               </div>
               {details?.providers?.length ? <p className="mt-3 text-[11px] leading-5 text-white/30">Disponibilités détectées en France via TMDB : {details.providers.join(", ")}.</p> : null}
-              {details?.watchLinks?.find((link) => link.provider === "tmdb") ? <a href={details.watchLinks.find((link) => link.provider === "tmdb")!.url} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-xs text-white/35 underline decoration-white/20 underline-offset-4 hover:text-white/60">Toutes les offres détectées <ExternalLink className="h-3 w-3" /></a> : null}
             </section>
           </div>
 
-          <aside className="space-y-5 text-xs">
-            <InfoLine label="Genres" value={genres} />
-            {director ? <InfoLine label="Réalisation" value={director} /> : null}
-            {cast.length ? <InfoLine label="Avec" value={cast.slice(0, 8).join(", ")} /> : null}
-            {details?.providers?.length ? <InfoLine label="Plateformes FR" value={details.providers.slice(0, 10).join(", ")} /> : null}
-          </aside>
+          <aside className="space-y-5 text-xs"><InfoLine label="Genres" value={genres} />{director ? <InfoLine label="Réalisation" value={director} /> : null}{cast.length ? <InfoLine label="Avec" value={cast.slice(0, 8).join(", ")} /> : null}{details?.providers?.length ? <InfoLine label="Plateformes FR" value={details.providers.slice(0, 10).join(", ")} /> : null}</aside>
         </div>
       </article>
     </div>
@@ -151,7 +113,4 @@ export function FilmDetailsModal({
 function Choice({ active, onClick, label, icon }: { active: boolean; onClick: () => void; label: string; icon?: React.ReactNode }) {
   return <button type="button" onClick={onClick} className={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3.5 text-xs font-semibold transition ${active ? "border-white bg-white text-black" : "border-white/10 bg-white/[.03] text-white/55 hover:bg-white/[.07] hover:text-white"}`}>{icon}{label}</button>;
 }
-
-function InfoLine({ label, value }: { label: string; value: string }) {
-  return <div><p className="font-semibold text-white/70">{label}</p><p className="mt-1 leading-5 text-white/40">{value}</p></div>;
-}
+function InfoLine({ label, value }: { label: string; value: string }) { return <div><p className="font-semibold text-white/70">{label}</p><p className="mt-1 leading-5 text-white/40">{value}</p></div>; }
