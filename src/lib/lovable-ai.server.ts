@@ -1,5 +1,5 @@
 // Moteur d'intelligence artificielle d'Angel OS : passerelle IA Lovable (modèles Google Gemini).
-// Aucun appel direct à OpenAI n'est effectué par Angel OS.
+// Aucun appel direct à Angel OS IA n'est effectué par Angel OS.
 export const LOVABLE_AI_ENDPOINT = "https://ai.gateway.lovable.dev/v1/chat/completions";
 export const LOVABLE_AI_SOURCE = "env:LOVABLE_API_KEY";
 
@@ -14,7 +14,7 @@ export function getLovableAiKey(): string | null {
   return value || null;
 }
 
-/** Convertit un identifiant de modèle historique (OpenAI) vers un modèle réellement disponible. */
+/** Convertit un identifiant de modèle historique (Angel OS IA) vers un modèle réellement disponible. */
 export function resolveAiModel(model?: string | null): string {
   const value = (model ?? "").trim();
   if (!value) return process.env["ANGEL_AI_MODEL"]?.trim() || DEFAULT_AI_MODEL;

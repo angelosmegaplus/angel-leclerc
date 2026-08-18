@@ -22,10 +22,10 @@ function looksLikeHtml(value: string | null | undefined) {
 function adminFailureMessage(result: { reason?: string; detail?: string | null; recoveryExplanation?: string | null }) {
   const labels: Record<string, string> = {
     disabled: "IA intégrée désactivée",
-    not_configured: "configuration OpenAI absente ou inaccessible",
+    not_configured: "configuration Angel OS IA absente ou inaccessible",
     budget: "limite interne de budget IA atteinte",
     circuit_open: "circuit de protection IA temporairement ouvert",
-    provider: "échec du fournisseur OpenAI",
+    provider: "échec du fournisseur Angel OS IA",
   };
   const label = labels[result.reason ?? ""] ?? "échec de l'IA intégrée";
   const rawDetail = result.detail?.trim() || result.recoveryExplanation?.trim() || "Aucun détail technique supplémentaire n'a été fourni.";

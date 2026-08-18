@@ -33,7 +33,7 @@ function looksLikeHtml(value: string | null | undefined) {
 }
 
 function safeTechnicalDetail(value: string | null | undefined) {
-  if (!value?.trim()) return "Aucune réponse OpenAI exploitable n’a été reçue.";
+  if (!value?.trim()) return "Aucune réponse Angel OS IA exploitable n’a été reçue.";
   if (looksLikeHtml(value)) return "Le service amont a renvoyé une page d’erreur HTML au lieu d’une réponse API exploitable.";
   return value.trim().slice(0, 700);
 }
@@ -150,7 +150,7 @@ export const runPrivateAngelOsIaChat = createServerFn({ method: "POST" })
       const messages: AiMessage[] = [
         {
           role: "system",
-          content: `Tu es Angel OS IA, la distribution d’intelligence artificielle privée fonctionnant au-dessus d’Angel OS dans l’espace administrateur privé. Tu réponds uniquement via OpenAI dans cette interface. Il n’existe aucun moteur conversationnel local de secours ici : ne prétends jamais être un fallback local.
+          content: `Tu es Angel OS IA, la distribution d’intelligence artificielle privée fonctionnant au-dessus d’Angel OS dans l’espace administrateur privé. Tu réponds uniquement via Angel OS IA dans cette interface. Il n’existe aucun moteur conversationnel local de secours ici : ne prétends jamais être un fallback local.
 
 Tu disposes d’un index local du code du site, des routes, de la documentation et du texte des pages publiques réellement rendues en production. Cet index est reconstruit automatiquement depuis le code livré avec Angel OS et depuis angel-leclerc.fr : ce n’est pas une mémoire imaginative. Tu ne prétends lire que les extraits effectivement fournis dans le contexte de la demande. Quand une question concerne le fonctionnement du site, appuie-toi d’abord sur ces preuves et cite naturellement le chemin de fichier ou la route lorsque c’est utile.
 

@@ -15,13 +15,13 @@ function normalizeBearerToken(value: string) {
   return value.replace(/^Bearer\s+/i, "").trim();
 }
 
-// Compatibilité : Angel OS n'utilise plus OpenAI, seulement la passerelle IA Lovable.
+// Compatibilité : Angel OS n'utilise plus Angel OS IA, seulement la passerelle IA Lovable.
 export async function getOpenAiCredential(): Promise<OpenAiCredential | null> {
   const value = env("LOVABLE_API_KEY");
   return value ? { value, source: "env:LOVABLE_API_KEY" } : null;
 }
 
-// Compatibility export: there is deliberately never more than one OpenAI key.
+// Compatibility export: there is deliberately never more than one Angel OS IA key.
 export async function getOpenAiCredentials(): Promise<OpenAiCredential[]> {
   const credential = await getOpenAiCredential();
   return credential ? [credential] : [];

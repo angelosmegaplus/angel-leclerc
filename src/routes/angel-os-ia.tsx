@@ -222,7 +222,7 @@ function AngelOsIaPage() {
           <div className="max-w-3xl">
             <p className="text-[11px] font-bold uppercase tracking-[.18em] text-[#b44738]">Infrastructure connectée</p>
             <h2 className="mt-2 font-display text-3xl font-black tracking-[-.045em] sm:text-4xl">Les technologies de l’écosystème Angel OS</h2>
-            <p className="mt-3 text-sm leading-7 text-[#6b655e] sm:text-base">Ces technologies servent différentes parties du système. OpenAI alimente certaines fonctions d’Angel OS IA ; les autres composants assurent l’interface, les données, les connexions, le code et le déploiement.</p>
+            <p className="mt-3 text-sm leading-7 text-[#6b655e] sm:text-base">Ces technologies servent différentes parties du système. Angel OS IA alimente certaines fonctions d’Angel OS IA ; les autres composants assurent l’interface, les données, les connexions, le code et le déploiement.</p>
           </div>
           <div className="mt-7 grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {technologies.map((technology) => <TechCard key={technology.name} technology={technology} />)}
@@ -241,7 +241,7 @@ function AngelOsIaPage() {
           </ExpandableWidget>
 
           <ExpandableWidget eyebrow="Autour du système" title="Ce qui reste volontairement séparé">
-            <p><strong className="text-[#181614]">ChatGPT</strong> sert au développement, aux corrections, au contrôle et à la maintenance du projet. <strong className="text-[#181614]">OpenAI API</strong> peut fournir certaines capacités à Angel OS IA. Aucun de ces services ne remplace Angel OS lui-même ni Angel Guard.</p>
+            <p><strong className="text-[#181614]">ChatGPT</strong> sert au développement, aux corrections, au contrôle et à la maintenance du projet. <strong className="text-[#181614]">Angel OS IA API</strong> peut fournir certaines capacités à Angel OS IA. Aucun de ces services ne remplace Angel OS lui-même ni Angel Guard.</p>
           </ExpandableWidget>
         </div>
 

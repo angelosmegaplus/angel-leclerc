@@ -106,7 +106,7 @@ export function Hero() {
           </div>
         </div>
         <div className="mt-10 grid gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl border border-white/10 bg-white/[.025] p-4"><p className="text-xs font-semibold uppercase tracking-[.18em] text-white/35">Angel OS IA</p><p className="mt-2 text-sm leading-7 text-white/55">La distribution IA ajoute OpenAI, mémoire contextuelle, supervision, automatisations et orchestration multi-moteurs au-dessus du noyau.</p></div>
+          <div className="rounded-2xl border border-white/10 bg-white/[.025] p-4"><p className="text-xs font-semibold uppercase tracking-[.18em] text-white/35">Angel OS IA</p><p className="mt-2 text-sm leading-7 text-white/55">La distribution IA ajoute Angel OS IA, mémoire contextuelle, supervision, automatisations et orchestration multi-moteurs au-dessus du noyau.</p></div>
           <div className="rounded-2xl border border-white/10 bg-white/[.025] p-4"><p className="text-xs font-semibold uppercase tracking-[.18em] text-white/35">angel-leclerc.fr</p><p className="mt-2 text-sm leading-7 text-white/55">L’application web exploite le noyau, le cockpit admin, les données et les services externes tout en restant distincte du Core.</p></div>
         </div>
         <RecentChanges />

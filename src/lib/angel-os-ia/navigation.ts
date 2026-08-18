@@ -27,7 +27,7 @@ export const ANGEL_NAVIGATION_TARGETS: AngelNavigationTarget[] = [
   { tab: "projets", label: "Projets", detail: "Projets et tâches", aliases: ["projet", "tâches", "taches", "todo"], group: "Page" },
   { tab: "activite", label: "Activité", detail: "Journal d'activité Angel OS", aliases: ["historique", "logs", "journal", "activité"], group: "Page" },
   { tab: "connexions", label: "Connexions", detail: "État des services connectés", aliases: ["services", "oauth", "google", "github", "vercel", "connexion"], group: "Page" },
-  { tab: "connexions", label: "État OpenAI", detail: "Clé OpenAI et disponibilité d’Angel OS IA", aliases: ["openai", "clé openai", "cle openai", "openai api key", "api key", "clé ia", "etat ia"], group: "Section", anchor: "openai" },
+  { tab: "connexions", label: "État Angel OS IA", detail: "Clé Angel OS IA et disponibilité d’Angel OS IA", aliases: ["openai", "clé openai", "cle openai", "openai api key", "api key", "clé ia", "etat ia"], group: "Section", anchor: "openai" },
   { tab: "connexions", label: "État Vercel", detail: "Publication et disponibilité Vercel", aliases: ["vercel", "publication vercel", "déploiement vercel", "deploiement vercel"], group: "Section", anchor: "vercel" },
   { tab: "connexions", label: "État GitHub", detail: "Dépôt, CI et publications GitHub", aliases: ["github", "ci github", "actions github", "dépôt github", "depot github"], group: "Section", anchor: "github" },
   { tab: "notifications", label: "Notifications", detail: "Alertes et notifications", aliases: ["alertes", "notifications", "important"], group: "Page" },

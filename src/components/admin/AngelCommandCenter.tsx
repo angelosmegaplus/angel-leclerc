@@ -89,7 +89,7 @@ function Conversation({ messages, compact }: { messages: Message[]; compact: boo
                   ) : message.status === "running" ? (
                     <span className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Angel OS IA réfléchit…</span>
                   ) : message.status === "failed" ? (
-                    <p className="text-destructive">Angel OS IA n’a pas reçu de réponse OpenAI. Aucun moteur local ne répond à sa place.</p>
+                    <p className="text-destructive">Angel OS IA n’a pas reçu de réponse Angel OS IA. Aucun moteur local ne répond à sa place.</p>
                   ) : (
                     <p className="text-muted-foreground">Réponse indisponible.</p>
                   )}
@@ -156,7 +156,7 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
   };
 
   const healthLabel = !aiHealth
-    ? "Vérification OpenAI…"
+    ? "Vérification Angel OS IA…"
     : aiHealth.healthy
       ? "OpenAI opérationnel"
       : "OpenAI indisponible";
@@ -215,7 +215,7 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
     <AdminCard
       className="border-primary/30 bg-gradient-to-br from-primary/8 via-card to-card"
       title="Angel OS IA"
-      description={`Conversation privée via OpenAI uniquement. État serveur : ${healthLabel}. Aucun moteur conversationnel local ne répond dans l’espace privé.`}
+      description={`Conversation privée via Angel OS IA uniquement. État serveur : ${healthLabel}. Aucun moteur conversationnel local ne répond dans l’espace privé.`}
     >
       <Conversation messages={messages} compact={false} />
       {composer}

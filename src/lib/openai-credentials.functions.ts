@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 
-// Angel OS n'utilise plus OpenAI : le moteur IA est la passerelle IA Lovable (modèles Google Gemini).
+// Angel OS n'utilise plus Angel OS IA : le moteur IA est la passerelle IA Lovable (modèles Google Gemini).
 // Ces fonctions conservent leurs noms historiques pour ne pas casser les écrans d'administration.
 
 export const getOpenAiCredentialStatus = createServerFn({ method: "GET" }).handler(async () => {
