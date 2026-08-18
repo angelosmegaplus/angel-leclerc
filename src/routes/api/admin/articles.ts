@@ -309,38 +309,41 @@ export const Route = createFileRoute("/api/admin/articles")({
             article?: Record<string, unknown>;
             slug?: string;
           };
+          // GitHub n'est plus qu'une sauvegarde optionnelle : la base reste la
+          // source de vérité éditoriale et le CMS fonctionne sans jeton Git.
           const token = githubToken();
+          const backupToGithub = async (run: () => Promise<unknown>) => {
+            if (!token) return;
+            try {
+              await run();
+            } catch (error) {
+              console.error("[article-api] github backup skipped", error);
+            }
+          };
 
           if (input.action === "delete") {
             const slug = slugify(String(input.slug || ""));
             if (!slug) return Response.json({ error: "Slug manquant." }, { status: 400, headers });
 
-            if (!token) return Response.json(await deleteViaSupabase(slug), { headers });
-
-            await deleteFile(`${CONTENT_DIR}/${slug}.json`, `Delete article: ${slug}`, token);
-            // Masquage immédiat du site public, sans attendre un rebuild GitHub.
-            await markGitArticleState(slug, true);
-            const tombstone = {
-              slug,
-              deleted: true,
-              deleted_at: new Date().toISOString(),
-              reason: "Deleted from Angel OS article editor",
-            };
-            const result = await putFile(
-              `${TOMBSTONE_DIR}/${slug}.json`,
-              tombstone,
-              `Tombstone article: ${slug}`,
-              token,
-            );
-            return Response.json({ ok: true, slug, backend: "github", commitSha: result.commit?.sha ?? null }, { headers });
+            const result = await deleteViaSupabase(slug);
+            await backupToGithub(async () => {
+              await deleteFile(`${CONTENT_DIR}/${slug}.json`, `Delete article: ${slug}`, token);
+              await putFile(
+                `${TOMBSTONE_DIR}/${slug}.json`,
+                { slug, deleted: true, deleted_at: new Date().toISOString(), reason: "Deleted from Studio" },
+                `Tombstone article: ${slug}`,
+                token,
+              );
+            });
+            return Response.json(result, { headers });
           }
 
           if (input.action === "restore") {
             const slug = slugify(String(input.slug || ""));
             if (!slug) return Response.json({ error: "Slug manquant." }, { status: 400, headers });
-            if (token) await deleteFile(`${TOMBSTONE_DIR}/${slug}.json`, `Restore article: ${slug}`, token);
-            await markGitArticleState(slug, false);
-            return Response.json(await restoreViaSupabase(slug), { headers });
+            const result = await restoreViaSupabase(slug);
+            await backupToGithub(() => deleteFile(`${TOMBSTONE_DIR}/${slug}.json`, `Restore article: ${slug}`, token));
+            return Response.json(result, { headers });
           }
 
           if (input.action === "purge") {
@@ -355,29 +358,26 @@ export const Route = createFileRoute("/api/admin/articles")({
             const slug = slugify(String(raw.slug || title));
             if (!title || !slug) return Response.json({ error: "Titre ou slug manquant." }, { status: 400, headers });
 
-            if (!token) return Response.json(await saveViaSupabase(raw, userId, slug), { headers });
-
+            const result = await saveViaSupabase(raw, userId, slug);
             const now = new Date().toISOString();
-            const article = {
-              ...raw,
-              id: String(raw.id || `github:${slug}`),
-              slug,
-              title,
-              author_id: raw.author_id || userId,
-              created_at: String(raw.created_at || now),
-              updated_at: now,
-            };
-
-            await deleteFile(`${TOMBSTONE_DIR}/${slug}.json`, `Restore article: ${slug}`, token);
-            // Un enregistrement volontaire annule explicitement la suppression.
-            await markGitArticleState(slug, false);
-            const result = await putFile(
-              `${CONTENT_DIR}/${slug}.json`,
-              article,
-              `${raw.id ? "Update" : "Create"} article: ${title}`,
-              token,
-            );
-            return Response.json({ ok: true, slug, backend: "github", commitSha: result.commit?.sha ?? null }, { headers });
+            await backupToGithub(async () => {
+              await deleteFile(`${TOMBSTONE_DIR}/${slug}.json`, `Restore article: ${slug}`, token);
+              await putFile(
+                `${CONTENT_DIR}/${slug}.json`,
+                {
+                  ...raw,
+                  id: String(raw.id || `github:${slug}`),
+                  slug,
+                  title,
+                  author_id: raw.author_id || userId,
+                  created_at: String(raw.created_at || now),
+                  updated_at: now,
+                },
+                `${raw.id ? "Update" : "Create"} article: ${title}`,
+                token,
+              );
+            });
+            return Response.json(result, { headers });
           }
 
           return Response.json({ error: "Action inconnue." }, { status: 400, headers });
