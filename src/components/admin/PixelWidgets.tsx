@@ -67,9 +67,8 @@ export function PixelWidgets() {
       return (await response.json()) as AdminWeather;
     },
     staleTime: 30 * 60 * 1000,
-    refetchInterval: 60 * 60 * 1000,
-    refetchOnWindowFocus: true,
-    retry: 1,
+    refetchOnWindowFocus: false,
+    retry: false,
   });
 
   const [now, setNow] = useState(() => new Date());

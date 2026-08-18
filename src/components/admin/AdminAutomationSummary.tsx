@@ -190,24 +190,21 @@ export function AdminAutomationSummary({ mode = "dashboard" }: { mode?: SummaryM
   const { data = {}, isLoading } = useQuery({
     queryKey: ["admin-automation-summaries"],
     queryFn: loadSummaries,
-    refetchInterval: 5 * 60 * 1000,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false,
+    retry: false,
   });
   const { data: applications = [], isLoading: applicationsLoading } = useQuery({
     queryKey: ["admin-application-summary"],
     queryFn: loadApplications,
-    refetchInterval: 5 * 60 * 1000,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false,
+    retry: false,
     enabled: effectiveMode === "applications" || effectiveMode === "dashboard",
   });
   const { data: aiSummary, isFetching: aiRefreshing } = useQuery({
     queryKey: ["admin-openai-summary"],
     queryFn: () => runAiSummary(),
-    refetchInterval: 5 * 60 * 1000,
-    refetchIntervalInBackground: true,
-    refetchOnWindowFocus: true,
-    staleTime: 4 * 60 * 1000,
-    retry: 1,
+    refetchOnWindowFocus: false,
+    retry: false,
     enabled: effectiveMode === "dashboard",
   });
 
@@ -268,7 +265,7 @@ export function AdminAutomationSummary({ mode = "dashboard" }: { mode?: SummaryM
             {aiRefreshing ? <span className="text-[10px] text-white/35">actualisation…</span> : null}
           </div>
           <p className="mt-1.5 text-sm leading-6 text-white/65 sm:text-[15px]">{generalText}</p>
-          {updatedAt ? <p className="mt-2 text-[10px] text-white/30">Mis à jour {new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short" }).format(new Date(updatedAt))} · toutes les 5 min</p> : null}
+          {updatedAt ? <p className="mt-2 text-[10px] text-white/30">Mis à jour {new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short" }).format(new Date(updatedAt))}</p> : null}
         </div>
       </div>
     </section>

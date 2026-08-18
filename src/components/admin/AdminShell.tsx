@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Bell, Grid2X2, Moon, Sun, X, type LucideIcon } from "lucide-react";
 import { PixelWidgets } from "@/components/admin/PixelWidgets";
 import { AngelCommandCenter } from "@/components/admin/AngelCommandCenter";
-import { AINotificationMonitor } from "@/components/admin/AINotificationMonitor";
 import { applyAdminTheme, clearAdminTheme, readAdminTheme, setAdminTheme, subscribeAdminTheme, type AdminTheme } from "@/lib/admin-theme";
 
 export type AdminNavItem = {
@@ -175,7 +174,6 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
 
   return (
     <div className="relative isolate min-h-[100dvh] w-full overflow-x-hidden bg-background text-foreground transition-colors lg:flex" style={{ fontFamily: '"Inter", system-ui, sans-serif' }} data-admin-theme={theme}>
-      <AINotificationMonitor />
       <div aria-hidden className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_12%_8%,rgba(220,38,38,.055),transparent_32%)] dark:bg-[radial-gradient(circle_at_12%_8%,rgba(239,68,68,.09),transparent_34%)]" />
 
       <aside className="sticky top-0 z-10 hidden h-[100dvh] w-[19rem] shrink-0 overflow-y-auto border-r border-border bg-card/95 px-4 py-6 backdrop-blur-xl lg:block">{menuContents}</aside>
