@@ -27,6 +27,14 @@ function githubToken() {
   return (process.env.GITHUB_CONTENT_TOKEN || process.env.GITHUB_TOKEN || "").trim();
 }
 
+function serviceRoleKey() {
+  return (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || "").trim();
+}
+
+function supabaseUrl() {
+  return (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || PUBLIC_SUPABASE_URL).trim();
+}
+
 function githubHeaders(token: string): HeadersInit {
   return {
     Accept: "application/vnd.github+json",
@@ -43,9 +51,8 @@ async function validateAdmin(request: Request) {
   const token = auth.slice(7).trim();
   if (!token) throw new Error("AUTH_REQUIRED");
 
-  const url = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || PUBLIC_SUPABASE_URL).trim();
   const key = (process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || PUBLIC_SUPABASE_PUBLISHABLE_KEY).trim();
-  const supabase = createClient(url, key, {
+  const supabase = createClient(supabaseUrl(), key, {
     global: { headers: { Authorization: `Bearer ${token}` } },
     auth: { persistSession: false, autoRefreshToken: false },
   });
@@ -61,6 +68,14 @@ async function validateAdmin(request: Request) {
     .maybeSingle();
   if (roleError || !role) throw new Error("ADMIN_REQUIRED");
   return userId;
+}
+
+function adminSupabase() {
+  const key = serviceRoleKey();
+  if (!key) throw new Error("ARTICLE_STORAGE_UNAVAILABLE");
+  return createClient(supabaseUrl(), key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 }
 
 async function getSha(path: string, token: string): Promise<string | null> {
@@ -103,34 +118,106 @@ async function deleteFile(path: string, message: string, token: string) {
   return response.json() as Promise<{ commit?: { sha?: string } }>;
 }
 
+function normalizeArticle(raw: Record<string, unknown>, userId: string, slug: string) {
+  const now = new Date().toISOString();
+  const published = raw.published === true;
+  const scheduledAt = typeof raw.scheduled_at === "string" && raw.scheduled_at ? raw.scheduled_at : null;
+  const publishedAt = published
+    ? (typeof raw.published_at === "string" && raw.published_at ? raw.published_at : scheduledAt || now)
+    : null;
+
+  return {
+    title: String(raw.title || "").trim(),
+    slug,
+    category: String(raw.category || "Article"),
+    excerpt: typeof raw.excerpt === "string" && raw.excerpt.trim() ? raw.excerpt.trim() : null,
+    content: String(raw.content || ""),
+    cover_url: typeof raw.cover_url === "string" && raw.cover_url.trim() ? raw.cover_url.trim() : null,
+    published,
+    published_at: publishedAt,
+    scheduled_at: scheduledAt,
+    is_private: raw.is_private === true,
+    featured: raw.featured === true,
+    attachments: Array.isArray(raw.attachments) ? raw.attachments : [],
+    sources: Array.isArray(raw.sources) ? raw.sources : [],
+    topics: Array.isArray(raw.topics) ? raw.topics : [],
+    ai_disclosure: raw.ai_disclosure && typeof raw.ai_disclosure === "object" ? raw.ai_disclosure : {},
+    cover_meta: raw.cover_meta && typeof raw.cover_meta === "object" ? raw.cover_meta : {},
+    author_id: typeof raw.author_id === "string" && raw.author_id ? raw.author_id : userId,
+    updated_at: now,
+  };
+}
+
+async function saveViaSupabase(raw: Record<string, unknown>, userId: string, slug: string) {
+  const db = adminSupabase();
+  const article = normalizeArticle(raw, userId, slug);
+  const { data: existing, error: existingError } = await db
+    .from("articles")
+    .select("id,created_at,published_at")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (existingError) throw existingError;
+
+  const row = {
+    ...article,
+    ...(existing?.id ? { id: existing.id } : {}),
+    ...(existing?.created_at ? { created_at: existing.created_at } : {}),
+    published_at: article.published
+      ? (article.scheduled_at || existing?.published_at || article.published_at)
+      : null,
+  };
+
+  const { error } = await db.from("articles").upsert(row as any, { onConflict: "slug" });
+  if (error) throw error;
+
+  const hiddenFromPublic = !article.published || article.is_private;
+  if (hiddenFromPublic) {
+    const { error: stateError } = await db
+      .from("git_article_state")
+      .upsert({ slug, deleted: true, deleted_at: new Date().toISOString() }, { onConflict: "slug" });
+    if (stateError) throw stateError;
+  } else {
+    await db.from("git_article_state").delete().eq("slug", slug);
+  }
+
+  return { ok: true, slug, backend: "supabase-fallback" as const };
+}
+
+async function deleteViaSupabase(slug: string) {
+  const db = adminSupabase();
+  const { error: deleteError } = await db.from("articles").delete().eq("slug", slug);
+  if (deleteError) throw deleteError;
+  const { error: stateError } = await db
+    .from("git_article_state")
+    .upsert({ slug, deleted: true, deleted_at: new Date().toISOString() }, { onConflict: "slug" });
+  if (stateError) throw stateError;
+  return { ok: true, slug, backend: "supabase-fallback" as const };
+}
+
 export const Route = createFileRoute("/api/admin/articles")({
   server: {
     handlers: {
       GET: async () => Response.json({
         ok: true,
         githubConfigured: Boolean(githubToken()),
-        supabaseServiceRoleConfigured: Boolean((process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim()),
+        supabaseServiceRoleConfigured: Boolean(serviceRoleKey()),
       }, { headers }),
       POST: async ({ request }) => {
         try {
           const userId = await validateAdmin(request);
-          const token = githubToken();
-          if (!token) {
-            return Response.json(
-              { error: "Le stockage GitHub est prêt, mais GITHUB_CONTENT_TOKEN manque côté serveur." },
-              { status: 503, headers },
-            );
-          }
-
           const input = (await request.json()) as {
             action?: "save" | "delete";
             article?: Record<string, unknown>;
             slug?: string;
           };
+          const token = githubToken();
 
           if (input.action === "delete") {
             const slug = slugify(String(input.slug || ""));
             if (!slug) return Response.json({ error: "Slug manquant." }, { status: 400, headers });
+
+            if (!token) return Response.json(await deleteViaSupabase(slug), { headers });
+
             await deleteFile(`${CONTENT_DIR}/${slug}.json`, `Delete article: ${slug}`, token);
             const tombstone = {
               slug,
@@ -144,7 +231,7 @@ export const Route = createFileRoute("/api/admin/articles")({
               `Tombstone article: ${slug}`,
               token,
             );
-            return Response.json({ ok: true, slug, commitSha: result.commit?.sha ?? null }, { headers });
+            return Response.json({ ok: true, slug, backend: "github", commitSha: result.commit?.sha ?? null }, { headers });
           }
 
           if (input.action === "save") {
@@ -152,6 +239,8 @@ export const Route = createFileRoute("/api/admin/articles")({
             const title = String(raw.title || "").trim();
             const slug = slugify(String(raw.slug || title));
             if (!title || !slug) return Response.json({ error: "Titre ou slug manquant." }, { status: 400, headers });
+
+            if (!token) return Response.json(await saveViaSupabase(raw, userId, slug), { headers });
 
             const now = new Date().toISOString();
             const article = {
@@ -171,13 +260,13 @@ export const Route = createFileRoute("/api/admin/articles")({
               `${raw.id ? "Update" : "Create"} article: ${title}`,
               token,
             );
-            return Response.json({ ok: true, slug, commitSha: result.commit?.sha ?? null }, { headers });
+            return Response.json({ ok: true, slug, backend: "github", commitSha: result.commit?.sha ?? null }, { headers });
           }
 
           return Response.json({ error: "Action inconnue." }, { status: 400, headers });
         } catch (error) {
           const message = error instanceof Error ? error.message : "Erreur inconnue";
-          const status = message === "AUTH_REQUIRED" || message === "AUTH_INVALID" ? 401 : message === "ADMIN_REQUIRED" ? 403 : 500;
+          const status = message === "AUTH_REQUIRED" || message === "AUTH_INVALID" ? 401 : message === "ADMIN_REQUIRED" ? 403 : message === "ARTICLE_STORAGE_UNAVAILABLE" ? 503 : 500;
           console.error("[article-api] mutation failed", error);
           return Response.json({ error: message }, { status, headers });
         }
