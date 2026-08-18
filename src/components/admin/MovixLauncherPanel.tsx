@@ -66,8 +66,7 @@ export function MovixLauncherPanel() {
       }
     };
     void syncOfficial();
-    const interval = window.setInterval(() => void syncOfficial(), AUTO_REFRESH_MS);
-    return () => { active = false; window.clearInterval(interval); };
+    return () => { active = false; };
   }, [resolveOfficialSource]);
 
   const persist = (next: Mirror[]) => {
