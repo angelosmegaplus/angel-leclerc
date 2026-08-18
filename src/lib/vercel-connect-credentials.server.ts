@@ -15,12 +15,13 @@ function normalizeBearerToken(value: string) {
   return value.replace(/^Bearer\s+/i, "").trim();
 }
 
+// Compatibilité : Angel OS n'utilise plus Angel OS IA, seulement la passerelle IA Lovable.
 export async function getOpenAiCredential(): Promise<OpenAiCredential | null> {
-  const value = env("OPENAI_API_KEY");
-  return value ? { value, source: "env:OPENAI_API_KEY" } : null;
+  const value = env("LOVABLE_API_KEY");
+  return value ? { value, source: "env:LOVABLE_API_KEY" } : null;
 }
 
-// Compatibility export: there is deliberately never more than one OpenAI key.
+// Compatibility export: there is deliberately never more than one Angel OS IA key.
 export async function getOpenAiCredentials(): Promise<OpenAiCredential[]> {
   const credential = await getOpenAiCredential();
   return credential ? [credential] : [];
@@ -48,11 +49,11 @@ export function markApiCredentialFailure(_credential: { source: string }, _coold
 export function markApiCredentialHealthy(_credential: { source: string }) {}
 
 export function getOpenAiCredentialHealthSnapshot() {
-  const configured = Boolean(env("OPENAI_API_KEY"));
+  const configured = Boolean(env("LOVABLE_API_KEY"));
   return {
     configured: configured ? 1 : 0,
     available: configured ? 1 : 0,
-    credentials: configured ? [{ source: "env:OPENAI_API_KEY", failures: 0, blockedUntil: null, healthy: true, lastFailureAt: null, lastSuccessAt: null }] : [],
+    credentials: configured ? [{ source: "env:LOVABLE_API_KEY", failures: 0, blockedUntil: null, healthy: true, lastFailureAt: null, lastSuccessAt: null }] : [],
   };
 }
 
@@ -68,7 +69,7 @@ export function getTmdbCredentialHealthSnapshot() {
   };
 }
 
-// Compatibility only. Angel OS IA uses OpenAI directly and never returns a gateway credential.
+// Compatibility only. Angel OS IA passe exclusivement par la passerelle IA Lovable.
 export function getAiGatewayCredential(): LegacyAiGatewayCredential | null {
   return null;
 }

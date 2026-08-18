@@ -264,7 +264,7 @@ export function AdminAutomationSummary({ mode = "dashboard" }: { mode?: SummaryM
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <p className="font-semibold text-white">Bilan général</p>
-            {aiSummary ? <AdminStatus tone={aiSummary.source === "openai" ? "success" : "error"} compact>{aiSummary.source === "openai" ? "OpenAI" : "IA indisponible"}</AdminStatus> : null}
+            {aiSummary ? <AdminStatus tone={aiSummary.source === "openai" ? "success" : "error"} compact>{aiSummary.source === "openai" ? "Angel OS IA" : "IA indisponible"}</AdminStatus> : null}
             {aiRefreshing ? <span className="text-[10px] text-white/35">actualisation…</span> : null}
           </div>
           <p className="mt-1.5 text-sm leading-6 text-white/65 sm:text-[15px]">{generalText}</p>

@@ -86,7 +86,7 @@ export function AutomationPanel() {
     {
       name: "Supervision IA",
       level: "auto",
-      detail: "Les requêtes critiques, erreurs et états OpenAI sont surveillés ; l’administration affiche un diagnostic au lieu d’un faux fallback local.",
+      detail: "Les requêtes critiques, erreurs et états Angel OS IA sont surveillés ; l’administration affiche un diagnostic au lieu d’un faux fallback local.",
     },
     {
       name: "Maintenance Angel OS",

@@ -178,7 +178,7 @@ export const getAdminAiSummary = createServerFn({ method: "GET" })
     if (!ai.text) {
       if (cachedPayload?.text && cachedPayload.source === "openai") return { ...cachedPayload, stale: true };
       return {
-        text: "Angel OS IA est temporairement indisponible. Les données et fonctions système restent accessibles, mais aucune synthèse locale ne remplace OpenAI dans l’administration.",
+        text: "Angel OS IA est temporairement indisponible. Les données et fonctions système restent accessibles, mais aucune synthèse locale ne remplace Angel OS IA dans l’administration.",
         generatedAt: new Date().toISOString(),
         source: "unavailable",
         stale: true,

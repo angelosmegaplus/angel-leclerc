@@ -175,7 +175,7 @@ export function AINotificationMonitor() {
 
   if (aiBroken) {
     const cause = !aiHealth?.providerConfigured
-      ? "Aucun fournisseur OpenAI n’est actuellement disponible côté serveur."
+      ? "Aucun fournisseur Angel OS IA n’est actuellement disponible côté serveur."
       : !aiHealth.enabled
         ? "Angel OS IA est désactivée côté serveur."
         : aiHealth.lastReason === "provider"

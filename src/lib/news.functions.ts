@@ -20,7 +20,7 @@ const NEWS_CACHE_KEY = "news_dashboard";
 const TOPICAL_MAX_HOURS = 48;
 const HEADLINE_PRIMARY_HOURS = 10;
 const HEADLINE_FALLBACK_HOURS = 30;
-// La recherche web peut tenter OpenAI direct (12 s max) puis le Gateway (12 s max).
+// La recherche web peut tenter Angel OS IA direct (12 s max) puis le Gateway (12 s max).
 // Le garde-fou externe doit donc laisser ce fallback aller au bout, tout en restant
 // inférieur au timeout de contrôle production (35 s).
 const AI_NEWS_TIMEOUT_MS = 28_000;
@@ -32,7 +32,7 @@ const FEEDS: Array<{ category: Exclude<NewsCategory, "une">; query: string }> = 
   { category: "medias", query: '(radio OR audiovisuel OR médias OR animateur radio OR podcast OR audience OR Radio France OR radio locale OR FM) France when:1d' },
   { category: "journalisme", query: '(journalisme OR presse OR rédaction OR communication OR création contenu OR média local OR édition OR information locale) France when:2d' },
   { category: "emploi", query: '(alternance BTS Communication OR assistant communication OR chargé communication OR radio OR média OR journalisme OR tourisme OR stage communication) (Périgueux OR Bergerac OR Brive OR Sarlat OR Bordeaux) when:2d' },
-  { category: "ia", query: '(OpenAI OR ChatGPT OR intelligence artificielle OR Android OR Google Pixel OR smartphone utile OR technologie grand public) France when:1d' },
+  { category: "ia", query: '(Angel OS IA OR ChatGPT OR intelligence artificielle OR Android OR Google Pixel OR smartphone utile OR technologie grand public) France when:1d' },
   { category: "scoutisme", query: '(scoutisme OR scouts OR éclaireurs OR camp scout OR mouvement scout OR éducation populaire jeunesse) France when:7d' },
 ];
 
@@ -99,5 +99,5 @@ export const getAdminNews = createServerFn({ method: "GET" }).middleware([requir
   await assertAdmin(context); const cached = await readCache(context); const liveItems = await loadCombinedNews(); if (liveItems.length === 0) return cached ?? { items: [], fetchedAt: new Date().toISOString(), source: "cache", phase: "combined" };
   const liveCategories = new Set(liveItems.filter((item) => item.category !== "une").map((item) => item.category)); const cachedFill = (cached?.items ?? []).filter((item) => item.category !== "une" && !liveCategories.has(item.category) && ageHours(item) <= TOPICAL_MAX_HOURS); const merged = finalize([...liveItems.filter((item) => item.category !== "une"), ...cachedFill]); const payload: NewsPayload = { items: merged, fetchedAt: new Date().toISOString(), source: "live", phase: "combined" }; await writeCache(context, payload); return payload;
 });
-export async function fetchAiNewsSnapshot(): Promise<NewsPayload> { const aiItems = finalize(await loadAiNewsFast()); if (aiItems.length === 0) throw new Error("Recherche web OpenAI indisponible"); return { items: aiItems, fetchedAt: new Date().toISOString(), source: "live", phase: "openai" }; }
+export async function fetchAiNewsSnapshot(): Promise<NewsPayload> { const aiItems = finalize(await loadAiNewsFast()); if (aiItems.length === 0) throw new Error("Recherche web Angel OS IA indisponible"); return { items: aiItems, fetchedAt: new Date().toISOString(), source: "live", phase: "openai" }; }
 export async function fetchAdminNewsSnapshot(): Promise<NewsPayload> { const items = await loadCombinedNews(); if (items.length === 0) throw new Error("Actualités indisponibles"); return { items, fetchedAt: new Date().toISOString(), source: "live", phase: "combined" }; }

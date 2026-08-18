@@ -36,7 +36,7 @@ function projectRef(url: string | undefined | null) {
 
 async function checkOpenAI(): Promise<DependencyHealth> {
   const configuredCredentials = await getOpenAiCredentials();
-  const gatewayConfigured = Boolean(process.env.AI_GATEWAY_API_KEY?.trim());
+  const gatewayConfigured = Boolean(process.env.LOVABLE_API_KEY?.trim());
   const configured = configuredCredentials.length > 0 || gatewayConfigured;
   if (!configured) return { configured: false, reachable: false, source: null, reason: "credential_missing", latencyMs: null };
   const started = performance.now();

@@ -40,7 +40,7 @@ function SourceBadge({ message, forcedFailure = false }: { message: Message; for
   return (
     <span className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
       {failed ? <ShieldAlert className="h-3.5 w-3.5 text-destructive" /> : <CheckCircle2 className="h-3.5 w-3.5 text-primary" />}
-      <span>{failed ? "Angel OS IA indisponible" : "OpenAI · vérifié pour cette réponse"}</span>
+      <span>{failed ? "Angel OS IA indisponible" : "Angel OS IA · vérifié pour cette réponse"}</span>
       <span>·</span>
       <time>{new Date(message.created_at).toLocaleString("fr-FR")}</time>
     </span>
@@ -89,7 +89,7 @@ function Conversation({ messages, compact }: { messages: Message[]; compact: boo
                   ) : message.status === "running" ? (
                     <span className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Angel OS IA réfléchit…</span>
                   ) : message.status === "failed" ? (
-                    <p className="text-destructive">Angel OS IA n’a pas reçu de réponse OpenAI. Aucun moteur local ne répond à sa place.</p>
+                    <p className="text-destructive">Angel OS IA n’a pas reçu de réponse Angel OS IA. Aucun moteur local ne répond à sa place.</p>
                   ) : (
                     <p className="text-muted-foreground">Réponse indisponible.</p>
                   )}
@@ -156,10 +156,10 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
   };
 
   const healthLabel = !aiHealth
-    ? "Vérification OpenAI…"
+    ? "Vérification Angel OS IA…"
     : aiHealth.healthy
-      ? "OpenAI opérationnel"
-      : "OpenAI indisponible";
+      ? "Angel OS IA opérationnel"
+      : "Angel OS IA indisponible";
 
   const composer = (
     <div className={compact ? "shrink-0 border-t border-white/10 bg-[#090b0d] pt-3" : "space-y-2"}>
@@ -215,7 +215,7 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
     <AdminCard
       className="border-primary/30 bg-gradient-to-br from-primary/8 via-card to-card"
       title="Angel OS IA"
-      description={`Conversation privée via OpenAI uniquement. État serveur : ${healthLabel}. Aucun moteur conversationnel local ne répond dans l’espace privé.`}
+      description={`Conversation privée via Angel OS IA uniquement. État serveur : ${healthLabel}. Aucun moteur conversationnel local ne répond dans l’espace privé.`}
     >
       <Conversation messages={messages} compact={false} />
       {composer}

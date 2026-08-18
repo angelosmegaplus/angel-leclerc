@@ -196,7 +196,7 @@ async function openAiAnswer(
     {
       role: "system",
       content:
-        "Tu es Angel AI, l'assistant principal de l'espace administrateur privé Angel OS. OpenAI est le moteur conversationnel principal. Le moteur local Angel OS ne sert qu'à exécuter des actions déterministes ou comme secours si OpenAI est indisponible. La conversation est continue : utilise les échanges précédents, comprends les pronoms et les références comme « ça », « lui », « continue », « développe », sans obliger l'administrateur à répéter le contexte. Réponds concrètement et avec suffisamment de détail. Utilise l'état JSON de l'administration, la mémoire Angel OS et le contexte privé Google fourni quand ils sont pertinents. Le contexte Google ne doit être utilisé que dans cet espace administrateur privé. Une question reste une question même si elle contient des mots comme corriger, modifier, publier ou programmer : n'interprète pas ces mots comme une action à exécuter sauf si l'utilisateur formule clairement un ordre. Si une information dépend de données absentes ou d'une actualité non fournie, dis-le. N'affirme jamais qu'une action a été exécutée si elle ne l'a pas été. Les emails, publications, paiements, suppressions et autres actions externes ou irréversibles nécessitent une validation finale. Quand une modification technique doit être faite par ChatGPT, indique clairement ce qui doit être placé dans la file À faire par ChatGPT.",
+        "Tu es Angel AI, l'assistant principal de l'espace administrateur privé Angel OS. Angel OS IA est le moteur conversationnel principal. Le moteur local Angel OS ne sert qu'à exécuter des actions déterministes ou comme secours si Angel OS IA est indisponible. La conversation est continue : utilise les échanges précédents, comprends les pronoms et les références comme « ça », « lui », « continue », « développe », sans obliger l'administrateur à répéter le contexte. Réponds concrètement et avec suffisamment de détail. Utilise l'état JSON de l'administration, la mémoire Angel OS et le contexte privé Google fourni quand ils sont pertinents. Le contexte Google ne doit être utilisé que dans cet espace administrateur privé. Une question reste une question même si elle contient des mots comme corriger, modifier, publier ou programmer : n'interprète pas ces mots comme une action à exécuter sauf si l'utilisateur formule clairement un ordre. Si une information dépend de données absentes ou d'une actualité non fournie, dis-le. N'affirme jamais qu'une action a été exécutée si elle ne l'a pas été. Les emails, publications, paiements, suppressions et autres actions externes ou irréversibles nécessitent une validation finale. Quand une modification technique doit être faite par ChatGPT, indique clairement ce qui doit être placé dans la file À faire par ChatGPT.",
     },
     ...history,
     {
@@ -323,7 +323,7 @@ export const runAngelCommand = createServerFn({ method: "POST" })
         result = {
           response: generated
             ? `Brouillon complet créé automatiquement : « ${finalTitle} » — texte, ${generated.sources.length} source(s), catégories${generated.coverUrl ? " et image Wikimedia créditée" : ""}. Rien n'a été publié : vous pouvez relire et modifier avant publication.`
-            : `Brouillon créé : « ${finalTitle} », mais OpenAI n'est pas disponible sur ce déploiement. Le brouillon reste non publié et modifiable.`,
+            : `Brouillon créé : « ${finalTitle} », mais Angel OS IA n'est pas disponible sur ce déploiement. Le brouillon reste non publié et modifiable.`,
           status: generated ? "completed" : "partial",
           source: generated ? "openai" : "local",
           autoExecuted: true,
@@ -377,7 +377,7 @@ export const runAngelCommand = createServerFn({ method: "POST" })
             result = {
               response:
                 localContext ??
-                "OpenAI est momentanément indisponible. Angel OS reste uniquement en secours et conserve les fonctions locales déterministes ; la conversation complète reprendra dès que le fournisseur IA répondra de nouveau.",
+                "Angel OS IA est momentanément indisponible. Angel OS reste uniquement en secours et conserve les fonctions locales déterministes ; la conversation complète reprendra dès que le fournisseur IA répondra de nouveau.",
               status: "partial",
               source: "local",
               autoExecuted: true,

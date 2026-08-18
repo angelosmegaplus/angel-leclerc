@@ -1,20 +1,19 @@
 import type { NewsCategory, NewsItem } from "./news.functions";
-import { getAiGatewayCredential, getOpenAiCredential } from "./vercel-connect-credentials.server";
+import { DEFAULT_AI_MODEL, FAST_AI_MODEL, getLovableAiKey, lovableChat } from "./lovable-ai.server";
 
 type SearchState = { expiresAt: number; items: NewsItem[]; failureUntil: number };
 const state: SearchState = { expiresAt: 0, items: [], failureUntil: 0 };
 const TTL_MS = 10 * 60_000;
 const FAILURE_COOLDOWN_MS = 5 * 60_000;
 const PROVIDER_TIMEOUT_MS = 20_000;
-const DEFAULT_WEB_MODEL = "gpt-4.1-mini";
-const DEFAULT_WEB_FALLBACK_MODEL = "gpt-4o-mini";
+const DEFAULT_WEB_MODEL = DEFAULT_AI_MODEL;
+const DEFAULT_WEB_FALLBACK_MODEL = FAST_AI_MODEL;
 
 const allowedCategories = new Set<Exclude<NewsCategory, "une">>([
   "politique", "dordogne", "tourisme", "medias", "journalisme", "emploi", "ia", "scoutisme",
 ]);
 
 const structuredNewsFormat = {
-  type: "json_schema",
   name: "angel_os_news_feed",
   strict: true,
   schema: {
@@ -46,14 +45,6 @@ const structuredNewsFormat = {
   },
 } as const;
 
-function responseText(json: any): string {
-  if (typeof json?.output_text === "string") return json.output_text;
-  for (const item of json?.output ?? []) {
-    if (item?.type !== "message") continue;
-    for (const content of item?.content ?? []) if (content?.type === "output_text" && typeof content.text === "string") return content.text;
-  }
-  return "";
-}
 function parseJsonArray(raw: string): any[] {
   const trimmed = raw.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "");
   try { const value = JSON.parse(trimmed); return Array.isArray(value) ? value : Array.isArray(value?.items) ? value.items : []; }
@@ -67,32 +58,17 @@ function cleanItem(value: any, index: number): NewsItem | null {
   if (!allowedCategories.has(category) || title.length < 8 || !/^https?:\/\//i.test(url)) return null;
   let publishedAt: string | null = null;
   if (value?.publishedAt) { const parsed = new Date(String(value.publishedAt)); if (!Number.isNaN(parsed.getTime())) publishedAt = parsed.toISOString(); }
-  return { id: `openai-web-${category}-${index}-${title.slice(0, 80)}`, title: title.slice(0, 260), url, source, publishedAt, category };
+  return { id: `angel-ai-web-${category}-${index}-${title.slice(0, 80)}`, title: title.slice(0, 260), url, source, publishedAt, category };
 }
 function webModels() {
-  const primary = process.env["OPENAI_WEB_MODEL"] || DEFAULT_WEB_MODEL;
-  const fallback = process.env["OPENAI_WEB_FALLBACK_MODEL"] || DEFAULT_WEB_FALLBACK_MODEL;
+  const primary = process.env["ANGEL_AI_WEB_MODEL"] || DEFAULT_WEB_MODEL;
+  const fallback = process.env["ANGEL_AI_WEB_FALLBACK_MODEL"] || DEFAULT_WEB_FALLBACK_MODEL;
   return Array.from(new Set([primary, fallback].filter(Boolean)));
 }
-function shouldTryFallback(status: number, body: string) { return (status === 400 || status === 403 || status === 404) && /model_not_found|model[^\n]*(?:unavailable|access|verified|verification)|organization must be verified/i.test(body); }
-function gatewayModel(model: string) { return model.includes("/") ? model : `openai/${model}`; }
 
-function requestBody(model: string) {
-  return {
-    model,
-    tools: [{ type: "web_search", search_context_size: "low" }],
-    tool_choice: "required",
-    text: { format: structuredNewsFormat },
-    max_output_tokens: 1800,
-    store: false,
-    input: [
-      {
-        role: "system",
-        content: [{ type: "input_text", text: "Tu alimentes le fil d’actualité privé d’Angel OS. Utilise obligatoirement la recherche web disponible. Le fil doit être réellement personnalisé, pas un fil tech générique. Priorité aux contenus publiés ou substantiellement mis à jour dans les dernières heures, avec extension à 48 h pour le local/tourisme et à 7 jours pour le scoutisme s’il n’y a rien de plus frais. Ne fournis que des articles/pages accessibles avec URL directe vérifiable. N’invente jamais une date, une source ou une URL. Évite les doublons, les polémiques vides, le clickbait et les sujets sans rapport avec le profil." }],
-      },
-      {
-        role: "user",
-        content: [{ type: "input_text", text: `Construis une veille très personnalisée et compacte. Le profil éditorial est, par ordre de priorité :
+const NEWS_SYSTEM_PROMPT = "Tu alimentes le fil d’actualité privé d’Angel OS. Utilise obligatoirement la recherche web disponible. Le fil doit être réellement personnalisé, pas un fil tech générique. Priorité aux contenus publiés ou substantiellement mis à jour dans les dernières heures, avec extension à 48 h pour le local/tourisme et à 7 jours pour le scoutisme s’il n’y a rien de plus frais. Ne fournis que des articles/pages accessibles avec URL directe vérifiable. N’invente jamais une date, une source ou une URL. Évite les doublons, les polémiques vides, le clickbait et les sujets sans rapport avec le profil.";
+
+const NEWS_USER_PROMPT = `Construis une veille très personnalisée et compacte. Le profil éditorial est, par ordre de priorité :
 1. Politique et société françaises : institutions, services publics, pouvoir d’achat, souveraineté, collectivités, politiques sociales, enquêtes solides, corruption, favoritisme, lobbying, conflits d’intérêts, justice et finances publiques.
 2. Sarlat-la-Canéda / Périgord Noir / Dordogne : politique locale, mairie/intercommunalité, travaux, commerces, logement, transports, justice, culture, associations, emploi et informations pratiques. Périgueux, Bergerac et Souillac en second cercle.
 3. Tourisme : offices de tourisme, attractivité, patrimoine, hôtellerie, campings, fréquentation, saison touristique, tourisme en Dordogne/Lot/Nouvelle-Aquitaine et évolutions nationales importantes.
@@ -102,30 +78,7 @@ function requestBody(model: string) {
 7. IA / tech : seulement les développements réellement utiles ou importants autour d’OpenAI/ChatGPT, Android, Pixel et technologie grand public.
 8. Scoutisme / éducation populaire : actualités réellement significatives du scoutisme, des mouvements de jeunesse et de l’éducation populaire.
 
-Retourne entre 8 et 14 résultats au total quand les sources récentes le permettent, en privilégiant politique, Dordogne et tourisme. Les catégories exactes sont : politique, dordogne, tourisme, medias, journalisme, emploi, ia, scoutisme. Utilise l'URL directe de la source consultée, jamais une URL de moteur de recherche.` }],
-      },
-    ],
-  };
-}
-
-async function runProvider(endpoint: string, token: string, model: string, label: string): Promise<Response | null> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), PROVIDER_TIMEOUT_MS);
-  try {
-    return await fetch(endpoint, {
-      method: "POST",
-      signal: controller.signal,
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify(requestBody(model)),
-    });
-  } catch (error) {
-    const aborted = controller.signal.aborted || (error instanceof DOMException && error.name === "AbortError");
-    console.warn(`[ai-news-search] ${label} request unavailable`, { model, reason: aborted ? "timeout" : "network_error" });
-    return null;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
+Retourne entre 8 et 14 résultats au total quand les sources récentes le permettent, en privilégiant politique, Dordogne et tourisme. Les catégories exactes sont : politique, dordogne, tourisme, medias, journalisme, emploi, ia, scoutisme. Utilise l'URL directe de la source consultée, jamais une URL de moteur de recherche.`;
 
 export async function searchNewsWithOpenAI(): Promise<NewsItem[]> {
   const now = Date.now();
@@ -133,41 +86,34 @@ export async function searchNewsWithOpenAI(): Promise<NewsItem[]> {
   if (state.failureUntil > now) return state.items;
   if (["0", "false", "off", "disabled"].includes(String(process.env["ANGEL_AI_ENABLED"] ?? "true").toLowerCase())) return [];
 
-  const [credential, gatewayCredential] = await Promise.all([getOpenAiCredential(), Promise.resolve(getAiGatewayCredential())]);
-  if (!credential && !gatewayCredential) return [];
+  if (!getLovableAiKey()) return [];
 
   try {
-    const models = webModels();
-    for (let index = 0; index < models.length; index += 1) {
-      const model = models[index];
-      let response: Response | null = null;
-
-      if (credential) {
-        response = await runProvider("https://api.openai.com/v1/responses", credential.value, model, "direct OpenAI web search");
-        if (response && !response.ok) {
-          const body = await response.text();
-          console.warn("[ai-news-search] direct OpenAI web search unavailable", response.status, { model, credentialSource: credential.source });
-          const hasFallbackModel = index < models.length - 1;
-          if (hasFallbackModel && shouldTryFallback(response.status, body)) continue;
-          response = null;
+    for (const model of webModels()) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), PROVIDER_TIMEOUT_MS);
+      let raw = "";
+      try {
+        const result = await lovableChat({
+          model,
+          messages: [
+            { role: "system", content: NEWS_SYSTEM_PROMPT },
+            { role: "user", content: NEWS_USER_PROMPT },
+          ],
+          tools: [{ type: "google_search" }],
+          responseFormat: { type: "json_schema", json_schema: structuredNewsFormat },
+          maxTokens: 2400,
+          signal: controller.signal,
+        });
+        if (!result.ok || !result.text) {
+          console.warn("[ai-news-search] AI gateway web search unavailable", { model, detail: result.detail });
+          continue;
         }
+        raw = result.text;
+      } finally {
+        clearTimeout(timeout);
       }
 
-      if (!response && gatewayCredential) {
-        const routedModel = gatewayModel(model);
-        response = await runProvider("https://ai-gateway.vercel.sh/v1/responses", gatewayCredential.value, routedModel, "Vercel AI Gateway web search");
-        if (response && !response.ok) {
-          const body = await response.text();
-          console.warn("[ai-news-search] Vercel AI Gateway web search unavailable", response.status, { model: routedModel, credentialSource: gatewayCredential.source });
-          const hasFallbackModel = index < models.length - 1;
-          if (hasFallbackModel && shouldTryFallback(response.status, body)) continue;
-          response = null;
-        }
-      }
-
-      if (!response) continue;
-      const json = await response.json();
-      const raw = responseText(json);
       const items = parseJsonArray(raw).map(cleanItem).filter((item): item is NewsItem => Boolean(item)).slice(0, 24);
       if (items.length > 0) {
         state.items = items;

@@ -21,7 +21,7 @@ import {
   type HealthProbeResult,
   type IssuePriority,
 } from "../../angel-os/core";
-import { getOpenAiCredential } from "./vercel-connect-credentials.server";
+import { getLovableAiKey } from "./lovable-ai.server";
 import { SupabaseKeyValueCache } from "./supabase-key-value-cache.server";
 import { SupabaseWorkflowStateStore } from "./supabase-workflow-state.server";
 
@@ -66,7 +66,7 @@ angelApplicationRuntime.register({
   health: async () => {
     const enabled = !["0", "false", "off", "disabled"].includes(String(process.env["ANGEL_AI_ENABLED"] ?? "true").toLowerCase());
     if (!enabled) return false;
-    return Boolean(await getOpenAiCredential());
+    return Boolean(getLovableAiKey());
   },
 });
 

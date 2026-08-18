@@ -128,7 +128,7 @@ export function GlobalSearch({ open, onClose, onNavigate }: { open: boolean; onC
       void emitAngelOSEvent("angel-os-ia:universal-search:conversation-started", { query: trimmed.slice(0, 500), source: "openai" }).catch(() => {});
       void queryClient.invalidateQueries({ queryKey: ["angel-ai-messages"] });
       void queryClient.invalidateQueries({ queryKey: ["angel"] });
-      toast.success("Conversation OpenAI lancée dans Angel OS IA");
+      toast.success("Conversation Angel OS IA lancée dans Angel OS IA");
       onNavigate("angel-ai");
       onClose();
     },

@@ -15,30 +15,30 @@ export function chooseRecovery(input: {
   hasFallbackModel?: boolean;
 }): RecoveryDecision {
   if (input.hasFreshCache) {
-    return { action: "use_cache", explanation: "Réponse OpenAI déjà calculée disponible." };
+    return { action: "use_cache", explanation: "Réponse Angel OS IA déjà calculée disponible." };
   }
   if (input.reason === "budget") {
     return input.hasStaleCache
-      ? { action: "use_cache", explanation: "Budget IA atteint : réutilisation temporaire d'une réponse OpenAI récente." }
-      : { action: "wait", delayMs: 60_000, explanation: "Budget OpenAI atteint : pas de remplacement par une IA locale." };
+      ? { action: "use_cache", explanation: "Budget IA atteint : réutilisation temporaire d'une réponse Angel OS IA récente." }
+      : { action: "wait", delayMs: 60_000, explanation: "Budget Angel OS IA atteint : pas de remplacement par une IA locale." };
   }
   if (input.reason === "disabled" || input.reason === "not_configured") {
-    return { action: "wait", delayMs: 60_000, explanation: "OpenAI n'est pas disponible : le système attend au lieu de produire une réponse IA locale." };
+    return { action: "wait", delayMs: 60_000, explanation: "Angel OS IA n'est pas disponible : le système attend au lieu de produire une réponse IA locale." };
   }
   if (input.reason === "circuit_open") {
     return input.hasStaleCache
-      ? { action: "use_cache", explanation: "Circuit temporairement ouvert : utilisation d'une réponse OpenAI en cache." }
-      : { action: "wait", delayMs: 30_000, explanation: "Circuit temporairement ouvert : nouvel appel OpenAI différé." };
+      ? { action: "use_cache", explanation: "Circuit temporairement ouvert : utilisation d'une réponse Angel OS IA en cache." }
+      : { action: "wait", delayMs: 30_000, explanation: "Circuit temporairement ouvert : nouvel appel Angel OS IA différé." };
   }
   const transient = input.status === 0 || input.status === 408 || input.status === 429 || (input.status ?? 0) >= 500;
   if (transient && input.attempt < 2) {
-    return { action: "retry", delayMs: input.attempt === 0 ? 350 : 900, explanation: "Erreur transitoire OpenAI : nouvelle tentative contrôlée." };
+    return { action: "retry", delayMs: input.attempt === 0 ? 350 : 900, explanation: "Erreur transitoire Angel OS IA : nouvelle tentative contrôlée." };
   }
   if (input.hasFallbackModel) {
-    return { action: "use_fallback_model", explanation: "Le modèle OpenAI principal échoue : bascule vers le modèle OpenAI de secours." };
+    return { action: "use_fallback_model", explanation: "Le modèle Angel OS IA principal échoue : bascule vers le modèle Angel OS IA de secours." };
   }
   if (input.hasStaleCache) {
-    return { action: "use_cache", explanation: "OpenAI est momentanément indisponible : continuité via une réponse OpenAI récente." };
+    return { action: "use_cache", explanation: "Angel OS IA est momentanément indisponible : continuité via une réponse Angel OS IA récente." };
   }
-  return { action: "wait", delayMs: 60_000, explanation: "Aucune réponse OpenAI disponible : la demande est différée, sans génération IA locale." };
+  return { action: "wait", delayMs: 60_000, explanation: "Aucune réponse Angel OS IA disponible : la demande est différée, sans génération IA locale." };
 }
