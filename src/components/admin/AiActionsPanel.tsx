@@ -54,7 +54,6 @@ export function AiActionsPanel() {
       if (error) throw error;
       return (data ?? []) as unknown as AiAction[];
     },
-    refetchInterval: 60_000,
   });
 
   const resolve = useMutation({

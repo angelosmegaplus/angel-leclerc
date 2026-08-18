@@ -18,7 +18,6 @@ export function AngelOsIaFocus() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["angel-os-ia-focus"],
     queryFn: () => loadFocus(),
-    refetchInterval: 5 * 60_000,
     staleTime: 60_000,
     retry: 1,
   });

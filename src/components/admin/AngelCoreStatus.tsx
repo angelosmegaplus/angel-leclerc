@@ -8,8 +8,6 @@ export function AngelCoreStatus() {
   const { data } = useQuery({
     queryKey: ["angel-os", "supervisor"],
     queryFn: () => readSupervisor(),
-    refetchInterval: 60_000,
-    refetchOnWindowFocus: true,
     staleTime: 30_000,
     retry: 1,
   });

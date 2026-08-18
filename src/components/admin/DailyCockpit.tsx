@@ -103,7 +103,6 @@ export function DailyCockpit() {
       if (error) throw error;
       return (data ?? []) as unknown as HourlyMailReport[];
     },
-    refetchInterval: 5 * 60 * 1000,
   });
 
   const syncMutation = useMutation({
