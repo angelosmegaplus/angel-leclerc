@@ -1,10 +1,10 @@
 {
-  "fetchedAt": "2026-08-18T17:57:56Z",
+  "fetchedAt": "2026-08-18T21:01:51Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-18T17:57:56Z",
+      "fetchedAt": "2026-08-18T21:01:51Z",
       "important": [],
-      "otherSummary": "Depuis le précédent rapport à 16:59:24 UTC, aucun nouveau mail Gmail reçu ou envoyé n’a été détecté. Aucun nouveau message pertinent pour une candidature BTS Communication, aucune réponse d’entreprise, aucun refus explicite, aucun entretien, aucune demande de CV, aucune redirection professionnelle et aucune alerte technique nouvelle n’ont été observés.",
+      "otherSummary": "Depuis le précédent rapport à 17:57:56 UTC, aucun nouveau mail Gmail reçu ou envoyé n’a été détecté. Aucun nouveau message pertinent pour une candidature BTS Communication, aucune réponse d’entreprise, aucun refus explicite, aucun entretien, aucune demande de CV, aucune redirection professionnelle et aucune alerte technique nouvelle n’ont été observés.",
       "counts": {
         "useful_messages": 0,
         "incoming": 0,
@@ -23,9 +23,11 @@
       }
     },
     "microsoft_mail_dashboard": {
-      "fetchedAt": "2026-08-18T17:57:56Z",
-      "summary": "Depuis le précédent rapport à 16:59:24 UTC, aucun nouveau message Outlook reçu n’a été détecté ; le message récent le plus tardif contrôlé datait de 16:45:50 UTC. Aucun nouvel élément envoyé Outlook n’a été identifié dans la période.",
+      "fetchedAt": "2026-08-18T21:01:51Z",
+      "summary": "Depuis le précédent rapport à 17:57:56 UTC, un nouveau message Outlook reçu a été détecté : une newsletter MuseHub à 20:59:25 UTC, sans lien avec une candidature, une action professionnelle ou une alerte technique. Aucun nouvel élément envoyé Outlook n’a été identifié dans la période.",
       "counts": {
+        "incoming": 1,
+        "useful_messages": 0,
         "unique_application_replies": 0,
         "unique_outgoing_applications": 0,
         "job_alerts": 0,
@@ -34,12 +36,12 @@
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-18T16:59:24Z",
-    "period_end": "2026-08-18T17:57:56Z",
-    "summary": "Cycle consolidé Gmail + Outlook terminé. Aucun nouveau mail reçu ou envoyé n’a été détecté depuis le rapport précédent. Aucun changement factuel de candidature n’est donc à synchroniser et aucun email, brouillon ou réponse n’a été envoyé. La file privée `ai_actions` et l’index mail privé cumulatif ne disposent toujours pas d’une voie serveur authentifiée exposée à cette exécution ; aucune donnée privée détaillée n’est écrite dans GitHub public.",
+    "period_start": "2026-08-18T17:57:56Z",
+    "period_end": "2026-08-18T21:01:51Z",
+    "summary": "Cycle consolidé Gmail + Outlook terminé. Gmail : aucun nouveau mail reçu ou envoyé. Outlook : un nouveau message reçu, newsletter MuseHub non pertinente pour les candidatures ou l’administration ; aucun élément envoyé. Aucun changement factuel de candidature à synchroniser, aucun refus, entretien, demande de CV ou redirection professionnelle détecté, et aucun email, brouillon ou réponse n’a été envoyé. L’accès privé direct à `ai_actions` n’est pas exposé à cette exécution ; aucune donnée mail privée détaillée n’est écrite dans GitHub public.",
     "counts": {
       "useful_messages": 0,
-      "incoming": 0,
+      "incoming": 1,
       "outgoing": 0,
       "outgoing_bts_applications": 0,
       "application_related_incoming": 0,
@@ -58,7 +60,8 @@
     "items": [],
     "recommendations": [
       "Aucune action mail n’est nécessaire sur cette période.",
-      "Réessayer au prochain cycle l’accès privé serveur à `ai_actions` et à l’index mail cumulatif sans exposer de données dans GitHub public."
+      "Le message Outlook reçu est une newsletter non pertinente ; aucune indexation métier ni action candidature n’est requise.",
+      "Réessayer au prochain cycle l’accès privé serveur à `ai_actions` sans exposer de données dans GitHub public."
     ],
     "source": "chatgpt-hourly-direct"
   }
