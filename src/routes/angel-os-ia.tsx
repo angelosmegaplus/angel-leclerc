@@ -239,7 +239,7 @@ function AngelOsIaPage() {
             <article className={`${card} p-5`}><Database className="h-5 w-5 text-[#5276a8]" /><p className="mt-4 text-[10px] font-bold uppercase tracking-[.16em] text-[#5276a8]">Données</p><h3 className="mt-1 text-lg font-black">Le contexte vient du système</h3><p className="mt-2 text-sm leading-6 text-[#6b655e]">Mails, agenda, candidatures, articles, projets et autres données restent organisés par Angel OS.</p></article>
             <article className={`${card} p-5`}><Network className="h-5 w-5 text-[#5276a8]" /><p className="mt-4 text-[10px] font-bold uppercase tracking-[.16em] text-[#5276a8]">Connecteurs</p><h3 className="mt-1 text-lg font-black">Les services enrichissent Angel OS</h3><p className="mt-2 text-sm leading-6 text-[#6b655e]">Google, API et autres services externes sont utilisés uniquement lorsqu’ils sont réellement disponibles.</p></article>
             <article className={`${card} p-5`}><Sparkles className="h-5 w-5 text-[#c54f41]" /><p className="mt-4 text-[10px] font-bold uppercase tracking-[.16em] text-[#b44738]">Intelligence</p><h3 className="mt-1 text-lg font-black">L’IA n’est pas le système</h3><p className="mt-2 text-sm leading-6 text-[#6b655e]">Angel OS IA est une capacité intégrée à Angel OS, pas le noyau qui remplace tout le reste.</p></article>
-            <article className={`${card} p-5`}><Wrench className="h-5 w-5 text-[#7867a9]" /><p className="mt-4 text-[10px] font-bold uppercase tracking-[.16em] text-[#7867a9]">Maintenance</p><h3 className="mt-1 text-lg font-black">ChatGPT reste autour du projet</h3><p className="mt-2 text-sm leading-6 text-[#6b655e]">Développement, corrections, contrôle du code et maintenance restent distingués d’Angel OS IA.</p></article>
+            <article className={`${card} p-5`}><Wrench className="h-5 w-5 text-[#7867a9]" /><p className="mt-4 text-[10px] font-bold uppercase tracking-[.16em] text-[#7867a9]">Maintenance</p><h3 className="mt-1 text-lg font-black">La supervision reste interne</h3><p className="mt-2 text-sm leading-6 text-[#6b655e]">Contrôles techniques, incidents et récupération sont assurés par Angel Guard, développé dans Angel OS.</p></article>
           </div>
         </div>
       </section>
@@ -334,7 +334,7 @@ function AngelOsIaPage() {
           </ExpandableWidget>
 
           <ExpandableWidget eyebrow="Autour du système" title="Ce qui reste volontairement séparé">
-            <p><strong className="text-[#181614]">ChatGPT</strong> sert au développement, aux corrections, au contrôle et à la maintenance du projet. La <strong className="text-[#181614]">passerelle IA Lovable</strong> (modèles Google Gemini) fournit les capacités utilisées par Angel OS IA. Aucun de ces services ne remplace Angel OS lui-même ni Angel Guard.</p>
+            <p>La <strong className="text-[#181614]">passerelle IA Lovable</strong> (modèles Google Gemini) fournit uniquement les capacités d’intelligence utilisées par Angel OS IA. Les services Google connectés n’apportent que des données. Le reste — interface, éditeur, administration, supervision — est développé directement dans Angel OS et ne dépend d’aucun outil externe.</p>
           </ExpandableWidget>
         </div>
 
