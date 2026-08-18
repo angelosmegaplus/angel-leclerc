@@ -831,14 +831,45 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
                 )}
 
                 {current.kind === "textarea" && (
-                  <textarea
-                    autoFocus
-                    rows={4}
-                    value={answers[current.id] ?? ""}
-                    placeholder={current.placeholder}
-                    onChange={(e) => setAnswer(current.id, e.target.value)}
-                    className="w-full resize-y rounded-xl border border-border bg-background px-4 py-3 text-sm leading-relaxed text-foreground outline-none focus:border-primary"
-                  />
+                  <div className="grid gap-2">
+                    <textarea
+                      autoFocus
+                      rows={4}
+                      value={answers[current.id] ?? ""}
+                      placeholder={current.placeholder}
+                      onChange={(e) => setAnswer(current.id, e.target.value)}
+                      className="w-full resize-y rounded-xl border border-border bg-background px-4 py-3 text-sm leading-relaxed text-foreground outline-none focus:border-primary"
+                    />
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={assisting}
+                        onClick={() => void assistCurrentAnswer()}
+                        className="min-h-10 rounded-xl text-xs"
+                      >
+                        {assisting ? (
+                          <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Sparkles className="mr-2 h-3.5 w-3.5" />
+                        )}
+                        {(answers[current.id] ?? "").trim()
+                          ? "Reformuler avec l'assistant"
+                          : "M'aider à rédiger"}
+                      </Button>
+                      <span className="text-[11px] text-muted-foreground">
+                        Proposition modifiable : rien n'est envoyé sans votre validation.
+                      </span>
+                    </div>
+                    {assistHints.length > 0 && (
+                      <ul className="grid gap-1 rounded-xl border border-dashed border-border bg-muted/30 p-3 text-[11px] text-muted-foreground">
+                        {assistHints.map((hint) => (
+                          <li key={hint}>• {hint}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 )}
 
                 {current.kind === "contact" && (
