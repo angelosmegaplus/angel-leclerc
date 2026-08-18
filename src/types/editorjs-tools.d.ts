@@ -1,0 +1,15 @@
+// Les outils Editor.js sont publiés sans typages exploitables via "exports".
+// Ils sont utilisés uniquement comme classes d'outils passées à Editor.js.
+declare module "@editorjs/header" { const tool: unknown; export default tool; }
+declare module "@editorjs/list" { const tool: unknown; export default tool; }
+declare module "@editorjs/quote" { const tool: unknown; export default tool; }
+declare module "@editorjs/image" { const tool: unknown; export default tool; }
+declare module "@editorjs/checklist" { const tool: unknown; export default tool; }
+declare module "@editorjs/delimiter" { const tool: unknown; export default tool; }
+declare module "@editorjs/raw" { const tool: unknown; export default tool; }
+declare module "@editorjs/embed" { const tool: unknown; export default tool; }
+declare module "@editorjs/marker" { const tool: unknown; export default tool; }
+declare module "@editorjs/inline-code" { const tool: unknown; export default tool; }
+declare module "@editorjs/link" { const tool: unknown; export default tool; }
+declare module "@editorjs/code" { const tool: unknown; export default tool; }
+declare module "@editorjs/warning" { const tool: unknown; export default tool; }
