@@ -449,6 +449,35 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
     setAnswers((prev) => ({ ...prev, [id]: value }));
   }
 
+  /** Demande à l'IA de rédiger ou reformuler la réponse à l'étape en cours. */
+  async function assistCurrentAnswer() {
+    if (!current || !track || assisting) return;
+    setAssisting(true);
+    setError(null);
+    try {
+      const res = await assistServer({
+        data: {
+          question: current.question.slice(0, 400),
+          draft: (answers[current.id] ?? "").slice(0, 2000),
+          track,
+          context: steps
+            .filter((s) => s.kind !== "contact" && s.id !== current.id && (answers[s.id] ?? "").trim())
+            .map((s) => ({ question: s.question.slice(0, 300), answer: (answers[s.id] ?? "").slice(0, 800) })),
+        },
+      });
+      if (res.text) {
+        setAnswer(current.id, res.text);
+        setAssistHints(res.hints);
+      } else {
+        setError("L'assistant n'est pas disponible pour l'instant : écrivez librement, cela suffit.");
+      }
+    } catch {
+      setError("L'assistant n'est pas disponible pour l'instant : écrivez librement, cela suffit.");
+    } finally {
+      setAssisting(false);
+    }
+  }
+
   function back() {
     setError(null);
     if (index === 0) {
