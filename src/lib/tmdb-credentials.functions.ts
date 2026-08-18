@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getTmdbCredential } from "./vercel-connect-credentials.server";
+import { getTmdbCredential } from "./runtime-credentials.server";
 
 const BASE = "https://api.themoviedb.org/3";
 
@@ -22,9 +22,7 @@ async function validateCredential(value: string, kind: "api-key" | "read-token")
       try {
         const body = await response.json() as { status_message?: string };
         detail = body.status_message ? ` — ${body.status_message}` : "";
-      } catch {
-        // Keep the public error concise when TMDB returns a non-JSON response.
-      }
+      } catch {}
       throw new Error(`TMDB_${kind === "read-token" ? "READ_TOKEN" : "API_KEY"}_INVALID_${response.status}${detail}`);
     }
     return true;
@@ -46,22 +44,22 @@ export const getTmdbCredentialStatus = createServerFn({ method: "GET" }).handler
   };
 });
 
-// Legacy admin action kept for backwards-compatible imports only.
-// TMDB credentials are configured exclusively in Vercel Environment Variables.
+// Conservé uniquement pour les anciens imports de l’admin.
+// Les identifiants TMDB sont fournis par les secrets du runtime Lovable.
 export const saveTmdbCredentials = createServerFn({ method: "POST" })
   .validator((input: CredentialInput) => ({
     apiKey: String(input?.apiKey ?? "").trim(),
     readToken: String(input?.readToken ?? "").trim(),
   }))
   .handler(async () => {
-    throw new Error("La configuration TMDB se fait uniquement dans les variables d’environnement Vercel.");
+    throw new Error("La configuration TMDB se fait dans les secrets du projet Lovable.");
   });
 
 export const clearTmdbCredentials = createServerFn({ method: "POST" }).handler(async () => ({ ok: true as const }));
 
 export const testActiveTmdbCredential = createServerFn({ method: "GET" }).handler(async () => {
   const credential = await getTmdbCredential();
-  if (!credential) return { ok: false as const, source: null, error: "TMDB_READ_TOKEN/TMDB_API_KEY absent des variables Vercel." };
+  if (!credential) return { ok: false as const, source: null, error: "TMDB_READ_TOKEN/TMDB_API_KEY absent des secrets du runtime Lovable." };
 
   try {
     await validateCredential(credential.value, credential.kind === "bearer" ? "read-token" : "api-key");
