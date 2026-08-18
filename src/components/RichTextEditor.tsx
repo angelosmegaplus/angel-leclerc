@@ -70,6 +70,15 @@ const SCRIPT_URLS = [
   "https://cdn.jsdelivr.net/npm/@editorjs/warning@latest",
 ] as const;
 
+export function parseYouTubeId(input: string): string | null {
+  const value = input.trim();
+  if (/^[\w-]{11}$/.test(value)) return value;
+  const match = value.match(
+    /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/,
+  );
+  return match ? match[1] : null;
+}
+
 function escapeHtml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
