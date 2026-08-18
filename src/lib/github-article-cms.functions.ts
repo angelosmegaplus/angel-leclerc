@@ -5,6 +5,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 const REPOSITORY = "angelosmegaplus/angel-leclerc";
 const BRANCH = "main";
 const CONTENT_DIR = "src/content/articles-data";
+const TOMBSTONE_DIR = "src/content/article-tombstones";
 
 const ArticleSchema = z.object({
   id: z.string().optional().nullable(),
@@ -49,6 +50,10 @@ function slugify(value: string) {
 
 function pathFor(slug: string) {
   return `${CONTENT_DIR}/${slugify(slug)}.json`;
+}
+
+function tombstonePathFor(slug: string) {
+  return `${TOMBSTONE_DIR}/${slugify(slug)}.json`;
 }
 
 async function assertAdmin(context: any) {
@@ -97,6 +102,21 @@ async function getExistingSha(path: string): Promise<string | null> {
   return body.sha || null;
 }
 
+async function putFile(path: string, contentText: string, message: string, sha?: string | null) {
+  const body: Record<string, unknown> = {
+    message,
+    content: Buffer.from(contentText, "utf8").toString("base64"),
+    branch: BRANCH,
+  };
+  if (sha) body.sha = sha;
+  const response = await githubRequest(`contents/${path}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return response.json() as Promise<{ commit?: { sha?: string } }>;
+}
+
 export const saveGitHubArticle = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((input: unknown) => ArticleSchema.parse(input))
@@ -113,19 +133,23 @@ export const saveGitHubArticle = createServerFn({ method: "POST" })
       created_at: data.created_at || now,
       updated_at: now,
     };
-    const content = Buffer.from(`${JSON.stringify(article, null, 2)}\n`, "utf8").toString("base64");
-    const body: Record<string, unknown> = {
-      message: `${sha ? "Update" : "Create"} article: ${data.title}`,
-      content,
-      branch: BRANCH,
-    };
-    if (sha) body.sha = sha;
-    const response = await githubRequest(`contents/${path}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const result = await response.json() as { commit?: { sha?: string } };
+
+    const tombstonePath = tombstonePathFor(slug);
+    const tombstoneSha = await getExistingSha(tombstonePath);
+    if (tombstoneSha) {
+      await githubRequest(`contents/${tombstonePath}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: `Restore article: ${slug}`, sha: tombstoneSha, branch: BRANCH }),
+      });
+    }
+
+    const result = await putFile(
+      path,
+      `${JSON.stringify(article, null, 2)}\n`,
+      `${sha ? "Update" : "Create"} article: ${data.title}`,
+      sha,
+    );
     return { ok: true, slug, commitSha: result.commit?.sha ?? null };
   });
 
@@ -137,16 +161,29 @@ export const deleteGitHubArticle = createServerFn({ method: "POST" })
     const slug = slugify(data.slug);
     const path = pathFor(slug);
     const sha = await getExistingSha(path);
-    if (!sha) return { ok: true, deleted: false, slug };
-    const response = await githubRequest(`contents/${path}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message: `Delete article: ${slug}`,
-        sha,
-        branch: BRANCH,
-      }),
-    });
-    const result = await response.json() as { commit?: { sha?: string } };
+
+    if (sha) {
+      await githubRequest(`contents/${path}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: `Delete article: ${slug}`, sha, branch: BRANCH }),
+      });
+    }
+
+    const tombstonePath = tombstonePathFor(slug);
+    const tombstoneSha = await getExistingSha(tombstonePath);
+    const tombstone = {
+      slug,
+      deleted: true,
+      deleted_at: new Date().toISOString(),
+      reason: "Deleted from Angel OS article editor",
+    };
+    const result = await putFile(
+      tombstonePath,
+      `${JSON.stringify(tombstone, null, 2)}\n`,
+      `Tombstone article: ${slug}`,
+      tombstoneSha,
+    );
+
     return { ok: true, deleted: true, slug, commitSha: result.commit?.sha ?? null };
   });
