@@ -30,6 +30,7 @@ type Technology = {
   wordmark?: string;
   href?: string;
   actionLabel?: string;
+  state?: string;
 };
 
 const technologies: Technology[] = [
