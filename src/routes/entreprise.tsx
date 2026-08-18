@@ -34,6 +34,7 @@ import { AnimatedSection } from "@/components/AnimatedSection";
 import { FeedbackBlock } from "@/components/FeedbackBlock";
 import heroImage from "@/assets/hero-illustration.jpg";
 import revolutInvoiceImage from "@/assets/revolut-invoice-example.jpg";
+import { brandLogos } from "@/assets/brands";
 
 const brandLogo = (domain: string) =>
   `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
@@ -744,11 +745,11 @@ function Contact() {
 }
 
 const paymentMethods = [
-  { name: "Visa", src: "https://cdn.simpleicons.org/visa/1A1F71" },
-  { name: "Mastercard", src: "https://cdn.simpleicons.org/mastercard/EB001B" },
-  { name: "Apple Pay", src: "https://cdn.simpleicons.org/applepay/000000" },
-  { name: "Google Pay", src: "https://cdn.simpleicons.org/googlepay/4285F4" },
-  { name: "Revolut Pay", src: "https://cdn.simpleicons.org/revolut/191C1F" },
+  { name: "Visa", src: brandLogos.visa },
+  { name: "Mastercard", src: brandLogos.mastercard },
+  { name: "Apple Pay", src: brandLogos.applepay },
+  { name: "Google Pay", src: brandLogos.googlepay },
+  { name: "Revolut Pay", src: brandLogos.revolut },
 ];
 
 function PaymentLogos() {

@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, BrainCircuit, ChevronDown, Cpu, Database, ExternalLink, Network, ShieldCheck, Sparkles, Wrench } from "lucide-react";
 import { BootIntro } from "@/components/angel-os/BootIntro";
+import { brandLogos } from "@/assets/brands";
 
 export const Route = createFileRoute("/angel-os-ia")({
   head: () => ({
@@ -31,18 +32,18 @@ type Technology = {
 const technologies: Technology[] = [
   { name: "Passerelle IA Lovable", wordmark: "IA", text: "Fournit les capacités d’intelligence artificielle (modèles Google Gemini) utilisées par Angel OS IA." },
   { name: "ChatGPT", logo: "/logos/chatgpt.com.svg", text: "Intervient autour du projet pour l’analyse, les corrections, le contrôle et la maintenance." },
-  { name: "React", logo: "https://cdn.simpleicons.org/react/149ECA", text: "Structure les interfaces et les composants interactifs d’Angel OS." },
-  { name: "TypeScript", logo: "https://cdn.simpleicons.org/typescript/3178C6", text: "Porte la logique applicative et sécurise le développement par le typage." },
-  { name: "TanStack", logo: "https://cdn.simpleicons.org/tanstack/111111", text: "Gère le routage, les données asynchrones et une partie de l’architecture." },
-  { name: "Tailwind CSS", logo: "https://cdn.simpleicons.org/tailwindcss/06B6D4", text: "Gère la mise en page responsive et l’identité visuelle." },
-  { name: "Vite", logo: "https://cdn.simpleicons.org/vite/646CFF", text: "Construit l’application et fournit l’environnement de développement." },
-  { name: "GitHub", logo: "https://cdn.simpleicons.org/github/111111", text: "Centralise le code source, l’historique des modifications et les versions publiques du projet.", href: "https://github.com/angelosmegaplus/angel-leclerc", actionLabel: "Voir le dépôt GitHub" },
-  { name: "Vercel", logo: "https://cdn.simpleicons.org/vercel/111111", text: "Construit et publie l’application web à partir du code du projet." },
-  { name: "Supabase", logo: "https://cdn.simpleicons.org/supabase/3FCF8E", text: "Gère la base de données, l’authentification et les données privées." },
-  { name: "Gmail API", logo: "https://cdn.simpleicons.org/gmail/EA4335", text: "Relie les mails utiles à l’administration et au suivi des candidatures." },
-  { name: "Google Calendar API", logo: "https://cdn.simpleicons.org/googlecalendar/4285F4", text: "Relie l’agenda Google aux informations utilisées dans Angel OS." },
-  { name: "Google Drive API", logo: "https://cdn.simpleicons.org/googledrive/4285F4", text: "Donne accès aux fichiers Google Drive nécessaires aux fonctions connectées." },
-  { name: "TMDB API", logo: "https://cdn.simpleicons.org/themoviedatabase/01B4E4", text: "Fournit les recherches, affiches et métadonnées de l’espace Films & séries." },
+  { name: "React", logo: brandLogos.react, text: "Structure les interfaces et les composants interactifs d’Angel OS." },
+  { name: "TypeScript", logo: brandLogos.typescript, text: "Porte la logique applicative et sécurise le développement par le typage." },
+  { name: "TanStack", logo: brandLogos.tanstack, text: "Gère le routage, les données asynchrones et une partie de l’architecture." },
+  { name: "Tailwind CSS", logo: brandLogos.tailwindcss, text: "Gère la mise en page responsive et l’identité visuelle." },
+  { name: "Vite", logo: brandLogos.vite, text: "Construit l’application et fournit l’environnement de développement." },
+  { name: "GitHub", logo: brandLogos.github, text: "Centralise le code source, l’historique des modifications et les versions publiques du projet.", href: "https://github.com/angelosmegaplus/angel-leclerc", actionLabel: "Voir le dépôt GitHub" },
+  { name: "Vercel", logo: brandLogos.vercel, text: "Construit et publie l’application web à partir du code du projet." },
+  { name: "Supabase", logo: brandLogos.supabase, text: "Gère la base de données, l’authentification et les données privées." },
+  { name: "Gmail API", logo: brandLogos.gmail, text: "Relie les mails utiles à l’administration et au suivi des candidatures." },
+  { name: "Google Calendar API", logo: brandLogos.googlecalendar, text: "Relie l’agenda Google aux informations utilisées dans Angel OS." },
+  { name: "Google Drive API", logo: brandLogos.googledrive, text: "Donne accès aux fichiers Google Drive nécessaires aux fonctions connectées." },
+  { name: "TMDB API", logo: brandLogos.themoviedatabase, text: "Fournit les recherches, affiches et métadonnées de l’espace Films & séries." },
 ];
 
 const card = "rounded-[1.35rem] border border-[#ded8cf] bg-white";
