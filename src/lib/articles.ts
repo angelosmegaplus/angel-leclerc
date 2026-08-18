@@ -129,3 +129,13 @@ export async function fetchAllArticles(): Promise<Article[]> {
   const database = await currentArticles();
   return mergeSources(database, getAllLovableArticleArchive(), deleted);
 }
+
+/**
+ * Studio : la base est la seule source éditoriale. Aucune archive historique
+ * n'apparaît dans la liste, et les articles en corbeille sont exclus (ils ont
+ * leur propre écran de restauration).
+ */
+export async function fetchStudioArticles(): Promise<Article[]> {
+  const database = await base.fetchAllArticles();
+  return database.filter((article) => !isDatabaseDeletionSentinel(article));
+}
