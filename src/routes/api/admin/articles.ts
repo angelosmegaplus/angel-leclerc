@@ -317,6 +317,8 @@ export const Route = createFileRoute("/api/admin/articles")({
             if (!token) return Response.json(await deleteViaSupabase(slug), { headers });
 
             await deleteFile(`${CONTENT_DIR}/${slug}.json`, `Delete article: ${slug}`, token);
+            // Masquage immédiat du site public, sans attendre un rebuild GitHub.
+            await markGitArticleState(slug, true);
             const tombstone = {
               slug,
               deleted: true,
@@ -336,6 +338,7 @@ export const Route = createFileRoute("/api/admin/articles")({
             const slug = slugify(String(input.slug || ""));
             if (!slug) return Response.json({ error: "Slug manquant." }, { status: 400, headers });
             if (token) await deleteFile(`${TOMBSTONE_DIR}/${slug}.json`, `Restore article: ${slug}`, token);
+            await markGitArticleState(slug, false);
             return Response.json(await restoreViaSupabase(slug), { headers });
           }
 
@@ -365,6 +368,8 @@ export const Route = createFileRoute("/api/admin/articles")({
             };
 
             await deleteFile(`${TOMBSTONE_DIR}/${slug}.json`, `Restore article: ${slug}`, token);
+            // Un enregistrement volontaire annule explicitement la suppression.
+            await markGitArticleState(slug, false);
             const result = await putFile(
               `${CONTENT_DIR}/${slug}.json`,
               article,
