@@ -250,6 +250,16 @@ function AdminPage() {
     if (requested) setTab(requested as AdminTab);
   }, []);
 
+  // Navigation interne demandée par un panneau (ex. « Ouvrir les connexions »).
+  useEffect(() => {
+    const onNavigate = (event: Event) => {
+      const next = (event as CustomEvent<string>).detail;
+      if (typeof next === "string" && next) setTab(next as AdminTab);
+    };
+    window.addEventListener(ADMIN_NAVIGATE_EVENT, onNavigate);
+    return () => window.removeEventListener(ADMIN_NAVIGATE_EVENT, onNavigate);
+  }, []);
+
   useEffect(() => {
     const url = new URL(window.location.href);
     if (url.searchParams.get("tab") === tab) return;
