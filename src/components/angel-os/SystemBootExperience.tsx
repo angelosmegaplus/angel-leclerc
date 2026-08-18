@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 let bootAudioContext: AudioContext | null = null;
+const ADMIN_STARTUP_TICKET = "angel-os:admin-startup-ticket";
 
 function playBootSound() {
   if (typeof window === "undefined") return;
@@ -40,8 +41,26 @@ export function SystemBootExperience({
   label?: string;
 }) {
   const [exiting, setExiting] = useState(false);
+  const authHandoff = typeof window !== "undefined" && window.location.pathname === "/auth";
 
   useEffect(() => {
+    if (authHandoff) {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("adminFlow") === "1") {
+        try {
+          window.sessionStorage.setItem(ADMIN_STARTUP_TICKET, "1");
+        } catch {
+          // The dedicated startup route will still verify the authenticated admin session.
+        }
+        window.location.replace("/admin-startup");
+      } else {
+        // The public Angel OS presentation uses the ordinary /auth route and must
+        // never trigger the special admin startup sequence.
+        window.location.replace("/admin");
+      }
+      return;
+    }
+
     playBootSound();
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) {
@@ -55,7 +74,11 @@ export function SystemBootExperience({
       window.clearTimeout(exitTimer);
       window.clearTimeout(doneTimer);
     };
-  }, [done]);
+  }, [done, authHandoff]);
+
+  if (authHandoff) {
+    return <div className="fixed inset-0 z-[9999] bg-black" aria-label="Préparation d'Angel OS" />;
+  }
 
   return (
     <div
