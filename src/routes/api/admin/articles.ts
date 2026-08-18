@@ -212,6 +212,55 @@ async function deleteViaSupabase(slug: string) {
   return { ok: true, slug, backend: "supabase-fallback" as const };
 }
 
+/**
+ * Restauration : on retire uniquement le marqueur de suppression. L'article
+ * revient en brouillon privé pour qu'aucune republication ne soit automatique.
+ */
+async function restoreViaSupabase(slug: string) {
+  const db = adminSupabase();
+  const { data: existing, error: existingError } = await db
+    .from("articles")
+    .select("badges")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (existingError) throw existingError;
+  if (!existing) throw new Error("ARTICLE_NOT_FOUND");
+
+  const badges = (existing.badges && typeof existing.badges === "object" && !Array.isArray(existing.badges)
+    ? { ...(existing.badges as Record<string, unknown>) }
+    : {}) as Record<string, unknown>;
+  delete badges.__angel_os_deleted;
+  delete badges.deleted_at;
+  delete badges.deleted_by;
+
+  const { error } = await db
+    .from("articles")
+    .update({ badges, published: false, is_private: true, updated_at: new Date().toISOString() } as any)
+    .eq("slug", slug);
+  if (error) throw error;
+
+  // Un ancien enregistrement Git ne doit pas continuer à masquer l'article.
+  await db.from("git_article_state").update({ deleted: false, deleted_at: null } as any).eq("slug", slug);
+  return { ok: true, slug, backend: "supabase-fallback" as const };
+}
+
+/** Suppression définitive : uniquement sur une ligne déjà dans la corbeille. */
+async function purgeViaSupabase(slug: string) {
+  const db = adminSupabase();
+  const { data: existing, error: existingError } = await db
+    .from("articles")
+    .select("badges")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (existingError) throw existingError;
+  const badges = existing?.badges as Record<string, unknown> | null | undefined;
+  if (!existing || !badges || badges.__angel_os_deleted !== true) throw new Error("PURGE_REQUIRES_TRASH");
+
+  const { error } = await db.from("articles").delete().eq("slug", slug);
+  if (error) throw error;
+  return { ok: true, slug, backend: "supabase-fallback" as const };
+}
+
 export const Route = createFileRoute("/api/admin/articles")({
   server: {
     handlers: {
@@ -224,7 +273,7 @@ export const Route = createFileRoute("/api/admin/articles")({
         try {
           const userId = await validateAdmin(request);
           const input = (await request.json()) as {
-            action?: "save" | "delete";
+            action?: "save" | "delete" | "restore" | "purge";
             article?: Record<string, unknown>;
             slug?: string;
           };
@@ -250,6 +299,19 @@ export const Route = createFileRoute("/api/admin/articles")({
               token,
             );
             return Response.json({ ok: true, slug, backend: "github", commitSha: result.commit?.sha ?? null }, { headers });
+          }
+
+          if (input.action === "restore") {
+            const slug = slugify(String(input.slug || ""));
+            if (!slug) return Response.json({ error: "Slug manquant." }, { status: 400, headers });
+            if (token) await deleteFile(`${TOMBSTONE_DIR}/${slug}.json`, `Restore article: ${slug}`, token);
+            return Response.json(await restoreViaSupabase(slug), { headers });
+          }
+
+          if (input.action === "purge") {
+            const slug = slugify(String(input.slug || ""));
+            if (!slug) return Response.json({ error: "Slug manquant." }, { status: 400, headers });
+            return Response.json(await purgeViaSupabase(slug), { headers });
           }
 
           if (input.action === "save") {

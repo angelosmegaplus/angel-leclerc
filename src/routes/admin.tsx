@@ -65,7 +65,13 @@ import {
 } from "@/lib/articles";
 import { MailboxAdmin } from "@/components/MailboxAdmin";
 import { describeDbError } from "@/lib/db-error";
-import { saveArticleViaApi, deleteArticleViaApi } from "@/lib/article-api";
+import {
+  saveArticleViaApi,
+  deleteArticleViaApi,
+  restoreArticleViaApi,
+  purgeArticleViaApi,
+} from "@/lib/article-api";
+import { fetchTrashedArticles } from "@/lib/articles-trash";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -347,8 +353,9 @@ function AdminPage() {
       await deleteArticleViaApi(slug);
     },
     onSuccess: () => {
-      toast.success("Article supprimé");
+      toast.success("Article placé dans la corbeille");
       queryClient.invalidateQueries({ queryKey: ["admin-articles"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-articles-trash"] });
       queryClient.invalidateQueries({ queryKey: ["articles"] });
     },
     onError: (err: unknown) => {
@@ -357,6 +364,34 @@ function AdminPage() {
         duration: 12000,
       });
     },
+  });
+
+  const { data: trashed = [] } = useQuery({
+    queryKey: ["admin-articles-trash"],
+    queryFn: fetchTrashedArticles,
+    enabled: Boolean(session) && isAdmin,
+  });
+
+  const restore = useMutation({
+    mutationFn: (slug: string) => restoreArticleViaApi(slug),
+    onSuccess: () => {
+      toast.success("Article restauré en brouillon privé");
+      queryClient.invalidateQueries({ queryKey: ["admin-articles"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-articles-trash"] });
+      queryClient.invalidateQueries({ queryKey: ["articles"] });
+    },
+    onError: (err: unknown) =>
+      toast.error("Restauration impossible", { description: describeDbError(err), duration: 12000 }),
+  });
+
+  const purge = useMutation({
+    mutationFn: (slug: string) => purgeArticleViaApi(slug),
+    onSuccess: () => {
+      toast.success("Article supprimé définitivement");
+      queryClient.invalidateQueries({ queryKey: ["admin-articles-trash"] });
+    },
+    onError: (err: unknown) =>
+      toast.error("Suppression définitive impossible", { description: describeDbError(err), duration: 12000 }),
   });
 
   const previewSlug = useMemo(
@@ -1484,6 +1519,55 @@ function AdminPage() {
                   </div>
                 </div>
               ))}
+            </div>
+
+            <div className="mt-10">
+              <h3 className="text-sm font-semibold text-foreground">
+                Corbeille {trashed.length > 0 && `(${trashed.length})`}
+              </h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Les articles supprimés sont conservés ici. Une restauration les remet en brouillon privé.
+              </p>
+              <div className="mt-3 space-y-2">
+                {trashed.length === 0 && (
+                  <p className="text-sm text-muted-foreground">Corbeille vide.</p>
+                )}
+                {trashed.map((a) => (
+                  <div
+                    key={a.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-dashed border-border bg-muted/30 p-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-foreground">{a.title}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {a.slug}
+                        {a.deletedAt && ` · supprimé le ${formatDateTime(a.deletedAt)}`}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={restore.isPending}
+                        onClick={() => restore.mutate(a.slug)}
+                      >
+                        Restaurer
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={purge.isPending}
+                        onClick={() => {
+                          if (confirm(`Supprimer définitivement « ${a.title} » ? Cette action est irréversible.`))
+                            purge.mutate(a.slug);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
             </>
             )}
