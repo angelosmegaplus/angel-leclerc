@@ -19,6 +19,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { AdminCard } from "./AdminShell";
 import { AdminStatus, type AdminStatusTone } from "./AdminStatus";
+import { CrudModule } from "./CrudModule";
+import { applicationFields } from "@/lib/angelos";
 
 function sentMailOf(row?: Row) {
   if (!row) return "";
@@ -286,13 +288,14 @@ function shortDate(value: string) {
   return new Intl.DateTimeFormat(
     "fr-FR",
     dateOnly
-      ? { day: "2-digit", month: "2-digit", year: "2-digit" }
+      ? { day: "2-digit", month: "2-digit", year: "2-digit", timeZone: "UTC" }
       : {
           day: "2-digit",
           month: "2-digit",
           year: "2-digit",
           hour: "2-digit",
           minute: "2-digit",
+          timeZone: "Europe/Paris",
         },
   ).format(new Date(parsed));
 }
@@ -329,7 +332,7 @@ export function ApplicationsPanel() {
   const syncApplications = useServerFn(syncGoogleApplications);
   const loadResearchSnapshot = useServerFn(getAlternanceResearchSnapshot);
   const [openId, setOpenId] = useState<string | null>(null);
-  const [view, setView] = useState<"followup" | "complete">("followup");
+  const [view, setView] = useState<"followup" | "complete" | "manage">("followup");
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const [syncError, setSyncError] = useState<string | null>(null);
@@ -448,7 +451,7 @@ export function ApplicationsPanel() {
           </Button>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-muted/45 p-1 sm:inline-grid">
+        <div className="mt-4 grid grid-cols-3 gap-2 rounded-xl bg-muted/45 p-1 sm:inline-grid">
           <button
             type="button"
             onClick={() => setView("followup")}
@@ -471,6 +474,17 @@ export function ApplicationsPanel() {
           >
             Tableau complet
           </button>
+          <button
+            type="button"
+            onClick={() => setView("manage")}
+            className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+              view === "manage"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground"
+            }`}
+          >
+            Gérer
+          </button>
         </div>
 
         {syncMessage ? (
@@ -486,7 +500,7 @@ export function ApplicationsPanel() {
           </div>
         ) : null}
 
-        {view === "followup" ? (
+        {view === "manage" ? null : view === "followup" ? (
           <>
             <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
               <div className="rounded-xl border border-border bg-background/60 p-3">
@@ -660,6 +674,34 @@ export function ApplicationsPanel() {
           </div>
         )}
       </AdminCard>
+
+      {view === "manage" ? (
+        <CrudModule
+          table="applications"
+          entityLabel="Candidature"
+          title="Fiches candidatures"
+          description="Ajouter, corriger un statut, une date d'envoi ou une relance. Chaque modification est enregistrée en base."
+          fields={applicationFields}
+          titleField="company"
+          subtitleFields={["position", "city", "sent_at"]}
+          statusField="status"
+          duplicateKeys={["company"]}
+          filters={[
+            { label: "Envoyées", test: (row) => str(row, "status") === "envoyee" },
+            { label: "Relancées", test: (row) => str(row, "status") === "relance" },
+            { label: "Entretien", test: (row) => str(row, "status") === "entretien" },
+            { label: "Refusées", test: (row) => str(row, "status") === "refusee" },
+            { label: "Relance à faire", test: (row) => Boolean(str(row, "follow_up_at")) },
+          ]}
+          renderExtra={(row) =>
+            str(row, "follow_up_at") ? (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Relance prévue : {shortDate(str(row, "follow_up_at"))}
+              </p>
+            ) : null
+          }
+        />
+      ) : null}
     </div>
   );
 }
