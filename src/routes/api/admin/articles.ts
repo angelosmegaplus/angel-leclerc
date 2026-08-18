@@ -398,6 +398,13 @@ export const Route = createFileRoute("/api/admin/articles")({
                 `${raw.id ? "Update" : "Create"} article: ${title}`,
                 token,
               );
+              if (result.renamedFrom) {
+                await deleteFile(
+                  `${CONTENT_DIR}/${result.renamedFrom}.json`,
+                  `Rename article: ${result.renamedFrom} -> ${slug}`,
+                  token,
+                );
+              }
             });
             return Response.json(result, { headers });
           }
