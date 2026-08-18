@@ -381,29 +381,6 @@ export const Route = createFileRoute("/api/admin/articles")({
           }
 
           return Response.json({ error: "Action inconnue." }, { status: 400, headers });
-            const article = {
-              ...raw,
-              id: String(raw.id || `github:${slug}`),
-              slug,
-              title,
-              author_id: raw.author_id || userId,
-              created_at: String(raw.created_at || now),
-              updated_at: now,
-            };
-
-            await deleteFile(`${TOMBSTONE_DIR}/${slug}.json`, `Restore article: ${slug}`, token);
-            // Un enregistrement volontaire annule explicitement la suppression.
-            await markGitArticleState(slug, false);
-            const result = await putFile(
-              `${CONTENT_DIR}/${slug}.json`,
-              article,
-              `${raw.id ? "Update" : "Create"} article: ${title}`,
-              token,
-            );
-            return Response.json({ ok: true, slug, backend: "github", commitSha: result.commit?.sha ?? null }, { headers });
-          }
-
-          return Response.json({ error: "Action inconnue." }, { status: 400, headers });
         } catch (error) {
           const message = error instanceof Error ? error.message : "Erreur inconnue";
           const status = message === "AUTH_REQUIRED" || message === "AUTH_INVALID" ? 401 : message === "ADMIN_REQUIRED" ? 403 : message === "ARTICLE_STORAGE_UNAVAILABLE" ? 503 : 500;
