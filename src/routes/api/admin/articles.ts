@@ -170,6 +170,7 @@ async function saveViaSupabase(raw: Record<string, unknown>, userId: string, slu
 
   const { error } = await db.from("articles").upsert(row as any, { onConflict: "slug" });
   if (error) throw error;
+  await markGitArticleState(slug, false);
 
   // The database row itself overrides any historical Lovable/Git fallback by slug.
   // Do not depend on the legacy git_article_state table: it is not present in every
@@ -209,7 +210,30 @@ async function deleteViaSupabase(slug: string) {
 
   const { error } = await db.from("articles").upsert(tombstone as any, { onConflict: "slug" });
   if (error) throw error;
+  await markGitArticleState(slug, true);
   return { ok: true, slug, backend: "supabase-fallback" as const };
+}
+
+/**
+ * Marqueur de suppression permanent, indépendant de la ligne `articles`.
+ * C'est le seul garde-fou qui empêche une archive Lovable/Git de ressusciter
+ * un article après une purge définitive.
+ */
+async function markGitArticleState(slug: string, deleted: boolean) {
+  try {
+    const db = adminSupabase();
+    const { error } = await db
+      .from("git_article_state")
+      .upsert(
+        { slug, deleted, deleted_at: deleted ? new Date().toISOString() : null } as any,
+        { onConflict: "slug" },
+      );
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error("[article-api] git_article_state update failed", slug, error);
+    return false;
+  }
 }
 
 /**
@@ -240,7 +264,7 @@ async function restoreViaSupabase(slug: string) {
   if (error) throw error;
 
   // Un ancien enregistrement Git ne doit pas continuer à masquer l'article.
-  await db.from("git_article_state").update({ deleted: false, deleted_at: null } as any).eq("slug", slug);
+  await markGitArticleState(slug, false);
   return { ok: true, slug, backend: "supabase-fallback" as const };
 }
 
@@ -256,8 +280,16 @@ async function purgeViaSupabase(slug: string) {
   const badges = existing?.badges as Record<string, unknown> | null | undefined;
   if (!existing || !badges || badges.__angel_os_deleted !== true) throw new Error("PURGE_REQUIRES_TRASH");
 
+  // Le marqueur permanent est écrit AVANT la suppression du contenu : sans lui,
+  // l'archive historique pourrait ressusciter l'article au prochain rendu.
+  const marked = await markGitArticleState(slug, true);
+  if (!marked) throw new Error("PURGE_TOMBSTONE_FAILED");
+
   const { error } = await db.from("articles").delete().eq("slug", slug);
   if (error) throw error;
+  // Le trigger de synchronisation ne couvre que deux slugs historiques :
+  // on réaffirme donc le marqueur après la suppression effective.
+  await markGitArticleState(slug, true);
   return { ok: true, slug, backend: "supabase-fallback" as const };
 }
 
@@ -286,6 +318,8 @@ export const Route = createFileRoute("/api/admin/articles")({
             if (!token) return Response.json(await deleteViaSupabase(slug), { headers });
 
             await deleteFile(`${CONTENT_DIR}/${slug}.json`, `Delete article: ${slug}`, token);
+            // Masquage immédiat du site public, sans attendre un rebuild GitHub.
+            await markGitArticleState(slug, true);
             const tombstone = {
               slug,
               deleted: true,
@@ -305,6 +339,7 @@ export const Route = createFileRoute("/api/admin/articles")({
             const slug = slugify(String(input.slug || ""));
             if (!slug) return Response.json({ error: "Slug manquant." }, { status: 400, headers });
             if (token) await deleteFile(`${TOMBSTONE_DIR}/${slug}.json`, `Restore article: ${slug}`, token);
+            await markGitArticleState(slug, false);
             return Response.json(await restoreViaSupabase(slug), { headers });
           }
 
@@ -334,6 +369,8 @@ export const Route = createFileRoute("/api/admin/articles")({
             };
 
             await deleteFile(`${TOMBSTONE_DIR}/${slug}.json`, `Restore article: ${slug}`, token);
+            // Un enregistrement volontaire annule explicitement la suppression.
+            await markGitArticleState(slug, false);
             const result = await putFile(
               `${CONTENT_DIR}/${slug}.json`,
               article,
