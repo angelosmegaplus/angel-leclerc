@@ -2,41 +2,44 @@ export * from "@/lib/articles-types";
 export * from "@/lib/articles-format";
 export * from "@/lib/articles-date";
 
+import * as base from "@/lib/articles.impl";
 import type { Article } from "@/lib/articles-types";
+import { fetchDeletedGitArticleSlugs } from "@/lib/git-article-state";
 import {
   githubDeletedArticleSlugs,
   githubNativeArticles,
-  githubNativeArticleBySlug,
 } from "@/lib/github-articles";
 import { legacyGitArticles } from "@/lib/legacy-git-articles";
 import {
   getAllLovableArticleArchive,
   getPublishedLovableArticleArchive,
-  lovableArticleArchiveBySlug,
 } from "@/content/lovable-archive";
 
+function deletedSlugs(extra: Set<string>) {
+  return new Set([...githubDeletedArticleSlugs, ...extra]);
+}
+
 /**
- * GitHub est la source de vérité éditoriale.
- *
- * Ordre de priorité :
- * 1. fichiers JSON natifs src/content/articles-data/*.json ;
- * 2. snapshot Lovable versionné dans Git ;
- * 3. anciens articles TypeScript maintenus dans Git.
- *
- * Aucune lecture de public.articles n'est nécessaire pour rendre le blog.
+ * GitHub reste la source éditoriale de référence. Tant que Vercel ne possède pas
+ * encore un token GitHub d'écriture, une ligne serveur Supabase peut toutefois
+ * surcharger un article Git existant afin que modifier/masquer/supprimer reste
+ * opérationnel. La version de base gagne toujours par slug.
  */
-function mergeGitSources(primary: Article[], archive: Article[]): Article[] {
+function mergeSources(databaseArticles: Article[], archive: Article[], deleted: Set<string>): Article[] {
   const bySlug = new Map<string, Article>();
 
   for (const article of legacyGitArticles) {
-    if (!githubDeletedArticleSlugs.has(article.slug)) bySlug.set(article.slug, article);
+    if (!deleted.has(article.slug)) bySlug.set(article.slug, article);
   }
   for (const article of archive) {
-    if (!githubDeletedArticleSlugs.has(article.slug)) bySlug.set(article.slug, article);
+    if (!deleted.has(article.slug)) bySlug.set(article.slug, article);
   }
-  for (const article of primary) {
-    if (!githubDeletedArticleSlugs.has(article.slug)) bySlug.set(article.slug, article);
+  for (const article of githubNativeArticles) {
+    if (!deleted.has(article.slug)) bySlug.set(article.slug, article);
   }
+  // Une ligne courante doit rester visible dans l'admin même si un tombstone
+  // masque sa version historique Git sur le site public.
+  for (const article of databaseArticles) bySlug.set(article.slug, article);
 
   return [...bySlug.values()].sort((a, b) => {
     if (a.featured !== b.featured) return a.featured ? -1 : 1;
@@ -56,30 +59,52 @@ function visiblePublished(articles: Article[]): Article[] {
   });
 }
 
+async function currentArticles(): Promise<Article[]> {
+  try {
+    return await base.fetchAllArticles();
+  } catch {
+    return [];
+  }
+}
+
 export async function fetchLatestArticles(limit = 3): Promise<Article[]> {
+  const deleted = deletedSlugs(await fetchDeletedGitArticleSlugs());
+  const database = await currentArticles();
   return visiblePublished(
-    mergeGitSources(githubNativeArticles, getPublishedLovableArticleArchive()),
+    mergeSources(database, getPublishedLovableArticleArchive(), deleted),
   ).slice(0, limit);
 }
 
 export async function fetchPublishedArticles(): Promise<Article[]> {
+  const deleted = deletedSlugs(await fetchDeletedGitArticleSlugs());
+  const database = await currentArticles();
   return visiblePublished(
-    mergeGitSources(githubNativeArticles, getPublishedLovableArticleArchive()),
+    mergeSources(database, getPublishedLovableArticleArchive(), deleted),
   );
 }
 
 export async function fetchArticleBySlug(slug: string): Promise<Article | null> {
-  if (githubDeletedArticleSlugs.has(slug)) return null;
+  const deleted = deletedSlugs(await fetchDeletedGitArticleSlugs());
+  const database = await currentArticles();
+  const current = database.find((article) => article.slug === slug);
 
-  const native = githubNativeArticleBySlug.get(slug);
-  if (native) return native;
+  if (current) {
+    if (!current.published || current.is_private) return null;
+    if (current.scheduled_at && new Date(current.scheduled_at).getTime() > Date.now()) return null;
+    return current;
+  }
+  if (deleted.has(slug)) return null;
 
-  const archived = lovableArticleArchiveBySlug.get(slug);
-  if (archived) return archived;
-
-  return legacyGitArticles.find((article) => article.slug === slug) ?? null;
+  const merged = mergeSources([], getAllLovableArticleArchive(), deleted);
+  const article = merged.find((candidate) => candidate.slug === slug) ?? null;
+  if (!article) return null;
+  if (!article.published || article.is_private) return null;
+  if (article.scheduled_at && new Date(article.scheduled_at).getTime() > Date.now()) return null;
+  return article;
 }
 
 export async function fetchAllArticles(): Promise<Article[]> {
-  return mergeGitSources(githubNativeArticles, getAllLovableArticleArchive());
+  const deleted = deletedSlugs(await fetchDeletedGitArticleSlugs());
+  const database = await currentArticles();
+  return mergeSources(database, getAllLovableArticleArchive(), deleted);
 }
