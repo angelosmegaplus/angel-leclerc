@@ -63,7 +63,7 @@ export const getAngelOsPublicStatus = createServerFn({ method: "GET" }).handler(
       githubJson(""),
       githubJson("/commits?per_page=1"),
       countRows("articles", "published=eq.true"),
-      countRows("projects", "select=id"),
+      countRows("projects", ""),
     ]);
 
     const head = Array.isArray(commits) && commits.length > 0 ? commits[0] : null;
