@@ -38,3 +38,13 @@ export function saveArticleViaApi(article: Record<string, unknown>) {
 export function deleteArticleViaApi(slug: string) {
   return callArticleApi({ action: "delete", slug });
 }
+
+/** Restauration depuis la corbeille : l'article revient en brouillon privé. */
+export function restoreArticleViaApi(slug: string) {
+  return callArticleApi({ action: "restore", slug });
+}
+
+/** Suppression définitive (uniquement depuis la corbeille). */
+export function purgeArticleViaApi(slug: string) {
+  return callArticleApi({ action: "purge", slug });
+}
