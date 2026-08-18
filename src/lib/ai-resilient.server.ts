@@ -46,8 +46,10 @@ export async function resilientAngelAi(options: {
   let usedFallbackModel = false;
   let currentOptions = options;
   let result = await angelAi(currentOptions);
-  const fallbackModel = process.env["OPENAI_FALLBACK_MODEL"]?.trim();
-  const primaryModel = options.model || process.env["OPENAI_MODEL"] || "gpt-4o-mini";
+  // Moteur unique : passerelle IA Lovable (Google Gemini).
+  const { DEFAULT_AI_MODEL, FAST_AI_MODEL, resolveAiModel } = await import("./lovable-ai.server");
+  const primaryModel = resolveAiModel(options.model || process.env["ANGEL_AI_MODEL"] || DEFAULT_AI_MODEL);
+  const fallbackModel = primaryModel === FAST_AI_MODEL ? DEFAULT_AI_MODEL : FAST_AI_MODEL;
 
   if (result.text && looksLikeHtml(result.text)) {
     result = {
