@@ -332,7 +332,7 @@ export function ApplicationsPanel() {
   const syncApplications = useServerFn(syncGoogleApplications);
   const loadResearchSnapshot = useServerFn(getAlternanceResearchSnapshot);
   const [openId, setOpenId] = useState<string | null>(null);
-  const [view, setView] = useState<"followup" | "complete">("followup");
+  const [view, setView] = useState<"followup" | "complete" | "manage">("followup");
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const [syncError, setSyncError] = useState<string | null>(null);
@@ -451,7 +451,7 @@ export function ApplicationsPanel() {
           </Button>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-muted/45 p-1 sm:inline-grid">
+        <div className="mt-4 grid grid-cols-3 gap-2 rounded-xl bg-muted/45 p-1 sm:inline-grid">
           <button
             type="button"
             onClick={() => setView("followup")}
@@ -473,6 +473,17 @@ export function ApplicationsPanel() {
             }`}
           >
             Tableau complet
+          </button>
+          <button
+            type="button"
+            onClick={() => setView("manage")}
+            className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+              view === "manage"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground"
+            }`}
+          >
+            Gérer
           </button>
         </div>
 
