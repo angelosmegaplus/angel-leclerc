@@ -1,1 +1,1 @@
-export { RichTextEditor, parseYouTubeId } from "./RichTextEditorEnhanced";
+export { RichTextEditor, parseYouTubeId } from "./RichTextEditor.tsx";
