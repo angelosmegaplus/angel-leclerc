@@ -88,6 +88,12 @@ function TechCard({ technology }: { technology: Technology }) {
         </span>
         <h3 className="min-w-0 break-words font-semibold text-[#181614]">{technology.name}</h3>
       </div>
+      {technology.state ? (
+        <span className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[#ded8cf] bg-[#faf8f4] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.12em] text-[#6b655e]">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#3f8f5f]" aria-hidden />
+          {technology.state}
+        </span>
+      ) : null}
       <p className="mt-3 text-sm leading-6 text-[#6b655e]">{technology.text}</p>
       {technology.href ? (
         <a href={technology.href} target="_blank" rel="noreferrer" className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#d8d1c8] bg-[#faf8f4] px-3 py-2 text-xs font-bold text-[#181614] transition hover:bg-[#f1ede7]">
