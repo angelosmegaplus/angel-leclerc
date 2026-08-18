@@ -142,23 +142,35 @@ async function probe(key: ConnectorKey): Promise<{ state: ConnectorState; detail
     const apiKey = process.env["LOVABLE_API_KEY"]?.trim();
     if (!apiKey) return { state: "missing", detail: "Clé de passerelle IA absente." };
     try {
-      const response = await fetch("https://ai.gateway.lovable.dev/v1/models", {
-        headers: { Authorization: `Bearer ${apiKey}` },
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [{ role: "user", content: "ping" }],
+          max_tokens: 1,
+        }),
       });
       if (!response.ok) {
         return { state: "error", detail: `Passerelle IA indisponible (${response.status}).` };
       }
-      const json = (await response.json()) as { data?: unknown[] };
-      return { state: "connected", detail: `Passerelle IA opérationnelle (${json.data?.length ?? 0} modèles).` };
+      return { state: "connected", detail: "Passerelle IA opérationnelle (Gemini 2.5 Flash)." };
     } catch {
       return { state: "configured", detail: "Clé présente, passerelle non joignable depuis ce serveur." };
     }
   }
 
   if (key === "tmdb") {
-    const token = process.env["TMDB_READ_TOKEN"]?.trim() || process.env["TMDB_READ_ACCESS_TOKEN"]?.trim();
-    const apiKey = process.env["TMDB_API_KEY"]?.trim();
-    if (!token && !apiKey) return { state: "missing", detail: "Aucun identifiant TMDB configuré." };
+    const { resolveTmdbCredential } = await import("./vercel-connect-credentials.server");
+    const credential = resolveTmdbCredential();
+    if (!credential) {
+      return {
+        state: "missing",
+        detail: "Aucun identifiant TMDB configuré : la page Films & séries reste sans données distantes.",
+      };
+    }
+    const token = credential.kind === "bearer" ? credential.value : null;
+    const apiKey = credential.kind === "bearer" ? null : credential.value;
     const url = token
       ? "https://api.themoviedb.org/3/configuration"
       : `https://api.themoviedb.org/3/configuration?api_key=${apiKey}`;
