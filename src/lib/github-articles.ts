@@ -11,6 +11,19 @@ const modules = import.meta.glob("/src/content/articles-data/*.json", {
   import: "default",
 }) as Record<string, Partial<Article>>;
 
+const tombstoneModules = import.meta.glob("/src/content/article-tombstones/*.json", {
+  eager: true,
+  import: "default",
+}) as Record<string, { slug?: string }>;
+
+export const githubDeletedArticleSlugs = new Set(
+  Object.entries(tombstoneModules)
+    .map(([path, value]) =>
+      String(value.slug || path.split("/").pop()?.replace(/\.json$/i, "") || ""),
+    )
+    .filter(Boolean),
+);
+
 function normalizeArticle(raw: Partial<Article>, path: string): Article {
   const now = new Date(0).toISOString();
   const slugFromPath = path.split("/").pop()?.replace(/\.json$/i, "") || "article";
@@ -44,6 +57,7 @@ function normalizeArticle(raw: Partial<Article>, path: string): Article {
 
 export const githubNativeArticles: Article[] = Object.entries(modules)
   .map(([path, value]) => normalizeArticle(value, path))
+  .filter((article) => !githubDeletedArticleSlugs.has(article.slug))
   .sort(
     (a, b) =>
       new Date(b.published_at ?? b.created_at).getTime() -
