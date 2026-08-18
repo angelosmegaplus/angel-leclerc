@@ -1,81 +1,49 @@
-## Périmètre
+# Isoler le module Articles / Blog — état réel et plan
 
-Modifier uniquement :
-- La section **Services** (services principaux + services complémentaires).
-- La section **Comment se déroule une mission ?** (mise en avant en frise chronologique).
-- La section **Contact** : remplacer les boutons par un vrai **formulaire fonctionnel** de présentation de projet.
+## Ce que révèle l'audit (important à lire avant de valider)
 
-Le reste du site (Hero, Intro, À propos, Modalités de paiement, Footer, pages légales…) reste inchangé.
+- **Il n'existe pas, dans cette stack, de stockage persistant « interne à Lovable » autre que Lovable Cloud.** Le site tourne sur un runtime serverless sans disque persistant : tout ce qui est écrit hors base est soit un fichier du dépôt (donc GitHub, ce que vous voulez supprimer), soit perdu au redéploiement. Une persistance uniquement navigateur (localStorage) ne peut pas alimenter le blog public.
+- **Lovable Cloud est déjà actif sur ce projet** et contient **27 articles**. Ce n'est pas un service externe à « activer » : c'est la base native du projet.
+- Le vrai problème n'est donc pas Lovable Cloud, ce sont les **couches externes empilées par-dessus** :
+  1. `src/integrations/supabase/client.ts` a été modifié à la main et pointe vers **un ancien projet de base externe** (différent de la base native du projet, qui est celle configurée dans `.env`).
+  2. La route `src/routes/api/admin/articles.ts` écrit **d'abord dans GitHub** (`src/content/articles-data`, `src/content/article-tombstones`) et n'utilise la base qu'en secours.
+  3. La lecture publique (`src/lib/articles.ts`) **fusionne 4 sources** : base, archive figée `src/content/lovable-archive` (29 articles JSON), articles Git « legacy » (`horrorArticle`, `macronPhilippeArticle`), fichiers JSON GitHub + pierres tombales.
+  4. Des workflows GitHub (`angel-os-data-sync`, `scheduled-maintenance`, `daily-article`) touchent encore ce contenu.
 
-## 1. Services principaux (mis en avant)
+Résultat actuel : **4 sources de vérité et une synchro bidirectionnelle** — exactement ce que vous voulez supprimer.
 
-Trois blocs sobres, plus grands et plus visibles que les services complémentaires, dans cet ordre :
+## Ce que je propose (une seule source de vérité)
 
-1. **Gestion de projet** — organisation, suivi, coordination des étapes et prestataires.
-2. **Conseil en communication** — analyse, objectifs, stratégie, choix des supports/messages.
-3. **Rédaction et contenus éditoriaux** — textes pros/institutionnels/journalistiques/web, enquêtes, adaptation du ton.
+Faire de la **base native du projet (Lovable Cloud)** l'unique source de vérité du module Articles, et supprimer toutes les autres voies pour ce module uniquement.
 
-Sans tarif affiché en gros ici (l'activité principale). Pictogrammes Lucide déjà présents.
+### 1. Récupération complète, une seule fois
+- Importer dans la table `articles` de la base native tous les articles encore absents : les 29 JSON de `lovable-archive`, les articles Git `legacy`, les JSON de `src/content/articles-data`, et les lignes de l'ancienne base externe encore lisibles.
+- Vérification chiffrée avant/après (nombre d'articles, slugs, images de couverture, pièces jointes) : aucun slug ni image ne doit disparaître, les URLs d'images historiques restent inchangées (URL absolues conservées telles quelles).
 
-## 2. « Comment se déroule une mission ? »
+### 2. Lecture publique simplifiée
+- `src/lib/articles.ts` ne lit plus que la base : suppression de la fusion archive/legacy/GitHub et des pierres tombales.
+- Blog `/articles`, page article `/articles/$slug`, `LatestArticles`, sitemap : mêmes composants et même apparence, une seule requête.
+- Publication et suppression prennent effet **immédiatement**, sans attendre GitHub.
 
-Section dédiée avec 4 étapes en frise horizontale (desktop) / verticale (mobile) :
+### 3. Écriture / éditeur
+- `src/routes/api/admin/articles.ts` : retrait des appels GitHub (création, renommage, suppression de fichiers, pierres tombales) ; écriture directe en base.
+- Corbeille et restauration conservées en base (statut supprimé + restauration en brouillon privé), suppression définitive séparée.
+- L'éditeur (`/admin` → Studio, `RichTextEditor`) garde son apparence, avec ces garanties :
+  - titre, slug (auto + éditable), extrait, contenu riche, couverture, images dans le contenu, catégorie, thèmes, statut brouillon/publié, date de publication, aperçu ;
+  - **autosauvegarde** avec brouillon de secours local, indicateur « modifications non enregistrées », confirmation avant fermeture ;
+  - actions : enregistrer, publier, dépublier, **dupliquer**, supprimer avec confirmation, restaurer ;
+  - messages d'erreur explicites au lieu d'échecs silencieux.
 
-1. Premier échange
-2. Proposition
-3. Réalisation et coordination
-4. Livraison et suivi
+### 4. Nettoyage sans casser le reste
+- Les autres modules (mail, candidatures, boutique, films, connexions) gardent leurs connecteurs actuels : aucun changement pour eux.
+- Les workflows GitHub touchant les articles sont neutralisés (articles uniquement).
+- Une **sauvegarde export JSON** manuelle reste possible depuis l'admin, mais elle n'est jamais relue automatiquement : pas de retour à deux sources.
 
-## 3. Services complémentaires
+### 5. Tests réels
+Création, édition, autosave, publication, dépublication, duplication, suppression, restauration, purge, plus vérification des pages publiques et des images historiques, avec correction des erreurs trouvées.
 
-Titre + phrase : *« Ces prestations peuvent être réalisées seules ou intégrées dans une mission globale. Elles ne constituent pas le cœur principal de l'activité. »*
+## Point à trancher (bloquant)
 
-Liste **limitée** à :
-- Rédaction de textes — à partir de 30 € (avec petite mention **« Découvrez aussi mes articles et réflexions sur Substack »** + logo Substack cliquable → https://blog.angel-leclerc.fr)
-- Affiche ou flyer — à partir de 50 €
-- Identité visuelle simple — à partir de 150 €
-- Recherche et coordination de prestataires — sur devis
-- Production audio, vidéo ou numérique sur le terrain — sur devis
+Le module articles doit s'appuyer sur **la base native Lovable Cloud du projet** — c'est le seul stockage persistant disponible ici. Si vous refusez absolument tout stockage de ce type, il n'existe pas d'alternative capable de servir un blog public : je ne peux alors que réduire les sources externes (supprimer GitHub et l'ancienne base externe) sans obtenir un module réellement autonome.
 
-En fin de rubrique, une seule mention discrète en petit :
-*« Toutes les prestations sont réalisées sur devis. Les montants affichés sont uniquement des tarifs indicatifs permettant de donner un ordre de prix. »*
-
-Visuellement moins important que les 3 principaux.
-
-## 4. Formulaire « Présenter mon projet »
-
-Remplace les deux boutons Appeler / E-mail actuels de la section Contact. Les boutons Appeler / E-mail restent disponibles en secondaire à côté.
-
-**Champs** : Nom & prénom, Email, Téléphone (fac.), Structure (fac.), Type de projet (select : Gestion / Conseil / Rédaction / Affiche-flyer / Identité visuelle / Recherche prestataires / Production audio-vidéo-num / Autre), Budget (fac.), Délai (fac.), Description, Fichier (fac., 10 Mo max, formats PDF/DOC/DOCX/PNG/JPG/JPEG/WEBP/PPT/PPTX), case obligatoire RGPD, honeypot anti-bot.
-
-Bouton : **« Présenter mon projet »** (état « Envoi en cours… »).
-
-**Fonctionnement technique :**
-
-- Activation de **Lovable Cloud** (Supabase géré).
-- Table `contact_requests` (privée, RLS : insert public via server function, lecture service_role uniquement) pour conserver toutes les demandes.
-- Bucket privé **`contact-uploads`** dans Supabase Storage pour les fichiers joints.
-- **Server function TanStack** `submitProjectRequest` :
-  - Valide côté serveur avec Zod (tailles, types MIME, honeypot, rate-limit simple par IP en base).
-  - Upload du fichier via `supabaseAdmin` dans le bucket privé.
-  - Insertion de la demande en base.
-  - Génération d'un **lien signé** (24h) pour le fichier.
-  - Envoi de deux e-mails via **Resend** (connecteur, gateway) :
-    - Récapitulatif à **contact@angel-leclerc.fr** (objet *« Nouvelle demande de projet – [Nom] – [Type] »*, `reply_to` = email du demandeur, lien signé si fichier).
-    - Confirmation au demandeur (objet *« Votre demande a bien été reçue »*, sans lien).
-- Aucune clé exposée côté client ; secrets stockés côté serveur.
-- Message de succès affiché, formulaire vidé. Erreurs affichées champ par champ sans effacer la saisie.
-
-**Prérequis à confirmer avec toi :**
-
-- L'envoi d'e-mails nécessite un **domaine expéditeur vérifié dans Resend** (par ex. `notify.angel-leclerc.fr`). Tant qu'il n'est pas vérifié, on peut utiliser `onboarding@resend.dev` mais les mails n'arriveront qu'à toi (le propriétaire du compte Resend), pas aux visiteurs. Je propose d'utiliser Resend + ton domaine ; tu ajouteras les DNS dans Resend après.
-- Je vais te demander de connecter le connecteur **Resend** au moment venu.
-
-## Livrables techniques
-
-- Composants React : `MainServices`, `ProcessTimeline`, `ExtraServices`, `ProjectForm`.
-- Migration SQL : table `contact_requests` + GRANT + RLS + bucket privé via tool storage.
-- `src/lib/contact.functions.ts` : server function protégée + validation Zod.
-- Petit helper `src/lib/email.server.ts` pour l'envoi Resend via la passerelle Lovable.
-
-Aucun autre changement en dehors de ces zones.
+Dites-moi simplement : **on utilise la base native du projet comme source unique (recommandé)**, ou on s'arrête au retrait de GitHub ?
