@@ -674,6 +674,34 @@ export function ApplicationsPanel() {
           </div>
         )}
       </AdminCard>
+
+      {view === "manage" ? (
+        <CrudModule
+          table="applications"
+          entityLabel="Candidature"
+          title="Fiches candidatures"
+          description="Ajouter, corriger un statut, une date d'envoi ou une relance. Chaque modification est enregistrée en base."
+          fields={applicationFields}
+          titleField="company"
+          subtitleFields={["position", "city", "sent_at"]}
+          statusField="status"
+          duplicateKeys={["company"]}
+          filters={[
+            { label: "Envoyées", test: (row) => str(row, "status") === "envoyee" },
+            { label: "Relancées", test: (row) => str(row, "status") === "relancee" },
+            { label: "Entretien", test: (row) => str(row, "status") === "entretien" },
+            { label: "Refusées", test: (row) => str(row, "status") === "refusee" },
+            { label: "Relance à faire", test: (row) => Boolean(str(row, "follow_up_at")) },
+          ]}
+          renderExtra={(row) =>
+            str(row, "follow_up_at") ? (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Relance prévue : {shortDate(str(row, "follow_up_at"))}
+              </p>
+            ) : null
+          }
+        />
+      ) : null}
     </div>
   );
 }
