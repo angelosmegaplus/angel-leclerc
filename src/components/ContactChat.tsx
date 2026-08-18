@@ -20,6 +20,7 @@ import { RevealContact } from "@/components/RevealContact";
 import { Captcha, type CaptchaValue } from "@/components/Captcha";
 import type { ConversationalContactInput } from "@/lib/contact-chat.functions";
 import { askAssistant } from "@/lib/assistant.functions";
+import { assistContactAnswer } from "@/lib/contact-assist.functions";
 import { answer as localAnswer } from "@/lib/assistant-engine";
 
 export type Track = "projet" | "alternance" | "autre";
@@ -299,6 +300,9 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
   const transcriptEndRef = useRef<HTMLDivElement>(null);
 
   const askServer = useServerFn(askAssistant);
+  const assistServer = useServerFn(assistContactAnswer);
+  const [assisting, setAssisting] = useState(false);
+  const [assistHints, setAssistHints] = useState<string[]>([]);
 
   const steps = track ? TRACKS[track].steps : [];
   const total = steps.length + 1; // + résumé
@@ -344,6 +348,7 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
   }, [hydrated, track, index, answers, contact, messages]);
 
   useEffect(() => {
+    setAssistHints([]);
     if (track) headingRef.current?.focus({ preventScroll: true });
   }, [index, track]);
 
@@ -443,6 +448,35 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
 
   function setAnswer(id: string, value: string) {
     setAnswers((prev) => ({ ...prev, [id]: value }));
+  }
+
+  /** Demande à l'IA de rédiger ou reformuler la réponse à l'étape en cours. */
+  async function assistCurrentAnswer() {
+    if (!current || !track || assisting) return;
+    setAssisting(true);
+    setError(null);
+    try {
+      const res = await assistServer({
+        data: {
+          question: current.question.slice(0, 400),
+          draft: (answers[current.id] ?? "").slice(0, 2000),
+          track,
+          context: steps
+            .filter((s) => s.kind !== "contact" && s.id !== current.id && (answers[s.id] ?? "").trim())
+            .map((s) => ({ question: s.question.slice(0, 300), answer: (answers[s.id] ?? "").slice(0, 800) })),
+        },
+      });
+      if (res.text) {
+        setAnswer(current.id, res.text);
+        setAssistHints(res.hints);
+      } else {
+        setError("L'assistant n'est pas disponible pour l'instant : écrivez librement, cela suffit.");
+      }
+    } catch {
+      setError("L'assistant n'est pas disponible pour l'instant : écrivez librement, cela suffit.");
+    } finally {
+      setAssisting(false);
+    }
   }
 
   function back() {
@@ -798,14 +832,45 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
                 )}
 
                 {current.kind === "textarea" && (
-                  <textarea
-                    autoFocus
-                    rows={4}
-                    value={answers[current.id] ?? ""}
-                    placeholder={current.placeholder}
-                    onChange={(e) => setAnswer(current.id, e.target.value)}
-                    className="w-full resize-y rounded-xl border border-border bg-background px-4 py-3 text-sm leading-relaxed text-foreground outline-none focus:border-primary"
-                  />
+                  <div className="grid gap-2">
+                    <textarea
+                      autoFocus
+                      rows={4}
+                      value={answers[current.id] ?? ""}
+                      placeholder={current.placeholder}
+                      onChange={(e) => setAnswer(current.id, e.target.value)}
+                      className="w-full resize-y rounded-xl border border-border bg-background px-4 py-3 text-sm leading-relaxed text-foreground outline-none focus:border-primary"
+                    />
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={assisting}
+                        onClick={() => void assistCurrentAnswer()}
+                        className="min-h-10 rounded-xl text-xs"
+                      >
+                        {assisting ? (
+                          <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Sparkles className="mr-2 h-3.5 w-3.5" />
+                        )}
+                        {(answers[current.id] ?? "").trim()
+                          ? "Reformuler avec l'assistant"
+                          : "M'aider à rédiger"}
+                      </Button>
+                      <span className="text-[11px] text-muted-foreground">
+                        Proposition modifiable : rien n'est envoyé sans votre validation.
+                      </span>
+                    </div>
+                    {assistHints.length > 0 && (
+                      <ul className="grid gap-1 rounded-xl border border-dashed border-border bg-muted/30 p-3 text-[11px] text-muted-foreground">
+                        {assistHints.map((hint) => (
+                          <li key={hint}>• {hint}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 )}
 
                 {current.kind === "contact" && (

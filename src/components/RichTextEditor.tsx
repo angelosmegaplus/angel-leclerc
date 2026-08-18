@@ -1,94 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Eye, Loader2, Pencil, RefreshCw } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  AlignCenter, AlignLeft, AlignRight, Bold, Code2, Eraser, Heading2, Heading3, Heading4,
+  Image as ImageIcon, Italic, Link2, Link2Off, List, ListOrdered, ListChecks, Loader2,
+  Maximize2, Minimize2, Minus, Pilcrow, Quote, Redo2, Replace, Strikethrough, Table2,
+  Underline, Undo2, Highlighter, Youtube, AlertTriangle, Superscript, Subscript, Search,
+} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
-const AUTOSAVE_DELAY = 1200;
+const SYNC_DELAY = 500;
 
-type Props = {
-  value: string;
-  onChange: (html: string) => void;
-};
-
-type EditorBlock = {
-  id?: string;
-  type: string;
-  data: Record<string, unknown>;
-};
-
-type EditorOutput = {
-  time?: number;
-  blocks: EditorBlock[];
-  version?: string;
-};
-
-type EditorInstance = {
-  isReady: Promise<void>;
-  save: () => Promise<EditorOutput>;
-  render: (data: EditorOutput) => Promise<void>;
-  destroy: () => void;
-};
-
-type EditorBundle = {
-  EditorJS: new (config: Record<string, unknown>) => EditorInstance;
-  tools: Record<string, unknown>;
-};
-
-let bundlePromise: Promise<EditorBundle> | null = null;
-
-/**
- * L'éditeur est embarqué dans l'application (aucun CDN externe) :
- * les modules sont installés localement et chargés à la demande côté navigateur.
- */
-async function loadEditorBundle(): Promise<EditorBundle> {
-  bundlePromise ??= (async () => {
-    const [
-      editorjs, header, list, quote, image, checklist, delimiter,
-      raw, table, embed, marker, inlineCode, linkTool, code, warning,
-    ] = await Promise.all([
-      import("@editorjs/editorjs"),
-      import("@editorjs/header"),
-      import("@editorjs/list"),
-      import("@editorjs/quote"),
-      import("@editorjs/image"),
-      import("@editorjs/checklist"),
-      import("@editorjs/delimiter"),
-      import("@editorjs/raw"),
-      import("@editorjs/table"),
-      import("@editorjs/embed"),
-      import("@editorjs/marker"),
-      import("@editorjs/inline-code"),
-      import("@editorjs/link"),
-      import("@editorjs/code"),
-      import("@editorjs/warning"),
-    ]);
-    const pick = (mod: unknown) => (mod as { default?: unknown })?.default ?? mod;
-    return {
-      EditorJS: pick(editorjs) as EditorBundle["EditorJS"],
-      tools: {
-        header: pick(header),
-        list: pick(list),
-        quote: pick(quote),
-        image: pick(image),
-        checklist: pick(checklist),
-        delimiter: pick(delimiter),
-        raw: pick(raw),
-        table: pick(table),
-        embed: pick(embed),
-        marker: pick(marker),
-        inlineCode: pick(inlineCode),
-        linkTool: pick(linkTool),
-        code: pick(code),
-        warning: pick(warning),
-      },
-    };
-  })().catch((error) => {
-    bundlePromise = null;
-    throw error;
-  });
-  return bundlePromise;
-}
+type Props = { value: string; onChange: (html: string) => void };
 
 export function parseYouTubeId(input: string): string | null {
   const value = input.trim();
@@ -99,239 +22,33 @@ export function parseYouTubeId(input: string): string | null {
   return match ? match[1] : null;
 }
 
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function safeUrl(value: unknown): string {
-  if (typeof value !== "string") return "";
+function safeUrl(value: string): string {
   const url = value.trim();
   if (!url) return "";
-  if (url.startsWith("/") || url.startsWith("data:image/")) return url;
+  if (url.startsWith("/") || url.startsWith("#") || url.startsWith("data:image/")) return url;
   try {
-    const parsed = new URL(url);
-    return ["http:", "https:"].includes(parsed.protocol) ? url : "";
+    const parsed = new URL(url.includes("://") ? url : `https://${url}`);
+    return ["http:", "https:", "mailto:"].includes(parsed.protocol) ? parsed.toString() : "";
   } catch {
     return "";
   }
 }
 
-function normaliseListItems(items: unknown): string[] {
-  if (!Array.isArray(items)) return [];
-  return items
-    .map((item) => {
-      if (typeof item === "string") return item;
-      if (item && typeof item === "object") {
-        const content = (item as { content?: unknown }).content;
-        return typeof content === "string" ? content : "";
-      }
-      return "";
-    })
-    .filter(Boolean);
-}
-
-function blocksToHtml(output: EditorOutput): string {
-  return output.blocks
-    .map((block) => {
-      const data = block.data ?? {};
-      switch (block.type) {
-        case "header":
-        case "heading": {
-          const level = Math.min(6, Math.max(2, Number(data.level) || 2));
-          return `<h${level}>${String(data.text ?? "")}</h${level}>`;
-        }
-        case "paragraph":
-          return `<p>${String(data.text ?? "")}</p>`;
-        case "quote": {
-          const text = String(data.text ?? "");
-          const caption = String(data.caption ?? "");
-          return `<blockquote><p>${text}</p>${caption ? `<cite>${caption}</cite>` : ""}</blockquote>`;
-        }
-        case "list": {
-          const style = data.style === "ordered" ? "ol" : "ul";
-          const items = normaliseListItems(data.items);
-          return `<${style}>${items.map((item) => `<li>${item}</li>`).join("")}</${style}>`;
-        }
-        case "checklist": {
-          const items = Array.isArray(data.items) ? data.items : [];
-          return `<ul class="article-checklist">${items
-            .map((item) => {
-              if (!item || typeof item !== "object") return "";
-              const row = item as { text?: unknown; checked?: unknown };
-              return `<li data-checked="${Boolean(row.checked)}">${Boolean(row.checked) ? "✓ " : ""}${String(row.text ?? "")}</li>`;
-            })
-            .join("")}</ul>`;
-        }
-        case "image": {
-          const file = data.file && typeof data.file === "object" ? (data.file as { url?: unknown }) : null;
-          const url = safeUrl(file?.url ?? data.url);
-          if (!url) return "";
-          const caption = String(data.caption ?? "");
-          const classes = [
-            "article-editor-image",
-            data.withBorder ? "with-border" : "",
-            data.withBackground ? "with-background" : "",
-            data.stretched ? "is-stretched" : "",
-          ]
-            .filter(Boolean)
-            .join(" ");
-          return `<figure class="${classes}"><img src="${escapeHtml(url)}" alt="${escapeHtml(caption.replace(/<[^>]*>/g, ""))}" loading="lazy" />${caption ? `<figcaption>${caption}</figcaption>` : ""}</figure>`;
-        }
-        case "delimiter":
-          return "<hr />";
-        case "raw":
-          return String(data.html ?? "");
-        case "code":
-          return `<pre><code>${escapeHtml(String(data.code ?? ""))}</code></pre>`;
-        case "warning":
-          return `<aside class="article-warning"><strong>${escapeHtml(String(data.title ?? "Note"))}</strong><p>${escapeHtml(String(data.message ?? ""))}</p></aside>`;
-        case "table": {
-          const rows = Array.isArray(data.content) ? data.content : [];
-          return `<div class="article-table-wrap"><table><tbody>${rows
-            .map((row) => {
-              const cells = Array.isArray(row) ? row : [];
-              return `<tr>${cells.map((cell) => `<td>${String(cell ?? "")}</td>`).join("")}</tr>`;
-            })
-            .join("")}</tbody></table></div>`;
-        }
-        case "embed": {
-          const source = safeUrl(data.embed ?? data.source);
-          if (!source) return "";
-          const caption = escapeHtml(String(data.caption ?? "Média intégré"));
-          return `<div class="video-embed"><iframe src="${escapeHtml(source)}" title="${caption}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`;
-        }
-        case "linkTool": {
-          const link = safeUrl(data.link);
-          if (!link) return "";
-          const meta = data.meta && typeof data.meta === "object" ? (data.meta as Record<string, unknown>) : {};
-          const title = escapeHtml(String(meta.title ?? link));
-          const description = escapeHtml(String(meta.description ?? ""));
-          return `<p class="article-link-card"><a href="${escapeHtml(link)}" target="_blank" rel="noreferrer nofollow"><strong>${title}</strong>${description ? `<span>${description}</span>` : ""}</a></p>`;
-        }
-        default:
-          return "";
-      }
-    })
-    .filter(Boolean)
-    .join("\n");
-}
-
-function htmlToBlocks(html: string): EditorOutput {
-  if (!html.trim()) return { blocks: [] };
-  if (typeof window === "undefined") {
-    return { blocks: [{ type: "paragraph", data: { text: html } }] };
-  }
-
-  const doc = new DOMParser().parseFromString(`<main>${html}</main>`, "text/html");
-  const root = doc.querySelector("main");
-  if (!root) return { blocks: [{ type: "paragraph", data: { text: html } }] };
-
-  const blocks: EditorBlock[] = [];
-  const pushParagraph = (node: Element) => {
-    const text = node.innerHTML.trim();
-    if (text && text !== "<br>") blocks.push({ type: "paragraph", data: { text } });
-  };
-
-  Array.from(root.children).forEach((node) => {
-    const tag = node.tagName.toLowerCase();
-    if (/^h[1-6]$/.test(tag)) {
-      blocks.push({
-        type: "header",
-        data: { text: node.innerHTML, level: Math.max(2, Number(tag.slice(1)) || 2) },
-      });
-      return;
-    }
-    if (tag === "p") {
-      pushParagraph(node);
-      return;
-    }
-    if (tag === "blockquote") {
-      const cite = node.querySelector("cite");
-      const clone = node.cloneNode(true) as HTMLElement;
-      clone.querySelector("cite")?.remove();
-      blocks.push({
-        type: "quote",
-        data: { text: clone.innerHTML, caption: cite?.innerHTML ?? "", alignment: "left" },
-      });
-      return;
-    }
-    if (tag === "ul" || tag === "ol") {
-      blocks.push({
-        type: "list",
-        data: {
-          style: tag === "ol" ? "ordered" : "unordered",
-          items: Array.from(node.querySelectorAll(":scope > li")).map((item) => item.innerHTML),
-        },
-      });
-      return;
-    }
-    if (tag === "hr") {
-      blocks.push({ type: "delimiter", data: {} });
-      return;
-    }
-    if (tag === "pre") {
-      blocks.push({ type: "code", data: { code: node.textContent ?? "" } });
-      return;
-    }
-    if (tag === "figure" && node.querySelector("img")) {
-      const img = node.querySelector("img") as HTMLImageElement;
-      blocks.push({
-        type: "image",
-        data: {
-          file: { url: img.getAttribute("src") ?? "" },
-          caption: node.querySelector("figcaption")?.innerHTML ?? img.getAttribute("alt") ?? "",
-          withBorder: node.classList.contains("with-border"),
-          withBackground: node.classList.contains("with-background"),
-          stretched: node.classList.contains("is-stretched"),
-        },
-      });
-      return;
-    }
-    if (tag === "img") {
-      const img = node as HTMLImageElement;
-      blocks.push({
-        type: "image",
-        data: { file: { url: img.getAttribute("src") ?? "" }, caption: img.getAttribute("alt") ?? "" },
-      });
-      return;
-    }
-    if (tag === "table" || node.querySelector("table")) {
-      const table = tag === "table" ? node : node.querySelector("table");
-      const rows = table
-        ? Array.from(table.querySelectorAll("tr")).map((row) =>
-            Array.from(row.querySelectorAll("th,td")).map((cell) => cell.innerHTML),
-          )
-        : [];
-      blocks.push({ type: "table", data: { content: rows } });
-      return;
-    }
-
-    blocks.push({ type: "raw", data: { html: node.outerHTML } });
-  });
-
-  if (blocks.length === 0 && root.textContent?.trim()) {
-    blocks.push({ type: "paragraph", data: { text: root.innerHTML } });
-  }
-
-  return { blocks };
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
 
 async function uploadMedia(file: File): Promise<string> {
   if (!file.type.startsWith("image/")) throw new Error("Seuls les fichiers image sont acceptés.");
   if (file.size > 12 * 1024 * 1024) throw new Error("L’image est trop volumineuse (12 Mo maximum).");
-
   const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
   const path = `editor/${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage
     .from("article-images")
     .upload(path, file, { cacheControl: "31536000", upsert: false });
   if (error) throw error;
-
   const { data, error: signErr } = await supabase.storage
     .from("article-images")
     .createSignedUrl(path, TEN_YEARS);
@@ -339,292 +56,385 @@ async function uploadMedia(file: File): Promise<string> {
   return data.signedUrl;
 }
 
+type Btn = {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  run: () => void;
+  active?: string;
+  shortcut?: string;
+};
+
 export function RichTextEditor({ value, onChange }: Props) {
-  const holderId = useMemo(() => `editorjs-${crypto.randomUUID()}`, []);
-  const editorRef = useRef<EditorInstance | null>(null);
-  const autosaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastEmittedRef = useRef(value);
-  const mountedRef = useRef(true);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [preview, setPreview] = useState(false);
-  const [previewHtml, setPreviewHtml] = useState(value);
-  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const ref = useRef<HTMLDivElement>(null);
+  const lastEmitted = useRef(value);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [state, setState] = useState<"idle" | "saving" | "saved">("idle");
+  const [uploading, setUploading] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [findOpen, setFindOpen] = useState(false);
+  const [find, setFind] = useState("");
+  const [replace, setReplace] = useState("");
+  const [stats, setStats] = useState({ words: 0, chars: 0, minutes: 0 });
+  const [, forceRender] = useState(0);
 
+  const computeStats = useCallback((root: HTMLElement) => {
+    const text = (root.innerText || "").trim();
+    const words = text ? text.split(/\s+/).length : 0;
+    setStats({ words, chars: text.length, minutes: Math.max(1, Math.round(words / 220)) });
+  }, []);
+
+  const emit = useCallback(() => {
+    const root = ref.current;
+    if (!root) return;
+    const html = root.innerHTML.trim();
+    lastEmitted.current = html;
+    computeStats(root);
+    onChange(html);
+    setState("saved");
+  }, [computeStats, onChange]);
+
+  const schedule = useCallback(() => {
+    setState("saving");
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(emit, SYNC_DELAY);
+  }, [emit]);
+
+  // Contenu initial et synchronisation externe.
   useEffect(() => {
-    mountedRef.current = true;
-    let cancelled = false;
+    const root = ref.current;
+    if (!root) return;
+    if (value === lastEmitted.current) return;
+    lastEmitted.current = value;
+    root.innerHTML = value || "";
+    computeStats(root);
+  }, [computeStats, value]);
 
-    const initialise = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const bundle = await loadEditorBundle();
-        if (cancelled || !mountedRef.current) return;
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
-        const tools: Record<string, unknown> = {};
-        const {
-          header, list, quote, image, checklist, delimiter, raw,
-          table, embed, marker, inlineCode, linkTool, code, warning,
-        } = bundle.tools;
+  const focusEditor = () => ref.current?.focus();
 
-        if (header) tools.header = { class: header, inlineToolbar: ["bold", "italic", "link", "marker"] };
-        if (list) tools.list = { class: list, inlineToolbar: true };
-        if (quote) tools.quote = { class: quote, inlineToolbar: true, config: { quotePlaceholder: "Saisissez une citation", captionPlaceholder: "Auteur ou source de la citation" } };
-        if (image) {
-          tools.image = {
-            class: image,
-            config: {
-              captionPlaceholder: "Légende de l’image",
-              buttonContent: "Choisir une image",
-              uploader: {
-                uploadByFile: async (file: File) => {
-                  try {
-                    const url = await uploadMedia(file);
-                    return { success: 1, file: { url } };
-                  } catch (uploadError) {
-                    toast.error(uploadError instanceof Error ? uploadError.message : "Échec de l’import de l’image.");
-                    return { success: 0 };
-                  }
-                },
-                uploadByUrl: async (url: string) => {
-                  const validated = safeUrl(url);
-                  return validated ? { success: 1, file: { url: validated } } : { success: 0 };
-                },
-              },
-            },
-          };
-        }
-        if (checklist) tools.checklist = { class: checklist, inlineToolbar: true };
-        if (delimiter) tools.delimiter = delimiter;
-        if (raw) tools.raw = raw;
-        if (table) tools.table = { class: table, inlineToolbar: true };
-        if (embed) tools.embed = embed;
-        if (marker) tools.marker = marker;
-        if (inlineCode) tools.inlineCode = inlineCode;
-        if (linkTool) tools.linkTool = linkTool;
-        if (code) tools.code = code;
-        if (warning) tools.warning = warning;
+  const exec = useCallback((command: string, arg?: string) => {
+    focusEditor();
+    document.execCommand(command, false, arg);
+    schedule();
+    forceRender((n) => n + 1);
+  }, [schedule]);
 
-        const editor = new bundle.EditorJS({
-          holder: holderId,
-          autofocus: true,
-          data: htmlToBlocks(value),
-          placeholder: "Commencez à écrire votre article…",
-          logLevel: "ERROR",
-          inlineToolbar: ["bold", "italic", "link", "marker", "inlineCode"],
-          tools,
-          i18n: {
-            messages: {
-              ui: {
-                toolbar: { toolbox: { Add: "Ajouter" } },
-                popover: { Filter: "Rechercher", "Nothing found": "Aucun résultat", "Convert to": "Convertir en" },
-                inlineToolbar: { converter: { "Convert to": "Convertir en" } },
-                blockTunes: { toggler: { "Click to tune": "Paramètres du bloc", "or drag to move": "ou faites glisser pour déplacer" } },
-              },
-              toolNames: {
-                Text: "Texte",
-                Heading: "Titre",
-                "Ordered List": "Liste numérotée",
-                "Unordered List": "Liste à puces",
-                Checklist: "Liste de contrôle",
-                Quote: "Citation",
-                Code: "Code",
-                Delimiter: "Séparateur",
-                "Raw HTML": "HTML brut",
-                Table: "Tableau",
-                Link: "Lien",
-                Marker: "Surlignage",
-                Bold: "Gras",
-                Italic: "Italique",
-                InlineCode: "Code intégré",
-                Image: "Image",
-                Warning: "Encadré",
-                Embed: "Intégration",
-              },
-              tools: {
-                image: {
-                  Caption: "Légende",
-                  "Select an Image": "Choisir une image",
-                  "With border": "Ajouter une bordure",
-                  "Stretch image": "Pleine largeur",
-                  "With background": "Ajouter un arrière-plan",
-                },
-                quote: { "Enter a quote": "Saisissez une citation", "Quote caption": "Auteur ou source de la citation" },
-                link: { "Add a link": "Ajouter un lien" },
-                stub: { "The block can not be displayed correctly.": "Ce bloc ne peut pas être affiché correctement." },
-                code: { "Enter a code": "Saisissez du code" },
-                header: {
-                  "Heading 1": "Titre 1",
-                  "Heading 2": "Titre 2",
-                  "Heading 3": "Titre 3",
-                  "Heading 4": "Titre 4",
-                  "Heading 5": "Titre 5",
-                  "Heading 6": "Titre 6",
-                },
-                paragraph: { "Enter something": "Commencez à écrire…" },
-                list: { Ordered: "Numérotée", Unordered: "À puces", Checklist: "Liste de contrôle" },
-              },
-              blockTunes: {
-                delete: { Delete: "Supprimer", "Click to delete": "Cliquez à nouveau pour supprimer" },
-                moveUp: { "Move up": "Déplacer vers le haut" },
-                moveDown: { "Move down": "Déplacer vers le bas" },
-              },
-            },
-          },
-          onReady: () => {
-            if (!mountedRef.current) return;
-            setLoading(false);
-            setSaveState("saved");
-          },
-          onChange: () => {
-            if (autosaveRef.current) clearTimeout(autosaveRef.current);
-            setSaveState("saving");
-            autosaveRef.current = setTimeout(async () => {
-              try {
-                const output = await editorRef.current?.save();
-                if (!output) return;
-                const html = blocksToHtml(output);
-                lastEmittedRef.current = html;
-                setPreviewHtml(html);
-                onChange(html);
-                setSaveState("saved");
-              } catch (saveError) {
-                console.error("Editor.js autosave failed", saveError);
-                setSaveState("error");
-              }
-            }, AUTOSAVE_DELAY);
-          },
-        });
+  const insertHtml = useCallback((html: string) => {
+    focusEditor();
+    document.execCommand("insertHTML", false, html);
+    schedule();
+  }, [schedule]);
 
-        editorRef.current = editor;
-        await editor.isReady;
-      } catch (initialiseError) {
-        console.error("Editor.js initialisation failed", initialiseError);
-        if (!cancelled && mountedRef.current) {
-          setLoading(false);
-          setError(initialiseError instanceof Error ? initialiseError.message : "Editor.js n’a pas pu être initialisé.");
-        }
-      }
-    };
+  const isActive = (command: string) => {
+    try { return document.queryCommandState(command); } catch { return false; }
+  };
 
-    void initialise();
+  const wrapInline = (tag: "code" | "sup" | "sub") => {
+    const selection = window.getSelection();
+    const text = selection?.toString() ?? "";
+    insertHtml(`<${tag}>${escapeHtml(text || "…")}</${tag}>&nbsp;`);
+  };
 
-    return () => {
-      cancelled = true;
-      mountedRef.current = false;
-      if (autosaveRef.current) clearTimeout(autosaveRef.current);
-      try {
-        editorRef.current?.destroy();
-      } catch {
-        // Editor may already be destroyed during hot reload.
-      }
-      editorRef.current = null;
-    };
-    // The editor is intentionally created once per mounted article editor.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [holderId]);
+  const insertLink = () => {
+    const selection = window.getSelection();
+    const selected = selection?.toString() ?? "";
+    const raw = window.prompt("Adresse du lien (https://…)", "https://");
+    if (!raw) return;
+    const url = safeUrl(raw);
+    if (!url) return toast.error("Adresse de lien invalide.");
+    if (selected) exec("createLink", url);
+    else insertHtml(`<a href="${escapeHtml(url)}" target="_blank" rel="noreferrer">${escapeHtml(url)}</a>&nbsp;`);
+  };
 
-  useEffect(() => {
-    if (!editorRef.current || loading) return;
-    if (value === lastEmittedRef.current) return;
-    lastEmittedRef.current = value;
-    setPreviewHtml(value);
-    void editorRef.current.render(htmlToBlocks(value)).catch((renderError) => {
-      console.error("Editor.js external content render failed", renderError);
-      setError("Le contenu de l’article n’a pas pu être rechargé dans Editor.js.");
-    });
-  }, [loading, value]);
+  const insertChecklist = () =>
+    insertHtml('<ul class="article-checklist"><li data-checked="false">À faire</li></ul><p><br></p>');
 
-  const refreshPreview = async () => {
+  const insertCallout = (kind: "info" | "warning") =>
+    insertHtml(
+      `<aside class="article-warning" data-kind="${kind}"><strong>${kind === "warning" ? "Attention" : "À noter"}</strong><p>Votre message…</p></aside><p><br></p>`,
+    );
+
+  const insertCodeBlock = () => insertHtml("<pre><code>// votre code</code></pre><p><br></p>");
+
+  const insertTable = () => {
+    const cols = Number(window.prompt("Nombre de colonnes ?", "3") ?? 0);
+    const rows = Number(window.prompt("Nombre de lignes ?", "3") ?? 0);
+    if (!cols || !rows || cols > 10 || rows > 30) return;
+    const head = `<tr>${Array.from({ length: cols }, (_, i) => `<th>Colonne ${i + 1}</th>`).join("")}</tr>`;
+    const body = Array.from({ length: rows }, () => `<tr>${"<td>&nbsp;</td>".repeat(cols)}</tr>`).join("");
+    insertHtml(`<div class="article-table-wrap"><table><thead>${head}</thead><tbody>${body}</tbody></table></div><p><br></p>`);
+  };
+
+  const insertYouTube = () => {
+    const raw = window.prompt("Lien YouTube ou identifiant de la vidéo");
+    if (!raw) return;
+    const id = parseYouTubeId(raw);
+    if (!id) return toast.error("Lien YouTube non reconnu.");
+    insertHtml(
+      `<div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/${id}" title="Vidéo YouTube" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div><p><br></p>`,
+    );
+  };
+
+  const insertImageFromUrl = () => {
+    const raw = window.prompt("Adresse de l’image (https://…)");
+    if (!raw) return;
+    const url = safeUrl(raw);
+    if (!url) return toast.error("Adresse d’image invalide.");
+    const caption = window.prompt("Légende (facultatif)") ?? "";
+    insertFigure(url, caption);
+  };
+
+  const insertFigure = (url: string, caption: string) =>
+    insertHtml(
+      `<figure class="article-editor-image"><img src="${escapeHtml(url)}" alt="${escapeHtml(caption)}" loading="lazy" />${caption ? `<figcaption>${escapeHtml(caption)}</figcaption>` : ""}</figure><p><br></p>`,
+    );
+
+  const handleFiles = async (files: FileList | File[]) => {
+    const images = Array.from(files).filter((f) => f.type.startsWith("image/"));
+    if (images.length === 0) return;
+    setUploading(true);
     try {
-      const output = await editorRef.current?.save();
-      if (!output) return;
-      const html = blocksToHtml(output);
-      setPreviewHtml(html);
-      lastEmittedRef.current = html;
-      onChange(html);
-      setSaveState("saved");
-    } catch (refreshError) {
-      console.error("Editor.js preview refresh failed", refreshError);
-      toast.error("Impossible d’actualiser l’aperçu de l’article.");
+      for (const file of images) {
+        const url = await uploadMedia(file);
+        insertFigure(url, "");
+      }
+      toast.success(images.length > 1 ? "Images ajoutées." : "Image ajoutée.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Échec de l’import de l’image.");
+    } finally {
+      setUploading(false);
     }
   };
 
-  const togglePreview = async () => {
-    if (!preview) await refreshPreview();
-    setPreview((current) => !current);
+  const runReplace = (all: boolean) => {
+    const root = ref.current;
+    if (!root || !find.trim()) return;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    let done = 0;
+    const nodes: Text[] = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode as Text);
+    for (const node of nodes) {
+      if (!all && done > 0) break;
+      const text = node.nodeValue ?? "";
+      if (!text.toLowerCase().includes(find.toLowerCase())) continue;
+      const pattern = new RegExp(find.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), all ? "gi" : "i");
+      node.nodeValue = text.replace(pattern, replace);
+      done += 1;
+    }
+    if (done === 0) toast.info("Aucune occurrence trouvée.");
+    else { emit(); toast.success(`${done} remplacement${done > 1 ? "s" : ""}.`); }
   };
 
+  /** Raccourcis markdown en début de ligne. */
+  const handleMarkdown = () => {
+    const selection = window.getSelection();
+    const node = selection?.anchorNode;
+    if (!node) return false;
+    const block = (node.nodeType === 3 ? node.parentElement : (node as HTMLElement))?.closest(
+      "p,div,h1,h2,h3,h4,li,blockquote",
+    );
+    if (!block || block.tagName === "LI") return false;
+    const text = block.textContent ?? "";
+    const rules: [RegExp, () => void][] = [
+      [/^# $/, () => exec("formatBlock", "h2")],
+      [/^## $/, () => exec("formatBlock", "h3")],
+      [/^### $/, () => exec("formatBlock", "h4")],
+      [/^> $/, () => exec("formatBlock", "blockquote")],
+      [/^- $/, () => exec("insertUnorderedList")],
+      [/^\* $/, () => exec("insertUnorderedList")],
+      [/^1\. $/, () => exec("insertOrderedList")],
+      [/^```$/, () => { block.textContent = ""; insertCodeBlock(); }],
+      [/^--- $/, () => { block.textContent = ""; exec("insertHorizontalRule"); }],
+    ];
+    for (const [pattern, action] of rules) {
+      if (pattern.test(text)) {
+        block.textContent = "";
+        action();
+        return true;
+      }
+    }
+    return false;
+  };
+
+  const groups: Btn[][] = useMemo(() => [
+    [
+      { icon: Undo2, label: "Annuler", run: () => exec("undo"), shortcut: "Ctrl+Z" },
+      { icon: Redo2, label: "Rétablir", run: () => exec("redo"), shortcut: "Ctrl+Y" },
+    ],
+    [
+      { icon: Pilcrow, label: "Paragraphe", run: () => exec("formatBlock", "p") },
+      { icon: Heading2, label: "Titre 2", run: () => exec("formatBlock", "h2") },
+      { icon: Heading3, label: "Titre 3", run: () => exec("formatBlock", "h3") },
+      { icon: Heading4, label: "Titre 4", run: () => exec("formatBlock", "h4") },
+    ],
+    [
+      { icon: Bold, label: "Gras", run: () => exec("bold"), active: "bold", shortcut: "Ctrl+B" },
+      { icon: Italic, label: "Italique", run: () => exec("italic"), active: "italic", shortcut: "Ctrl+I" },
+      { icon: Underline, label: "Souligné", run: () => exec("underline"), active: "underline", shortcut: "Ctrl+U" },
+      { icon: Strikethrough, label: "Barré", run: () => exec("strikeThrough"), active: "strikeThrough" },
+      { icon: Highlighter, label: "Surligner", run: () => exec("hiliteColor", "#F7E2B5") },
+      { icon: Code2, label: "Code en ligne", run: () => wrapInline("code") },
+      { icon: Superscript, label: "Exposant", run: () => wrapInline("sup") },
+      { icon: Subscript, label: "Indice", run: () => wrapInline("sub") },
+    ],
+    [
+      { icon: List, label: "Liste à puces", run: () => exec("insertUnorderedList"), active: "insertUnorderedList" },
+      { icon: ListOrdered, label: "Liste numérotée", run: () => exec("insertOrderedList"), active: "insertOrderedList" },
+      { icon: ListChecks, label: "Liste de contrôle", run: insertChecklist },
+      { icon: Quote, label: "Citation", run: () => exec("formatBlock", "blockquote") },
+      { icon: AlertTriangle, label: "Encadré", run: () => insertCallout("info") },
+      { icon: Minus, label: "Séparateur", run: () => exec("insertHorizontalRule") },
+    ],
+    [
+      { icon: AlignLeft, label: "Aligner à gauche", run: () => exec("justifyLeft") },
+      { icon: AlignCenter, label: "Centrer", run: () => exec("justifyCenter") },
+      { icon: AlignRight, label: "Aligner à droite", run: () => exec("justifyRight") },
+    ],
+    [
+      { icon: Link2, label: "Lien", run: insertLink, shortcut: "Ctrl+K" },
+      { icon: Link2Off, label: "Retirer le lien", run: () => exec("unlink") },
+      { icon: ImageIcon, label: "Image", run: () => fileRef.current?.click() },
+      { icon: Youtube, label: "Vidéo YouTube", run: insertYouTube },
+      { icon: Table2, label: "Tableau", run: insertTable },
+      { icon: Code2, label: "Bloc de code", run: insertCodeBlock },
+    ],
+    [
+      { icon: Search, label: "Rechercher / remplacer", run: () => setFindOpen((o) => !o) },
+      { icon: Eraser, label: "Effacer la mise en forme", run: () => exec("removeFormat") },
+      { icon: fullscreen ? Minimize2 : Maximize2, label: "Plein écran", run: () => setFullscreen((f) => !f) },
+    ],
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ], [exec, fullscreen]);
+
   return (
-    <div className="min-w-0 overflow-hidden rounded-xl border border-input bg-background">
-      <div className="flex min-h-12 items-center justify-between gap-3 border-b border-border bg-muted/40 px-3 py-2">
-        <div className="min-w-0">
-          <p className="text-xs font-semibold text-foreground">Editor.js</p>
-          <p className="truncate text-[11px] text-muted-foreground">
-            Éditeur par blocs · sauvegarde automatique · images · tableaux · intégrations · citations · listes
-          </p>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <span
-            className={`hidden text-[11px] sm:inline ${
-              saveState === "error" ? "text-destructive" : "text-muted-foreground"
-            }`}
-          >
-            {saveState === "saving"
-              ? "Enregistrement…"
-              : saveState === "saved"
-                ? "Enregistré"
-                : saveState === "error"
-                  ? "Échec de la sauvegarde automatique"
-                  : "Prêt"}
-          </span>
-          <button
-            type="button"
-            onClick={() => void togglePreview()}
-            className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-border bg-background px-3 text-xs font-medium text-foreground transition hover:bg-muted"
-          >
-            {preview ? <Pencil className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-            {preview ? "Modifier" : "Aperçu"}
-          </button>
+    <div
+      className={`min-w-0 overflow-hidden rounded-xl border border-input bg-background ${
+        fullscreen ? "fixed inset-0 z-[100] rounded-none" : ""
+      }`}
+    >
+      <div className="flex flex-wrap items-center gap-1 border-b border-border bg-muted/40 p-2">
+        {groups.map((group, gi) => (
+          <div key={gi} className="flex flex-wrap items-center gap-1 pr-1 [&+div]:border-l [&+div]:border-border [&+div]:pl-1">
+            {group.map((btn) => (
+              <button
+                key={btn.label}
+                type="button"
+                title={btn.shortcut ? `${btn.label} (${btn.shortcut})` : btn.label}
+                aria-label={btn.label}
+                aria-pressed={btn.active ? isActive(btn.active) : undefined}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={btn.run}
+                className={`inline-flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-foreground transition hover:border-border hover:bg-background ${
+                  btn.active && isActive(btn.active) ? "border-border bg-background text-primary" : ""
+                }`}
+              >
+                <btn.icon className="h-4 w-4" />
+              </button>
+            ))}
+          </div>
+        ))}
+        <div className="ml-auto flex items-center gap-2 pl-2 text-[11px] text-muted-foreground">
+          {uploading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+          <span>{stats.words} mots · {stats.minutes} min</span>
+          <span className="hidden sm:inline">{state === "saving" ? "Enregistrement…" : state === "saved" ? "Enregistré" : "Prêt"}</span>
         </div>
       </div>
 
-      {error ? (
-        <div className="space-y-3 p-4">
-          <p className="text-sm font-semibold text-destructive">Editor.js est indisponible</p>
-          <p className="text-xs leading-relaxed text-muted-foreground">{error}</p>
-          <button
-            type="button"
-            onClick={() => window.location.reload()}
-            className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-border px-3 text-xs font-medium"
-          >
-            <RefreshCw className="h-3.5 w-3.5" /> Recharger l’éditeur
+      {findOpen && (
+        <div className="flex flex-wrap items-center gap-2 border-b border-border bg-background px-2 py-2">
+          <input
+            value={find}
+            onChange={(e) => setFind(e.target.value)}
+            placeholder="Rechercher"
+            aria-label="Rechercher"
+            className="min-h-9 flex-1 rounded-lg border border-border bg-background px-3 text-xs outline-none focus:border-primary"
+          />
+          <input
+            value={replace}
+            onChange={(e) => setReplace(e.target.value)}
+            placeholder="Remplacer par"
+            aria-label="Remplacer par"
+            className="min-h-9 flex-1 rounded-lg border border-border bg-background px-3 text-xs outline-none focus:border-primary"
+          />
+          <button type="button" onClick={() => runReplace(false)} className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-border px-3 text-xs">
+            <Replace className="h-3.5 w-3.5" /> Une
+          </button>
+          <button type="button" onClick={() => runReplace(true)} className="inline-flex min-h-9 items-center rounded-lg border border-border px-3 text-xs">
+            Tout
           </button>
         </div>
-      ) : (
-        <>
-          {loading && (
-            <div className="flex min-h-52 items-center justify-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" /> Chargement d’Editor.js…
-            </div>
-          )}
-          <div className={preview || loading ? "hidden" : "block"}>
-            <div
-              id={holderId}
-              className="editorjs-angel-studio min-h-[420px] px-3 py-5 text-foreground sm:px-5 [&_.ce-block__content]:max-w-none [&_.ce-toolbar__content]:max-w-none [&_.ce-paragraph]:text-[15px] [&_.ce-paragraph]:leading-7 [&_.ce-header]:font-display [&_.ce-header]:font-bold [&_.cdx-block]:max-w-none"
-            />
-          </div>
-          {preview && (
-            <div className="p-5 sm:p-7">
-              <div
-                className="article-content text-left text-[15px] leading-[1.8] text-foreground/90"
-                dangerouslySetInnerHTML={{ __html: previewHtml }}
-              />
-            </div>
-          )}
-        </>
       )}
+
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={(e) => {
+          if (e.target.files) void handleFiles(e.target.files);
+          e.target.value = "";
+        }}
+      />
+
+      <div
+        ref={ref}
+        contentEditable
+        suppressContentEditableWarning
+        role="textbox"
+        aria-multiline="true"
+        aria-label="Contenu de l'article"
+        data-placeholder="Commencez à écrire… « # » pour un titre, « - » pour une liste, « > » pour une citation."
+        spellCheck
+        onInput={schedule}
+        onBlur={emit}
+        onKeyUp={() => forceRender((n) => n + 1)}
+        onMouseUp={() => forceRender((n) => n + 1)}
+        onKeyDown={(e) => {
+          const meta = e.ctrlKey || e.metaKey;
+          if (meta && e.key.toLowerCase() === "k") { e.preventDefault(); insertLink(); return; }
+          if (meta && e.key.toLowerCase() === "s") { e.preventDefault(); emit(); toast.success("Contenu synchronisé."); return; }
+          if (e.key === " " && handleMarkdown()) e.preventDefault();
+          if (e.key === "Tab") { e.preventDefault(); exec(e.shiftKey ? "outdent" : "indent"); }
+        }}
+        onPaste={(e) => {
+          const files = e.clipboardData?.files;
+          if (files && files.length > 0 && files[0]?.type.startsWith("image/")) {
+            e.preventDefault();
+            void handleFiles(files);
+            return;
+          }
+          e.preventDefault();
+          const html = e.clipboardData.getData("text/html");
+          const text = e.clipboardData.getData("text/plain");
+          if (html) {
+            const doc = new DOMParser().parseFromString(html, "text/html");
+            doc.querySelectorAll("script,style,meta,link,object,embed").forEach((n) => n.remove());
+            doc.querySelectorAll("*").forEach((el) => {
+              for (const attr of Array.from(el.attributes)) {
+                if (!["href", "src", "alt", "title", "colspan", "rowspan"].includes(attr.name)) {
+                  el.removeAttribute(attr.name);
+                }
+              }
+            });
+            document.execCommand("insertHTML", false, doc.body.innerHTML);
+          } else {
+            document.execCommand("insertText", false, text);
+          }
+          schedule();
+        }}
+        onDrop={(e) => {
+          if (e.dataTransfer?.files?.length) {
+            e.preventDefault();
+            void handleFiles(e.dataTransfer.files);
+          }
+        }}
+        className={`article-content min-h-[420px] w-full overflow-y-auto px-4 py-5 text-[1.02rem] leading-[1.8] text-foreground outline-none sm:px-8 ${
+          fullscreen ? "h-[calc(100vh-7rem)]" : ""
+        } [&_blockquote]:border-l-4 [&_blockquote]:border-primary [&_blockquote]:pl-4 [&_blockquote]:italic [&_h2]:mt-6 [&_h2]:font-display [&_h2]:text-2xl [&_h2]:font-bold [&_h3]:mt-5 [&_h3]:text-xl [&_h3]:font-bold [&_h4]:mt-4 [&_h4]:text-lg [&_h4]:font-semibold [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:my-3 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-muted [&_pre]:p-3 [&_pre]:font-mono [&_pre]:text-sm [&_table]:w-full [&_table]:border-collapse [&_td]:border [&_td]:border-border [&_td]:p-2 [&_th]:border [&_th]:border-border [&_th]:bg-muted [&_th]:p-2 [&_ul]:list-disc [&_ul]:pl-6 [&_ul.article-checklist]:list-none [&_ul.article-checklist]:pl-0 [&_a]:text-primary [&_a]:underline [&_aside.article-warning]:rounded-xl [&_aside.article-warning]:border [&_aside.article-warning]:border-border [&_aside.article-warning]:bg-muted/50 [&_aside.article-warning]:p-3 [&_figure]:my-4 [&_img]:max-w-full [&_img]:rounded-xl [&_iframe]:aspect-video [&_iframe]:w-full [&_iframe]:rounded-xl [&:empty::before]:text-muted-foreground [&:empty::before]:content-[attr(data-placeholder)]`}
+      />
     </div>
   );
 }
