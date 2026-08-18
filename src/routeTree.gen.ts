@@ -51,6 +51,7 @@ import { Route as ApiAngelOsHealthRouteImport } from './routes/api/angel-os/heal
 import { Route as ApiAngelOsGuardRouteImport } from './routes/api/angel-os/guard'
 import { Route as ApiAdminWeatherRouteImport } from './routes/api/admin/weather'
 import { Route as ApiAdminNewsRouteImport } from './routes/api/admin/news'
+import { Route as ApiAdminArticlesRouteImport } from './routes/api/admin/articles'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
@@ -276,6 +277,11 @@ const ApiAdminNewsRoute = ApiAdminNewsRouteImport.update({
   path: '/api/admin/news',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminArticlesRoute = ApiAdminArticlesRouteImport.update({
+  id: '/api/admin/articles',
+  path: '/api/admin/articles',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailTransactionalPreviewRoute =
   LovableEmailTransactionalPreviewRouteImport.update({
     id: '/lovable/email/transactional/preview',
@@ -376,6 +382,7 @@ export interface FileRoutesByFullPath {
   '/actualites/': typeof ActualitesIndexRoute
   '/articles/': typeof ArticlesIndexRoute
   '/boutique/': typeof BoutiqueIndexRoute
+  '/api/admin/articles': typeof ApiAdminArticlesRoute
   '/api/admin/news': typeof ApiAdminNewsRoute
   '/api/admin/weather': typeof ApiAdminWeatherRoute
   '/api/angel-os/guard': typeof ApiAngelOsGuardRoute
@@ -431,6 +438,7 @@ export interface FileRoutesByTo {
   '/actualites': typeof ActualitesIndexRoute
   '/articles': typeof ArticlesIndexRoute
   '/boutique': typeof BoutiqueIndexRoute
+  '/api/admin/articles': typeof ApiAdminArticlesRoute
   '/api/admin/news': typeof ApiAdminNewsRoute
   '/api/admin/weather': typeof ApiAdminWeatherRoute
   '/api/angel-os/guard': typeof ApiAngelOsGuardRoute
@@ -487,6 +495,7 @@ export interface FileRoutesById {
   '/actualites/': typeof ActualitesIndexRoute
   '/articles/': typeof ArticlesIndexRoute
   '/boutique/': typeof BoutiqueIndexRoute
+  '/api/admin/articles': typeof ApiAdminArticlesRoute
   '/api/admin/news': typeof ApiAdminNewsRoute
   '/api/admin/weather': typeof ApiAdminWeatherRoute
   '/api/angel-os/guard': typeof ApiAngelOsGuardRoute
@@ -544,6 +553,7 @@ export interface FileRouteTypes {
     | '/actualites/'
     | '/articles/'
     | '/boutique/'
+    | '/api/admin/articles'
     | '/api/admin/news'
     | '/api/admin/weather'
     | '/api/angel-os/guard'
@@ -599,6 +609,7 @@ export interface FileRouteTypes {
     | '/actualites'
     | '/articles'
     | '/boutique'
+    | '/api/admin/articles'
     | '/api/admin/news'
     | '/api/admin/weather'
     | '/api/angel-os/guard'
@@ -654,6 +665,7 @@ export interface FileRouteTypes {
     | '/actualites/'
     | '/articles/'
     | '/boutique/'
+    | '/api/admin/articles'
     | '/api/admin/news'
     | '/api/admin/weather'
     | '/api/angel-os/guard'
@@ -709,6 +721,7 @@ export interface RootRouteChildren {
   ActualitesIndexRoute: typeof ActualitesIndexRoute
   ArticlesIndexRoute: typeof ArticlesIndexRoute
   BoutiqueIndexRoute: typeof BoutiqueIndexRoute
+  ApiAdminArticlesRoute: typeof ApiAdminArticlesRoute
   ApiAdminNewsRoute: typeof ApiAdminNewsRoute
   ApiAdminWeatherRoute: typeof ApiAdminWeatherRoute
   ApiAngelOsGuardRoute: typeof ApiAngelOsGuardRoute
@@ -1025,6 +1038,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminNewsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/articles': {
+      id: '/api/admin/articles'
+      path: '/api/admin/articles'
+      fullPath: '/api/admin/articles'
+      preLoaderRoute: typeof ApiAdminArticlesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/transactional/preview': {
       id: '/lovable/email/transactional/preview'
       path: '/lovable/email/transactional/preview'
@@ -1155,6 +1175,7 @@ const rootRouteChildren: RootRouteChildren = {
   ActualitesIndexRoute: ActualitesIndexRoute,
   ArticlesIndexRoute: ArticlesIndexRoute,
   BoutiqueIndexRoute: BoutiqueIndexRoute,
+  ApiAdminArticlesRoute: ApiAdminArticlesRoute,
   ApiAdminNewsRoute: ApiAdminNewsRoute,
   ApiAdminWeatherRoute: ApiAdminWeatherRoute,
   ApiAngelOsGuardRoute: ApiAngelOsGuardRoute,
