@@ -50,7 +50,7 @@ export function PublicContactAssistant() {
 
     let text: string | null = null;
     const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 15_000);
+    const timeout = window.setTimeout(() => controller.abort(), 60_000);
     try {
       const response = await fetch("/api/assistant", {
         method: "POST",
