@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 
 let bootAudioContext: AudioContext | null = null;
-const ADMIN_STARTUP_TICKET = "angel-os:admin-startup-ticket";
 
 function playBootSound() {
   if (typeof window === "undefined") return;
@@ -45,19 +44,8 @@ export function SystemBootExperience({
 
   useEffect(() => {
     if (authHandoff) {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("adminFlow") === "1") {
-        try {
-          window.sessionStorage.setItem(ADMIN_STARTUP_TICKET, "1");
-        } catch {
-          // The dedicated startup route will still verify the authenticated admin session.
-        }
-        window.location.replace("/admin-startup");
-      } else {
-        // The public Angel OS presentation uses the ordinary /auth route and must
-        // never trigger the special admin startup sequence.
-        window.location.replace("/admin");
-      }
+      // Plus d'écran de démarrage intermédiaire : accès direct à l'administration.
+      window.location.replace("/admin");
       return;
     }
 

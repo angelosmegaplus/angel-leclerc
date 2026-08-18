@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/angel-os")({
   head: () => ({
     meta: [
-      { title: "Angel OS — Architecture, IA et supervision" },
+      { title: "Angel OS — Projet personnel et expérimental" },
       {
         name: "description",
-        content: "Angel OS réunit l'administration, les données, les automatisations, Angel OS IA et Angel Guard dans une architecture connectée.",
+        content: "Angel OS est mon projet personnel et expérimental : l'identité et l'ensemble des fonctions qui organisent l'administration, les contenus, l'IA et les automatisations d'angel-leclerc.fr.",
       },
       { name: "robots", content: "index,follow" },
       { property: "og:title", content: "Angel OS" },
-      { property: "og:description", content: "L'architecture qui organise l'administration, l'intelligence artificielle, les données et la supervision d'angel-leclerc.fr." },
+      { property: "og:description", content: "Projet personnel et expérimental : la couche qui regroupe l'administration, les contenus, l'IA et les automatisations d'angel-leclerc.fr." },
       { property: "og:url", content: "https://www.angel-leclerc.fr/angel-os" },
     ],
     links: [{ rel: "canonical", href: "https://www.angel-leclerc.fr/angel-os" }],
@@ -22,15 +22,34 @@ export const Route = createFileRoute("/angel-os")({
 
 type Tech = { name: string; description: string; logo?: string; mark?: string };
 
+const features = [
+  "Espace d’administration",
+  "Articles, éditeur et corbeille",
+  "Candidatures",
+  "Projets",
+  "Agenda",
+  "Boîte mail",
+  "Statistiques",
+  "Fichiers",
+  "Films & séries",
+  "Notifications",
+  "Connexions",
+  "Automatisations",
+  "Recherche universelle",
+  "IA intégrée",
+  "Thèmes clair et sombre",
+  "Authentification",
+  "Usage mobile",
+];
+
 const technologies: Tech[] = [
-  { name: "ChatGPT", logo: "/logos/chatgpt.com.svg", description: "Intervient sur le développement, les corrections, la maintenance et certaines opérations automatisées autour d’Angel OS." },
-  { name: "Passerelle IA Lovable", mark: "AI", description: "Fournit les capacités d’intelligence artificielle (modèles Google Gemini) utilisées directement par Angel OS IA." },
+  { name: "Lovable", mark: "LV", description: "Plateforme actuelle sur laquelle une partie du site est construite, hébergée et publiée." },
+  { name: "Passerelle IA Lovable", mark: "AI", description: "Fournit les capacités d’intelligence artificielle (modèles Google Gemini) utilisées par les fonctions IA du site." },
   { name: "React", mark: "R", description: "Structure les interfaces et les composants de l’application." },
   { name: "TypeScript", mark: "TS", description: "Porte la logique applicative et une grande partie du fonctionnement du système." },
   { name: "GitHub", mark: "GH", description: "Centralise le code source, les versions et l’historique des modifications." },
-  { name: "Vercel", mark: "▲", description: "Construit et déploie l’application web." },
-  { name: "Supabase", mark: "S", description: "Gère la base de données, l’authentification et des données internes d’Angel OS." },
-  { name: "Google APIs", logo: "/logos/google.com.svg", description: "Connectent les services Google utilisés par Angel OS, notamment Gmail et Google Calendar." },
+  { name: "Base de données & authentification", mark: "DB", description: "Stocke les contenus, les données internes et gère la connexion à l’espace administrateur." },
+  { name: "Google APIs", logo: "/logos/google.com.svg", description: "Connectent les services Google utilisés par le site, notamment Gmail et Google Calendar." },
   { name: "TMDB API", mark: "TMDB", description: "Alimente les recherches et les informations de l’espace Films & séries." },
 ];
 
@@ -54,15 +73,15 @@ function AngelOsPublicPage() {
           <div className="flex items-center gap-4">
             <img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-16 w-16 rounded-2xl object-contain shadow-sm md:h-20 md:w-20" />
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[.2em] text-primary">Architecture connectée</p>
+              <p className="text-xs font-semibold uppercase tracking-[.2em] text-primary">Projet personnel · Expérimental</p>
               <h1 className="font-display text-4xl font-bold tracking-tight text-foreground md:text-6xl">Angel OS</h1>
             </div>
           </div>
           <h2 className="mt-8 max-w-4xl font-display text-3xl font-bold leading-tight tracking-tight text-foreground md:text-5xl">
-            Un environnement pour organiser l’administration, les données, l’intelligence artificielle et les automatisations.
+            Le nom que je donne à l’ensemble des idées et des fonctions qui font vivre mon site.
           </h2>
           <p className="mt-6 max-w-3xl text-base leading-8 text-muted-foreground md:text-lg">
-            Angel OS est l’architecture qui organise l’espace administrateur d’angel-leclerc.fr, ses données, ses automatisations, ses connecteurs et ses fonctions internes.
+            Angel OS est un projet personnel et expérimental. C’est à la fois une identité et une couche qui regroupe une partie des fonctions d’administration, d’intelligence artificielle, de données et d’automatisation du site. Il évolue au fil de mes essais, avec plusieurs outils : une partie du site est aujourd’hui construite et exploitée avec Lovable.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg"><Link to="/auth">Accéder à l’administration <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
@@ -72,18 +91,23 @@ function AngelOsPublicPage() {
       </section>
 
       <section className="container-tight py-14 md:py-20">
-        <div className="grid gap-4 md:grid-cols-2">
+        <p className="text-xs font-semibold uppercase tracking-[.18em] text-primary">Ce qui existe aujourd’hui</p>
+        <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">Les fonctions réellement présentes</h2>
+        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {features.map((item) => (
+            <div key={item} className="rounded-2xl border border-border bg-card px-5 py-4 text-sm font-medium text-foreground">{item}</div>
+          ))}
+        </div>
+        <div className="mt-8 grid gap-4 md:grid-cols-2">
           <article className="rounded-3xl border border-border bg-card p-6 md:p-8">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary"><BrainCircuit className="h-5 w-5" /></div>
-            <p className="mt-6 text-xs font-semibold uppercase tracking-[.18em] text-primary">Intelligence artificielle</p>
-            <h2 className="mt-2 font-display text-2xl font-bold text-foreground">Angel OS IA</h2>
-            <p className="mt-3 leading-7 text-muted-foreground">Utilise les données disponibles dans l’espace administrateur pour rechercher, analyser, rédiger, assister certaines actions et exploiter le contexte du système.</p>
+            <h3 className="mt-6 font-display text-2xl font-bold text-foreground">Angel OS IA</h3>
+            <p className="mt-3 leading-7 text-muted-foreground">Les fonctions d’intelligence artificielle intégrées au site : aide à la rédaction, recherche, assistance dans le formulaire de contact et dans l’administration.</p>
           </article>
           <article className="rounded-3xl border border-border bg-card p-6 md:p-8">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary"><ShieldCheck className="h-5 w-5" /></div>
-            <p className="mt-6 text-xs font-semibold uppercase tracking-[.18em] text-primary">Supervision</p>
-            <h2 className="mt-2 font-display text-2xl font-bold text-foreground">Angel Guard</h2>
-            <p className="mt-3 leading-7 text-muted-foreground">Surveille le fonctionnement d’Angel OS, détecte des anomalies, centralise des incidents et participe aux contrôles techniques et aux mécanismes de récupération.</p>
+            <h3 className="mt-6 font-display text-2xl font-bold text-foreground">Angel Guard</h3>
+            <p className="mt-3 leading-7 text-muted-foreground">Un concept expérimental de sécurité et de supervision lié à Angel OS. Il s’agit d’une réflexion en cours, pas d’un système autonome : la sécurité réelle repose sur l’authentification, les rôles et les contrôles de la base de données.</p>
           </article>
         </div>
       </section>
@@ -92,8 +116,8 @@ function AngelOsPublicPage() {
         <div className="container-tight py-14 md:py-20">
           <div className="max-w-3xl">
             <p className="text-xs font-semibold uppercase tracking-[.18em] text-primary">Infrastructure</p>
-            <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">Les technologies connectées à Angel OS</h2>
-            <p className="mt-4 leading-7 text-muted-foreground">L’ensemble fonctionne avec une infrastructure connectée associant les technologies et API utilisées par le système.</p>
+            <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">Les technologies utilisées aujourd’hui</h2>
+            <p className="mt-4 leading-7 text-muted-foreground">Le site s’appuie sur quelques outils simples, dont Lovable, la plateforme actuelle de développement et de publication.</p>
           </div>
           <div className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {technologies.map((tech) => (
@@ -108,15 +132,9 @@ function AngelOsPublicPage() {
 
       <section className="container-tight py-14 md:py-20">
         <div className="rounded-3xl border border-border bg-card p-6 md:p-9">
-          <p className="text-xs font-semibold uppercase tracking-[.18em] text-primary">Fonctionnement</p>
-          <h2 className="mt-3 font-display text-3xl font-bold text-foreground">Un même système, plusieurs rôles</h2>
-          <div className="mt-7 grid gap-3 md:grid-cols-4 md:items-center md:text-center">
-            <div className="rounded-2xl border border-border bg-background p-4 font-semibold">ChatGPT</div>
-            <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4 font-semibold">Angel OS</div>
-            <div className="rounded-2xl border border-border bg-background p-4 font-semibold">Angel OS IA</div>
-            <div className="rounded-2xl border border-border bg-background p-4 font-semibold">Angel Guard</div>
-          </div>
-          <p className="mt-6 max-w-3xl text-sm leading-7 text-muted-foreground">ChatGPT intervient autour du projet pour le développement et la maintenance. Angel OS organise l’application et ses données. Angel OS IA apporte les fonctions intelligentes intégrées. Angel Guard assure la supervision technique du système.</p>
+          <p className="text-xs font-semibold uppercase tracking-[.18em] text-primary">En résumé</p>
+          <h2 className="mt-3 font-display text-3xl font-bold text-foreground">Un projet qui avance par expérimentation</h2>
+          <p className="mt-5 max-w-3xl leading-7 text-muted-foreground">Angel OS n’est pas un produit commercial. C’est un espace d’apprentissage où je teste des idées d’organisation, d’automatisation et d’intelligence artificielle appliquées à mon propre site. Certaines fonctions sont pleinement actives, d’autres restent à l’état de concept assumé.</p>
         </div>
       </section>
     </main>

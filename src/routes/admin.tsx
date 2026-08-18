@@ -99,7 +99,6 @@ import { AgendaPanel } from "@/components/admin/AgendaPanel";
 import { FilesPanel } from "@/components/admin/FilesPanel";
 import { ActivityPanel } from "@/components/admin/ActivityPanel";
 import { GlobalSearch } from "@/components/admin/GlobalSearch";
-import { AdminBootIntro } from "@/components/admin/AdminBootIntro";
 import { AngelCommandCenter } from "@/components/admin/AngelCommandCenter";
 import { ApplicationsPanel } from "@/components/admin/ApplicationsPanel";
 import { AdminAutomationSummary } from "@/components/admin/AdminAutomationSummary";
@@ -511,7 +510,6 @@ function AdminPage() {
         </>
       }
     >
-      <AdminBootIntro />
       <GlobalSearch
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
