@@ -1,28 +1,19 @@
 {
-  "fetchedAt": "2026-08-18T16:59:24Z",
+  "fetchedAt": "2026-08-18T17:57:56Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-18T16:59:24Z",
-      "important": [
-        {
-          "subject": "Alerte de solde Lovable",
-          "from": "Lovable",
-          "date": "2026-08-18T16:07:49Z",
-          "summary": "Une alerte de solde faible Lovable a été reçue. Elle est consignée comme alerte technique/commerciale uniquement ; Lovable n’est pas un prérequis d’Angel OS et aucune action ni dépense n’a été déclenchée.",
-          "reason": "Tracer l’alerte sans créer de dépendance Lovable ni déclencher d’action non validée.",
-          "suggestedReply": ""
-        }
-      ],
-      "otherSummary": "Depuis le précédent rapport, aucun nouveau mail reçu pertinent pour une candidature BTS Communication, aucune réponse d’entreprise, aucun refus explicite, aucun entretien, aucune demande de CV et aucun nouvel envoi Gmail n’ont été détectés. Une alerte de solde Lovable a été consignée sans action.",
+      "fetchedAt": "2026-08-18T17:57:56Z",
+      "important": [],
+      "otherSummary": "Depuis le précédent rapport à 16:59:24 UTC, aucun nouveau mail Gmail reçu ou envoyé n’a été détecté. Aucun nouveau message pertinent pour une candidature BTS Communication, aucune réponse d’entreprise, aucun refus explicite, aucun entretien, aucune demande de CV, aucune redirection professionnelle et aucune alerte technique nouvelle n’ont été observés.",
       "counts": {
-        "useful_messages": 1,
-        "incoming": 1,
+        "useful_messages": 0,
+        "incoming": 0,
         "outgoing": 0,
         "outgoing_bts_applications": 0,
         "application_related_incoming": 0,
         "automatic_absence": 0,
         "delivery_challenge": 0,
-        "technical_incoming": 1,
+        "technical_incoming": 0,
         "security_or_account_incoming": 0,
         "job_alerts": 0,
         "explicit_rejections": 0,
@@ -32,8 +23,8 @@
       }
     },
     "microsoft_mail_dashboard": {
-      "fetchedAt": "2026-08-18T16:59:24Z",
-      "summary": "La boîte Outlook a été contrôlée depuis la borne du précédent rapport. Un nouveau message de type newsletter a été reçu à 16:45 UTC, sans lien avec les candidatures, les actions Angel OS ou une demande professionnelle. Aucun nouvel élément envoyé Outlook dans la période n’a été identifié parmi les éléments récents contrôlés.",
+      "fetchedAt": "2026-08-18T17:57:56Z",
+      "summary": "Depuis le précédent rapport à 16:59:24 UTC, aucun nouveau message Outlook reçu n’a été détecté ; le message récent le plus tardif contrôlé datait de 16:45:50 UTC. Aucun nouvel élément envoyé Outlook n’a été identifié dans la période.",
       "counts": {
         "unique_application_replies": 0,
         "unique_outgoing_applications": 0,
@@ -43,18 +34,18 @@
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-18T11:02:31Z",
-    "period_end": "2026-08-18T16:59:24Z",
-    "summary": "Cycle consolidé Gmail + Outlook terminé. Aucun nouveau mail pertinent pour une candidature BTS Communication, aucune réponse d’entreprise, aucun refus explicite, aucun entretien, aucune demande de CV et aucun nouvel envoi de candidature n’ont été détectés depuis le rapport précédent. Une alerte de solde Lovable a été consignée comme information technique/commerciale, sans action car Lovable n’est pas un prérequis. Aucun email n’a été envoyé, répondu, classé ou modifié. La file privée `ai_actions` et l’index mail privé cumulatif ne sont toujours pas accessibles en lecture/écriture depuis les connecteurs de cette exécution sans voie serveur authentifiée dédiée ; aucune donnée privée détaillée n’est écrite dans ce snapshot GitHub public.",
+    "period_start": "2026-08-18T16:59:24Z",
+    "period_end": "2026-08-18T17:57:56Z",
+    "summary": "Cycle consolidé Gmail + Outlook terminé. Aucun nouveau mail reçu ou envoyé n’a été détecté depuis le rapport précédent. Aucun changement factuel de candidature n’est donc à synchroniser et aucun email, brouillon ou réponse n’a été envoyé. La file privée `ai_actions` et l’index mail privé cumulatif ne disposent toujours pas d’une voie serveur authentifiée exposée à cette exécution ; aucune donnée privée détaillée n’est écrite dans GitHub public.",
     "counts": {
-      "useful_messages": 1,
-      "incoming": 1,
+      "useful_messages": 0,
+      "incoming": 0,
       "outgoing": 0,
       "outgoing_bts_applications": 0,
       "application_related_incoming": 0,
       "automatic_absence": 0,
       "delivery_challenge": 0,
-      "technical_incoming": 1,
+      "technical_incoming": 0,
       "security_or_account_incoming": 0,
       "job_alerts": 0,
       "explicit_rejections": 0,
@@ -64,16 +55,10 @@
       "pending_actions_created": 0,
       "cross_provider_duplicates_ignored": 0
     },
-    "items": [
-      {
-        "kind": "technical_alert",
-        "summary": "Alerte de solde faible Lovable reçue ; consignée sans action et sans dépendance Lovable."
-      }
-    ],
+    "items": [],
     "recommendations": [
       "Aucune action mail n’est nécessaire sur cette période.",
-      "Ne déclencher aucune dépense ni reconnexion Lovable depuis cette routine.",
-      "Continuer à attendre une voie privée serveur authentifiée pour exécuter `awaiting_operator` et maintenir l’index mail privé détaillé sans exposer de données dans GitHub public."
+      "Réessayer au prochain cycle l’accès privé serveur à `ai_actions` et à l’index mail cumulatif sans exposer de données dans GitHub public."
     ],
     "source": "chatgpt-hourly-direct"
   }
