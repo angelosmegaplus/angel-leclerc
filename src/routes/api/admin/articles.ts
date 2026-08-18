@@ -106,7 +106,11 @@ async function deleteFile(path: string, message: string, token: string) {
 export const Route = createFileRoute("/api/admin/articles")({
   server: {
     handlers: {
-      GET: async () => Response.json({ ok: true, githubConfigured: Boolean(githubToken()) }, { headers }),
+      GET: async () => Response.json({
+        ok: true,
+        githubConfigured: Boolean(githubToken()),
+        supabaseServiceRoleConfigured: Boolean((process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim()),
+      }, { headers }),
       POST: async ({ request }) => {
         try {
           const userId = await validateAdmin(request);
