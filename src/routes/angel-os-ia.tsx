@@ -232,6 +232,7 @@ function AngelOsIaPage() {
               <div className="mt-5 flex flex-wrap gap-2">
                 {["Santé", "Incidents", "Anomalies", "Contrôles", "Récupération"].map((item) => <span key={item} className="rounded-full border border-[#ddd6eb] bg-[#faf8ff] px-3 py-1.5 text-xs font-semibold text-[#65558f]">{item}</span>)}
               </div>
+              <Link to="/angel-guard-os" className="mt-5 inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#ddd6eb] bg-[#faf8ff] px-3 py-2 text-xs font-bold text-[#65558f] transition hover:bg-[#f3f0fb]">Voir Angel Guard</Link>
             </article>
           </div>
 
