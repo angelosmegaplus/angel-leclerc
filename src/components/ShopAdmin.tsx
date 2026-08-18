@@ -476,9 +476,10 @@ function ShopAdminInner() {
             <Button
               size="sm"
               variant="outline"
-              onClick={() =>
-                queryClient.invalidateQueries({ queryKey: ["admin-shop-orders"] })
-              }
+              onClick={() => {
+                void queryClient.invalidateQueries({ queryKey: ["admin-shop-orders"] });
+                void queryClient.invalidateQueries({ queryKey: ["admin-shop-auto-sync"] });
+              }}
             >
               <RefreshCw className="mr-2 h-4 w-4" /> Actualiser
             </Button>
@@ -486,7 +487,7 @@ function ShopAdminInner() {
         </div>
 
         <p className="mt-1 text-[11px] text-muted-foreground">
-          Statuts Printful synchronisés automatiquement toutes les 2 minutes
+          Statuts Printful relevés à l’ouverture de cette page et à chaque « Actualiser »
           {autoSync
             ? ` · dernier contrôle à ${new Date(autoSync.at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })} — ${autoSync.checked} en cours, ${autoSync.updated} mise(s) à jour`
             : "…"}
