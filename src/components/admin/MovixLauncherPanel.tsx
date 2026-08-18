@@ -19,8 +19,11 @@ function hostOf(url: string) {
 function withPath(base: string, path: string) {
   try {
     const url = new URL(base);
-    url.pathname = path.startsWith("/") ? path : `/${path}`;
-    url.search = "";
+    const queryIndex = path.indexOf("?");
+    const pathname = queryIndex >= 0 ? path.slice(0, queryIndex) : path;
+    const search = queryIndex >= 0 ? path.slice(queryIndex) : "";
+    url.pathname = pathname.startsWith("/") ? pathname : `/${pathname}`;
+    url.search = search;
     url.hash = "";
     return url.toString();
   } catch {
