@@ -29,6 +29,7 @@ function BugDodger() {
   const [best, setBest] = useState(0);
   const [running, setRunning] = useState(false);
   const [gameOver, setGameOver] = useState(false);
+  const [opened, setOpened] = useState(false);
   const nextId = useRef(1);
 
   const move = (delta: number) => {
@@ -36,6 +37,7 @@ function BugDodger() {
   };
 
   const startGame = () => {
+    setOpened(true);
     setPlayerX(50);
     setBugs([]);
     setScore(0);
@@ -45,6 +47,7 @@ function BugDodger() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (!opened) return;
       if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
         event.preventDefault();
         move(-8);
@@ -61,7 +64,7 @@ function BugDodger() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [running]);
+  }, [opened, running]);
 
   useEffect(() => {
     if (!running) return;
@@ -122,11 +125,37 @@ function BugDodger() {
     return () => window.clearInterval(tick);
   }, [playerX, running, score]);
 
+  if (!opened) {
+    return (
+      <div className="mt-7 overflow-hidden rounded-2xl border border-border bg-card/85 text-left shadow-sm backdrop-blur motion-safe:animate-[fadeIn_.55s_ease-out]">
+        <div className="relative flex min-h-52 items-end overflow-hidden bg-muted/40 p-5">
+          <div className="pointer-events-none absolute -left-10 -top-10 h-36 w-36 rounded-full bg-primary/15 blur-3xl motion-safe:animate-pulse" />
+          <div className="pointer-events-none absolute right-5 top-5 text-5xl opacity-80 motion-safe:animate-[bugFloat_2.2s_ease-in-out_infinite]" aria-hidden="true">🐛</div>
+          <div className="pointer-events-none absolute right-24 top-20 text-3xl opacity-50 motion-safe:animate-[bugFloat_2.7s_ease-in-out_infinite_reverse]" aria-hidden="true">🐛</div>
+          <div className="pointer-events-none absolute bottom-5 right-8 text-6xl drop-shadow-md" aria-hidden="true">🛡️</div>
+
+          <div className="relative z-10 max-w-sm">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Mini-jeu</p>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight">Bug Hunter</h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">Évite les bugs pendant qu’on répare les vrais.</p>
+            <button
+              type="button"
+              onClick={startGame}
+              className="mt-4 inline-flex items-center justify-center rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0"
+            >
+              Jouer →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mt-7 rounded-2xl border border-border bg-card/80 p-4 text-left shadow-sm backdrop-blur">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold">En attendant… chasse les bugs</p>
+          <p className="text-sm font-semibold">Bug Hunter</p>
           <p className="text-xs text-muted-foreground">Flèches / A-D / boutons tactiles</p>
         </div>
         <div className="text-right text-xs text-muted-foreground">
@@ -237,6 +266,10 @@ function MaintenancePage() {
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes bugFloat {
+          0%, 100% { transform: translateY(0) rotate(-4deg); }
+          50% { transform: translateY(-10px) rotate(4deg); }
         }
       `}</style>
     </main>
