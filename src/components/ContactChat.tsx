@@ -20,6 +20,7 @@ import { RevealContact } from "@/components/RevealContact";
 import { Captcha, type CaptchaValue } from "@/components/Captcha";
 import type { ConversationalContactInput } from "@/lib/contact-chat.functions";
 import { askAssistant } from "@/lib/assistant.functions";
+import { assistContactAnswer } from "@/lib/contact-assist.functions";
 import { answer as localAnswer } from "@/lib/assistant-engine";
 
 export type Track = "projet" | "alternance" | "autre";
@@ -299,6 +300,9 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
   const transcriptEndRef = useRef<HTMLDivElement>(null);
 
   const askServer = useServerFn(askAssistant);
+  const assistServer = useServerFn(assistContactAnswer);
+  const [assisting, setAssisting] = useState(false);
+  const [assistHints, setAssistHints] = useState<string[]>([]);
 
   const steps = track ? TRACKS[track].steps : [];
   const total = steps.length + 1; // + résumé
