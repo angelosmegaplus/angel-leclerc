@@ -17,7 +17,6 @@ let gatewayLastSuccessAt: number | null = null;
 
 function numberEnv(name: string, fallback: number) { const value = Number(process.env[name]); return Number.isFinite(value) && value > 0 ? value : fallback; }
 function enabled() { return !["0", "false", "off", "disabled"].includes(String(process.env.ANGEL_AI_ENABLED ?? "true").toLowerCase()); }
-function env(name: string) { const value = process.env[name]?.trim(); return value || null; }
 function gatewayKey() { return getLovableAiKey(); }
 function gatewayModel(model: string) { return resolveAiModel(model); }
 function prune(now = Date.now()) {
@@ -44,30 +43,6 @@ function succeed() { health.consecutiveFailures = 0; health.lastSuccessAt = Date
 function sanitizeMessages(messages: AiMessage[]): AiMessage[] {
   const stale = [/^État réel\s*:/i, /moteur IA externe n['’]est pas disponible/i, /moteur local/i, /mode de secours/i];
   return messages.filter((message) => message.role !== "assistant" || !stale.some((pattern) => pattern.test(message.content)));
-}
-function responseText(json: any): string | null {
-  if (typeof json?.output_text === "string" && json.output_text.trim()) return json.output_text.trim();
-  for (const item of json?.output ?? []) {
-    if (item?.type !== "message") continue;
-    for (const content of item?.content ?? []) {
-      if (content?.type === "output_text" && typeof content.text === "string" && content.text.trim()) return content.text.trim();
-    }
-  }
-  return null;
-}
-function providerErrorDetail(status: number, body: string, model: string, requestId: string | null, source: string) {
-  let message = "";
-  let code = "";
-  try {
-    const parsed = JSON.parse(body);
-    message = typeof parsed?.error?.message === "string" ? parsed.error.message : "";
-    code = typeof parsed?.error?.code === "string" ? parsed.error.code : typeof parsed?.error?.type === "string" ? parsed.error.type : "";
-  } catch {}
-  const parts = [`IA HTTP ${status}`, `modèle ${model}`, source];
-  if (code) parts.push(`code ${code}`);
-  if (message) parts.push(message.replace(/(?:sk|vck)_[A-Za-z0-9_-]+/g, "[clé masquée]").slice(0, 500));
-  if (requestId) parts.push(`request ${requestId}`);
-  return parts.join(" · ");
 }
 function credentialCooldown(status?: number) {
   if (status === 401 || status === 403) return 15 * 60_000;

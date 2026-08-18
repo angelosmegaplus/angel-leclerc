@@ -45,14 +45,6 @@ const structuredNewsFormat = {
   },
 } as const;
 
-function responseText(json: any): string {
-  if (typeof json?.output_text === "string") return json.output_text;
-  for (const item of json?.output ?? []) {
-    if (item?.type !== "message") continue;
-    for (const content of item?.content ?? []) if (content?.type === "output_text" && typeof content.text === "string") return content.text;
-  }
-  return "";
-}
 function parseJsonArray(raw: string): any[] {
   const trimmed = raw.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "");
   try { const value = JSON.parse(trimmed); return Array.isArray(value) ? value : Array.isArray(value?.items) ? value.items : []; }
@@ -73,8 +65,6 @@ function webModels() {
   const fallback = process.env["ANGEL_AI_WEB_FALLBACK_MODEL"] || DEFAULT_WEB_FALLBACK_MODEL;
   return Array.from(new Set([primary, fallback].filter(Boolean)));
 }
-function shouldTryFallback(status: number, body: string) { return (status === 400 || status === 403 || status === 404) && /model_not_found|model[^\n]*(?:unavailable|access|verified|verification)|organization must be verified/i.test(body); }
-function gatewayModel(model: string) { return model.includes("/") ? model : `openai/${model}`; }
 
 const NEWS_SYSTEM_PROMPT = "Tu alimentes le fil d’actualité privé d’Angel OS. Utilise obligatoirement la recherche web disponible. Le fil doit être réellement personnalisé, pas un fil tech générique. Priorité aux contenus publiés ou substantiellement mis à jour dans les dernières heures, avec extension à 48 h pour le local/tourisme et à 7 jours pour le scoutisme s’il n’y a rien de plus frais. Ne fournis que des articles/pages accessibles avec URL directe vérifiable. N’invente jamais une date, une source ou une URL. Évite les doublons, les polémiques vides, le clickbait et les sujets sans rapport avec le profil.";
 
