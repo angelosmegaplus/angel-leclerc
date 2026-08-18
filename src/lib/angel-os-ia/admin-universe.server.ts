@@ -44,10 +44,7 @@ async function readMailContext(userId: string) {
         rows.slice(0, limit).map(async (row) => {
           try {
             const detail = await readMail(userId, row.id);
-            return {
-              ...row,
-              bodyText: cleanHtml(detail.body).slice(0, 3500),
-            };
+            return { ...row, bodyText: cleanHtml(detail.body).slice(0, 3500) };
           } catch {
             return { ...row, bodyText: row.snippet };
           }
@@ -67,6 +64,40 @@ async function readMailContext(userId: string) {
   }
 }
 
+async function readCalendarContext(userId: string) {
+  try {
+    const { getAccessToken } = await import("@/lib/oauth/oauth.server");
+    const token = await getAccessToken(userId, "google");
+    if (!token) return { connected: false, events: [], error: "Google Workspace n’est pas connecté ou doit être reconnecté." };
+
+    const now = new Date();
+    const until = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+    const url = new URL("https://www.googleapis.com/calendar/v3/calendars/primary/events");
+    url.searchParams.set("timeMin", new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString());
+    url.searchParams.set("timeMax", until.toISOString());
+    url.searchParams.set("singleEvents", "true");
+    url.searchParams.set("orderBy", "startTime");
+    url.searchParams.set("maxResults", "75");
+
+    const response = await fetch(url, { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } });
+    const text = await response.text();
+    if (!response.ok) return { connected: false, events: [], error: `Google Agenda a refusé la requête (${response.status}).` };
+    const json = text ? JSON.parse(text) : {};
+    const events = (json.items ?? [])
+      .filter((event: any) => event?.status !== "cancelled" && (event?.start?.dateTime || event?.start?.date))
+      .map((event: any) => ({
+        id: String(event.id),
+        title: String(event.summary || "Événement Google"),
+        start: String(event.start.dateTime || `${event.start.date}T00:00:00`),
+        end: event.end?.dateTime || (event.end?.date ? `${event.end.date}T00:00:00` : null),
+        location: event.location ? String(event.location) : null,
+      }));
+    return { connected: true, events };
+  } catch (error) {
+    return { connected: false, events: [], error: error instanceof Error ? error.message : String(error) };
+  }
+}
+
 export async function readAdminUniverse(db: Db, userId: string) {
   const anyDb = db as unknown as { from: (table: string) => any };
 
@@ -83,8 +114,10 @@ export async function readAdminUniverse(db: Db, userId: string) {
     safeRows("angel_os_cache", anyDb.from("angel_os_cache").select("key,payload,updated_at").order("updated_at", { ascending: false }).limit(60)),
   ]);
 
-  const mail = await readMailContext(userId);
+  const [mail, calendar] = await Promise.all([readMailContext(userId), readCalendarContext(userId)]);
   const errors = sources.filter((source) => source.error).map((source) => `${source.source}: ${source.error}`);
+  if (!mail.connected && mail.error) errors.push(`mail: ${mail.error}`);
+  if (!calendar.connected && calendar.error) errors.push(`calendar: ${calendar.error}`);
 
   return {
     generatedAt: new Date().toISOString(),
@@ -94,10 +127,11 @@ export async function readAdminUniverse(db: Db, userId: string) {
     },
     pages: Object.fromEntries(sources.map((source) => [source.source, source.rows])),
     mail,
+    calendar,
     errors,
   };
 }
 
 export function adminUniversePrompt(universe: Awaited<ReturnType<typeof readAdminUniverse>>) {
-  return `\n\nUNIVERS ADMINISTRATEUR ANGEL OS — lecture privée ${universe.generatedAt}\nTu as accès en lecture au contexte des pages privées fourni ci-dessous, y compris les mails reçus ET envoyés lorsque la connexion mail fonctionne. Utilise les mails envoyés comme source de vérité pour reconstruire les candidatures réellement envoyées, leurs dates, destinataires, objets et fils ; croise avec les réponses reçues et la table applications. Ne confonds jamais absence de réponse et refus. Si un mail envoyé prouve une candidature absente ou obsolète dans applications, signale clairement l'écart et propose/autorise une synchronisation interne sûre. Pour un mail ouvert ou un fil présent dans ce contexte, tu peux rédiger un brouillon précis à partir du fil et des données privées. N'affirme jamais avoir lu une page ou un message non présent dans ce contexte.\n${JSON.stringify(universe)}`;
+  return `\n\nUNIVERS ADMINISTRATEUR ANGEL OS — lecture privée ${universe.generatedAt}\nTu as accès en lecture au contexte des pages privées fourni ci-dessous, y compris les mails reçus ET envoyés lorsque la connexion mail fonctionne, ainsi que l’agenda Google lorsqu’il est connecté. Utilise les mails envoyés comme source de vérité pour reconstruire les candidatures réellement envoyées, leurs dates, destinataires, objets et fils ; croise avec les réponses reçues et la table applications. Utilise l’agenda pour les rendez-vous, échéances et entretiens à venir. Ne confonds jamais absence de réponse et refus. Si un mail envoyé prouve une candidature absente ou obsolète dans applications, signale clairement l'écart et propose/autorise une synchronisation interne sûre. Pour un mail ouvert ou un fil présent dans ce contexte, tu peux rédiger un brouillon précis à partir du fil et des données privées. N'affirme jamais avoir lu une page, un message ou un événement non présent dans ce contexte.\n${JSON.stringify(universe)}`;
 }
