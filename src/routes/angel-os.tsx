@@ -22,6 +22,26 @@ export const Route = createFileRoute("/angel-os")({
 
 type Tech = { name: string; description: string; logo?: string; mark?: string };
 
+const features = [
+  "Espace d’administration",
+  "Articles, éditeur et corbeille",
+  "Candidatures",
+  "Projets",
+  "Agenda",
+  "Boîte mail",
+  "Statistiques",
+  "Fichiers",
+  "Films & séries",
+  "Notifications",
+  "Connexions",
+  "Automatisations",
+  "Recherche universelle",
+  "IA intégrée",
+  "Thèmes clair et sombre",
+  "Authentification",
+  "Usage mobile",
+];
+
 const technologies: Tech[] = [
   { name: "Lovable", mark: "LV", description: "Plateforme actuelle sur laquelle une partie du site est construite, hébergée et publiée." },
   { name: "Passerelle IA Lovable", mark: "AI", description: "Fournit les capacités d’intelligence artificielle (modèles Google Gemini) utilisées par les fonctions IA du site." },
