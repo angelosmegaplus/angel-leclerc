@@ -17,41 +17,48 @@ function isMaintenanceEnabled() {
 
 function MaintenancePage() {
   return (
-    <main className="min-h-screen bg-background px-5 py-10 text-foreground">
-      <div className="mx-auto flex min-h-[80vh] w-full max-w-3xl items-center justify-center">
-        <section className="w-full rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-10">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            Maintenance en cours
+    <main className="relative min-h-screen overflow-hidden bg-background px-5 text-foreground">
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl motion-safe:animate-pulse" />
+
+      <div className="relative mx-auto flex min-h-screen w-full max-w-xl items-center justify-center">
+        <section className="w-full text-center motion-safe:animate-[fadeIn_.55s_ease-out]">
+          <div className="mx-auto mb-7 flex h-16 w-16 items-center justify-center rounded-2xl border border-border bg-card shadow-sm">
+            <div className="h-7 w-7 rounded-full border-[3px] border-primary/20 border-t-primary motion-safe:animate-spin" />
           </div>
 
-          <h1 className="max-w-2xl text-3xl font-bold tracking-tight sm:text-5xl">
-            Angel-leclerc.fr évolue en ce moment.
-          </h1>
-
-          <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-            Une modification importante est en cours. Le site principal est temporairement placé en maintenance afin d’éviter de vous afficher une version incomplète ou instable.
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+            Maintenance en cours
           </p>
 
-          <div className="mt-8 rounded-2xl border border-border bg-muted/50 p-5">
-            <h2 className="text-base font-semibold">Site temporaire disponible</h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Vous pouvez continuer sur l’ancienne version hébergée sur Lovable pendant la maintenance. Cette version sert uniquement de solution de secours : certaines informations peuvent être anciennes et des erreurs ou bugs peuvent encore apparaître.
-            </p>
-            <a
-              href={TEMPORARY_SITE_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-5 inline-flex items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-            >
-              Ouvrir le site temporaire
-            </a>
-          </div>
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+            On améliore le site.
+          </h1>
 
-          <p className="mt-6 text-xs leading-5 text-muted-foreground">
-            L’espace d’administration reste accessible pendant la maintenance afin de permettre les contrôles et corrections nécessaires.
+          <p className="mx-auto mt-4 max-w-md text-base leading-7 text-muted-foreground">
+            Angel-leclerc.fr revient bientôt.
+          </p>
+
+          <a
+            href={TEMPORARY_SITE_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-8 inline-flex items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0"
+          >
+            Voir le site temporaire →
+          </a>
+
+          <p className="mt-4 text-xs text-muted-foreground">
+            Version de secours · elle peut contenir des bugs.
           </p>
         </section>
       </div>
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </main>
   );
 }
