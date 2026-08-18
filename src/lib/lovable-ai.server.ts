@@ -98,7 +98,7 @@ export async function lovableChat(options: {
 /** Sonde légère : une requête minimale suffit, la passerelle n'expose pas /models. */
 export async function probeLovableAi() {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8_000);
+  const timeout = setTimeout(() => controller.abort(), 25_000);
   try {
     const result = await lovableChat({ model: FAST_AI_MODEL, messages: [{ role: "user", content: "ping" }], maxTokens: 8, signal: controller.signal });
     return { healthy: result.ok, detail: result.detail, source: LOVABLE_AI_SOURCE };
