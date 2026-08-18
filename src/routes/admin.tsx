@@ -246,6 +246,45 @@ function AdminPage() {
   const [uploadingCover, setUploadingCover] = useState(false);
   const [tab, setTab] = useState<AdminTab>("dashboard");
 
+  // Autosauvegarde locale du brouillon en cours (aucun service externe).
+  const DRAFT_STORAGE_KEY = "alc-article-draft";
+  const [draftRestored, setDraftRestored] = useState(false);
+
+  useEffect(() => {
+    if (draftRestored) return;
+    setDraftRestored(true);
+    try {
+      const stored = window.localStorage.getItem(DRAFT_STORAGE_KEY);
+      if (!stored) return;
+      const parsed = JSON.parse(stored) as Draft;
+      if (parsed && typeof parsed.title === "string") {
+        setDraft(parsed);
+        setTab("studio");
+        toast.info("Brouillon local récupéré", {
+          description: "La dernière saisie non enregistrée a été restaurée.",
+        });
+      }
+    } catch {
+      window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+    }
+  }, [draftRestored]);
+
+  useEffect(() => {
+    if (!draftRestored) return;
+    if (!draft) {
+      window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      try {
+        window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+      } catch {
+        /* quota atteint : l'enregistrement en base reste la référence */
+      }
+    }, 800);
+    return () => window.clearTimeout(timer);
+  }, [draft, draftRestored]);
+
   // Raccourcis d'application installée et retours OAuth : /admin?tab=studio
   useEffect(() => {
     const requested = new URLSearchParams(window.location.search).get("tab");
