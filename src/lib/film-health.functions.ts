@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getTmdbCredentials } from "./vercel-connect-credentials.server";
+import { filmContent } from "./film-content.server";
+import { getTmdbCredentials } from "./runtime-credentials.server";
 
 export type FilmProviderHealth = {
   configuredCredentials: number;
@@ -8,10 +9,6 @@ export type FilmProviderHealth = {
   status: "ok" | "missing-credentials" | "all-credentials-failed";
 };
 
-/**
- * Safe health probe used by the private Films & séries UI.
- * It never exposes credential values or their source names.
- */
 export const getFilmProviderHealth = createServerFn({ method: "GET" }).handler(async (): Promise<FilmProviderHealth> => {
   const credentials = await getTmdbCredentials();
   if (!credentials.length) {
@@ -24,8 +21,7 @@ export const getFilmProviderHealth = createServerFn({ method: "GET" }).handler(a
   }
 
   try {
-    const { tmdb } = await import("./tmdb.server");
-    await tmdb<{ id?: number }>("/configuration");
+    await filmContent.health();
     return {
       configuredCredentials: credentials.length,
       workingCredential: true,
