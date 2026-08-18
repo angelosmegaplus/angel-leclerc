@@ -1,15 +1,15 @@
 /**
  * Boîte mail native Angel OS.
  *
- * Aucun proxy Lovable :
- * - Google -> Gmail API officielle
- * - Microsoft -> Microsoft Graph officiel
+ * - Google  -> Gmail API via le connecteur Gmail relié au projet (passerelle
+ *              Lovable). Aucun client OAuth Google à héberger, aucun jeton
+ *              stocké côté projet, renouvellement géré par la passerelle.
+ *              Repli sur le moteur OAuth Angel OS si un jeton existe encore.
+ * - Microsoft -> Microsoft Graph officiel via le moteur OAuth Angel OS.
  *
- * Les access tokens sont obtenus côté serveur via le moteur OAuth Angel OS et
- * ne sont jamais exposés au navigateur.
+ * Aucun jeton n'est exposé au navigateur.
  */
 
-const GMAIL_API = "https://gmail.googleapis.com/gmail/v1";
 const GRAPH_API = "https://graph.microsoft.com/v1.0";
 
 export type MailFolder = "inbox" | "sent" | "archive" | "trash" | "spam" | "unread";
@@ -39,19 +39,21 @@ export type MailAction = "read" | "unread" | "archive" | "trash" | "untrash" | "
 
 type Provider = "google" | "microsoft";
 
-type NativeTransport = {
-  provider: Provider;
-  token: string;
-};
+type NativeTransport =
+  | { provider: "google"; mode: "gateway" }
+  | { provider: Provider; mode: "oauth"; token: string };
 
 async function getNativeTransport(userId: string): Promise<NativeTransport | null> {
+  const { gatewayConfigured } = await import("./connectors/lovable-gateway.server");
+  if (gatewayConfigured("google_mail")) return { provider: "google", mode: "gateway" };
+
   const { getAccessToken } = await import("./oauth/oauth.server");
 
   const google = await getAccessToken(userId, "google").catch(() => null);
-  if (google) return { provider: "google", token: google };
+  if (google) return { provider: "google", mode: "oauth", token: google };
 
   const microsoft = await getAccessToken(userId, "microsoft").catch(() => null);
-  if (microsoft) return { provider: "microsoft", token: microsoft };
+  if (microsoft) return { provider: "microsoft", mode: "oauth", token: microsoft };
 
   return null;
 }
@@ -60,7 +62,7 @@ async function getTransport(userId: string): Promise<NativeTransport> {
   const transport = await getNativeTransport(userId);
   if (transport) return transport;
   throw new Error(
-    "Aucune boîte mail native active. Connectez Google Workspace ou Microsoft 365 depuis Angel OS → Connexions.",
+    "Aucune boîte mail active. Reliez le connecteur Gmail (ou Microsoft 365) depuis Angel OS → Connexions.",
   );
 }
 
@@ -94,11 +96,21 @@ async function apiRequest(
   return text ? (JSON.parse(text) as any) : {};
 }
 
-function gmailRequest(transport: NativeTransport, path: string, init?: Parameters<typeof apiRequest>[3]) {
-  return apiRequest(GMAIL_API, path, transport.token, init);
+async function gmailRequest(transport: NativeTransport, path: string, init?: Parameters<typeof apiRequest>[3]) {
+  if (transport.mode === "gateway") {
+    const { gatewayRequest } = await import("./connectors/lovable-gateway.server");
+    return gatewayRequest("google_mail", `/gmail/v1${path}`, {
+      ...(init?.method ? { method: init.method } : {}),
+      ...(init?.body !== undefined ? { body: init.body } : {}),
+      ...(init?.query ? { query: init.query } : {}),
+      ...(init?.headers ? { headers: init.headers } : {}),
+    });
+  }
+  return apiRequest("https://gmail.googleapis.com/gmail/v1", path, transport.token, init);
 }
 
 function graphRequest(transport: NativeTransport, path: string, init?: Parameters<typeof apiRequest>[3]) {
+  if (transport.mode === "gateway") throw new Error("Microsoft Graph n’est pas disponible via le connecteur Gmail.");
   return apiRequest(GRAPH_API, path, transport.token, init);
 }
 
