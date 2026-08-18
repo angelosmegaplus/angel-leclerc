@@ -54,13 +54,29 @@ export function ProjectsPanel() {
           ]}
           renderExtra={(row: Row) => {
             const cents = Number(row["amount_cents"] ?? 0);
-            if (!cents) return null;
+            const payment = str(row, "payment_status");
+            const paymentLabel =
+              payment === "devis"
+                ? "Devis envoyé"
+                : payment === "acompte"
+                  ? "Acompte reçu"
+                  : payment === "solde"
+                    ? "Soldé"
+                    : "";
+            if (!cents && !paymentLabel) return null;
             return (
               <p className="mt-2 text-sm font-medium text-foreground">
-                {(cents / 100).toLocaleString("fr-FR", {
-                  style: "currency",
-                  currency: "EUR",
-                })}
+                {cents
+                  ? (cents / 100).toLocaleString("fr-FR", {
+                      style: "currency",
+                      currency: "EUR",
+                    })
+                  : "Montant non renseigné"}
+                {paymentLabel ? (
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">
+                    · {paymentLabel}
+                  </span>
+                ) : null}
               </p>
             );
           }}
