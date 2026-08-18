@@ -70,7 +70,8 @@ async function requestProvider(options: {
   priority: AiPriority;
 }) {
   const controller = new AbortController();
-  const timeoutMs = options.interactive ? 20_000 : 15_000;
+  // Les modèles Gemini avec raisonnement peuvent dépasser 20 s : marge large côté serveur.
+  const timeoutMs = options.interactive ? 75_000 : 60_000;
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const result = await lovableChat({
