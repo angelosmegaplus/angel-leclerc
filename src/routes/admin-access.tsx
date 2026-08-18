@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/admin-access")({
@@ -34,7 +34,6 @@ function tone(frequency: number, duration = 0.08, delay = 0) {
 }
 
 function AdminAccessGate() {
-  const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const checks = [
     "ACCESS REQUEST CAPTURED",
@@ -46,9 +45,7 @@ function AdminAccessGate() {
   ];
 
   useEffect(() => {
-    const arm = () => {
-      tone(92, 0.07);
-    };
+    const arm = () => tone(92, 0.07);
     window.addEventListener("pointerdown", arm, { once: true });
     window.addEventListener("keydown", arm, { once: true });
 
@@ -59,7 +56,7 @@ function AdminAccessGate() {
     }, 220 + index * 280));
 
     const finish = window.setTimeout(() => {
-      void navigate({ to: "/auth", search: { adminFlow: "1" } as never });
+      window.location.assign("/auth?adminFlow=1");
     }, 220 + checks.length * 280 + 520);
 
     return () => {
@@ -68,7 +65,7 @@ function AdminAccessGate() {
       timers.forEach(window.clearTimeout);
       window.clearTimeout(finish);
     };
-  }, [navigate]);
+  }, []);
 
   return (
     <section className="guard-shell" aria-label="Inspection Angel Guard" role="status">
