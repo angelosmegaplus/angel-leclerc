@@ -339,46 +339,6 @@ async function uploadMedia(file: File): Promise<string> {
   return data.signedUrl;
 }
 
-function loadScript(url: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>(`script[data-editorjs-src="${url}"]`);
-    if (existing?.dataset.loaded === "true") return resolve();
-    if (existing) {
-      existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error(`Impossible de charger ${url}`)), { once: true });
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = url;
-    script.async = true;
-    script.dataset.editorjsSrc = url;
-    script.addEventListener(
-      "load",
-      () => {
-        script.dataset.loaded = "true";
-        resolve();
-      },
-      { once: true },
-    );
-    script.addEventListener("error", () => reject(new Error(`Impossible de charger ${url}`)), { once: true });
-    document.head.appendChild(script);
-  });
-}
-
-async function loadEditorScripts(): Promise<void> {
-  await loadScript(SCRIPT_URLS[0]);
-  await Promise.allSettled(SCRIPT_URLS.slice(1).map(loadScript));
-}
-
-function resolveTool(...names: string[]): unknown {
-  for (const name of names) {
-    const tool = (window as unknown as Record<string, unknown>)[name];
-    if (tool) return tool;
-  }
-  return undefined;
-}
-
 export function RichTextEditor({ value, onChange }: Props) {
   const holderId = useMemo(() => `editorjs-${crypto.randomUUID()}`, []);
   const editorRef = useRef<EditorInstance | null>(null);
