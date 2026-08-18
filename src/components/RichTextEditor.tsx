@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
-const EDITOR_JS_VERSION = "2.31.6";
 const AUTOSAVE_DELAY = 1200;
 
 type Props = {
@@ -31,44 +30,65 @@ type EditorInstance = {
   destroy: () => void;
 };
 
-declare global {
-  interface Window {
-    EditorJS?: new (config: Record<string, unknown>) => EditorInstance;
-    Header?: unknown;
-    List?: unknown;
-    EditorjsList?: unknown;
-    Quote?: unknown;
-    ImageTool?: unknown;
-    Checklist?: unknown;
-    Delimiter?: unknown;
-    RawTool?: unknown;
-    Table?: unknown;
-    Embed?: unknown;
-    Marker?: unknown;
-    InlineCode?: unknown;
-    LinkTool?: unknown;
-    CodeTool?: unknown;
-    Warning?: unknown;
-  }
-}
+type EditorBundle = {
+  EditorJS: new (config: Record<string, unknown>) => EditorInstance;
+  tools: Record<string, unknown>;
+};
 
-const SCRIPT_URLS = [
-  `https://cdn.jsdelivr.net/npm/@editorjs/editorjs@${EDITOR_JS_VERSION}`,
-  "https://cdn.jsdelivr.net/npm/@editorjs/header@2.8.9",
-  "https://cdn.jsdelivr.net/npm/@editorjs/list@2.0.9",
-  "https://cdn.jsdelivr.net/npm/@editorjs/quote@2.7.6",
-  "https://cdn.jsdelivr.net/npm/@editorjs/image@2.10.3",
-  "https://cdn.jsdelivr.net/npm/@editorjs/checklist@1.6.0",
-  "https://cdn.jsdelivr.net/npm/@editorjs/delimiter@1.4.2",
-  "https://cdn.jsdelivr.net/npm/@editorjs/raw@2.5.1",
-  "https://cdn.jsdelivr.net/npm/@editorjs/table@2.4.6",
-  "https://cdn.jsdelivr.net/npm/@editorjs/embed@2.8.1",
-  "https://cdn.jsdelivr.net/npm/@editorjs/marker@1.4.0",
-  "https://cdn.jsdelivr.net/npm/@editorjs/inline-code@1.5.2",
-  "https://cdn.jsdelivr.net/npm/@editorjs/link@2.6.2",
-  "https://cdn.jsdelivr.net/npm/@editorjs/code@2.9.4",
-  "https://cdn.jsdelivr.net/npm/@editorjs/warning@1.4.1",
-] as const;
+let bundlePromise: Promise<EditorBundle> | null = null;
+
+/**
+ * L'éditeur est embarqué dans l'application (aucun CDN externe) :
+ * les modules sont installés localement et chargés à la demande côté navigateur.
+ */
+async function loadEditorBundle(): Promise<EditorBundle> {
+  bundlePromise ??= (async () => {
+    const [
+      editorjs, header, list, quote, image, checklist, delimiter,
+      raw, table, embed, marker, inlineCode, linkTool, code, warning,
+    ] = await Promise.all([
+      import("@editorjs/editorjs"),
+      import("@editorjs/header"),
+      import("@editorjs/list"),
+      import("@editorjs/quote"),
+      import("@editorjs/image"),
+      import("@editorjs/checklist"),
+      import("@editorjs/delimiter"),
+      import("@editorjs/raw"),
+      import("@editorjs/table"),
+      import("@editorjs/embed"),
+      import("@editorjs/marker"),
+      import("@editorjs/inline-code"),
+      import("@editorjs/link"),
+      import("@editorjs/code"),
+      import("@editorjs/warning"),
+    ]);
+    const pick = (mod: unknown) => (mod as { default?: unknown })?.default ?? mod;
+    return {
+      EditorJS: pick(editorjs) as EditorBundle["EditorJS"],
+      tools: {
+        header: pick(header),
+        list: pick(list),
+        quote: pick(quote),
+        image: pick(image),
+        checklist: pick(checklist),
+        delimiter: pick(delimiter),
+        raw: pick(raw),
+        table: pick(table),
+        embed: pick(embed),
+        marker: pick(marker),
+        inlineCode: pick(inlineCode),
+        linkTool: pick(linkTool),
+        code: pick(code),
+        warning: pick(warning),
+      },
+    };
+  })().catch((error) => {
+    bundlePromise = null;
+    throw error;
+  });
+  return bundlePromise;
+}
 
 export function parseYouTubeId(input: string): string | null {
   const value = input.trim();
