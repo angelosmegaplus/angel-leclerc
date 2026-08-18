@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
+import { filmContent, tmdbImage, type FilmMediaType } from "./film-content.server";
 import type { RecommendationCandidate } from "./film-recommendations";
 
-type MediaType = "movie" | "tv";
 type RawMedia = {
   id: number;
   media_type?: string;
@@ -28,32 +28,13 @@ export type LiveFilmCatalogResult = {
 };
 
 const GENRES: Record<number, string> = {
-  12: "Aventure",
-  14: "Fantastique",
-  16: "Animation",
-  18: "Drame",
-  27: "Horreur",
-  28: "Action",
-  35: "Comédie",
-  36: "Histoire",
-  37: "Western",
-  53: "Thriller",
-  80: "Crime",
-  99: "Documentaire",
-  878: "Science-fiction",
-  9648: "Mystère",
-  10749: "Romance",
-  10751: "Famille",
-  10752: "Guerre",
-  10759: "Action & aventure",
-  10765: "Science-fiction & fantastique",
+  12: "Aventure", 14: "Fantastique", 16: "Animation", 18: "Drame", 27: "Horreur", 28: "Action",
+  35: "Comédie", 36: "Histoire", 37: "Western", 53: "Thriller", 80: "Crime", 99: "Documentaire",
+  878: "Science-fiction", 9648: "Mystère", 10749: "Romance", 10751: "Famille", 10752: "Guerre",
+  10759: "Action & aventure", 10765: "Science-fiction & fantastique",
 };
 
-function image(path: string | null | undefined, size: "w500" | "w780") {
-  return path ? `https://image.tmdb.org/t/p/${size}${path}` : undefined;
-}
-
-function normalize(raw: RawMedia, mediaType: MediaType): RecommendationCandidate | null {
+function normalize(raw: RawMedia, mediaType: FilmMediaType): RecommendationCandidate | null {
   const title = (mediaType === "movie" ? raw.title : raw.name) || raw.title || raw.name;
   if (!title || !raw.id) return null;
   const date = mediaType === "movie" ? raw.release_date : raw.first_air_date;
@@ -70,8 +51,8 @@ function normalize(raw: RawMedia, mediaType: MediaType): RecommendationCandidate
     popularity: Number(raw.popularity) || 0,
     pitch: raw.overview?.trim() || "Synopsis non disponible en français.",
     genreLabel: genreIds.slice(0, 3).map((id) => GENRES[id]).filter(Boolean).join(" · ") || (mediaType === "movie" ? "Film" : "Série"),
-    posterUrl: image(raw.poster_path, "w500"),
-    backdropUrl: image(raw.backdrop_path, "w780"),
+    posterUrl: tmdbImage(raw.poster_path, "w500"),
+    backdropUrl: tmdbImage(raw.backdrop_path, "w1280"),
     rating: Math.round((Number(raw.vote_average) || 0) * 10) / 10,
     originalTitle: (mediaType === "movie" ? raw.original_title : raw.original_name) || title,
   };
@@ -86,44 +67,47 @@ function dedupe(items: RecommendationCandidate[]) {
   });
 }
 
+function mediaTypeFor(raw: RawMedia, fallback: FilmMediaType): FilmMediaType {
+  return raw.media_type === "tv" ? "tv" : raw.media_type === "movie" ? "movie" : fallback;
+}
+
 export const getLiveFilmCatalog = createServerFn({ method: "GET" })
-  .validator((input: { query?: string; page?: number; mediaType?: "all" | MediaType } | undefined) => ({
+  .validator((input: { query?: string; page?: number; mediaType?: "all" | FilmMediaType } | undefined) => ({
     query: String(input?.query ?? "").trim().slice(0, 100),
     page: Math.max(1, Math.min(5, Number(input?.page) || 1)),
     mediaType: input?.mediaType === "movie" || input?.mediaType === "tv" ? input.mediaType : "all" as const,
   }))
   .handler(async ({ data }): Promise<LiveFilmCatalogResult> => {
     try {
-      const { tmdb } = await import("./tmdb.server");
-      const pages: Array<Promise<{ mediaType: MediaType; page: Page }>> = [];
-      const common = { page: String(data.page), include_adult: "false" };
-
       if (data.query.length >= 2) {
-        if (data.mediaType !== "tv") pages.push(tmdb<Page>("/search/movie", { ...common, query: data.query }).then((page) => ({ mediaType: "movie", page })));
-        if (data.mediaType !== "movie") pages.push(tmdb<Page>("/search/tv", { ...common, query: data.query }).then((page) => ({ mediaType: "tv", page })));
-      } else {
-        if (data.mediaType !== "tv") {
-          pages.push(tmdb<Page>("/trending/movie/week", { page: String(data.page) }).then((page) => ({ mediaType: "movie", page })));
-          pages.push(tmdb<Page>("/movie/popular", { page: String(data.page) }).then((page) => ({ mediaType: "movie", page })));
-          pages.push(tmdb<Page>("/discover/movie", { ...common, sort_by: "popularity.desc", with_genres: "27|53|80|9648" }).then((page) => ({ mediaType: "movie", page })));
-        }
-        if (data.mediaType !== "movie") {
-          pages.push(tmdb<Page>("/trending/tv/week", { page: String(data.page) }).then((page) => ({ mediaType: "tv", page })));
-          pages.push(tmdb<Page>("/tv/popular", { page: String(data.page) }).then((page) => ({ mediaType: "tv", page })));
-        }
+        const response = await filmContent.search({ q: data.query, type: data.mediaType, page: data.page }) as Page;
+        const fallbackType: FilmMediaType = data.mediaType === "tv" ? "tv" : "movie";
+        const items = (response.results ?? [])
+          .filter((raw) => raw.media_type !== "person")
+          .map((raw) => normalize(raw, mediaTypeFor(raw, fallbackType)))
+          .filter((item): item is RecommendationCandidate => Boolean(item));
+        return { items: dedupe(items).slice(0, 50), source: "tmdb", diagnostic: null };
       }
 
-      const settled = await Promise.allSettled(pages);
-      const fulfilled = settled.filter((entry): entry is PromiseFulfilledResult<{ mediaType: MediaType; page: Page }> => entry.status === "fulfilled");
-      const normalized = fulfilled.flatMap((entry) =>
+      const requests: Array<Promise<{ mediaType: FilmMediaType; page: Page }>> = [];
+      if (data.mediaType !== "tv") {
+        requests.push(Promise.resolve(filmContent.trending("movie", "week", data.page) as Promise<Page>).then((page) => ({ mediaType: "movie", page })));
+        requests.push(Promise.resolve(filmContent.movies() as Promise<Page>).then((page) => ({ mediaType: "movie", page })));
+        requests.push(Promise.resolve(filmContent.discover("movie", { page: data.page, with_genres: "27|53|80|9648", sort_by: "popularity.desc", vote_count_gte: 50 }) as Promise<Page>).then((page) => ({ mediaType: "movie", page })));
+      }
+      if (data.mediaType !== "movie") {
+        requests.push(Promise.resolve(filmContent.trending("tv", "week", data.page) as Promise<Page>).then((page) => ({ mediaType: "tv", page })));
+        requests.push(Promise.resolve(filmContent.tv() as Promise<Page>).then((page) => ({ mediaType: "tv", page })));
+      }
+
+      const settled = await Promise.allSettled(requests);
+      const fulfilled = settled.filter((entry): entry is PromiseFulfilledResult<{ mediaType: FilmMediaType; page: Page }> => entry.status === "fulfilled");
+      const items = dedupe(fulfilled.flatMap((entry) =>
         (entry.value.page.results ?? [])
           .map((raw) => normalize(raw, entry.value.mediaType))
           .filter((item): item is RecommendationCandidate => Boolean(item)),
-      );
-      const items = dedupe(normalized).slice(0, data.query ? 40 : 100);
+      )).slice(0, 120);
 
-      // A valid TMDB response with zero matches is still a successful TMDB search.
-      // Only fall back locally when every requested TMDB call actually failed.
       if (fulfilled.length > 0) return { items, source: "tmdb", diagnostic: null };
 
       const failure = settled.find((entry): entry is PromiseRejectedResult => entry.status === "rejected");
