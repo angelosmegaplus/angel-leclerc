@@ -1,54 +1,30 @@
 {
-  "fetchedAt": "2026-08-18T11:02:31Z",
+  "fetchedAt": "2026-08-18T16:59:24Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-18T11:02:31Z",
+      "fetchedAt": "2026-08-18T16:59:24Z",
       "important": [
         {
-          "subject": "Candidatures BTS Communication envoyées",
-          "from": "Boîte Gmail connectée",
-          "date": "2026-08-18T11:02:31Z",
-          "summary": "21 mails envoyés correspondant avec forte certitude à des candidatures BTS Communication ont été détectés depuis le précédent rapport. Aucun envoi supplémentaire n'a été effectué par cette routine.",
-          "reason": "Les éléments envoyés servent de preuve opérationnelle pour la synchronisation Candidatures et le futur index mail privé Angel OS IA.",
-          "suggestedReply": ""
-        },
-        {
-          "subject": "Réponses automatiques de candidature",
-          "from": "Boîte Gmail connectée",
-          "date": "2026-08-18T11:02:31Z",
-          "summary": "Trois réponses automatiques d'absence et un challenge de délivrabilité ont été détectés sur des fils de candidature. Aucun de ces messages ne constitue un refus, une acceptation ou une demande d'entretien.",
-          "reason": "Conserver le statut factuel des candidatures sans interpréter une absence ou un système anti-spam comme une réponse négative.",
-          "suggestedReply": ""
-        },
-        {
-          "subject": "Alertes techniques Angel OS",
-          "from": "Services techniques connectés",
-          "date": "2026-08-18T11:02:31Z",
-          "summary": "Sept alertes de déploiement Vercel en échec ont été détectées depuis le précédent rapport. Elles sont consignées pour la maintenance technique ; aucune modification du site n'a été déclenchée par cette routine.",
-          "reason": "Éviter de mélanger veille mail et maintenance technique tout en conservant une trace exploitable.",
-          "suggestedReply": ""
-        },
-        {
-          "subject": "Autorisations Google récentes",
-          "from": "Google",
-          "date": "2026-08-18T11:02:31Z",
-          "summary": "Plusieurs alertes de sécurité Google confirment des autorisations récentes accordées à angel-leclerc.fr. Les copies reçues sur Outlook ont été dédupliquées comme le même type d'événement et ne sont pas comptées deux fois.",
-          "reason": "Information utile au diagnostic OAuth sans exposer de jeton, secret ou identifiant privé.",
+          "subject": "Alerte de solde Lovable",
+          "from": "Lovable",
+          "date": "2026-08-18T16:07:49Z",
+          "summary": "Une alerte de solde faible Lovable a été reçue. Elle est consignée comme alerte technique/commerciale uniquement ; Lovable n’est pas un prérequis d’Angel OS et aucune action ni dépense n’a été déclenchée.",
+          "reason": "Tracer l’alerte sans créer de dépendance Lovable ni déclencher d’action non validée.",
           "suggestedReply": ""
         }
       ],
-      "otherSummary": "Depuis le précédent rapport, 21 candidatures BTS Communication envoyées ont été détectées, ainsi que quatre retours automatiques liés à ces fils. Aucun refus explicite, aucune réponse positive, aucun entretien et aucune demande de CV ou d'information n'ont été détectés. Aucun mail n'a été envoyé ou modifié par cette routine.",
+      "otherSummary": "Depuis le précédent rapport, aucun nouveau mail reçu pertinent pour une candidature BTS Communication, aucune réponse d’entreprise, aucun refus explicite, aucun entretien, aucune demande de CV et aucun nouvel envoi Gmail n’ont été détectés. Une alerte de solde Lovable a été consignée sans action.",
       "counts": {
-        "useful_messages": 37,
-        "incoming": 16,
-        "outgoing": 21,
-        "outgoing_bts_applications": 21,
-        "application_related_incoming": 4,
-        "automatic_absence": 3,
-        "delivery_challenge": 1,
-        "technical_incoming": 7,
-        "security_or_account_incoming": 4,
-        "job_alerts": 1,
+        "useful_messages": 1,
+        "incoming": 1,
+        "outgoing": 0,
+        "outgoing_bts_applications": 0,
+        "application_related_incoming": 0,
+        "automatic_absence": 0,
+        "delivery_challenge": 0,
+        "technical_incoming": 1,
+        "security_or_account_incoming": 0,
+        "job_alerts": 0,
         "explicit_rejections": 0,
         "positive_or_interview": 0,
         "professional_redirects": 0,
@@ -56,62 +32,48 @@
       }
     },
     "microsoft_mail_dashboard": {
-      "fetchedAt": "2026-08-18T11:02:31Z",
-      "summary": "La boîte Outlook a été contrôlée. Les alertes de sécurité Google reçues en copie ont été dédupliquées avec Gmail. Une alerte d'offre d'alternance en communication a été repérée mais ne prouve aucune candidature ni réponse d'entreprise. Aucun élément envoyé Outlook postérieur à la borne du précédent rapport n'a été identifié parmi les éléments récents examinés.",
+      "fetchedAt": "2026-08-18T16:59:24Z",
+      "summary": "La boîte Outlook a été contrôlée depuis la borne du précédent rapport. Un nouveau message de type newsletter a été reçu à 16:45 UTC, sans lien avec les candidatures, les actions Angel OS ou une demande professionnelle. Aucun nouvel élément envoyé Outlook dans la période n’a été identifié parmi les éléments récents contrôlés.",
       "counts": {
         "unique_application_replies": 0,
         "unique_outgoing_applications": 0,
-        "job_alerts": 1,
-        "cross_provider_duplicates_ignored": 4
+        "job_alerts": 0,
+        "cross_provider_duplicates_ignored": 0
       }
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-17T07:13:10Z",
-    "period_end": "2026-08-18T11:02:31Z",
-    "summary": "Cycle consolidé Gmail + Outlook terminé. 21 mails envoyés correspondent avec forte certitude à des candidatures BTS Communication. Quatre retours automatiques liés aux candidatures ont été détectés, sans refus explicite, entretien, acceptation ni demande de CV. Sept alertes Vercel ont été consignées pour la maintenance technique. Les copies Outlook d'alertes Google ont été dédupliquées. Aucun email n'a été envoyé, répondu, classé ou modifié par cette routine. La file `ai_actions` et l'index mail privé cumulatif ne peuvent toujours pas être lus/écrits directement depuis les connecteurs de cette exécution sans voie serveur authentifiée dédiée ; aucune donnée privée détaillée, aucun message_id, destinataire ni contenu de fil n'a donc été écrit dans ce snapshot GitHub public.",
+    "period_start": "2026-08-18T11:02:31Z",
+    "period_end": "2026-08-18T16:59:24Z",
+    "summary": "Cycle consolidé Gmail + Outlook terminé. Aucun nouveau mail pertinent pour une candidature BTS Communication, aucune réponse d’entreprise, aucun refus explicite, aucun entretien, aucune demande de CV et aucun nouvel envoi de candidature n’ont été détectés depuis le rapport précédent. Une alerte de solde Lovable a été consignée comme information technique/commerciale, sans action car Lovable n’est pas un prérequis. Aucun email n’a été envoyé, répondu, classé ou modifié. La file privée `ai_actions` et l’index mail privé cumulatif ne sont toujours pas accessibles en lecture/écriture depuis les connecteurs de cette exécution sans voie serveur authentifiée dédiée ; aucune donnée privée détaillée n’est écrite dans ce snapshot GitHub public.",
     "counts": {
-      "useful_messages": 37,
-      "incoming": 16,
-      "outgoing": 21,
-      "outgoing_bts_applications": 21,
-      "application_related_incoming": 4,
-      "automatic_absence": 3,
-      "delivery_challenge": 1,
-      "technical_incoming": 7,
-      "security_or_account_incoming": 4,
-      "job_alerts": 1,
+      "useful_messages": 1,
+      "incoming": 1,
+      "outgoing": 0,
+      "outgoing_bts_applications": 0,
+      "application_related_incoming": 0,
+      "automatic_absence": 0,
+      "delivery_challenge": 0,
+      "technical_incoming": 1,
+      "security_or_account_incoming": 0,
+      "job_alerts": 0,
       "explicit_rejections": 0,
       "positive_or_interview": 0,
       "professional_redirects": 0,
       "awaiting_operator_executed": 0,
       "pending_actions_created": 0,
-      "cross_provider_duplicates_ignored": 4
+      "cross_provider_duplicates_ignored": 0
     },
     "items": [
       {
-        "kind": "applications_sent",
-        "summary": "21 candidatures BTS Communication envoyées détectées ; réconciliation avec `applications` requise via la voie privée native avant toute création afin d'éviter les doublons."
-      },
-      {
-        "kind": "application_auto_replies",
-        "summary": "Trois absences automatiques et un challenge de délivrabilité ; aucun changement vers refus/acceptation/entretien."
-      },
-      {
-        "kind": "technical_alerts",
-        "summary": "Sept échecs de déploiement Vercel consignés ; traitement laissé à la maintenance technique."
-      },
-      {
-        "kind": "oauth_security",
-        "summary": "Alertes Google d'autorisation récentes détectées ; copies Outlook dédupliquées."
+        "kind": "technical_alert",
+        "summary": "Alerte de solde faible Lovable reçue ; consignée sans action et sans dépendance Lovable."
       }
     ],
     "recommendations": [
-      "Ne répondre automatiquement à aucun fil de candidature détecté pendant ce cycle.",
-      "Réconcilier les 21 preuves d'envoi avec `applications` uniquement via une voie privée serveur, avec anti-doublon par message/thread/domaine/entreprise.",
-      "Conserver les réponses automatiques comme état d'attente ; ne jamais les transformer en refus.",
-      "Laisser la maintenance technique diagnostiquer les alertes Vercel ; aucune action technique n'a été exécutée ici.",
-      "Ne pas stocker l'index mail privé détaillé dans GitHub public ; une voie serveur authentifiée dédiée reste nécessaire pour message_id/thread_id/destinataires et résumés de fils."
+      "Aucune action mail n’est nécessaire sur cette période.",
+      "Ne déclencher aucune dépense ni reconnexion Lovable depuis cette routine.",
+      "Continuer à attendre une voie privée serveur authentifiée pour exécuter `awaiting_operator` et maintenir l’index mail privé détaillé sans exposer de données dans GitHub public."
     ],
     "source": "chatgpt-hourly-direct"
   }
