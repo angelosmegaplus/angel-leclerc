@@ -1,22 +1,32 @@
 // Browser/SSR Supabase client. Public configuration only.
 import { createClient, type Session } from '@supabase/supabase-js';
 import type { Database } from './types';
+import { lovableArticleArchive } from '@/content/lovable-archive';
 
 const PUBLIC_SUPABASE_URL = 'https://timygavajdestkbdzuyk.supabase.co';
 const PUBLIC_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_8IG8jsDj3yWH7u7urAQPig_r2V8Wd9s';
 
-// A few articles are still shipped from Git as a resilience fallback. They are
-// displayed in the same admin list as database articles, so deleting them by
-// `articles.id` cannot work: no matching row exists in public.articles. Keep a
-// small compatibility map here and turn that delete into a tombstone in
-// git_article_state. The article readers already honour those tombstones.
-const LEGACY_GIT_ARTICLE_BY_ID: Record<string, string> = {
+// Les articles récupérés depuis l'ancien site peuvent être affichés dans l'admin
+// avant leur restauration native dans public.articles. Dans ce cas un DELETE par
+// id toucherait zéro ligne et l'article réapparaîtrait via le fallback historique.
+// On transforme donc la suppression de TOUT article d'archive en tombstone
+// persistant dans git_article_state. Les lecteurs d'articles respectent déjà ces
+// tombstones, ce qui empêche toute résurrection involontaire.
+const RECOVERED_ARTICLE_BY_ID: Record<string, string> = Object.fromEntries(
+  lovableArticleArchive
+    .filter((article) => typeof article.id === 'string' && typeof article.slug === 'string')
+    .map((article) => [article.id, article.slug]),
+);
+
+// Quelques articles historiques maintenus directement dans Git ne font pas
+// forcément partie du snapshot Lovable : conserver leur compatibilité explicite.
+Object.assign(RECOVERED_ARTICLE_BY_ID, {
   'political-salaries-20260815': 'salaires-politiques-france-combien-coutent-elus',
   '9b51d8a2-7cf4-4d9b-a9d0-202608131438':
     'macron-2017-philippe-2027-reseaux-attali-president-par-defaut',
   '4f948fd6-424d-4fc2-9d0b-202608131420':
     'meilleurs-films-horreur-classement-allocine-avis',
-};
+});
 
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
@@ -71,11 +81,14 @@ function proxiedFrom(table: string) {
             if (deleteProp !== 'eq') return Reflect.get(deleteTarget, deleteProp, deleteReceiver);
             return (column: string, value: unknown) => {
               if (column === 'id' && typeof value === 'string') {
-                const slug = LEGACY_GIT_ARTICLE_BY_ID[value];
+                const slug = RECOVERED_ARTICLE_BY_ID[value];
                 if (slug) {
                   return (_supabase as any)
                     .from('git_article_state')
-                    .upsert({ slug, deleted: true }, { onConflict: 'slug' });
+                    .upsert(
+                      { slug, deleted: true, deleted_at: new Date().toISOString() },
+                      { onConflict: 'slug' },
+                    );
                 }
               }
               return deleteTarget.eq(column, value);
