@@ -9,6 +9,12 @@ import { aiMemoryPrompt } from "@/lib/ai-memory.server";
 import { searchPersonalContext } from "./personal-context.server";
 import { operationalContextPrompt, readOperationalContext } from "./operational-context.server";
 import { adminUniversePrompt, readAdminUniverse } from "./admin-universe.server";
+import {
+  ensureSiteKnowledgeFresh,
+  searchSiteKnowledge,
+  siteKnowledgePrompt,
+  SITE_KNOWLEDGE_POLICY,
+} from "./site-knowledge.server";
 import { recordAngelOperation } from "@/lib/angel-runtime.server";
 
 const InputSchema = z.object({ command: z.string().trim().min(2).max(2_000) });
@@ -43,12 +49,7 @@ async function recentConversation(db: Db) {
       const messages: AiMessage[] = [];
       if (row.content?.trim()) messages.push({ role: "user", content: row.content.trim().slice(0, 2_000) });
       const response = row.response?.trim();
-      if (
-        row.status === "completed" &&
-        response &&
-        !LEGACY_AUTOMATIC_RESPONSE.test(response) &&
-        !looksLikeHtml(response)
-      ) {
+      if (row.status === "completed" && response && !LEGACY_AUTOMATIC_RESPONSE.test(response) && !looksLikeHtml(response)) {
         messages.push({ role: "assistant", content: response.slice(0, 3_000) });
       }
       return messages;
@@ -71,7 +72,12 @@ export const runPrivateAngelOsIaChat = createServerFn({ method: "POST" })
     const db = context.supabase as Db;
     await assertAdmin(db, context.userId);
     const startedAt = Date.now();
-    const { data: stored, error: insertError } = await db.from("ai_messages").insert({ author: "angel", content: data.command, status: "running", context: { source: "angel-os-ia", private: true } }).select("id").single();
+    const { data: stored, error: insertError } = await db.from("ai_messages").insert({
+      author: "angel",
+      content: data.command,
+      status: "running",
+      context: { source: "angel-os-ia", private: true },
+    }).select("id").single();
     if (insertError) throw insertError;
 
     try {
@@ -80,36 +86,78 @@ export const runPrivateAngelOsIaChat = createServerFn({ method: "POST" })
         readAdminUniverse(db, context.userId),
         aiMemoryPrompt("private"),
         readOperationalContext({ refreshIfStale: true }),
+        ensureSiteKnowledgeFresh(),
       ]);
+
       const personal = searchPersonalContext(data.command, 8);
-      const personalText = personal.length ? personal.map((hit) => `${hit.title}: ${hit.text.slice(0, 700)}`).join("\n") : "Aucun contexte personnel pertinent indexé.";
+      const siteHits = searchSiteKnowledge(data.command, 14);
+      const personalText = personal.length
+        ? personal.map((hit) => `${hit.title}: ${hit.text.slice(0, 700)}`).join("\n")
+        : "Aucun contexte personnel pertinent indexé.";
       const operationalText = operationalContextPrompt(operational);
       const universeText = adminUniversePrompt(universe);
+      const siteText = siteKnowledgePrompt(siteHits);
+
       const messages: AiMessage[] = [
         {
           role: "system",
-          content: "Tu es Angel OS IA, la distribution d’intelligence artificielle privée fonctionnant au-dessus d’Angel OS dans l’espace administrateur privé. Tu réponds uniquement via OpenAI dans cette interface. Il n’existe aucun moteur conversationnel local de secours ici : ne prétends jamais être un fallback local. Tu peux lire et croiser les données de l’ensemble de l’espace administrateur qui te sont fournies dans l’univers admin, notamment candidatures, projets, tâches, articles, messages du site, abonnés, actions, rapports, caches et la boîte mail reçue/envoyée lorsqu’elle est connectée. Les mails envoyés sont une source opérationnelle de vérité : s’ils prouvent qu’une candidature a été envoyée, utilise la date, le destinataire, l’objet et le fil pour comprendre l’état réel, puis compare avec la base applications. Tu peux rédiger des brouillons de mail à partir des fils réels. Tu peux être autonome pour lire, analyser, diagnostiquer, prioriser et préparer les opérations internes sûres et réversibles. Une synchronisation interne factuelle et idempotente à partir d’une preuve certaine peut être proposée comme correction ; ne transforme jamais une inférence faible en fait. Tu dois conserver une validation explicite avant tout nouvel envoi externe depuis le chat, publication publique, suppression, paiement ou action destructive/irréversible. Garde la continuité de conversation et dis clairement quand une source est indisponible. Les informations les plus récentes priment en cas de contradiction. N’affirme jamais qu’une action externe ou une synchronisation a été exécutée si elle ne l’a pas réellement été.",
+          content: `Tu es Angel OS IA, la distribution d’intelligence artificielle privée fonctionnant au-dessus d’Angel OS dans l’espace administrateur privé. Tu réponds uniquement via OpenAI dans cette interface. Il n’existe aucun moteur conversationnel local de secours ici : ne prétends jamais être un fallback local.
+
+Tu disposes d’un index local du code du site, des routes, de la documentation et du texte des pages publiques réellement rendues en production. Cet index est reconstruit automatiquement depuis le code livré avec Angel OS et depuis angel-leclerc.fr : ce n’est pas une mémoire imaginative. Tu ne prétends lire que les extraits effectivement fournis dans le contexte de la demande. Quand une question concerne le fonctionnement du site, appuie-toi d’abord sur ces preuves et cite naturellement le chemin de fichier ou la route lorsque c’est utile.
+
+Tu peux également lire et croiser les données de l’ensemble de l’espace administrateur qui te sont fournies dans l’univers admin, notamment candidatures, projets, tâches, articles, messages du site, abonnés, actions, rapports, caches, Google Agenda et la boîte mail reçue/envoyée lorsqu’elle est connectée. Les mails envoyés sont une source opérationnelle de vérité : s’ils prouvent qu’une candidature a été envoyée, utilise la date, le destinataire, l’objet et le fil pour comprendre l’état réel, puis compare avec la base applications. Tu peux rédiger des brouillons de mail à partir des fils réels.
+
+Tu peux être autonome pour lire, analyser, diagnostiquer, prioriser et préparer les opérations internes sûres et réversibles. Une synchronisation interne factuelle et idempotente à partir d’une preuve certaine peut être proposée comme correction ; ne transforme jamais une inférence faible en fait. Tu dois conserver une validation explicite avant tout nouvel envoi externe depuis le chat, publication publique, suppression, paiement ou action destructive/irréversible. Garde la continuité de conversation et dis clairement quand une source est indisponible. Les informations les plus récentes et les preuves directes priment en cas de contradiction. N’affirme jamais qu’une action externe ou une synchronisation a été exécutée si elle ne l’a pas réellement été.
+
+${SITE_KNOWLEDGE_POLICY}`,
         },
         ...history,
         {
           role: "user",
-          content: `Demande actuelle : ${data.command}${memory}${operationalText}${universeText}\n\nMémoire personnelle Angel OS IA :\n${personalText}`,
+          content: `Demande actuelle : ${data.command}${memory}${operationalText}${universeText}${siteText}\n\nMémoire personnelle Angel OS IA :\n${personalText}`,
         },
       ];
-      const ai = await resilientAngelAi({ messages, priority: "interactive", maxTokens: 1_800, temperature: 0.3, cacheTtlMs: 1 });
+
+      const ai = await resilientAngelAi({ messages, priority: "interactive", maxTokens: 1_800, temperature: 0.2, cacheTtlMs: 1 });
       const candidate = ai.text?.trim() ?? "";
       if ((ai as typeof ai & { adminFailure?: boolean }).adminFailure || !candidate || looksLikeHtml(candidate) || LEGACY_AUTOMATIC_RESPONSE.test(candidate)) {
         const technical = safeTechnicalDetail((ai as typeof ai & { detail?: string | null; adminFailureMessage?: string | null }).detail ?? (ai as typeof ai & { adminFailureMessage?: string | null }).adminFailureMessage);
         throw new Error(`Angel OS IA est indisponible : ${technical} Aucun moteur local ne répond à sa place dans l’espace privé.`);
       }
+
       const response = candidate.slice(0, 7_000);
-      const { error: updateError } = await db.from("ai_messages").update({ response, status: "completed", context: { source: "openai", private: true, angel_os_ia: true, operational_context_at: operational?.generatedAt ?? null, admin_universe_at: universe.generatedAt } }).eq("id", stored.id);
+      const { error: updateError } = await db.from("ai_messages").update({
+        response,
+        status: "completed",
+        context: {
+          source: "openai",
+          private: true,
+          angel_os_ia: true,
+          operational_context_at: operational?.generatedAt ?? null,
+          admin_universe_at: universe.generatedAt,
+          site_knowledge_sources: siteHits.map((hit) => hit.source).slice(0, 14),
+        },
+      }).eq("id", stored.id);
       if (updateError) throw updateError;
-      await recordAngelOperation({ type: "angel-os-ia.private-chat.completed", source: "angel-os-ia", ok: true, durationMs: Date.now() - startedAt, payload: { messageId: stored.id, operationalContextAt: operational?.generatedAt ?? null, adminUniverseAt: universe.generatedAt } });
+
+      await recordAngelOperation({
+        type: "angel-os-ia.private-chat.completed",
+        source: "angel-os-ia",
+        ok: true,
+        durationMs: Date.now() - startedAt,
+        payload: {
+          messageId: stored.id,
+          operationalContextAt: operational?.generatedAt ?? null,
+          adminUniverseAt: universe.generatedAt,
+          siteKnowledgeSources: siteHits.length,
+        },
+      });
       return { response, status: "completed", source: "openai", autoExecuted: false, actionId: null };
     } catch (error) {
       const rawDetail = error instanceof Error ? error.message : "Angel OS IA indisponible.";
-      const detail = looksLikeHtml(rawDetail) ? "Angel OS IA indisponible : le service amont a renvoyé une page d’erreur non exploitable." : rawDetail.slice(0, 900);
+      const detail = looksLikeHtml(rawDetail)
+        ? "Angel OS IA indisponible : le service amont a renvoyé une page d’erreur non exploitable."
+        : rawDetail.slice(0, 900);
       await db.from("ai_messages").update({ response: null, status: "failed", context: { source: "openai", private: true, error: detail } }).eq("id", stored.id);
       await recordAngelOperation({ type: "angel-os-ia.private-chat.failed", source: "angel-os-ia", ok: false, durationMs: Date.now() - startedAt, payload: { messageId: stored.id, error: detail } });
       throw new Error(detail);
