@@ -93,8 +93,6 @@ function ShopAdminInner() {
   const { data: catalog, refetch: refetchCatalog } = useQuery({
     queryKey: ["admin-printful-catalog"],
     queryFn: () => fetchCatalogStatus({ data: undefined }),
-    refetchInterval: 300_000,
-    refetchOnWindowFocus: true,
   });
 
   const runProductSync = async () => {
@@ -147,8 +145,6 @@ function ShopAdminInner() {
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["admin-shop-orders"],
     queryFn: () => fetchOrders(),
-    refetchInterval: 60_000,
-    refetchOnWindowFocus: true,
   });
 
   // Récupération automatique des statuts Printful (brouillon, confirmé,
@@ -162,8 +158,6 @@ function ShopAdminInner() {
       }
       return { ...result, at: new Date().toISOString() };
     },
-    refetchInterval: 120_000,
-    refetchOnWindowFocus: true,
     staleTime: 60_000,
   });
 

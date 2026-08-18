@@ -113,7 +113,6 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
   const { data: aiHealth } = useQuery({
     queryKey: ["angel-ai-health"],
     queryFn: () => executeAiHealth(),
-    refetchInterval: 10_000,
     retry: 1,
   });
 
@@ -128,7 +127,6 @@ export function AngelCommandCenter({ compact = false }: { compact?: boolean }) {
       if (error) throw error;
       return (data ?? []) as unknown as Message[];
     },
-    refetchInterval: 10_000,
   });
 
   const mutation = useMutation({

@@ -63,13 +63,11 @@ export function AdminStats() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["admin-site-stats", request],
     queryFn: () => fetchStats({ data: request }),
-    refetchInterval: 60_000,
   });
 
   const { data: realtime } = useQuery({
     queryKey: ["admin-site-stats-realtime"],
     queryFn: () => fetchRealtime(),
-    refetchInterval: 15_000,
   });
 
   const setFilter = (key: FilterKey, value: string) => {

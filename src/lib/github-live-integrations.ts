@@ -129,18 +129,11 @@ export async function bootGitHubLiveIntegrations() {
   started = true;
 
   try {
-    const manifest = await reloadGitHubLiveIntegrations();
-    const refreshMs = Math.max(MIN_REFRESH_MS, manifest?.refreshMs || DEFAULT_REFRESH_MS);
-    timer = setInterval(() => {
-      void reloadGitHubLiveIntegrations().catch((error) => {
-        console.warn("Angel OS GitHub live sync unavailable", error);
-      });
-    }, refreshMs);
+    // Chargement unique au démarrage : plus aucune boucle de synchronisation
+    // périodique, pour éviter les rafraîchissements parasites de l'interface.
+    await reloadGitHubLiveIntegrations();
   } catch (error) {
     console.warn("Angel OS GitHub live integrations unavailable", error);
-    timer = setInterval(() => {
-      void reloadGitHubLiveIntegrations().catch(() => undefined);
-    }, DEFAULT_REFRESH_MS);
   }
 }
 

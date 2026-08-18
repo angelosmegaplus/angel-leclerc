@@ -37,9 +37,6 @@ export function NewsPanel({ showQueue = true }: { showQueue?: boolean }) {
     queryKey: ["admin-news"],
     queryFn: () => fetchPayload(Math.floor(Date.now() / NEWS_REFRESH_MS)),
     staleTime: 5 * 60 * 1000,
-    refetchInterval: NEWS_REFRESH_MS,
-    refetchIntervalInBackground: true,
-    refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     retry: 2,
   });

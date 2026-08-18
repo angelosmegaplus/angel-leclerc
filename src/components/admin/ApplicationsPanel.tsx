@@ -337,16 +337,12 @@ export function ApplicationsPanel() {
   const { data: rows = [], isFetching } = useQuery({
     queryKey: ["angel", "applications"],
     queryFn: () => listRows("applications"),
-    refetchInterval: 60_000,
-    refetchOnWindowFocus: true,
     staleTime: 15_000,
   });
 
   const { data: researchSnapshot, isFetching: researchFetching } = useQuery({
     queryKey: ["angel", "applications", "research-snapshot"],
     queryFn: () => loadResearchSnapshot(),
-    refetchInterval: 60_000,
-    refetchOnWindowFocus: true,
     staleTime: 15_000,
   });
 
