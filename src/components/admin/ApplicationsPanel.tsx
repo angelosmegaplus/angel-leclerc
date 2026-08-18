@@ -338,12 +338,16 @@ export function ApplicationsPanel() {
     queryKey: ["angel", "applications"],
     queryFn: () => listRows("applications"),
     staleTime: 15_000,
+    retry: false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: researchSnapshot, isFetching: researchFetching } = useQuery({
     queryKey: ["angel", "applications", "research-snapshot"],
     queryFn: () => loadResearchSnapshot(),
     staleTime: 15_000,
+    retry: false,
+    refetchOnWindowFocus: false,
   });
 
   const databaseItems = useMemo(() => rows.map(rowToItem), [rows]);

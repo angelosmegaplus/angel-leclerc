@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AdminCard } from "./AdminShell";
 import { listGoogleDriveFiles } from "@/lib/google-workspace.functions";
+import { ConnectionEmptyState } from "./ConnectionEmptyState";
 
 type Item = {
   id: string;
@@ -174,12 +175,16 @@ export function FilesPanel() {
   const [uploading, setUploading] = useState(false);
   const queryClient = useQueryClient();
   const loadDrive = useServerFn(listGoogleDriveFiles);
-  const { data = [], isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["angel", "files", "google-drive"],
     queryFn: async () => {
+      let driveConnected = true;
       const [local, drive] = await Promise.all([
         loadFiles(),
-        loadDrive().catch(() => []),
+        loadDrive().catch(() => {
+          driveConnected = false;
+          return [];
+        }),
       ]);
       const driveItems: Item[] = drive
         .filter((file) => Boolean(file.webViewLink))
@@ -191,19 +196,23 @@ export function FilesPanel() {
           type: kindOfMime(file.mimeType, file.name),
           size: file.size,
         }));
-      return [...local, ...driveItems];
+      return { items: [...local, ...driveItems], driveConnected };
     },
     staleTime: 2 * 60 * 1000,
+    retry: false,
+    refetchOnWindowFocus: false,
   });
+  const items = data?.items ?? [];
+  const driveConnected = data?.driveConnected ?? true;
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return data;
-    return data.filter(
+    if (!q) return items;
+    return items.filter(
       (f) =>
         f.name.toLowerCase().includes(q) || f.origin.toLowerCase().includes(q),
     );
-  }, [data, query]);
+  }, [items, query]);
 
   const onUpload = async (files: File[]) => {
     if (!files.length || uploading) return;
@@ -339,6 +348,13 @@ export function FilesPanel() {
           })}
         </ul>
       )}
+
+      {!isLoading && !driveConnected ? (
+        <ConnectionEmptyState
+          title="Aucun stockage externe connecté"
+          description="Seule la bibliothèque interne d’Angel OS est affichée. Connecte Google Drive (ou OneDrive lorsqu’il sera disponible) pour y accéder ici."
+        />
+      ) : null}
     </div>
   );
 }

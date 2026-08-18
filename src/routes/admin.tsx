@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { ADMIN_NAVIGATE_EVENT } from "@/lib/admin-navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Loader2,
@@ -248,6 +249,16 @@ function AdminPage() {
   useEffect(() => {
     const requested = new URLSearchParams(window.location.search).get("tab");
     if (requested) setTab(requested as AdminTab);
+  }, []);
+
+  // Navigation interne demandée par un panneau (ex. « Ouvrir les connexions »).
+  useEffect(() => {
+    const onNavigate = (event: Event) => {
+      const next = (event as CustomEvent<string>).detail;
+      if (typeof next === "string" && next) setTab(next as AdminTab);
+    };
+    window.addEventListener(ADMIN_NAVIGATE_EVENT, onNavigate);
+    return () => window.removeEventListener(ADMIN_NAVIGATE_EVENT, onNavigate);
   }, []);
 
   useEffect(() => {

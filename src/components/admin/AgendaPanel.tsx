@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AdminCard } from "./AdminShell";
 import { fmtDate } from "@/lib/angelos";
 import { listGoogleCalendarEvents } from "@/lib/google-workspace.functions";
+import { ConnectionEmptyState } from "./ConnectionEmptyState";
 
 type Entry = {
   id: string;
@@ -17,6 +18,7 @@ type Entry = {
 type AgendaData = {
   entries: Entry[];
   warnings: string[];
+  googleConnected: boolean;
 };
 
 const anyDb = supabase as unknown as { from: (t: string) => any };
@@ -59,7 +61,7 @@ async function loadLocalAgenda(): Promise<AgendaData> {
   for (const task of tasks) if (task.due_date) out.push({ id: `tsk-${task.id}`, date: task.due_date, label: task.title, detail: "Tâche", kind: "Tâche" });
   for (const application of applications) if (application.follow_up_at) out.push({ id: `can-${application.id}`, date: application.follow_up_at, label: application.company, detail: "Relance de candidature", kind: "Alternance" });
   for (const interview of interviews) if (interview.scheduled_at) out.push({ id: `itw-${interview.id}`, date: interview.scheduled_at, label: interview.title, detail: interview.person ? `Interview · ${interview.person}` : "Interview", kind: "Studio" });
-  return { entries: out, warnings };
+  return { entries: out, warnings, googleConnected: false };
 }
 
 export function AgendaPanel() {
@@ -70,6 +72,7 @@ export function AgendaPanel() {
       const local = await loadLocalAgenda();
       let googleEntries: Entry[] = [];
       const warnings = [...local.warnings];
+      let googleConnected = true;
 
       try {
         const google = await loadGoogleCalendar();
@@ -81,19 +84,23 @@ export function AgendaPanel() {
           kind: "Google",
         }));
       } catch {
-        warnings.push("Google Agenda n’est pas connecté, a expiré ou n’autorise pas encore la lecture du calendrier.");
+        googleConnected = false;
       }
 
       return {
         entries: [...local.entries, ...googleEntries].sort((a, b) => a.date.localeCompare(b.date)),
         warnings,
+        googleConnected,
       };
     },
     staleTime: 2 * 60 * 1000,
+    retry: false,
+    refetchOnWindowFocus: false,
   });
 
   const entries = data?.entries ?? [];
   const warnings = data?.warnings ?? [];
+  const googleConnected = data?.googleConnected ?? true;
   const today = localDateKey();
   const upcoming = entries.filter((entry) => entry.date.slice(0, 10) >= today);
   const past = entries.filter((entry) => entry.date.slice(0, 10) < today).slice(-10).reverse();
@@ -137,6 +144,15 @@ export function AgendaPanel() {
         ) : upcoming.length === 0 ? (
           <p className="text-sm text-white/45">{warnings.length > 0 ? "Aucune échéance chargée pour le moment." : "Aucune échéance à venir."}</p>
         ) : list(upcoming)}
+
+        {!isLoading && !googleConnected ? (
+          <div className="mt-4">
+            <ConnectionEmptyState
+              title="Aucun agenda externe connecté"
+              description="Seules les échéances internes d’Angel OS sont affichées. Connecte Google Agenda (ou Outlook lorsqu’il sera disponible) pour voir aussi tes rendez-vous."
+            />
+          </div>
+        ) : null}
       </AdminCard>
 
       {past.length > 0 ? <AdminCard title="Passé récent" description="Les dix dernières échéances.">{list(past)}</AdminCard> : null}
