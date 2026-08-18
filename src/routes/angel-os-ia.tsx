@@ -1,8 +1,11 @@
 import { useCallback, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, BrainCircuit, ChevronDown, Cpu, Database, ExternalLink, Network, ShieldCheck, Sparkles, Wrench } from "lucide-react";
 import { BootIntro } from "@/components/angel-os/BootIntro";
 import { brandLogos } from "@/assets/brands";
+import { getAngelOsPublicStatus } from "@/lib/angel-os-status.functions";
 
 export const Route = createFileRoute("/angel-os-ia")({
   head: () => ({
@@ -30,20 +33,20 @@ type Technology = {
 };
 
 const technologies: Technology[] = [
-  { name: "Passerelle IA Lovable", wordmark: "IA", text: "Fournit les capacités d’intelligence artificielle (modèles Google Gemini) utilisées par Angel OS IA." },
-  { name: "ChatGPT", logo: "/logos/chatgpt.com.svg", text: "Intervient autour du projet pour l’analyse, les corrections, le contrôle et la maintenance." },
-  { name: "React", logo: brandLogos.react, text: "Structure les interfaces et les composants interactifs d’Angel OS." },
-  { name: "TypeScript", logo: brandLogos.typescript, text: "Porte la logique applicative et sécurise le développement par le typage." },
-  { name: "TanStack", logo: brandLogos.tanstack, text: "Gère le routage, les données asynchrones et une partie de l’architecture." },
-  { name: "Tailwind CSS", logo: brandLogos.tailwindcss, text: "Gère la mise en page responsive et l’identité visuelle." },
-  { name: "Vite", logo: brandLogos.vite, text: "Construit l’application et fournit l’environnement de développement." },
-  { name: "GitHub", logo: brandLogos.github, text: "Centralise le code source, l’historique des modifications et les versions publiques du projet.", href: "https://github.com/angelosmegaplus/angel-leclerc", actionLabel: "Voir le dépôt GitHub" },
-  { name: "Vercel", logo: brandLogos.vercel, text: "Construit et publie l’application web à partir du code du projet." },
-  { name: "Supabase", logo: brandLogos.supabase, text: "Gère la base de données, l’authentification et les données privées." },
-  { name: "Gmail API", logo: brandLogos.gmail, text: "Relie les mails utiles à l’administration et au suivi des candidatures." },
-  { name: "Google Calendar API", logo: brandLogos.googlecalendar, text: "Relie l’agenda Google aux informations utilisées dans Angel OS." },
-  { name: "Google Drive API", logo: brandLogos.googledrive, text: "Donne accès aux fichiers Google Drive nécessaires aux fonctions connectées." },
-  { name: "TMDB API", logo: brandLogos.themoviedatabase, text: "Fournit les recherches, affiches et métadonnées de l’espace Films & séries." },
+  { name: "Passerelle IA Lovable", wordmark: "IA", text: "Fournit les capacités d’intelligence artificielle (modèles Google Gemini) utilisées par Angel OS IA.", href: "https://docs.lovable.dev/features/ai", actionLabel: "Documentation", state: "En service" },
+  { name: "ChatGPT", logo: "/logos/chatgpt.com.svg", text: "Intervient autour du projet pour l’analyse, les corrections, le contrôle et la maintenance.", href: "https://chatgpt.com", actionLabel: "Ouvrir le site", state: "Autour du projet" },
+  { name: "React", logo: brandLogos.react, text: "Structure les interfaces et les composants interactifs d’Angel OS.", href: "https://react.dev", actionLabel: "Site officiel", state: "En service" },
+  { name: "TypeScript", logo: brandLogos.typescript, text: "Porte la logique applicative et sécurise le développement par le typage.", href: "https://www.typescriptlang.org", actionLabel: "Site officiel", state: "En service" },
+  { name: "TanStack", logo: brandLogos.tanstack, text: "Gère le routage, les données asynchrones et une partie de l’architecture.", href: "https://tanstack.com", actionLabel: "Site officiel", state: "En service" },
+  { name: "Tailwind CSS", logo: brandLogos.tailwindcss, text: "Gère la mise en page responsive et l’identité visuelle.", href: "https://tailwindcss.com", actionLabel: "Site officiel", state: "En service" },
+  { name: "Vite", logo: brandLogos.vite, text: "Construit l’application et fournit l’environnement de développement.", href: "https://vite.dev", actionLabel: "Site officiel", state: "En service" },
+  { name: "GitHub", logo: brandLogos.github, text: "Centralise le code source, l’historique des modifications et les versions publiques du projet.", href: "https://github.com/angelosmegaplus/angel-leclerc", actionLabel: "Voir le dépôt GitHub", state: "En service" },
+  { name: "Vercel", logo: brandLogos.vercel, text: "Construit et publie l’application web à partir du code du projet.", href: "https://vercel.com", actionLabel: "Site officiel", state: "En service" },
+  { name: "Supabase", logo: brandLogos.supabase, text: "Gère la base de données, l’authentification et les données privées.", href: "https://supabase.com", actionLabel: "Site officiel", state: "En service" },
+  { name: "Gmail API", logo: brandLogos.gmail, text: "Relie les mails utiles à l’administration et au suivi des candidatures.", href: "https://developers.google.com/gmail/api", actionLabel: "Documentation", state: "Espace privé" },
+  { name: "Google Calendar API", logo: brandLogos.googlecalendar, text: "Relie l’agenda Google aux informations utilisées dans Angel OS.", href: "https://developers.google.com/calendar", actionLabel: "Documentation", state: "Espace privé" },
+  { name: "Google Drive API", logo: brandLogos.googledrive, text: "Donne accès aux fichiers Google Drive nécessaires aux fonctions connectées.", href: "https://developers.google.com/drive", actionLabel: "Documentation", state: "Espace privé" },
+  { name: "TMDB API", logo: brandLogos.themoviedatabase, text: "Fournit les recherches, affiches et métadonnées de l’espace Films & séries.", href: "https://www.themoviedb.org", actionLabel: "Site officiel", state: "En service" },
 ];
 
 const card = "rounded-[1.35rem] border border-[#ded8cf] bg-white";
