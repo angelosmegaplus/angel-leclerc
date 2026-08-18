@@ -159,23 +159,45 @@ async function saveViaSupabase(raw: Record<string, unknown>, userId: string, slu
     .maybeSingle();
   if (existingError) throw existingError;
 
+  // Renommage de slug : sans cette recherche par identifiant, l'upsert créait un
+  // second article et l'ancienne adresse restait publiée en double.
+  const rawId = typeof raw.id === "string" ? raw.id.trim() : "";
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawId);
+  let renamedFrom: string | null = null;
+  let current = existing;
+
+  if (!current && isUuid) {
+    const { data: byId, error: byIdError } = await db
+      .from("articles")
+      .select("id,slug,created_at,published_at")
+      .eq("id", rawId)
+      .maybeSingle();
+    if (byIdError) throw byIdError;
+    if (byId) {
+      current = { id: byId.id, created_at: byId.created_at, published_at: byId.published_at };
+      if (byId.slug && byId.slug !== slug) renamedFrom = byId.slug;
+    }
+  }
+
   const row = {
     ...article,
-    ...(existing?.id ? { id: existing.id } : {}),
-    ...(existing?.created_at ? { created_at: existing.created_at } : {}),
+    ...(current?.id ? { id: current.id } : {}),
+    ...(current?.created_at ? { created_at: current.created_at } : {}),
     published_at: article.published
-      ? (article.scheduled_at || existing?.published_at || article.published_at)
+      ? (article.scheduled_at || current?.published_at || article.published_at)
       : null,
   };
 
   const { error } = await db.from("articles").upsert(row as any, { onConflict: "slug" });
   if (error) throw error;
   await markGitArticleState(slug, false);
+  // L'ancienne adresse ne doit plus répondre après un changement de slug.
+  if (renamedFrom) await markGitArticleState(renamedFrom, true);
 
   // The database row itself overrides any historical Lovable/Git fallback by slug.
   // Do not depend on the legacy git_article_state table: it is not present in every
   // production schema and previously turned successful saves into HTTP 500 errors.
-  return { ok: true, slug, backend: "supabase-fallback" as const };
+  return { ok: true, slug, renamedFrom, backend: "supabase-fallback" as const };
 }
 
 async function deleteViaSupabase(slug: string) {
@@ -376,6 +398,13 @@ export const Route = createFileRoute("/api/admin/articles")({
                 `${raw.id ? "Update" : "Create"} article: ${title}`,
                 token,
               );
+              if (result.renamedFrom) {
+                await deleteFile(
+                  `${CONTENT_DIR}/${result.renamedFrom}.json`,
+                  `Rename article: ${result.renamedFrom} -> ${slug}`,
+                  token,
+                );
+              }
             });
             return Response.json(result, { headers });
           }
