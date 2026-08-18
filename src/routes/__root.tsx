@@ -39,17 +39,27 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">Cette page n'a pas pu charger</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Une erreur s'est produite de notre côté. Vous pouvez réessayer ou revenir à l'accueil.</p>
+        <div className="mx-auto mb-4 text-5xl" aria-hidden="true">👀</div>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Oups… Internet n’a pas suivi.</h1>
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+          Cette page n’a pas pu être chargée. Une petite panne de connexion — ou un grain de sable de notre côté — s’est glissée dans la machine.
+          Vous pouvez actualiser la page et réessayer.
+        </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
+          <button
+            onClick={() => window.location.reload()}
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            Actualiser la page
+          </button>
           <button
             onClick={() => {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            Réessayer
+            Réessayer sans recharger
           </button>
           <a
             href="/"
@@ -90,7 +100,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "Gestion de projets de communication, conseil stratégique, rédaction éditoriale et journalistique pour professionnels, associations et porteurs de projets." },
       { name: "twitter:description", content: "Gestion de projets de communication, conseil stratégique, rédaction éditoriale et journalistique pour professionnels, associations et porteurs de projets." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d458ad7c-4ac2-4fac-82a0-d9564bf48140/id-preview-95572016--5bca9ec4-6763-4641-aa6d-439dc0e8bfc8.lovable.app-1784314332053.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d458ad7c-4fac-82a0-d9564bf48140/id-preview-95572016--5bca9ec4-6763-4641-aa6d-439dc0e8bfc8.lovable.app-1784314332053.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d458ad7c-4ac2-4fac-82a0-d9564bf48140/id-preview-95572016--5bca9ec4-6763-4641-aa6d-439dc0e8bfc8.lovable.app-1784314332053.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
