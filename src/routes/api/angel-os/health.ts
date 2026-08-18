@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { angelEventLog, angelMemoryIndex, angelNodeGateway } from "@/lib/angel-runtime.server";
-import { getTmdbCredential, getOpenAiCredentials } from "@/lib/vercel-connect-credentials.server";
+import { getTmdbCredential, getOpenAiCredentials } from "@/lib/runtime-credentials.server";
 import { probeOpenAiHealth } from "@/lib/ai-gateway.server";
 import { readIntegrations } from "@/lib/system.server";
 
@@ -52,7 +52,7 @@ async function checkOpenAI(): Promise<DependencyHealth> {
 
 async function checkTmdb(): Promise<DependencyHealth> {
   const credential = await getTmdbCredential();
-  if (!credential) return { configured: false, reachable: false, source: "environment-or-build", reason: "credential_missing", latencyMs: null };
+  if (!credential) return { configured: false, reachable: false, source: "runtime-environment", reason: "credential_missing", latencyMs: null };
   try {
     const url = credential.kind === "api-key"
       ? `https://api.themoviedb.org/3/configuration?api_key=${encodeURIComponent(credential.value)}`
@@ -82,22 +82,22 @@ function publicSupabaseConfig() {
 
 async function checkSupabaseAuth(): Promise<DependencyHealth> {
   const { url, publishableKey } = publicSupabaseConfig();
-  if (!url || !publishableKey) return { configured: false, reachable: false, source: "environment-or-build", reason: "public_config_missing", latencyMs: null };
+  if (!url || !publishableKey) return { configured: false, reachable: false, source: "runtime-environment-or-build", reason: "public_config_missing", latencyMs: null };
   try {
     const { value: response, latencyMs } = await timed((signal) => fetch(`${url.replace(/\/$/, "")}/auth/v1/settings`, {
       signal,
       headers: { apikey: publishableKey },
     }));
-    return { configured: true, reachable: response.ok, source: "environment-or-build", latencyMs, reason: response.ok ? null : `http_${response.status}` };
+    return { configured: true, reachable: response.ok, source: "runtime-environment-or-build", latencyMs, reason: response.ok ? null : `http_${response.status}` };
   } catch (error) {
-    return { configured: true, reachable: false, source: "environment-or-build", latencyMs: null, reason: error instanceof Error ? error.name : "request_failed" };
+    return { configured: true, reachable: false, source: "runtime-environment-or-build", latencyMs: null, reason: error instanceof Error ? error.name : "request_failed" };
   }
 }
 
 async function checkSupabaseServer(): Promise<DependencyHealth> {
   const { url } = publicSupabaseConfig();
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || process.env.SUPABASE_SECRET_KEY?.trim();
-  if (!url || !serviceKey) return { configured: false, reachable: false, source: "vercel-environment", reason: "server_config_missing", latencyMs: null };
+  if (!url || !serviceKey) return { configured: false, reachable: false, source: "runtime-environment", reason: "server_config_missing", latencyMs: null };
   const headers = new Headers({ apikey: serviceKey, Accept: "application/json" });
   if (!serviceKey.startsWith("sb_secret_")) headers.set("Authorization", `Bearer ${serviceKey}`);
   try {
@@ -105,9 +105,9 @@ async function checkSupabaseServer(): Promise<DependencyHealth> {
       signal,
       headers,
     }));
-    return { configured: true, reachable: response.ok, source: "vercel-environment", latencyMs, reason: response.ok ? null : `user_roles_http_${response.status}` };
+    return { configured: true, reachable: response.ok, source: "runtime-environment", latencyMs, reason: response.ok ? null : `user_roles_http_${response.status}` };
   } catch (error) {
-    return { configured: true, reachable: false, source: "vercel-environment", latencyMs: null, reason: error instanceof Error ? error.name : "request_failed" };
+    return { configured: true, reachable: false, source: "runtime-environment", latencyMs: null, reason: error instanceof Error ? error.name : "request_failed" };
   }
 }
 
@@ -161,9 +161,9 @@ export const Route = createFileRoute("/api/angel-os/health")({
           healthy,
           degraded: degradedReasons.length > 0,
           checkedAt: new Date().toISOString(),
-          release: process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.GITHUB_SHA ?? null,
+          release: process.env.GITHUB_SHA ?? null,
           configuration: {
-            source: "vercel-environment+build",
+            source: "runtime-environment+build",
             missing: missingEnvironment,
             criticalMissing,
             degradedReasons,
