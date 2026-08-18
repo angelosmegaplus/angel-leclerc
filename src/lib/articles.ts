@@ -2,13 +2,9 @@ export * from "@/lib/articles-types";
 export * from "@/lib/articles-format";
 export * from "@/lib/articles-date";
 
-import * as base from "@/lib/articles.impl";
 import type { Article } from "@/lib/articles-types";
-import { fetchDeletedGitArticleSlugs } from "@/lib/git-article-state";
-import {
-  legacyGitArticles,
-  mergeLegacyGitArticles,
-} from "@/lib/legacy-git-articles";
+import { githubNativeArticles, githubNativeArticleBySlug } from "@/lib/github-articles";
+import { legacyGitArticles } from "@/lib/legacy-git-articles";
 import {
   getAllLovableArticleArchive,
   getPublishedLovableArticleArchive,
@@ -16,105 +12,64 @@ import {
 } from "@/content/lovable-archive";
 
 /**
- * Fusionne la base actuelle avec le snapshot Lovable récupéré.
- * La base gagne toujours en cas de slug identique. Les suppressions volontaires
- * ne filtrent que les archives : une ligne Supabase actuelle n'est jamais masquée.
+ * GitHub est la source de vérité éditoriale.
+ *
+ * Ordre de priorité :
+ * 1. fichiers JSON natifs src/content/articles-data/*.json ;
+ * 2. snapshot Lovable versionné dans Git ;
+ * 3. anciens articles TypeScript maintenus dans Git.
+ *
+ * Aucune lecture de public.articles n'est nécessaire pour rendre le blog.
  */
-function mergeLovableArchive(
-  databaseArticles: Article[],
-  archivedArticles: Article[],
-  deleted: Set<string>,
-): Article[] {
-  const databaseSlugs = new Set(databaseArticles.map((article) => article.slug));
-  const recovered = archivedArticles.filter(
-    (article) => !databaseSlugs.has(article.slug) && !deleted.has(article.slug),
-  );
-  return [...databaseArticles, ...recovered].sort(
-    (a, b) =>
+function mergeGitSources(primary: Article[], archive: Article[]): Article[] {
+  const bySlug = new Map<string, Article>();
+
+  // Les sources historiques sont ajoutées d'abord pour que les fichiers natifs
+  // plus récents gagnent en cas de slug identique.
+  for (const article of legacyGitArticles) bySlug.set(article.slug, article);
+  for (const article of archive) bySlug.set(article.slug, article);
+  for (const article of primary) bySlug.set(article.slug, article);
+
+  return [...bySlug.values()].sort((a, b) => {
+    if (a.featured !== b.featured) return a.featured ? -1 : 1;
+    return (
       new Date(b.published_at ?? b.created_at).getTime() -
-      new Date(a.published_at ?? a.created_at).getTime(),
-  );
+      new Date(a.published_at ?? a.created_at).getTime()
+    );
+  });
 }
 
-function archivedPublishedFallback(deleted: Set<string>): Article[] {
-  return mergeLegacyGitArticles(getPublishedLovableArticleArchive(), deleted);
-}
-
-function archivedAllFallback(deleted: Set<string>): Article[] {
-  return mergeLegacyGitArticles(getAllLovableArticleArchive(), deleted);
+function visiblePublished(articles: Article[]): Article[] {
+  const now = Date.now();
+  return articles.filter((article) => {
+    if (!article.published || article.is_private) return false;
+    if (!article.scheduled_at) return true;
+    return new Date(article.scheduled_at).getTime() <= now;
+  });
 }
 
 export async function fetchLatestArticles(limit = 3): Promise<Article[]> {
-  const deleted = await fetchDeletedGitArticleSlugs();
-  try {
-    const databaseArticles = await base.fetchLatestArticles(Math.max(limit, 10));
-    const withArchive = mergeLovableArchive(
-      databaseArticles,
-      getPublishedLovableArticleArchive(),
-      deleted,
-    );
-    return mergeLegacyGitArticles(withArchive, deleted).slice(0, limit);
-  } catch {
-    return archivedPublishedFallback(deleted).slice(0, limit);
-  }
+  return visiblePublished(
+    mergeGitSources(githubNativeArticles, getPublishedLovableArticleArchive()),
+  ).slice(0, limit);
 }
 
 export async function fetchPublishedArticles(): Promise<Article[]> {
-  const deleted = await fetchDeletedGitArticleSlugs();
-  try {
-    const databaseArticles = await base.fetchPublishedArticles();
-    const withArchive = mergeLovableArchive(
-      databaseArticles,
-      getPublishedLovableArticleArchive(),
-      deleted,
-    );
-    return mergeLegacyGitArticles(withArchive, deleted);
-  } catch {
-    return archivedPublishedFallback(deleted);
-  }
+  return visiblePublished(
+    mergeGitSources(githubNativeArticles, getPublishedLovableArticleArchive()),
+  );
 }
 
 export async function fetchArticleBySlug(slug: string): Promise<Article | null> {
-  const deleted = await fetchDeletedGitArticleSlugs();
-  try {
-    // Toujours donner priorité à la base actuelle. Un ancien article Git marqué
-    // supprimé ne doit pas empêcher la réutilisation normale de son slug.
-    const databaseArticles = await base.fetchAllArticles();
-    const databaseArticle = databaseArticles.find((article) => article.slug === slug);
-    if (databaseArticle) return databaseArticle;
+  const native = githubNativeArticleBySlug.get(slug);
+  if (native) return native;
 
-    // Tant que la restauration native n'est pas terminée, un article du snapshot
-    // doit rester adressable même si quelques lignes seulement existent en base.
-    if (!deleted.has(slug)) {
-      const archived = lovableArticleArchiveBySlug.get(slug);
-      if (archived) return archived;
-    }
+  const archived = lovableArticleArchiveBySlug.get(slug);
+  if (archived) return archived;
 
-    if (deleted.has(slug)) return null;
-    return await base.fetchArticleBySlug(slug);
-  } catch {
-    if (!deleted.has(slug)) {
-      const archived = lovableArticleArchiveBySlug.get(slug);
-      if (archived) return archived;
-    }
-    if (deleted.has(slug)) return null;
-    return legacyGitArticles.find((article) => article.slug === slug) ?? null;
-  }
+  return legacyGitArticles.find((article) => article.slug === slug) ?? null;
 }
 
 export async function fetchAllArticles(): Promise<Article[]> {
-  const deleted = await fetchDeletedGitArticleSlugs();
-  try {
-    // L'admin montre aussi les archives récupérées tant que leur restauration
-    // native n'est pas terminée. Une version Supabase plus récente reste prioritaire.
-    const databaseArticles = await base.fetchAllArticles();
-    const withArchive = mergeLovableArchive(
-      databaseArticles,
-      getAllLovableArticleArchive(),
-      deleted,
-    );
-    return mergeLegacyGitArticles(withArchive, deleted);
-  } catch {
-    return archivedAllFallback(deleted);
-  }
+  return mergeGitSources(githubNativeArticles, getAllLovableArticleArchive());
 }
