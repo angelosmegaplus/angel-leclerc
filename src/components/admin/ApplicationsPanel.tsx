@@ -19,6 +19,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { AdminCard } from "./AdminShell";
 import { AdminStatus, type AdminStatusTone } from "./AdminStatus";
+import { CrudModule } from "./CrudModule";
+import { applicationFields } from "@/lib/angelos";
 
 function sentMailOf(row?: Row) {
   if (!row) return "";
@@ -286,13 +288,14 @@ function shortDate(value: string) {
   return new Intl.DateTimeFormat(
     "fr-FR",
     dateOnly
-      ? { day: "2-digit", month: "2-digit", year: "2-digit" }
+      ? { day: "2-digit", month: "2-digit", year: "2-digit", timeZone: "UTC" }
       : {
           day: "2-digit",
           month: "2-digit",
           year: "2-digit",
           hour: "2-digit",
           minute: "2-digit",
+          timeZone: "Europe/Paris",
         },
   ).format(new Date(parsed));
 }
