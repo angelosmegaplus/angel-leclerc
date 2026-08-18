@@ -137,6 +137,16 @@ function LiveCodeRail() {
 function AngelOsIaPage() {
   const [booting, setBooting] = useState(true);
   const finishBoot = useCallback(() => setBooting(false), []);
+  const loadStatus = useServerFn(getAngelOsPublicStatus);
+  const statusQuery = useQuery({
+    queryKey: ["angel-os-public-status"],
+    queryFn: () => loadStatus(),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const status = statusQuery.data;
+  const formatDate = (value?: string | null) =>
+    value ? new Date(value).toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" }) : "—";
 
   if (booting) {
     return (
@@ -231,9 +241,73 @@ function AngelOsIaPage() {
       <section className="px-4 py-10 sm:px-7 sm:py-14 lg:px-10 lg:py-16">
         <div className="mx-auto max-w-6xl">
           <div className="max-w-3xl">
+            <p className="text-[11px] font-bold uppercase tracking-[.18em] text-[#b44738]">État réel</p>
+            <h2 className="mt-2 font-display text-3xl font-black tracking-[-.045em] sm:text-4xl">Ce qui fonctionne vraiment, en direct</h2>
+            <p className="mt-3 text-sm leading-7 text-[#6b655e] sm:text-base">
+              Ces informations sont relevées à l’instant sur le dépôt public, la base de données du site et la configuration serveur. Rien n’est simulé : si une donnée n’est pas disponible, elle est affichée comme telle.
+            </p>
+          </div>
+
+          <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <article className={`${card} p-5`}>
+              <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#6f675f]">Code source</p>
+              <h3 className="mt-1 text-lg font-black">Dépôt GitHub</h3>
+              {statusQuery.isPending ? (
+                <p className="mt-2 text-sm text-[#6b655e]">Relevé en cours…</p>
+              ) : status?.repository.available ? (
+                <div className="mt-2 space-y-1 text-sm leading-6 text-[#6b655e]">
+                  <p className="font-semibold text-[#181614]">{status.repository.fullName}</p>
+                  <p>Branche : {status.repository.defaultBranch ?? "—"}</p>
+                  <p>Dernier commit : {formatDate(status.repository.lastCommit?.date ?? status.repository.pushedAt)}</p>
+                  {status.repository.lastCommit ? (
+                    <a href={status.repository.lastCommit.url} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-2 break-all font-mono text-xs font-bold text-[#b44738] underline underline-offset-4">
+                      {status.repository.lastCommit.sha} · {status.repository.lastCommit.message}
+                    </a>
+                  ) : null}
+                </div>
+              ) : (
+                <p className="mt-2 text-sm leading-6 text-[#6b655e]">Dépôt non public ou indisponible pour le moment.</p>
+              )}
+            </article>
+
+            <article className={`${card} p-5`}>
+              <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#6f675f]">Données</p>
+              <h3 className="mt-1 text-lg font-black">Contenus publiés</h3>
+              <div className="mt-2 space-y-1 text-sm leading-6 text-[#6b655e]">
+                <p>Articles publiés : <strong className="text-[#181614]">{status?.database.publishedArticles ?? "—"}</strong></p>
+                <p>Projets référencés : <strong className="text-[#181614]">{status?.database.projects ?? "—"}</strong></p>
+                <p>Base de données : {status?.database.available ? "accessible" : "non vérifiée"}</p>
+              </div>
+            </article>
+
+            <article className={`${card} p-5`}>
+              <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#b44738]">Intelligence</p>
+              <h3 className="mt-1 text-lg font-black">Angel OS IA</h3>
+              <div className="mt-2 space-y-1 text-sm leading-6 text-[#6b655e]">
+                <p>Passerelle : {status?.intelligence.gatewayConfigured ? "configurée et active" : "non configurée"}</p>
+                <p>Modèles : {status?.intelligence.provider ?? "Google Gemini via passerelle IA Lovable"}</p>
+              </div>
+            </article>
+
+            <article className={`${card} p-5`}>
+              <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#6f5c9a]">Supervision</p>
+              <h3 className="mt-1 text-lg font-black">Angel Guard</h3>
+              <div className="mt-2 space-y-1 text-sm leading-6 text-[#6b655e]">
+                <p>Déploiement : {status?.deployment.branch ? `${status.deployment.branch}${status.deployment.commit ? ` · ${status.deployment.commit}` : ""}` : "environnement géré"}</p>
+                <p>Contrôle effectué : {formatDate(status?.checkedAt)}</p>
+                <p>Les contrôles détaillés, incidents et récupérations restent dans l’espace privé.</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section className="px-4 pb-10 sm:px-7 sm:pb-14 lg:px-10">
+        <div className="mx-auto max-w-6xl">
+          <div className="max-w-3xl">
             <p className="text-[11px] font-bold uppercase tracking-[.18em] text-[#b44738]">Infrastructure connectée</p>
             <h2 className="mt-2 font-display text-3xl font-black tracking-[-.045em] sm:text-4xl">Les technologies de l’écosystème Angel OS</h2>
-            <p className="mt-3 text-sm leading-7 text-[#6b655e] sm:text-base">Ces technologies servent différentes parties du système. Angel OS IA alimente certaines fonctions d’Angel OS IA ; les autres composants assurent l’interface, les données, les connexions, le code et le déploiement.</p>
+            <p className="mt-3 text-sm leading-7 text-[#6b655e] sm:text-base">Chaque technologie sert une partie précise du système : la passerelle IA alimente Angel OS IA, les autres composants assurent l’interface, les données, les connexions, le code et le déploiement. Chaque carte renvoie vers le service réellement utilisé.</p>
           </div>
           <div className="mt-7 grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {technologies.map((technology) => <TechCard key={technology.name} technology={technology} />)}
