@@ -1522,6 +1522,31 @@ function AdminPage() {
                     <Button
                       size="sm"
                       variant="ghost"
+                      title="Dupliquer en brouillon"
+                      onClick={() =>
+                        setDraft({
+                          title: `${a.title} (copie)`,
+                          slug: `${a.slug}-copie`,
+                          category: a.category,
+                          excerpt: a.excerpt ?? "",
+                          content: a.content,
+                          cover_url: a.cover_url ?? "",
+                          status: "brouillon",
+                          scheduled_at: "",
+                          is_private: true,
+                          featured: false,
+                          attachments: getAttachments(a),
+                          sources: getSources(a),
+                          topics: getTopics(a),
+                          ai: getAiDisclosure(a),
+                        })
+                      }
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
                       onClick={() => {
                         if (confirm(`Supprimer « ${a.title} » ?`)) remove.mutate(a.slug);
                       }}
