@@ -3,7 +3,11 @@ export * from "@/lib/articles-format";
 export * from "@/lib/articles-date";
 
 import type { Article } from "@/lib/articles-types";
-import { githubNativeArticles, githubNativeArticleBySlug } from "@/lib/github-articles";
+import {
+  githubDeletedArticleSlugs,
+  githubNativeArticles,
+  githubNativeArticleBySlug,
+} from "@/lib/github-articles";
 import { legacyGitArticles } from "@/lib/legacy-git-articles";
 import {
   getAllLovableArticleArchive,
@@ -24,11 +28,15 @@ import {
 function mergeGitSources(primary: Article[], archive: Article[]): Article[] {
   const bySlug = new Map<string, Article>();
 
-  // Les sources historiques sont ajoutées d'abord pour que les fichiers natifs
-  // plus récents gagnent en cas de slug identique.
-  for (const article of legacyGitArticles) bySlug.set(article.slug, article);
-  for (const article of archive) bySlug.set(article.slug, article);
-  for (const article of primary) bySlug.set(article.slug, article);
+  for (const article of legacyGitArticles) {
+    if (!githubDeletedArticleSlugs.has(article.slug)) bySlug.set(article.slug, article);
+  }
+  for (const article of archive) {
+    if (!githubDeletedArticleSlugs.has(article.slug)) bySlug.set(article.slug, article);
+  }
+  for (const article of primary) {
+    if (!githubDeletedArticleSlugs.has(article.slug)) bySlug.set(article.slug, article);
+  }
 
   return [...bySlug.values()].sort((a, b) => {
     if (a.featured !== b.featured) return a.featured ? -1 : 1;
@@ -61,6 +69,8 @@ export async function fetchPublishedArticles(): Promise<Article[]> {
 }
 
 export async function fetchArticleBySlug(slug: string): Promise<Article | null> {
+  if (githubDeletedArticleSlugs.has(slug)) return null;
+
   const native = githubNativeArticleBySlug.get(slug);
   if (native) return native;
 
