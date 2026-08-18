@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Film, Loader2, RefreshCw, Search, ShieldCheck, Star } from "lucide-react";
+import { Film, Flame, Info, Loader2, RefreshCw, Search, ShieldCheck, Sparkles, Star, Tv, X } from "lucide-react";
 import { Captcha, type CaptchaValue } from "@/components/Captcha";
 import { verifyCaptchaAnswer } from "@/lib/captcha.functions";
 import { FILM_CATALOG } from "@/lib/film-catalog";
@@ -13,26 +13,31 @@ import { selectDailyRecommendations, type RecommendationCandidate } from "@/lib/
 export const Route = createFileRoute("/films-series")({
   head: () => ({
     meta: [
-      { title: "Films et séries | Angel OS IA" },
+      { title: "Films & séries | Angel" },
+      { name: "description", content: "Sélection personnelle de films et séries, alimentée par TMDB avec secours local." },
       { name: "robots", content: "noindex, nofollow, noarchive, nosnippet" },
     ],
   }),
-  component: FilmSeriesPrivateLinkPage,
+  component: FilmSeriesPage,
 });
 
-const ACCESS_KEY = "angel-os-films-series-access-v1";
+const ACCESS_KEY = "angel-os-films-series-access-v2";
 const ACCESS_MS = 12 * 60 * 60 * 1000;
 type Filter = "all" | "movie" | "tv";
 
 function localFallback(mediaType: Filter, query: string) {
   const q = query.trim().toLocaleLowerCase("fr");
-  return FILM_CATALOG.filter((item) => mediaType === "all" || item.mediaType === mediaType).filter((item) => {
-    if (q.length < 2) return true;
-    return `${item.title} ${item.genreLabel} ${item.pitch}`.toLocaleLowerCase("fr").includes(q);
-  });
+  return FILM_CATALOG
+    .filter((item) => mediaType === "all" || item.mediaType === mediaType)
+    .filter((item) => {
+      if (q.length < 2) return true;
+      return `${item.title} ${item.genreLabel} ${item.pitch} ${item.people.join(" ")}`
+        .toLocaleLowerCase("fr")
+        .includes(q);
+    });
 }
 
-function FilmSeriesPrivateLinkPage() {
+function FilmSeriesPage() {
   const verify = useServerFn(verifyCaptchaAnswer);
   const loadCatalog = useServerFn(getLiveFilmCatalog);
   const loadProviderHealth = useServerFn(getFilmProviderHealth);
@@ -44,6 +49,7 @@ function FilmSeriesPrivateLinkPage() {
   const [draftQuery, setDraftQuery] = useState("");
   const [query, setQuery] = useState("");
   const [mediaType, setMediaType] = useState<Filter>("all");
+  const [selected, setSelected] = useState<RecommendationCandidate | null>(null);
 
   useEffect(() => {
     try {
@@ -57,7 +63,7 @@ function FilmSeriesPrivateLinkPage() {
   }, []);
 
   const { data, isLoading, isFetching, refetch } = useQuery({
-    queryKey: ["films-series-live-tmdb", query, mediaType],
+    queryKey: ["films-series-live-tmdb-v2", query, mediaType],
     queryFn: () => loadCatalog({ data: { query, mediaType } }),
     enabled: unlocked,
     staleTime: 15 * 60 * 1000,
@@ -65,7 +71,7 @@ function FilmSeriesPrivateLinkPage() {
   });
 
   const { data: providerHealth, refetch: refetchProviderHealth, isFetching: checkingProvider } = useQuery({
-    queryKey: ["films-series-provider-health"],
+    queryKey: ["films-series-provider-health-v2"],
     queryFn: () => loadProviderHealth(),
     enabled: unlocked,
     staleTime: 60 * 1000,
@@ -73,9 +79,13 @@ function FilmSeriesPrivateLinkPage() {
   });
 
   const fallback = useMemo(() => localFallback(mediaType, query), [mediaType, query]);
-  const usingLocalFallback = data?.source === "unavailable";
-  const catalog = useMemo<RecommendationCandidate[]>(() => usingLocalFallback ? fallback : (data?.items ?? []), [data?.items, fallback, usingLocalFallback]);
-  const picks = useMemo(() => selectDailyRecommendations(catalog, []).slice(0, 5), [catalog]);
+  const usingLocalFallback = !data || data.source === "unavailable";
+  const catalog = useMemo<RecommendationCandidate[]>(
+    () => usingLocalFallback ? fallback : data.items,
+    [data, fallback, usingLocalFallback],
+  );
+  const picks = useMemo(() => selectDailyRecommendations(catalog, []).map((entry) => entry.candidate), [catalog]);
+  const hero = !query ? picks[0] : null;
 
   async function unlock() {
     if (unlocking || !captcha.token || !captcha.answer.trim()) return;
@@ -97,28 +107,33 @@ function FilmSeriesPrivateLinkPage() {
     setQuery(draftQuery.trim());
   }
 
+  function clearSearch() {
+    setDraftQuery("");
+    setQuery("");
+  }
+
   async function retryTmdb() {
     await Promise.all([refetchProviderHealth(), refetch()]);
   }
 
   if (checkingAccess) {
-    return <main className="grid min-h-[100dvh] place-items-center bg-[#050607] text-white"><Loader2 className="h-6 w-6 animate-spin" /></main>;
+    return <main className="grid min-h-[100dvh] place-items-center bg-[#070708] text-white"><Loader2 className="h-6 w-6 animate-spin" /></main>;
   }
 
   if (!unlocked) {
     return (
-      <main className="grid min-h-[100dvh] place-items-center bg-[#050607] px-4 text-white">
-        <section className="w-full max-w-md rounded-[2rem] border border-white/10 bg-[#0b0d10] p-6 shadow-2xl">
+      <main className="grid min-h-[100dvh] place-items-center bg-[#070708] px-4 text-white">
+        <section className="w-full max-w-md rounded-[2rem] border border-white/10 bg-white/[.035] p-6 shadow-2xl backdrop-blur-xl">
           <div className="flex items-center gap-3">
             <span className="grid h-11 w-11 place-items-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-300"><ShieldCheck className="h-5 w-5" /></span>
-            <div><p className="font-mono text-[10px] uppercase tracking-[.18em] text-red-300">Accès par lien</p><h1 className="text-2xl font-semibold tracking-[-.04em]">Films et séries</h1></div>
+            <div><p className="text-[10px] font-semibold uppercase tracking-[.2em] text-red-300">Accès privé</p><h1 className="text-2xl font-semibold tracking-[-.04em]">Films & séries</h1></div>
           </div>
-          <p className="mt-4 text-sm leading-6 text-white/55">Cette page n’est pas référencée dans le site public. Une vérification anti-robot est demandée avant d’ouvrir le catalogue.</p>
+          <p className="mt-4 text-sm leading-6 text-white/55">Une vérification anti-robot protège cette page non référencée.</p>
           <div className="mt-5 [&_.bg-muted\/30]:bg-white/[.03] [&_.bg-background]:bg-black/30 [&_.border-border]:border-white/10 [&_.text-foreground]:text-white [&_.text-muted-foreground]:text-white/50">
             <Captcha value={captcha} onChange={setCaptcha} error={captchaError} />
           </div>
-          <button type="button" onClick={() => void unlock()} disabled={unlocking || !captcha.answer.trim()} className="mt-4 flex min-h-12 w-full items-center justify-center rounded-xl bg-red-500 px-4 font-semibold text-white disabled:opacity-40">
-            {unlocking ? <Loader2 className="h-4 w-4 animate-spin" /> : "Ouvrir le catalogue"}
+          <button type="button" onClick={() => void unlock()} disabled={unlocking || !captcha.answer.trim()} className="mt-4 flex min-h-12 w-full items-center justify-center rounded-xl bg-white px-4 font-semibold text-black transition hover:bg-white/90 disabled:opacity-40">
+            {unlocking ? <Loader2 className="h-4 w-4 animate-spin" /> : "Entrer"}
           </button>
         </section>
       </main>
@@ -126,79 +141,139 @@ function FilmSeriesPrivateLinkPage() {
   }
 
   return (
-    <main className="min-h-[100dvh] bg-[#050607] px-4 py-7 text-white sm:px-7 lg:px-10">
-      <div className="mx-auto max-w-[1450px]">
-        <header className="flex flex-col gap-5 border-b border-white/10 pb-7 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-red-300"><Film className="h-5 w-5" /><span className="font-mono text-[10px] uppercase tracking-[.18em]">Angel OS IA · catalogue privé par lien</span></div>
-            <h1 className="mt-2 text-4xl font-semibold tracking-[-.055em] sm:text-5xl">Films et séries</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/45">TMDB alimente le catalogue, les affiches, les notes et la recherche. Le catalogue local n’est utilisé qu’en véritable secours.</p>
-          </div>
-          <form onSubmit={submitSearch} className="flex w-full max-w-md items-center gap-2 rounded-xl border border-white/10 bg-white/[.04] p-2">
-            <Search className="ml-2 h-4 w-4 shrink-0 text-white/35" />
-            <input value={draftQuery} onChange={(event) => setDraftQuery(event.target.value)} placeholder="Titre d’un film ou d’une série…" className="min-w-0 flex-1 bg-transparent px-1 py-2 text-sm outline-none placeholder:text-white/25" />
-            <button type="submit" className="rounded-lg bg-red-500 px-3 py-2 text-xs font-semibold">Rechercher</button>
+    <main className="min-h-[100dvh] overflow-x-hidden bg-[#070708] text-white">
+      <div className="sticky top-0 z-30 border-b border-white/[.07] bg-[#070708]/85 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-[1500px] items-center gap-4 px-4 py-3 sm:px-7 lg:px-10">
+          <div className="flex shrink-0 items-center gap-2 font-semibold tracking-[-.03em]"><Film className="h-5 w-5 text-red-400" />Films & séries</div>
+          <form onSubmit={submitSearch} className="ml-auto flex w-full max-w-xl items-center gap-2 rounded-full border border-white/10 bg-white/[.055] px-4">
+            <Search className="h-4 w-4 shrink-0 text-white/35" />
+            <input value={draftQuery} onChange={(event) => setDraftQuery(event.target.value)} placeholder="Rechercher un titre…" className="min-w-0 flex-1 bg-transparent py-2.5 text-sm outline-none placeholder:text-white/25" />
+            {draftQuery ? <button type="button" onClick={clearSearch} className="text-white/35 hover:text-white"><X className="h-4 w-4" /></button> : null}
           </form>
-        </header>
+        </div>
+      </div>
 
-        <div className="mt-5 flex flex-wrap items-center gap-2">
+      {hero ? (
+        <section className="relative min-h-[480px] overflow-hidden border-b border-white/[.06] sm:min-h-[560px]">
+          {hero.backdropUrl || hero.posterUrl ? <img src={hero.backdropUrl || hero.posterUrl} alt="" className="absolute inset-0 h-full w-full object-cover opacity-55" /> : null}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#070708] via-[#070708]/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#070708] via-transparent to-[#070708]/20" />
+          <div className="relative mx-auto flex min-h-[480px] max-w-[1500px] items-end px-4 pb-12 pt-24 sm:min-h-[560px] sm:px-7 sm:pb-16 lg:px-10">
+            <div className="max-w-2xl">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/30 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[.12em] text-white/70 backdrop-blur"><Sparkles className="h-3.5 w-3.5 text-red-300" />Sélection du jour</div>
+              <h1 className="text-5xl font-bold tracking-[-.065em] sm:text-7xl">{hero.title}</h1>
+              <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-white/60"><span>{hero.year}</span><span>{hero.mediaType === "movie" ? "Film" : "Série"}</span>{hero.rating ? <span className="inline-flex items-center gap-1"><Star className="h-4 w-4 fill-current text-amber-300" />{hero.rating.toFixed(1)}</span> : null}<span>{hero.genreLabel}</span></div>
+              <p className="mt-5 line-clamp-4 max-w-xl text-base leading-7 text-white/70 sm:text-lg">{hero.pitch}</p>
+              <button type="button" onClick={() => setSelected(hero)} className="mt-7 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-black transition hover:scale-[1.02]"><Info className="h-4 w-4" />Voir la fiche</button>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <div className="mx-auto max-w-[1500px] px-4 pb-16 pt-7 sm:px-7 lg:px-10">
+        <div className="flex flex-wrap items-center gap-2">
           {(["all", "movie", "tv"] as const).map((value) => (
-            <button key={value} type="button" onClick={() => setMediaType(value)} className={`rounded-full border px-3 py-1.5 text-xs font-medium ${mediaType === value ? "border-red-500/35 bg-red-500/15 text-red-200" : "border-white/10 bg-white/[.03] text-white/55"}`}>
+            <button key={value} type="button" onClick={() => setMediaType(value)} className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition ${mediaType === value ? "border-white bg-white text-black" : "border-white/10 bg-white/[.035] text-white/55 hover:bg-white/[.07] hover:text-white"}`}>
+              {value === "movie" ? <Film className="h-3.5 w-3.5" /> : value === "tv" ? <Tv className="h-3.5 w-3.5" /> : <Flame className="h-3.5 w-3.5" />}
               {value === "all" ? "Tout" : value === "movie" ? "Films" : "Séries"}
             </button>
           ))}
-          {(isLoading || isFetching) ? <span className="ml-1 inline-flex items-center gap-1.5 text-xs text-white/35"><Loader2 className="h-3.5 w-3.5 animate-spin" />Actualisation TMDB</span> : null}
-          <button type="button" onClick={() => void retryTmdb()} className="ml-auto inline-flex items-center gap-1.5 text-xs text-white/35 hover:text-white/70"><RefreshCw className={`h-3.5 w-3.5 ${checkingProvider || isFetching ? "animate-spin" : ""}`} />Tester TMDB</button>
+          <button type="button" onClick={() => void retryTmdb()} className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-2 text-[11px] text-white/40 transition hover:text-white/75"><RefreshCw className={`h-3.5 w-3.5 ${checkingProvider || isFetching ? "animate-spin" : ""}`} />TMDB</button>
         </div>
 
-        {providerHealth ? (
-          <div className={`mt-4 rounded-xl border px-4 py-3 text-xs leading-5 ${providerHealth.status === "ok" ? "border-emerald-400/20 bg-emerald-400/[.06] text-emerald-100/75" : "border-amber-400/20 bg-amber-400/[.06] text-amber-100/75"}`}>
-            {providerHealth.status === "ok"
-              ? `TMDB opérationnel · ${providerHealth.configuredCredentials} identifiant${providerHealth.configuredCredentials > 1 ? "s" : ""} configuré${providerHealth.configuredCredentials > 1 ? "s" : ""}.`
-              : providerHealth.status === "missing-credentials"
-                ? "TMDB indisponible : aucun identifiant n’est chargé dans l’environnement de production."
-                : `TMDB indisponible : ${providerHealth.configuredCredentials} identifiant${providerHealth.configuredCredentials > 1 ? "s" : ""} chargé${providerHealth.configuredCredentials > 1 ? "s" : ""}, mais aucun ne répond correctement.`}
-          </div>
+        <div className="mt-4 flex items-center gap-2 text-[11px] text-white/35">
+          <span className={`h-2 w-2 rounded-full ${providerHealth?.status === "ok" && !usingLocalFallback ? "bg-emerald-400" : "bg-amber-400"}`} />
+          {providerHealth?.status === "ok" && !usingLocalFallback ? "Catalogue en direct via TMDB" : "Mode résilient : catalogue local actif"}
+          {(isLoading || isFetching) ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+        </div>
+
+        {!query && picks.length > 1 ? (
+          <MediaRail title="Pour toi aujourd’hui" subtitle="Une sélection qui change avec le catalogue disponible." items={picks.slice(1)} onSelect={setSelected} />
         ) : null}
 
-        {!query && picks.length > 0 ? (
-          <section className="mt-9">
-            <h2 className="text-2xl font-semibold tracking-[-.04em]">À regarder aujourd’hui</h2>
-            <p className="mt-1 text-xs text-white/35">{usingLocalFallback ? "Sélection locale temporaire pendant l’indisponibilité de TMDB." : "Cinq propositions calculées à partir du catalogue TMDB disponible."}</p>
-            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
-              {picks.map(({ candidate }) => <MediaCard key={`pick-${candidate.id}`} item={candidate} />)}
-            </div>
-          </section>
-        ) : null}
-
-        <section className="mt-10 border-t border-white/10 pt-7">
-          <div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-2xl font-semibold tracking-[-.04em]">{query ? `Résultats pour « ${query} »` : "Catalogue"}</h2><p className="mt-1 text-xs text-white/35">{catalog.length} titre{catalog.length > 1 ? "s" : ""} affiché{catalog.length > 1 ? "s" : ""}</p></div></div>
-          {usingLocalFallback ? <div className="mt-4 rounded-xl border border-amber-400/20 bg-amber-400/[.06] px-4 py-3 text-xs leading-5 text-amber-100/75">TMDB n’est pas joignable depuis le serveur. Le catalogue local est utilisé uniquement pour maintenir la page exploitable pendant le diagnostic.</div> : null}
-          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-            {catalog.map((item) => <MediaCard key={item.id} item={item} />)}
+        <section className="mt-10">
+          <div className="flex items-end justify-between gap-4">
+            <div><p className="text-[10px] font-semibold uppercase tracking-[.18em] text-red-300/80">Catalogue</p><h2 className="mt-1 text-2xl font-semibold tracking-[-.04em] sm:text-3xl">{query ? `Résultats pour « ${query} »` : mediaType === "movie" ? "Films" : mediaType === "tv" ? "Séries" : "À découvrir"}</h2></div>
+            <span className="text-xs text-white/30">{catalog.length} titre{catalog.length > 1 ? "s" : ""}</span>
           </div>
-          {!catalog.length && !isLoading ? <p className="mt-8 text-sm text-white/45">Aucun résultat.</p> : null}
+
+          <div className="mt-5 grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+            {catalog.map((item) => <MediaCard key={item.id} item={item} onSelect={setSelected} />)}
+          </div>
+          {!catalog.length && !isLoading ? <div className="mt-10 rounded-2xl border border-white/10 bg-white/[.03] p-8 text-center text-sm text-white/45">Aucun résultat. Essaie un autre titre.</div> : null}
         </section>
 
-        <footer className="mt-12 border-t border-white/10 py-6 text-[11px] leading-5 text-white/30">Métadonnées et visuels fournis par TMDB. Cette page est volontairement exclue de l’indexation publique.</footer>
+        <footer className="mt-14 border-t border-white/[.07] py-7 text-[11px] leading-5 text-white/25">Données et visuels enrichis par TMDB lorsqu’il est disponible. Un catalogue local prend automatiquement le relais en cas d’indisponibilité.</footer>
       </div>
+
+      {selected ? <MediaModal item={selected} onClose={() => setSelected(null)} /> : null}
     </main>
   );
 }
 
-function MediaCard({ item }: { item: RecommendationCandidate }) {
+function MediaRail({ title, subtitle, items, onSelect }: { title: string; subtitle: string; items: RecommendationCandidate[]; onSelect: (item: RecommendationCandidate) => void }) {
   return (
-    <article className="overflow-hidden rounded-xl border border-white/10 bg-white/[.035]">
-      <div className="relative aspect-[2/3] bg-[#111318]">
-        {item.posterUrl ? <img src={item.posterUrl} alt={`Affiche de ${item.title}`} loading="lazy" decoding="async" className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center px-4 text-center text-xs text-white/25">Affiche indisponible</div>}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
-        <span className="absolute left-2 top-2 rounded-md bg-black/75 px-2 py-1 text-[9px] font-semibold uppercase tracking-wider text-white/75">{item.mediaType === "movie" ? "Film" : "Série"}</span>
-        <div className="absolute inset-x-0 bottom-0 p-3">
-          <h3 className="line-clamp-2 text-sm font-semibold">{item.title}</h3>
-          <div className="mt-1.5 flex items-center gap-2 text-[10px] text-white/55"><span>{item.year}</span>{item.rating ? <span className="inline-flex items-center gap-1"><Star className="h-3 w-3" />{item.rating.toFixed(1)}</span> : null}</div>
-        </div>
+    <section className="mt-10">
+      <h2 className="text-2xl font-semibold tracking-[-.04em]">{title}</h2>
+      <p className="mt-1 text-xs text-white/35">{subtitle}</p>
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
+        {items.map((item) => <MediaCard key={`rail-${item.id}`} item={item} onSelect={onSelect} />)}
       </div>
-      <div className="p-3"><p className="line-clamp-1 text-[10px] font-medium text-red-200/70">{item.genreLabel}</p><p className="mt-1.5 line-clamp-3 text-xs leading-5 text-white/45">{item.pitch}</p></div>
-    </article>
+    </section>
   );
+}
+
+function MediaCard({ item, onSelect }: { item: RecommendationCandidate; onSelect: (item: RecommendationCandidate) => void }) {
+  return (
+    <button type="button" onClick={() => onSelect(item)} className="group text-left">
+      <div className="relative aspect-[2/3] overflow-hidden rounded-2xl border border-white/[.08] bg-[#121216] shadow-lg transition duration-300 group-hover:-translate-y-1 group-hover:border-white/20">
+        {item.posterUrl ? <img src={item.posterUrl} alt={`Affiche de ${item.title}`} loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" /> : <div className="grid h-full place-items-center bg-gradient-to-br from-[#19191e] to-[#0d0d10] px-4 text-center text-sm font-semibold text-white/35">{item.title}</div>}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-80" />
+        <span className="absolute left-2 top-2 rounded-md bg-black/70 px-2 py-1 text-[9px] font-semibold uppercase tracking-wider text-white/75 backdrop-blur">{item.mediaType === "movie" ? "Film" : "Série"}</span>
+        {item.rating ? <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-md bg-black/70 px-2 py-1 text-[10px] font-semibold text-white/85 backdrop-blur"><Star className="h-3 w-3 fill-current text-amber-300" />{item.rating.toFixed(1)}</span> : null}
+      </div>
+      <h3 className="mt-2.5 line-clamp-1 text-sm font-semibold tracking-[-.02em] text-white/90">{item.title}</h3>
+      <p className="mt-1 line-clamp-1 text-[11px] text-white/35">{item.year} · {item.genreLabel}</p>
+    </button>
+  );
+}
+
+function MediaModal({ item, onClose }: { item: RecommendationCandidate; onClose: () => void }) {
+  useEffect(() => {
+    const close = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
+    window.addEventListener("keydown", close);
+    return () => window.removeEventListener("keydown", close);
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-end bg-black/75 p-0 backdrop-blur-sm sm:place-items-center sm:p-6" onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }}>
+      <article className="relative max-h-[92dvh] w-full max-w-4xl overflow-y-auto rounded-t-[2rem] border border-white/10 bg-[#101014] shadow-2xl sm:rounded-[2rem]">
+        <button type="button" onClick={onClose} className="absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-black/60 text-white backdrop-blur hover:bg-black/80"><X className="h-5 w-5" /></button>
+        <div className="relative min-h-[260px] overflow-hidden rounded-t-[2rem]">
+          {item.backdropUrl || item.posterUrl ? <img src={item.backdropUrl || item.posterUrl} alt="" className="absolute inset-0 h-full w-full object-cover opacity-45" /> : null}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#101014] via-[#101014]/40 to-transparent" />
+          <div className="relative flex min-h-[260px] items-end p-6 sm:p-8">
+            <div><p className="text-[10px] font-semibold uppercase tracking-[.18em] text-red-300">{item.mediaType === "movie" ? "Film" : "Série"}</p><h2 className="mt-1 text-4xl font-bold tracking-[-.055em] sm:text-5xl">{item.title}</h2></div>
+          </div>
+        </div>
+        <div className="grid gap-7 p-6 pt-2 sm:grid-cols-[1fr_220px] sm:p-8 sm:pt-3">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-white/45"><span>{item.year}</span>{item.runtime ? <><span>•</span><span>{item.runtime}</span></> : null}{item.rating ? <><span>•</span><span className="inline-flex items-center gap-1"><Star className="h-3.5 w-3.5 fill-current text-amber-300" />{item.rating.toFixed(1)}</span></> : null}</div>
+            <p className="mt-5 text-sm leading-7 text-white/70 sm:text-base">{item.pitch}</p>
+            {item.originalTitle && item.originalTitle !== item.title ? <p className="mt-4 text-xs text-white/35">Titre original : {item.originalTitle}</p> : null}
+          </div>
+          <aside className="space-y-4 text-xs">
+            <InfoLine label="Genres" value={item.genreLabel} />
+            {item.director ? <InfoLine label="Réalisation" value={item.director} /> : null}
+            {item.people.length ? <InfoLine label="Avec" value={item.people.slice(0, 4).join(", ")} /> : null}
+            {item.certification ? <InfoLine label="Repère" value={item.certification} /> : null}
+          </aside>
+        </div>
+      </article>
+    </div>
+  );
+}
+
+function InfoLine({ label, value }: { label: string; value: string }) {
+  return <div><p className="font-semibold text-white/70">{label}</p><p className="mt-1 leading-5 text-white/40">{value}</p></div>;
 }
