@@ -35,16 +35,6 @@ function asJsonObject(value: unknown): Record<string, unknown> {
     : {};
 }
 
-function unusedNormalize(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[«»"']/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
 function stripArticlePrefix(value: string) {
   return value
     .replace(/^(?:l['’]\s*)?article\s+/i, "")
