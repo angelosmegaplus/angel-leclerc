@@ -1,7 +1,7 @@
-import { getTmdbCredential } from "./vercel-connect-credentials.server";
+import { getTmdbCredential } from "./runtime-credentials.server";
 
 const BASE = "https://api.themoviedb.org/3";
-const REQUEST_TIMEOUT_MS = 3500;
+const REQUEST_TIMEOUT_MS = 10_000;
 
 export async function tmdb<T>(path: string, params: Record<string, string> = {}): Promise<T> {
   const credential = await getTmdbCredential();
