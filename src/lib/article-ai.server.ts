@@ -1,4 +1,4 @@
-import { getAiGatewayCredential, getOpenAiCredential } from "./vercel-connect-credentials.server";
+import { DEEP_AI_MODEL, DEFAULT_AI_MODEL, getLovableAiKey, lovableChat } from "./lovable-ai.server";
 
 type ArticleSource = { label: string; url: string };
 
@@ -26,8 +26,8 @@ const ALLOWED_TOPICS = [
   "Scoutisme", "Technologie & numérique", "Culture & idées",
 ];
 
-const DEFAULT_ARTICLE_MODEL = "gpt-4.1-mini";
-const DEFAULT_ARTICLE_FALLBACK_MODEL = "gpt-4o-mini";
+const DEFAULT_ARTICLE_MODEL = DEFAULT_AI_MODEL;
+const DEFAULT_ARTICLE_FALLBACK_MODEL = DEEP_AI_MODEL;
 
 function extractResponseText(json: unknown): string | null {
   if (!json || typeof json !== "object") return null;
@@ -56,86 +56,43 @@ function parseJsonObject(text: string) {
   }
 }
 
-function articleRequestBody(model: string, subject: string) {
-  return {
-    model,
-    tools: [{ type: "web_search", search_context_size: "high" }],
-    input: [
-      { role: "system", content: [{ type: "input_text", text:
-        "Tu es le moteur de veille journalistique d'Angel OS. Rédige en français une synthèse d'actualité ULTRA COMPLÈTE, détaillée, factuelle, lisible et vérifiable. Utilise activement le web et recoupe plusieurs sources fiables. Le lecteur doit comprendre le sujet sans devoir ouvrir les sources : explique le contexte, les faits nouveaux, la chronologie utile, les personnes/organisations concernées, les chiffres clés lorsqu'ils existent, les réactions ou points de vue pertinents, les conséquences possibles et ce qui reste incertain. Distingue clairement les faits établis des analyses ou hypothèses. Ne remplis jamais les trous par invention. Évite les répétitions et le remplissage. Vise au minimum environ 1800 mots quand les informations disponibles le permettent. Retourne UNIQUEMENT un objet JSON valide avec title, excerpt, content, sources, topics. excerpt doit être un résumé global dense de l'actualité. content doit être en HTML simple (<p>, <h2>, <strong>, <em>) et comporter plusieurs sections explicatives. À la fin de content, ajoute un <h2>Lire les articles et sources</h2> puis une liste de paragraphes contenant des liens HTML cliquables vers CHAQUE source réellement utilisée, sous la forme <p><a href=\"URL\" target=\"_blank\" rel=\"noopener noreferrer\">Média — titre ou description</a></p>. sources doit contenir les mêmes pages réellement consultées sous forme {label,url}. N'invente jamais une URL, une citation ou une source. topics est limité aux catégories autorisées fournies par l'utilisateur." }] },
-      { role: "user", content: [{ type: "input_text", text: `Sujet demandé : ${subject}\nCatégories autorisées : ${ALLOWED_TOPICS.join(", ")}. Fais une recherche approfondie, recoupe les informations importantes avec plusieurs médias ou sources primaires quand possible, puis produis le JSON complet.` }] },
-    ],
-  };
+const ARTICLE_SYSTEM_PROMPT =
+        "Tu es le moteur de veille journalistique d'Angel OS. Rédige en français une synthèse d'actualité ULTRA COMPLÈTE, détaillée, factuelle, lisible et vérifiable. Utilise activement le web et recoupe plusieurs sources fiables. Le lecteur doit comprendre le sujet sans devoir ouvrir les sources : explique le contexte, les faits nouveaux, la chronologie utile, les personnes/organisations concernées, les chiffres clés lorsqu'ils existent, les réactions ou points de vue pertinents, les conséquences possibles et ce qui reste incertain. Distingue clairement les faits établis des analyses ou hypothèses. Ne remplis jamais les trous par invention. Évite les répétitions et le remplissage. Vise au minimum environ 1800 mots quand les informations disponibles le permettent. Retourne UNIQUEMENT un objet JSON valide avec title, excerpt, content, sources, topics. excerpt doit être un résumé global dense de l'actualité. content doit être en HTML simple (<p>, <h2>, <strong>, <em>) et comporter plusieurs sections explicatives. À la fin de content, ajoute un <h2>Lire les articles et sources</h2> puis une liste de paragraphes contenant des liens HTML cliquables vers CHAQUE source réellement utilisée, sous la forme <p><a href=\"URL\" target=\"_blank\" rel=\"noopener noreferrer\">Média — titre ou description</a></p>. sources doit contenir les mêmes pages réellement consultées sous forme {label,url}. N'invente jamais une URL, une citation ou une source. topics est limité aux catégories autorisées fournies par l'utilisateur.";
+
+function articleUserPrompt(subject: string) {
+  return `Sujet demandé : ${subject}\nCatégories autorisées : ${ALLOWED_TOPICS.join(", ")}. Fais une recherche approfondie, recoupe les informations importantes avec plusieurs médias ou sources primaires quand possible, puis produis le JSON complet.`;
 }
 
 function articleModels() {
-  const primary = process.env["OPENAI_ARTICLE_MODEL"] || process.env["OPENAI_WEB_MODEL"] || DEFAULT_ARTICLE_MODEL;
-  const fallback = process.env["OPENAI_ARTICLE_FALLBACK_MODEL"] || process.env["OPENAI_WEB_FALLBACK_MODEL"] || DEFAULT_ARTICLE_FALLBACK_MODEL;
+  const primary = process.env["ANGEL_AI_ARTICLE_MODEL"] || DEFAULT_ARTICLE_MODEL;
+  const fallback = process.env["ANGEL_AI_ARTICLE_FALLBACK_MODEL"] || DEFAULT_ARTICLE_FALLBACK_MODEL;
   return Array.from(new Set([primary, fallback].filter(Boolean)));
 }
 
-function shouldTryFallback(status: number, body: string) {
-  return (status === 400 || status === 403 || status === 404) &&
-    /model_not_found|model[^\n]*(?:unavailable|access|verified|verification)|organization must be verified/i.test(body);
-}
-
-function gatewayModel(model: string) {
-  return model.includes("/") ? model : `openai/${model}`;
-}
-
-async function runProvider(endpoint: string, token: string, model: string, subject: string, signal: AbortSignal) {
-  return fetch(endpoint, {
-    method: "POST",
-    signal,
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify(articleRequestBody(model, subject)),
-  });
-}
-
 async function researchAndWrite(subject: string): Promise<Omit<GeneratedArticleDraft, "coverUrl" | "coverMeta"> | null> {
-  const [credential, gatewayCredential] = await Promise.all([getOpenAiCredential(), Promise.resolve(getAiGatewayCredential())]);
-  if (!credential && !gatewayCredential) {
-    console.error("[article-ai] no OpenAI or Vercel AI Gateway credential available");
+  if (!getLovableAiKey()) {
+    console.error("[article-ai] no AI gateway credential available");
     return null;
   }
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 50_000);
+  const timeout = setTimeout(() => controller.abort(), 90_000);
   try {
-    const models = articleModels();
-    for (let index = 0; index < models.length; index += 1) {
-      const model = models[index];
-      let response: Response | null = null;
-
-      if (credential) {
-        response = await runProvider("https://api.openai.com/v1/responses", credential.value, model, subject, controller.signal);
-        if (!response.ok) {
-          const body = await response.text();
-          console.warn("[article-ai] direct OpenAI failed", response.status, { model, credentialSource: credential.source, body: body.slice(0, 1200) });
-          const hasFallbackModel = index < models.length - 1;
-          if (hasFallbackModel && shouldTryFallback(response.status, body)) continue;
-          response = null;
-        }
-      }
-
-      if (!response && gatewayCredential) {
-        const routedModel = gatewayModel(model);
-        response = await runProvider("https://ai-gateway.vercel.sh/v1/responses", gatewayCredential.value, routedModel, subject, controller.signal);
-        if (!response.ok) {
-          const body = await response.text();
-          console.warn("[article-ai] Vercel AI Gateway failed", response.status, { model: routedModel, credentialSource: gatewayCredential.source, body: body.slice(0, 1200) });
-          const hasFallbackModel = index < models.length - 1;
-          if (hasFallbackModel && shouldTryFallback(response.status, body)) continue;
-          continue;
-        }
-      }
-
-      if (!response) continue;
-      const text = extractResponseText(await response.json());
-      if (!text) {
-        console.warn("[article-ai] provider returned no usable text", { model });
+    for (const model of articleModels()) {
+      const result = await lovableChat({
+        model,
+        messages: [
+          { role: "system", content: ARTICLE_SYSTEM_PROMPT },
+          { role: "user", content: articleUserPrompt(subject) },
+        ],
+        tools: [{ type: "google_search" }],
+        temperature: 0.3,
+        signal: controller.signal,
+      });
+      if (!result.ok || !result.text) {
+        console.warn("[article-ai] AI gateway failed", { model, detail: result.detail });
         continue;
       }
-      const parsed = parseJsonObject(text);
+      const parsed = parseJsonObject(result.text);
       if (!parsed) {
         console.warn("[article-ai] provider returned unparsable JSON", { model });
         continue;
@@ -144,7 +101,14 @@ async function researchAndWrite(subject: string): Promise<Omit<GeneratedArticleD
       const excerpt = typeof parsed.excerpt === "string" ? parsed.excerpt.trim().slice(0, 1200) : "";
       const content = typeof parsed.content === "string" ? parsed.content.trim() : "";
       const rawSources = Array.isArray(parsed.sources) ? parsed.sources : [];
-      const sources: ArticleSource[] = rawSources.filter((item): item is Record<string, unknown> => !!item && typeof item === "object" && !Array.isArray(item)).map((item) => ({ label: typeof item.label === "string" ? item.label.trim().slice(0, 220) : "Source", url: typeof item.url === "string" ? item.url.trim() : "" })).filter((item) => /^https?:\/\//i.test(item.url)).slice(0, 20);
+      const sources: ArticleSource[] = rawSources
+        .filter((item): item is Record<string, unknown> => !!item && typeof item === "object" && !Array.isArray(item))
+        .map((item) => ({
+          label: typeof item.label === "string" ? item.label.trim().slice(0, 220) : "Source",
+          url: typeof item.url === "string" ? item.url.trim() : "",
+        }))
+        .filter((item) => /^https?:\/\//i.test(item.url))
+        .slice(0, 20);
       const rawTopics = Array.isArray(parsed.topics) ? parsed.topics : [];
       const topics = rawTopics.filter((item): item is string => typeof item === "string" && ALLOWED_TOPICS.includes(item)).slice(0, 4);
       if (!content || sources.length < 2) {
