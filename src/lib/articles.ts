@@ -48,11 +48,12 @@ function mergeSources(databaseArticles: Article[], archive: Article[], deleted: 
     if (!deleted.has(article.slug)) bySlug.set(article.slug, article);
   }
 
-  // Une ligne courante Supabase est prioritaire par slug. Un sentinel de
-  // suppression masque explicitement toutes les versions historiques sans être
-  // lui-même affiché dans le public ni dans Studio.
+  // A deletion tombstone is authoritative across every source. In particular,
+  // an old Supabase row must never resurrect an article deleted through GitHub.
+  // A database deletion sentinel has the same effect when GitHub writes are not
+  // available. This keeps public pages and Studio consistent after deletion.
   for (const article of databaseArticles) {
-    if (isDatabaseDeletionSentinel(article)) {
+    if (deleted.has(article.slug) || isDatabaseDeletionSentinel(article)) {
       bySlug.delete(article.slug);
       continue;
     }
@@ -103,6 +104,8 @@ export async function fetchPublishedArticles(): Promise<Article[]> {
 
 export async function fetchArticleBySlug(slug: string): Promise<Article | null> {
   const deleted = deletedSlugs(await fetchDeletedGitArticleSlugs());
+  if (deleted.has(slug)) return null;
+
   const database = await currentArticles();
   const current = database.find((article) => article.slug === slug);
 
@@ -112,7 +115,6 @@ export async function fetchArticleBySlug(slug: string): Promise<Article | null> 
     if (current.scheduled_at && new Date(current.scheduled_at).getTime() > Date.now()) return null;
     return current;
   }
-  if (deleted.has(slug)) return null;
 
   const merged = mergeSources([], getAllLovableArticleArchive(), deleted);
   const article = merged.find((candidate) => candidate.slug === slug) ?? null;
