@@ -2,19 +2,21 @@ import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Film, Flame, Info, Loader2, RefreshCw, Search, ShieldCheck, Sparkles, Star, Tv, X } from "lucide-react";
+import { Brain, Film, Flame, Gauge, Info, Loader2, RefreshCw, Search, ShieldCheck, Sparkles, Star, Tv, X } from "lucide-react";
 import { Captcha, type CaptchaValue } from "@/components/Captcha";
+import { FilmDetailsModal } from "@/components/films/FilmDetailsModal";
 import { verifyCaptchaAnswer } from "@/lib/captcha.functions";
 import { FILM_CATALOG } from "@/lib/film-catalog";
 import { getFilmProviderHealth } from "@/lib/film-health.functions";
 import { getLiveFilmCatalog } from "@/lib/film-live.functions";
-import { selectDailyRecommendations, type RecommendationCandidate } from "@/lib/film-recommendations";
+import { loadTasteSignals } from "@/lib/film-taste.client";
+import { confidenceFor, selectDailyRecommendations, type RecommendationCandidate, type ViewingSignal } from "@/lib/film-recommendations";
 
 export const Route = createFileRoute("/films-series")({
   head: () => ({
     meta: [
       { title: "Films & séries | Angel" },
-      { name: "description", content: "Sélection personnelle de films et séries, alimentée par TMDB avec secours local." },
+      { name: "description", content: "Recommandations personnelles de films et séries, alimentées par TMDB." },
       { name: "robots", content: "noindex, nofollow, noarchive, nosnippet" },
     ],
   }),
@@ -50,11 +52,13 @@ function FilmSeriesPage() {
   const [query, setQuery] = useState("");
   const [mediaType, setMediaType] = useState<Filter>("all");
   const [selected, setSelected] = useState<RecommendationCandidate | null>(null);
+  const [signals, setSignals] = useState<ViewingSignal[]>([]);
 
   useEffect(() => {
     try {
       const grantedAt = Number(sessionStorage.getItem(ACCESS_KEY));
       setUnlocked(Number.isFinite(grantedAt) && Date.now() - grantedAt < ACCESS_MS);
+      setSignals(loadTasteSignals());
     } catch {
       setUnlocked(false);
     } finally {
@@ -63,7 +67,7 @@ function FilmSeriesPage() {
   }, []);
 
   const { data, isLoading, isFetching, refetch } = useQuery({
-    queryKey: ["films-series-live-tmdb-v2", query, mediaType],
+    queryKey: ["films-series-live-tmdb-v3", query, mediaType],
     queryFn: () => loadCatalog({ data: { query, mediaType } }),
     enabled: unlocked,
     staleTime: 15 * 60 * 1000,
@@ -71,7 +75,7 @@ function FilmSeriesPage() {
   });
 
   const { data: providerHealth, refetch: refetchProviderHealth, isFetching: checkingProvider } = useQuery({
-    queryKey: ["films-series-provider-health-v2"],
+    queryKey: ["films-series-provider-health-v3"],
     queryFn: () => loadProviderHealth(),
     enabled: unlocked,
     staleTime: 60 * 1000,
@@ -84,8 +88,10 @@ function FilmSeriesPage() {
     () => usingLocalFallback ? fallback : data.items,
     [data, fallback, usingLocalFallback],
   );
-  const picks = useMemo(() => selectDailyRecommendations(catalog, []).map((entry) => entry.candidate), [catalog]);
+  const ranked = useMemo(() => selectDailyRecommendations(catalog, signals, 12), [catalog, signals]);
+  const picks = useMemo(() => ranked.map((entry) => entry.candidate), [ranked]);
   const hero = !query ? picks[0] : null;
+  const confidence = useMemo(() => confidenceFor(signals), [signals]);
 
   async function unlock() {
     if (unlocking || !captcha.token || !captcha.answer.trim()) return;
@@ -95,6 +101,7 @@ function FilmSeriesPage() {
       await verify({ data: captcha });
       try { sessionStorage.setItem(ACCESS_KEY, String(Date.now())); } catch { /* optional */ }
       setUnlocked(true);
+      setSignals(loadTasteSignals());
     } catch (error) {
       setCaptchaError(error instanceof Error ? error.message : "Vérification incorrecte.");
     } finally {
@@ -160,7 +167,7 @@ function FilmSeriesPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-[#070708] via-transparent to-[#070708]/20" />
           <div className="relative mx-auto flex min-h-[480px] max-w-[1500px] items-end px-4 pb-12 pt-24 sm:min-h-[560px] sm:px-7 sm:pb-16 lg:px-10">
             <div className="max-w-2xl">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/30 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[.12em] text-white/70 backdrop-blur"><Sparkles className="h-3.5 w-3.5 text-red-300" />Sélection du jour</div>
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/30 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[.12em] text-white/70 backdrop-blur"><Sparkles className="h-3.5 w-3.5 text-red-300" />Recommandé pour toi</div>
               <h1 className="text-5xl font-bold tracking-[-.065em] sm:text-7xl">{hero.title}</h1>
               <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-white/60"><span>{hero.year}</span><span>{hero.mediaType === "movie" ? "Film" : "Série"}</span>{hero.rating ? <span className="inline-flex items-center gap-1"><Star className="h-4 w-4 fill-current text-amber-300" />{hero.rating.toFixed(1)}</span> : null}<span>{hero.genreLabel}</span></div>
               <p className="mt-5 line-clamp-4 max-w-xl text-base leading-7 text-white/70 sm:text-lg">{hero.pitch}</p>
@@ -171,14 +178,19 @@ function FilmSeriesPage() {
       ) : null}
 
       <div className="mx-auto max-w-[1500px] px-4 pb-16 pt-7 sm:px-7 lg:px-10">
-        <div className="flex flex-wrap items-center gap-2">
-          {(["all", "movie", "tv"] as const).map((value) => (
-            <button key={value} type="button" onClick={() => setMediaType(value)} className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition ${mediaType === value ? "border-white bg-white text-black" : "border-white/10 bg-white/[.035] text-white/55 hover:bg-white/[.07] hover:text-white"}`}>
-              {value === "movie" ? <Film className="h-3.5 w-3.5" /> : value === "tv" ? <Tv className="h-3.5 w-3.5" /> : <Flame className="h-3.5 w-3.5" />}
-              {value === "all" ? "Tout" : value === "movie" ? "Films" : "Séries"}
-            </button>
-          ))}
-          <button type="button" onClick={() => void retryTmdb()} className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-2 text-[11px] text-white/40 transition hover:text-white/75"><RefreshCw className={`h-3.5 w-3.5 ${checkingProvider || isFetching ? "animate-spin" : ""}`} />TMDB</button>
+        <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+          <div className="flex flex-wrap items-center gap-2">
+            {(["all", "movie", "tv"] as const).map((value) => (
+              <button key={value} type="button" onClick={() => setMediaType(value)} className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition ${mediaType === value ? "border-white bg-white text-black" : "border-white/10 bg-white/[.035] text-white/55 hover:bg-white/[.07] hover:text-white"}`}>
+                {value === "movie" ? <Film className="h-3.5 w-3.5" /> : value === "tv" ? <Tv className="h-3.5 w-3.5" /> : <Flame className="h-3.5 w-3.5" />}
+                {value === "all" ? "Tout" : value === "movie" ? "Films" : "Séries"}
+              </button>
+            ))}
+            <button type="button" onClick={() => void retryTmdb()} className="inline-flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-2 text-[11px] text-white/40 transition hover:text-white/75"><RefreshCw className={`h-3.5 w-3.5 ${checkingProvider || isFetching ? "animate-spin" : ""}`} />TMDB</button>
+          </div>
+          <div className="inline-flex w-fit items-center gap-3 rounded-full border border-violet-400/15 bg-violet-400/[.07] px-3.5 py-2 text-[11px] text-violet-100/70">
+            <Brain className="h-3.5 w-3.5" /><span>{signals.length} avis enregistrés</span><span className="text-white/25">•</span><Gauge className="h-3.5 w-3.5" /><span>précision {confidence.percent}%</span>
+          </div>
         </div>
 
         <div className="mt-4 flex items-center gap-2 text-[11px] text-white/35">
@@ -188,7 +200,7 @@ function FilmSeriesPage() {
         </div>
 
         {!query && picks.length > 1 ? (
-          <MediaRail title="Pour toi aujourd’hui" subtitle="Une sélection qui change avec le catalogue disponible." items={picks.slice(1)} onSelect={setSelected} />
+          <MediaRail title="Films recommandés" subtitle={`Le moteur apprend de tes notes, likes, dislikes et de ce que tu considères comme ton style. Confiance ${confidence.level}.`} items={picks.slice(1)} onSelect={setSelected} />
         ) : null}
 
         <section className="mt-10">
@@ -203,10 +215,10 @@ function FilmSeriesPage() {
           {!catalog.length && !isLoading ? <div className="mt-10 rounded-2xl border border-white/10 bg-white/[.03] p-8 text-center text-sm text-white/45">Aucun résultat. Essaie un autre titre.</div> : null}
         </section>
 
-        <footer className="mt-14 border-t border-white/[.07] py-7 text-[11px] leading-5 text-white/25">Données et visuels enrichis par TMDB lorsqu’il est disponible. Un catalogue local prend automatiquement le relais en cas d’indisponibilité.</footer>
+        <footer className="mt-14 border-t border-white/[.07] py-7 text-[11px] leading-5 text-white/25">Données, visuels et disponibilités enrichis par TMDB. Les préférences restent enregistrées localement sur cet appareil et servent uniquement à personnaliser tes recommandations.</footer>
       </div>
 
-      {selected ? <MediaModal item={selected} onClose={() => setSelected(null)} /> : null}
+      {selected ? <FilmDetailsModal item={selected} signals={signals} onSignalsChange={setSignals} onClose={() => setSelected(null)} /> : null}
     </main>
   );
 }
@@ -215,8 +227,8 @@ function MediaRail({ title, subtitle, items, onSelect }: { title: string; subtit
   return (
     <section className="mt-10">
       <h2 className="text-2xl font-semibold tracking-[-.04em]">{title}</h2>
-      <p className="mt-1 text-xs text-white/35">{subtitle}</p>
-      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
+      <p className="mt-1 max-w-3xl text-xs leading-5 text-white/35">{subtitle}</p>
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
         {items.map((item) => <MediaCard key={`rail-${item.id}`} item={item} onSelect={onSelect} />)}
       </div>
     </section>
@@ -236,44 +248,4 @@ function MediaCard({ item, onSelect }: { item: RecommendationCandidate; onSelect
       <p className="mt-1 line-clamp-1 text-[11px] text-white/35">{item.year} · {item.genreLabel}</p>
     </button>
   );
-}
-
-function MediaModal({ item, onClose }: { item: RecommendationCandidate; onClose: () => void }) {
-  useEffect(() => {
-    const close = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
-    window.addEventListener("keydown", close);
-    return () => window.removeEventListener("keydown", close);
-  }, [onClose]);
-
-  return (
-    <div className="fixed inset-0 z-50 grid place-items-end bg-black/75 p-0 backdrop-blur-sm sm:place-items-center sm:p-6" onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }}>
-      <article className="relative max-h-[92dvh] w-full max-w-4xl overflow-y-auto rounded-t-[2rem] border border-white/10 bg-[#101014] shadow-2xl sm:rounded-[2rem]">
-        <button type="button" onClick={onClose} className="absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-black/60 text-white backdrop-blur hover:bg-black/80"><X className="h-5 w-5" /></button>
-        <div className="relative min-h-[260px] overflow-hidden rounded-t-[2rem]">
-          {item.backdropUrl || item.posterUrl ? <img src={item.backdropUrl || item.posterUrl} alt="" className="absolute inset-0 h-full w-full object-cover opacity-45" /> : null}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#101014] via-[#101014]/40 to-transparent" />
-          <div className="relative flex min-h-[260px] items-end p-6 sm:p-8">
-            <div><p className="text-[10px] font-semibold uppercase tracking-[.18em] text-red-300">{item.mediaType === "movie" ? "Film" : "Série"}</p><h2 className="mt-1 text-4xl font-bold tracking-[-.055em] sm:text-5xl">{item.title}</h2></div>
-          </div>
-        </div>
-        <div className="grid gap-7 p-6 pt-2 sm:grid-cols-[1fr_220px] sm:p-8 sm:pt-3">
-          <div>
-            <div className="flex flex-wrap items-center gap-2 text-xs text-white/45"><span>{item.year}</span>{item.runtime ? <><span>•</span><span>{item.runtime}</span></> : null}{item.rating ? <><span>•</span><span className="inline-flex items-center gap-1"><Star className="h-3.5 w-3.5 fill-current text-amber-300" />{item.rating.toFixed(1)}</span></> : null}</div>
-            <p className="mt-5 text-sm leading-7 text-white/70 sm:text-base">{item.pitch}</p>
-            {item.originalTitle && item.originalTitle !== item.title ? <p className="mt-4 text-xs text-white/35">Titre original : {item.originalTitle}</p> : null}
-          </div>
-          <aside className="space-y-4 text-xs">
-            <InfoLine label="Genres" value={item.genreLabel} />
-            {item.director ? <InfoLine label="Réalisation" value={item.director} /> : null}
-            {item.people.length ? <InfoLine label="Avec" value={item.people.slice(0, 4).join(", ")} /> : null}
-            {item.certification ? <InfoLine label="Repère" value={item.certification} /> : null}
-          </aside>
-        </div>
-      </article>
-    </div>
-  );
-}
-
-function InfoLine({ label, value }: { label: string; value: string }) {
-  return <div><p className="font-semibold text-white/70">{label}</p><p className="mt-1 leading-5 text-white/40">{value}</p></div>;
 }
