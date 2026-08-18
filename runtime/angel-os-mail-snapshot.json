@@ -1,92 +1,117 @@
 {
-  "fetchedAt": "2026-08-17T07:13:10Z",
+  "fetchedAt": "2026-08-18T11:02:31Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-17T07:13:10Z",
+      "fetchedAt": "2026-08-18T11:02:31Z",
       "important": [
         {
-          "subject": "[angelosmegaplus/angel-leclerc] Generic High Entropy Secret exposed on GitHub",
-          "from": "GitGuardian <security@getgitguardian.com>",
-          "date": "2026-08-16T16:49:05Z",
-          "summary": "GitGuardian signale la détection d'un secret générique à forte entropie exposé dans le dépôt angelosmegaplus/angel-leclerc. Cette routine n'a répondu à aucun message et n'a modifié aucun secret.",
-          "reason": "Alerte de sécurité récente concernant directement le dépôt principal Angel OS ; elle doit être rapprochée des corrections de sécurité déjà en cours et traitée par la maintenance technique.",
+          "subject": "Candidatures BTS Communication envoyées",
+          "from": "Boîte Gmail connectée",
+          "date": "2026-08-18T11:02:31Z",
+          "summary": "21 mails envoyés correspondant avec forte certitude à des candidatures BTS Communication ont été détectés depuis le précédent rapport. Aucun envoi supplémentaire n'a été effectué par cette routine.",
+          "reason": "Les éléments envoyés servent de preuve opérationnelle pour la synchronisation Candidatures et le futur index mail privé Angel OS IA.",
           "suggestedReply": ""
         },
         {
-          "subject": "Confirm your email address",
-          "from": "Supabase Auth <noreply@mail.app.supabase.io>",
-          "date": "2026-08-16T15:44:48Z",
-          "summary": "Supabase Auth demande de confirmer l'adresse email afin de terminer une inscription à une application. Aucun clic ni modification du compte n'a été effectué par cette routine.",
-          "reason": "Message récent d'authentification pouvant correspondre à une inscription ou reconnexion Supabase ; à conserver comme information de sécurité/compte.",
+          "subject": "Réponses automatiques de candidature",
+          "from": "Boîte Gmail connectée",
+          "date": "2026-08-18T11:02:31Z",
+          "summary": "Trois réponses automatiques d'absence et un challenge de délivrabilité ont été détectés sur des fils de candidature. Aucun de ces messages ne constitue un refus, une acceptation ou une demande d'entretien.",
+          "reason": "Conserver le statut factuel des candidatures sans interpréter une absence ou un système anti-spam comme une réponse négative.",
           "suggestedReply": ""
         },
         {
-          "subject": "Alerte de sécurité",
-          "from": "Google <no-reply@accounts.google.com>",
-          "date": "2026-08-16T12:43:21Z",
-          "summary": "Google a signalé une nouvelle connexion au compte principal. Le message précise qu'aucune action n'est nécessaire si cette connexion était bien celle d'Angel.",
-          "reason": "Alerte de sécurité récente concernant directement le compte Google principal.",
+          "subject": "Alertes techniques Angel OS",
+          "from": "Services techniques connectés",
+          "date": "2026-08-18T11:02:31Z",
+          "summary": "Sept alertes de déploiement Vercel en échec ont été détectées depuis le précédent rapport. Elles sont consignées pour la maintenance technique ; aucune modification du site n'a été déclenchée par cette routine.",
+          "reason": "Éviter de mélanger veille mail et maintenance technique tout en conservant une trace exploitable.",
           "suggestedReply": ""
         },
         {
-          "subject": "[angelosmegaplus/angel-leclerc] Run failed: Publication Angel OS - main (53c1522)",
-          "from": "Angel OS <notifications@github.com>",
-          "date": "2026-08-16T12:39:40Z",
-          "summary": "Des échecs répétés de workflows CI, publication, observabilité, maintenance ou synchronisation Angel OS restent présents parmi les non-lus récents. Aucun nouvel échec GitHub n'est arrivé pendant cette période.",
-          "reason": "Blocage technique antérieur encore utile au cockpit tant que la maintenance n'a pas confirmé sa résolution.",
-          "suggestedReply": ""
-        },
-        {
-          "subject": "Complétez votre dossier de candidature",
-          "from": "Université de Bordeaux - Service des recrutements <message@beetween-software.com>",
-          "date": "2026-08-15T18:32:12Z",
-          "summary": "L'Université de Bordeaux confirme la réception de la candidature au poste de Chargé(e) de communication en alternance F/H et propose de compléter un court questionnaire. Il ne s'agit ni d'une acceptation ni d'un refus.",
-          "reason": "Action candidature antérieure toujours pertinente : compléter le questionnaire associé au dossier.",
+          "subject": "Autorisations Google récentes",
+          "from": "Google",
+          "date": "2026-08-18T11:02:31Z",
+          "summary": "Plusieurs alertes de sécurité Google confirment des autorisations récentes accordées à angel-leclerc.fr. Les copies reçues sur Outlook ont été dédupliquées comme le même type d'événement et ne sont pas comptées deux fois.",
+          "reason": "Information utile au diagnostic OAuth sans exposer de jeton, secret ou identifiant privé.",
           "suggestedReply": ""
         }
       ],
-      "otherSummary": "Aucun nouveau message reçu depuis la fin du précédent rapport à 06:14:46 UTC. Les non-lus récents pertinents restent inchangés : anciennes alertes GitHub, sécurité/compte et dossier Université de Bordeaux. Aucun nouveau refus, entretien, demande de CV, demande d'information, redirection professionnelle, réponse d'entreprise ou alerte technique nouvelle n'a été reçu. Aucun email n'a été envoyé, classé, marqué lu ou modifié par cette routine.",
+      "otherSummary": "Depuis le précédent rapport, 21 candidatures BTS Communication envoyées ont été détectées, ainsi que quatre retours automatiques liés à ces fils. Aucun refus explicite, aucune réponse positive, aucun entretien et aucune demande de CV ou d'information n'ont été détectés. Aucun mail n'a été envoyé ou modifié par cette routine.",
       "counts": {
-        "new_since_last_run": 0,
-        "incoming": 0,
-        "outgoing": 0,
-        "technical_incoming": 0,
-        "security_or_account_incoming": 0,
-        "secondary_incoming": 0,
-        "employment_or_application_incoming": 0,
-        "application_action_required": 0,
+        "useful_messages": 37,
+        "incoming": 16,
+        "outgoing": 21,
+        "outgoing_bts_applications": 21,
+        "application_related_incoming": 4,
+        "automatic_absence": 3,
+        "delivery_challenge": 1,
+        "technical_incoming": 7,
+        "security_or_account_incoming": 4,
+        "job_alerts": 1,
         "explicit_rejections": 0,
         "positive_or_interview": 0,
         "professional_redirects": 0,
         "already_sent_rejection_replies": 0
       }
+    },
+    "microsoft_mail_dashboard": {
+      "fetchedAt": "2026-08-18T11:02:31Z",
+      "summary": "La boîte Outlook a été contrôlée. Les alertes de sécurité Google reçues en copie ont été dédupliquées avec Gmail. Une alerte d'offre d'alternance en communication a été repérée mais ne prouve aucune candidature ni réponse d'entreprise. Aucun élément envoyé Outlook postérieur à la borne du précédent rapport n'a été identifié parmi les éléments récents examinés.",
+      "counts": {
+        "unique_application_replies": 0,
+        "unique_outgoing_applications": 0,
+        "job_alerts": 1,
+        "cross_provider_duplicates_ignored": 4
+      }
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-17T06:14:46Z",
-    "period_end": "2026-08-17T07:13:10Z",
-    "summary": "Aucun nouveau mail pertinent n'a été reçu depuis le précédent rapport. Aucun refus explicite, acceptation, entretien, demande de CV, demande d'information, redirection professionnelle ou nouvelle alerte technique n'a été détecté. Cette routine n'a envoyé ni modifié aucun email. La file `public.ai_actions` et la table native `hourly_mail_reports` restent inaccessibles depuis les connecteurs de cette exécution faute de voie Supabase serveur authentifiée exposée ; aucune action `awaiting_operator` n'a été exécutée, modifiée ou simulée. Le cache Gmail de secours a été actualisé sans écraser les données existantes.",
+    "period_start": "2026-08-17T07:13:10Z",
+    "period_end": "2026-08-18T11:02:31Z",
+    "summary": "Cycle consolidé Gmail + Outlook terminé. 21 mails envoyés correspondent avec forte certitude à des candidatures BTS Communication. Quatre retours automatiques liés aux candidatures ont été détectés, sans refus explicite, entretien, acceptation ni demande de CV. Sept alertes Vercel ont été consignées pour la maintenance technique. Les copies Outlook d'alertes Google ont été dédupliquées. Aucun email n'a été envoyé, répondu, classé ou modifié par cette routine. La file `ai_actions` et l'index mail privé cumulatif ne peuvent toujours pas être lus/écrits directement depuis les connecteurs de cette exécution sans voie serveur authentifiée dédiée ; aucune donnée privée détaillée, aucun message_id, destinataire ni contenu de fil n'a donc été écrit dans ce snapshot GitHub public.",
     "counts": {
-      "total_messages": 0,
-      "incoming": 0,
-      "outgoing": 0,
-      "technical_incoming": 0,
-      "security_or_account_incoming": 0,
-      "secondary_incoming": 0,
-      "employment_or_application_incoming": 0,
-      "application_action_required": 0,
+      "useful_messages": 37,
+      "incoming": 16,
+      "outgoing": 21,
+      "outgoing_bts_applications": 21,
+      "application_related_incoming": 4,
+      "automatic_absence": 3,
+      "delivery_challenge": 1,
+      "technical_incoming": 7,
+      "security_or_account_incoming": 4,
+      "job_alerts": 1,
       "explicit_rejections": 0,
       "positive_or_interview": 0,
       "professional_redirects": 0,
-      "already_sent_rejection_replies": 0,
       "awaiting_operator_executed": 0,
-      "pending_actions_created": 0
+      "pending_actions_created": 0,
+      "cross_provider_duplicates_ignored": 4
     },
-    "items": [],
+    "items": [
+      {
+        "kind": "applications_sent",
+        "summary": "21 candidatures BTS Communication envoyées détectées ; réconciliation avec `applications` requise via la voie privée native avant toute création afin d'éviter les doublons."
+      },
+      {
+        "kind": "application_auto_replies",
+        "summary": "Trois absences automatiques et un challenge de délivrabilité ; aucun changement vers refus/acceptation/entretien."
+      },
+      {
+        "kind": "technical_alerts",
+        "summary": "Sept échecs de déploiement Vercel consignés ; traitement laissé à la maintenance technique."
+      },
+      {
+        "kind": "oauth_security",
+        "summary": "Alertes Google d'autorisation récentes détectées ; copies Outlook dédupliquées."
+      }
+    ],
     "recommendations": [
-      "Ne créer aucune réponse automatique de refus : aucun nouveau refus explicite n'a été reçu sur la période.",
-      "Ne créer aucune action `pending` : aucun nouvel email ne justifie d'action.",
-      "Réessayer au prochain cycle la lecture/écriture native Supabase si une voie serveur authentifiée devient disponible."
+      "Ne répondre automatiquement à aucun fil de candidature détecté pendant ce cycle.",
+      "Réconcilier les 21 preuves d'envoi avec `applications` uniquement via une voie privée serveur, avec anti-doublon par message/thread/domaine/entreprise.",
+      "Conserver les réponses automatiques comme état d'attente ; ne jamais les transformer en refus.",
+      "Laisser la maintenance technique diagnostiquer les alertes Vercel ; aucune action technique n'a été exécutée ici.",
+      "Ne pas stocker l'index mail privé détaillé dans GitHub public ; une voie serveur authentifiée dédiée reste nécessaire pour message_id/thread_id/destinataires et résumés de fils."
     ],
     "source": "chatgpt-hourly-direct"
   }
