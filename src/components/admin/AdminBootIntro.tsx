@@ -9,6 +9,7 @@ const ADMIN_THEME_KEY = "angel-os:admin-theme";
 type AdminTheme = "light" | "dark";
 
 function hasPendingBoot() {
+  if (typeof window === "undefined") return false;
   try {
     return window.sessionStorage.getItem(ADMIN_BOOT_PENDING_KEY) === "1";
   } catch {
@@ -41,24 +42,21 @@ function applyAdminTheme(theme: AdminTheme) {
 }
 
 export function AdminBootIntro() {
-  const [visible, setVisible] = useState(false);
-  const [theme, setTheme] = useState<AdminTheme>("light");
+  // Important : lire l'indicateur au premier rendu client. L'ancienne version
+  // attendait useEffect et laissait donc le dashboard apparaître une frame avant le boot.
+  const [visible, setVisible] = useState(() => hasPendingBoot());
+  const [theme, setTheme] = useState<AdminTheme>(() =>
+    typeof window === "undefined" ? "light" : readAdminTheme(),
+  );
 
   useEffect(() => {
     const initialTheme = readAdminTheme();
     setTheme(initialTheme);
+    applyAdminTheme(initialTheme);
 
-    // AdminShell appliquait historiquement le sombre au montage. L'application
-    // différée garantit que la préférence admin gagne toujours, sans flash durable.
-    const frame = window.requestAnimationFrame(() => applyAdminTheme(initialTheme));
-
-    if (hasPendingBoot()) {
-      consumePendingBoot();
-      setVisible(true);
-    }
+    if (hasPendingBoot()) consumePendingBoot();
 
     return () => {
-      window.cancelAnimationFrame(frame);
       document.documentElement.classList.remove("admin-light");
     };
   }, []);
@@ -79,15 +77,17 @@ export function AdminBootIntro() {
       {visible ? (
         <SystemBootExperience done={() => setVisible(false)} label="Démarrage de l'espace administrateur Angel OS" />
       ) : null}
-      <button
-        type="button"
-        onClick={toggleTheme}
-        className="admin-theme-toggle"
-        title={theme === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}
-        aria-label={theme === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}
-      >
-        {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-      </button>
+      {!visible ? (
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="admin-theme-toggle"
+          title={theme === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}
+          aria-label={theme === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}
+        >
+          {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+        </button>
+      ) : null}
     </>
   );
 }
