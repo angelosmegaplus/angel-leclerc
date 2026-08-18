@@ -1,23 +1,39 @@
 import type { RecommendationCandidate, ViewingSignal } from "./film-recommendations";
 
-const STORAGE_KEY = "angel-film-taste-profile-v1";
+const STORAGE_KEY = "angel-film-taste-profile-v2";
+const LEGACY_KEY = "angel-film-taste-profile-v1";
 
-export function loadTasteSignals(): ViewingSignal[] {
+function safeProfileKey(profileKey?: string | null) {
+  const raw = String(profileKey || "guest").trim().toLowerCase();
+  return raw.replace(/[^a-z0-9._-]+/g, "-").slice(0, 120) || "guest";
+}
+
+function storageKey(profileKey?: string | null) {
+  return `${STORAGE_KEY}:${safeProfileKey(profileKey)}`;
+}
+
+export function loadTasteSignals(profileKey?: string | null): ViewingSignal[] {
   if (typeof window === "undefined") return [];
   try {
-    const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    const key = storageKey(profileKey);
+    let raw = localStorage.getItem(key);
+    if (!raw && safeProfileKey(profileKey) === "guest") {
+      raw = localStorage.getItem(LEGACY_KEY);
+      if (raw) localStorage.setItem(key, raw);
+    }
+    const value = JSON.parse(raw || "[]");
     return Array.isArray(value) ? value.slice(0, 1000) : [];
   } catch {
     return [];
   }
 }
 
-export function saveTasteSignals(signals: ViewingSignal[]) {
+export function saveTasteSignals(signals: ViewingSignal[], profileKey?: string | null) {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(signals.slice(-1000)));
+    localStorage.setItem(storageKey(profileKey), JSON.stringify(signals.slice(-1000)));
   } catch {
-    // Le profil de goût est une amélioration progressive : l'UI continue sans stockage local.
+    // Le profil de goût reste optionnel : l'UI continue sans stockage local.
   }
 }
 
@@ -40,11 +56,11 @@ export function signalForCandidate(candidate: RecommendationCandidate, previous?
   };
 }
 
-export function upsertTasteSignal(signals: ViewingSignal[], next: ViewingSignal) {
+export function upsertTasteSignal(signals: ViewingSignal[], next: ViewingSignal, profileKey?: string | null) {
   const index = signals.findIndex((signal) => signal.candidateId === next.candidateId);
   const updated = index >= 0
     ? signals.map((signal, i) => i === index ? next : signal)
     : [...signals, next];
-  saveTasteSignals(updated);
+  saveTasteSignals(updated, profileKey);
   return updated;
 }
