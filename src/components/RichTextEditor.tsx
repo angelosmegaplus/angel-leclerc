@@ -1,295 +1,652 @@
-import { useEffect, useRef, useState } from "react";
-import {
-  Bold,
-  Italic,
-  Underline,
-  Heading2,
-  Heading3,
-  List,
-  ListOrdered,
-  Quote,
-  Link2,
-  ImagePlus,
-  Youtube,
-  Film,
-  Music2,
-  Radio,
-  LayoutGrid,
-  Loader2,
-  Undo2,
-  Redo2,
-  Eraser,
-  Eye,
-  Pencil,
-} from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Eye, Loader2, Pencil, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { buildEmbedHtml } from "@/lib/embeds";
 
 const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
-
-export function parseYouTubeId(input: string): string | null {
-  const value = input.trim();
-  if (/^[\w-]{11}$/.test(value)) return value;
-  const match = value.match(
-    /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/,
-  );
-  return match ? match[1] : null;
-}
-
-async function uploadMedia(file: File): Promise<string> {
-  const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
-  const path = `${crypto.randomUUID()}.${ext}`;
-  const { error } = await supabase.storage
-    .from("article-images")
-    .upload(path, file, { cacheControl: "31536000", upsert: false });
-  if (error) throw error;
-  const { data, error: signErr } = await supabase.storage
-    .from("article-images")
-    .createSignedUrl(path, TEN_YEARS);
-  if (signErr || !data) throw signErr ?? new Error("URL indisponible");
-  return data.signedUrl;
-}
+const EDITOR_JS_VERSION = "2.31.6";
+const AUTOSAVE_DELAY = 1200;
 
 type Props = {
   value: string;
   onChange: (html: string) => void;
 };
 
-export function RichTextEditor({ value, onChange }: Props) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [preview, setPreview] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
-  const videoRef = useRef<HTMLInputElement>(null);
-  const audioRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState<null | "image" | "video" | "audio">(null);
-  const replaceRef = useRef<HTMLInputElement>(null);
-  const [selectedImg, setSelectedImg] = useState<HTMLImageElement | null>(null);
+type EditorBlock = {
+  id?: string;
+  type: string;
+  data: Record<string, unknown>;
+};
 
-  // Important : les contenus appliqués par Angel OS IA doivent apparaître immédiatement
-  // dans l'éditeur. La comparaison évite de déplacer le curseur pendant la saisie normale.
-  useEffect(() => {
-    const el = ref.current;
-    if (el && value !== el.innerHTML) el.innerHTML = value || "";
-  }, [value]);
+type EditorOutput = {
+  time?: number;
+  blocks: EditorBlock[];
+  version?: string;
+};
 
-  const sync = () => onChange(ref.current?.innerHTML ?? "");
+type EditorInstance = {
+  isReady: Promise<void>;
+  save: () => Promise<EditorOutput>;
+  render: (data: EditorOutput) => Promise<void>;
+  destroy: () => void;
+};
 
-  const onEditorClick = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-    if (target.tagName === "IMG") {
-      const img = target as HTMLImageElement;
-      ref.current?.querySelectorAll("img").forEach((i) => i.classList.remove("is-selected"));
-      img.classList.add("is-selected");
-      img.style.outline = "2px solid var(--primary, #CE654B)";
-      setSelectedImg(img);
-    } else if (selectedImg) {
-      selectedImg.style.outline = "";
-      selectedImg.classList.remove("is-selected");
-      setSelectedImg(null);
-    }
-  };
+declare global {
+  interface Window {
+    EditorJS?: new (config: Record<string, unknown>) => EditorInstance;
+    Header?: unknown;
+    List?: unknown;
+    EditorjsList?: unknown;
+    Quote?: unknown;
+    ImageTool?: unknown;
+    Checklist?: unknown;
+    Delimiter?: unknown;
+    RawTool?: unknown;
+    Table?: unknown;
+    Embed?: unknown;
+    Marker?: unknown;
+    InlineCode?: unknown;
+    LinkTool?: unknown;
+    CodeTool?: unknown;
+    Warning?: unknown;
+  }
+}
 
-  const resizeSelected = (width: string) => {
-    if (!selectedImg) return;
-    selectedImg.style.width = width;
-    selectedImg.style.maxWidth = "100%";
-    sync();
-  };
+const SCRIPT_URLS = [
+  `https://cdn.jsdelivr.net/npm/@editorjs/editorjs@${EDITOR_JS_VERSION}`,
+  "https://cdn.jsdelivr.net/npm/@editorjs/header@latest",
+  "https://cdn.jsdelivr.net/npm/@editorjs/list@latest",
+  "https://cdn.jsdelivr.net/npm/@editorjs/quote@latest",
+  "https://cdn.jsdelivr.net/npm/@editorjs/image@latest",
+  "https://cdn.jsdelivr.net/npm/@editorjs/checklist@latest",
+  "https://cdn.jsdelivr.net/npm/@editorjs/delimiter@latest",
+  "https://cdn.jsdelivr.net/npm/@editorjs/raw@latest",
+  "https://cdn.jsdelivr.net/npm/@editorjs/table@latest",
+  "https://cdn.jsdelivr.net/npm/@editorjs/embed@latest",
+  "https://cdn.jsdelivr.net/npm/@editorjs/marker@latest",
+  "https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest",
+  "https://cdn.jsdelivr.net/npm/@editorjs/link@latest",
+  "https://cdn.jsdelivr.net/npm/@editorjs/code@latest",
+  "https://cdn.jsdelivr.net/npm/@editorjs/warning@latest",
+] as const;
 
-  const deleteSelected = () => {
-    if (!selectedImg) return;
-    selectedImg.remove();
-    setSelectedImg(null);
-    sync();
-  };
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
-  const replaceSelected = async (file: File | undefined, input: HTMLInputElement | null) => {
-    if (!file || !selectedImg) return;
-    setUploading("image");
-    try {
-      const url = await uploadMedia(file);
-      selectedImg.src = url;
-      selectedImg.alt = file.name.replace(/"/g, "");
-      sync();
-      toast.success("Image remplacée");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Envoi impossible");
-    } finally {
-      setUploading(null);
-      if (input) input.value = "";
-    }
-  };
+function safeUrl(value: unknown): string {
+  if (typeof value !== "string") return "";
+  const url = value.trim();
+  if (!url) return "";
+  if (url.startsWith("/") || url.startsWith("data:image/")) return url;
+  try {
+    const parsed = new URL(url);
+    return ["http:", "https:"].includes(parsed.protocol) ? url : "";
+  } catch {
+    return "";
+  }
+}
 
-  const cmd = (command: string, arg?: string) => {
-    ref.current?.focus();
-    document.execCommand(command, false, arg);
-    sync();
-  };
-
-  const insertHtml = (html: string) => {
-    ref.current?.focus();
-    document.execCommand("insertHTML", false, html);
-    sync();
-  };
-
-  const onInsertVideo = () => {
-    const url = prompt("Lien de la vidéo YouTube (https://youtu.be/…)");
-    if (!url) return;
-    const id = parseYouTubeId(url);
-    if (!id) {
-      toast.error("Lien YouTube non reconnu");
-      return;
-    }
-    insertHtml(
-      `<div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/${id}" title="Vidéo YouTube" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div><p><br/></p>`,
-    );
-    toast.success("Vidéo ajoutée");
-  };
-
-  const onInsertEmbed = () => {
-    const url = prompt(
-      "Collez un lien Spotify, Deezer, SoundCloud, Apple Music/Podcasts, Vimeo, Dailymotion, Ausha, YouTube ou un fichier MP4/MP3",
-    );
-    if (!url) return;
-    const embed = buildEmbedHtml(url);
-    if (!embed) {
-      toast.error("Lien non reconnu ou plateforme non prise en charge");
-      return;
-    }
-    insertHtml(embed.html);
-    toast.success(`Contenu ${embed.label} intégré`);
-  };
-
-  const onInsertEmbedSection = () => {
-    const title = prompt("Titre du bloc (laissez vide pour aucun titre)", "En vidéo") ?? "";
-    const raw = prompt(
-      "Collez un lien par ligne (YouTube, Vimeo, Spotify, Deezer, SoundCloud, Apple, Dailymotion, Ausha, MP4/MP3…)",
-    );
-    if (!raw) return;
-    const links = raw
-      .split(/[\n\s]+/)
-      .map((l) => l.trim())
-      .filter(Boolean);
-    const parts: string[] = [];
-    const rejected: string[] = [];
-    for (const link of links) {
-      const embed = buildEmbedHtml(link);
-      if (embed) parts.push(embed.html.replace(/<p><br\/><\/p>$/, ""));
-      else rejected.push(link);
-    }
-    if (parts.length === 0) {
-      toast.error("Aucun lien reconnu");
-      return;
-    }
-    const heading = title.trim()
-      ? `<h3>${title.trim().replace(/[<>]/g, "")}</h3>`
-      : "";
-    const grid = parts.length > 1 ? " is-grid" : "";
-    insertHtml(
-      `<section class="embed-section${grid}">${heading}${parts.join("")}</section><p><br/></p>`,
-    );
-    if (rejected.length > 0) toast.warning(`${rejected.length} lien(s) non reconnu(s)`);
-    toast.success(`Bloc créé avec ${parts.length} intégration(s)`);
-  };
-
-  const onPickMedia = async (
-    kind: "image" | "video" | "audio",
-    file: File | undefined,
-    input: HTMLInputElement | null,
-  ) => {
-    if (!file) return;
-    setUploading(kind);
-    try {
-      const url = await uploadMedia(file);
-      const name = file.name.replace(/"/g, "");
-      if (kind === "image") {
-        insertHtml(`<img src="${url}" alt="${name}" style="max-width:100%;border-radius:12px" /><p><br/></p>`);
-        toast.success("Image ajoutée");
-      } else if (kind === "video") {
-        insertHtml(`<video class="media-video" src="${url}" controls playsinline preload="metadata"></video><p><br/></p>`);
-        toast.success("Vidéo ajoutée");
-      } else {
-        insertHtml(`<figure class="media-audio"><figcaption>${name}</figcaption><audio src="${url}" controls preload="metadata"></audio></figure><p><br/></p>`);
-        toast.success("Audio ajouté");
+function normaliseListItems(items: unknown): string[] {
+  if (!Array.isArray(items)) return [];
+  return items
+    .map((item) => {
+      if (typeof item === "string") return item;
+      if (item && typeof item === "object") {
+        const content = (item as { content?: unknown }).content;
+        return typeof content === "string" ? content : "";
       }
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Envoi impossible");
-    } finally {
-      setUploading(null);
-      if (input) input.value = "";
+      return "";
+    })
+    .filter(Boolean);
+}
+
+function blocksToHtml(output: EditorOutput): string {
+  return output.blocks
+    .map((block) => {
+      const data = block.data ?? {};
+      switch (block.type) {
+        case "header":
+        case "heading": {
+          const level = Math.min(6, Math.max(2, Number(data.level) || 2));
+          return `<h${level}>${String(data.text ?? "")}</h${level}>`;
+        }
+        case "paragraph":
+          return `<p>${String(data.text ?? "")}</p>`;
+        case "quote": {
+          const text = String(data.text ?? "");
+          const caption = String(data.caption ?? "");
+          return `<blockquote><p>${text}</p>${caption ? `<cite>${caption}</cite>` : ""}</blockquote>`;
+        }
+        case "list": {
+          const style = data.style === "ordered" ? "ol" : "ul";
+          const items = normaliseListItems(data.items);
+          return `<${style}>${items.map((item) => `<li>${item}</li>`).join("")}</${style}>`;
+        }
+        case "checklist": {
+          const items = Array.isArray(data.items) ? data.items : [];
+          return `<ul class="article-checklist">${items
+            .map((item) => {
+              if (!item || typeof item !== "object") return "";
+              const row = item as { text?: unknown; checked?: unknown };
+              return `<li data-checked="${Boolean(row.checked)}">${Boolean(row.checked) ? "✓ " : ""}${String(row.text ?? "")}</li>`;
+            })
+            .join("")}</ul>`;
+        }
+        case "image": {
+          const file = data.file && typeof data.file === "object" ? (data.file as { url?: unknown }) : null;
+          const url = safeUrl(file?.url ?? data.url);
+          if (!url) return "";
+          const caption = String(data.caption ?? "");
+          const classes = [
+            "article-editor-image",
+            data.withBorder ? "with-border" : "",
+            data.withBackground ? "with-background" : "",
+            data.stretched ? "is-stretched" : "",
+          ]
+            .filter(Boolean)
+            .join(" ");
+          return `<figure class="${classes}"><img src="${escapeHtml(url)}" alt="${escapeHtml(caption.replace(/<[^>]*>/g, ""))}" loading="lazy" />${caption ? `<figcaption>${caption}</figcaption>` : ""}</figure>`;
+        }
+        case "delimiter":
+          return "<hr />";
+        case "raw":
+          return String(data.html ?? "");
+        case "code":
+          return `<pre><code>${escapeHtml(String(data.code ?? ""))}</code></pre>`;
+        case "warning":
+          return `<aside class="article-warning"><strong>${escapeHtml(String(data.title ?? "Note"))}</strong><p>${escapeHtml(String(data.message ?? ""))}</p></aside>`;
+        case "table": {
+          const rows = Array.isArray(data.content) ? data.content : [];
+          return `<div class="article-table-wrap"><table><tbody>${rows
+            .map((row) => {
+              const cells = Array.isArray(row) ? row : [];
+              return `<tr>${cells.map((cell) => `<td>${String(cell ?? "")}</td>`).join("")}</tr>`;
+            })
+            .join("")}</tbody></table></div>`;
+        }
+        case "embed": {
+          const source = safeUrl(data.embed ?? data.source);
+          if (!source) return "";
+          const caption = escapeHtml(String(data.caption ?? "Embedded media"));
+          return `<div class="video-embed"><iframe src="${escapeHtml(source)}" title="${caption}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`;
+        }
+        case "linkTool": {
+          const link = safeUrl(data.link);
+          if (!link) return "";
+          const meta = data.meta && typeof data.meta === "object" ? (data.meta as Record<string, unknown>) : {};
+          const title = escapeHtml(String(meta.title ?? link));
+          const description = escapeHtml(String(meta.description ?? ""));
+          return `<p class="article-link-card"><a href="${escapeHtml(link)}" target="_blank" rel="noreferrer nofollow"><strong>${title}</strong>${description ? `<span>${description}</span>` : ""}</a></p>`;
+        }
+        default:
+          return "";
+      }
+    })
+    .filter(Boolean)
+    .join("\n");
+}
+
+function htmlToBlocks(html: string): EditorOutput {
+  if (!html.trim()) return { blocks: [] };
+  if (typeof window === "undefined") {
+    return { blocks: [{ type: "paragraph", data: { text: html } }] };
+  }
+
+  const doc = new DOMParser().parseFromString(`<main>${html}</main>`, "text/html");
+  const root = doc.querySelector("main");
+  if (!root) return { blocks: [{ type: "paragraph", data: { text: html } }] };
+
+  const blocks: EditorBlock[] = [];
+  const pushParagraph = (node: Element) => {
+    const text = node.innerHTML.trim();
+    if (text && text !== "<br>") blocks.push({ type: "paragraph", data: { text } });
+  };
+
+  Array.from(root.children).forEach((node) => {
+    const tag = node.tagName.toLowerCase();
+    if (/^h[1-6]$/.test(tag)) {
+      blocks.push({
+        type: "header",
+        data: { text: node.innerHTML, level: Math.max(2, Number(tag.slice(1)) || 2) },
+      });
+      return;
+    }
+    if (tag === "p") {
+      pushParagraph(node);
+      return;
+    }
+    if (tag === "blockquote") {
+      const cite = node.querySelector("cite");
+      const clone = node.cloneNode(true) as HTMLElement;
+      clone.querySelector("cite")?.remove();
+      blocks.push({
+        type: "quote",
+        data: { text: clone.innerHTML, caption: cite?.innerHTML ?? "", alignment: "left" },
+      });
+      return;
+    }
+    if (tag === "ul" || tag === "ol") {
+      blocks.push({
+        type: "list",
+        data: {
+          style: tag === "ol" ? "ordered" : "unordered",
+          items: Array.from(node.querySelectorAll(":scope > li")).map((item) => item.innerHTML),
+        },
+      });
+      return;
+    }
+    if (tag === "hr") {
+      blocks.push({ type: "delimiter", data: {} });
+      return;
+    }
+    if (tag === "pre") {
+      blocks.push({ type: "code", data: { code: node.textContent ?? "" } });
+      return;
+    }
+    if (tag === "figure" && node.querySelector("img")) {
+      const img = node.querySelector("img") as HTMLImageElement;
+      blocks.push({
+        type: "image",
+        data: {
+          file: { url: img.getAttribute("src") ?? "" },
+          caption: node.querySelector("figcaption")?.innerHTML ?? img.getAttribute("alt") ?? "",
+          withBorder: node.classList.contains("with-border"),
+          withBackground: node.classList.contains("with-background"),
+          stretched: node.classList.contains("is-stretched"),
+        },
+      });
+      return;
+    }
+    if (tag === "img") {
+      const img = node as HTMLImageElement;
+      blocks.push({
+        type: "image",
+        data: { file: { url: img.getAttribute("src") ?? "" }, caption: img.getAttribute("alt") ?? "" },
+      });
+      return;
+    }
+    if (tag === "table" || node.querySelector("table")) {
+      const table = tag === "table" ? node : node.querySelector("table");
+      const rows = table
+        ? Array.from(table.querySelectorAll("tr")).map((row) =>
+            Array.from(row.querySelectorAll("th,td")).map((cell) => cell.innerHTML),
+          )
+        : [];
+      blocks.push({ type: "table", data: { content: rows } });
+      return;
+    }
+
+    blocks.push({ type: "raw", data: { html: node.outerHTML } });
+  });
+
+  if (blocks.length === 0 && root.textContent?.trim()) {
+    blocks.push({ type: "paragraph", data: { text: root.innerHTML } });
+  }
+
+  return { blocks };
+}
+
+async function uploadMedia(file: File): Promise<string> {
+  if (!file.type.startsWith("image/")) throw new Error("Only image files are accepted.");
+  if (file.size > 12 * 1024 * 1024) throw new Error("The image is too large (12 MB maximum).");
+
+  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const path = `editor/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage
+    .from("article-images")
+    .upload(path, file, { cacheControl: "31536000", upsert: false });
+  if (error) throw error;
+
+  const { data, error: signErr } = await supabase.storage
+    .from("article-images")
+    .createSignedUrl(path, TEN_YEARS);
+  if (signErr || !data) throw signErr ?? new Error("Unable to create the image URL.");
+  return data.signedUrl;
+}
+
+function loadScript(url: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector<HTMLScriptElement>(`script[data-editorjs-src="${url}"]`);
+    if (existing?.dataset.loaded === "true") return resolve();
+    if (existing) {
+      existing.addEventListener("load", () => resolve(), { once: true });
+      existing.addEventListener("error", () => reject(new Error(`Unable to load ${url}`)), { once: true });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = url;
+    script.async = true;
+    script.dataset.editorjsSrc = url;
+    script.addEventListener(
+      "load",
+      () => {
+        script.dataset.loaded = "true";
+        resolve();
+      },
+      { once: true },
+    );
+    script.addEventListener("error", () => reject(new Error(`Unable to load ${url}`)), { once: true });
+    document.head.appendChild(script);
+  });
+}
+
+async function loadEditorScripts(): Promise<void> {
+  await loadScript(SCRIPT_URLS[0]);
+  await Promise.allSettled(SCRIPT_URLS.slice(1).map(loadScript));
+}
+
+function resolveTool(...names: string[]): unknown {
+  for (const name of names) {
+    const tool = (window as unknown as Record<string, unknown>)[name];
+    if (tool) return tool;
+  }
+  return undefined;
+}
+
+export function RichTextEditor({ value, onChange }: Props) {
+  const holderId = useMemo(() => `editorjs-${crypto.randomUUID()}`, []);
+  const editorRef = useRef<EditorInstance | null>(null);
+  const autosaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastEmittedRef = useRef(value);
+  const mountedRef = useRef(true);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [preview, setPreview] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState(value);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+  useEffect(() => {
+    mountedRef.current = true;
+    let cancelled = false;
+
+    const initialise = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        await loadEditorScripts();
+        if (cancelled || !mountedRef.current) return;
+        if (!window.EditorJS) throw new Error("Editor.js core did not initialise.");
+
+        const tools: Record<string, unknown> = {};
+        const header = resolveTool("Header");
+        const list = resolveTool("EditorjsList", "List");
+        const quote = resolveTool("Quote");
+        const image = resolveTool("ImageTool");
+        const checklist = resolveTool("Checklist");
+        const delimiter = resolveTool("Delimiter");
+        const raw = resolveTool("RawTool");
+        const table = resolveTool("Table");
+        const embed = resolveTool("Embed");
+        const marker = resolveTool("Marker");
+        const inlineCode = resolveTool("InlineCode");
+        const linkTool = resolveTool("LinkTool");
+        const code = resolveTool("CodeTool");
+        const warning = resolveTool("Warning");
+
+        if (header) tools.header = { class: header, inlineToolbar: ["bold", "italic", "link", "marker"] };
+        if (list) tools.list = { class: list, inlineToolbar: true };
+        if (quote) tools.quote = { class: quote, inlineToolbar: true, config: { quotePlaceholder: "Enter a quote", captionPlaceholder: "Quote author or source" } };
+        if (image) {
+          tools.image = {
+            class: image,
+            config: {
+              captionPlaceholder: "Image caption",
+              buttonContent: "Select an image",
+              uploader: {
+                uploadByFile: async (file: File) => {
+                  try {
+                    const url = await uploadMedia(file);
+                    return { success: 1, file: { url } };
+                  } catch (uploadError) {
+                    toast.error(uploadError instanceof Error ? uploadError.message : "Image upload failed.");
+                    return { success: 0 };
+                  }
+                },
+                uploadByUrl: async (url: string) => {
+                  const validated = safeUrl(url);
+                  return validated ? { success: 1, file: { url: validated } } : { success: 0 };
+                },
+              },
+            },
+          };
+        }
+        if (checklist) tools.checklist = { class: checklist, inlineToolbar: true };
+        if (delimiter) tools.delimiter = delimiter;
+        if (raw) tools.raw = raw;
+        if (table) tools.table = { class: table, inlineToolbar: true };
+        if (embed) tools.embed = embed;
+        if (marker) tools.marker = marker;
+        if (inlineCode) tools.inlineCode = inlineCode;
+        if (linkTool) tools.linkTool = linkTool;
+        if (code) tools.code = code;
+        if (warning) tools.warning = warning;
+
+        const editor = new window.EditorJS({
+          holder: holderId,
+          autofocus: true,
+          data: htmlToBlocks(value),
+          placeholder: "Start writing your article…",
+          logLevel: "ERROR",
+          inlineToolbar: ["bold", "italic", "link", "marker", "inlineCode"],
+          tools,
+          i18n: {
+            messages: {
+              ui: {
+                toolbar: { toolbox: { Add: "Add" } },
+                popover: { Filter: "Search", "Nothing found": "Nothing found", "Convert to": "Convert to" },
+                inlineToolbar: { converter: { "Convert to": "Convert to" } },
+                blockTunes: { toggler: { "Click to tune": "Block settings", "or drag to move": "or drag to move" } },
+              },
+              toolNames: {
+                Text: "Text",
+                Heading: "Heading",
+                "Ordered List": "Ordered list",
+                "Unordered List": "Bullet list",
+                Checklist: "Checklist",
+                Quote: "Quote",
+                Code: "Code",
+                Delimiter: "Divider",
+                "Raw HTML": "Raw HTML",
+                Table: "Table",
+                Link: "Link",
+                Marker: "Highlight",
+                Bold: "Bold",
+                Italic: "Italic",
+                InlineCode: "Inline code",
+                Image: "Image",
+                Warning: "Callout",
+                Embed: "Embed",
+              },
+              tools: {
+                image: {
+                  Caption: "Caption",
+                  "Select an Image": "Select an image",
+                  "With border": "Add border",
+                  "Stretch image": "Full width",
+                  "With background": "Add background",
+                },
+                quote: { "Enter a quote": "Enter a quote", "Quote caption": "Quote author or source" },
+                link: { "Add a link": "Add a link" },
+                stub: { "The block can not be displayed correctly.": "This block cannot be displayed correctly." },
+                code: { "Enter a code": "Enter code" },
+                header: {
+                  "Heading 1": "Heading 1",
+                  "Heading 2": "Heading 2",
+                  "Heading 3": "Heading 3",
+                  "Heading 4": "Heading 4",
+                  "Heading 5": "Heading 5",
+                  "Heading 6": "Heading 6",
+                },
+                paragraph: { "Enter something": "Start writing…" },
+                list: { Ordered: "Ordered", Unordered: "Bulleted", Checklist: "Checklist" },
+              },
+              blockTunes: {
+                delete: { Delete: "Delete", "Click to delete": "Click again to delete" },
+                moveUp: { "Move up": "Move up" },
+                moveDown: { "Move down": "Move down" },
+              },
+            },
+          },
+          onReady: () => {
+            if (!mountedRef.current) return;
+            setLoading(false);
+            setSaveState("saved");
+          },
+          onChange: () => {
+            if (autosaveRef.current) clearTimeout(autosaveRef.current);
+            setSaveState("saving");
+            autosaveRef.current = setTimeout(async () => {
+              try {
+                const output = await editorRef.current?.save();
+                if (!output) return;
+                const html = blocksToHtml(output);
+                lastEmittedRef.current = html;
+                setPreviewHtml(html);
+                onChange(html);
+                setSaveState("saved");
+              } catch (saveError) {
+                console.error("Editor.js autosave failed", saveError);
+                setSaveState("error");
+              }
+            }, AUTOSAVE_DELAY);
+          },
+        });
+
+        editorRef.current = editor;
+        await editor.isReady;
+      } catch (initialiseError) {
+        console.error("Editor.js initialisation failed", initialiseError);
+        if (!cancelled && mountedRef.current) {
+          setLoading(false);
+          setError(initialiseError instanceof Error ? initialiseError.message : "Editor.js could not be initialised.");
+        }
+      }
+    };
+
+    void initialise();
+
+    return () => {
+      cancelled = true;
+      mountedRef.current = false;
+      if (autosaveRef.current) clearTimeout(autosaveRef.current);
+      try {
+        editorRef.current?.destroy();
+      } catch {
+        // Editor may already be destroyed during hot reload.
+      }
+      editorRef.current = null;
+    };
+    // The editor is intentionally created once per mounted article editor.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [holderId]);
+
+  useEffect(() => {
+    if (!editorRef.current || loading) return;
+    if (value === lastEmittedRef.current) return;
+    lastEmittedRef.current = value;
+    setPreviewHtml(value);
+    void editorRef.current.render(htmlToBlocks(value)).catch((renderError) => {
+      console.error("Editor.js external content render failed", renderError);
+      setError("The article content could not be reloaded in Editor.js.");
+    });
+  }, [loading, value]);
+
+  const refreshPreview = async () => {
+    try {
+      const output = await editorRef.current?.save();
+      if (!output) return;
+      const html = blocksToHtml(output);
+      setPreviewHtml(html);
+      lastEmittedRef.current = html;
+      onChange(html);
+      setSaveState("saved");
+    } catch (refreshError) {
+      console.error("Editor.js preview refresh failed", refreshError);
+      toast.error("Unable to refresh the article preview.");
     }
   };
 
-  const btn =
-    "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-transparent text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:scale-95 sm:h-9 sm:w-9 sm:rounded-lg";
+  const togglePreview = async () => {
+    if (!preview) await refreshPreview();
+    setPreview((current) => !current);
+  };
 
   return (
     <div className="min-w-0 overflow-hidden rounded-xl border border-input bg-background">
-      <div className="flex items-center gap-1 overflow-x-auto border-b border-border bg-muted/40 p-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <button type="button" className={btn} title="Gras" onClick={() => cmd("bold")}><Bold className="h-4 w-4" /></button>
-        <button type="button" className={btn} title="Italique" onClick={() => cmd("italic")}><Italic className="h-4 w-4" /></button>
-        <button type="button" className={btn} title="Souligné" onClick={() => cmd("underline")}><Underline className="h-4 w-4" /></button>
-        <span className="mx-1 h-5 w-px shrink-0 bg-border" />
-        <button type="button" className={btn} title="Titre" onClick={() => cmd("formatBlock", "<h2>")}><Heading2 className="h-4 w-4" /></button>
-        <button type="button" className={btn} title="Sous-titre" onClick={() => cmd("formatBlock", "<h3>")}><Heading3 className="h-4 w-4" /></button>
-        <button type="button" className={btn} title="Citation" onClick={() => cmd("formatBlock", "<blockquote>")}><Quote className="h-4 w-4" /></button>
-        <span className="mx-1 h-5 w-px shrink-0 bg-border" />
-        <button type="button" className={btn} title="Liste à puces" onClick={() => cmd("insertUnorderedList")}><List className="h-4 w-4" /></button>
-        <button type="button" className={btn} title="Liste numérotée" onClick={() => cmd("insertOrderedList")}><ListOrdered className="h-4 w-4" /></button>
-        <span className="mx-1 h-5 w-px shrink-0 bg-border" />
-        <button type="button" className={btn} title="Lien" onClick={() => { const url = prompt("Adresse du lien (https://…)"); if (url) cmd("createLink", url); }}><Link2 className="h-4 w-4" /></button>
-        <button type="button" className={btn} title="Insérer une image" onClick={() => fileRef.current?.click()} disabled={uploading !== null}>{uploading === "image" ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}</button>
-        <button type="button" className={btn} title="Insérer une vidéo (MP4)" onClick={() => videoRef.current?.click()} disabled={uploading !== null}>{uploading === "video" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Film className="h-4 w-4" />}</button>
-        <button type="button" className={btn} title="Insérer un son (MP3, WAV…)" onClick={() => audioRef.current?.click()} disabled={uploading !== null}>{uploading === "audio" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Music2 className="h-4 w-4" />}</button>
-        <button type="button" className={btn} title="Insérer une vidéo YouTube" onClick={onInsertVideo}><Youtube className="h-4 w-4" /></button>
-        <button type="button" className={btn} title="Intégrer Spotify, Deezer, SoundCloud, Apple Music, Vimeo…" onClick={onInsertEmbed}><Radio className="h-4 w-4" /></button>
-        <button type="button" className={btn} title="Bloc dédié : plusieurs vidéos ou intégrations" onClick={onInsertEmbedSection}><LayoutGrid className="h-4 w-4" /></button>
-        <span className="mx-1 h-5 w-px shrink-0 bg-border" />
-        <button type="button" className={btn} title="Annuler" onClick={() => cmd("undo")}><Undo2 className="h-4 w-4" /></button>
-        <button type="button" className={btn} title="Rétablir" onClick={() => cmd("redo")}><Redo2 className="h-4 w-4" /></button>
-        <button type="button" className={btn} title="Effacer la mise en forme" onClick={() => cmd("removeFormat")}><Eraser className="h-4 w-4" /></button>
-        <span className="mx-1 h-5 w-px shrink-0 bg-border" />
-        <button type="button" className={`${btn} w-auto px-3 ${preview ? "bg-primary/10 text-primary" : ""}`} title={preview ? "Revenir à l'édition" : "Aperçu de l'article"} onClick={() => setPreview((v) => !v)}>
-          {preview ? <Pencil className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          <span className="ml-1.5 text-xs font-medium">{preview ? "Éditer" : "Aperçu"}</span>
-        </button>
-        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => onPickMedia("image", e.target.files?.[0], fileRef.current)} />
-        <input ref={videoRef} type="file" accept="video/mp4,video/webm,video/quicktime,video/*" className="hidden" onChange={(e) => onPickMedia("video", e.target.files?.[0], videoRef.current)} />
-        <input ref={audioRef} type="file" accept="audio/mpeg,audio/wav,audio/ogg,audio/mp4,audio/*" className="hidden" onChange={(e) => onPickMedia("audio", e.target.files?.[0], audioRef.current)} />
+      <div className="flex min-h-12 items-center justify-between gap-3 border-b border-border bg-muted/40 px-3 py-2">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold text-foreground">Editor.js</p>
+          <p className="truncate text-[11px] text-muted-foreground">
+            Block editor · autosave · images · tables · embeds · quotes · lists
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <span
+            className={`hidden text-[11px] sm:inline ${
+              saveState === "error" ? "text-destructive" : "text-muted-foreground"
+            }`}
+          >
+            {saveState === "saving"
+              ? "Saving…"
+              : saveState === "saved"
+                ? "Saved"
+                : saveState === "error"
+                  ? "Autosave failed"
+                  : "Ready"}
+          </span>
+          <button
+            type="button"
+            onClick={() => void togglePreview()}
+            className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-border bg-background px-3 text-xs font-medium text-foreground transition hover:bg-muted"
+          >
+            {preview ? <Pencil className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+            {preview ? "Edit" : "Preview"}
+          </button>
+        </div>
       </div>
 
-      {selectedImg && !preview && (
-        <div className="flex items-center gap-2 overflow-x-auto border-b border-border bg-primary/5 px-2 py-2 text-xs [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <span className="shrink-0 font-medium text-foreground">Image :</span>
-          {(["25%", "50%", "75%", "100%"] as const).map((w) => (
-            <button key={w} type="button" onClick={() => resizeSelected(w)} className="min-h-9 shrink-0 rounded-lg border border-border bg-background px-2 text-foreground hover:bg-muted">{w}</button>
-          ))}
-          <button type="button" onClick={() => replaceRef.current?.click()} className="min-h-9 shrink-0 rounded-lg border border-border bg-background px-2 text-foreground hover:bg-muted">Remplacer</button>
-          <button type="button" onClick={deleteSelected} className="min-h-9 shrink-0 rounded-lg border border-border bg-background px-2 text-destructive hover:bg-muted">Supprimer</button>
-          <input ref={replaceRef} type="file" accept="image/*" className="hidden" onChange={(e) => void replaceSelected(e.target.files?.[0], replaceRef.current)} />
+      {error ? (
+        <div className="space-y-3 p-4">
+          <p className="text-sm font-semibold text-destructive">Editor.js is unavailable</p>
+          <p className="text-xs leading-relaxed text-muted-foreground">{error}</p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-border px-3 text-xs font-medium"
+          >
+            <RefreshCw className="h-3.5 w-3.5" /> Reload editor
+          </button>
         </div>
+      ) : (
+        <>
+          {loading && (
+            <div className="flex min-h-52 items-center justify-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" /> Loading Editor.js…
+            </div>
+          )}
+          <div className={preview || loading ? "hidden" : "block"}>
+            <div
+              id={holderId}
+              className="editorjs-angel-studio min-h-[420px] px-3 py-5 text-foreground sm:px-5 [&_.ce-block__content]:max-w-none [&_.ce-toolbar__content]:max-w-none [&_.ce-paragraph]:text-[15px] [&_.ce-paragraph]:leading-7 [&_.ce-header]:font-display [&_.ce-header]:font-bold [&_.cdx-block]:max-w-none"
+            />
+          </div>
+          {preview && (
+            <div className="p-5 sm:p-7">
+              <div
+                className="article-content text-left text-[15px] leading-[1.8] text-foreground/90"
+                dangerouslySetInnerHTML={{ __html: previewHtml }}
+              />
+            </div>
+          )}
+        </>
       )}
-
-      {preview && (
-        <div className="border-t border-border bg-background px-3 py-4 sm:px-4 sm:py-6">
-          <p className="mb-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">Aperçu — rendu public</p>
-          <div className="article-content text-sm leading-relaxed text-foreground" dangerouslySetInnerHTML={{ __html: value || "<p>Aucun contenu pour le moment.</p>" }} />
-        </div>
-      )}
-      <div
-        hidden={preview}
-        ref={ref}
-        contentEditable
-        suppressContentEditableWarning
-        role="textbox"
-        aria-multiline="true"
-        aria-label="Contenu de l'article"
-        onInput={sync}
-        onBlur={sync}
-        onClick={onEditorClick}
-        className="article-content min-h-[220px] w-full overflow-x-hidden px-3 py-3 text-base leading-relaxed text-foreground outline-none sm:min-h-[320px] sm:px-4 sm:text-sm"
-      />
     </div>
   );
 }
