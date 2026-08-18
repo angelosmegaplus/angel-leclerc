@@ -1,8 +1,11 @@
 import { useCallback, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, BrainCircuit, ChevronDown, Cpu, Database, ExternalLink, Network, ShieldCheck, Sparkles, Wrench } from "lucide-react";
 import { BootIntro } from "@/components/angel-os/BootIntro";
 import { brandLogos } from "@/assets/brands";
+import { getAngelOsPublicStatus } from "@/lib/angel-os-status.functions";
 
 export const Route = createFileRoute("/angel-os-ia")({
   head: () => ({
@@ -27,23 +30,24 @@ type Technology = {
   wordmark?: string;
   href?: string;
   actionLabel?: string;
+  state?: string;
 };
 
 const technologies: Technology[] = [
-  { name: "Passerelle IA Lovable", wordmark: "IA", text: "Fournit les capacités d’intelligence artificielle (modèles Google Gemini) utilisées par Angel OS IA." },
-  { name: "ChatGPT", logo: "/logos/chatgpt.com.svg", text: "Intervient autour du projet pour l’analyse, les corrections, le contrôle et la maintenance." },
-  { name: "React", logo: brandLogos.react, text: "Structure les interfaces et les composants interactifs d’Angel OS." },
-  { name: "TypeScript", logo: brandLogos.typescript, text: "Porte la logique applicative et sécurise le développement par le typage." },
-  { name: "TanStack", logo: brandLogos.tanstack, text: "Gère le routage, les données asynchrones et une partie de l’architecture." },
-  { name: "Tailwind CSS", logo: brandLogos.tailwindcss, text: "Gère la mise en page responsive et l’identité visuelle." },
-  { name: "Vite", logo: brandLogos.vite, text: "Construit l’application et fournit l’environnement de développement." },
-  { name: "GitHub", logo: brandLogos.github, text: "Centralise le code source, l’historique des modifications et les versions publiques du projet.", href: "https://github.com/angelosmegaplus/angel-leclerc", actionLabel: "Voir le dépôt GitHub" },
-  { name: "Vercel", logo: brandLogos.vercel, text: "Construit et publie l’application web à partir du code du projet." },
-  { name: "Supabase", logo: brandLogos.supabase, text: "Gère la base de données, l’authentification et les données privées." },
-  { name: "Gmail API", logo: brandLogos.gmail, text: "Relie les mails utiles à l’administration et au suivi des candidatures." },
-  { name: "Google Calendar API", logo: brandLogos.googlecalendar, text: "Relie l’agenda Google aux informations utilisées dans Angel OS." },
-  { name: "Google Drive API", logo: brandLogos.googledrive, text: "Donne accès aux fichiers Google Drive nécessaires aux fonctions connectées." },
-  { name: "TMDB API", logo: brandLogos.themoviedatabase, text: "Fournit les recherches, affiches et métadonnées de l’espace Films & séries." },
+  { name: "Passerelle IA Lovable", wordmark: "IA", text: "Fournit les capacités d’intelligence artificielle (modèles Google Gemini) utilisées par Angel OS IA.", href: "https://docs.lovable.dev/features/ai", actionLabel: "Documentation", state: "En service" },
+  { name: "ChatGPT", logo: "/logos/chatgpt.com.svg", text: "Intervient autour du projet pour l’analyse, les corrections, le contrôle et la maintenance.", href: "https://chatgpt.com", actionLabel: "Ouvrir le site", state: "Autour du projet" },
+  { name: "React", logo: brandLogos.react, text: "Structure les interfaces et les composants interactifs d’Angel OS.", href: "https://react.dev", actionLabel: "Site officiel", state: "En service" },
+  { name: "TypeScript", logo: brandLogos.typescript, text: "Porte la logique applicative et sécurise le développement par le typage.", href: "https://www.typescriptlang.org", actionLabel: "Site officiel", state: "En service" },
+  { name: "TanStack", logo: brandLogos.tanstack, text: "Gère le routage, les données asynchrones et une partie de l’architecture.", href: "https://tanstack.com", actionLabel: "Site officiel", state: "En service" },
+  { name: "Tailwind CSS", logo: brandLogos.tailwindcss, text: "Gère la mise en page responsive et l’identité visuelle.", href: "https://tailwindcss.com", actionLabel: "Site officiel", state: "En service" },
+  { name: "Vite", logo: brandLogos.vite, text: "Construit l’application et fournit l’environnement de développement.", href: "https://vite.dev", actionLabel: "Site officiel", state: "En service" },
+  { name: "GitHub", logo: brandLogos.github, text: "Centralise le code source, l’historique des modifications et les versions publiques du projet.", href: "https://github.com/angelosmegaplus/angel-leclerc", actionLabel: "Voir le dépôt GitHub", state: "En service" },
+  { name: "Vercel", logo: brandLogos.vercel, text: "Construit et publie l’application web à partir du code du projet.", href: "https://vercel.com", actionLabel: "Site officiel", state: "En service" },
+  { name: "Supabase", logo: brandLogos.supabase, text: "Gère la base de données, l’authentification et les données privées.", href: "https://supabase.com", actionLabel: "Site officiel", state: "En service" },
+  { name: "Gmail API", logo: brandLogos.gmail, text: "Relie les mails utiles à l’administration et au suivi des candidatures.", href: "https://developers.google.com/gmail/api", actionLabel: "Documentation", state: "Espace privé" },
+  { name: "Google Calendar API", logo: brandLogos.googlecalendar, text: "Relie l’agenda Google aux informations utilisées dans Angel OS.", href: "https://developers.google.com/calendar", actionLabel: "Documentation", state: "Espace privé" },
+  { name: "Google Drive API", logo: brandLogos.googledrive, text: "Donne accès aux fichiers Google Drive nécessaires aux fonctions connectées.", href: "https://developers.google.com/drive", actionLabel: "Documentation", state: "Espace privé" },
+  { name: "TMDB API", logo: brandLogos.themoviedatabase, text: "Fournit les recherches, affiches et métadonnées de l’espace Films & séries.", href: "https://www.themoviedb.org", actionLabel: "Site officiel", state: "En service" },
 ];
 
 const card = "rounded-[1.35rem] border border-[#ded8cf] bg-white";
@@ -84,6 +88,12 @@ function TechCard({ technology }: { technology: Technology }) {
         </span>
         <h3 className="min-w-0 break-words font-semibold text-[#181614]">{technology.name}</h3>
       </div>
+      {technology.state ? (
+        <span className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[#ded8cf] bg-[#faf8f4] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.12em] text-[#6b655e]">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#3f8f5f]" aria-hidden />
+          {technology.state}
+        </span>
+      ) : null}
       <p className="mt-3 text-sm leading-6 text-[#6b655e]">{technology.text}</p>
       {technology.href ? (
         <a href={technology.href} target="_blank" rel="noreferrer" className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#d8d1c8] bg-[#faf8f4] px-3 py-2 text-xs font-bold text-[#181614] transition hover:bg-[#f1ede7]">
@@ -127,6 +137,16 @@ function LiveCodeRail() {
 function AngelOsIaPage() {
   const [booting, setBooting] = useState(true);
   const finishBoot = useCallback(() => setBooting(false), []);
+  const loadStatus = useServerFn(getAngelOsPublicStatus);
+  const statusQuery = useQuery({
+    queryKey: ["angel-os-public-status"],
+    queryFn: () => loadStatus(),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const status = statusQuery.data;
+  const formatDate = (value?: string | null) =>
+    value ? new Date(value).toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" }) : "—";
 
   if (booting) {
     return (
@@ -221,9 +241,75 @@ function AngelOsIaPage() {
       <section className="px-4 py-10 sm:px-7 sm:py-14 lg:px-10 lg:py-16">
         <div className="mx-auto max-w-6xl">
           <div className="max-w-3xl">
+            <p className="text-[11px] font-bold uppercase tracking-[.18em] text-[#b44738]">État réel</p>
+            <h2 className="mt-2 font-display text-3xl font-black tracking-[-.045em] sm:text-4xl">Ce qui fonctionne vraiment, en direct</h2>
+            <p className="mt-3 text-sm leading-7 text-[#6b655e] sm:text-base">
+              Ces informations sont relevées à l’instant sur le dépôt public, la base de données du site et la configuration serveur. Rien n’est simulé : si une donnée n’est pas disponible, elle est affichée comme telle.
+            </p>
+          </div>
+
+          <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <article className={`${card} p-5`}>
+              <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#6f675f]">Code source</p>
+              <h3 className="mt-1 text-lg font-black">Dépôt GitHub</h3>
+              {statusQuery.isPending ? (
+                <p className="mt-2 text-sm text-[#6b655e]">Relevé en cours…</p>
+              ) : status?.repository.available ? (
+                <div className="mt-2 space-y-1 text-sm leading-6 text-[#6b655e]">
+                  <p className="font-semibold text-[#181614]">{status.repository.fullName}</p>
+                  <p>Branche : {status.repository.defaultBranch ?? "—"}</p>
+                  <p>Dernier commit : {formatDate(status.repository.lastCommit?.date ?? status.repository.pushedAt)}</p>
+                  {status.repository.lastCommit ? (
+                    <a href={status.repository.lastCommit.url} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-2 break-all font-mono text-xs font-bold text-[#b44738] underline underline-offset-4">
+                      {status.repository.lastCommit.sha} · {status.repository.lastCommit.message}
+                    </a>
+                  ) : null}
+                </div>
+              ) : (
+                <p className="mt-2 text-sm leading-6 text-[#6b655e]">Dépôt non public ou indisponible pour le moment.</p>
+              )}
+            </article>
+
+            <article className={`${card} p-5`}>
+              <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#6f675f]">Données</p>
+              <h3 className="mt-1 text-lg font-black">Contenus publiés</h3>
+              <div className="mt-2 space-y-1 text-sm leading-6 text-[#6b655e]">
+                <p>Articles publiés : <strong className="text-[#181614]">{status?.database.publishedArticles ?? "—"}</strong></p>
+                {status?.database.projects ? (
+                  <p>Projets référencés : <strong className="text-[#181614]">{status.database.projects}</strong></p>
+                ) : null}
+                <p>Base de données : {status?.database.available ? "accessible" : "non vérifiée"}</p>
+              </div>
+            </article>
+
+            <article className={`${card} p-5`}>
+              <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#b44738]">Intelligence</p>
+              <h3 className="mt-1 text-lg font-black">Angel OS IA</h3>
+              <div className="mt-2 space-y-1 text-sm leading-6 text-[#6b655e]">
+                <p>Passerelle : {status?.intelligence.gatewayConfigured ? "configurée et active" : "non configurée"}</p>
+                <p>Modèles : {status?.intelligence.provider ?? "Google Gemini via passerelle IA Lovable"}</p>
+              </div>
+            </article>
+
+            <article className={`${card} p-5`}>
+              <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#6f5c9a]">Supervision</p>
+              <h3 className="mt-1 text-lg font-black">Angel Guard</h3>
+              <div className="mt-2 space-y-1 text-sm leading-6 text-[#6b655e]">
+                <p>Déploiement : {status?.deployment.branch ? `${status.deployment.branch}${status.deployment.commit ? ` · ${status.deployment.commit}` : ""}` : "environnement géré"}</p>
+                <p>Contrôle effectué : {formatDate(status?.checkedAt)}</p>
+                <p>Les contrôles détaillés, incidents et récupérations restent dans l’espace privé.</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section className="px-4 pb-10 sm:px-7 sm:pb-14 lg:px-10">
+        <div className="mx-auto max-w-6xl">
+          <div className="max-w-3xl">
             <p className="text-[11px] font-bold uppercase tracking-[.18em] text-[#b44738]">Infrastructure connectée</p>
             <h2 className="mt-2 font-display text-3xl font-black tracking-[-.045em] sm:text-4xl">Les technologies de l’écosystème Angel OS</h2>
-            <p className="mt-3 text-sm leading-7 text-[#6b655e] sm:text-base">Ces technologies servent différentes parties du système. Angel OS IA alimente certaines fonctions d’Angel OS IA ; les autres composants assurent l’interface, les données, les connexions, le code et le déploiement.</p>
+            <p className="mt-3 text-sm leading-7 text-[#6b655e] sm:text-base">Chaque technologie sert une partie précise du système : la passerelle IA alimente Angel OS IA, les autres composants assurent l’interface, les données, les connexions, le code et le déploiement. Chaque carte renvoie vers le service réellement utilisé.</p>
           </div>
           <div className="mt-7 grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {technologies.map((technology) => <TechCard key={technology.name} technology={technology} />)}
@@ -242,7 +328,7 @@ function AngelOsIaPage() {
           </ExpandableWidget>
 
           <ExpandableWidget eyebrow="Autour du système" title="Ce qui reste volontairement séparé">
-            <p><strong className="text-[#181614]">ChatGPT</strong> sert au développement, aux corrections, au contrôle et à la maintenance du projet. <strong className="text-[#181614]">Angel OS IA API</strong> peut fournir certaines capacités à Angel OS IA. Aucun de ces services ne remplace Angel OS lui-même ni Angel Guard.</p>
+            <p><strong className="text-[#181614]">ChatGPT</strong> sert au développement, aux corrections, au contrôle et à la maintenance du projet. La <strong className="text-[#181614]">passerelle IA Lovable</strong> (modèles Google Gemini) fournit les capacités utilisées par Angel OS IA. Aucun de ces services ne remplace Angel OS lui-même ni Angel Guard.</p>
           </ExpandableWidget>
         </div>
 
