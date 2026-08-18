@@ -2,8 +2,10 @@
 import { createClient, type Session } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const PUBLIC_SUPABASE_URL = 'https://timygavajdestkbdzuyk.supabase.co';
-const PUBLIC_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_8IG8jsDj3yWH7u7urAQPig_r2V8Wd9s';
+// Configuration native du projet uniquement : plus aucun repli vers une base externe.
+const PUBLIC_SUPABASE_URL = 'https://mzlxscmgxrylfkofjwzn.supabase.co';
+const PUBLIC_SUPABASE_PUBLISHABLE_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16bHhzY21neHJ5bGZrb2Zqd3puIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ1NjU3NzEsImV4cCI6MjEwMDE0MTc3MX0.j__ZNL-KZtnqnZt16g7HNdt1ONzWfEAmblEl6IjierU';
 
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
