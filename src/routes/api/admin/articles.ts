@@ -141,6 +141,7 @@ function normalizeArticle(raw: Record<string, unknown>, userId: string, slug: st
     attachments: Array.isArray(raw.attachments) ? raw.attachments : [],
     sources: Array.isArray(raw.sources) ? raw.sources : [],
     topics: Array.isArray(raw.topics) ? raw.topics : [],
+    badges: {},
     ai_disclosure: raw.ai_disclosure && typeof raw.ai_disclosure === "object" ? raw.ai_disclosure : {},
     cover_meta: raw.cover_meta && typeof raw.cover_meta === "object" ? raw.cover_meta : {},
     author_id: typeof raw.author_id === "string" && raw.author_id ? raw.author_id : userId,
@@ -170,27 +171,44 @@ async function saveViaSupabase(raw: Record<string, unknown>, userId: string, slu
   const { error } = await db.from("articles").upsert(row as any, { onConflict: "slug" });
   if (error) throw error;
 
-  const hiddenFromPublic = !article.published || article.is_private;
-  if (hiddenFromPublic) {
-    const { error: stateError } = await db
-      .from("git_article_state")
-      .upsert({ slug, deleted: true, deleted_at: new Date().toISOString() }, { onConflict: "slug" });
-    if (stateError) throw stateError;
-  } else {
-    await db.from("git_article_state").delete().eq("slug", slug);
-  }
-
+  // The database row itself overrides any historical Lovable/Git fallback by slug.
+  // Do not depend on the legacy git_article_state table: it is not present in every
+  // production schema and previously turned successful saves into HTTP 500 errors.
   return { ok: true, slug, backend: "supabase-fallback" as const };
 }
 
 async function deleteViaSupabase(slug: string) {
   const db = adminSupabase();
-  const { error: deleteError } = await db.from("articles").delete().eq("slug", slug);
-  if (deleteError) throw deleteError;
-  const { error: stateError } = await db
-    .from("git_article_state")
-    .upsert({ slug, deleted: true, deleted_at: new Date().toISOString() }, { onConflict: "slug" });
-  if (stateError) throw stateError;
+  const { data: existing, error: existingError } = await db
+    .from("articles")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (existingError) throw existingError;
+
+  // Keep a private unpublished sentinel row instead of hard-deleting it. The
+  // current database source wins over historical fallbacks by slug, so this masks
+  // an archived Lovable/Git article without requiring the missing
+  // public.git_article_state table. The marker lets the merge layer hide the
+  // sentinel from both the public site and Studio.
+  const now = new Date().toISOString();
+  const tombstone = {
+    ...(existing ?? {}),
+    slug,
+    title: existing?.title || `Article supprimé — ${slug}`,
+    category: existing?.category || "Article",
+    content: existing?.content || "",
+    published: false,
+    published_at: null,
+    scheduled_at: null,
+    is_private: true,
+    featured: false,
+    badges: { __angel_os_deleted: true, deleted_at: now },
+    updated_at: now,
+  };
+
+  const { error } = await db.from("articles").upsert(tombstone as any, { onConflict: "slug" });
+  if (error) throw error;
   return { ok: true, slug, backend: "supabase-fallback" as const };
 }
 
