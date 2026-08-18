@@ -5,11 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { claimOwnerAdminAccess } from "@/lib/admin-owner-recovery.functions";
 import { resetOwnerPasswordWithEmergencyCode } from "@/lib/admin-password-reset.functions";
+import { SystemBootExperience } from "@/components/angel-os/SystemBootExperience";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-const ADMIN_BOOT_PENDING_KEY = "angel-os:admin-boot-pending";
 type AuthMode = "login" | "signup" | "forgot" | "owner";
 
 export const Route = createFileRoute("/auth")({
@@ -67,6 +67,55 @@ function cleanError(error: unknown, fallback: string) {
   return raw.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 280) || fallback;
 }
 
+function AngelGuardInspection({ done }: { done: () => void }) {
+  const [step, setStep] = useState(0);
+  const checks = [
+    "ACCESS REQUEST CAPTURED",
+    "BROWSER SECURITY CONTEXT",
+    "AUTHENTICATION GATE",
+    "SESSION STORAGE ISOLATION",
+    "ADMIN SURFACE LOCK",
+    "ANGEL GUARD CLEARANCE",
+  ];
+
+  useEffect(() => {
+    const secure = typeof window !== "undefined" && (window.isSecureContext || window.location.hostname === "localhost");
+    const timings = checks.map((_, index) => window.setTimeout(() => {
+      setStep(index + 1);
+      if (index === 0) playTone(92, 0.08, 0.018);
+      if (index === 2) playTone(138, 0.06, 0.013);
+      if (index === checks.length - 1 && secure) playTone(220, 0.1, 0.016);
+    }, 220 + index * 280));
+    const finish = window.setTimeout(done, 220 + checks.length * 280 + 520);
+    return () => {
+      timings.forEach(window.clearTimeout);
+      window.clearTimeout(finish);
+    };
+  }, [done]);
+
+  return (
+    <section className="guard-shell" aria-label="Inspection Angel Guard" role="status">
+      <div className="guard-scanline" aria-hidden />
+      <div className="guard-terminal">
+        <div className="guard-title"><span>ANGEL GUARD</span><span>ACCESS INSPECTION</span></div>
+        <div className="guard-mark"><ShieldCheck className="h-12 w-12" /><span>GUARD</span></div>
+        <p className="guard-warning">RESTRICTED ADMINISTRATIVE SURFACE</p>
+        <div className="guard-lines">
+          {checks.map((check, index) => (
+            <p key={check} className={step > index ? "done" : step === index ? "active" : "pending"}>
+              <span>{step > index ? "[PASS]" : step === index ? "[....]" : "[WAIT]"}</span> {check}
+            </p>
+          ))}
+        </div>
+        <p className="guard-foot">Toute tentative d’accès est soumise aux contrôles Angel OS. Aucune donnée sensible n’est affichée pendant cette inspection.</p>
+      </div>
+      <style>{`
+        .guard-shell{position:fixed;inset:0;z-index:10000;background:#020402;color:#a8ffb1;display:grid;place-items:center;padding:24px;overflow:hidden;font-family:Consolas,Monaco,monospace}.guard-scanline{position:absolute;inset:-40% 0;background:linear-gradient(transparent 0 47%,rgba(70,255,105,.08) 49%,rgba(70,255,105,.18) 50%,rgba(70,255,105,.08) 51%,transparent 53%);animation:guardScan 2.2s linear infinite;pointer-events:none}.guard-terminal{position:relative;width:min(690px,100%);border:1px solid #22622d;background:rgba(0,12,2,.96);box-shadow:0 0 80px rgba(42,255,84,.09),inset 0 0 45px rgba(0,0,0,.9);padding:20px}.guard-title{display:flex;justify-content:space-between;border-bottom:1px solid #174a20;padding-bottom:10px;color:#65ff79;font-size:11px;font-weight:700;letter-spacing:.12em}.guard-mark{display:flex;align-items:center;justify-content:center;gap:14px;margin:28px 0 8px;color:#52ff6a}.guard-mark span{font-size:30px;font-weight:800;letter-spacing:.18em}.guard-warning{text-align:center;color:#ff5d5d;font-size:11px;letter-spacing:.13em;margin-bottom:25px;animation:guardPulse 1.1s steps(2) infinite}.guard-lines{border:1px solid #123a18;background:#000;padding:14px 16px;font-size:12px;line-height:2}.guard-lines p{transition:opacity .15s,color .15s}.guard-lines .pending{color:#315b36}.guard-lines .active{color:#ffe66d}.guard-lines .done{color:#68ff7d}.guard-lines span{display:inline-block;width:54px}.guard-foot{margin-top:14px;color:#48704e;font-size:9px;line-height:1.6;text-transform:uppercase;letter-spacing:.06em}@keyframes guardScan{from{transform:translateY(-25%)}to{transform:translateY(25%)}}@keyframes guardPulse{50%{opacity:.42}}@media(max-width:600px){.guard-shell{padding:12px}.guard-terminal{padding:14px}.guard-mark{margin-top:20px}.guard-mark span{font-size:22px}.guard-lines{font-size:10px;padding:10px}.guard-title{font-size:9px}}
+      `}</style>
+    </section>
+  );
+}
+
 function SecurityConsole({ busy, error, sessionReady }: { busy: boolean; error: string | null; sessionReady: boolean }) {
   const lines = busy
     ? ["AUTH CHANNEL ........ ACTIVE", "TOKEN CHECK ......... RUNNING", "SESSION VERIFY ...... RUNNING", "ADMIN GATE .......... LOCKED"]
@@ -90,6 +139,7 @@ function SecurityConsole({ busy, error, sessionReady }: { busy: boolean; error: 
 function AuthPage() {
   const navigate = useNavigate();
   const { session, isAdmin, loading } = useAuth();
+  const [guardComplete, setGuardComplete] = useState(false);
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -112,13 +162,11 @@ function AuthPage() {
   }, []);
 
   useEffect(() => {
-    if (!loading && session && isAdmin && !opening) {
-      setOpening(true);
+    if (guardComplete && !loading && session && isAdmin && !opening) {
       playAccessSound(true);
-      sessionStorage.setItem(ADMIN_BOOT_PENDING_KEY, "1");
-      window.setTimeout(() => navigate({ to: "/admin" }), 360);
+      setOpening(true);
     }
-  }, [loading, session, isAdmin, navigate, opening]);
+  }, [guardComplete, loading, session, isAdmin, opening]);
 
   function resetMessages() { setError(null); setNotice(null); }
   function switchMode(next: AuthMode) {
@@ -172,9 +220,8 @@ function AuthPage() {
         return;
       }
       playAccessSound(true);
-      sessionStorage.setItem(ADMIN_BOOT_PENDING_KEY, "1");
-      setNotice(result.adminRestored ? "Accès restauré. Ouverture de l’administration…" : "Mot de passe restauré. Connexion en cours…");
-      window.setTimeout(() => window.location.assign("/admin"), 360);
+      if (result.adminRestored) setOpening(true);
+      else setNotice("Mot de passe restauré. Connexion validée ; vérification des droits administrateur…");
     } catch (err) {
       playAccessSound(false);
       setError(cleanError(err, "La récupération a rencontré une erreur serveur. Aucun code HTML n’est affiché : réessayez directement."));
@@ -189,13 +236,16 @@ function AuthPage() {
       await claimOwnerAdminAccess({ data: { code: ownerCode.trim() } });
       playAccessSound(true);
       setNotice("Identité propriétaire validée. Accès administrateur activé.");
-      setOwnerCode(""); sessionStorage.setItem(ADMIN_BOOT_PENDING_KEY, "1");
-      window.setTimeout(() => window.location.assign("/admin"), 360);
+      setOwnerCode("");
+      setOpening(true);
     } catch (err) { playAccessSound(false); setError(cleanError(err, "Impossible de valider le code de secours.")); }
     finally { setBusy(false); }
   }
 
   async function logout() { await supabase.auth.signOut(); switchMode("login"); }
+
+  if (!guardComplete) return <AngelGuardInspection done={() => setGuardComplete(true)} />;
+  if (opening) return <SystemBootExperience done={() => void navigate({ to: "/admin" })} label="Ouverture de l'espace administrateur Angel OS" />;
   if (loading) return <section className="auth-shell"><Loader2 className="h-6 w-6 animate-spin text-[#3f78ff]" /></section>;
 
   const title = mode === "signup" ? "Créer mon compte" : mode === "forgot" ? "Récupérer mon accès" : mode === "owner" ? "Accès propriétaire" : "Connexion";
