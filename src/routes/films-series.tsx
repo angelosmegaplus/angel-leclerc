@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { FilmSeriesAccountPage } from "@/components/films/FilmSeriesAccountPage";
+import { ProtonVpnBanner } from "@/components/films/ProtonVpnBanner";
 
 export const Route = createFileRoute("/films-series")({
   head: () => ({
@@ -9,5 +10,14 @@ export const Route = createFileRoute("/films-series")({
       { name: "robots", content: "noindex, nofollow, noarchive, nosnippet" },
     ],
   }),
-  component: FilmSeriesAccountPage,
+  component: FilmSeriesRoute,
 });
+
+function FilmSeriesRoute() {
+  return (
+    <>
+      <FilmSeriesAccountPage />
+      <ProtonVpnBanner />
+    </>
+  );
+}
