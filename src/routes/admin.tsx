@@ -65,6 +65,7 @@ import {
 } from "@/lib/articles";
 import { MailboxAdmin } from "@/components/MailboxAdmin";
 import { describeDbError } from "@/lib/db-error";
+import { saveArticleViaApi, deleteArticleViaApi } from "@/lib/article-api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -301,6 +302,7 @@ function AdminPage() {
           : null;
       const isPublished = d.status !== "brouillon";
       const payload = {
+        ...(d.id ? { id: d.id } : {}),
         title: d.title.trim(),
         slug,
         category: d.category,
@@ -318,46 +320,8 @@ function AdminPage() {
         published_at: isPublished ? (scheduledIso ?? new Date().toISOString()) : null,
         author_id: user?.id ?? null,
       };
-      if (d.id) {
-        if (d.featured) {
-          await supabase
-            .from("articles")
-            .update({ featured: false })
-            .neq("id", d.id)
-            .eq("featured", true);
-        }
-        const { error } = await supabase
-          .from("articles")
-          .update({
-            ...payload,
-            // la date de parution existante est préservée, sauf programmation
-            published_at: scheduledIso ?? undefined,
-          })
-          .eq("id", d.id);
-        if (error) throw error;
-        if (isPublished && !scheduledIso) {
-          await supabase
-            .from("articles")
-            .update({ published_at: new Date().toISOString() })
-            .eq("id", d.id)
-            .is("published_at", null);
-        }
-        if (!isPublished) {
-          await supabase
-            .from("articles")
-            .update({ published_at: null })
-            .eq("id", d.id);
-        }
-      } else {
-        if (d.featured) {
-          await supabase
-            .from("articles")
-            .update({ featured: false })
-            .eq("featured", true);
-        }
-        const { error } = await supabase.from("articles").insert(payload);
-        if (error) throw error;
-      }
+      // Source unique : route API stable, partagée avec l'éditeur Lovable.
+      await saveArticleViaApi(payload);
       return slug;
     },
     onSuccess: () => {
@@ -379,14 +343,19 @@ function AdminPage() {
   });
 
   const remove = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("articles").delete().eq("id", id);
-      if (error) throw error;
+    mutationFn: async (slug: string) => {
+      await deleteArticleViaApi(slug);
     },
     onSuccess: () => {
       toast.success("Article supprimé");
       queryClient.invalidateQueries({ queryKey: ["admin-articles"] });
       queryClient.invalidateQueries({ queryKey: ["articles"] });
+    },
+    onError: (err: unknown) => {
+      toast.error("Suppression impossible", {
+        description: describeDbError(err),
+        duration: 12000,
+      });
     },
   });
 
@@ -1507,7 +1476,7 @@ function AdminPage() {
                       size="sm"
                       variant="ghost"
                       onClick={() => {
-                        if (confirm(`Supprimer « ${a.title} » ?`)) remove.mutate(a.id);
+                        if (confirm(`Supprimer « ${a.title} » ?`)) remove.mutate(a.slug);
                       }}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
