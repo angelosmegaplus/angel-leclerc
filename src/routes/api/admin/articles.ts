@@ -263,7 +263,7 @@ async function restoreViaSupabase(slug: string) {
   if (error) throw error;
 
   // Un ancien enregistrement Git ne doit pas continuer à masquer l'article.
-  await db.from("git_article_state").update({ deleted: false, deleted_at: null } as any).eq("slug", slug);
+  await markGitArticleState(slug, false);
   return { ok: true, slug, backend: "supabase-fallback" as const };
 }
 
@@ -279,8 +279,16 @@ async function purgeViaSupabase(slug: string) {
   const badges = existing?.badges as Record<string, unknown> | null | undefined;
   if (!existing || !badges || badges.__angel_os_deleted !== true) throw new Error("PURGE_REQUIRES_TRASH");
 
+  // Le marqueur permanent est écrit AVANT la suppression du contenu : sans lui,
+  // l'archive historique pourrait ressusciter l'article au prochain rendu.
+  const marked = await markGitArticleState(slug, true);
+  if (!marked) throw new Error("PURGE_TOMBSTONE_FAILED");
+
   const { error } = await db.from("articles").delete().eq("slug", slug);
   if (error) throw error;
+  // Le trigger de synchronisation ne couvre que deux slugs historiques :
+  // on réaffirme donc le marqueur après la suppression effective.
+  await markGitArticleState(slug, true);
   return { ok: true, slug, backend: "supabase-fallback" as const };
 }
 
