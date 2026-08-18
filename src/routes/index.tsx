@@ -8,17 +8,17 @@ import { LatestArticles } from "@/components/LatestArticles";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Angel Leclerc — Entreprise & Parcours" },
+      { title: "Angel Leclerc Communication — Conseil & Rédaction" },
       {
         name: "description",
         content:
-          "Découvrez Angel Leclerc Communication, mon parcours, mes compétences, mes réalisations et mes projets.",
+          "Gestion de projets de communication, conseil stratégique et rédaction éditoriale pour professionnels, associations et porteurs de projets.",
       },
-      { property: "og:title", content: "Angel Leclerc — Entreprise & Parcours" },
+      { property: "og:title", content: "Angel Leclerc Communication — Conseil & Rédaction" },
       {
         property: "og:description",
         content:
-          "Angel Leclerc Communication, parcours personnel, compétences, réalisations et projets.",
+          "Gestion de projets de communication, conseil stratégique et rédaction éditoriale pour professionnels, associations et porteurs de projets.",
       },
       { property: "og:url", content: "https://www.angel-leclerc.fr/" },
     ],
