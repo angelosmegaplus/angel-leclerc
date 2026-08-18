@@ -26,6 +26,23 @@ import {
 
 const GOOGLE_CALLBACK = "https://www.angel-leclerc.fr/oauth/google/callback";
 
+/**
+ * Connecteurs natifs Lovable visés. Ils ne sont pas encore autorisés sur ce
+ * workspace : ils sont donc annoncés comme « bientôt disponibles » et jamais
+ * présentés comme actifs. Seul Canva est réellement relié côté workspace.
+ */
+const NATIVE_CONNECTORS: Array<{ name: string; state: "connected" | "soon" }> = [
+  { name: "Canva", state: "connected" },
+  { name: "Gmail", state: "soon" },
+  { name: "Google Agenda", state: "soon" },
+  { name: "Google Drive", state: "soon" },
+  { name: "Google Docs / Sheets", state: "soon" },
+  { name: "GitHub", state: "soon" },
+  { name: "Google Analytics / Search Console", state: "soon" },
+  { name: "LinkedIn", state: "soon" },
+  { name: "Microsoft Outlook / OneDrive", state: "soon" },
+];
+
 function humanError(error: unknown) {
   const raw = error instanceof Error ? error.message : String(error ?? "");
   if (/<!doctype|<html|<head|<body/i.test(raw)) return "Le service Google n’a pas répondu correctement. Réessayez.";
@@ -138,7 +155,7 @@ export function ConnectionsPanel() {
                     <div className="flex items-center gap-2">
                       <p className="font-semibold text-foreground">{service.name}</p>
                       <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${connected ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-300" : "bg-muted text-muted-foreground"}`}>
-                        {connected ? "Connecté" : "Non connecté"}
+                        {connected ? "Connecté" : canConnect ? "Disponible — à connecter" : "Non disponible"}
                       </span>
                     </div>
                     <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{service.description}</p>
@@ -187,6 +204,35 @@ export function ConnectionsPanel() {
       </AdminCard>
 
       {oauthConnected ? <GoogleServicesModules grantedScopes={grantedScopes} /> : null}
+
+      <AdminCard
+        title="Connecteurs Lovable"
+        description="État réel des connecteurs natifs. Rien n’est activé automatiquement : la connexion reste une action volontaire."
+      >
+        <ul className="grid gap-2 sm:grid-cols-2">
+          {NATIVE_CONNECTORS.map((connector) => (
+            <li
+              key={connector.name}
+              className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background px-3 py-2.5"
+            >
+              <span className="min-w-0 truncate text-sm text-foreground">{connector.name}</span>
+              <span
+                className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                  connector.state === "connected"
+                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"
+                    : "bg-muted text-muted-foreground"
+                }`}
+              >
+                {connector.state === "connected" ? "Connecté" : "Pas encore disponible"}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-xs leading-5 text-muted-foreground">
+          Les services Google ci-dessus restent connectables dès maintenant via OAuth. Les autres seront branchés
+          sur les connecteurs natifs quand ils seront autorisés sur cet espace de travail.
+        </p>
+      </AdminCard>
 
       <AdminCard
         title="Accès de l’IA"
