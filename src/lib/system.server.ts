@@ -24,27 +24,17 @@ type Definition = Omit<IntegrationReadiness, "status" | "missing"> & { env: stri
 
 const DEFINITIONS: Definition[] = [
   {
-    key: "google", provider: "google", name: "Google Workspace", category: "Bureautique & mail",
-    description: "Connexion OAuth Google pour Gmail, Google Calendar et Drive.",
-    env: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"], connectPath: "/oauth/google/start", reconnectPath: "/oauth/google/start?prompt=consent",
-    note: "Un seul client OAuth Google est utilisé, directement depuis les variables d’environnement Vercel.",
+    key: "google", name: "Google Workspace", category: "Bureautique & mail",
+    description: "Gmail, Google Agenda et Google Drive reliés à Angel OS.",
+    env: ["LOVABLE_API_KEY", "GOOGLE_MAIL_API_KEY", "GOOGLE_CALENDAR_API_KEY", "GOOGLE_DRIVE_API_KEY"],
+    note: "Les accès Google passent par les connecteurs reliés au projet : aucun jeton n’est stocké côté site.",
   },
-  {
-    key: "microsoft", name: "Microsoft 365", category: "Bureautique & mail",
-    description: "Outlook, Calendrier et OneDrive.", env: ["MS_CLIENT_ID", "MS_CLIENT_SECRET"],
-  },
-  { key: "meta", provider: "meta", name: "Facebook / Instagram", category: "Réseaux sociaux", description: "Publication et statistiques des pages via Meta.", env: ["META_APP_ID", "META_APP_SECRET"] },
-  { key: "linkedin", provider: "linkedin", name: "LinkedIn", category: "Réseaux sociaux", description: "Publication sur la page entreprise et suivi des posts.", env: ["LINKEDIN_CLIENT_ID", "LINKEDIN_CLIENT_SECRET"] },
-  { key: "x", provider: "x", name: "X", category: "Réseaux sociaux", description: "Diffusion des brèves et fils d'actualité.", env: ["X_CLIENT_ID", "X_CLIENT_SECRET"] },
-  { key: "youtube", provider: "youtube", name: "YouTube", category: "Réseaux sociaux", description: "Mise en ligne des reportages vidéo via le client OAuth Google.", env: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"] },
-  { key: "github", provider: "github", name: "GitHub", category: "Développement", description: "Synchronisation du code du site et suivi des évolutions.", env: ["GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET"] },
+  { key: "github", name: "GitHub", category: "Développement", description: "Sauvegarde facultative des articles.", env: ["GITHUB_CONTENT_TOKEN"], note: "Facultatif : la source de vérité des articles reste la base du site." },
   { key: "angel-ai", name: "Passerelle IA Lovable · Angel OS IA", category: "Intelligence artificielle", description: "Moteur d’intelligence artificielle (modèles Google Gemini) utilisé par Angel OS IA.", env: ["LOVABLE_API_KEY"], note: "Une seule clé IA est utilisée : LOVABLE_API_KEY (passerelle IA Lovable)." },
-  { key: "site", name: "Supabase · angel-leclerc.fr", category: "Site & contenus", description: "Base de données, authentification, stockage et traitements serveur du site.", env: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"], note: "Une seule clé serveur Supabase est utilisée." },
+  { key: "site", name: "Base Angel OS", category: "Site & contenus", description: "Base de données, authentification, stockage et traitements serveur du site.", env: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"] },
   { key: "tmdb", name: "TMDB", category: "Films & séries", description: "Métadonnées, affiches, recherche et informations Films & séries.", env: ["TMDB_READ_TOKEN"], note: "TMDB utilise un identifiant unique : variable serveur si disponible, sinon la clé v3 intégrée au build." },
   { key: "stripe", name: "Stripe", category: "Site & contenus", description: "Paiements de la boutique.", env: ["STRIPE_SECRET_KEY"] },
   { key: "printful", name: "Printful", category: "Site & contenus", description: "Catalogue, impression et expédition des produits.", env: ["PRINTFUL_API_KEY"] },
-  { key: "canva", provider: "canva", name: "Canva", category: "Création visuelle", description: "Visuels et gabarits de la marque.", env: ["CANVA_CLIENT_ID", "CANVA_CLIENT_SECRET"] },
-  { key: "adobe", provider: "adobe", name: "Adobe Express / Creative Cloud", category: "Création visuelle", description: "Retouches et exports haute qualité.", env: ["ADOBE_CLIENT_ID", "ADOBE_CLIENT_SECRET"] },
 ];
 
 function hasEnv(name: string) {
