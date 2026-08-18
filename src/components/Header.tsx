@@ -49,7 +49,7 @@ export function Header() {
             <a href="https://www.facebook.com/share/1LFGicX7qF/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Facebook Angel Leclerc Communication"><Facebook size={20} /></a>
           </div>
           <Link
-            to="/admin-access"
+            to="/auth"
             className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             aria-label="Ouvrir l'espace administrateur"
           >
@@ -78,7 +78,7 @@ export function Header() {
               <Link key={link.href} to={link.href} activeOptions={{ exact: link.href === "/" }} activeProps={{ className: "text-primary font-medium" }} onClick={() => setMobileOpen(false)} className="text-base py-2 text-foreground hover:text-primary transition-colors">{link.label}</Link>
             ))}
             <Link
-              to="/admin-access"
+              to="/auth"
               onClick={() => setMobileOpen(false)}
               className="inline-flex items-center gap-2 py-2 text-sm text-muted-foreground hover:text-foreground"
             >
