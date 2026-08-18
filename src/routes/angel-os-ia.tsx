@@ -35,14 +35,14 @@ type Technology = {
 
 const technologies: Technology[] = [
   { name: "Passerelle IA Lovable", wordmark: "IA", text: "Fournit les capacités d’intelligence artificielle (modèles Google Gemini) utilisées par Angel OS IA.", href: "https://docs.lovable.dev/features/ai", actionLabel: "Documentation", state: "En service" },
-  { name: "ChatGPT", logo: "/logos/chatgpt.com.svg", text: "Intervient autour du projet pour l’analyse, les corrections, le contrôle et la maintenance.", href: "https://chatgpt.com", actionLabel: "Ouvrir le site", state: "Autour du projet" },
+  { name: "Angel Guard", wordmark: "AG", text: "Couche interne de supervision : santé technique, anomalies, incidents et récupération, développée dans Angel OS.", href: "/angel-guard-os", actionLabel: "Voir Angel Guard", state: "Interne" },
   { name: "React", logo: brandLogos.react, text: "Structure les interfaces et les composants interactifs d’Angel OS.", href: "https://react.dev", actionLabel: "Site officiel", state: "En service" },
   { name: "TypeScript", logo: brandLogos.typescript, text: "Porte la logique applicative et sécurise le développement par le typage.", href: "https://www.typescriptlang.org", actionLabel: "Site officiel", state: "En service" },
   { name: "TanStack", logo: brandLogos.tanstack, text: "Gère le routage, les données asynchrones et une partie de l’architecture.", href: "https://tanstack.com", actionLabel: "Site officiel", state: "En service" },
   { name: "Tailwind CSS", logo: brandLogos.tailwindcss, text: "Gère la mise en page responsive et l’identité visuelle.", href: "https://tailwindcss.com", actionLabel: "Site officiel", state: "En service" },
   { name: "Vite", logo: brandLogos.vite, text: "Construit l’application et fournit l’environnement de développement.", href: "https://vite.dev", actionLabel: "Site officiel", state: "En service" },
   { name: "GitHub", logo: brandLogos.github, text: "Centralise le code source, l’historique des modifications et les versions publiques du projet.", href: "https://github.com/angelosmegaplus/angel-leclerc", actionLabel: "Voir le dépôt GitHub", state: "En service" },
-  { name: "Vercel", logo: brandLogos.vercel, text: "Construit et publie l’application web à partir du code du projet.", href: "https://vercel.com", actionLabel: "Site officiel", state: "En service" },
+  { name: "Hébergement Lovable", wordmark: "LOV", text: "Construit et publie le site à partir du code du dépôt, puis le sert sur le domaine public.", href: "https://lovable.dev", actionLabel: "Site officiel", state: "En service" },
   { name: "Supabase", logo: brandLogos.supabase, text: "Gère la base de données, l’authentification et les données privées.", href: "https://supabase.com", actionLabel: "Site officiel", state: "En service" },
   { name: "Gmail API", logo: brandLogos.gmail, text: "Relie les mails utiles à l’administration et au suivi des candidatures.", href: "https://developers.google.com/gmail/api", actionLabel: "Documentation", state: "Espace privé" },
   { name: "Google Calendar API", logo: brandLogos.googlecalendar, text: "Relie l’agenda Google aux informations utilisées dans Angel OS.", href: "https://developers.google.com/calendar", actionLabel: "Documentation", state: "Espace privé" },
@@ -96,9 +96,15 @@ function TechCard({ technology }: { technology: Technology }) {
       ) : null}
       <p className="mt-3 text-sm leading-6 text-[#6b655e]">{technology.text}</p>
       {technology.href ? (
-        <a href={technology.href} target="_blank" rel="noreferrer" className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#d8d1c8] bg-[#faf8f4] px-3 py-2 text-xs font-bold text-[#181614] transition hover:bg-[#f1ede7]">
-          {technology.actionLabel || "Ouvrir"} <ExternalLink className="h-3.5 w-3.5" />
-        </a>
+        technology.href.startsWith("/") ? (
+          <Link to={technology.href} className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#d8d1c8] bg-[#faf8f4] px-3 py-2 text-xs font-bold text-[#181614] transition hover:bg-[#f1ede7]">
+            {technology.actionLabel || "Ouvrir"}
+          </Link>
+        ) : (
+          <a href={technology.href} target="_blank" rel="noreferrer" className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#d8d1c8] bg-[#faf8f4] px-3 py-2 text-xs font-bold text-[#181614] transition hover:bg-[#f1ede7]">
+            {technology.actionLabel || "Ouvrir"} <ExternalLink className="h-3.5 w-3.5" />
+          </a>
+        )
       ) : null}
     </article>
   );
