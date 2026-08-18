@@ -638,24 +638,6 @@ export type Database = {
         }
         Relationships: []
       }
-      git_article_state: {
-        Row: {
-          deleted: boolean
-          deleted_at: string | null
-          slug: string
-        }
-        Insert: {
-          deleted?: boolean
-          deleted_at?: string | null
-          slug: string
-        }
-        Update: {
-          deleted?: boolean
-          deleted_at?: string | null
-          slug?: string
-        }
-        Relationships: []
-      }
       hourly_mail_reports: {
         Row: {
           counts: Json

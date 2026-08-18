@@ -1,6 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
-import { horrorArticle } from "@/content/horrorArticle";
 
 export type Article = Database["public"]["Tables"]["articles"]["Row"];
 export type ArticleAttachment = { name: string; url: string; size?: number };
@@ -37,11 +36,9 @@ export function formatDateTime(value: string | null): string { if (!value) retur
 export function slugify(input: string): string { return input.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/['’]/g, " ").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80); }
 export function formatDate(value: string | null): string { if (!value) return ""; return new Date(value).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }); }
 
-const staticPublicArticles = [horrorArticle as unknown as Article];
-function mergePublicArticles(data: Article[]): Article[] {
-  const bySlug = new Map<string, Article>();
-  for (const article of [...staticPublicArticles, ...data]) bySlug.set(article.slug, article);
-  return [...bySlug.values()].sort((a, b) => {
+// Tri unique côté application : la base est la seule source d'articles.
+function orderArticles(data: Article[]): Article[] {
+  return [...data].sort((a, b) => {
     if (a.featured !== b.featured) return a.featured ? -1 : 1;
     return new Date(b.published_at ?? b.created_at).getTime() - new Date(a.published_at ?? a.created_at).getTime();
   });
@@ -50,16 +47,14 @@ function mergePublicArticles(data: Article[]): Article[] {
 export async function fetchLatestArticles(limit = 3): Promise<Article[]> {
   const { data, error } = await visibleNow(supabase.from("articles").select("*").eq("published", true).eq("is_private", false)).order("featured", { ascending: false }).order("published_at", { ascending: false }).limit(Math.max(limit, 10));
   if (error) throw error;
-  return mergePublicArticles(data ?? []).slice(0, limit);
+  return orderArticles(data ?? []).slice(0, limit);
 }
 export async function fetchPublishedArticles(): Promise<Article[]> {
   const { data, error } = await visibleNow(supabase.from("articles").select("*").eq("published", true).eq("is_private", false)).order("featured", { ascending: false }).order("published_at", { ascending: false });
   if (error) throw error;
-  return mergePublicArticles(data ?? []);
+  return orderArticles(data ?? []);
 }
 export async function fetchArticleBySlug(slug: string): Promise<Article | null> {
-  const local = staticPublicArticles.find((article) => article.slug === slug);
-  if (local) return local;
   const { data, error } = await supabase
     .from("articles")
     .select("*")

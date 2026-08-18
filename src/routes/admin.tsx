@@ -38,6 +38,7 @@ import {
   Search,
   Settings,
 } from "lucide-react";
+import { Copy } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { ShopAdmin } from "@/components/ShopAdmin";
 import { toast } from "sonner";
@@ -244,6 +245,45 @@ function AdminPage() {
   const [uploadingFile, setUploadingFile] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [tab, setTab] = useState<AdminTab>("dashboard");
+
+  // Autosauvegarde locale du brouillon en cours (aucun service externe).
+  const DRAFT_STORAGE_KEY = "alc-article-draft";
+  const [draftRestored, setDraftRestored] = useState(false);
+
+  useEffect(() => {
+    if (draftRestored) return;
+    setDraftRestored(true);
+    try {
+      const stored = window.localStorage.getItem(DRAFT_STORAGE_KEY);
+      if (!stored) return;
+      const parsed = JSON.parse(stored) as Draft;
+      if (parsed && typeof parsed.title === "string") {
+        setDraft(parsed);
+        setTab("studio");
+        toast.info("Brouillon local récupéré", {
+          description: "La dernière saisie non enregistrée a été restaurée.",
+        });
+      }
+    } catch {
+      window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+    }
+  }, [draftRestored]);
+
+  useEffect(() => {
+    if (!draftRestored) return;
+    if (!draft) {
+      window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      try {
+        window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+      } catch {
+        /* quota atteint : l'enregistrement en base reste la référence */
+      }
+    }, 800);
+    return () => window.clearTimeout(timer);
+  }, [draft, draftRestored]);
 
   // Raccourcis d'application installée et retours OAuth : /admin?tab=studio
   useEffect(() => {
@@ -1517,6 +1557,32 @@ function AdminPage() {
                       }
                     >
                       <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      title="Dupliquer en brouillon"
+                      onClick={() =>
+                        setDraft({
+                          id: null,
+                          title: `${a.title} (copie)`,
+                          slug: `${a.slug}-copie`,
+                          category: a.category,
+                          excerpt: a.excerpt ?? "",
+                          content: a.content,
+                          cover_url: a.cover_url ?? "",
+                          status: "brouillon",
+                          scheduled_at: "",
+                          is_private: true,
+                          featured: false,
+                          attachments: getAttachments(a),
+                          sources: getSources(a),
+                          topics: getTopics(a),
+                          ai: getAiDisclosure(a),
+                        })
+                      }
+                    >
+                      <Copy className="h-4 w-4" />
                     </Button>
                     <Button
                       size="sm"
