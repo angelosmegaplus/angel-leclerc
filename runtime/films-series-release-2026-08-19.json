@@ -1,0 +1,36 @@
+{
+  "release": "films-series-v4",
+  "createdAt": "2026-08-19T00:02:00+02:00",
+  "purpose": "Force une nouvelle synchronisation complète GitHub vers Lovable après publication d'un snapshot incomplet.",
+  "publishAutomatically": false,
+  "features": [
+    "TMDB serveur via TMDB_READ_TOKEN",
+    "cache TMDB, retry, deduplication et fallback",
+    "catalogue films et series",
+    "recherche et fiches detaillees",
+    "synopsis complet",
+    "notation personnelle 1 a 5",
+    "vu / pas vu",
+    "aime / pas aime",
+    "style oui / moyen / non",
+    "memoire locale des gouts",
+    "algorithme de recommandations apprenant",
+    "score de confiance",
+    "disponibilites France TMDB",
+    "liens Canal+",
+    "liens Netflix",
+    "lien Movix avec resolution de source officielle"
+  ],
+  "sourceFiles": [
+    "src/routes/films-series.tsx",
+    "src/components/films/FilmDetailsModal.tsx",
+    "src/lib/film-details.functions.ts",
+    "src/lib/film-taste.client.ts",
+    "src/lib/film-recommendations.ts",
+    "src/lib/film-content.server.ts",
+    "src/lib/film-live.functions.ts",
+    "src/lib/film-health.functions.ts",
+    "src/lib/movix-source.functions.ts",
+    "src/lib/runtime-credentials.server.ts"
+  ]
+}
