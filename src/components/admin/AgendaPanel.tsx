@@ -61,7 +61,7 @@ async function loadLocalAgenda(): Promise<AgendaData> {
   for (const task of tasks) if (task.due_date) out.push({ id: `tsk-${task.id}`, date: task.due_date, label: task.title, detail: "Tâche", kind: "Tâche" });
   for (const application of applications) if (application.follow_up_at) out.push({ id: `can-${application.id}`, date: application.follow_up_at, label: application.company, detail: "Relance de candidature", kind: "Alternance" });
   for (const interview of interviews) if (interview.scheduled_at) out.push({ id: `itw-${interview.id}`, date: interview.scheduled_at, label: interview.title, detail: interview.person ? `Interview · ${interview.person}` : "Interview", kind: "Studio" });
-  return { entries: out, warnings };
+  return { entries: out, warnings, googleConnected: false };
 }
 
 export function AgendaPanel() {
