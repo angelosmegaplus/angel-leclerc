@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { MOVIX_PERSISTED } from "@/lib/movix-current.generated";
 
 const UPSTREAM_RAW =
   "https://raw.githubusercontent.com/movixcorp/MovixOpenSource/main/src/pages/help/MiroirsPage.tsx";
@@ -17,7 +18,7 @@ let lastKnownGoodUrl: string | null = null;
 export type MovixOfficialSource = {
   url: string;
   checkedAt: string;
-  source: "last_known" | "movix_online" | "github" | "fallback";
+  source: "last_known" | "persisted" | "movix_online" | "github" | "fallback";
   upstreamSha: string | null;
   chain: string[];
 };
@@ -41,7 +42,7 @@ async function probeUrl(raw: string) {
       method: "GET",
       redirect: "follow",
       cache: "no-store",
-      headers: { "User-Agent": "Angel-OS-Movix-Link-Sync" },
+      headers: { "User-Agent": "Angel-Movies-Movix-Link-Sync" },
       signal: AbortSignal.timeout(8_000),
     });
     if (!response.ok) return null;
@@ -94,7 +95,7 @@ function extractOfficialUrl(source: string) {
 async function upstreamSha() {
   try {
     const response = await fetch(UPSTREAM_COMMITS, {
-      headers: { Accept: "application/vnd.github+json", "User-Agent": "Angel-OS-Movix-Link-Sync" },
+      headers: { Accept: "application/vnd.github+json", "User-Agent": "Angel-Movies-Movix-Link-Sync" },
       signal: AbortSignal.timeout(6_000),
     });
     if (!response.ok) return null;
@@ -107,7 +108,7 @@ async function upstreamSha() {
 
 async function githubOfficialUrl() {
   const response = await fetch(UPSTREAM_RAW, {
-    headers: { "User-Agent": "Angel-OS-Movix-Link-Sync" },
+    headers: { "User-Agent": "Angel-Movies-Movix-Link-Sync" },
     cache: "no-store",
     signal: AbortSignal.timeout(8_000),
   });
@@ -135,6 +136,21 @@ async function resolveMovixSource(): Promise<MovixOfficialSource> {
       cache = { expiresAt: now + 30 * 60_000, value };
       return value;
     }
+  }
+
+  chain.push("persisted");
+  const persisted = await probeUrl(MOVIX_PERSISTED.url);
+  if (persisted) {
+    lastKnownGoodUrl = persisted.finalUrl;
+    const value: MovixOfficialSource = {
+      url: persisted.finalUrl,
+      checkedAt: new Date(now).toISOString(),
+      source: "persisted",
+      upstreamSha: null,
+      chain,
+    };
+    cache = { expiresAt: now + 30 * 60_000, value };
+    return value;
   }
 
   chain.push("movix_online");
