@@ -638,6 +638,60 @@ export type Database = {
         }
         Relationships: []
       }
+      film_taste_signals: {
+        Row: {
+          candidate_id: string
+          completion: number
+          director: string | null
+          genre_ids: Json
+          keywords: Json
+          liked: boolean | null
+          media_type: string
+          people: Json
+          rating: number | null
+          rejected: boolean | null
+          release_year: number | null
+          seen: boolean | null
+          style_fit: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          candidate_id: string
+          completion?: number
+          director?: string | null
+          genre_ids?: Json
+          keywords?: Json
+          liked?: boolean | null
+          media_type: string
+          people?: Json
+          rating?: number | null
+          rejected?: boolean | null
+          release_year?: number | null
+          seen?: boolean | null
+          style_fit?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          candidate_id?: string
+          completion?: number
+          director?: string | null
+          genre_ids?: Json
+          keywords?: Json
+          liked?: boolean | null
+          media_type?: string
+          people?: Json
+          rating?: number | null
+          rejected?: boolean | null
+          release_year?: number | null
+          seen?: boolean | null
+          style_fit?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       hourly_mail_reports: {
         Row: {
           counts: Json
