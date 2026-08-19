@@ -1,0 +1,33 @@
+name: Angel Movies · synchronisation Movix
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 * * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: angel-movies-movix-domain-sync
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v5
+      - name: Rechercher et vérifier le domaine Movix
+        run: node scripts/update-movix-domain.mjs
+      - name: Enregistrer uniquement si le domaine change
+        run: |
+          if git diff --quiet -- src/lib/movix-current.generated.ts; then
+            echo "Aucun changement de domaine."
+            exit 0
+          fi
+          git config user.name "Angel Movies Bot"
+          git config user.email "angel-movies-bot@users.noreply.github.com"
+          git add src/lib/movix-current.generated.ts
+          git commit -m "chore(movix): update active domain"
+          git push
