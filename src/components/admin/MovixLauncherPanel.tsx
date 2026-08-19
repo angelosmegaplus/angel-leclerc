@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ExternalLink, Globe2, RefreshCw, Save, Trash2 } from "lucide-react";
+import { ExternalLink, Globe2, Maximize2, RefreshCw, Save, Trash2 } from "lucide-react";
 import { getMovixOfficialSource, type MovixOfficialSource } from "@/lib/movix-source.functions";
 
-const OVERRIDE_KEY = "angel-os-movix-override-v1";
-const LAST_KEY = "angel-os-movix-launcher-last-v1";
+const OVERRIDE_KEY = "angel-movies-movix-override-v2";
+const LAST_KEY = "angel-movies-movix-launcher-last-v2";
 
 function normalize(raw: string) {
   const value = raw.trim();
@@ -37,6 +37,25 @@ function sourceLabel(source?: MovixOfficialSource["source"]) {
   if (source === "github") return "GitHub Movix";
   if (source === "fallback") return "secours";
   return "résolution automatique";
+}
+
+async function enterCinemaMode() {
+  try {
+    if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+      await document.documentElement.requestFullscreen();
+    }
+  } catch {}
+  try {
+    const orientation = screen.orientation as ScreenOrientation & { lock?: (value: string) => Promise<void> };
+    await orientation.lock?.("landscape");
+  } catch {}
+}
+
+async function leaveCinemaMode() {
+  try { screen.orientation.unlock?.(); } catch {}
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+  } catch {}
 }
 
 export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: string | null; targetLabel?: string | null } = {}) {
@@ -127,14 +146,19 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
     else await resolveOfficial();
   }
 
+  async function closeIntegrated() {
+    setEmbed(null);
+    await leaveCinemaMode();
+  }
+
   return (
     <section id="movix-launcher" className="mt-12 border-t border-white/10 pt-10">
       <div className="grid gap-6 lg:grid-cols-[1fr_1.15fr]">
         <div className="space-y-5">
           <div>
-            <div className="flex items-center gap-2 text-red-300"><Globe2 className="h-5 w-5" /><span className="font-mono text-xs uppercase tracking-[.18em]">Movix Link Launcher</span></div>
+            <div className="flex items-center gap-2 text-red-300"><Globe2 className="h-5 w-5" /><span className="font-mono text-xs uppercase tracking-[.18em]">Angel Movies · Movix</span></div>
             <h2 className="mt-2 text-3xl font-semibold tracking-[-.045em]">Bac à sable Movix</h2>
-            <p className="mt-2 text-sm leading-6 text-white/50">Le domaine est retrouvé automatiquement via le dernier lien valide, movix.online et le dépôt officiel Movix. Tu peux aussi forcer manuellement une nouvelle adresse. Si elle ne répond plus, le système revient au résolveur automatique.</p>
+            <p className="mt-2 text-sm leading-6 text-white/50">Le domaine est retrouvé automatiquement via le dernier lien valide, movix.online et le dépôt officiel Movix. Les routes de lecture utilisent directement l’ID TMDB du film ou de la série.</p>
             {targetLabel ? <p className="mt-3 rounded-xl border border-violet-400/20 bg-violet-400/10 px-4 py-3 text-sm text-violet-100">Lecture demandée : <strong>{targetLabel}</strong></p> : null}
           </div>
 
@@ -164,10 +188,10 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
         <div id="movix-launcher-frame" className="scroll-mt-5 rounded-2xl border border-white/10 bg-white/[.025] p-4 sm:p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div><p className="text-xs font-semibold uppercase tracking-[.12em] text-white/35">Cadre intégré</p><p className="mt-1 max-w-[70vw] truncate font-mono text-xs text-white/30">{embed || "aucun lien chargé"}</p></div>
-            {embed ? <div className="flex gap-2"><button type="button" onClick={() => setFrameKey((value) => value + 1)} className="rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60">Recharger</button><a href={embed} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60">Nouvelle page <ExternalLink className="h-3.5 w-3.5" /></a><button type="button" onClick={() => setEmbed(null)} className="rounded-lg border border-white/10 px-3 py-2 text-xs text-white/40">Fermer</button></div> : null}
+            {embed ? <div className="flex flex-wrap gap-2"><button type="button" onClick={() => setFrameKey((value) => value + 1)} className="rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60">Recharger</button><button type="button" onClick={() => void enterCinemaMode()} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60"><Maximize2 className="h-3.5 w-3.5" />Horizontal</button><a href={embed} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60">Nouvelle page <ExternalLink className="h-3.5 w-3.5" /></a><button type="button" onClick={() => void closeIntegrated()} className="rounded-lg border border-white/10 px-3 py-2 text-xs text-white/40">Fermer</button></div> : null}
           </div>
-          <p className="mt-4 rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-xs leading-5 text-white/45">Si une version de Movix refuse l’intégration iframe, utilise « Nouvelle page ». Aucune protection du site n’est contournée.</p>
-          {embed ? <iframe key={frameKey} src={embed} title={`Movix Launcher — ${hostOf(embed)}`} referrerPolicy="no-referrer" allow="fullscreen" sandbox="allow-forms allow-same-origin allow-scripts" className="mt-4 h-[70vh] min-h-[520px] w-full rounded-xl border border-white/10 bg-black" /> : <div className="mt-4 grid min-h-[520px] place-items-center rounded-xl border border-dashed border-white/10 bg-black/20 p-8 text-center text-sm text-white/30">Clique sur Lecture sous un film ou ouvre Movix.</div>}
+          <p className="mt-4 rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-xs leading-5 text-white/45">Au lancement depuis « Regarder sur Movix », Angel Movies demande le plein écran et l’orientation horizontale quand le navigateur l’autorise. Si l’intégration iframe est refusée par Movix, utilise « Nouvelle page ».</p>
+          {embed ? <iframe key={frameKey} src={embed} title={`Movix Launcher — ${hostOf(embed)}`} referrerPolicy="no-referrer" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" sandbox="allow-forms allow-same-origin allow-scripts allow-presentation" className="mt-4 h-[70vh] min-h-[520px] w-full rounded-xl border border-white/10 bg-black" /> : <div className="mt-4 grid min-h-[520px] place-items-center rounded-xl border border-dashed border-white/10 bg-black/20 p-8 text-center text-sm text-white/30">Clique sur « Regarder sur Movix » sous un film ou ouvre Movix.</div>}
         </div>
       </div>
     </section>
