@@ -1,21 +1,21 @@
 {
-  "fetchedAt": "2026-08-19T19:00:33Z",
+  "fetchedAt": "2026-08-19T19:57:47Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-19T19:00:33Z",
+      "fetchedAt": "2026-08-19T19:57:47Z",
       "important": [],
-      "otherSummary": "Depuis le précédent rapport, Gmail contient deux nouveaux messages reçus non professionnels et un nouvel élément envoyé lié au suivi d'alternance avec l'école. Aucun nouvel email reçu d'entreprise, aucune demande de CV, entretien, redirection professionnelle, réponse positive ou refus explicite directement reçu n'a été détecté. Le contenu privé détaillé et les identifiants de messages ne sont pas écrits dans GitHub public.",
+      "otherSummary": "Depuis le précédent rapport, Gmail contient trois nouveaux messages reçus et aucun nouvel élément envoyé. Un message technique Vercel signale un échec de déploiement en production d’Angel OS. Deux messages Mon Compte Formation appartiennent au même fil et concernent la finalisation d’une inscription, sans lien certain avec une candidature BTS Communication. Aucun nouveau mail reçu d’entreprise, aucune demande de CV, entretien, redirection professionnelle, réponse positive ou refus explicite directement reçu n’a été détecté. Un brouillon de rapport d’erreur France Identité est présent mais n’est pas compté comme message envoyé. Le contenu privé détaillé et les identifiants de messages ne sont pas écrits dans GitHub public.",
       "counts": {
-        "useful_messages": 1,
-        "incoming": 2,
-        "outgoing": 1,
+        "useful_messages": 2,
+        "incoming": 3,
+        "outgoing": 0,
         "outgoing_bts_applications": 0,
-        "application_related_outgoing": 1,
+        "application_related_outgoing": 0,
         "application_related_incoming": 0,
         "automatic_absence": 0,
         "delivery_challenge": 0,
-        "technical_incoming": 0,
-        "security_or_account_incoming": 0,
+        "technical_incoming": 1,
+        "security_or_account_incoming": 2,
         "job_alerts": 0,
         "explicit_rejections": 0,
         "positive_or_interview": 0,
@@ -24,10 +24,10 @@
       }
     },
     "microsoft_mail_dashboard": {
-      "fetchedAt": "2026-08-19T19:00:33Z",
-      "summary": "Depuis le précédent rapport, Outlook contient cinq nouveaux messages reçus de nature promotionnelle ou commerciale, sans lien certain avec une candidature ou une action professionnelle. Aucun nouvel élément envoyé Outlook n'a été identifié sur la période.",
+      "fetchedAt": "2026-08-19T19:57:47Z",
+      "summary": "Depuis le précédent rapport, aucun nouveau message reçu ni envoyé n’a été trouvé dans Outlook sur la période. Aucun élément Outlook ne nécessite une synchronisation candidature ou une action.",
       "counts": {
-        "incoming": 5,
+        "incoming": 0,
         "useful_messages": 0,
         "unique_application_replies": 0,
         "unique_outgoing_applications": 0,
@@ -37,20 +37,20 @@
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-19T12:01:04Z",
-    "period_end": "2026-08-19T19:00:33Z",
-    "summary": "Cycle consolidé Gmail + Outlook terminé. Sept nouveaux messages reçus ont été observés : deux sur Gmail et cinq sur Outlook, sans nouveau message professionnel entrant pertinent. Un nouvel email envoyé Gmail concerne le suivi d'alternance avec l'école et constitue un élément opérationnel utile, sans qu'un nouveau mail direct d'entreprise permette de qualifier ici un refus, un entretien, une demande de CV, une redirection ou une réponse positive. Aucun nouvel email envoyé Outlook. Aucun email, brouillon ou réponse n'a été envoyé automatiquement. L'accès privé direct à ai_actions, applications et à un index mail privé cumulatif n'est pas exposé à cette exécution ; aucune donnée privée détaillée, adresse, message_id ou thread_id n'a été placée dans GitHub public. Le rapport et les caches agrégés sont synchronisés vers Supabase par le workflow natif Angel OS, sans Lovable.",
+    "period_start": "2026-08-19T19:00:33Z",
+    "period_end": "2026-08-19T19:57:47Z",
+    "summary": "Cycle consolidé Gmail + Outlook terminé. Trois nouveaux messages reçus ont été observés sur Gmail et aucun sur Outlook. Aucun nouvel email envoyé n’a été identifié sur les deux fournisseurs. Le seul élément professionnel directement pertinent est une alerte technique Vercel signalant un échec de déploiement en production d’Angel OS ; elle est consignée sans modification du site. Deux messages Mon Compte Formation appartiennent au même fil et ne prouvent aucune évolution de candidature BTS Communication. Aucun refus explicite, entretien, demande de CV, redirection professionnelle ou réponse positive n’a été détecté. Aucun email, brouillon ou réponse n’a été envoyé automatiquement. L’accès privé direct à ai_actions, applications et à un index mail privé cumulatif n’est pas exposé à cette exécution ; aucune donnée privée détaillée, adresse, message_id ou thread_id n’a été placée dans GitHub public. Le rapport et les caches agrégés sont synchronisés vers Supabase par le workflow natif Angel OS, sans Lovable.",
     "counts": {
-      "useful_messages": 1,
-      "incoming": 7,
-      "outgoing": 1,
+      "useful_messages": 2,
+      "incoming": 3,
+      "outgoing": 0,
       "outgoing_bts_applications": 0,
-      "application_related_outgoing": 1,
+      "application_related_outgoing": 0,
       "application_related_incoming": 0,
       "automatic_absence": 0,
       "delivery_challenge": 0,
-      "technical_incoming": 0,
-      "security_or_account_incoming": 0,
+      "technical_incoming": 1,
+      "security_or_account_incoming": 2,
       "job_alerts": 0,
       "explicit_rejections": 0,
       "positive_or_interview": 0,
@@ -61,9 +61,9 @@
     },
     "items": [],
     "recommendations": [
-      "Conserver le nouvel élément envoyé lié au suivi d'alternance comme preuve opérationnelle privée lors de la prochaine synchronisation backend disposant d'un accès direct à applications et à l'index mail privé.",
-      "Ne créer aucune action externe ni réponse automatique sur la base de cet élément envoyé seul.",
-      "Réessayer au prochain cycle l'accès privé serveur à ai_actions, applications et à l'index mail cumulatif, sans exposer de contenu privé dans GitHub public."
+      "Consigner l’alerte Vercel comme incident technique Angel OS et laisser la maintenance technique gérer le déploiement ; aucune modification du site n’est exécutée dans cette routine sans action validée.",
+      "Ne créer ni mise à jour de candidature à partir des messages Mon Compte Formation, faute de correspondance certaine avec une candidature BTS Communication.",
+      "Réessayer au prochain cycle l’accès privé serveur à ai_actions, applications et à l’index mail cumulatif afin d’exécuter les actions awaiting_operator et d’enrichir l’index privé sans exposer de données dans GitHub public."
     ],
     "source": "chatgpt-hourly-direct"
   }
