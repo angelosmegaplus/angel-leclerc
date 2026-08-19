@@ -1,20 +1,20 @@
 {
-  "fetchedAt": "2026-08-18T21:01:51Z",
+  "fetchedAt": "2026-08-19T08:00:49Z",
   "caches": {
     "gmail_dashboard": {
-      "fetchedAt": "2026-08-18T21:01:51Z",
+      "fetchedAt": "2026-08-19T08:00:49Z",
       "important": [],
-      "otherSummary": "Depuis le précédent rapport à 17:57:56 UTC, aucun nouveau mail Gmail reçu ou envoyé n’a été détecté. Aucun nouveau message pertinent pour une candidature BTS Communication, aucune réponse d’entreprise, aucun refus explicite, aucun entretien, aucune demande de CV, aucune redirection professionnelle et aucune alerte technique nouvelle n’ont été observés.",
+      "otherSummary": "Depuis le précédent rapport à 21:01:51 UTC, Gmail contient une candidature BTS Communication envoyée, un groupe d’alertes techniques Vercel répétées dans un même fil, une notification de création de compte applicatif, deux rappels Agenda et quelques messages non professionnels. Aucun refus explicite, entretien, demande de CV, redirection professionnelle ni réponse positive d’entreprise n’a été détecté sur la période.",
       "counts": {
-        "useful_messages": 0,
-        "incoming": 0,
-        "outgoing": 0,
-        "outgoing_bts_applications": 0,
+        "useful_messages": 22,
+        "incoming": 25,
+        "outgoing": 1,
+        "outgoing_bts_applications": 1,
         "application_related_incoming": 0,
         "automatic_absence": 0,
         "delivery_challenge": 0,
-        "technical_incoming": 0,
-        "security_or_account_incoming": 0,
+        "technical_incoming": 20,
+        "security_or_account_incoming": 1,
         "job_alerts": 0,
         "explicit_rejections": 0,
         "positive_or_interview": 0,
@@ -23,33 +23,33 @@
       }
     },
     "microsoft_mail_dashboard": {
-      "fetchedAt": "2026-08-18T21:01:51Z",
-      "summary": "Depuis le précédent rapport à 17:57:56 UTC, un nouveau message Outlook reçu a été détecté : une newsletter MuseHub à 20:59:25 UTC, sans lien avec une candidature, une action professionnelle ou une alerte technique. Aucun nouvel élément envoyé Outlook n’a été identifié dans la période.",
+      "fetchedAt": "2026-08-19T08:00:49Z",
+      "summary": "Depuis le précédent rapport, Outlook contient un nouveau message reçu de type alerte emploi. Aucun nouvel élément envoyé Outlook n’a été identifié sur la période.",
       "counts": {
         "incoming": 1,
-        "useful_messages": 0,
+        "useful_messages": 1,
         "unique_application_replies": 0,
         "unique_outgoing_applications": 0,
-        "job_alerts": 0,
+        "job_alerts": 1,
         "cross_provider_duplicates_ignored": 0
       }
     }
   },
   "hourly_mail_report": {
-    "period_start": "2026-08-18T17:57:56Z",
-    "period_end": "2026-08-18T21:01:51Z",
-    "summary": "Cycle consolidé Gmail + Outlook terminé. Gmail : aucun nouveau mail reçu ou envoyé. Outlook : un nouveau message reçu, newsletter MuseHub non pertinente pour les candidatures ou l’administration ; aucun élément envoyé. Aucun changement factuel de candidature à synchroniser, aucun refus, entretien, demande de CV ou redirection professionnelle détecté, et aucun email, brouillon ou réponse n’a été envoyé. L’accès privé direct à `ai_actions` n’est pas exposé à cette exécution ; aucune donnée mail privée détaillée n’est écrite dans GitHub public.",
+    "period_start": "2026-08-18T21:01:51Z",
+    "period_end": "2026-08-19T08:00:49Z",
+    "summary": "Cycle consolidé Gmail + Outlook terminé. Gmail : 25 messages reçus et 1 envoyé sur la période ; l’envoi est une candidature BTS Communication certaine. Les alertes techniques Vercel sont regroupées dans un même fil et ne doivent pas déclencher d’actions mail. Outlook : 1 alerte emploi reçue, aucun nouvel envoi. Aucun refus explicite, entretien, demande de CV, redirection professionnelle ou réponse positive détecté. Aucun email, brouillon ou réponse n’a été envoyé automatiquement. L’accès privé direct à ai_actions/applications n’est pas exposé à cette exécution ; la candidature envoyée doit être recroisée au prochain cycle disposant de cet accès serveur, sans doublon et sans exposer de détail privé dans GitHub public.",
     "counts": {
-      "useful_messages": 0,
-      "incoming": 1,
-      "outgoing": 0,
-      "outgoing_bts_applications": 0,
+      "useful_messages": 23,
+      "incoming": 26,
+      "outgoing": 1,
+      "outgoing_bts_applications": 1,
       "application_related_incoming": 0,
       "automatic_absence": 0,
       "delivery_challenge": 0,
-      "technical_incoming": 0,
-      "security_or_account_incoming": 0,
-      "job_alerts": 0,
+      "technical_incoming": 20,
+      "security_or_account_incoming": 1,
+      "job_alerts": 1,
       "explicit_rejections": 0,
       "positive_or_interview": 0,
       "professional_redirects": 0,
@@ -59,9 +59,10 @@
     },
     "items": [],
     "recommendations": [
-      "Aucune action mail n’est nécessaire sur cette période.",
-      "Le message Outlook reçu est une newsletter non pertinente ; aucune indexation métier ni action candidature n’est requise.",
-      "Réessayer au prochain cycle l’accès privé serveur à `ai_actions` sans exposer de données dans GitHub public."
+      "Recroiser la candidature BTS Communication envoyée avec applications dès qu’un accès privé serveur est disponible ; créer ou mettre à jour uniquement sur correspondance certaine et sans doublon.",
+      "Traiter les alertes Vercel comme un seul incident technique par fil ; ne pas générer d’action mail automatique.",
+      "Conserver l’alerte emploi Outlook dans le contexte de veille sans la transformer en candidature envoyée.",
+      "Réessayer au prochain cycle l’accès privé serveur à ai_actions et à l’index mail privé, sans exposer de message, identifiant, adresse ou contenu privé dans GitHub public."
     ],
     "source": "chatgpt-hourly-direct"
   }
