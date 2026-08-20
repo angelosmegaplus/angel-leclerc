@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Lightbulb, Loader2, Send, X } from "lucide-react";
+import { Lightbulb, Loader2, Send, ShieldCheck, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { submitMovieFeedback } from "@/lib/movie-feedback.functions";
 
 const BUBBLE_KEY = "angel-movies-feedback-bubble-seen-v1";
+const PROTON_PLAY_URL = "https://play.google.com/store/apps/details?id=ch.protonvpn.android";
 
 export function MovieFeedbackLightbulb() {
   const { user } = useAuth();
@@ -57,25 +58,38 @@ export function MovieFeedbackLightbulb() {
 
   return (
     <>
-      <div className="fixed right-3 top-16 z-[80] flex items-start gap-2 sm:right-5 sm:top-20">
+      <div className="fixed right-3 top-3 z-[80] flex items-start gap-2 sm:right-5 sm:top-5">
         {bubbleVisible && !open ? (
           <button
             type="button"
             onClick={() => { setOpen(true); setBubbleVisible(false); }}
-            className="relative max-w-[185px] rounded-2xl border border-white/10 bg-black/80 px-3 py-2 text-left text-[10px] leading-4 text-white/65 shadow-xl backdrop-blur-xl"
+            className="relative max-w-[165px] rounded-2xl border border-white/10 bg-black/80 px-2.5 py-1.5 text-left text-[9px] leading-4 text-white/60 shadow-xl backdrop-blur-xl sm:max-w-[185px] sm:px-3 sm:py-2 sm:text-[10px]"
           >
             Des idées de mises à jour ? Écris-moi.
             <span className="absolute -right-1 top-3 h-2 w-2 rotate-45 border-r border-t border-white/10 bg-black/80" />
           </button>
         ) : null}
-        <button
-          type="button"
-          onClick={() => { setOpen(true); setBubbleVisible(false); try { localStorage.setItem(BUBBLE_KEY, "1"); } catch {} }}
-          aria-label="Proposer une idée"
-          className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-black/55 text-amber-200/75 shadow-lg backdrop-blur-xl transition hover:bg-black/75 hover:text-amber-100"
-        >
-          <Lightbulb className="h-4 w-4" />
-        </button>
+
+        <div className="flex gap-1.5">
+          <a
+            href={PROTON_PLAY_URL}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Proton VPN"
+            title="Proton VPN"
+            className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-black/55 text-violet-200/75 shadow-lg backdrop-blur-xl transition hover:bg-black/75 hover:text-violet-100"
+          >
+            <ShieldCheck className="h-4 w-4" />
+          </a>
+          <button
+            type="button"
+            onClick={() => { setOpen(true); setBubbleVisible(false); try { localStorage.setItem(BUBBLE_KEY, "1"); } catch {} }}
+            aria-label="Proposer une idée"
+            className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-black/55 text-amber-200/75 shadow-lg backdrop-blur-xl transition hover:bg-black/75 hover:text-amber-100"
+          >
+            <Lightbulb className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       {open ? (
