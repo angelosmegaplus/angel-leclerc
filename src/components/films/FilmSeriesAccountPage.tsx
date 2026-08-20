@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Brain, CheckCircle2, Film, Gauge, Heart, Info, Loader2, LogIn, Play, RefreshCw, Search, Sparkles, Star, ThumbsDown, Tv, UserRound, X } from "lucide-react";
+import { BookOpen, Brain, CheckCircle2, Film, Gauge, Heart, Info, Loader2, LogIn, Play, RefreshCw, Search, Sparkles, Star, ThumbsDown, Tv, UserRound, X } from "lucide-react";
 import { MovixLauncherPanel } from "@/components/admin/MovixLauncherPanel";
 import { FilmDetailsModal } from "@/components/films/FilmDetailsModal";
-import { ProtonVpnBanner } from "@/components/films/ProtonVpnBanner";
 import { useAuth } from "@/hooks/useAuth";
 import { FILM_CATALOG } from "@/lib/film-catalog";
 import { getFilmProviderHealth } from "@/lib/film-health.functions";
@@ -15,15 +14,12 @@ import { buildTasteProfile, confidenceFor, scoreCandidate, selectDailyRecommenda
 
 type Filter = "all" | "movie" | "tv" | "documentary";
 type MovixTarget = { path: string; label: string; nonce: number } | null;
-
-function isDocumentary(item: RecommendationCandidate) {
-  return item.genreIds.includes(99);
-}
+type TasteSeed = { mediaType: "movie" | "tv"; id: number };
 
 function localFallback(mediaType: Filter, query: string) {
   const q = query.trim().toLocaleLowerCase("fr");
   return FILM_CATALOG
-    .filter((item) => mediaType === "all" || (mediaType === "documentary" ? isDocumentary(item) : item.mediaType === mediaType))
+    .filter((item) => mediaType === "all" || (mediaType === "documentary" ? item.genreIds.includes(99) : item.mediaType === mediaType))
     .filter((item) => !q || `${item.title} ${item.genreLabel} ${item.pitch} ${item.people.join(" ")}`.toLocaleLowerCase("fr").includes(q));
 }
 
@@ -31,6 +27,19 @@ function movixPath(item: RecommendationCandidate) {
   const match = item.id.match(/^tmdb-(movie|tv)-(\d+)$/);
   if (!match) return null;
   return match[1] === "movie" ? `/watch/movie/${match[2]}` : `/tv/${match[2]}`;
+}
+
+function seedsFromSignals(signals: ViewingSignal[]): TasteSeed[] {
+  return [...signals]
+    .filter((signal) => signal.liked === true || (signal.rating ?? 0) >= 4 || signal.styleFit === "yes")
+    .sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0))
+    .map((signal) => {
+      const match = signal.candidateId.match(/^tmdb-(movie|tv)-(\d+)$/);
+      return match ? { mediaType: match[1] as "movie" | "tv", id: Number(match[2]) } : null;
+    })
+    .filter((seed): seed is TasteSeed => Boolean(seed?.id))
+    .filter((seed, index, all) => all.findIndex((candidate) => candidate.mediaType === seed.mediaType && candidate.id === seed.id) === index)
+    .slice(0, 4);
 }
 
 async function enterCinemaMode() {
@@ -58,7 +67,7 @@ export function FilmSeriesAccountPage() {
   const [movixTarget, setMovixTarget] = useState<MovixTarget>(null);
 
   const userId = user?.id || "";
-  const profileLabel = user?.email || "Compte Angel Movies";
+  const profileLabel = user?.user_metadata?.display_name || user?.email || "Compte Angel Movies";
 
   useEffect(() => {
     if (!userId) {
@@ -82,11 +91,15 @@ export function FilmSeriesAccountPage() {
     return () => { active = false; };
   }, [userId]);
 
+  const tasteSeeds = useMemo(() => seedsFromSignals(signals), [signals]);
+  const seedKey = useMemo(() => tasteSeeds.map((seed) => `${seed.mediaType}:${seed.id}`).join(","), [tasteSeeds]);
+  const apiMediaType = mediaType === "documentary" ? "all" : mediaType;
+
   const { data, isLoading, isFetching, refetch } = useQuery({
-    queryKey: ["angel-movies-live-tmdb-v8", query, mediaType],
-    queryFn: () => loadCatalog({ data: { query, mediaType: mediaType === "documentary" ? "all" : mediaType } }),
+    queryKey: ["angel-movies-live-tmdb-v10", userId, query, mediaType, seedKey],
+    queryFn: () => loadCatalog({ data: { query, mediaType: apiMediaType, seeds: tasteSeeds } }),
     enabled: Boolean(userId),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 60_000,
     retry: 2,
   });
 
@@ -100,12 +113,10 @@ export function FilmSeriesAccountPage() {
 
   const fallback = useMemo(() => localFallback(mediaType, query), [mediaType, query]);
   const usingLocalFallback = !data || data.source === "unavailable";
-  const catalog = useMemo<RecommendationCandidate[]>(() => {
-    const source = usingLocalFallback ? fallback : data.items;
-    return mediaType === "documentary" ? source.filter(isDocumentary) : source;
-  }, [usingLocalFallback, fallback, data, mediaType]);
+  const rawCatalog = useMemo<RecommendationCandidate[]>(() => usingLocalFallback ? fallback : data.items, [usingLocalFallback, fallback, data]);
+  const catalog = useMemo(() => mediaType === "documentary" ? rawCatalog.filter((item) => item.genreIds.includes(99)) : rawCatalog, [rawCatalog, mediaType]);
   const taste = useMemo(() => buildTasteProfile(signals), [signals]);
-  const ranked = useMemo(() => selectDailyRecommendations(catalog, signals, 24), [catalog, signals]);
+  const ranked = useMemo(() => selectDailyRecommendations(catalog, signals, 30), [catalog, signals]);
   const picks = useMemo(() => ranked.map((entry) => entry.candidate), [ranked]);
   const confidence = useMemo(() => confidenceFor(signals), [signals]);
   const hero = !query ? picks[0] : null;
@@ -140,8 +151,8 @@ export function FilmSeriesAccountPage() {
           <div className="grid h-12 w-12 place-items-center rounded-2xl bg-violet-400/10 text-violet-200"><Film className="h-6 w-6" /></div>
           <p className="mt-5 text-xs font-semibold uppercase tracking-[.18em] text-violet-200/70">Angel Movies</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-[-.05em]">Ton cinéma, ton profil.</h1>
-          <p className="mt-3 text-sm leading-6 text-white/50">Crée un compte ou connecte-toi pour retrouver tes likes, dislikes, contenus vus et recommandations personnalisées.</p>
-          <a href="/auth?next=/films-series" className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-white px-5 font-semibold text-black"><LogIn className="h-4 w-4" />Créer mon compte / se connecter</a>
+          <p className="mt-3 text-sm leading-6 text-white/50">Crée un compte Angel Movies classique. Aucun accès administrateur n’est nécessaire.</p>
+          <a href="/movies-auth?mode=signup" className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-white px-5 font-semibold text-black"><LogIn className="h-4 w-4" />Créer mon compte / se connecter</a>
         </section>
       </main>
     );
@@ -150,57 +161,61 @@ export function FilmSeriesAccountPage() {
   return (
     <main className="min-h-[100dvh] overflow-x-hidden bg-[#070708] text-white">
       <header className="sticky top-0 z-30 border-b border-white/[.07] bg-[#070708]/88 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[1500px] items-center gap-3 px-4 py-3 sm:px-7 lg:px-10">
+        <div className="mx-auto flex max-w-[1500px] flex-col gap-2 px-3 py-3 pr-24 sm:flex-row sm:items-center sm:gap-3 sm:px-7 sm:pr-28 lg:px-10 lg:pr-28">
           <div className="flex shrink-0 items-center gap-2 font-semibold"><Film className="h-5 w-5 text-red-400" />Angel Movies</div>
-          <form onSubmit={(event) => { event.preventDefault(); setQuery(draftQuery.trim()); }} className="ml-auto flex w-full max-w-xl items-center gap-2 rounded-full border border-white/10 bg-white/[.055] px-4">
+          <form onSubmit={(event) => { event.preventDefault(); setQuery(draftQuery.trim()); }} className="flex w-full min-w-0 items-center gap-2 rounded-full border border-white/10 bg-white/[.055] px-3 sm:ml-auto sm:max-w-xl sm:px-4">
             <Search className="h-4 w-4 shrink-0 text-white/35" />
-            <input value={draftQuery} onChange={(event) => setDraftQuery(event.target.value)} placeholder="Rechercher un film, une série ou un documentaire…" className="min-w-0 flex-1 bg-transparent py-2.5 text-sm outline-none placeholder:text-white/25" />
-            {draftQuery ? <button type="button" onClick={() => { setDraftQuery(""); setQuery(""); }} className="text-white/35"><X className="h-4 w-4" /></button> : null}
+            <input value={draftQuery} onChange={(event) => setDraftQuery(event.target.value)} placeholder="Film, série ou documentaire…" className="min-w-0 flex-1 bg-transparent py-2.5 text-sm outline-none placeholder:text-white/25" />
+            {draftQuery ? <button type="button" onClick={() => { setDraftQuery(""); setQuery(""); }} className="shrink-0 text-white/35"><X className="h-4 w-4" /></button> : null}
           </form>
         </div>
       </header>
 
       {hero ? (
-        <section className="relative min-h-[430px] overflow-hidden border-b border-white/[.06] sm:min-h-[540px]">
+        <section className="relative min-h-[400px] overflow-hidden border-b border-white/[.06] sm:min-h-[540px]">
           {hero.backdropUrl || hero.posterUrl ? <img src={hero.backdropUrl || hero.posterUrl} alt="" className="absolute inset-0 h-full w-full object-cover opacity-50" /> : null}
           <div className="absolute inset-0 bg-gradient-to-r from-[#070708] via-[#070708]/85 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#070708] via-transparent to-[#070708]/25" />
-          <div className="relative mx-auto flex min-h-[430px] max-w-[1500px] items-end px-4 pb-12 pt-24 sm:min-h-[540px] sm:px-7 lg:px-10">
+          <div className="relative mx-auto flex min-h-[400px] max-w-[1500px] items-end px-4 pb-9 pt-20 sm:min-h-[540px] sm:px-7 sm:pb-12 sm:pt-24 lg:px-10">
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-violet-300/20 bg-violet-400/10 px-3 py-1.5 text-[11px] font-semibold text-violet-100"><Sparkles className="h-3.5 w-3.5" />{Math.round(scoreCandidate(hero, taste) * 100)}% pour toi</div>
-              <h1 className="mt-4 text-5xl font-bold tracking-[-.065em] sm:text-7xl">{hero.title}</h1>
-              <div className="mt-4 flex flex-wrap gap-3 text-sm text-white/55"><span>{hero.year}</span><span>{isDocumentary(hero) ? "Documentaire" : hero.mediaType === "movie" ? "Film" : "Série"}</span>{hero.rating ? <span className="inline-flex items-center gap-1"><Star className="h-4 w-4 fill-current text-amber-300" />{hero.rating.toFixed(1)}</span> : null}<span>{hero.genreLabel}</span></div>
-              <p className="mt-5 line-clamp-4 max-w-xl text-base leading-7 text-white/70">{hero.pitch}</p>
-              <div className="mt-7 flex flex-wrap gap-2"><button type="button" onClick={() => setSelected(hero)} className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-black"><Info className="h-4 w-4" />Fiche</button>{movixPath(hero) ? <button type="button" onClick={() => play(hero)} className="inline-flex items-center gap-2 rounded-full border border-red-400/30 bg-red-400/10 px-5 py-3 text-sm font-semibold text-red-100"><Play className="h-4 w-4 fill-current" />Regarder sur Movix</button> : null}</div>
+              <h1 className="mt-4 text-4xl font-bold tracking-[-.06em] sm:text-7xl">{hero.title}</h1>
+              <div className="mt-4 flex flex-wrap gap-3 text-sm text-white/55"><span>{hero.year}</span><span>{hero.genreIds.includes(99) ? "Documentaire" : hero.mediaType === "movie" ? "Film" : "Série"}</span>{hero.rating ? <span className="inline-flex items-center gap-1"><Star className="h-4 w-4 fill-current text-amber-300" />{hero.rating.toFixed(1)}</span> : null}<span>{hero.genreLabel}</span></div>
+              <p className="mt-5 line-clamp-3 max-w-xl text-sm leading-6 text-white/70 sm:line-clamp-4 sm:text-base sm:leading-7">{hero.pitch}</p>
+              <div className="mt-6 flex flex-wrap gap-2 sm:mt-7"><button type="button" onClick={() => setSelected(hero)} className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-black"><Info className="h-4 w-4" />Fiche</button>{movixPath(hero) ? <button type="button" onClick={() => play(hero)} className="inline-flex items-center gap-2 rounded-full border border-red-400/30 bg-red-400/10 px-5 py-3 text-sm font-semibold text-red-100"><Play className="h-4 w-4 fill-current" />Regarder</button> : null}</div>
             </div>
           </div>
         </section>
       ) : null}
 
-      <div className="mx-auto max-w-[1500px] px-4 pb-16 pt-7 sm:px-7 lg:px-10">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-2">
-            {(["all", "movie", "tv", "documentary"] as const).map((value) => <button key={value} type="button" onClick={() => setMediaType(value)} className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold ${mediaType === value ? "border-white bg-white text-black" : "border-white/10 bg-white/[.035] text-white/55"}`}>{value === "movie" ? <Film className="h-3.5 w-3.5" /> : value === "tv" ? <Tv className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}{value === "all" ? "Tout" : value === "movie" ? "Films" : value === "tv" ? "Séries" : "Documentaires"}</button>)}
-            <button type="button" onClick={() => void Promise.all([refetch(), refetchHealth()])} className="inline-flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-2 text-[11px] text-white/45"><RefreshCw className={`h-3.5 w-3.5 ${isFetching || checkingHealth ? "animate-spin" : ""}`} />TMDB</button>
+      <div className="mx-auto max-w-[1500px] px-3 pb-12 pt-5 sm:px-7 sm:pb-16 sm:pt-7 lg:px-10">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+          <div className="flex max-w-full gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {(["all", "movie", "tv", "documentary"] as const).map((value) => (
+              <button key={value} type="button" onClick={() => setMediaType(value)} className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold ${mediaType === value ? "border-white bg-white text-black" : "border-white/10 bg-white/[.035] text-white/55"}`}>
+                {value === "movie" ? <Film className="h-3.5 w-3.5" /> : value === "tv" ? <Tv className="h-3.5 w-3.5" /> : value === "documentary" ? <BookOpen className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}
+                {value === "all" ? "Tout" : value === "movie" ? "Films" : value === "tv" ? "Séries" : "Documentaires"}
+              </button>
+            ))}
+            <button type="button" onClick={() => void Promise.all([refetch(), refetchHealth()])} className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 px-3 py-2 text-[11px] text-white/45"><RefreshCw className={`h-3.5 w-3.5 ${isFetching || checkingHealth ? "animate-spin" : ""}`} />Actualiser</button>
           </div>
-          <div className="flex flex-wrap gap-2 text-[11px]"><span className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-2 text-white/55"><UserRound className="h-3.5 w-3.5" />{profileLabel}</span><span className="inline-flex items-center gap-2 rounded-full border border-violet-400/15 bg-violet-400/[.07] px-3 py-2 text-violet-100/70"><Brain className="h-3.5 w-3.5" />{signals.length} avis · <Gauge className="h-3.5 w-3.5" />{confidence.percent}%</span></div>
+          <div className="flex min-w-0 flex-wrap gap-2 text-[10px] sm:text-[11px]"><span className="inline-flex min-w-0 items-center gap-2 rounded-full border border-white/10 px-3 py-2 text-white/55"><UserRound className="h-3.5 w-3.5 shrink-0" /><span className="max-w-[180px] truncate">{profileLabel}</span></span><span className="inline-flex items-center gap-2 rounded-full border border-violet-400/15 bg-violet-400/[.07] px-3 py-2 text-violet-100/70"><Brain className="h-3.5 w-3.5" />{signals.length} avis · <Gauge className="h-3.5 w-3.5" />{confidence.percent}%</span></div>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-3 text-[11px] text-white/35">
+        <div className="mt-4 flex flex-wrap items-center gap-2 text-[10px] text-white/35 sm:gap-3 sm:text-[11px]">
           <span className={`h-2 w-2 rounded-full ${health?.status === "ok" && !usingLocalFallback ? "bg-emerald-400" : "bg-amber-400"}`} />
           <span>{health?.status === "ok" && !usingLocalFallback ? "TMDB connecté" : "Catalogue local de secours"}</span>
-          <span>•</span><span>{cloudState === "synced" ? "Profil synchronisé" : cloudState === "syncing" ? "Synchronisation…" : cloudState === "offline" ? "Hors ligne · copie locale active" : "Profil local"}</span>
+          <span>•</span><span>{cloudState === "synced" ? "Profil personnel synchronisé" : cloudState === "syncing" ? "Personnalisation…" : cloudState === "offline" ? "Profil local actif" : "Profil personnel"}</span>
+          {tasteSeeds.length ? <><span>•</span><span>{tasteSeeds.length} source{tasteSeeds.length > 1 ? "s" : ""} de goûts active{tasteSeeds.length > 1 ? "s" : ""}</span></> : null}
           {(isLoading || isFetching) ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
         </div>
 
-        <section className="mt-8 rounded-2xl border border-violet-400/15 bg-violet-400/[.055] p-4"><div className="flex gap-3"><Brain className="mt-0.5 h-5 w-5 text-violet-300" /><div><h2 className="font-semibold">Algorithme Angel Movies actif</h2><p className="mt-1 text-xs leading-5 text-white/45">Chaque like, dislike, contenu vu ou avis de style recalcule immédiatement ton profil. Les films, séries et documentaires se réorganisent selon tes réactions récentes.</p></div></div></section>
+        <section className="mt-6 rounded-2xl border border-violet-400/15 bg-violet-400/[.055] p-3.5 sm:mt-8 sm:p-4"><div className="flex gap-3"><Brain className="mt-0.5 h-5 w-5 shrink-0 text-violet-300" /><div><h2 className="text-sm font-semibold sm:text-base">Recommandations personnalisées en direct</h2><p className="mt-1 text-xs leading-5 text-white/45">Chaque compte garde son propre profil. Un like, dislike, contenu vu ou préférence modifie immédiatement le score ; les derniers titres aimés alimentent aussi les recommandations et contenus similaires de TMDB.</p></div></div></section>
 
-        {!query && picks.length > 1 ? <MediaGrid title="Recommandés pour toi" items={picks.slice(1, 13)} signals={signals} taste={taste} onSelect={setSelected} onSignal={updateSignal} onPlay={play} /> : null}
+        {!query && picks.length > 1 ? <MediaGrid title="Recommandés pour toi" items={picks.slice(1, 16)} signals={signals} taste={taste} onSelect={setSelected} onSignal={updateSignal} onPlay={play} /> : null}
         <MediaGrid title={query ? `Résultats pour « ${query} »` : mediaType === "documentary" ? "Documentaires" : "Catalogue"} items={catalog} signals={signals} taste={taste} onSelect={setSelected} onSignal={updateSignal} onPlay={play} />
 
         <MovixLauncherPanel targetPath={movixTarget ? `${movixTarget.path}?angel=${movixTarget.nonce}` : null} targetLabel={movixTarget?.label} />
-        <ProtonVpnBanner />
-        <footer className="mt-14 border-t border-white/[.07] py-7 text-[11px] text-white/25">Angel Movies · Données et visuels : TMDB. Préférences : compte utilisateur + copie locale de secours.</footer>
       </div>
 
       {selected ? <FilmDetailsModal item={selected} signals={signals} profileKey={userId} onSignalsChange={(next) => { setSignals(next); const changed = next.find((signal) => signal.candidateId === selected.id); if (changed) void saveCloudTasteSignal(userId, changed).catch(() => setCloudState("offline")); }} onPlay={play} onClose={() => setSelected(null)} /> : null}
@@ -209,12 +224,12 @@ export function FilmSeriesAccountPage() {
 }
 
 function MediaGrid({ title, items, signals, taste, onSelect, onSignal, onPlay }: { title: string; items: RecommendationCandidate[]; signals: ViewingSignal[]; taste: ReturnType<typeof buildTasteProfile>; onSelect: (item: RecommendationCandidate) => void; onSignal: (item: RecommendationCandidate, patch: Partial<ViewingSignal>) => void; onPlay: (item: RecommendationCandidate) => void }) {
-  return <section className="mt-10"><div className="flex items-end justify-between gap-4"><h2 className="text-2xl font-semibold tracking-[-.04em] sm:text-3xl">{title}</h2><span className="text-xs text-white/30">{items.length} titre{items.length > 1 ? "s" : ""}</span></div><div className="mt-5 grid grid-cols-2 gap-x-3 gap-y-7 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">{items.map((item) => <MediaCard key={`${title}-${item.id}`} item={item} signal={signals.find((signal) => signal.candidateId === item.id)} score={scoreCandidate(item, taste)} onSelect={onSelect} onSignal={onSignal} onPlay={onPlay} />)}</div>{!items.length ? <div className="mt-8 rounded-2xl border border-white/10 p-8 text-center text-sm text-white/40">Aucun résultat.</div> : null}</section>;
+  return <section className="mt-8 sm:mt-10"><div className="flex items-end justify-between gap-4"><h2 className="text-xl font-semibold tracking-[-.04em] sm:text-3xl">{title}</h2><span className="shrink-0 text-[10px] text-white/30 sm:text-xs">{items.length} titre{items.length > 1 ? "s" : ""}</span></div><div className="mt-4 grid grid-cols-2 gap-x-2.5 gap-y-6 sm:mt-5 sm:grid-cols-3 sm:gap-x-3 sm:gap-y-7 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">{items.map((item) => <MediaCard key={`${title}-${item.id}`} item={item} signal={signals.find((signal) => signal.candidateId === item.id)} score={scoreCandidate(item, taste)} onSelect={onSelect} onSignal={onSignal} onPlay={onPlay} />)}</div>{!items.length ? <div className="mt-8 rounded-2xl border border-white/10 p-8 text-center text-sm text-white/40">Aucun résultat.</div> : null}</section>;
 }
 
 function MediaCard({ item, signal, score, onSelect, onSignal, onPlay }: { item: RecommendationCandidate; signal?: ViewingSignal; score: number; onSelect: (item: RecommendationCandidate) => void; onSignal: (item: RecommendationCandidate, patch: Partial<ViewingSignal>) => void; onPlay: (item: RecommendationCandidate) => void }) {
   const canPlay = Boolean(movixPath(item));
-  return <article className="group min-w-0"><button type="button" onClick={() => onSelect(item)} className="block w-full text-left"><div className="relative aspect-[2/3] overflow-hidden rounded-2xl border border-white/[.08] bg-[#121216]">{item.posterUrl ? <img src={item.posterUrl} alt={`Affiche de ${item.title}`} loading="lazy" className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]" /> : <div className="grid h-full place-items-center p-4 text-center text-white/35">{item.title}</div>}<span className="absolute right-2 top-2 rounded-lg bg-violet-500/90 px-2 py-1 text-[10px] font-bold">{Math.round(score * 100)}%</span></div><h3 className="mt-2 line-clamp-1 text-sm font-semibold">{item.title}</h3><p className="mt-1 line-clamp-1 text-[11px] text-white/35">{item.year} · {isDocumentary(item) ? "Documentaire · " : ""}{item.genreLabel}</p></button><div className="mt-2 grid grid-cols-4 gap-1.5"><Action active={signal?.seen === true} label="Vu" onClick={() => onSignal(item, { seen: true, completion: 1 })}><CheckCircle2 className="h-3.5 w-3.5" /></Action><Action active={signal?.liked === true} label="J’aime" onClick={() => onSignal(item, { liked: true, rejected: false })}><Heart className="h-3.5 w-3.5" /></Action><Action active={signal?.liked === false || signal?.rejected === true} label="J’aime pas" onClick={() => onSignal(item, { liked: false, rejected: true })}><ThumbsDown className="h-3.5 w-3.5" /></Action><Action active={signal?.styleFit === "yes"} label="Style" onClick={() => onSignal(item, { styleFit: signal?.styleFit === "yes" ? "mixed" : "yes" })}><Sparkles className="h-3.5 w-3.5" /></Action></div>{canPlay ? <button type="button" onClick={() => onPlay(item)} className="mt-1.5 flex min-h-9 w-full items-center justify-center gap-2 rounded-lg border border-red-400/20 bg-red-400/10 text-[11px] font-semibold text-red-100"><Play className="h-3.5 w-3.5 fill-current" />Regarder sur Movix</button> : null}</article>;
+  return <article className="group min-w-0"><button type="button" onClick={() => onSelect(item)} className="block w-full text-left"><div className="relative aspect-[2/3] overflow-hidden rounded-xl border border-white/[.08] bg-[#121216] sm:rounded-2xl">{item.posterUrl ? <img src={item.posterUrl} alt={`Affiche de ${item.title}`} loading="lazy" className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]" /> : <div className="grid h-full place-items-center p-4 text-center text-white/35">{item.title}</div>}<span className="absolute right-1.5 top-1.5 rounded-lg bg-violet-500/90 px-1.5 py-1 text-[9px] font-bold sm:right-2 sm:top-2 sm:px-2 sm:text-[10px]">{Math.round(score * 100)}%</span></div><h3 className="mt-2 line-clamp-1 text-xs font-semibold sm:text-sm">{item.title}</h3><p className="mt-1 line-clamp-1 text-[10px] text-white/35 sm:text-[11px]">{item.year} · {item.genreLabel}</p></button><div className="mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-4"><Action active={signal?.seen === true} label="Vu" onClick={() => onSignal(item, { seen: true, completion: 1 })}><CheckCircle2 className="h-3.5 w-3.5" /></Action><Action active={signal?.liked === true} label="J’aime" onClick={() => onSignal(item, { liked: true, rejected: false })}><Heart className="h-3.5 w-3.5" /></Action><Action active={signal?.liked === false || signal?.rejected === true} label="J’aime pas" onClick={() => onSignal(item, { liked: false, rejected: true })}><ThumbsDown className="h-3.5 w-3.5" /></Action><Action active={signal?.styleFit === "yes"} label="Style" onClick={() => onSignal(item, { styleFit: signal?.styleFit === "yes" ? "mixed" : "yes" })}><Sparkles className="h-3.5 w-3.5" /></Action></div>{canPlay ? <button type="button" onClick={() => onPlay(item)} className="mt-1.5 flex min-h-9 w-full items-center justify-center gap-2 rounded-lg border border-red-400/20 bg-red-400/10 text-[10px] font-semibold text-red-100 sm:text-[11px]"><Play className="h-3.5 w-3.5 fill-current" />Regarder</button> : null}</article>;
 }
 
 function Action({ active, label, onClick, children }: { active: boolean; label: string; onClick: () => void; children: React.ReactNode }) {
