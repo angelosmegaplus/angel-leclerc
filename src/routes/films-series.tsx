@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Film, LogIn, UserPlus } from "lucide-react";
 import { FilmSeriesAccountPage } from "@/components/films/FilmSeriesAccountPage";
 import { MovieFeedbackLightbulb } from "@/components/films/MovieFeedbackLightbulb";
-import { ProtonVpnBanner } from "@/components/films/ProtonVpnBanner";
 import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/films-series")({
@@ -33,9 +32,9 @@ function FilmSeriesRoute() {
             <Link to="/movies-auth" search={{ mode: "signup" }} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-4 font-semibold text-black"><UserPlus className="h-4 w-4" />Créer mon compte</Link>
             <Link to="/movies-auth" search={{ mode: "login" }} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[.04] px-4 font-semibold text-white"><LogIn className="h-4 w-4" />Connexion</Link>
           </div>
-          <p className="mt-4 text-[11px] leading-5 text-white/25">L’espace cinéma est séparé visuellement de l’administration et n’affiche aucun outil Angel OS.</p>
+          <p className="mt-4 text-[11px] leading-5 text-white/25">Angel Movies utilise ses propres comptes utilisateurs : aucun rôle administrateur n’est nécessaire.</p>
         </section>
-        <ProtonVpnBanner />
+        <MovieFeedbackLightbulb />
       </main>
     );
   }
