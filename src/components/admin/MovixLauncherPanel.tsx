@@ -29,7 +29,6 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
 
   useEffect(() => { try { const saved = normalize(localStorage.getItem(OVERRIDE_KEY) || ""); setOverride(saved); setDraftOverride(saved); } catch {} }, []);
   useEffect(() => () => { if (transitionTimerRef.current) window.clearTimeout(transitionTimerRef.current); }, []);
-
   async function resolveOfficial() { setResolving(true); try { const source = await resolveOfficialSource(); if (source?.url) { setOfficial(source); return source.url; } return ""; } finally { setResolving(false); } }
   useEffect(() => { void resolveOfficial(); }, []);
 
@@ -46,7 +45,7 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
       setPendingUrl(null);
       setEmbed(url);
       setFrameKey((value) => value + 1);
-    }, 900);
+    }, 1150);
   }
 
   useEffect(() => {
@@ -90,15 +89,24 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
       </div>
     </section>
 
-    {pendingUrl ? <div className="fixed inset-0 z-[10000] grid h-[100dvh] w-screen place-items-center overflow-hidden bg-[#050506] text-white">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(239,68,68,.14),transparent_48%)] animate-pulse" />
-      <div className="relative mx-5 max-w-lg text-center animate-in fade-in zoom-in-90 duration-200">
-        <div className="mx-auto mb-5 grid h-14 w-14 place-items-center rounded-2xl border border-red-400/25 bg-red-400/10 shadow-[0_0_50px_rgba(239,68,68,.16)]"><PlayIcon /></div>
-        <p className="text-[10px] font-semibold uppercase tracking-[.28em] text-red-300/75">Angel Movies</p>
-        <h2 className="mt-2 text-2xl font-semibold tracking-[-.04em] sm:text-3xl">Ouverture du lecteur Movix</h2>
-        <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-white/60"><strong className="text-white">Ne cliquez pas sur Retour.</strong><br />Pour fermer le lecteur, utilisez la croix ✕.</p>
-        <div className="mx-auto mt-5 h-1 w-28 overflow-hidden rounded-full bg-white/10"><div className="h-full w-full origin-left animate-[pulse_450ms_ease-in-out_infinite] rounded-full bg-white/70" /></div>
+    {pendingUrl ? <div className="fixed inset-0 z-[10000] grid h-[100dvh] w-screen place-items-center overflow-hidden bg-black text-white">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(239,68,68,.18),transparent_38%)] animate-pulse" />
+      <div className="absolute left-1/2 top-1/2 h-[120vmax] w-[8px] -translate-x-1/2 -translate-y-1/2 rotate-12 bg-gradient-to-b from-transparent via-red-500/80 to-transparent blur-sm animate-in zoom-in-50 fade-in duration-300" />
+      <div className="absolute left-1/2 top-1/2 h-44 w-44 -translate-x-1/2 -translate-y-1/2 rounded-full border border-red-500/20 shadow-[0_0_100px_rgba(239,68,68,.24)] animate-ping" />
+      <div className="relative mx-6 text-center">
+        <div className="relative mx-auto flex h-24 w-24 items-center justify-center overflow-hidden animate-in zoom-in-50 fade-in duration-300">
+          <span className="absolute text-[6.2rem] font-black leading-none tracking-[-.12em] text-white drop-shadow-[0_0_26px_rgba(239,68,68,.65)]">A</span>
+          <span className="absolute h-full w-[3px] -skew-x-12 bg-red-500 shadow-[0_0_18px_rgba(239,68,68,.9)] animate-pulse" />
+        </div>
+        <div className="mt-1 animate-in fade-in slide-in-from-bottom-2 duration-300 delay-150">
+          <p className="text-[11px] font-semibold uppercase tracking-[.42em] text-white/45">Angel OS Films</p>
+          <h2 className="mt-3 text-xl font-semibold tracking-[-.04em] sm:text-2xl">Ouverture du lecteur Movix</h2>
+          <p className="mx-auto mt-2 max-w-sm text-[11px] leading-5 text-white/55 sm:text-xs">Un petit bandeau du navigateur peut apparaître : c’est normal, attendez quelques instants, il disparaîtra.</p>
+          <p className="mx-auto mt-1 max-w-sm text-[11px] font-semibold text-white/85 sm:text-xs">Ne cliquez pas sur Retour · fermez avec ✕.</p>
+        </div>
+        <div className="mx-auto mt-4 h-[2px] w-24 overflow-hidden bg-white/10"><div className="h-full w-full origin-left bg-red-500 animate-[pulse_300ms_ease-in-out_infinite] shadow-[0_0_10px_rgba(239,68,68,.8)]" /></div>
       </div>
+      <div className="pointer-events-none absolute inset-0 animate-in fade-in duration-150 [background:linear-gradient(90deg,transparent_0%,rgba(255,255,255,.04)_45%,rgba(255,255,255,.14)_50%,rgba(255,255,255,.04)_55%,transparent_100%)]" />
     </div> : null}
 
     {embed ? <div className="fixed inset-0 z-[9999] h-[100dvh] w-screen overflow-hidden bg-black"><iframe key={frameKey} src={embed} title={`Movix Launcher — ${hostOf(embed)}`} referrerPolicy="no-referrer" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" sandbox="allow-forms allow-same-origin allow-scripts allow-presentation" className="absolute inset-0 h-full w-full border-0 bg-black" /><div className="absolute bottom-3 right-3 z-20 flex gap-2 sm:bottom-5 sm:right-5"><button type="button" onClick={() => setFrameKey((v) => v + 1)} className="rounded-full border border-white/15 bg-black/70 px-3 py-2 text-xs text-white/75 backdrop-blur-lg">Recharger</button><button type="button" onClick={() => void closeIntegrated()} aria-label="Fermer le lecteur" className="grid h-10 w-10 place-items-center rounded-full border border-white/15 bg-black/70 text-white backdrop-blur-lg"><X className="h-4 w-4" /></button></div></div> : null}
