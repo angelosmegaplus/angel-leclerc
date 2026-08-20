@@ -114,15 +114,13 @@ function IntroSection() {
               Angel <span className="italic text-primary">Leclerc</span>
             </h1>
             <p className="mt-3 font-display text-base text-foreground/80 sm:text-lg md:text-xl">
-              Étudiant en communication — recherche d'alternance à Sarlat
+              Étudiant en communication
             </p>
             <p className="mt-4 max-w-xl text-[0.95rem] leading-relaxed text-muted-foreground md:mt-6 md:text-base">
-              Je recherche une entreprise pour préparer un BTS Communication en
-              alternance à partir de septembre 2026. Création de contenus,
-              rédaction, communication numérique, accueil du public et gestion
-              de projets&nbsp;: je souhaite mettre mes compétences au service
-              d'une structure située à Sarlat-la-Canéda ou dans ses environs
-              accessibles en scooter.
+              Création de contenus, rédaction, communication numérique,
+              accueil du public et gestion de projets&nbsp;: je mets mes
+              compétences au service de structures qui souhaitent gagner en
+              clarté et en visibilité.
             </p>
             <div className="mt-6 grid grid-cols-1 gap-2.5 sm:flex sm:flex-wrap sm:gap-3 md:mt-8">
               <a
@@ -137,12 +135,6 @@ function IntroSection() {
                 className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary sm:justify-start"
               >
                 <Download size={16} /> Télécharger mon CV
-              </a>
-              <a
-                href="#alternance"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary sm:justify-start"
-              >
-                <GraduationCap size={16} /> Voir le BTS Communication
               </a>
               <a
                 href="#outils"
@@ -171,208 +163,6 @@ function IntroSection() {
         </div>
       </div>
     </section>
-  );
-}
-
-function AlternanceSection() {
-  const rows: { icon: LucideIcon; label: string; value: string }[] = [
-    { icon: GraduationCap, label: "Formation", value: "BTS Communication" },
-    { icon: Calendar, label: "Début", value: "Septembre 2026" },
-    { icon: MapPin, label: "Zone principale", value: "Sarlat-la-Canéda et communes proches" },
-    { icon: Bike, label: "Mobilité", value: "Scooter — trajets quotidiens autour de Sarlat" },
-    { icon: Building2, label: "Secteurs privilégiés", value: "Tourisme, culture, médias, collectivités, associations, commerce et services" },
-    { icon: ClipboardList, label: "Missions recherchées", value: "Réseaux sociaux, rédaction, création graphique, communication digitale, événementiel, accueil et gestion de projet" },
-  ];
-
-  return (
-    <AnimatedSection>
-      <section id="alternance" className="section-padding bg-muted/40 scroll-mt-24">
-        <div className="container-tight">
-          <SectionHeader
-            eyebrow="Alternance 2026"
-            title="Mon BTS Communication en alternance"
-            intro="Je prépare un BTS Communication en alternance avec l'école Talis (campus de Périgueux) à partir de septembre 2026 et je recherche l'entreprise qui m'accueillera. Ma recherche se concentre sur Sarlat-la-Canéda et les communes proches, accessibles quotidiennement en scooter."
-          />
-
-          <div className="mt-10 grid gap-4 md:grid-cols-2">
-            {rows.map((r) => (
-              <Card key={r.label} className="flex items-start gap-4">
-                <div className="inline-flex shrink-0 rounded-xl bg-primary/10 p-3 text-primary">
-                  <r.icon size={20} />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                    {r.label}
-                  </p>
-                  <p className="mt-1 text-sm font-medium leading-relaxed text-foreground">
-                    {r.value}
-                  </p>
-                </div>
-              </Card>
-            ))}
-          </div>
-
-          <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-card">
-            <div className="flex flex-wrap items-center justify-between gap-2 px-5 pt-5">
-              <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-                Ma zone de recherche
-              </p>
-              <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground">
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-full bg-primary" /> Sarlat · zone prioritaire
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-foreground/70" /> Villes envisageables
-                </span>
-              </div>
-            </div>
-            <div className="mt-4 overflow-hidden border-y border-border">
-              <ClientOnly fallback={<div className="h-[280px] w-full bg-muted sm:h-[300px]" />}>
-                <Suspense fallback={<div className="h-[280px] w-full bg-muted sm:h-[300px]" />}>
-                  <MobilityMap />
-                </Suspense>
-              </ClientOnly>
-            </div>
-            <p className="px-5 py-4 text-xs leading-relaxed text-muted-foreground">
-              Je privilégie une alternance à Sarlat ou dans un rayon d'environ 10&nbsp;km,
-              accessible en scooter au quotidien. Je peux toutefois envisager une opportunité
-              plus éloignée si elle est réellement cohérente avec mon projet, avec possibilité
-              de déménagement.
-            </p>
-          </div>
-
-          <div className="mt-10 rounded-2xl border border-border bg-card p-6 md:p-8">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-                  Projet de formation
-                </p>
-                <h4 className="mt-2 font-display text-xl font-semibold text-foreground">
-                  Le BTS Communication en détail
-                </h4>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <a
-                  href="/bts/programme-bts-com-talis.pdf"
-                  download
-                  className="inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/5 px-3.5 py-2 text-xs font-semibold text-primary transition-colors hover:bg-primary/10"
-                >
-                  <Download size={14} /> Programme (PDF)
-                </a>
-                <a
-                  href="/bts/calendrier-bts-com-talis.pdf"
-                  download
-                  className="inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/5 px-3.5 py-2 text-xs font-semibold text-primary transition-colors hover:bg-primary/10"
-                >
-                  <Download size={14} /> Calendrier (PDF)
-                </a>
-              </div>
-            </div>
-
-            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Mon projet d'études&nbsp;: intégrer un BTS Communication en
-              alternance, puis poursuivre vers une formation spécialisée en
-              information-communication ou en journalisme. Je prépare ce BTS
-              avec l'école{" "}
-              <strong className="text-foreground">Talis de Périgueux</strong>{" "}
-              à partir de septembre 2026. Le BTS
-              Communication est un diplôme d'État Bac+2 (niveau 5, RNCP 37198)
-              préparé en 24 mois, dont environ{" "}
-              <strong className="text-foreground">65 % du temps en entreprise</strong>.
-            </p>
-
-            <div className="mt-5 grid gap-3 sm:grid-cols-3">
-              {[
-                { k: "Durée", v: "24 mois" },
-                { k: "Volume", v: "1 351 h de formation" },
-                { k: "Rythme", v: "≈ 35 % école · 65 % entreprise" },
-              ].map((s) => (
-                <div key={s.k} className="rounded-xl border border-border bg-background p-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                    {s.k}
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-foreground">{s.v}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 grid gap-6 md:grid-cols-2">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                  Blocs de compétences
-                </p>
-                <ul className="mt-2 space-y-1.5 text-sm text-foreground/90">
-                  <li>• Élaboration et pilotage de la stratégie de communication</li>
-                  <li>• Conception et mise en œuvre des solutions de communication</li>
-                  <li>• Solutions media et digitales innovantes</li>
-                  <li>• Culture de la communication, langue vivante, CEJM</li>
-                </ul>
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                  Planning prévisionnel
-                </p>
-                <ul className="mt-2 space-y-1.5 text-sm text-foreground/90">
-                  <li>• Rentrée septembre 2026 · promotion 2028</li>
-                  <li>• Année 1 (2026-2027) : 676 h — pics d'école oct., nov., mai</li>
-                  <li>• Année 2 (2027-2028) : 675 h — examens printemps 2028</li>
-                  <li>• Reste du temps : en entreprise, avec suivi tuteur</li>
-                </ul>
-              </div>
-            </div>
-
-            <p className="mt-6 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              École de formation
-            </p>
-            <div className="mt-3 grid gap-3 md:grid-cols-2">
-              <a
-                href="https://www.talis.community/campus/perigueux/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex items-center gap-4 rounded-xl border border-border bg-background p-4 transition-shadow hover:shadow-sm"
-              >
-                <img
-                  src={talisLogo}
-                  alt="Logo Talis Business School"
-                  width={40}
-                  height={40}
-                  className="h-10 w-auto shrink-0 object-contain"
-                  loading="lazy"
-                />
-                <div className="flex-1">
-                  <p className="font-display text-sm font-semibold text-foreground group-hover:text-primary">
-                    Talis
-                  </p>
-                  <p className="text-xs text-muted-foreground">Campus Périgueux</p>
-                </div>
-                <ExternalLink size={14} className="text-muted-foreground" />
-              </a>
-            </div>
-
-            <p className="mt-5 text-xs italic text-muted-foreground">
-              Source : documents officiels de l'école Talis — campus Périgueux.
-              Le calendrier détaillé jour par jour est disponible dans le PDF
-              « Calendrier ».
-            </p>
-
-            <p className="mt-6 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              En vidéo
-            </p>
-            <div className="mt-3">
-              <YouTubeEmbed
-                id="Bz5m7zzdYzs"
-                title="Présentation du BTS Communication"
-              />
-            </div>
-          </div>
-
-          <p className="mt-8 text-center text-sm italic text-muted-foreground">
-            Je privilégie une entreprise située à Sarlat ou dans un secteur
-            raisonnablement accessible en scooter.
-          </p>
-        </div>
-      </section>
-    </AnimatedSection>
   );
 }
 
@@ -817,7 +607,7 @@ function FormationSection() {
           <SectionHeader
             eyebrow="Études"
             title="Formation"
-            intro="Mon parcours actuel et mon projet de poursuite d'études en alternance."
+            intro="Mon parcours actuel et mon projet de poursuite d'études."
           />
 
           <div className="mt-12 space-y-6">
@@ -1296,7 +1086,6 @@ export function MyJourney() {
   return (
     <>
       <IntroSection />
-      <AlternanceSection />
       <CvSection />
       <EngagementsSection />
       <ToolsSection />
