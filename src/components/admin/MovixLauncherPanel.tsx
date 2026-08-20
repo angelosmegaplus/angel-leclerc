@@ -57,7 +57,7 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
       setEmbed(url);
       setFrameKey((value) => value + 1);
       showControlsBriefly();
-    }, 2800);
+    }, 3400);
   }
 
   useEffect(() => {
@@ -116,6 +116,14 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
         <div className="relative mx-auto flex h-24 w-24 items-center justify-center overflow-hidden animate-in zoom-in-50 fade-in duration-300"><span className="absolute text-[6.2rem] font-black leading-none tracking-[-.12em] text-white drop-shadow-[0_0_26px_rgba(239,68,68,.65)]">A</span><span className="absolute h-full w-[3px] -skew-x-12 bg-red-500 shadow-[0_0_18px_rgba(239,68,68,.9)] animate-pulse" /></div>
         <div className="mt-1 animate-in fade-in slide-in-from-bottom-2 duration-300 delay-150"><p className="text-[11px] font-semibold uppercase tracking-[.42em] text-white/45">Angel OS Films</p><h2 className="mt-3 text-xl font-semibold tracking-[-.04em] sm:text-2xl">Ouverture du lecteur Movix</h2><p className="mx-auto mt-2 max-w-sm text-[11px] leading-5 text-white/55 sm:text-xs">Un petit bandeau du navigateur peut apparaître : c’est normal, attendez quelques instants, il disparaîtra.</p><p className="mx-auto mt-1 max-w-sm text-[11px] font-semibold text-white/85 sm:text-xs">Ne cliquez pas sur Retour · fermez avec ✕.</p></div>
         <div className="mx-auto mt-4 h-[2px] w-24 overflow-hidden bg-white/10"><div className="h-full w-full origin-left bg-red-500 animate-[pulse_300ms_ease-in-out_infinite] shadow-[0_0_10px_rgba(239,68,68,.8)]" /></div>
+      </div>
+      <div className="absolute inset-x-0 bottom-8 flex flex-col items-center gap-2 text-center sm:bottom-10">
+        <p className="text-[11px] font-medium tracking-wide text-white/60">On recherche le bon domaine 👀</p>
+        <div className="flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full border border-red-300/30 bg-red-500/70 shadow-[0_0_12px_rgba(239,68,68,.65)] animate-bounce [animation-delay:0ms]" />
+          <span className="h-2.5 w-2.5 rounded-full border border-red-300/30 bg-red-500/70 shadow-[0_0_12px_rgba(239,68,68,.65)] animate-bounce [animation-delay:120ms]" />
+          <span className="h-2.5 w-2.5 rounded-full border border-red-300/30 bg-red-500/70 shadow-[0_0_12px_rgba(239,68,68,.65)] animate-bounce [animation-delay:240ms]" />
+        </div>
       </div>
       <div className="pointer-events-none absolute inset-0 animate-in fade-in duration-150 [background:linear-gradient(90deg,transparent_0%,rgba(255,255,255,.04)_45%,rgba(255,255,255,.14)_50%,rgba(255,255,255,.04)_55%,transparent_100%)]" />
     </div> : null}
