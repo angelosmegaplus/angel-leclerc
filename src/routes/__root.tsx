@@ -139,6 +139,7 @@ function RootComponent() {
   const isAngelOSPage = pathname === "/angel-os-ia";
   const isAdminPage = pathname === "/admin" || pathname.startsWith("/admin/") || pathname.startsWith("/admin-");
   const isStandaloneMoviesPage = pathname === "/films-series" || pathname === "/movies-auth";
+  const showFloatingContact = pathname === "/" || pathname === "/entreprise";
 
   useEffect(() => {
     void bootAngelOS().catch((error) => {
@@ -198,6 +199,14 @@ function RootComponent() {
             </main>
             <Footer />
           </div>
+        )}
+        {showFloatingContact && (
+          <a
+            href="/contact"
+            className="fixed inset-x-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-40 flex min-h-12 items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-lg md:hidden"
+          >
+            Me contacter
+          </a>
         )}
         {!isAngelOSPage && !isAdminPage && !isStandaloneMoviesPage && <CartDrawer />}
         <Toaster position="top-center" />
