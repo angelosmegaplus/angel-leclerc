@@ -6,7 +6,8 @@ const UPSTREAM_RAW =
   "https://raw.githubusercontent.com/movixcorp/MovixOpenSource/main/src/pages/help/MiroirsPage.tsx";
 const UPSTREAM_COMMITS =
   "https://api.github.com/repos/movixcorp/MovixOpenSource/commits?path=src/pages/help/MiroirsPage.tsx&per_page=1";
-const REFERENCE_URLS = ["https://movix.help/", "https://movix.online/"] as const;
+const RENTRY_REFERENCE = "https://rentry.co/movix/raw";
+const HELP_REFERENCE = "https://movix.help/";
 const TELEGRAM_PUBLIC = "https://t.me/s/movix_site";
 const SEARCH_URL = "https://html.duckduckgo.com/html/?q=Movix%20adresse%20officielle%20site%20streaming";
 
@@ -21,7 +22,7 @@ let lastKnownGoodUrl: string | null = null;
 export type MovixOfficialSource = {
   url: string;
   checkedAt: string;
-  source: "last_known" | "persisted" | "movix_help" | "movix_online" | "github" | "lovable_ai" | "fallback";
+  source: "last_known" | "rentry" | "movix_help" | "persisted" | "github" | "lovable_ai" | "fallback";
   upstreamSha: string | null;
   chain: string[];
   evidence?: string[];
@@ -60,7 +61,8 @@ async function probeUrl(raw: string) {
     });
     if (!response.ok) return null;
     const finalUrl = normalizeUrl(response.url) ?? normalized;
-    const body = (response.headers.get("content-type") || "").includes("text/html")
+    const body = (response.headers.get("content-type") || "").includes("text/html") ||
+      (response.headers.get("content-type") || "").includes("text/plain")
       ? await response.text()
       : "";
     return { finalUrl, body };
@@ -80,12 +82,6 @@ function extractCandidates(source: string) {
   return [...new Set(values)];
 }
 
-function extractOfficialUrl(source: string) {
-  const marker = source.indexOf("help.miroirs.officialListTitle");
-  const relevant = marker >= 0 ? source.slice(marker, marker + 4_000) : source;
-  return extractCandidates(relevant)[0] ?? null;
-}
-
 async function upstreamSha() {
   try {
     const response = await fetch(UPSTREAM_COMMITS, {
@@ -100,20 +96,29 @@ async function upstreamSha() {
   }
 }
 
-async function githubOfficialUrl() {
-  const response = await fetch(UPSTREAM_RAW, {
-    headers: { "User-Agent": "Angel-Movies-Movix-Link-Sync" },
-    cache: "no-store",
-    signal: AbortSignal.timeout(8_000),
-  });
-  if (!response.ok) return null;
-  return extractOfficialUrl(await response.text());
+async function githubCandidates() {
+  try {
+    const response = await fetch(UPSTREAM_RAW, {
+      headers: { "User-Agent": "Angel-Movies-Movix-Link-Sync" },
+      cache: "no-store",
+      signal: AbortSignal.timeout(8_000),
+    });
+    if (!response.ok) return [];
+    return extractCandidates(await response.text());
+  } catch {
+    return [];
+  }
+}
+
+async function candidatesFromReference(url: string) {
+  const reference = await probeUrl(url);
+  if (!reference) return [];
+  return extractCandidates(reference.body);
 }
 
 async function publicResearchEvidence() {
   const evidence: string[] = [];
-  const urls = [TELEGRAM_PUBLIC, SEARCH_URL];
-  for (const url of urls) {
+  for (const url of [TELEGRAM_PUBLIC, SEARCH_URL]) {
     try {
       const response = await fetch(url, {
         headers: { "User-Agent": "Angel-Movies-Movix-Research" },
@@ -136,8 +141,7 @@ function parseAiUrl(text: string) {
     const confidence = Number(parsed.confidence);
     return url && isMovixHost(url) && Number.isFinite(confidence) && confidence >= 0.75 ? url : null;
   } catch {
-    const url = extractCandidates(text)[0] ?? null;
-    return url;
+    return extractCandidates(text)[0] ?? null;
   }
 }
 
@@ -184,8 +188,16 @@ function buildValue(
     chain: [...chain],
     ...extra,
   };
-  cache = { expiresAt: now + 30 * 60_000, value };
+  cache = { expiresAt: now + 15 * 60_000, value };
   return value;
+}
+
+async function firstVerified(candidates: string[]) {
+  for (const candidate of candidates) {
+    const verified = await probeUrl(candidate);
+    if (verified && isMovixHost(verified.finalUrl)) return verified.finalUrl;
+  }
+  return null;
 }
 
 async function resolveMovixSource(): Promise<MovixOfficialSource> {
@@ -193,43 +205,43 @@ async function resolveMovixSource(): Promise<MovixOfficialSource> {
   if (cache && cache.expiresAt > now) return cache.value;
   const chain: string[] = [];
 
+  // 1. La liste d'adresses recommandée par le projet est consultée avant toute ancienne valeur locale.
+  chain.push("rentry");
+  const rentry = await firstVerified(await candidatesFromReference(RENTRY_REFERENCE));
+  if (rentry) return buildValue(rentry, "rentry", chain, now, { evidence: [RENTRY_REFERENCE] });
+
+  // 2. Vérification de la source GitHub officielle du projet.
+  chain.push("github");
+  const github = await firstVerified(await githubCandidates());
+  if (github) {
+    return buildValue(github, "github", chain, now, {
+      upstreamSha: await upstreamSha(),
+      evidence: [UPSTREAM_RAW],
+    });
+  }
+
+  // 3. Page d'aide officielle, sans forcer movix.online comme valeur par défaut.
+  chain.push("movix_help");
+  const help = await probeUrl(HELP_REFERENCE);
+  if (help) {
+    const fromHelp = await firstVerified(extractCandidates(help.body));
+    if (fromHelp) return buildValue(fromHelp, "movix_help", chain, now, { evidence: [HELP_REFERENCE] });
+  }
+
+  // 4. L'ancien domaine enregistré n'est désormais qu'un secours, jamais la priorité.
+  chain.push("persisted");
+  if (MOVIX_PERSISTED.url) {
+    const persisted = await probeUrl(MOVIX_PERSISTED.url);
+    if (persisted && isMovixHost(persisted.finalUrl)) {
+      return buildValue(persisted.finalUrl, "persisted", chain, now);
+    }
+  }
+
+  // 5. Dernier domaine réellement validé pendant la vie du serveur.
   if (lastKnownGoodUrl) {
     chain.push("last_known");
     const probe = await probeUrl(lastKnownGoodUrl);
-    if (probe) return buildValue(probe.finalUrl, "last_known", chain, now);
-  }
-
-  chain.push("persisted");
-  const persisted = await probeUrl(MOVIX_PERSISTED.url);
-  if (persisted) return buildValue(persisted.finalUrl, "persisted", chain, now);
-
-  for (const referenceUrl of REFERENCE_URLS) {
-    const source: MovixOfficialSource["source"] = referenceUrl.includes("movix.help") ? "movix_help" : "movix_online";
-    chain.push(source);
-    const reference = await probeUrl(referenceUrl);
-    if (!reference) continue;
-    const candidates = extractCandidates(reference.body);
-    for (const candidate of candidates) {
-      const verified = await probeUrl(candidate);
-      if (verified) return buildValue(verified.finalUrl, source, chain, now, { evidence: [referenceUrl] });
-    }
-    if (isMovixHost(reference.finalUrl)) return buildValue(reference.finalUrl, source, chain, now, { evidence: [referenceUrl] });
-  }
-
-  chain.push("github");
-  try {
-    const official = await githubOfficialUrl();
-    if (official) {
-      const verified = await probeUrl(official);
-      if (verified) {
-        return buildValue(verified.finalUrl, "github", chain, now, {
-          upstreamSha: await upstreamSha(),
-          evidence: [UPSTREAM_RAW],
-        });
-      }
-    }
-  } catch (error) {
-    console.error("[movix-source] github resolution failed", error);
+    if (probe && isMovixHost(probe.finalUrl)) return buildValue(probe.finalUrl, "last_known", chain, now);
   }
 
   chain.push("lovable_ai");
@@ -240,7 +252,8 @@ async function resolveMovixSource(): Promise<MovixOfficialSource> {
     console.error("[movix-source] Lovable AI research failed", error);
   }
 
-  const fallbackUrl = normalizeUrl(MOVIX_PERSISTED.url) || REFERENCE_URLS[0];
+  // Aucun domaine arbitraire n'est injecté : on conserve seulement une valeur enregistrée si elle existe.
+  const fallbackUrl = normalizeUrl(MOVIX_PERSISTED.url) || "";
   const value: MovixOfficialSource = {
     url: fallbackUrl,
     checkedAt: new Date(now).toISOString(),
@@ -248,7 +261,7 @@ async function resolveMovixSource(): Promise<MovixOfficialSource> {
     upstreamSha: null,
     chain: [...chain, "fallback"],
   };
-  cache = { expiresAt: now + 10 * 60_000, value };
+  cache = { expiresAt: now + 5 * 60_000, value };
   return value;
 }
 
