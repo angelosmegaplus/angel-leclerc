@@ -24,16 +24,27 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
   const [resolving, setResolving] = useState(false);
   const [testingOverride, setTestingOverride] = useState(false);
   const [overrideOk, setOverrideOk] = useState<boolean | null>(null);
+  const [controlsVisible, setControlsVisible] = useState(true);
   const transitionTimerRef = useRef<number | null>(null);
+  const controlsTimerRef = useRef<number | null>(null);
   const lastAutoOpenedRef = useRef<string | null>(null);
 
   useEffect(() => { try { const saved = normalize(localStorage.getItem(OVERRIDE_KEY) || ""); setOverride(saved); setDraftOverride(saved); } catch {} }, []);
-  useEffect(() => () => { if (transitionTimerRef.current) window.clearTimeout(transitionTimerRef.current); }, []);
+  useEffect(() => () => {
+    if (transitionTimerRef.current) window.clearTimeout(transitionTimerRef.current);
+    if (controlsTimerRef.current) window.clearTimeout(controlsTimerRef.current);
+  }, []);
   async function resolveOfficial() { setResolving(true); try { const source = await resolveOfficialSource(); if (source?.url) { setOfficial(source); return source.url; } return ""; } finally { setResolving(false); } }
   useEffect(() => { void resolveOfficial(); }, []);
 
   const activeBase = override || official?.url || "";
   const targetUrl = targetPath && activeBase ? withPath(activeBase, targetPath) : null;
+
+  function showControlsBriefly() {
+    setControlsVisible(true);
+    if (controlsTimerRef.current) window.clearTimeout(controlsTimerRef.current);
+    controlsTimerRef.current = window.setTimeout(() => setControlsVisible(false), 2200);
+  }
 
   function openIntegrated(url: string) {
     if (!url) return;
@@ -45,7 +56,8 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
       setPendingUrl(null);
       setEmbed(url);
       setFrameKey((value) => value + 1);
-    }, 1150);
+      showControlsBriefly();
+    }, 2800);
   }
 
   useEffect(() => {
@@ -75,13 +87,20 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
   async function saveOverride() { const value = normalize(draftOverride); if (!value) return; setTestingOverride(true); const ok = await testUrl(value); setTestingOverride(false); setOverrideOk(ok); if (!ok) return; setOverride(value); try { localStorage.setItem(OVERRIDE_KEY, value); } catch {} }
   async function clearOverride() { setOverride(""); setDraftOverride(""); setOverrideOk(null); try { localStorage.removeItem(OVERRIDE_KEY); } catch {} await resolveOfficial(); }
   async function verifyActive() { if (!activeBase) { await resolveOfficial(); return; } const ok = await testUrl(activeBase); if (ok) return; if (override) await clearOverride(); else await resolveOfficial(); }
-  async function closeIntegrated() { if (transitionTimerRef.current) window.clearTimeout(transitionTimerRef.current); setPendingUrl(null); setEmbed(null); await leaveCinemaMode(); }
+  async function closeIntegrated() {
+    if (transitionTimerRef.current) window.clearTimeout(transitionTimerRef.current);
+    if (controlsTimerRef.current) window.clearTimeout(controlsTimerRef.current);
+    setPendingUrl(null);
+    setEmbed(null);
+    setControlsVisible(true);
+    await leaveCinemaMode();
+  }
 
   return <>
     <section id="movix-launcher" className="mt-12 border-t border-white/10 pt-10">
       <div className="grid gap-6 lg:grid-cols-[1fr_1.15fr]">
         <div className="space-y-5">
-          <div><div className="flex items-center gap-2 text-red-300"><Globe2 className="h-5 w-5" /><span className="font-mono text-xs uppercase tracking-[.18em]">Angel Movies · Movix</span></div><h2 className="mt-2 text-3xl font-semibold tracking-[-.045em]">Lecture Movix</h2><p className="mt-2 text-sm leading-6 text-white/50">L’adresse active est résolue silencieusement. Le lecteur s’ouvre automatiquement après une très courte transition.</p>{targetLabel ? <div className="mt-3 rounded-xl border border-violet-400/20 bg-violet-400/10 p-4"><p className="text-sm text-violet-100">Lecture demandée : <strong>{targetLabel}</strong></p>{targetUrl ? <button type="button" onClick={() => openIntegrated(targetUrl)} className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white"><PlayIcon />Lecteur intégré</button> : <p className="mt-2 text-xs text-white/40">Préparation de la lecture…</p>}</div> : null}</div>
+          <div><div className="flex items-center gap-2 text-red-300"><Globe2 className="h-5 w-5" /><span className="font-mono text-xs uppercase tracking-[.18em]">Angel Movies · Movix</span></div><h2 className="mt-2 text-3xl font-semibold tracking-[-.045em]">Lecture Movix</h2><p className="mt-2 text-sm leading-6 text-white/50">L’adresse active est résolue silencieusement. Le lecteur s’ouvre automatiquement après une courte transition.</p>{targetLabel ? <div className="mt-3 rounded-xl border border-violet-400/20 bg-violet-400/10 p-4"><p className="text-sm text-violet-100">Lecture demandée : <strong>{targetLabel}</strong></p>{targetUrl ? <button type="button" onClick={() => openIntegrated(targetUrl)} className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white"><PlayIcon />Lecteur intégré</button> : <p className="mt-2 text-xs text-white/40">Préparation de la lecture…</p>}</div> : null}</div>
           <div className="rounded-2xl border border-white/10 bg-white/[.035] p-5"><p className="text-[10px] font-semibold uppercase tracking-[.18em] text-white/35">Adresse active</p><p className="mt-2 break-all font-mono text-base text-white/85">{activeBase || "Détection en cours…"}</p><p className="mt-2 text-[11px] text-white/35">Source : {override ? "adresse forcée" : sourceLabel(official?.source)}</p><div className="mt-4 grid gap-2 sm:grid-cols-2"><button type="button" disabled={!activeBase} onClick={() => activeBase && openIntegrated(activeBase)} className="rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white disabled:opacity-40">Lecteur intégré</button><button type="button" onClick={() => void verifyActive()} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm text-white/65"><RefreshCw className={`h-4 w-4 ${resolving ? "animate-spin" : ""}`} />Vérifier</button></div></div>
           <div className="rounded-2xl border border-white/10 bg-white/[.025] p-5"><h3 className="text-sm font-semibold">Changer manuellement le domaine</h3><input value={draftOverride} onChange={(e) => { setDraftOverride(e.target.value); setOverrideOk(null); }} placeholder="https://nouveau-domaine.example" className="mt-3 min-h-11 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-sm text-white outline-none" /><div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={() => void saveOverride()} disabled={testingOverride || !draftOverride.trim()} className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-black disabled:opacity-40"><Save className="h-4 w-4" />{testingOverride ? "Test…" : "Tester et utiliser"}</button>{override ? <button type="button" onClick={() => void clearOverride()} className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/55"><Trash2 className="h-4 w-4" />Retirer</button> : null}</div>{overrideOk === false ? <p className="mt-2 text-xs text-amber-300">Cette adresse ne répond pas.</p> : null}</div>
         </div>
@@ -94,22 +113,19 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
       <div className="absolute left-1/2 top-1/2 h-[120vmax] w-[8px] -translate-x-1/2 -translate-y-1/2 rotate-12 bg-gradient-to-b from-transparent via-red-500/80 to-transparent blur-sm animate-in zoom-in-50 fade-in duration-300" />
       <div className="absolute left-1/2 top-1/2 h-44 w-44 -translate-x-1/2 -translate-y-1/2 rounded-full border border-red-500/20 shadow-[0_0_100px_rgba(239,68,68,.24)] animate-ping" />
       <div className="relative mx-6 text-center">
-        <div className="relative mx-auto flex h-24 w-24 items-center justify-center overflow-hidden animate-in zoom-in-50 fade-in duration-300">
-          <span className="absolute text-[6.2rem] font-black leading-none tracking-[-.12em] text-white drop-shadow-[0_0_26px_rgba(239,68,68,.65)]">A</span>
-          <span className="absolute h-full w-[3px] -skew-x-12 bg-red-500 shadow-[0_0_18px_rgba(239,68,68,.9)] animate-pulse" />
-        </div>
-        <div className="mt-1 animate-in fade-in slide-in-from-bottom-2 duration-300 delay-150">
-          <p className="text-[11px] font-semibold uppercase tracking-[.42em] text-white/45">Angel OS Films</p>
-          <h2 className="mt-3 text-xl font-semibold tracking-[-.04em] sm:text-2xl">Ouverture du lecteur Movix</h2>
-          <p className="mx-auto mt-2 max-w-sm text-[11px] leading-5 text-white/55 sm:text-xs">Un petit bandeau du navigateur peut apparaître : c’est normal, attendez quelques instants, il disparaîtra.</p>
-          <p className="mx-auto mt-1 max-w-sm text-[11px] font-semibold text-white/85 sm:text-xs">Ne cliquez pas sur Retour · fermez avec ✕.</p>
-        </div>
+        <div className="relative mx-auto flex h-24 w-24 items-center justify-center overflow-hidden animate-in zoom-in-50 fade-in duration-300"><span className="absolute text-[6.2rem] font-black leading-none tracking-[-.12em] text-white drop-shadow-[0_0_26px_rgba(239,68,68,.65)]">A</span><span className="absolute h-full w-[3px] -skew-x-12 bg-red-500 shadow-[0_0_18px_rgba(239,68,68,.9)] animate-pulse" /></div>
+        <div className="mt-1 animate-in fade-in slide-in-from-bottom-2 duration-300 delay-150"><p className="text-[11px] font-semibold uppercase tracking-[.42em] text-white/45">Angel OS Films</p><h2 className="mt-3 text-xl font-semibold tracking-[-.04em] sm:text-2xl">Ouverture du lecteur Movix</h2><p className="mx-auto mt-2 max-w-sm text-[11px] leading-5 text-white/55 sm:text-xs">Un petit bandeau du navigateur peut apparaître : c’est normal, attendez quelques instants, il disparaîtra.</p><p className="mx-auto mt-1 max-w-sm text-[11px] font-semibold text-white/85 sm:text-xs">Ne cliquez pas sur Retour · fermez avec ✕.</p></div>
         <div className="mx-auto mt-4 h-[2px] w-24 overflow-hidden bg-white/10"><div className="h-full w-full origin-left bg-red-500 animate-[pulse_300ms_ease-in-out_infinite] shadow-[0_0_10px_rgba(239,68,68,.8)]" /></div>
       </div>
       <div className="pointer-events-none absolute inset-0 animate-in fade-in duration-150 [background:linear-gradient(90deg,transparent_0%,rgba(255,255,255,.04)_45%,rgba(255,255,255,.14)_50%,rgba(255,255,255,.04)_55%,transparent_100%)]" />
     </div> : null}
 
-    {embed ? <div className="fixed inset-0 z-[9999] h-[100dvh] w-screen overflow-hidden bg-black"><iframe key={frameKey} src={embed} title={`Movix Launcher — ${hostOf(embed)}`} referrerPolicy="no-referrer" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" sandbox="allow-forms allow-same-origin allow-scripts allow-presentation" className="absolute inset-0 h-full w-full border-0 bg-black" /><div className="absolute bottom-3 right-3 z-20 flex gap-2 sm:bottom-5 sm:right-5"><button type="button" onClick={() => setFrameKey((v) => v + 1)} className="rounded-full border border-white/15 bg-black/70 px-3 py-2 text-xs text-white/75 backdrop-blur-lg">Recharger</button><button type="button" onClick={() => void closeIntegrated()} aria-label="Fermer le lecteur" className="grid h-10 w-10 place-items-center rounded-full border border-white/15 bg-black/70 text-white backdrop-blur-lg"><X className="h-4 w-4" /></button></div></div> : null}
+    {embed ? <div onPointerDownCapture={showControlsBriefly} className="fixed inset-0 z-[9999] h-[100dvh] w-screen overflow-hidden bg-black"><iframe key={frameKey} src={embed} title={`Movix Launcher — ${hostOf(embed)}`} referrerPolicy="no-referrer" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" sandbox="allow-forms allow-same-origin allow-scripts allow-presentation" className="absolute inset-0 h-full w-full border-0 bg-black" />
+      <div className={`absolute bottom-3 right-3 z-20 flex items-center gap-2 transition-all duration-200 sm:bottom-5 sm:right-5 ${controlsVisible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0"}`}>
+        <button type="button" onClick={() => setFrameKey((v) => v + 1)} className="rounded-full border border-white/15 bg-black/65 px-2.5 py-1.5 text-[10px] text-white/70 backdrop-blur-lg">Recharger</button>
+        <button type="button" onClick={() => void closeIntegrated()} aria-label="Fermer le lecteur" className="grid h-8 w-8 place-items-center rounded-full border border-red-300/30 bg-black/70 text-white shadow-[0_0_16px_rgba(239,68,68,.65),0_0_32px_rgba(239,68,68,.25)] backdrop-blur-lg transition hover:scale-105"><X className="h-3.5 w-3.5" /></button>
+      </div>
+    </div> : null}
   </>;
 }
 
