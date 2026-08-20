@@ -57,7 +57,7 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
       setEmbed(url);
       setFrameKey((value) => value + 1);
       showControlsBriefly();
-    }, 3400);
+    }, 5500);
   }
 
   useEffect(() => {
