@@ -10,8 +10,8 @@ export type AngelNavigationTarget = {
 export const ANGEL_NAVIGATION_TARGETS: AngelNavigationTarget[] = [
   { tab: "dashboard", label: "Vue d'ensemble", detail: "Accueil de l'administration", aliases: ["accueil", "home", "tableau de bord", "aujourd'hui", "aperçu"], group: "Page" },
   { tab: "angel-ai", label: "Angel OS IA", detail: "Assistant et conversation privée", aliases: ["ia", "assistant", "discussion", "chat", "angel os ia"], group: "Page" },
-  { tab: "candidatures", label: "Candidatures", detail: "Alternance et suivi des candidatures", aliases: ["alternance", "emploi", "recrutement", "entreprises"], group: "Page" },
-  { tab: "candidatures", label: "Relances de candidatures", detail: "Candidatures à relancer et suivi des réponses", aliases: ["relances", "relancer entreprise", "sans réponse", "candidatures a relancer"], group: "Section", anchor: "relances" },
+  { tab: "candidatures", label: "Études & Travail", detail: "BTS Communication CNED, emploi, intérim, organisation et mobilité", aliases: ["études", "etudes", "cned", "bts", "bts communication", "travail", "emploi", "intérim", "interim", "mobilité", "mobilite", "planning"], group: "Page" },
+  { tab: "candidatures", label: "Archives des candidatures", detail: "Ancien historique des candidatures, conservé uniquement comme archive", aliases: ["anciennes candidatures", "archives candidatures", "historique alternance"], group: "Section", anchor: "archives" },
   { tab: "messages", label: "Messages", detail: "Demandes reçues depuis le site", aliases: ["messages", "contacts", "demandes reçues"], group: "Page" },
   { tab: "boite-mail", label: "Boîte mail", detail: "Mails et Gmail", aliases: ["mail", "email", "gmail", "courriels", "boite mail"], group: "Page" },
   { tab: "boite-mail", label: "Mails importants", detail: "Messages importants et réponses à traiter", aliases: ["mails importants", "emails importants", "réponses mails", "mail urgent"], group: "Section", anchor: "important" },
