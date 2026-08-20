@@ -5,6 +5,7 @@ import { getMovixOfficialSource, type MovixOfficialSource } from "@/lib/movix-so
 
 const OVERRIDE_KEY = "angel-movies-movix-override-v2";
 const LAST_KEY = "angel-movies-movix-launcher-last-v2";
+const TRANSITION_ASSET = "/media/angel-os-films-transition.b64";
 
 function normalize(raw: string) { const value = raw.trim(); if (!value) return ""; return /^https?:\/\//i.test(value) ? value : `https://${value}`; }
 function hostOf(url: string) { try { return new URL(url).host; } catch { return url; } }
@@ -12,12 +13,22 @@ function withPath(base: string, path: string) { try { const url = new URL(base);
 function sourceLabel(source?: MovixOfficialSource["source"]) { if (source === "last_known") return "dernier lien valide"; if (source === "persisted") return "lien automatisé enregistré"; if (source === "rentry") return "liste officielle Movix"; if (source === "movix_help") return "référence publique Movix"; if (source === "movix_online") return "movix.online"; if (source === "github") return "GitHub Movix"; if (source === "lovable_ai") return "recherche web IA Lovable"; if (source === "fallback") return "secours"; return "résolution automatique"; }
 async function leaveCinemaMode() {}
 
+function decodeTransition(base64: string) {
+  const clean = base64.replace(/\s+/g, "");
+  const binary = atob(clean);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+  return URL.createObjectURL(new Blob([bytes], { type: "video/mp4" }));
+}
+
 export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: string | null; targetLabel?: string | null } = {}) {
   const resolveOfficialSource = useServerFn(getMovixOfficialSource);
   const [official, setOfficial] = useState<MovixOfficialSource | null>(null);
   const [override, setOverride] = useState("");
   const [draftOverride, setDraftOverride] = useState("");
   const [embed, setEmbed] = useState<string | null>(null);
+  const [pendingTarget, setPendingTarget] = useState<string | null>(null);
+  const [transitionUrl, setTransitionUrl] = useState<string | null>(null);
   const [frameKey, setFrameKey] = useState(0);
   const [resolving, setResolving] = useState(false);
   const [testingOverride, setTestingOverride] = useState(false);
@@ -27,7 +38,23 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
   const lastAutoOpenedRef = useRef<string | null>(null);
 
   useEffect(() => { try { const saved = normalize(localStorage.getItem(OVERRIDE_KEY) || ""); setOverride(saved); setDraftOverride(saved); } catch {} }, []);
-  useEffect(() => () => { if (controlsTimerRef.current) window.clearTimeout(controlsTimerRef.current); }, []);
+  useEffect(() => {
+    let active = true;
+    let objectUrl = "";
+    void fetch(TRANSITION_ASSET, { cache: "force-cache" })
+      .then((response) => response.ok ? response.text() : Promise.reject(new Error("transition unavailable")))
+      .then((base64) => {
+        if (!active) return;
+        objectUrl = decodeTransition(base64);
+        setTransitionUrl(objectUrl);
+      })
+      .catch(() => setTransitionUrl(null));
+    return () => {
+      active = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      if (controlsTimerRef.current) window.clearTimeout(controlsTimerRef.current);
+    };
+  }, []);
 
   async function resolveOfficial() { setResolving(true); try { const source = await resolveOfficialSource(); if (source?.url) { setOfficial(source); return source.url; } return ""; } finally { setResolving(false); } }
   useEffect(() => { void resolveOfficial(); }, []);
@@ -41,12 +68,19 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
     controlsTimerRef.current = window.setTimeout(() => setControlsVisible(false), 2200);
   }
 
-  function openIntegrated(url: string) {
-    if (!url) return;
-    try { localStorage.setItem(LAST_KEY, url); } catch {}
+  function openPlayer(url: string) {
+    setPendingTarget(null);
     setEmbed(url);
     setFrameKey((value) => value + 1);
     showControlsBriefly();
+  }
+
+  function openIntegrated(url: string) {
+    if (!url) return;
+    try { localStorage.setItem(LAST_KEY, url); } catch {}
+    setEmbed(null);
+    if (transitionUrl) setPendingTarget(url);
+    else openPlayer(url);
   }
 
   useEffect(() => {
@@ -61,10 +95,10 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
       openIntegrated(withPath(base, targetPath));
     })();
     return () => { cancelled = true; };
-  }, [targetPath, override]);
+  }, [targetPath, override, transitionUrl]);
 
   useEffect(() => {
-    if (!embed) return;
+    if (!embed && !pendingTarget) return;
     const body = document.body;
     const scrollY = window.scrollY;
     const previous = { overflow: body.style.overflow, position: body.style.position, top: body.style.top, width: body.style.width };
@@ -79,25 +113,27 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
       body.style.width = previous.width;
       window.scrollTo({ top: scrollY, left: 0, behavior: "auto" });
     };
-  }, [embed]);
+  }, [embed, pendingTarget]);
 
   async function testUrl(url: string) { const value = normalize(url); if (!value) return false; try { const controller = new AbortController(); const timeout = window.setTimeout(() => controller.abort(), 7000); await fetch(value, { mode: "no-cors", signal: controller.signal, cache: "no-store" }); window.clearTimeout(timeout); return true; } catch { return false; } }
   async function saveOverride() { const value = normalize(draftOverride); if (!value) return; setTestingOverride(true); const ok = await testUrl(value); setTestingOverride(false); setOverrideOk(ok); if (!ok) return; setOverride(value); try { localStorage.setItem(OVERRIDE_KEY, value); } catch {} }
   async function clearOverride() { setOverride(""); setDraftOverride(""); setOverrideOk(null); try { localStorage.removeItem(OVERRIDE_KEY); } catch {} await resolveOfficial(); }
   async function verifyActive() { if (!activeBase) { await resolveOfficial(); return; } const ok = await testUrl(activeBase); if (ok) return; if (override) await clearOverride(); else await resolveOfficial(); }
-  async function closeIntegrated() { if (controlsTimerRef.current) window.clearTimeout(controlsTimerRef.current); setEmbed(null); setControlsVisible(true); await leaveCinemaMode(); }
+  async function closeIntegrated() { if (controlsTimerRef.current) window.clearTimeout(controlsTimerRef.current); setPendingTarget(null); setEmbed(null); setControlsVisible(true); await leaveCinemaMode(); }
 
   return <>
     <section id="movix-launcher" className="mt-12 border-t border-white/10 pt-10">
       <div className="grid gap-6 lg:grid-cols-[1fr_1.15fr]">
         <div className="space-y-5">
-          <div><div className="flex items-center gap-2 text-red-300"><Globe2 className="h-5 w-5" /><span className="font-mono text-xs uppercase tracking-[.18em]">Angel Movies · Movix</span></div><h2 className="mt-2 text-3xl font-semibold tracking-[-.045em]">Lecture Movix</h2><p className="mt-2 text-sm leading-6 text-white/50">L’adresse active est résolue silencieusement. Le lecteur s’ouvre directement au lancement.</p>{targetLabel ? <div className="mt-3 rounded-xl border border-violet-400/20 bg-violet-400/10 p-4"><p className="text-sm text-violet-100">Lecture demandée : <strong>{targetLabel}</strong></p>{targetUrl ? <button type="button" onClick={() => openIntegrated(targetUrl)} className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white"><PlayIcon />Lecteur intégré</button> : <p className="mt-2 text-xs text-white/40">Préparation de la lecture…</p>}</div> : null}</div>
+          <div><div className="flex items-center gap-2 text-red-300"><Globe2 className="h-5 w-5" /><span className="font-mono text-xs uppercase tracking-[.18em]">Angel Movies · Movix</span></div><h2 className="mt-2 text-3xl font-semibold tracking-[-.045em]">Lecture Movix</h2><p className="mt-2 text-sm leading-6 text-white/50">La transition Angel OS Films se lance automatiquement avant le lecteur.</p>{targetLabel ? <div className="mt-3 rounded-xl border border-violet-400/20 bg-violet-400/10 p-4"><p className="text-sm text-violet-100">Lecture demandée : <strong>{targetLabel}</strong></p>{targetUrl ? <button type="button" onClick={() => openIntegrated(targetUrl)} className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white"><PlayIcon />Lecteur intégré</button> : <p className="mt-2 text-xs text-white/40">Préparation de la lecture…</p>}</div> : null}</div>
           <div className="rounded-2xl border border-white/10 bg-white/[.035] p-5"><p className="text-[10px] font-semibold uppercase tracking-[.18em] text-white/35">Adresse active</p><p className="mt-2 break-all font-mono text-base text-white/85">{activeBase || "Détection en cours…"}</p><p className="mt-2 text-[11px] text-white/35">Source : {override ? "adresse forcée" : sourceLabel(official?.source)}</p><div className="mt-4 grid gap-2 sm:grid-cols-2"><button type="button" disabled={!activeBase} onClick={() => activeBase && openIntegrated(activeBase)} className="rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white disabled:opacity-40">Lecteur intégré</button><button type="button" onClick={() => void verifyActive()} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm text-white/65"><RefreshCw className={`h-4 w-4 ${resolving ? "animate-spin" : ""}`} />Vérifier</button></div></div>
           <div className="rounded-2xl border border-white/10 bg-white/[.025] p-5"><h3 className="text-sm font-semibold">Changer manuellement le domaine</h3><input value={draftOverride} onChange={(e) => { setDraftOverride(e.target.value); setOverrideOk(null); }} placeholder="https://nouveau-domaine.example" className="mt-3 min-h-11 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-sm text-white outline-none" /><div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={() => void saveOverride()} disabled={testingOverride || !draftOverride.trim()} className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-black disabled:opacity-40"><Save className="h-4 w-4" />{testingOverride ? "Test…" : "Tester et utiliser"}</button>{override ? <button type="button" onClick={() => void clearOverride()} className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/55"><Trash2 className="h-4 w-4" />Retirer</button> : null}</div>{overrideOk === false ? <p className="mt-2 text-xs text-amber-300">Cette adresse ne répond pas.</p> : null}</div>
         </div>
         <div id="movix-launcher-frame" className="rounded-2xl border border-white/10 bg-white/[.025] p-4 sm:p-5"><div className="flex items-center justify-between"><p className="text-xs font-semibold uppercase tracking-[.12em] text-white/35">Lecteur intégré</p>{embed ? <button type="button" onClick={() => openIntegrated(embed)} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60"><Maximize2 className="h-3.5 w-3.5" />Rouvrir</button> : null}</div><div className="mt-4 grid min-h-[360px] place-items-center rounded-xl border border-dashed border-white/10 bg-black/20 p-8 text-center text-sm text-white/30">Choisis un film ou une série.</div></div>
       </div>
     </section>
+
+    {pendingTarget && transitionUrl ? <div className="fixed inset-0 z-[10000] grid h-[100dvh] w-screen place-items-center overflow-hidden bg-black"><video key={pendingTarget} src={transitionUrl} autoPlay playsInline muted onEnded={() => openPlayer(pendingTarget)} onError={() => openPlayer(pendingTarget)} className="h-full w-full object-contain bg-black" /></div> : null}
 
     {embed ? <div onPointerDownCapture={showControlsBriefly} className="fixed inset-0 z-[9999] h-[100dvh] w-screen overflow-hidden bg-black"><iframe key={frameKey} src={embed} title={`Movix Launcher — ${hostOf(embed)}`} referrerPolicy="no-referrer" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" sandbox="allow-forms allow-same-origin allow-scripts allow-presentation" className="absolute inset-0 h-full w-full border-0 bg-black" />
       <div className={`absolute bottom-3 right-3 z-20 flex items-center gap-2 transition-all duration-200 sm:bottom-5 sm:right-5 ${controlsVisible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0"}`}>
