@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Globe2, Maximize2, RefreshCw, Save, Trash2, X } from "lucide-react";
+import { Globe2, Maximize2, Play, RefreshCw, Save, Trash2, X } from "lucide-react";
 import { getMovixOfficialSource, type MovixOfficialSource } from "@/lib/movix-source.functions";
 
 const OVERRIDE_KEY = "angel-movies-movix-override-v2";
@@ -127,6 +127,12 @@ export function MovixLauncherPanel({
     setFrameKey((value) => value + 1);
   }
 
+  async function launchMovix() {
+    const base = activeBase || (await resolveOfficial());
+    if (!base) return;
+    openPlayer(base);
+  }
+
   useEffect(() => {
     if (!targetPath) return;
     const requestKey = `${targetPath}|${override}`;
@@ -229,6 +235,20 @@ export function MovixLauncherPanel({
 
   return (
     <>
+      {!embed ? (
+        <button
+          type="button"
+          onClick={() => void launchMovix()}
+          disabled={resolving && !activeBase}
+          className="fixed right-16 top-3 z-40 inline-flex h-10 items-center gap-2 rounded-full border border-red-400/30 bg-[#111]/90 px-3.5 text-xs font-semibold text-white shadow-xl backdrop-blur-xl transition hover:bg-red-500 disabled:cursor-wait disabled:opacity-60 sm:right-20 sm:px-4"
+          aria-label="Lancer Movix en plein écran"
+        >
+          {resolving && !activeBase ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4 fill-current" />}
+          <span className="hidden sm:inline">Lancer Movix</span>
+          <span className="sm:hidden">Movix</span>
+        </button>
+      ) : null}
+
       <section id="movix-launcher" className="mt-12 border-t border-white/10 pt-10">
         <div className="grid gap-6 lg:grid-cols-[1fr_1.15fr]">
           <div className="space-y-5">
@@ -289,10 +309,10 @@ export function MovixLauncherPanel({
 
       {embed ? (
         <div className="fixed inset-0 z-[9999] h-[100dvh] w-screen overflow-hidden bg-black">
-          <iframe key={frameKey} src={embed} title={`Movix Launcher — ${hostOf(embed)}`} referrerPolicy="no-referrer" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" sandbox="allow-forms allow-same-origin allow-scripts allow-presentation" className="absolute inset-0 h-full w-full border-0 bg-black" />
+          <iframe key={frameKey} src={embed} title={`Movix — ${hostOf(embed)}`} referrerPolicy="no-referrer" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" sandbox="allow-forms allow-same-origin allow-scripts allow-presentation" className="absolute inset-0 h-full w-full border-0 bg-black" />
           <div className="absolute bottom-3 right-3 z-20 flex items-center gap-2 sm:bottom-5 sm:right-5">
-            <button type="button" onClick={() => setFrameKey((value) => value + 1)} className="rounded-full border border-white/15 bg-black/65 px-2.5 py-1.5 text-[10px] text-white/70 backdrop-blur-lg">Recharger</button>
-            <button type="button" onClick={() => void closeIntegrated()} aria-label="Fermer le lecteur" className="grid h-8 w-8 place-items-center rounded-full border border-red-300/30 bg-black/70 text-white shadow-[0_0_16px_rgba(239,68,68,.65),0_0_32px_rgba(239,68,68,.25)] backdrop-blur-lg transition hover:scale-105"><X className="h-3.5 w-3.5" /></button>
+            <button type="button" onClick={() => setFrameKey((value) => value + 1)} className="rounded-full border border-white/15 bg-black/65 px-2.5 py-1.5 text-[10px] text-white/70 shadow-lg backdrop-blur-lg">Recharger</button>
+            <button type="button" onClick={() => void closeIntegrated()} aria-label="Quitter Movix" className="grid h-9 w-9 place-items-center rounded-full border border-red-300/30 bg-black/70 text-white shadow-[0_0_16px_rgba(239,68,68,.65),0_0_32px_rgba(239,68,68,.25)] backdrop-blur-lg transition hover:scale-105"><X className="h-4 w-4" /></button>
           </div>
         </div>
       ) : null}
