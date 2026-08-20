@@ -29,6 +29,10 @@ const COMPACT_NAV: CompactDefinition[] = [
   { key: "systeme", label: "Système", description: "Connexions, alertes et communauté", source: "connexions", children: ["connexions", "notifications", "abonnes", "avis", "parametres"] },
 ];
 
+function adminDisplayLabel(key: string, label: string) {
+  return key === "candidatures" ? "Études & Travail" : label;
+}
+
 export function AdminShell({ items, active, onSelect, title, actions, children }: {
   items: AdminNavItem[];
   active: string;
@@ -166,6 +170,7 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
   const currentItem = items.find((item) => item.key === active);
   const CurrentIcon = currentItem?.icon;
   const isDashboard = active === "dashboard";
+  const displayTitle = adminDisplayLabel(active, title);
 
   return (
     <div className="relative isolate min-h-[100dvh] w-full overflow-x-hidden bg-background text-foreground transition-colors lg:flex" style={{ fontFamily: '"Inter", system-ui, sans-serif' }} data-admin-theme={theme}>
@@ -198,7 +203,7 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
               </div>
               <div className="mt-1.5 flex min-w-0 items-center gap-2 sm:mt-2">
                 {CurrentIcon ? <span className="hidden h-10 w-10 shrink-0 place-items-center rounded-xl border border-red-300/60 bg-red-500/10 text-red-600 dark:text-red-400 sm:grid"><CurrentIcon className="h-5 w-5" /></span> : null}
-                <h1 className="min-w-0 truncate text-[1.35rem] font-semibold leading-none tracking-[-0.04em] text-foreground sm:text-[2.2rem]">{title}</h1>
+                <h1 className="min-w-0 truncate text-[1.35rem] font-semibold leading-none tracking-[-0.04em] text-foreground sm:text-[2.2rem]">{displayTitle}</h1>
               </div>
             </div>
             <div className="hidden shrink-0 items-center gap-2 sm:flex [&_button]:rounded-xl [&_a]:rounded-xl [&_button]:border-border [&_a]:border-border [&_button]:bg-card [&_a]:bg-card [&_button]:text-foreground [&_a]:text-foreground [&_[aria-label='Recherche_globale']]:hidden">
@@ -215,11 +220,12 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
               {sectionItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = item.key === active;
+                const displayLabel = adminDisplayLabel(item.key, item.label);
                 return (
                   <button key={item.key} type="button" onClick={() => onSelect(item.key)} aria-current={isActive ? "page" : undefined}
                     className={`flex min-h-10 shrink-0 items-center gap-2 rounded-xl border px-3 text-sm font-medium transition-colors ${isActive ? "border-red-300/60 bg-red-500/10 text-red-700 dark:text-red-300" : "border-border bg-card text-muted-foreground hover:border-red-300/60 hover:text-foreground"}`}>
                     <Icon className="h-4 w-4" />
-                    <span>{item.label}</span>
+                    <span>{displayLabel}</span>
                     {(item.badge ?? 0) > 0 ? <span className="rounded-full bg-red-500/15 px-1.5 py-0.5 text-[10px] font-bold text-red-700 dark:text-red-300">{item.badge}</span> : null}
                   </button>
                 );
