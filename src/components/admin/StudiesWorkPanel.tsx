@@ -1,4 +1,13 @@
-import { BookOpen, Briefcase, CalendarDays, GraduationCap, PiggyBank, Route, WalletCards } from "lucide-react";
+import {
+  BookOpen,
+  Briefcase,
+  CalendarDays,
+  GraduationCap,
+  PiggyBank,
+  Route,
+  WalletCards,
+  type LucideIcon,
+} from "lucide-react";
 import { AdminCard } from "./AdminShell";
 
 const week = [
@@ -22,6 +31,41 @@ const studyDay = [
   ["16h30–17h30", "Devoirs CNED / exercices / révisions"],
 ] as const;
 
+const overview: Array<{ label: string; value: string; icon: LucideIcon }> = [
+  { label: "Études", value: "BTS Communication — CNED", icon: GraduationCap },
+  { label: "Travail", value: "Intérim / CDD — 3 jours consécutifs", icon: Briefcase },
+  { label: "Mobilité", value: "Scooter Mission Locale ou vélo", icon: Route },
+  { label: "Priorité", value: "Revenu + progression + épargne", icon: PiggyBank },
+];
+
+const priorities: Array<{ title: string; detail: string; icon: LucideIcon }> = [
+  {
+    title: "Revenu",
+    detail: "Trouver des missions d'intérim puis, si possible, un poste stable compatible avec 3 jours de travail consécutifs.",
+    icon: WalletCards,
+  },
+  {
+    title: "CNED",
+    detail: "Tenir les deux journées de cours et suivre devoirs, progression, stages et échéances.",
+    icon: BookOpen,
+  },
+  {
+    title: "Mobilité",
+    detail: "Voir la Mission Locale pour un scooter ; vélo en solution de repli.",
+    icon: Route,
+  },
+  {
+    title: "Épargne",
+    detail: "Profiter des charges faibles actuelles pour construire une réserve avant le prochain logement.",
+    icon: PiggyBank,
+  },
+  {
+    title: "Organisation",
+    detail: "Inscrire missions, stages, cours et rendez-vous dans l'agenda dès qu'ils sont connus.",
+    icon: CalendarDays,
+  },
+];
+
 function tone(kind: (typeof week)[number][2]) {
   if (kind === "work") return "border-sky-200/70 bg-sky-50/60 dark:border-sky-900/60 dark:bg-sky-950/20";
   if (kind === "study") return "border-violet-200/70 bg-violet-50/60 dark:border-violet-900/60 dark:bg-violet-950/20";
@@ -37,13 +81,8 @@ export function StudiesWorkPanel() {
         description="Piloter le BTS Communication au CNED, le travail, la mobilité et la stabilité financière depuis un seul endroit."
       >
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            ["Études", "BTS Communication — CNED", GraduationCap],
-            ["Travail", "Intérim / CDD — 3 jours consécutifs", Briefcase],
-            ["Mobilité", "Scooter Mission Locale ou vélo", Route],
-            ["Priorité", "Revenu + progression + épargne", PiggyBank],
-          ].map(([label, value, Icon]) => (
-            <div key={String(label)} className="rounded-xl border border-border/70 bg-background p-3">
+          {overview.map(({ label, value, icon: Icon }) => (
+            <div key={label} className="rounded-xl border border-border/70 bg-background p-3">
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                 <Icon className="h-4 w-4" /> {label}
               </div>
@@ -81,14 +120,8 @@ export function StudiesWorkPanel() {
 
         <AdminCard title="Priorités opérationnelles" description="Ce qui doit être sécurisé en premier.">
           <div className="space-y-3">
-            {[
-              [WalletCards, "Revenu", "Trouver des missions d'intérim puis, si possible, un poste stable compatible avec 3 jours de travail consécutifs."],
-              [BookOpen, "CNED", "Tenir les deux journées de cours et suivre devoirs, progression, stages et échéances."],
-              [Route, "Mobilité", "Voir la Mission Locale pour un scooter ; vélo en solution de repli."],
-              [PiggyBank, "Épargne", "Profiter des charges faibles actuelles pour construire une réserve avant le prochain logement."],
-              [CalendarDays, "Organisation", "Inscrire missions, stages, cours et rendez-vous dans l'agenda dès qu'ils sont connus."],
-            ].map(([Icon, title, detail]) => (
-              <div key={String(title)} className="flex gap-3 rounded-xl border border-border/70 bg-background p-3">
+            {priorities.map(({ icon: Icon, title, detail }) => (
+              <div key={title} className="flex gap-3 rounded-xl border border-border/70 bg-background p-3">
                 <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                 <div>
                   <p className="text-sm font-semibold text-foreground">{title}</p>
