@@ -39,10 +39,5 @@ function FilmSeriesRoute() {
     );
   }
 
-  return (
-    <>
-      <FilmSeriesAccountPage />
-      <ProtonVpnBanner />
-    </>
-  );
+  return <FilmSeriesAccountPage />;
 }
