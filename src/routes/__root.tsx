@@ -15,7 +15,6 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { bootAngelOS } from "../lib/angel-os-runtime";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
-import { ApprenticeshipBanner } from "../components/ApprenticeshipBanner";
 import { Toaster } from "../components/ui/sonner";
 import { NotFound404 } from "../components/NotFound404";
 import { PageViewTracker } from "../components/PageViewTracker";
@@ -159,7 +158,6 @@ function RootComponent() {
           </main>
         ) : (
           <div className="flex min-h-screen flex-col">
-            <ApprenticeshipBanner />
             <Header />
             <main className="flex-1">
               <Outlet />
