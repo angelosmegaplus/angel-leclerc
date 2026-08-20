@@ -1,15 +1,9 @@
-import { lazy, Suspense } from "react";
-import { ClientOnly } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-const MobilityMap = lazy(() => import("@/components/MobilityMap"));
 import {
-  MapPin,
-  Bike,
   Calendar,
   Download,
   Sparkles,
   Briefcase,
-  GraduationCap,
   Award,
   HeartHandshake,
   Wrench,
