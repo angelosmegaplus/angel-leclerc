@@ -80,7 +80,7 @@ export const getLiveFilmCatalog = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<LiveFilmCatalogResult> => {
     try {
       if (data.query.length >= 2) {
-        const response = await filmContent.search({ q: data.query, type: data.mediaType, page: data.page }) as Page;
+        const response = await filmContent.search({ q: data.query, type: data.mediaType === "all" ? "multi" : data.mediaType, page: data.page }) as Page;
         const fallbackType: FilmMediaType = data.mediaType === "tv" ? "tv" : "movie";
         const items = (response.results ?? [])
           .filter((raw) => raw.media_type !== "person")
