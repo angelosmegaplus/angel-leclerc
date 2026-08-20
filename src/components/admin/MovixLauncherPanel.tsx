@@ -49,6 +49,23 @@ function sourceLabel(source?: MovixOfficialSource["source"]) {
 
 async function leaveCinemaMode() {}
 
+function updateBannerDomain(url: string) {
+  if (!url || typeof document === "undefined") return;
+  const domain = hostOf(url);
+  const status = Array.from(document.querySelectorAll("span")).find((node) =>
+    node.textContent?.includes("On recherche le bon domaine"),
+  ) as HTMLElement | undefined;
+  if (!status) return;
+  status.textContent = `Domaine actuel : ${domain}`;
+  const wrapper = status.parentElement;
+  if (!wrapper) return;
+  Array.from(wrapper.children).forEach((child) => {
+    if (child !== status && child instanceof HTMLElement && child.className.includes("animate-bounce")) {
+      child.style.display = "none";
+    }
+  });
+}
+
 export function MovixLauncherPanel({
   targetPath,
   targetLabel,
@@ -81,6 +98,7 @@ export function MovixLauncherPanel({
       const source = await resolveOfficialSource();
       if (source?.url) {
         setOfficial(source);
+        updateBannerDomain(source.url);
         return source.url;
       }
       return "";
@@ -95,6 +113,10 @@ export function MovixLauncherPanel({
 
   const activeBase = override || official?.url || "";
   const targetUrl = targetPath && activeBase ? withPath(activeBase, targetPath) : null;
+
+  useEffect(() => {
+    if (activeBase) updateBannerDomain(activeBase);
+  }, [activeBase]);
 
   function openPlayer(url: string) {
     if (!url) return;
@@ -153,11 +175,7 @@ export function MovixLauncherPanel({
     try {
       const controller = new AbortController();
       const timeout = window.setTimeout(() => controller.abort(), 7000);
-      await fetch(value, {
-        mode: "no-cors",
-        signal: controller.signal,
-        cache: "no-store",
-      });
+      await fetch(value, { mode: "no-cors", signal: controller.signal, cache: "no-store" });
       window.clearTimeout(timeout);
       return true;
     } catch {
@@ -174,6 +192,7 @@ export function MovixLauncherPanel({
     setOverrideOk(ok);
     if (!ok) return;
     setOverride(value);
+    updateBannerDomain(value);
     try {
       localStorage.setItem(OVERRIDE_KEY, value);
     } catch {}
@@ -195,7 +214,10 @@ export function MovixLauncherPanel({
       return;
     }
     const ok = await testUrl(activeBase);
-    if (ok) return;
+    if (ok) {
+      updateBannerDomain(activeBase);
+      return;
+    }
     if (override) await clearOverride();
     else await resolveOfficial();
   }
@@ -220,20 +242,12 @@ export function MovixLauncherPanel({
 
               {targetLabel ? (
                 <div className="mt-3 rounded-xl border border-violet-400/20 bg-violet-400/10 p-4">
-                  <p className="text-sm text-violet-100">
-                    Lecture demandée : <strong>{targetLabel}</strong>
-                  </p>
+                  <p className="text-sm text-violet-100">Lecture demandée : <strong>{targetLabel}</strong></p>
                   {targetUrl ? (
-                    <button
-                      type="button"
-                      onClick={() => openPlayer(targetUrl)}
-                      className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white"
-                    >
+                    <button type="button" onClick={() => openPlayer(targetUrl)} className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white">
                       <PlayIcon /> Lecteur intégré
                     </button>
-                  ) : (
-                    <p className="mt-2 text-xs text-white/40">Préparation de la lecture…</p>
-                  )}
+                  ) : <p className="mt-2 text-xs text-white/40">Préparation de la lecture…</p>}
                 </div>
               ) : null}
             </div>
@@ -243,19 +257,8 @@ export function MovixLauncherPanel({
               <p className="mt-2 break-all font-mono text-base text-white/85">{activeBase || "Détection en cours…"}</p>
               <p className="mt-2 text-[11px] text-white/35">Source : {override ? "adresse forcée" : sourceLabel(official?.source)}</p>
               <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                <button
-                  type="button"
-                  disabled={!activeBase}
-                  onClick={() => activeBase && openPlayer(activeBase)}
-                  className="rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white disabled:opacity-40"
-                >
-                  Lecteur intégré
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void verifyActive()}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm text-white/65"
-                >
+                <button type="button" disabled={!activeBase} onClick={() => activeBase && openPlayer(activeBase)} className="rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white disabled:opacity-40">Lecteur intégré</button>
+                <button type="button" onClick={() => void verifyActive()} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm text-white/65">
                   <RefreshCw className={`h-4 w-4 ${resolving ? "animate-spin" : ""}`} /> Vérifier
                 </button>
               </div>
@@ -263,33 +266,12 @@ export function MovixLauncherPanel({
 
             <div className="rounded-2xl border border-white/10 bg-white/[.025] p-5">
               <h3 className="text-sm font-semibold">Changer manuellement le domaine</h3>
-              <input
-                value={draftOverride}
-                onChange={(event) => {
-                  setDraftOverride(event.target.value);
-                  setOverrideOk(null);
-                }}
-                placeholder="https://nouveau-domaine.example"
-                className="mt-3 min-h-11 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-sm text-white outline-none"
-              />
+              <input value={draftOverride} onChange={(event) => { setDraftOverride(event.target.value); setOverrideOk(null); }} placeholder="https://nouveau-domaine.example" className="mt-3 min-h-11 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-sm text-white outline-none" />
               <div className="mt-3 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => void saveOverride()}
-                  disabled={testingOverride || !draftOverride.trim()}
-                  className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-black disabled:opacity-40"
-                >
+                <button type="button" onClick={() => void saveOverride()} disabled={testingOverride || !draftOverride.trim()} className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-black disabled:opacity-40">
                   <Save className="h-4 w-4" /> {testingOverride ? "Test…" : "Tester et utiliser"}
                 </button>
-                {override ? (
-                  <button
-                    type="button"
-                    onClick={() => void clearOverride()}
-                    className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/55"
-                  >
-                    <Trash2 className="h-4 w-4" /> Retirer
-                  </button>
-                ) : null}
+                {override ? <button type="button" onClick={() => void clearOverride()} className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/55"><Trash2 className="h-4 w-4" /> Retirer</button> : null}
               </div>
               {overrideOk === false ? <p className="mt-2 text-xs text-amber-300">Cette adresse ne répond pas.</p> : null}
             </div>
@@ -298,51 +280,19 @@ export function MovixLauncherPanel({
           <div id="movix-launcher-frame" className="rounded-2xl border border-white/10 bg-white/[.025] p-4 sm:p-5">
             <div className="flex items-center justify-between">
               <p className="text-xs font-semibold uppercase tracking-[.12em] text-white/35">Lecteur intégré</p>
-              {embed ? (
-                <button
-                  type="button"
-                  onClick={() => openPlayer(embed)}
-                  className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60"
-                >
-                  <Maximize2 className="h-3.5 w-3.5" /> Rouvrir
-                </button>
-              ) : null}
+              {embed ? <button type="button" onClick={() => openPlayer(embed)} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60"><Maximize2 className="h-3.5 w-3.5" /> Rouvrir</button> : null}
             </div>
-            <div className="mt-4 grid min-h-[360px] place-items-center rounded-xl border border-dashed border-white/10 bg-black/20 p-8 text-center text-sm text-white/30">
-              Choisis un film ou une série.
-            </div>
+            <div className="mt-4 grid min-h-[360px] place-items-center rounded-xl border border-dashed border-white/10 bg-black/20 p-8 text-center text-sm text-white/30">Choisis un film ou une série.</div>
           </div>
         </div>
       </section>
 
       {embed ? (
         <div className="fixed inset-0 z-[9999] h-[100dvh] w-screen overflow-hidden bg-black">
-          <iframe
-            key={frameKey}
-            src={embed}
-            title={`Movix Launcher — ${hostOf(embed)}`}
-            referrerPolicy="no-referrer"
-            allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-            sandbox="allow-forms allow-same-origin allow-scripts allow-presentation"
-            className="absolute inset-0 h-full w-full border-0 bg-black"
-          />
-
+          <iframe key={frameKey} src={embed} title={`Movix Launcher — ${hostOf(embed)}`} referrerPolicy="no-referrer" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" sandbox="allow-forms allow-same-origin allow-scripts allow-presentation" className="absolute inset-0 h-full w-full border-0 bg-black" />
           <div className="absolute bottom-3 right-3 z-20 flex items-center gap-2 sm:bottom-5 sm:right-5">
-            <button
-              type="button"
-              onClick={() => setFrameKey((value) => value + 1)}
-              className="rounded-full border border-white/15 bg-black/65 px-2.5 py-1.5 text-[10px] text-white/70 backdrop-blur-lg"
-            >
-              Recharger
-            </button>
-            <button
-              type="button"
-              onClick={() => void closeIntegrated()}
-              aria-label="Fermer le lecteur"
-              className="grid h-8 w-8 place-items-center rounded-full border border-red-300/30 bg-black/70 text-white shadow-[0_0_16px_rgba(239,68,68,.65),0_0_32px_rgba(239,68,68,.25)] backdrop-blur-lg transition hover:scale-105"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
+            <button type="button" onClick={() => setFrameKey((value) => value + 1)} className="rounded-full border border-white/15 bg-black/65 px-2.5 py-1.5 text-[10px] text-white/70 backdrop-blur-lg">Recharger</button>
+            <button type="button" onClick={() => void closeIntegrated()} aria-label="Fermer le lecteur" className="grid h-8 w-8 place-items-center rounded-full border border-red-300/30 bg-black/70 text-white shadow-[0_0_16px_rgba(239,68,68,.65),0_0_32px_rgba(239,68,68,.25)] backdrop-blur-lg transition hover:scale-105"><X className="h-3.5 w-3.5" /></button>
           </div>
         </div>
       ) : null}
@@ -351,9 +301,5 @@ export function MovixLauncherPanel({
 }
 
 function PlayIcon() {
-  return (
-    <span aria-hidden="true" className="text-sm">
-      ▶
-    </span>
-  );
+  return <span aria-hidden="true" className="text-sm">▶</span>;
 }
