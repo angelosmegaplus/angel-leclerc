@@ -10,7 +10,7 @@ import { FILM_CATALOG } from "@/lib/film-catalog";
 import { getFilmProviderHealth } from "@/lib/film-health.functions";
 import { getLiveFilmCatalog } from "@/lib/film-live.functions";
 import { hydrateTasteProfile, saveCloudTasteSignal } from "@/lib/film-taste.cloud";
-import { loadTasteSignals, signalForCandidate, upsertTasteSignal } from "@/lib/film-taste.client";
+import { loadTasteSignals, signalForCandidate, upsertTasteSignal } from "@/lib/film-taste.browser";
 import { buildTasteProfile, confidenceFor, scoreCandidate, selectDailyRecommendations, type RecommendationCandidate, type ViewingSignal } from "@/lib/film-recommendations";
 
 type Filter = "all" | "movie" | "tv";
