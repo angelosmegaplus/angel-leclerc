@@ -26,7 +26,6 @@ import { playRetroSound } from "@/lib/retro-sounds";
 
 const KINDS: { key: string; label: string; help: string }[] = [
   { key: "task", label: "Tâches en retard", help: "Échéance dépassée dans Projets." },
-  { key: "application", label: "Candidatures à relancer", help: "Date de relance atteinte." },
   { key: "message", label: "Nouveaux messages", help: "Demandes de contact non lues." },
   { key: "ai", label: "Actions Angel AI terminées", help: "File d'actions résolue." },
   { key: "connection", label: "Problèmes de connexion", help: "Compte externe à réautoriser." },
@@ -102,7 +101,6 @@ export function NotificationsPanel() {
     },
   });
 
-  // Vérification des évènements réels à l'ouverture du centre de notifications.
   useEffect(() => {
     syncMutation.mutate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -114,7 +112,7 @@ export function NotificationsPanel() {
   });
 
   const visible = useMemo(
-    () => items.filter((n: Row) => prefs[str(n, "kind")] !== false),
+    () => items.filter((n: Row) => str(n, "kind") !== "application" && prefs[str(n, "kind")] !== false),
     [items, prefs],
   );
   const unread = visible.filter((n) => n["is_read"] !== true);
@@ -225,8 +223,7 @@ export function NotificationsPanel() {
         {!swAvailable && (
           <p className="mt-2 text-xs text-muted-foreground">
             <Smartphone className="mr-1 inline h-3.5 w-3.5" />
-            Le mode application installée (écran d'accueil Android) offre les notifications les plus
-            fiables. Sur l'aperçu de développement, le service worker est volontairement désactivé.
+            Le mode application installée (écran d'accueil Android) offre les notifications les plus fiables. Sur l'aperçu de développement, le service worker est volontairement désactivé.
           </p>
         )}
       </AdminCard>
@@ -234,81 +231,39 @@ export function NotificationsPanel() {
       <AdminCard title="Préférences" description="Choisissez les évènements qui vous alertent.">
         <ul className="grid gap-2 sm:grid-cols-2">
           {KINDS.map((k) => (
-            <li
-              key={k.key}
-              className="flex items-start justify-between gap-3 rounded-xl border border-border bg-background p-3"
-            >
+            <li key={k.key} className="flex items-start justify-between gap-3 rounded-xl border border-border bg-background p-3">
               <div className="min-w-0">
                 <p className="text-sm font-medium text-foreground">{k.label}</p>
                 <p className="text-xs text-muted-foreground">{k.help}</p>
               </div>
-              <Switch
-                checked={prefs[k.key] !== false}
-                onCheckedChange={(v) => togglePref(k.key, v)}
-                aria-label={k.label}
-              />
+              <Switch checked={prefs[k.key] !== false} onCheckedChange={(v) => togglePref(k.key, v)} aria-label={k.label} />
             </li>
           ))}
         </ul>
       </AdminCard>
 
-      <AdminCard
-        title={`Centre de notifications${unread.length ? ` — ${unread.length} non lue(s)` : ""}`}
-        description="Évènements réels d'Angel OS, visibles même sans push système."
-      >
-        <Button
-          variant="outline"
-          size="sm"
-          className="mb-3 min-h-11"
-          onClick={() => syncMutation.mutate()}
-          disabled={syncMutation.isPending}
-        >
-          {syncMutation.isPending ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <RefreshCw className="mr-2 h-4 w-4" />
-          )}
+      <AdminCard title={`Centre de notifications${unread.length ? ` — ${unread.length} non lue(s)` : ""}`} description="Évènements réels d'Angel OS, visibles même sans push système.">
+        <Button variant="outline" size="sm" className="mb-3 min-h-11" onClick={() => syncMutation.mutate()} disabled={syncMutation.isPending}>
+          {syncMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
           Vérifier les évènements
         </Button>
 
         {isPending && <p className="text-sm text-muted-foreground">Chargement…</p>}
-        {!isPending && visible.length === 0 && (
-          <p className="text-sm text-muted-foreground">Aucune notification pour le moment.</p>
-        )}
+        {!isPending && visible.length === 0 && <p className="text-sm text-muted-foreground">Aucune notification pour le moment.</p>}
         <ul className="grid gap-2">
           {visible.slice(0, 60).map((n) => {
             const read = n["is_read"] === true;
             const link = str(n, "link");
             return (
-              <li
-                key={n.id}
-                className={`flex flex-col gap-2 rounded-xl border p-3 sm:flex-row sm:items-start sm:justify-between ${
-                  read ? "border-border bg-background" : "border-primary/30 bg-primary/5"
-                }`}
-              >
+              <li key={n.id} className={`flex flex-col gap-2 rounded-xl border p-3 sm:flex-row sm:items-start sm:justify-between ${read ? "border-border bg-background" : "border-primary/30 bg-primary/5"}`}>
                 <div className="min-w-0">
                   <p className="font-medium text-foreground">{str(n, "title")}</p>
-                  {str(n, "content") && (
-                    <p className="text-sm text-muted-foreground">{str(n, "content")}</p>
-                  )}
+                  {str(n, "content") && <p className="text-sm text-muted-foreground">{str(n, "content")}</p>}
                   <p className="mt-1 text-xs text-muted-foreground">{fmtDate(n.created_at)}</p>
                 </div>
                 <div className="flex shrink-0 gap-2">
-                  {link && (
-                    <Button asChild size="sm" variant="outline" className="min-h-10">
-                      <a href={link}>Ouvrir</a>
-                    </Button>
-                  )}
-                  {!read && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="min-h-10"
-                      onClick={() => markRead.mutate(n.id)}
-                    >
-                      <Check className="mr-1 h-4 w-4" /> Lu
-                    </Button>
-                  )}
+                  {link && <Button asChild size="sm" variant="outline" className="min-h-10"><a href={link}>Ouvrir</a></Button>}
+                  {!read && <Button size="sm" variant="ghost" className="min-h-10" onClick={() => markRead.mutate(n.id)}><Check className="mr-1 h-4 w-4" /> Lu</Button>}
                 </div>
               </li>
             );
