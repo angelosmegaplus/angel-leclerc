@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Film, LogIn, UserPlus } from "lucide-react";
 import { FilmSeriesAccountPage } from "@/components/films/FilmSeriesAccountPage";
+import { MovieFeedbackLightbulb } from "@/components/films/MovieFeedbackLightbulb";
 import { ProtonVpnBanner } from "@/components/films/ProtonVpnBanner";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -39,5 +40,10 @@ function FilmSeriesRoute() {
     );
   }
 
-  return <FilmSeriesAccountPage />;
+  return (
+    <>
+      <FilmSeriesAccountPage />
+      <MovieFeedbackLightbulb />
+    </>
+  );
 }
