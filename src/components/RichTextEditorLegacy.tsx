@@ -66,7 +66,9 @@ type Btn = {
 
 export function RichTextEditor({ value, onChange }: Props) {
   const ref = useRef<HTMLDivElement>(null);
-  const lastEmitted = useRef(value);
+  // null signifie « jamais injecté ». L'ancienne initialisation avec `value`
+  // empêchait précisément le premier chargement d'un article existant.
+  const lastEmitted = useRef<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [state, setState] = useState<"idle" | "saving" | "saved">("idle");
@@ -104,7 +106,7 @@ export function RichTextEditor({ value, onChange }: Props) {
   useEffect(() => {
     const root = ref.current;
     if (!root) return;
-    if (value === lastEmitted.current) return;
+    if (value === lastEmitted.current && root.innerHTML === (value || "")) return;
     lastEmitted.current = value;
     root.innerHTML = value || "";
     computeStats(root);
