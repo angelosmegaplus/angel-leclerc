@@ -5,10 +5,11 @@ type Props = {
 };
 
 /**
- * Résumé Études & Travail affiché dans l'administration.
- * `mode` reste accepté pour compatibilité avec les anciens emplacements pendant
- * la découpe progressive de admin.tsx, mais aucun hack DOM n'est utilisé.
+ * Résumé Études & Travail réservé à l'accueil de l'administration.
+ * Les anciens appels avec `mode` restent tolérés pendant la découpe de admin.tsx,
+ * mais n'injectent plus ce tableau de bord dans des modules sans rapport.
  */
-export function AdminAutomationSummary({ mode: _mode }: Props = {}) {
+export function AdminAutomationSummary({ mode }: Props = {}) {
+  if (mode) return null;
   return <StudiesWorkDashboard />;
 }
