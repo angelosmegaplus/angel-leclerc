@@ -34,6 +34,7 @@ function withPath(base: string, path: string) {
 function sourceLabel(source?: MovixOfficialSource["source"]) {
   if (source === "last_known") return "dernier lien valide";
   if (source === "persisted") return "lien automatisé enregistré";
+  if (source === "rentry") return "liste officielle Movix";
   if (source === "movix_help") return "référence publique Movix";
   if (source === "movix_online") return "movix.online";
   if (source === "github") return "GitHub Movix";
@@ -86,19 +87,25 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
     setResolving(true);
     try {
       const source = await resolveOfficialSource();
-      if (source?.url) setOfficial(source);
-      return source?.url || "https://movix.online/";
+      if (source?.url) {
+        setOfficial(source);
+        return source.url;
+      }
+      return "";
     } finally {
       setResolving(false);
     }
   }
 
+  // Pré-résolution silencieuse : dans la plupart des cas l'adresse est déjà prête
+  // au moment où l'utilisateur appuie sur « Regarder ».
   useEffect(() => { void resolveOfficial(); }, []);
 
-  const activeBase = override || official?.url || "https://movix.online/";
-  const targetUrl = targetPath ? withPath(activeBase, targetPath) : null;
+  const activeBase = override || official?.url || "";
+  const targetUrl = targetPath && activeBase ? withPath(activeBase, targetPath) : null;
 
   function openIntegrated(url: string) {
+    if (!url) return;
     try { localStorage.setItem(LAST_KEY, url); } catch {}
     setEmbed(url);
     setChoiceVisible(true);
@@ -106,15 +113,29 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
   }
 
   function openExternal(url: string) {
+    if (!url) return;
     try { localStorage.setItem(LAST_KEY, url); } catch {}
     window.open(url, "_blank", "noopener,noreferrer");
   }
 
+  // Le changement de film ne montre jamais la page de résolution. Si aucune
+  // adresse n'est encore en mémoire, elle est résolue en arrière-plan puis le
+  // lecteur apparaît directement avec l'URL finale du film/série.
   useEffect(() => {
-    if (!targetUrl || lastAutoOpenedRef.current === targetUrl) return;
-    lastAutoOpenedRef.current = targetUrl;
-    openIntegrated(targetUrl);
-  }, [targetUrl]);
+    if (!targetPath) return;
+    const requestKey = `${targetPath}|${override}`;
+    if (lastAutoOpenedRef.current === requestKey) return;
+    lastAutoOpenedRef.current = requestKey;
+
+    let cancelled = false;
+    void (async () => {
+      const base = override || official?.url || await resolveOfficial();
+      if (cancelled || !base) return;
+      openIntegrated(withPath(base, targetPath));
+    })();
+
+    return () => { cancelled = true; };
+  }, [targetPath, override]);
 
   useEffect(() => {
     if (!embed) return;
@@ -177,6 +198,10 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
   }
 
   async function verifyActive() {
+    if (!activeBase) {
+      await resolveOfficial();
+      return;
+    }
     const ok = await testUrl(activeBase);
     if (ok) return;
     if (override) await clearOverride();
@@ -197,25 +222,27 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
             <div>
               <div className="flex items-center gap-2 text-red-300"><Globe2 className="h-5 w-5" /><span className="font-mono text-xs uppercase tracking-[.18em]">Angel Movies · Movix</span></div>
               <h2 className="mt-2 text-3xl font-semibold tracking-[-.045em]">Lecture Movix</h2>
-              <p className="mt-2 text-sm leading-6 text-white/50">Le même repérage automatique est utilisé pour les deux modes. Le lecteur intégré s’ouvre désormais directement en vue immersive.</p>
-              {targetLabel && targetUrl ? (
+              <p className="mt-2 text-sm leading-6 text-white/50">L’adresse active est résolue silencieusement. Quand tu lances un titre, le lecteur affiche directement sa page de lecture sans montrer l’étape de résolution.</p>
+              {targetLabel ? (
                 <div className="mt-3 rounded-xl border border-violet-400/20 bg-violet-400/10 p-4">
                   <p className="text-sm text-violet-100">Lecture demandée : <strong>{targetLabel}</strong></p>
-                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                    <button type="button" onClick={() => { void enterCinemaMode(); openIntegrated(targetUrl); }} className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white"><PlayIcon />Lecteur intégré</button>
-                    <button type="button" onClick={() => openExternal(targetUrl)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[.06] px-4 py-3 text-sm font-semibold text-white"><ExternalLink className="h-4 w-4" />Ouvrir sur Movix</button>
-                  </div>
+                  {targetUrl ? (
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                      <button type="button" onClick={() => { void enterCinemaMode(); openIntegrated(targetUrl); }} className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white"><PlayIcon />Lecteur intégré</button>
+                      <button type="button" onClick={() => openExternal(targetUrl)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[.06] px-4 py-3 text-sm font-semibold text-white"><ExternalLink className="h-4 w-4" />Ouvrir sur Movix</button>
+                    </div>
+                  ) : <p className="mt-2 text-xs text-white/40">Préparation de la lecture…</p>}
                 </div>
               ) : null}
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-white/[.035] p-5">
               <p className="text-[10px] font-semibold uppercase tracking-[.18em] text-white/35">Adresse active</p>
-              <p className="mt-2 break-all font-mono text-base text-white/85">{activeBase}</p>
+              <p className="mt-2 break-all font-mono text-base text-white/85">{activeBase || "Détection en cours…"}</p>
               <p className="mt-2 text-[11px] text-white/35">Source : {override ? "adresse forcée" : sourceLabel(official?.source)}{official?.checkedAt && !override ? ` · vérifiée ${new Date(official.checkedAt).toLocaleString("fr-FR")}` : ""}</p>
               <div className="mt-4 grid gap-2 sm:grid-cols-3">
-                <button type="button" onClick={() => { void enterCinemaMode(); openIntegrated(activeBase); }} className="rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white">Lecteur intégré</button>
-                <button type="button" onClick={() => openExternal(activeBase)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm text-white/65"><ExternalLink className="h-4 w-4" />Movix</button>
+                <button type="button" disabled={!activeBase} onClick={() => { if (!activeBase) return; void enterCinemaMode(); openIntegrated(activeBase); }} className="rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white disabled:opacity-40">Lecteur intégré</button>
+                <button type="button" disabled={!activeBase} onClick={() => activeBase && openExternal(activeBase)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm text-white/65 disabled:opacity-40"><ExternalLink className="h-4 w-4" />Movix</button>
                 <button type="button" onClick={() => void verifyActive()} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm text-white/65"><RefreshCw className={`h-4 w-4 ${resolving ? "animate-spin" : ""}`} />Vérifier</button>
               </div>
             </div>
@@ -238,7 +265,7 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
               <div><p className="text-xs font-semibold uppercase tracking-[.12em] text-white/35">Lecteur intégré</p><p className="mt-1 max-w-[70vw] truncate font-mono text-xs text-white/30">{embed || "aucun lien chargé"}</p></div>
               {embed ? <button type="button" onClick={() => { void enterCinemaMode(); setChoiceVisible(true); }} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60"><Maximize2 className="h-3.5 w-3.5" />Rouvrir</button> : null}
             </div>
-            <p className="mt-4 rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-xs leading-5 text-white/45">Au lancement d’un film ou d’une série, le lecteur prend tout l’écran. Le site reste derrière sans défilement ni repositionnement manuel.</p>
+            <p className="mt-4 rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-xs leading-5 text-white/45">Au lancement d’un film ou d’une série, le lecteur prend tout l’écran. La résolution du domaine reste invisible.</p>
             <div className="mt-4 grid min-h-[360px] place-items-center rounded-xl border border-dashed border-white/10 bg-black/20 p-8 text-center text-sm text-white/30">Choisis un film ou une série : le lecteur s’ouvrira automatiquement.</div>
           </div>
         </div>
