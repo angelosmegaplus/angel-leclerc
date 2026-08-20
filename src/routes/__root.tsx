@@ -138,6 +138,7 @@ function RootComponent() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const isAngelOSPage = pathname === "/angel-os-ia";
   const isAdminPage = pathname === "/admin" || pathname.startsWith("/admin/") || pathname.startsWith("/admin-");
+  const isStandaloneMoviesPage = pathname === "/films-series";
 
   useEffect(() => {
     void bootAngelOS().catch((error) => {
@@ -152,7 +153,7 @@ function RootComponent() {
         <AngelOSCardStyle />
         <PageViewTracker />
         <PwaRegistrar />
-        {isAngelOSPage || isAdminPage ? (
+        {isAngelOSPage || isAdminPage || isStandaloneMoviesPage ? (
           <main className="min-h-screen [&_footer]:hidden">
             <Outlet />
           </main>
@@ -165,7 +166,7 @@ function RootComponent() {
             <Footer />
           </div>
         )}
-        {!isAngelOSPage && !isAdminPage && <CartDrawer />}
+        {!isAngelOSPage && !isAdminPage && !isStandaloneMoviesPage && <CartDrawer />}
         <Toaster position="top-center" />
         <Analytics />
       </MaintenanceGate>
