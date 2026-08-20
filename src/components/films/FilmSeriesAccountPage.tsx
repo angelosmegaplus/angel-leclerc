@@ -227,35 +227,37 @@ export function FilmSeriesAccountPage() {
 
 function MovixInfoBanner() {
   return (
-    <section className="relative z-20 overflow-hidden border-b border-red-400/15 bg-[#0b090b]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_50%,rgba(239,68,68,.17),transparent_34%),radial-gradient(circle_at_85%_50%,rgba(139,92,246,.10),transparent_30%)]" />
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/[.07] to-transparent animate-[pulse_1.2s_ease-in-out_infinite]" />
-      <div className="relative mx-auto flex max-w-[1500px] items-center gap-3 px-3 py-2.5 pr-24 sm:px-7 sm:py-3 sm:pr-28 lg:px-10 lg:pr-28">
-        <div className="relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-xl border border-red-400/25 bg-red-500/10 shadow-[0_0_28px_rgba(239,68,68,.22)] sm:h-11 sm:w-11">
-          <span className="text-2xl font-black tracking-[-.12em] text-white drop-shadow-[0_0_10px_rgba(239,68,68,.7)] sm:text-3xl">A</span>
-          <span className="absolute h-full w-[2px] -skew-x-12 bg-red-500 shadow-[0_0_10px_rgba(239,68,68,.9)] animate-pulse" />
-        </div>
+    <section className="relative z-20 overflow-hidden border-b border-red-400/20 bg-[#0b090b]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_35%,rgba(239,68,68,.20),transparent_32%),radial-gradient(circle_at_82%_70%,rgba(139,92,246,.12),transparent_34%)] animate-[bannerGlow_5s_ease-in-out_infinite]" />
+      <div className="pointer-events-none absolute -left-1/3 top-0 h-full w-1/2 -skew-x-12 bg-gradient-to-r from-transparent via-white/[.06] to-transparent animate-[bannerSweep_4.5s_ease-in-out_infinite]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red-400/70 to-transparent animate-pulse" />
 
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="shrink-0 text-[9px] font-semibold uppercase tracking-[.24em] text-red-200/70 sm:text-[10px]">Angel OS Films</span>
-            <span className="h-px flex-1 overflow-hidden bg-white/10"><span className="block h-full w-1/3 bg-gradient-to-r from-transparent via-red-400 to-transparent animate-[pulse_700ms_ease-in-out_infinite]" /></span>
-          </div>
-          <div className="relative mt-1 h-5 overflow-hidden text-[10px] font-medium text-white/75 sm:h-6 sm:text-xs">
-            <p className="absolute inset-0 flex items-center animate-[fadeBanner_8s_ease-in-out_infinite]">Sans publicité ni pop-up · cliquez simplement sur Lire dans Movix : le film s’affiche automatiquement.</p>
-            <p className="absolute inset-0 flex items-center opacity-0 animate-[fadeBanner2_8s_ease-in-out_infinite]">Lecteur Movix : un bandeau Chrome peut apparaître, c’est normal. Attendez quelques instants.</p>
-            <p className="absolute inset-0 flex items-center opacity-0 animate-[fadeBanner3_8s_ease-in-out_infinite]">Ne cliquez pas sur Retour · fermez le lecteur avec ✕.</p>
-          </div>
-        </div>
+      <div className="relative mx-auto max-w-[1500px] px-4 py-5 sm:px-7 sm:py-6 lg:px-10">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-semibold uppercase tracking-[.26em] text-red-200/75 sm:text-xs">À savoir avant de lancer un film</span>
+              <span className="h-px min-w-10 flex-1 overflow-hidden bg-white/10"><span className="block h-full w-1/3 bg-gradient-to-r from-transparent via-red-400 to-transparent animate-[bannerLine_2.2s_ease-in-out_infinite]" /></span>
+            </div>
 
-        <div className="hidden shrink-0 items-center gap-2 rounded-full border border-red-400/15 bg-red-500/[.07] px-3 py-1.5 sm:flex">
-          <span className="text-[10px] text-white/55">On recherche le bon domaine 👀</span>
-          <span className="h-1.5 w-1.5 rounded-full bg-red-400 shadow-[0_0_8px_rgba(239,68,68,.8)] animate-bounce [animation-delay:0ms]" />
-          <span className="h-1.5 w-1.5 rounded-full bg-red-400 shadow-[0_0_8px_rgba(239,68,68,.8)] animate-bounce [animation-delay:120ms]" />
-          <span className="h-1.5 w-1.5 rounded-full bg-red-400 shadow-[0_0_8px_rgba(239,68,68,.8)] animate-bounce [animation-delay:240ms]" />
+            <div className="mt-3 grid gap-2.5 text-[12px] leading-5 text-white/75 sm:text-sm sm:leading-6 lg:grid-cols-2 lg:gap-x-8">
+              <p className="animate-[bannerTextIn_700ms_ease-out_both]">Sans publicité ni pop-up. Pour regarder un titre, cliquez simplement sur <strong className="font-semibold text-white">Lire dans Movix</strong> : la vidéo apparaît automatiquement.</p>
+              <p className="animate-[bannerTextIn_700ms_ease-out_120ms_both]">Un petit bandeau du navigateur peut apparaître au lancement. C’est normal : attendez quelques instants, il disparaîtra.</p>
+              <p className="animate-[bannerTextIn_700ms_ease-out_240ms_both]">Dans le lecteur, évitez le bouton Retour du navigateur. Pour quitter proprement, utilisez la croix <strong className="font-semibold text-white">✕</strong>.</p>
+              <p className="animate-[bannerTextIn_700ms_ease-out_360ms_both]">Des erreurs ou bugs d’affichage peuvent encore arriver : cette interface est principalement optimisée pour une utilisation sur <strong className="font-semibold text-white">TV ou ordinateur</strong>.</p>
+            </div>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-3 self-start rounded-full border border-red-400/20 bg-red-500/[.08] px-4 py-2.5 shadow-[0_0_30px_rgba(239,68,68,.08)] lg:self-center">
+            <span className="text-[11px] font-medium text-white/65 sm:text-xs">On recherche le bon domaine 👀</span>
+            <span className="h-2 w-2 rounded-full bg-red-400 shadow-[0_0_10px_rgba(239,68,68,.85)] animate-bounce [animation-delay:0ms]" />
+            <span className="h-2 w-2 rounded-full bg-red-400 shadow-[0_0_10px_rgba(239,68,68,.85)] animate-bounce [animation-delay:120ms]" />
+            <span className="h-2 w-2 rounded-full bg-red-400 shadow-[0_0_10px_rgba(239,68,68,.85)] animate-bounce [animation-delay:240ms]" />
+          </div>
         </div>
       </div>
-      <style>{`@keyframes fadeBanner{0%,28%{opacity:1;transform:translateY(0)}34%,100%{opacity:0;transform:translateY(-6px)}}@keyframes fadeBanner2{0%,31%{opacity:0;transform:translateY(6px)}38%,61%{opacity:1;transform:translateY(0)}68%,100%{opacity:0;transform:translateY(-6px)}}@keyframes fadeBanner3{0%,65%{opacity:0;transform:translateY(6px)}72%,94%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-6px)}}`}</style>
+
+      <style>{`@keyframes bannerGlow{0%,100%{opacity:.72;transform:scale(1)}50%{opacity:1;transform:scale(1.035)}}@keyframes bannerSweep{0%{transform:translateX(-120%) skewX(-12deg);opacity:0}15%{opacity:1}55%{opacity:.6}100%{transform:translateX(340%) skewX(-12deg);opacity:0}}@keyframes bannerLine{0%,100%{transform:translateX(-80%);opacity:.35}50%{transform:translateX(240%);opacity:1}}@keyframes bannerTextIn{0%{opacity:0;transform:translateY(7px)}100%{opacity:1;transform:translateY(0)}}`}</style>
     </section>
   );
 }
