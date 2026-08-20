@@ -102,7 +102,7 @@ import { FilesPanel } from "@/components/admin/FilesPanel";
 import { ActivityPanel } from "@/components/admin/ActivityPanel";
 import { GlobalSearch } from "@/components/admin/GlobalSearch";
 import { AngelCommandCenter } from "@/components/admin/AngelCommandCenter";
-import { ApplicationsPanel } from "@/components/admin/ApplicationsPanel";
+import { StudiesWorkWorkspace } from "@/components/admin/StudiesWorkWorkspace";
 import { AdminAutomationSummary } from "@/components/admin/AdminAutomationSummary";
 
 export const Route = createFileRoute("/admin")({
@@ -112,7 +112,7 @@ export const Route = createFileRoute("/admin")({
       {
         name: "description",
         content:
-          "Centre de contrôle privé Angel OS : commandes IA, candidatures, contenus, projets et connexions.",
+          "Centre de contrôle privé Angel OS : études, travail, contenus, projets, agenda et connexions.",
       },
       { name: "robots", content: "noindex, nofollow" },
       { property: "og:type", content: "website" },
@@ -150,7 +150,6 @@ type Draft = {
   ai: AiDisclosure;
 };
 
-
 const emptyDraft: Draft = {
   id: null,
   title: "",
@@ -182,7 +181,7 @@ type AdminTab =
   | "avis"
   | "boutique"
   | "projets"
-  | "candidatures"
+  | "etudes-travail"
   | "agenda"
   | "fichiers"
   | "studio"
@@ -192,6 +191,12 @@ type AdminTab =
   | "automatisation"
   | "parametres"
   | "angel-ai";
+
+function normalizeAdminTab(value: string | null): AdminTab | null {
+  if (!value) return null;
+  if (value === "candidatures") return "etudes-travail";
+  return value as AdminTab;
+}
 
 /** ISO -> valeur d'un <input type="datetime-local"> en heure locale. */
 function toLocalInput(iso: string | null): string {
@@ -246,7 +251,6 @@ function AdminPage() {
   const [uploadingCover, setUploadingCover] = useState(false);
   const [tab, setTab] = useState<AdminTab>("dashboard");
 
-  // Autosauvegarde locale du brouillon en cours (aucun service externe).
   const DRAFT_STORAGE_KEY = "alc-article-draft";
   const [draftRestored, setDraftRestored] = useState(false);
 
@@ -285,17 +289,16 @@ function AdminPage() {
     return () => window.clearTimeout(timer);
   }, [draft, draftRestored]);
 
-  // Raccourcis d'application installée et retours OAuth : /admin?tab=studio
   useEffect(() => {
-    const requested = new URLSearchParams(window.location.search).get("tab");
-    if (requested) setTab(requested as AdminTab);
+    const requested = normalizeAdminTab(new URLSearchParams(window.location.search).get("tab"));
+    if (requested) setTab(requested);
   }, []);
 
-  // Navigation interne demandée par un panneau (ex. « Ouvrir les connexions »).
   useEffect(() => {
     const onNavigate = (event: Event) => {
       const next = (event as CustomEvent<string>).detail;
-      if (typeof next === "string" && next) setTab(next as AdminTab);
+      const normalized = normalizeAdminTab(typeof next === "string" ? next : null);
+      if (normalized) setTab(normalized);
     };
     window.addEventListener(ADMIN_NAVIGATE_EVENT, onNavigate);
     return () => window.removeEventListener(ADMIN_NAVIGATE_EVENT, onNavigate);
@@ -376,7 +379,6 @@ function AdminPage() {
         published_at: isPublished ? (scheduledIso ?? new Date().toISOString()) : null,
         author_id: user?.id ?? null,
       };
-      // Source unique : route API stable, partagée avec l'éditeur Lovable.
       await saveArticleViaApi(payload);
       return slug;
     },
@@ -487,7 +489,7 @@ function AdminPage() {
   const navItems: AdminNavItem[] = [
     { key: "dashboard", label: "Vue d'ensemble", icon: LayoutDashboard, group: "Essentiel", primary: true },
     { key: "angel-ai", label: "Demander à l'IA", icon: Sparkles, group: "Essentiel", primary: true },
-    { key: "candidatures", label: "Candidatures", icon: Briefcase, group: "Essentiel", primary: true },
+    { key: "etudes-travail", label: "Études & Travail", icon: Briefcase, group: "Essentiel", primary: true },
     { key: "messages", label: "Messages", icon: Mail, badge: unreadCount, group: "Essentiel", primary: true },
     { key: "articles", label: "Articles", icon: FileText, badge: articles.length, group: "Essentiel", primary: true },
     { key: "agenda", label: "Agenda", icon: CalendarDays, group: "Essentiel", primary: true },
@@ -515,7 +517,8 @@ function AdminPage() {
       items={navItems}
       active={tab}
       onSelect={(key) => {
-        setTab(key as AdminTab);
+        const normalized = normalizeAdminTab(key);
+        if (normalized) setTab(normalized);
         setDraft(null);
       }}
       title={draft ? (draft.id ? "Modifier l'article" : "Nouvel article") : currentLabel}
@@ -567,7 +570,8 @@ function AdminPage() {
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
         onNavigate={(key) => {
-          setTab(key as AdminTab);
+          const normalized = normalizeAdminTab(key);
+          if (normalized) setTab(normalized);
           setDraft(null);
         }}
       />
@@ -580,7 +584,7 @@ function AdminPage() {
               [
                 ["Nouvel article", () => { setTab("articles"); setDraft({ ...emptyDraft }); }],
                 ["Nouveau projet", () => setTab("projets")],
-                ["Nouvelle candidature", () => setTab("candidatures")],
+                ["Études & Travail", () => setTab("etudes-travail")],
                 ["Studio", () => setTab("studio")],
                 ["Agenda", () => setTab("agenda")],
               ] as const
@@ -1237,9 +1241,9 @@ function AdminPage() {
               </div>
             )}
 
-            {tab === "candidatures" && (
+            {tab === "etudes-travail" && (
               <div className="mt-6">
-                <ApplicationsPanel />
+                <StudiesWorkWorkspace />
               </div>
             )}
 
@@ -1461,8 +1465,7 @@ function AdminPage() {
                               .update({ active: false })
                               .eq("id", s.id);
                             queryClient.invalidateQueries({
-                              queryKey: ["admin-subscribers"],
-                            });
+                              queryKey: ["admin-subscribers"] });
                             toast.success("Abonné désinscrit.");
                           }}
                         >
@@ -1479,8 +1482,7 @@ function AdminPage() {
                             .delete()
                             .eq("id", s.id);
                           queryClient.invalidateQueries({
-                            queryKey: ["admin-subscribers"],
-                          });
+                            queryKey: ["admin-subscribers"] });
                         }}
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
