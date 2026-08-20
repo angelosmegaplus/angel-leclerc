@@ -144,7 +144,7 @@ async function request<T>(
     for (const [name, value] of Object.entries(normalized)) url.searchParams.set(name, value);
     if (credential.kind === "api-key") url.searchParams.set("api_key", credential.value);
 
-    const headers = credential.kind === "bearer"
+    const headers: Record<string, string> = credential.kind === "bearer"
       ? { Authorization: `Bearer ${credential.value}`, Accept: "application/json" }
       : { Accept: "application/json" };
 

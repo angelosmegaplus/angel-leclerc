@@ -76,7 +76,7 @@ function extractCandidates(source: string) {
     ...source.matchAll(/https?:\/\/[^\s"'<>]+/gi),
   ]
     .map((match) => normalizeUrl(match[1] || match[0]))
-    .filter((value): value is string => Boolean(value) && isMovixHost(value));
+    .filter((value): value is string => value !== null && isMovixHost(value));
   return [...new Set(values)];
 }
 
