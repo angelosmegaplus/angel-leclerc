@@ -94,6 +94,7 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
   useEffect(() => { void resolveOfficial(); }, []);
 
   const activeBase = override || official?.url || "https://movix.online/";
+  const targetUrl = targetPath ? withPath(activeBase, targetPath) : null;
 
   function openIntegrated(url: string) {
     try { localStorage.setItem(LAST_KEY, url); } catch {}
@@ -102,11 +103,10 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
     window.setTimeout(() => document.getElementById("movix-launcher-frame")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
   }
 
-  useEffect(() => {
-    if (!targetPath || !activeBase) return;
-    openIntegrated(withPath(activeBase, targetPath));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [targetPath, activeBase]);
+  function openExternal(url: string) {
+    try { localStorage.setItem(LAST_KEY, url); } catch {}
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
 
   async function testUrl(url: string) {
     const value = normalize(url);
@@ -160,18 +160,27 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
         <div className="space-y-5">
           <div>
             <div className="flex items-center gap-2 text-red-300"><Globe2 className="h-5 w-5" /><span className="font-mono text-xs uppercase tracking-[.18em]">Angel Movies · Movix</span></div>
-            <h2 className="mt-2 text-3xl font-semibold tracking-[-.045em]">Bac à sable Movix</h2>
-            <p className="mt-2 text-sm leading-6 text-white/50">Le domaine est retrouvé automatiquement depuis le dernier lien sain, les références publiques de Movix et son dépôt GitHub. Si ces sources deviennent ambiguës ou indisponibles, l’IA Lovable compare des résultats web publics puis ne retient qu’une adresse qui répond réellement.</p>
-            {targetLabel ? <p className="mt-3 rounded-xl border border-violet-400/20 bg-violet-400/10 px-4 py-3 text-sm text-violet-100">Lecture demandée : <strong>{targetLabel}</strong></p> : null}
+            <h2 className="mt-2 text-3xl font-semibold tracking-[-.045em]">Lecture Movix</h2>
+            <p className="mt-2 text-sm leading-6 text-white/50">Le même repérage automatique est utilisé pour les deux modes. Choisis soit le bac à sable intégré, soit l’ouverture directe sur Internet.</p>
+            {targetLabel && targetUrl ? (
+              <div className="mt-3 rounded-xl border border-violet-400/20 bg-violet-400/10 p-4">
+                <p className="text-sm text-violet-100">Lecture demandée : <strong>{targetLabel}</strong></p>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <button type="button" onClick={() => openIntegrated(targetUrl)} className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white"><PlayIcon />Bac à sable</button>
+                  <button type="button" onClick={() => openExternal(targetUrl)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[.06] px-4 py-3 text-sm font-semibold text-white"><ExternalLink className="h-4 w-4" />Ouvrir sur Internet</button>
+                </div>
+              </div>
+            ) : null}
           </div>
 
           <div className="rounded-2xl border border-white/10 bg-white/[.035] p-5">
             <p className="text-[10px] font-semibold uppercase tracking-[.18em] text-white/35">Adresse active</p>
             <p className="mt-2 break-all font-mono text-base text-white/85">{activeBase}</p>
             <p className="mt-2 text-[11px] text-white/35">Source : {override ? "adresse forcée" : sourceLabel(official?.source)}{official?.checkedAt && !override ? ` · vérifiée ${new Date(official.checkedAt).toLocaleString("fr-FR")}` : ""}</p>
-            <div className="mt-4 grid gap-2 sm:grid-cols-2">
-              <button type="button" onClick={() => openIntegrated(activeBase)} className="rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white">Ouvrir Movix</button>
-              <button type="button" onClick={() => void verifyActive()} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm text-white/65"><RefreshCw className={`h-4 w-4 ${resolving ? "animate-spin" : ""}`} />Vérifier le lien</button>
+            <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              <button type="button" onClick={() => openIntegrated(activeBase)} className="rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white">Bac à sable</button>
+              <button type="button" onClick={() => openExternal(activeBase)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm text-white/65"><ExternalLink className="h-4 w-4" />Internet</button>
+              <button type="button" onClick={() => void verifyActive()} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm text-white/65"><RefreshCw className={`h-4 w-4 ${resolving ? "animate-spin" : ""}`} />Vérifier</button>
             </div>
           </div>
 
@@ -191,12 +200,16 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
         <div id="movix-launcher-frame" className="scroll-mt-5 rounded-2xl border border-white/10 bg-white/[.025] p-4 sm:p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div><p className="text-xs font-semibold uppercase tracking-[.12em] text-white/35">Cadre intégré</p><p className="mt-1 max-w-[70vw] truncate font-mono text-xs text-white/30">{embed || "aucun lien chargé"}</p></div>
-            {embed ? <div className="flex flex-wrap gap-2"><button type="button" onClick={() => setFrameKey((value) => value + 1)} className="rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60">Recharger</button><button type="button" onClick={() => void enterCinemaMode()} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60"><Maximize2 className="h-3.5 w-3.5" />Horizontal</button><a href={embed} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60">Nouvelle page <ExternalLink className="h-3.5 w-3.5" /></a><button type="button" onClick={() => void closeIntegrated()} className="rounded-lg border border-white/10 px-3 py-2 text-xs text-white/40">Fermer</button></div> : null}
+            {embed ? <div className="flex flex-wrap gap-2"><button type="button" onClick={() => setFrameKey((value) => value + 1)} className="rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60">Recharger</button><button type="button" onClick={() => void enterCinemaMode()} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60"><Maximize2 className="h-3.5 w-3.5" />Horizontal</button><button type="button" onClick={() => openExternal(embed)} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60">Internet <ExternalLink className="h-3.5 w-3.5" /></button><button type="button" onClick={() => void closeIntegrated()} className="rounded-lg border border-white/10 px-3 py-2 text-xs text-white/40">Fermer</button></div> : null}
           </div>
-          <p className="mt-4 rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-xs leading-5 text-white/45">Au lancement depuis « Regarder sur Movix », Angel Movies demande le plein écran et l’orientation horizontale quand le navigateur l’autorise. Si l’intégration iframe est refusée par Movix, utilise « Nouvelle page ».</p>
-          {embed ? <iframe key={frameKey} src={embed} title={`Movix Launcher — ${hostOf(embed)}`} referrerPolicy="no-referrer" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" sandbox="allow-forms allow-same-origin allow-scripts allow-presentation" className="mt-4 h-[70vh] min-h-[520px] w-full rounded-xl border border-white/10 bg-black" /> : <div className="mt-4 grid min-h-[520px] place-items-center rounded-xl border border-dashed border-white/10 bg-black/20 p-8 text-center text-sm text-white/30">Clique sur « Regarder sur Movix » sous un film ou ouvre Movix.</div>}
+          <p className="mt-4 rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-xs leading-5 text-white/45">Le bac à sable et l’ouverture Internet utilisent exactement la même adresse calculée. Si l’intégration iframe est refusée, ouvre le contenu directement sur Internet.</p>
+          {embed ? <iframe key={frameKey} src={embed} title={`Movix Launcher — ${hostOf(embed)}`} referrerPolicy="no-referrer" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" sandbox="allow-forms allow-same-origin allow-scripts allow-presentation" className="mt-4 h-[70vh] min-h-[520px] w-full rounded-xl border border-white/10 bg-black" /> : <div className="mt-4 grid min-h-[520px] place-items-center rounded-xl border border-dashed border-white/10 bg-black/20 p-8 text-center text-sm text-white/30">Choisis un film ou une série puis sélectionne « Bac à sable » ou « Ouvrir sur Internet ».</div>}
         </div>
       </div>
     </section>
   );
+}
+
+function PlayIcon() {
+  return <span aria-hidden="true" className="text-xs">▶</span>;
 }
