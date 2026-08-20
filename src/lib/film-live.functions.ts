@@ -86,7 +86,7 @@ export const getLiveFilmCatalog = createServerFn({ method: "GET" })
           .filter((raw) => raw.media_type !== "person")
           .map((raw) => normalize(raw, mediaTypeFor(raw, fallbackType)))
           .filter((item): item is RecommendationCandidate => Boolean(item));
-        return { items: dedupe(items).slice(0, 50), source: "tmdb", diagnostic: null };
+        return { items: dedupe(items).slice(0, 60), source: "tmdb", diagnostic: null };
       }
 
       const requests: Array<Promise<{ mediaType: FilmMediaType; page: Page }>> = [];
@@ -94,10 +94,14 @@ export const getLiveFilmCatalog = createServerFn({ method: "GET" })
         requests.push(Promise.resolve(filmContent.trending("movie", "week", data.page) as Promise<Page>).then((page) => ({ mediaType: "movie", page })));
         requests.push(Promise.resolve(filmContent.movies() as Promise<Page>).then((page) => ({ mediaType: "movie", page })));
         requests.push(Promise.resolve(filmContent.discover("movie", { page: data.page, with_genres: "27|53|80|9648", sort_by: "popularity.desc", vote_count_gte: 50 }) as Promise<Page>).then((page) => ({ mediaType: "movie", page })));
+        requests.push(Promise.resolve(filmContent.discover("movie", { page: data.page, with_genres: "99", sort_by: "popularity.desc", vote_count_gte: 20 }) as Promise<Page>).then((page) => ({ mediaType: "movie", page })));
+        requests.push(Promise.resolve(filmContent.discover("movie", { page: Math.min(5, data.page + 1), sort_by: "vote_average.desc", vote_count_gte: 250 }) as Promise<Page>).then((page) => ({ mediaType: "movie", page })));
       }
       if (data.mediaType !== "movie") {
         requests.push(Promise.resolve(filmContent.trending("tv", "week", data.page) as Promise<Page>).then((page) => ({ mediaType: "tv", page })));
         requests.push(Promise.resolve(filmContent.tv() as Promise<Page>).then((page) => ({ mediaType: "tv", page })));
+        requests.push(Promise.resolve(filmContent.discover("tv", { page: data.page, with_genres: "99", sort_by: "popularity.desc", vote_count_gte: 10 }) as Promise<Page>).then((page) => ({ mediaType: "tv", page })));
+        requests.push(Promise.resolve(filmContent.discover("tv", { page: Math.min(5, data.page + 1), sort_by: "vote_average.desc", vote_count_gte: 100 }) as Promise<Page>).then((page) => ({ mediaType: "tv", page })));
       }
 
       const settled = await Promise.allSettled(requests);
@@ -106,7 +110,7 @@ export const getLiveFilmCatalog = createServerFn({ method: "GET" })
         (entry.value.page.results ?? [])
           .map((raw) => normalize(raw, entry.value.mediaType))
           .filter((item): item is RecommendationCandidate => Boolean(item)),
-      )).slice(0, 120);
+      )).slice(0, 180);
 
       if (fulfilled.length > 0) return { items, source: "tmdb", diagnostic: null };
 
