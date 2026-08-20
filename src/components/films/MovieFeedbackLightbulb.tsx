@@ -1,17 +1,20 @@
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Lightbulb, Loader2, Send, X } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { submitMovieFeedback } from "@/lib/movie-feedback.functions";
 
 const BUBBLE_KEY = "angel-movies-feedback-bubble-seen-v1";
 
 export function MovieFeedbackLightbulb() {
   const { user } = useAuth();
+  const submitFeedback = useServerFn(submitMovieFeedback);
   const [open, setOpen] = useState(false);
   const [bubbleVisible, setBubbleVisible] = useState(false);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     try {
@@ -35,41 +38,18 @@ export function MovieFeedbackLightbulb() {
     if (!value || sending) return;
     setSending(true);
     setSent(false);
+    setError("");
     try {
-      const createdAt = new Date().toISOString();
-      const { error } = await supabase.from("ai_actions").insert({
-        kind: "user_feedback",
-        title: "Idée Angel Movies",
-        description: value,
-        payload: {
-          message: value,
-          source: "angel_movies_feedback",
-          route: "/films-series",
-          created_at: createdAt,
-          user_id: user?.id ?? null,
-          user_email: user?.email ?? null,
-        },
-        status: "pending",
-        target_type: "admin",
-        sensitive: false,
-      });
-      if (error) throw error;
-
-      void supabase.from("activity_log").insert({
-        source: "user",
-        action: "submit_angel_movies_feedback",
-        entity_type: "feedback",
-        details: { route: "/films-series", created_at: createdAt, user_id: user?.id ?? null },
-      });
-
+      await submitFeedback({ data: { message: value, userId: user?.id ?? null, userEmail: user?.email ?? null } });
       setMessage("");
       setSent(true);
       window.setTimeout(() => {
         setOpen(false);
         setSent(false);
       }, 1400);
-    } catch {
+    } catch (reason) {
       setSent(false);
+      setError(reason instanceof Error ? reason.message : "La suggestion n’a pas pu être envoyée.");
     } finally {
       setSending(false);
     }
@@ -105,7 +85,7 @@ export function MovieFeedbackLightbulb() {
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[.14em] text-amber-200/70">Une idée ?</p>
                 <h2 className="mt-1 text-xl font-semibold">Proposer une amélioration</h2>
-                <p className="mt-1 text-xs leading-5 text-white/40">Ton message arrivera directement dans l’espace administrateur.</p>
+                <p className="mt-1 text-xs leading-5 text-white/40">Ton message arrivera directement dans l’espace administrateur, avec un envoi mail de secours si nécessaire.</p>
               </div>
               <button type="button" onClick={() => setOpen(false)} className="grid h-9 w-9 place-items-center rounded-full border border-white/10 text-white/45"><X className="h-4 w-4" /></button>
             </div>
@@ -118,6 +98,7 @@ export function MovieFeedbackLightbulb() {
               autoFocus
               className="mt-4 w-full resize-none rounded-2xl border border-white/10 bg-black/25 p-3 text-sm leading-6 text-white outline-none placeholder:text-white/20 focus:border-white/20"
             />
+            {error ? <p className="mt-2 text-xs text-red-300">{error}</p> : null}
             <div className="mt-3 flex items-center justify-between gap-3">
               <span className="text-[10px] text-white/25">{message.length}/1200</span>
               <button type="submit" disabled={!message.trim() || sending || sent} className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-black disabled:opacity-40">
