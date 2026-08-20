@@ -72,7 +72,6 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
   const [resolving, setResolving] = useState(false);
   const [testingOverride, setTestingOverride] = useState(false);
   const [overrideOk, setOverrideOk] = useState<boolean | null>(null);
-  const [choiceVisible, setChoiceVisible] = useState(false);
   const lastAutoOpenedRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -97,8 +96,6 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
     }
   }
 
-  // Pré-résolution silencieuse : dans la plupart des cas l'adresse est déjà prête
-  // au moment où l'utilisateur appuie sur « Regarder ».
   useEffect(() => { void resolveOfficial(); }, []);
 
   const activeBase = override || official?.url || "";
@@ -108,7 +105,6 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
     if (!url) return;
     try { localStorage.setItem(LAST_KEY, url); } catch {}
     setEmbed(url);
-    setChoiceVisible(true);
     setFrameKey((value) => value + 1);
   }
 
@@ -118,9 +114,6 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
     window.open(url, "_blank", "noopener,noreferrer");
   }
 
-  // Le changement de film ne montre jamais la page de résolution. Si aucune
-  // adresse n'est encore en mémoire, elle est résolue en arrière-plan puis le
-  // lecteur apparaît directement avec l'URL finale du film/série.
   useEffect(() => {
     if (!targetPath) return;
     const requestKey = `${targetPath}|${override}`;
@@ -210,7 +203,6 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
 
   async function closeIntegrated() {
     setEmbed(null);
-    setChoiceVisible(false);
     await leaveCinemaMode();
   }
 
@@ -227,9 +219,8 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
                 <div className="mt-3 rounded-xl border border-violet-400/20 bg-violet-400/10 p-4">
                   <p className="text-sm text-violet-100">Lecture demandée : <strong>{targetLabel}</strong></p>
                   {targetUrl ? (
-                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                      <button type="button" onClick={() => { void enterCinemaMode(); openIntegrated(targetUrl); }} className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white"><PlayIcon />Lecteur intégré</button>
-                      <button type="button" onClick={() => openExternal(targetUrl)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[.06] px-4 py-3 text-sm font-semibold text-white"><ExternalLink className="h-4 w-4" />Ouvrir sur Movix</button>
+                    <div className="mt-3">
+                      <button type="button" onClick={() => { void enterCinemaMode(); openIntegrated(targetUrl); }} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white"><PlayIcon />Lecteur intégré</button>
                     </div>
                   ) : <p className="mt-2 text-xs text-white/40">Préparation de la lecture…</p>}
                 </div>
@@ -240,9 +231,8 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
               <p className="text-[10px] font-semibold uppercase tracking-[.18em] text-white/35">Adresse active</p>
               <p className="mt-2 break-all font-mono text-base text-white/85">{activeBase || "Détection en cours…"}</p>
               <p className="mt-2 text-[11px] text-white/35">Source : {override ? "adresse forcée" : sourceLabel(official?.source)}{official?.checkedAt && !override ? ` · vérifiée ${new Date(official.checkedAt).toLocaleString("fr-FR")}` : ""}</p>
-              <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              <div className="mt-4 grid gap-2 sm:grid-cols-2">
                 <button type="button" disabled={!activeBase} onClick={() => { if (!activeBase) return; void enterCinemaMode(); openIntegrated(activeBase); }} className="rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white disabled:opacity-40">Lecteur intégré</button>
-                <button type="button" disabled={!activeBase} onClick={() => activeBase && openExternal(activeBase)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm text-white/65 disabled:opacity-40"><ExternalLink className="h-4 w-4" />Movix</button>
                 <button type="button" onClick={() => void verifyActive()} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm text-white/65"><RefreshCw className={`h-4 w-4 ${resolving ? "animate-spin" : ""}`} />Vérifier</button>
               </div>
             </div>
@@ -263,7 +253,7 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
           <div id="movix-launcher-frame" className="rounded-2xl border border-white/10 bg-white/[.025] p-4 sm:p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div><p className="text-xs font-semibold uppercase tracking-[.12em] text-white/35">Lecteur intégré</p><p className="mt-1 max-w-[70vw] truncate font-mono text-xs text-white/30">{embed || "aucun lien chargé"}</p></div>
-              {embed ? <button type="button" onClick={() => { void enterCinemaMode(); setChoiceVisible(true); }} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60"><Maximize2 className="h-3.5 w-3.5" />Rouvrir</button> : null}
+              {embed ? <button type="button" onClick={() => { void enterCinemaMode(); }} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60"><Maximize2 className="h-3.5 w-3.5" />Rouvrir</button> : null}
             </div>
             <p className="mt-4 rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-xs leading-5 text-white/45">Au lancement d’un film ou d’une série, le lecteur prend tout l’écran. La résolution du domaine reste invisible.</p>
             <div className="mt-4 grid min-h-[360px] place-items-center rounded-xl border border-dashed border-white/10 bg-black/20 p-8 text-center text-sm text-white/30">Choisis un film ou une série : le lecteur s’ouvrira automatiquement.</div>
@@ -282,19 +272,6 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
             sandbox="allow-forms allow-same-origin allow-scripts allow-presentation"
             className="absolute inset-0 h-full w-full border-0 bg-black"
           />
-
-          {choiceVisible ? (
-            <div className="absolute left-1/2 top-3 z-20 w-[calc(100%-1.5rem)] max-w-xl -translate-x-1/2 rounded-2xl border border-white/15 bg-black/85 p-3 shadow-2xl backdrop-blur-xl sm:top-5 sm:flex sm:items-center sm:gap-3 sm:p-4">
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-white">Tu préfères ouvrir directement dans Movix ?</p>
-                <p className="mt-0.5 truncate text-[11px] text-white/45">{targetLabel || hostOf(embed)}</p>
-              </div>
-              <div className="mt-3 flex shrink-0 gap-2 sm:mt-0">
-                <button type="button" onClick={() => openExternal(embed)} className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-white px-3 py-2.5 text-xs font-semibold text-black sm:flex-none"><ExternalLink className="h-3.5 w-3.5" />Ouvrir Movix</button>
-                <button type="button" onClick={() => setChoiceVisible(false)} className="flex-1 rounded-xl border border-white/15 bg-white/[.07] px-3 py-2.5 text-xs font-semibold text-white sm:flex-none">Continuer ici</button>
-              </div>
-            </div>
-          ) : null}
 
           <div className="absolute bottom-3 right-3 z-20 flex gap-2 sm:bottom-5 sm:right-5">
             <button type="button" onClick={() => setFrameKey((value) => value + 1)} className="rounded-full border border-white/15 bg-black/70 px-3 py-2 text-xs text-white/75 backdrop-blur-lg">Recharger</button>
