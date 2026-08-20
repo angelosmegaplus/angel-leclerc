@@ -138,10 +138,10 @@ export function MovixLauncherPanel({
       localStorage.setItem(LAST_KEY, url);
     } catch {}
     iframeLoadCountRef.current = 0;
+    if (controlsTimerRef.current) window.clearTimeout(controlsTimerRef.current);
     setControlsVisible(true);
     setEmbed(url);
     setFrameKey((value) => value + 1);
-    scheduleControlsHide();
   }
 
   async function launchMovix() {
@@ -259,7 +259,7 @@ export function MovixLauncherPanel({
       setControlsVisible(false);
       if (controlsTimerRef.current) window.clearTimeout(controlsTimerRef.current);
     } else {
-      scheduleControlsHide();
+      setControlsVisible(true);
     }
   }
 
@@ -367,14 +367,14 @@ export function MovixLauncherPanel({
             type="button"
             onClick={revealControls}
             aria-label="Afficher les commandes Movix"
-            className={`absolute bottom-0 right-0 z-20 h-12 w-12 bg-transparent transition-opacity ${controlsVisible ? "pointer-events-none opacity-0" : "opacity-100"}`}
+            className={`absolute bottom-0 right-0 z-20 h-14 w-14 bg-transparent transition-opacity ${controlsVisible ? "pointer-events-none opacity-0" : "opacity-100"}`}
           />
 
-          <div className={`absolute bottom-2 right-2 z-30 flex items-center gap-1.5 transition-all duration-300 sm:bottom-3 sm:right-3 ${controlsVisible ? "translate-y-0 opacity-55 hover:opacity-100" : "pointer-events-none translate-y-2 opacity-0"}`}>
+          <div className={`absolute bottom-3 right-3 z-30 flex items-center gap-2 transition-all duration-300 sm:bottom-4 sm:right-4 ${controlsVisible ? "translate-y-0 opacity-85 hover:opacity-100" : "pointer-events-none translate-y-2 opacity-0"}`}>
             <button
               type="button"
               onClick={() => { setFrameKey((value) => value + 1); revealControls(); }}
-              className="rounded-full border border-white/10 bg-black/45 px-2 py-1 text-[9px] text-white/55 shadow-sm backdrop-blur-md"
+              className="rounded-full border border-white/20 bg-black/65 px-3 py-1.5 text-[10px] font-medium text-white/85 shadow-lg backdrop-blur-md transition hover:bg-black/85 hover:text-white"
             >
               Recharger
             </button>
@@ -382,9 +382,9 @@ export function MovixLauncherPanel({
               type="button"
               onClick={() => void closeIntegrated()}
               aria-label="Quitter Movix"
-              className="grid h-7 w-7 place-items-center rounded-full border border-white/10 bg-black/45 text-white/65 shadow-sm backdrop-blur-md transition hover:bg-black/75 hover:text-white"
+              className="grid h-8 w-8 place-items-center rounded-full border border-white/20 bg-black/65 text-white/90 shadow-lg backdrop-blur-md transition hover:bg-black/85 hover:text-white"
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-4 w-4" />
             </button>
           </div>
         </div>
