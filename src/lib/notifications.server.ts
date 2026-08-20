@@ -16,9 +16,8 @@ const DAY = 86_400_000;
 export async function buildRealNotifications(db: Db): Promise<Candidate[]> {
   const now = new Date();
   const out: Candidate[] = [];
-  const [tasks, applications, messages, aiActions, connections, interviews, articles] = await Promise.all([
+  const [tasks, messages, aiActions, connections, interviews, articles] = await Promise.all([
     db.from("project_tasks").select("id,title,due_date,status").neq("status", "done").limit(100),
-    db.from("applications").select("id,company,position,follow_up_at,status").limit(100),
     db.from("contact_requests").select("id,full_name,created_at,is_read").eq("is_read", false).limit(50),
     db.from("ai_actions").select("id,title,status,resolved_at").eq("status", "done").limit(50),
     db.from("oauth_connections").select("provider,status,expires_at").limit(50),
@@ -35,18 +34,6 @@ export async function buildRealNotifications(db: Db): Promise<Candidate[]> {
       title: `Tâche en retard : ${t.title}`,
       content: `Échéance dépassée depuis le ${due.toLocaleDateString("fr-FR")}.`,
       link: "/admin?tab=projets",
-    });
-  }
-
-  for (const a of applications.data ?? []) {
-    if (!a.follow_up_at) continue;
-    const at = new Date(a.follow_up_at.length <= 10 ? `${a.follow_up_at}T12:00:00` : a.follow_up_at);
-    if (at <= now && !["acceptee", "refusee", "accepted", "refused"].includes(a.status)) out.push({
-      dedupe_key: `application_followup:${a.id}:${a.follow_up_at}`,
-      kind: "application",
-      title: `Candidature à relancer : ${a.company}`,
-      content: a.position ? `Poste : ${a.position}.` : null,
-      link: "/admin?tab=candidatures",
     });
   }
 
@@ -72,8 +59,6 @@ export async function buildRealNotifications(db: Db): Promise<Candidate[]> {
   for (const c of connections.data ?? []) {
     const expired = c.expires_at ? new Date(c.expires_at) < now : false;
     if (c.status === "reconnect_required" || c.status === "error" || expired) out.push({
-      // Stable key: one active problem per provider instead of a new notification
-      // every time expires_at/status changes.
       dedupe_key: `connection_issue:${c.provider}`,
       kind: "connection",
       title: `Connexion à rétablir : ${c.provider}`,
