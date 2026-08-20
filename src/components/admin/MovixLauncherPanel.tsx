@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ExternalLink, Globe2, Maximize2, RefreshCw, Save, Trash2 } from "lucide-react";
+import { ExternalLink, Globe2, Maximize2, RefreshCw, Save, Trash2, X } from "lucide-react";
 import { getMovixOfficialSource, type MovixOfficialSource } from "@/lib/movix-source.functions";
 
 const OVERRIDE_KEY = "angel-movies-movix-override-v2";
@@ -71,6 +71,8 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
   const [resolving, setResolving] = useState(false);
   const [testingOverride, setTestingOverride] = useState(false);
   const [overrideOk, setOverrideOk] = useState<boolean | null>(null);
+  const [choiceVisible, setChoiceVisible] = useState(false);
+  const lastAutoOpenedRef = useRef<string | null>(null);
 
   useEffect(() => {
     try {
@@ -99,14 +101,46 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
   function openIntegrated(url: string) {
     try { localStorage.setItem(LAST_KEY, url); } catch {}
     setEmbed(url);
+    setChoiceVisible(true);
     setFrameKey((value) => value + 1);
-    window.setTimeout(() => document.getElementById("movix-launcher-frame")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
   }
 
   function openExternal(url: string) {
     try { localStorage.setItem(LAST_KEY, url); } catch {}
     window.open(url, "_blank", "noopener,noreferrer");
   }
+
+  useEffect(() => {
+    if (!targetUrl || lastAutoOpenedRef.current === targetUrl) return;
+    lastAutoOpenedRef.current = targetUrl;
+    openIntegrated(targetUrl);
+  }, [targetUrl]);
+
+  useEffect(() => {
+    if (!embed) return;
+
+    const body = document.body;
+    const scrollY = window.scrollY;
+    const previous = {
+      overflow: body.style.overflow,
+      position: body.style.position,
+      top: body.style.top,
+      width: body.style.width,
+    };
+
+    body.style.overflow = "hidden";
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.width = "100%";
+
+    return () => {
+      body.style.overflow = previous.overflow;
+      body.style.position = previous.position;
+      body.style.top = previous.top;
+      body.style.width = previous.width;
+      window.scrollTo({ top: scrollY, left: 0, behavior: "auto" });
+    };
+  }, [embed]);
 
   async function testUrl(url: string) {
     const value = normalize(url);
@@ -151,62 +185,97 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
 
   async function closeIntegrated() {
     setEmbed(null);
+    setChoiceVisible(false);
     await leaveCinemaMode();
   }
 
   return (
-    <section id="movix-launcher" className="mt-12 border-t border-white/10 pt-10">
-      <div className="grid gap-6 lg:grid-cols-[1fr_1.15fr]">
-        <div className="space-y-5">
-          <div>
-            <div className="flex items-center gap-2 text-red-300"><Globe2 className="h-5 w-5" /><span className="font-mono text-xs uppercase tracking-[.18em]">Angel Movies · Movix</span></div>
-            <h2 className="mt-2 text-3xl font-semibold tracking-[-.045em]">Lecture Movix</h2>
-            <p className="mt-2 text-sm leading-6 text-white/50">Le même repérage automatique est utilisé pour les deux modes. Choisis soit le bac à sable intégré, soit l’ouverture directe sur Internet.</p>
-            {targetLabel && targetUrl ? (
-              <div className="mt-3 rounded-xl border border-violet-400/20 bg-violet-400/10 p-4">
-                <p className="text-sm text-violet-100">Lecture demandée : <strong>{targetLabel}</strong></p>
-                <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                  <button type="button" onClick={() => openIntegrated(targetUrl)} className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white"><PlayIcon />Bac à sable</button>
-                  <button type="button" onClick={() => openExternal(targetUrl)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[.06] px-4 py-3 text-sm font-semibold text-white"><ExternalLink className="h-4 w-4" />Ouvrir sur Internet</button>
+    <>
+      <section id="movix-launcher" className="mt-12 border-t border-white/10 pt-10">
+        <div className="grid gap-6 lg:grid-cols-[1fr_1.15fr]">
+          <div className="space-y-5">
+            <div>
+              <div className="flex items-center gap-2 text-red-300"><Globe2 className="h-5 w-5" /><span className="font-mono text-xs uppercase tracking-[.18em]">Angel Movies · Movix</span></div>
+              <h2 className="mt-2 text-3xl font-semibold tracking-[-.045em]">Lecture Movix</h2>
+              <p className="mt-2 text-sm leading-6 text-white/50">Le même repérage automatique est utilisé pour les deux modes. Le lecteur intégré s’ouvre désormais directement en vue immersive.</p>
+              {targetLabel && targetUrl ? (
+                <div className="mt-3 rounded-xl border border-violet-400/20 bg-violet-400/10 p-4">
+                  <p className="text-sm text-violet-100">Lecture demandée : <strong>{targetLabel}</strong></p>
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                    <button type="button" onClick={() => { void enterCinemaMode(); openIntegrated(targetUrl); }} className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white"><PlayIcon />Lecteur intégré</button>
+                    <button type="button" onClick={() => openExternal(targetUrl)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[.06] px-4 py-3 text-sm font-semibold text-white"><ExternalLink className="h-4 w-4" />Ouvrir sur Movix</button>
+                  </div>
                 </div>
+              ) : null}
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-white/[.035] p-5">
+              <p className="text-[10px] font-semibold uppercase tracking-[.18em] text-white/35">Adresse active</p>
+              <p className="mt-2 break-all font-mono text-base text-white/85">{activeBase}</p>
+              <p className="mt-2 text-[11px] text-white/35">Source : {override ? "adresse forcée" : sourceLabel(official?.source)}{official?.checkedAt && !override ? ` · vérifiée ${new Date(official.checkedAt).toLocaleString("fr-FR")}` : ""}</p>
+              <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                <button type="button" onClick={() => { void enterCinemaMode(); openIntegrated(activeBase); }} className="rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white">Lecteur intégré</button>
+                <button type="button" onClick={() => openExternal(activeBase)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm text-white/65"><ExternalLink className="h-4 w-4" />Movix</button>
+                <button type="button" onClick={() => void verifyActive()} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm text-white/65"><RefreshCw className={`h-4 w-4 ${resolving ? "animate-spin" : ""}`} />Vérifier</button>
               </div>
-            ) : null}
-          </div>
+            </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/[.035] p-5">
-            <p className="text-[10px] font-semibold uppercase tracking-[.18em] text-white/35">Adresse active</p>
-            <p className="mt-2 break-all font-mono text-base text-white/85">{activeBase}</p>
-            <p className="mt-2 text-[11px] text-white/35">Source : {override ? "adresse forcée" : sourceLabel(official?.source)}{official?.checkedAt && !override ? ` · vérifiée ${new Date(official.checkedAt).toLocaleString("fr-FR")}` : ""}</p>
-            <div className="mt-4 grid gap-2 sm:grid-cols-3">
-              <button type="button" onClick={() => openIntegrated(activeBase)} className="rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white">Bac à sable</button>
-              <button type="button" onClick={() => openExternal(activeBase)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm text-white/65"><ExternalLink className="h-4 w-4" />Internet</button>
-              <button type="button" onClick={() => void verifyActive()} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm text-white/65"><RefreshCw className={`h-4 w-4 ${resolving ? "animate-spin" : ""}`} />Vérifier</button>
+            <div className="rounded-2xl border border-white/10 bg-white/[.025] p-5">
+              <h3 className="text-sm font-semibold">Changer manuellement le domaine</h3>
+              <p className="mt-1 text-xs leading-5 text-white/35">Colle uniquement l’adresse de base. Les routes de lecture sont ajoutées automatiquement à partir de l’ID TMDB.</p>
+              <input value={draftOverride} onChange={(event) => { setDraftOverride(event.target.value); setOverrideOk(null); }} placeholder="https://nouveau-domaine.example" className="mt-3 min-h-11 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-sm text-white outline-none placeholder:text-white/20" />
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button type="button" onClick={() => void saveOverride()} disabled={testingOverride || !draftOverride.trim()} className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-black disabled:opacity-40"><Save className="h-4 w-4" />{testingOverride ? "Test…" : "Tester et utiliser"}</button>
+                {override ? <button type="button" onClick={() => void clearOverride()} className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/55"><Trash2 className="h-4 w-4" />Retirer l’adresse forcée</button> : null}
+              </div>
+              {overrideOk === true ? <p className="mt-2 text-xs text-emerald-300">Adresse valide et utilisée.</p> : null}
+              {overrideOk === false ? <p className="mt-2 text-xs text-amber-300">Cette adresse ne répond pas : elle n’a pas remplacé le lien automatique.</p> : null}
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/[.025] p-5">
-            <h3 className="text-sm font-semibold">Changer manuellement le domaine</h3>
-            <p className="mt-1 text-xs leading-5 text-white/35">Colle uniquement l’adresse de base. Les routes de lecture sont ajoutées automatiquement à partir de l’ID TMDB.</p>
-            <input value={draftOverride} onChange={(event) => { setDraftOverride(event.target.value); setOverrideOk(null); }} placeholder="https://nouveau-domaine.example" className="mt-3 min-h-11 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-sm text-white outline-none placeholder:text-white/20" />
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button type="button" onClick={() => void saveOverride()} disabled={testingOverride || !draftOverride.trim()} className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-black disabled:opacity-40"><Save className="h-4 w-4" />{testingOverride ? "Test…" : "Tester et utiliser"}</button>
-              {override ? <button type="button" onClick={() => void clearOverride()} className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/55"><Trash2 className="h-4 w-4" />Retirer l’adresse forcée</button> : null}
+          <div id="movix-launcher-frame" className="rounded-2xl border border-white/10 bg-white/[.025] p-4 sm:p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div><p className="text-xs font-semibold uppercase tracking-[.12em] text-white/35">Lecteur intégré</p><p className="mt-1 max-w-[70vw] truncate font-mono text-xs text-white/30">{embed || "aucun lien chargé"}</p></div>
+              {embed ? <button type="button" onClick={() => { void enterCinemaMode(); setChoiceVisible(true); }} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60"><Maximize2 className="h-3.5 w-3.5" />Rouvrir</button> : null}
             </div>
-            {overrideOk === true ? <p className="mt-2 text-xs text-emerald-300">Adresse valide et utilisée.</p> : null}
-            {overrideOk === false ? <p className="mt-2 text-xs text-amber-300">Cette adresse ne répond pas : elle n’a pas remplacé le lien automatique.</p> : null}
+            <p className="mt-4 rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-xs leading-5 text-white/45">Au lancement d’un film ou d’une série, le lecteur prend tout l’écran. Le site reste derrière sans défilement ni repositionnement manuel.</p>
+            <div className="mt-4 grid min-h-[360px] place-items-center rounded-xl border border-dashed border-white/10 bg-black/20 p-8 text-center text-sm text-white/30">Choisis un film ou une série : le lecteur s’ouvrira automatiquement.</div>
           </div>
         </div>
+      </section>
 
-        <div id="movix-launcher-frame" className="scroll-mt-5 rounded-2xl border border-white/10 bg-white/[.025] p-4 sm:p-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div><p className="text-xs font-semibold uppercase tracking-[.12em] text-white/35">Cadre intégré</p><p className="mt-1 max-w-[70vw] truncate font-mono text-xs text-white/30">{embed || "aucun lien chargé"}</p></div>
-            {embed ? <div className="flex flex-wrap gap-2"><button type="button" onClick={() => setFrameKey((value) => value + 1)} className="rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60">Recharger</button><button type="button" onClick={() => void enterCinemaMode()} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60"><Maximize2 className="h-3.5 w-3.5" />Horizontal</button><button type="button" onClick={() => openExternal(embed)} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60">Internet <ExternalLink className="h-3.5 w-3.5" /></button><button type="button" onClick={() => void closeIntegrated()} className="rounded-lg border border-white/10 px-3 py-2 text-xs text-white/40">Fermer</button></div> : null}
+      {embed ? (
+        <div className="fixed inset-0 z-[9999] h-[100dvh] w-screen overflow-hidden bg-black">
+          <iframe
+            key={frameKey}
+            src={embed}
+            title={`Movix Launcher — ${hostOf(embed)}`}
+            referrerPolicy="no-referrer"
+            allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+            sandbox="allow-forms allow-same-origin allow-scripts allow-presentation"
+            className="absolute inset-0 h-full w-full border-0 bg-black"
+          />
+
+          {choiceVisible ? (
+            <div className="absolute left-1/2 top-3 z-20 w-[calc(100%-1.5rem)] max-w-xl -translate-x-1/2 rounded-2xl border border-white/15 bg-black/85 p-3 shadow-2xl backdrop-blur-xl sm:top-5 sm:flex sm:items-center sm:gap-3 sm:p-4">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-white">Tu préfères ouvrir directement dans Movix ?</p>
+                <p className="mt-0.5 truncate text-[11px] text-white/45">{targetLabel || hostOf(embed)}</p>
+              </div>
+              <div className="mt-3 flex shrink-0 gap-2 sm:mt-0">
+                <button type="button" onClick={() => openExternal(embed)} className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-white px-3 py-2.5 text-xs font-semibold text-black sm:flex-none"><ExternalLink className="h-3.5 w-3.5" />Ouvrir Movix</button>
+                <button type="button" onClick={() => setChoiceVisible(false)} className="flex-1 rounded-xl border border-white/15 bg-white/[.07] px-3 py-2.5 text-xs font-semibold text-white sm:flex-none">Continuer ici</button>
+              </div>
+            </div>
+          ) : null}
+
+          <div className="absolute bottom-3 right-3 z-20 flex gap-2 sm:bottom-5 sm:right-5">
+            <button type="button" onClick={() => setFrameKey((value) => value + 1)} className="rounded-full border border-white/15 bg-black/70 px-3 py-2 text-xs text-white/75 backdrop-blur-lg">Recharger</button>
+            <button type="button" onClick={() => void closeIntegrated()} aria-label="Fermer le lecteur" className="grid h-10 w-10 place-items-center rounded-full border border-white/15 bg-black/70 text-white backdrop-blur-lg"><X className="h-4 w-4" /></button>
           </div>
-          <p className="mt-4 rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-xs leading-5 text-white/45">Le bac à sable et l’ouverture Internet utilisent exactement la même adresse calculée. Si l’intégration iframe est refusée, ouvre le contenu directement sur Internet.</p>
-          {embed ? <iframe key={frameKey} src={embed} title={`Movix Launcher — ${hostOf(embed)}`} referrerPolicy="no-referrer" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" sandbox="allow-forms allow-same-origin allow-scripts allow-presentation" className="mt-4 h-[70vh] min-h-[520px] w-full rounded-xl border border-white/10 bg-black" /> : <div className="mt-4 grid min-h-[520px] place-items-center rounded-xl border border-dashed border-white/10 bg-black/20 p-8 text-center text-sm text-white/30">Choisis un film ou une série puis sélectionne « Bac à sable » ou « Ouvrir sur Internet ».</div>}
         </div>
-      </div>
-    </section>
+      ) : null}
+    </>
   );
 }
 
