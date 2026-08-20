@@ -1,8 +1,8 @@
 import fs from "node:fs/promises";
 
-const REFERENCE_URLS = ["https://movix.help/", "https://movix.online/"];
+const RENTRY_REFERENCE = "https://rentry.co/movix/raw";
+const HELP_REFERENCE = "https://movix.help/";
 const UPSTREAM_RAW = "https://raw.githubusercontent.com/movixcorp/MovixOpenSource/main/src/pages/help/MiroirsPage.tsx";
-const TELEGRAM_PUBLIC = "https://t.me/s/movix_site";
 const TARGET = "src/lib/movix-current.generated.ts";
 
 function normalize(value) {
@@ -31,11 +31,13 @@ async function probe(raw) {
   try {
     const response = await fetch(value, {
       redirect: "follow",
+      cache: "no-store",
       headers: { "User-Agent": "Angel-Movies-Movix-Automation" },
       signal: AbortSignal.timeout(10_000),
     });
     if (!response.ok) return null;
-    const body = (response.headers.get("content-type") || "").includes("text/html") ? await response.text() : "";
+    const contentType = response.headers.get("content-type") || "";
+    const body = contentType.includes("text/html") || contentType.includes("text/plain") ? await response.text() : "";
     return { url: normalize(response.url) || value, body };
   } catch {
     return null;
@@ -55,39 +57,50 @@ function extractMovixUrls(source) {
   return values;
 }
 
-async function resolve() {
-  for (const referenceUrl of REFERENCE_URLS) {
-    const reference = await probe(referenceUrl);
-    if (!reference) continue;
-    for (const candidate of extractMovixUrls(reference.body)) {
-      const verified = await probe(candidate);
-      if (verified) return { url: verified.url, source: referenceUrl };
-    }
-    if (isCandidate(reference.url)) return { url: reference.url, source: referenceUrl };
+async function firstVerified(candidates) {
+  for (const candidate of candidates) {
+    const verified = await probe(candidate);
+    if (verified && isCandidate(verified.url)) return verified.url;
   }
+  return null;
+}
 
-  for (const sourceUrl of [UPSTREAM_RAW, TELEGRAM_PUBLIC]) {
-    try {
-      const response = await fetch(sourceUrl, {
-        headers: { "User-Agent": "Angel-Movies-Movix-Automation" },
-        signal: AbortSignal.timeout(10_000),
-      });
-      if (!response.ok) continue;
-      const text = await response.text();
-      for (const candidate of extractMovixUrls(text)) {
-        const verified = await probe(candidate);
-        if (verified) return { url: verified.url, source: sourceUrl };
-      }
-    } catch {}
-  }
+async function candidatesFromReference(referenceUrl) {
+  const reference = await probe(referenceUrl);
+  return reference ? extractMovixUrls(reference.body) : [];
+}
+
+async function resolve() {
+  // 1. Liste d'adresses dédiée : priorité absolue sur l'ancienne valeur enregistrée.
+  const rentry = await firstVerified(await candidatesFromReference(RENTRY_REFERENCE));
+  if (rentry) return { url: rentry, source: RENTRY_REFERENCE };
+
+  // 2. Source GitHub officielle du projet.
+  try {
+    const response = await fetch(UPSTREAM_RAW, {
+      cache: "no-store",
+      headers: { "User-Agent": "Angel-Movies-Movix-Automation" },
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (response.ok) {
+      const github = await firstVerified(extractMovixUrls(await response.text()));
+      if (github) return { url: github, source: UPSTREAM_RAW };
+    }
+  } catch {}
+
+  // 3. Page d'aide officielle. Aucun movix.online n'est forcé dans le code.
+  const help = await firstVerified(await candidatesFromReference(HELP_REFERENCE));
+  if (help) return { url: help, source: HELP_REFERENCE };
+
   return null;
 }
 
 const current = await fs.readFile(TARGET, "utf8");
 const currentUrl = current.match(/url:\s*"([^"]+)"/)?.[1] || "";
 const resolved = await resolve();
+
 if (!resolved) {
-  console.error("Aucun domaine Movix vérifié. Le dernier domaine sain est conservé.");
+  console.error("Aucune nouvelle adresse Movix vérifiée. L'adresse persistante n'est pas remplacée.");
   process.exitCode = 1;
 } else if (resolved.url === currentUrl) {
   console.log(`Movix inchangé : ${resolved.url}`);
