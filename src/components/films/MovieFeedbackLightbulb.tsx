@@ -56,40 +56,47 @@ export function MovieFeedbackLightbulb() {
     }
   }
 
+  function openFeedback() {
+    setOpen(true);
+    setBubbleVisible(false);
+    try { localStorage.setItem(BUBBLE_KEY, "1"); } catch {}
+  }
+
   return (
     <>
-      <div className="fixed right-3 top-3 z-[80] flex items-start gap-2 sm:right-5 sm:top-5">
-        {bubbleVisible && !open ? (
-          <button
-            type="button"
-            onClick={() => { setOpen(true); setBubbleVisible(false); }}
-            className="relative max-w-[165px] rounded-2xl border border-white/10 bg-black/80 px-2.5 py-1.5 text-left text-[9px] leading-4 text-white/60 shadow-xl backdrop-blur-xl sm:max-w-[185px] sm:px-3 sm:py-2 sm:text-[10px]"
-          >
-            Des idées de mises à jour ? Écris-moi.
-            <span className="absolute -right-1 top-3 h-2 w-2 rotate-45 border-r border-t border-white/10 bg-black/80" />
-          </button>
-        ) : null}
+      <div className="fixed right-3 top-3 z-[80] flex items-start gap-1.5 sm:right-5 sm:top-5">
+        <div className="relative flex items-start gap-2">
+          {bubbleVisible && !open ? (
+            <button
+              type="button"
+              onClick={openFeedback}
+              className="relative max-w-[155px] rounded-2xl border border-white/10 bg-black/80 px-2.5 py-1.5 text-left text-[9px] leading-4 text-white/60 shadow-xl backdrop-blur-xl sm:max-w-[180px] sm:px-3 sm:py-2 sm:text-[10px]"
+            >
+              Des idées de mises à jour ? Écris-moi.
+              <span className="absolute -right-1 top-3 h-2 w-2 rotate-45 border-r border-t border-white/10 bg-black/80" />
+            </button>
+          ) : null}
 
-        <div className="flex gap-1.5">
-          <a
-            href={PROTON_PLAY_URL}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Proton VPN"
-            title="Proton VPN"
-            className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-black/55 text-violet-200/75 shadow-lg backdrop-blur-xl transition hover:bg-black/75 hover:text-violet-100"
-          >
-            <ShieldCheck className="h-4 w-4" />
-          </a>
           <button
             type="button"
-            onClick={() => { setOpen(true); setBubbleVisible(false); try { localStorage.setItem(BUBBLE_KEY, "1"); } catch {} }}
+            onClick={openFeedback}
             aria-label="Proposer une idée"
-            className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-black/55 text-amber-200/75 shadow-lg backdrop-blur-xl transition hover:bg-black/75 hover:text-amber-100"
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/10 bg-black/55 text-amber-200/75 shadow-lg backdrop-blur-xl transition hover:bg-black/75 hover:text-amber-100"
           >
             <Lightbulb className="h-4 w-4" />
           </button>
         </div>
+
+        <a
+          href={PROTON_PLAY_URL}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Proton VPN"
+          title="Proton VPN"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/10 bg-black/55 text-violet-200/75 shadow-lg backdrop-blur-xl transition hover:bg-black/75 hover:text-violet-100"
+        >
+          <ShieldCheck className="h-4 w-4" />
+        </a>
       </div>
 
       {open ? (
