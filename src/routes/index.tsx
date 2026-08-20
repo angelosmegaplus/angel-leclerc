@@ -41,9 +41,8 @@ const choices = [
     icon: User,
     eyebrow: "Partie personnelle",
     title: "Mon parcours",
-    text: "Découvrez mon parcours, mes compétences, mes réalisations et ma recherche urgente d'alternance en BTS Communication. Je suis ouvert à tout secteur proposant de vraies missions de communication, avec Sarlat en priorité puis Périgueux, Bergerac, Brive, Bordeaux, Toulouse et les alentours pertinents.",
+    text: "Découvrez mon parcours, mes compétences, mes réalisations et mes projets en communication.",
     cta: "Voir mon parcours",
-    badge: "Recherche urgente d'alternance — septembre 2026",
   },
 ];
 
