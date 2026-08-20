@@ -83,6 +83,7 @@ export function MovixLauncherPanel({
   const [testingOverride, setTestingOverride] = useState(false);
   const [overrideOk, setOverrideOk] = useState<boolean | null>(null);
   const [controlsVisible, setControlsVisible] = useState(true);
+  const [launcherDismissed, setLauncherDismissed] = useState(false);
   const lastAutoOpenedRef = useRef<string | null>(null);
   const iframeLoadCountRef = useRef(0);
   const controlsTimerRef = useRef<number | null>(null);
@@ -264,19 +265,30 @@ export function MovixLauncherPanel({
 
   return (
     <>
-      {!embed ? (
-        <div className="fixed inset-x-3 top-[4.6rem] z-40 mx-auto w-auto max-w-[1100px] sm:inset-x-6 sm:top-20">
-          <button
-            type="button"
-            onClick={() => void launchMovix()}
-            disabled={resolving && !activeBase}
-            className="flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl border border-red-400/35 bg-gradient-to-r from-red-600/95 via-red-500/95 to-red-600/95 px-4 py-3 text-sm font-bold text-white shadow-[0_12px_40px_rgba(239,68,68,.28)] backdrop-blur-xl transition hover:scale-[1.01] hover:from-red-500 hover:to-red-500 disabled:cursor-wait disabled:opacity-60 sm:min-h-16 sm:text-base"
-            aria-label="Lancer Movix en plein écran"
-          >
-            {resolving && !activeBase ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Play className="h-5 w-5 fill-current sm:h-6 sm:w-6" />}
-            <span>Lancer Movix</span>
-            <span className="hidden text-xs font-medium text-white/70 sm:inline">· plein écran</span>
-          </button>
+      {!embed && !launcherDismissed ? (
+        <div className="fixed inset-x-3 top-[6.35rem] z-40 mx-auto w-auto max-w-[1100px] sm:inset-x-6 sm:top-28">
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => void launchMovix()}
+              disabled={resolving && !activeBase}
+              className="flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl border border-red-400/35 bg-gradient-to-r from-red-600/95 via-red-500/95 to-red-600/95 px-12 py-3 text-sm font-bold text-white shadow-[0_12px_40px_rgba(239,68,68,.28)] backdrop-blur-xl transition hover:scale-[1.01] hover:from-red-500 hover:to-red-500 disabled:cursor-wait disabled:opacity-60 sm:min-h-16 sm:text-base"
+              aria-label="Lancer Movix en plein écran"
+            >
+              {resolving && !activeBase ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Play className="h-5 w-5 fill-current sm:h-6 sm:w-6" />}
+              <span>Lancer Movix</span>
+              <span className="hidden text-xs font-medium text-white/70 sm:inline">· plein écran</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setLauncherDismissed(true)}
+              aria-label="Masquer le bouton Lancer Movix"
+              title="Masquer"
+              className="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full border border-white/15 bg-black/20 text-white/75 backdrop-blur transition hover:bg-black/40 hover:text-white"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       ) : null}
 
