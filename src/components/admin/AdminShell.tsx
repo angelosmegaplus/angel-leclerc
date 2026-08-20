@@ -23,14 +23,14 @@ type CompactDefinition = {
 
 const COMPACT_NAV: CompactDefinition[] = [
   { key: "dashboard", label: "Accueil", description: "Vue d'ensemble et priorités", source: "dashboard", children: ["dashboard"] },
-  { key: "travail", label: "Travail", description: "Études, emploi, projets, agenda et statistiques", source: "candidatures", children: ["candidatures", "projets", "agenda", "messages", "boite-mail", "stats"] },
+  { key: "travail", label: "Travail", description: "Études, emploi, projets, agenda et statistiques", source: "etudes-travail", children: ["etudes-travail", "projets", "agenda", "messages", "boite-mail", "stats"] },
   { key: "studio", label: "Studio", description: "Articles, médias, fichiers et services", source: "articles", children: ["articles", "studio", "contenus", "fichiers", "boutique"] },
   { key: "pilotage", label: "Pilotage IA", description: "ChatGPT, automatisations et activité", source: "angel-ai", children: ["angel-ai", "automatisation", "activite"] },
   { key: "systeme", label: "Système", description: "Connexions, alertes et communauté", source: "connexions", children: ["connexions", "notifications", "abonnes", "avis", "parametres"] },
 ];
 
 function adminDisplayLabel(key: string, label: string) {
-  return key === "candidatures" ? "Études & Travail" : label;
+  return key === "candidatures" || key === "etudes-travail" ? "Études & Travail" : label;
 }
 
 export function AdminShell({ items, active, onSelect, title, actions, children }: {
