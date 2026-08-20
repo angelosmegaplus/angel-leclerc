@@ -5,14 +5,14 @@ import { ContactChat, type Track } from "@/components/ContactChat";
 import { PublicContactAssistant } from "@/components/PublicContactAssistant";
 
 const TITLE = "Contact — Angel Leclerc";
-const DESCRIPTION = "Contactez Angel Leclerc pour une alternance, un projet professionnel ou une demande liée à Angel Leclerc Communication.";
+const DESCRIPTION = "Contactez Angel Leclerc pour un projet professionnel, une demande de communication ou toute autre question.";
 
 type OpenPanel = "question" | "contact" | null;
 
 export const Route = createFileRoute("/contact")({
   validateSearch: (search: Record<string, unknown>): { parcours?: Track } => {
     const raw = typeof search["parcours"] === "string" ? (search["parcours"] as string) : "";
-    return raw === "projet" || raw === "alternance" || raw === "autre" ? { parcours: raw } : {};
+    return raw === "projet" || raw === "autre" ? { parcours: raw } : {};
   },
   head: () => ({
     meta: [
@@ -79,7 +79,7 @@ function ContactPage() {
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block font-display text-lg font-bold text-foreground">Contacter Angel Leclerc</span>
-                <span className="mt-0.5 block text-sm text-muted-foreground">Alternance, projet professionnel ou Angel Leclerc Communication</span>
+                <span className="mt-0.5 block text-sm text-muted-foreground">Projet professionnel, communication ou autre demande</span>
               </span>
               <ChevronDown className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-200 ${openPanel === "contact" ? "rotate-180" : ""}`} />
             </button>
