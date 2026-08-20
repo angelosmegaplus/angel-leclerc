@@ -21,7 +21,6 @@ type Hit = { id: string; label: string; detail: string; group: string; tab: stri
 const SOURCES = [
   { table: "articles", select: "id,title,category,slug", group: "Article", tab: "articles", label: (r: any) => r.title, detail: (r: any) => r.category ?? "" },
   { table: "projects", select: "id,title,client_name", group: "Projet", tab: "projets", label: (r: any) => r.title, detail: (r: any) => r.client_name ?? "" },
-  { table: "applications", select: "id,company,position,city", group: "Candidature", tab: "candidatures", label: (r: any) => r.company, detail: (r: any) => [r.position, r.city].filter(Boolean).join(" · ") },
   { table: "contacts_sources", select: "id,last_name,first_name,organization", group: "Contact studio", tab: "studio", label: (r: any) => [r.first_name, r.last_name].filter(Boolean).join(" "), detail: (r: any) => r.organization ?? "" },
   { table: "reportages", select: "id,title,location", group: "Reportage", tab: "studio", label: (r: any) => r.title, detail: (r: any) => r.location ?? "" },
   { table: "interviews", select: "id,title,person", group: "Interview", tab: "studio", label: (r: any) => r.title, detail: (r: any) => r.person ?? "" },
@@ -69,7 +68,7 @@ export function GlobalSearch({ open, onClose, onNavigate }: { open: boolean; onC
   const [query, setQuery] = useState("");
   const executePrivateAi = useServerFn(runPrivateAngelOsIaChat);
   const queryClient = useQueryClient();
-  const { data = [], isLoading } = useQuery({ queryKey: ["angel", "search-index"], queryFn: loadIndex, enabled: open, staleTime: 60_000 });
+  const { data = [], isLoading } = useQuery({ queryKey: ["angel", "search-index", "v2"], queryFn: loadIndex, enabled: open, staleTime: 60_000 });
 
   useEffect(() => {
     if (!open) return;
@@ -205,7 +204,7 @@ export function GlobalSearch({ open, onClose, onNavigate }: { open: boolean; onC
             <Send className="h-4 w-4 shrink-0 text-red-300" />
           </button> : null}
 
-          {!trimmed && !isLoading ? <p className="px-3 py-2 text-sm leading-relaxed text-white/45">Recherche une page, une candidature, un article ou pose directement une question. Dans l’espace privé, aucune IA locale ne remplace Angel OS IA.</p> : null}
+          {!trimmed && !isLoading ? <p className="px-3 py-2 text-sm leading-relaxed text-white/45">Recherche une page, un article, un projet ou pose directement une question. L’espace Études & Travail reste accessible comme page dédiée.</p> : null}
         </div>
       </div>
     </div>
