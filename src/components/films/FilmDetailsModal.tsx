@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Brain, CheckCircle2, ExternalLink, Heart, Loader2, Play, Star, ThumbsDown, X } from "lucide-react";
 import { getFilmDetails } from "@/lib/film-details.functions";
-import { signalForCandidate, upsertTasteSignal } from "@/lib/film-taste.client";
+import { signalForCandidate, upsertTasteSignal } from "@/lib/film-taste.browser";
 import type { RecommendationCandidate, ViewingSignal } from "@/lib/film-recommendations";
 
 export function FilmDetailsModal({

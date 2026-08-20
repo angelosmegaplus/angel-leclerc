@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { saveTasteSignals } from "./film-taste.client";
+import { saveTasteSignals } from "./film-taste.browser";
 import type { ViewingSignal } from "./film-recommendations";
 
 type TasteRow = {
