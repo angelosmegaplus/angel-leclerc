@@ -33,8 +33,11 @@ function withPath(base: string, path: string) {
 
 function sourceLabel(source?: MovixOfficialSource["source"]) {
   if (source === "last_known") return "dernier lien valide";
+  if (source === "persisted") return "lien automatisé enregistré";
+  if (source === "movix_help") return "référence publique Movix";
   if (source === "movix_online") return "movix.online";
   if (source === "github") return "GitHub Movix";
+  if (source === "lovable_ai") return "recherche web IA Lovable";
   if (source === "fallback") return "secours";
   return "résolution automatique";
 }
@@ -158,7 +161,7 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
           <div>
             <div className="flex items-center gap-2 text-red-300"><Globe2 className="h-5 w-5" /><span className="font-mono text-xs uppercase tracking-[.18em]">Angel Movies · Movix</span></div>
             <h2 className="mt-2 text-3xl font-semibold tracking-[-.045em]">Bac à sable Movix</h2>
-            <p className="mt-2 text-sm leading-6 text-white/50">Le domaine est retrouvé automatiquement via le dernier lien valide, movix.online et le dépôt officiel Movix. Les routes de lecture utilisent directement l’ID TMDB du film ou de la série.</p>
+            <p className="mt-2 text-sm leading-6 text-white/50">Le domaine est retrouvé automatiquement depuis le dernier lien sain, les références publiques de Movix et son dépôt GitHub. Si ces sources deviennent ambiguës ou indisponibles, l’IA Lovable compare des résultats web publics puis ne retient qu’une adresse qui répond réellement.</p>
             {targetLabel ? <p className="mt-3 rounded-xl border border-violet-400/20 bg-violet-400/10 px-4 py-3 text-sm text-violet-100">Lecture demandée : <strong>{targetLabel}</strong></p> : null}
           </div>
 
