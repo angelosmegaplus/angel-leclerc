@@ -138,7 +138,7 @@ function RootComponent() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const isAngelOSPage = pathname === "/angel-os-ia";
   const isAdminPage = pathname === "/admin" || pathname.startsWith("/admin/") || pathname.startsWith("/admin-");
-  const isStandaloneMoviesPage = pathname === "/films-series";
+  const isStandaloneMoviesPage = pathname === "/films-series" || pathname === "/movies-auth";
 
   useEffect(() => {
     void bootAngelOS().catch((error) => {
@@ -148,7 +148,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <MaintenanceGate bypass={isAdminPage}>
+      <MaintenanceGate bypass={isAdminPage || isStandaloneMoviesPage}>
         <ThemeSync />
         <AngelOSCardStyle />
         <PageViewTracker />
