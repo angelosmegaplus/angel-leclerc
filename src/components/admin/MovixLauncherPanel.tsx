@@ -57,7 +57,7 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
       setEmbed(url);
       setFrameKey((value) => value + 1);
       showControlsBriefly();
-    }, 5500);
+    }, 10000);
   }
 
   useEffect(() => {
@@ -100,7 +100,7 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
     <section id="movix-launcher" className="mt-12 border-t border-white/10 pt-10">
       <div className="grid gap-6 lg:grid-cols-[1fr_1.15fr]">
         <div className="space-y-5">
-          <div><div className="flex items-center gap-2 text-red-300"><Globe2 className="h-5 w-5" /><span className="font-mono text-xs uppercase tracking-[.18em]">Angel Movies · Movix</span></div><h2 className="mt-2 text-3xl font-semibold tracking-[-.045em]">Lecture Movix</h2><p className="mt-2 text-sm leading-6 text-white/50">L’adresse active est résolue silencieusement. Le lecteur s’ouvre automatiquement après une courte transition.</p>{targetLabel ? <div className="mt-3 rounded-xl border border-violet-400/20 bg-violet-400/10 p-4"><p className="text-sm text-violet-100">Lecture demandée : <strong>{targetLabel}</strong></p>{targetUrl ? <button type="button" onClick={() => openIntegrated(targetUrl)} className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white"><PlayIcon />Lecteur intégré</button> : <p className="mt-2 text-xs text-white/40">Préparation de la lecture…</p>}</div> : null}</div>
+          <div><div className="flex items-center gap-2 text-red-300"><Globe2 className="h-5 w-5" /><span className="font-mono text-xs uppercase tracking-[.18em]">Angel Movies · Movix</span></div><h2 className="mt-2 text-3xl font-semibold tracking-[-.045em]">Lecture Movix</h2><p className="mt-2 text-sm leading-6 text-white/50">L’adresse active est résolue silencieusement. Le lecteur s’ouvre automatiquement après la transition.</p>{targetLabel ? <div className="mt-3 rounded-xl border border-violet-400/20 bg-violet-400/10 p-4"><p className="text-sm text-violet-100">Lecture demandée : <strong>{targetLabel}</strong></p>{targetUrl ? <button type="button" onClick={() => openIntegrated(targetUrl)} className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white"><PlayIcon />Lecteur intégré</button> : <p className="mt-2 text-xs text-white/40">Préparation de la lecture…</p>}</div> : null}</div>
           <div className="rounded-2xl border border-white/10 bg-white/[.035] p-5"><p className="text-[10px] font-semibold uppercase tracking-[.18em] text-white/35">Adresse active</p><p className="mt-2 break-all font-mono text-base text-white/85">{activeBase || "Détection en cours…"}</p><p className="mt-2 text-[11px] text-white/35">Source : {override ? "adresse forcée" : sourceLabel(official?.source)}</p><div className="mt-4 grid gap-2 sm:grid-cols-2"><button type="button" disabled={!activeBase} onClick={() => activeBase && openIntegrated(activeBase)} className="rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white disabled:opacity-40">Lecteur intégré</button><button type="button" onClick={() => void verifyActive()} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm text-white/65"><RefreshCw className={`h-4 w-4 ${resolving ? "animate-spin" : ""}`} />Vérifier</button></div></div>
           <div className="rounded-2xl border border-white/10 bg-white/[.025] p-5"><h3 className="text-sm font-semibold">Changer manuellement le domaine</h3><input value={draftOverride} onChange={(e) => { setDraftOverride(e.target.value); setOverrideOk(null); }} placeholder="https://nouveau-domaine.example" className="mt-3 min-h-11 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-sm text-white outline-none" /><div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={() => void saveOverride()} disabled={testingOverride || !draftOverride.trim()} className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-black disabled:opacity-40"><Save className="h-4 w-4" />{testingOverride ? "Test…" : "Tester et utiliser"}</button>{override ? <button type="button" onClick={() => void clearOverride()} className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/55"><Trash2 className="h-4 w-4" />Retirer</button> : null}</div>{overrideOk === false ? <p className="mt-2 text-xs text-amber-300">Cette adresse ne répond pas.</p> : null}</div>
         </div>
@@ -108,18 +108,26 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
       </div>
     </section>
 
-    {pendingUrl ? <div className="fixed inset-0 z-[10000] grid h-[100dvh] w-screen place-items-center overflow-hidden bg-black text-white">
+    {pendingUrl ? <div className="fixed inset-0 z-[10000] h-[100dvh] w-screen overflow-hidden bg-black text-white">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(239,68,68,.18),transparent_38%)] animate-pulse" />
       <div className="absolute left-1/2 top-1/2 h-[120vmax] w-[8px] -translate-x-1/2 -translate-y-1/2 rotate-12 bg-gradient-to-b from-transparent via-red-500/80 to-transparent blur-sm animate-in zoom-in-50 fade-in duration-300" />
       <div className="absolute left-1/2 top-1/2 h-44 w-44 -translate-x-1/2 -translate-y-1/2 rounded-full border border-red-500/20 shadow-[0_0_100px_rgba(239,68,68,.24)] animate-ping" />
-      <div className="relative mx-6 text-center">
-        <div className="relative mx-auto flex h-24 w-24 items-center justify-center overflow-hidden animate-in zoom-in-50 fade-in duration-300"><span className="absolute text-[6.2rem] font-black leading-none tracking-[-.12em] text-white drop-shadow-[0_0_26px_rgba(239,68,68,.65)]">A</span><span className="absolute h-full w-[3px] -skew-x-12 bg-red-500 shadow-[0_0_18px_rgba(239,68,68,.9)] animate-pulse" /></div>
-        <div className="mt-1 animate-in fade-in slide-in-from-bottom-2 duration-300 delay-150"><p className="text-[11px] font-semibold uppercase tracking-[.42em] text-white/45">Angel OS Films</p><h2 className="mt-3 text-xl font-semibold tracking-[-.04em] sm:text-2xl">Ouverture du lecteur Movix</h2><p className="mx-auto mt-2 max-w-sm text-[11px] leading-5 text-white/55 sm:text-xs">Un petit bandeau du navigateur peut apparaître : c’est normal, attendez quelques instants, il disparaîtra.</p><p className="mx-auto mt-1 max-w-sm text-[11px] font-semibold text-white/85 sm:text-xs">Ne cliquez pas sur Retour · fermez avec ✕.</p></div>
-        <div className="mx-auto mt-4 h-[2px] w-24 overflow-hidden bg-white/10"><div className="h-full w-full origin-left bg-red-500 animate-[pulse_300ms_ease-in-out_infinite] shadow-[0_0_10px_rgba(239,68,68,.8)]" /></div>
+
+      <div className="absolute inset-x-4 top-4 z-20 mx-auto max-w-md space-y-2 text-center sm:top-6">
+        <p className="animate-in fade-in slide-in-from-top-2 duration-500 [animation-fill-mode:both] text-[11px] font-semibold text-white/90">Vous allez ouvrir le lecteur Movix.</p>
+        <p className="animate-in fade-in slide-in-from-top-2 duration-500 [animation-delay:1800ms] [animation-fill-mode:both] text-[11px] leading-5 text-white/65">Un petit bandeau du navigateur peut apparaître en bas : c’est normal.</p>
+        <p className="animate-in fade-in slide-in-from-top-2 duration-500 [animation-delay:3800ms] [animation-fill-mode:both] text-[11px] font-semibold text-white/90">Attendez quelques instants : il disparaîtra. Ne cliquez pas sur Retour · fermez avec ✕.</p>
       </div>
-      <div className="absolute inset-x-0 bottom-8 flex flex-col items-center gap-2 text-center sm:bottom-10">
-        <p className="text-[11px] font-medium tracking-wide text-white/60">On recherche le bon domaine 👀</p>
-        <div className="flex items-center gap-2">
+
+      <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 text-center">
+        <div className="relative mx-auto flex h-24 w-24 items-center justify-center overflow-hidden animate-in zoom-in-50 fade-in duration-500"><span className="absolute text-[6.2rem] font-black leading-none tracking-[-.12em] text-white drop-shadow-[0_0_26px_rgba(239,68,68,.65)]">A</span><span className="absolute h-full w-[3px] -skew-x-12 bg-red-500 shadow-[0_0_18px_rgba(239,68,68,.9)] animate-pulse" /></div>
+        <p className="mt-2 animate-in fade-in slide-in-from-bottom-2 duration-500 [animation-delay:800ms] [animation-fill-mode:both] text-[11px] font-semibold uppercase tracking-[.42em] text-white/45">Angel OS Films</p>
+        <h2 className="mt-3 animate-in fade-in zoom-in-95 duration-500 [animation-delay:1200ms] [animation-fill-mode:both] text-xl font-semibold tracking-[-.04em] sm:text-2xl">Ouverture du lecteur Movix</h2>
+      </div>
+
+      <div className="absolute inset-x-0 bottom-20 z-20 flex flex-col items-center gap-2 text-center sm:bottom-24">
+        <p className="animate-in fade-in slide-in-from-bottom-2 duration-500 [animation-delay:5200ms] [animation-fill-mode:both] text-[11px] font-medium tracking-wide text-white/60">On recherche le bon domaine 👀</p>
+        <div className="flex items-center gap-2 animate-in fade-in duration-500 [animation-delay:5600ms] [animation-fill-mode:both]">
           <span className="h-2.5 w-2.5 rounded-full border border-red-300/30 bg-red-500/70 shadow-[0_0_12px_rgba(239,68,68,.65)] animate-bounce [animation-delay:0ms]" />
           <span className="h-2.5 w-2.5 rounded-full border border-red-300/30 bg-red-500/70 shadow-[0_0_12px_rgba(239,68,68,.65)] animate-bounce [animation-delay:120ms]" />
           <span className="h-2.5 w-2.5 rounded-full border border-red-300/30 bg-red-500/70 shadow-[0_0_12px_rgba(239,68,68,.65)] animate-bounce [animation-delay:240ms]" />
