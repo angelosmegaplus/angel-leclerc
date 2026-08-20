@@ -161,6 +161,19 @@ function RootComponent() {
       let node = walker.nextNode();
       while (node) {
         const current = node.nodeValue ?? "";
+        const normalized = current.replace(/\s+/g, " ").trim().toLowerCase();
+        const isLegacyAlternance = normalized.includes("me contacter pour une alternance") || normalized.includes("me contacter pour l’alternance") || normalized.includes("me contacter pour l'alternance");
+
+        if (pathname === "/contact" && isLegacyAlternance) {
+          const element = node.parentElement;
+          const option = element?.closest("button, a, [role='button']") as HTMLElement | null;
+          if (option) {
+            option.remove();
+            node = walker.nextNode();
+            continue;
+          }
+        }
+
         let next = current;
         for (const [before, after] of replacements) {
           if (next.includes(before)) next = next.replaceAll(before, after);
