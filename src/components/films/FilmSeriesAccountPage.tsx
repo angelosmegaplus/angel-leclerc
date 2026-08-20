@@ -242,8 +242,8 @@ function MovixInfoBanner() {
             <span className="h-px flex-1 overflow-hidden bg-white/10"><span className="block h-full w-1/3 bg-gradient-to-r from-transparent via-red-400 to-transparent animate-[pulse_700ms_ease-in-out_infinite]" /></span>
           </div>
           <div className="relative mt-1 h-5 overflow-hidden text-[10px] font-medium text-white/75 sm:h-6 sm:text-xs">
-            <p className="absolute inset-0 flex items-center animate-[fadeBanner_8s_ease-in-out_infinite]">Lecteur Movix : un bandeau Chrome peut apparaître, c’est normal.</p>
-            <p className="absolute inset-0 flex items-center opacity-0 animate-[fadeBanner2_8s_ease-in-out_infinite]">Attendez quelques instants : il disparaîtra automatiquement.</p>
+            <p className="absolute inset-0 flex items-center animate-[fadeBanner_8s_ease-in-out_infinite]">Sans publicité ni pop-up · cliquez simplement sur Lire dans Movix : le film s’affiche automatiquement.</p>
+            <p className="absolute inset-0 flex items-center opacity-0 animate-[fadeBanner2_8s_ease-in-out_infinite]">Lecteur Movix : un bandeau Chrome peut apparaître, c’est normal. Attendez quelques instants.</p>
             <p className="absolute inset-0 flex items-center opacity-0 animate-[fadeBanner3_8s_ease-in-out_infinite]">Ne cliquez pas sur Retour · fermez le lecteur avec ✕.</p>
           </div>
         </div>
