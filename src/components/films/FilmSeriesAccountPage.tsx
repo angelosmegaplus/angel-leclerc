@@ -171,6 +171,8 @@ export function FilmSeriesAccountPage() {
         </div>
       </header>
 
+      <MovixInfoBanner />
+
       {hero ? (
         <section className="relative min-h-[400px] overflow-hidden border-b border-white/[.06] sm:min-h-[540px]">
           {hero.backdropUrl || hero.posterUrl ? <img src={hero.backdropUrl || hero.posterUrl} alt="" className="absolute inset-0 h-full w-full object-cover opacity-50" /> : null}
@@ -220,6 +222,41 @@ export function FilmSeriesAccountPage() {
 
       {selected ? <FilmDetailsModal item={selected} signals={signals} profileKey={userId} onSignalsChange={(next) => { setSignals(next); const changed = next.find((signal) => signal.candidateId === selected.id); if (changed) void saveCloudTasteSignal(userId, changed).catch(() => setCloudState("offline")); }} onPlay={play} onClose={() => setSelected(null)} /> : null}
     </main>
+  );
+}
+
+function MovixInfoBanner() {
+  return (
+    <section className="relative z-20 overflow-hidden border-b border-red-400/15 bg-[#0b090b]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_50%,rgba(239,68,68,.17),transparent_34%),radial-gradient(circle_at_85%_50%,rgba(139,92,246,.10),transparent_30%)]" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/[.07] to-transparent animate-[pulse_1.2s_ease-in-out_infinite]" />
+      <div className="relative mx-auto flex max-w-[1500px] items-center gap-3 px-3 py-2.5 pr-24 sm:px-7 sm:py-3 sm:pr-28 lg:px-10 lg:pr-28">
+        <div className="relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-xl border border-red-400/25 bg-red-500/10 shadow-[0_0_28px_rgba(239,68,68,.22)] sm:h-11 sm:w-11">
+          <span className="text-2xl font-black tracking-[-.12em] text-white drop-shadow-[0_0_10px_rgba(239,68,68,.7)] sm:text-3xl">A</span>
+          <span className="absolute h-full w-[2px] -skew-x-12 bg-red-500 shadow-[0_0_10px_rgba(239,68,68,.9)] animate-pulse" />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="shrink-0 text-[9px] font-semibold uppercase tracking-[.24em] text-red-200/70 sm:text-[10px]">Angel OS Films</span>
+            <span className="h-px flex-1 overflow-hidden bg-white/10"><span className="block h-full w-1/3 bg-gradient-to-r from-transparent via-red-400 to-transparent animate-[pulse_700ms_ease-in-out_infinite]" /></span>
+          </div>
+          <div className="relative mt-1 h-5 overflow-hidden text-[10px] font-medium text-white/75 sm:h-6 sm:text-xs">
+            <p className="absolute inset-0 flex items-center animate-[fadeBanner_8s_ease-in-out_infinite]">Lecteur Movix : un bandeau Chrome peut apparaître, c’est normal.</p>
+            <p className="absolute inset-0 flex items-center opacity-0 animate-[fadeBanner2_8s_ease-in-out_infinite]">Attendez quelques instants : il disparaîtra automatiquement.</p>
+            <p className="absolute inset-0 flex items-center opacity-0 animate-[fadeBanner3_8s_ease-in-out_infinite]">Ne cliquez pas sur Retour · fermez le lecteur avec ✕.</p>
+          </div>
+        </div>
+
+        <div className="hidden shrink-0 items-center gap-2 rounded-full border border-red-400/15 bg-red-500/[.07] px-3 py-1.5 sm:flex">
+          <span className="text-[10px] text-white/55">On recherche le bon domaine 👀</span>
+          <span className="h-1.5 w-1.5 rounded-full bg-red-400 shadow-[0_0_8px_rgba(239,68,68,.8)] animate-bounce [animation-delay:0ms]" />
+          <span className="h-1.5 w-1.5 rounded-full bg-red-400 shadow-[0_0_8px_rgba(239,68,68,.8)] animate-bounce [animation-delay:120ms]" />
+          <span className="h-1.5 w-1.5 rounded-full bg-red-400 shadow-[0_0_8px_rgba(239,68,68,.8)] animate-bounce [animation-delay:240ms]" />
+        </div>
+      </div>
+      <style>{`@keyframes fadeBanner{0%,28%{opacity:1;transform:translateY(0)}34%,100%{opacity:0;transform:translateY(-6px)}}@keyframes fadeBanner2{0%,31%{opacity:0;transform:translateY(6px)}38%,61%{opacity:1;transform:translateY(0)}68%,100%{opacity:0;transform:translateY(-6px)}}@keyframes fadeBanner3{0%,65%{opacity:0;transform:translateY(6px)}72%,94%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-6px)}}`}</style>
+    </section>
   );
 }
 
