@@ -3,6 +3,7 @@ import { Menu, X, Linkedin, Instagram, Facebook, LogIn } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import logo from "@/assets/logo.svg";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeController";
 
 const navLinks = [
   { href: "/", label: "Accueil" },
@@ -48,6 +49,7 @@ export function Header() {
             <a href="https://www.instagram.com/angelof_com?igsh=MWpqMjc3Mm03MHJpYg==" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Instagram Angel Leclerc Communication"><Instagram size={20} /></a>
             <a href="https://www.facebook.com/share/1LFGicX7qF/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Facebook Angel Leclerc Communication"><Facebook size={20} /></a>
           </div>
+          <ThemeToggle className="h-9 w-9 shrink-0" />
           <Link
             to="/auth"
             className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
@@ -60,15 +62,18 @@ export function Header() {
           </Button>
         </nav>
 
-        <button
-          className="md:hidden inline-flex h-11 w-11 items-center justify-center text-foreground"
-          type="button"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label={mobileOpen ? "Fermer le menu" : "Ouvrir le menu"}
-          aria-expanded={mobileOpen}
-        >
-          {mobileOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        <div className="flex items-center gap-1 md:hidden">
+          <ThemeToggle className="h-10 w-10 border-transparent bg-transparent" />
+          <button
+            className="inline-flex h-11 w-11 items-center justify-center text-foreground"
+            type="button"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label={mobileOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            aria-expanded={mobileOpen}
+          >
+            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {mobileOpen && (
