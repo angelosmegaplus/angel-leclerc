@@ -85,7 +85,7 @@ function ContactPage() {
             </button>
             {openPanel === "contact" && (
               <div id="contact-form-panel" className="contact-form-clean border-t border-border p-3 sm:p-5">
-                <ContactChat {...(parcours ? { initialTrack: parcours } : {})} />
+                <ContactChat initialTrack={parcours ?? "autre"} />
               </div>
             )}
           </section>
