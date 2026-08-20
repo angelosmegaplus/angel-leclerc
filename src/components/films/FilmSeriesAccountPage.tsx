@@ -171,8 +171,6 @@ export function FilmSeriesAccountPage() {
         </div>
       </header>
 
-      <MovixInfoBanner />
-
       {hero ? (
         <section className="relative min-h-[400px] overflow-hidden border-b border-white/[.06] sm:min-h-[540px]">
           {hero.backdropUrl || hero.posterUrl ? <img src={hero.backdropUrl || hero.posterUrl} alt="" className="absolute inset-0 h-full w-full object-cover opacity-50" /> : null}
@@ -217,6 +215,7 @@ export function FilmSeriesAccountPage() {
         {!query && picks.length > 1 ? <MediaGrid title="Recommandés pour toi" items={picks.slice(1, 16)} signals={signals} taste={taste} onSelect={setSelected} onSignal={updateSignal} onPlay={play} /> : null}
         <MediaGrid title={query ? `Résultats pour « ${query} »` : mediaType === "documentary" ? "Documentaires" : "Catalogue"} items={catalog} signals={signals} taste={taste} onSelect={setSelected} onSignal={updateSignal} onPlay={play} />
 
+        <MovixInfoBanner />
         <MovixLauncherPanel targetPath={movixTarget ? `${movixTarget.path}?angel=${movixTarget.nonce}` : null} targetLabel={movixTarget?.label} />
       </div>
 
@@ -227,12 +226,20 @@ export function FilmSeriesAccountPage() {
 
 function MovixInfoBanner() {
   return (
-    <section className="relative z-20 overflow-hidden border-b border-red-400/20 bg-[#0b090b]">
+    <details className="group relative z-20 mt-10 overflow-hidden rounded-2xl border border-red-400/20 bg-[#0b090b] sm:mt-12">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_35%,rgba(239,68,68,.20),transparent_32%),radial-gradient(circle_at_82%_70%,rgba(139,92,246,.12),transparent_34%)] animate-[bannerGlow_5s_ease-in-out_infinite]" />
       <div className="pointer-events-none absolute -left-1/3 top-0 h-full w-1/2 -skew-x-12 bg-gradient-to-r from-transparent via-white/[.06] to-transparent animate-[bannerSweep_4.5s_ease-in-out_infinite]" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red-400/70 to-transparent animate-pulse" />
 
-      <div className="relative mx-auto max-w-[1500px] px-4 py-5 sm:px-7 sm:py-6 lg:px-10">
+      <summary className="relative flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 px-4 py-3 text-left marker:content-none sm:min-h-16 sm:px-6 [&::-webkit-details-marker]:hidden">
+        <div className="min-w-0">
+          <p className="text-[10px] font-semibold uppercase tracking-[.22em] text-red-200/75 sm:text-xs">Infos Movix</p>
+          <p className="mt-1 text-xs text-white/55 sm:text-sm">À savoir avant de lancer un film</p>
+        </div>
+        <span className="shrink-0 rounded-full border border-white/10 bg-white/[.04] px-3 py-1.5 text-[10px] font-semibold text-white/60 transition group-open:bg-red-500/15 group-open:text-red-100 sm:text-xs">Dérouler</span>
+      </summary>
+
+      <div className="relative border-t border-white/10 px-4 py-5 sm:px-6 sm:py-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3">
@@ -258,7 +265,7 @@ function MovixInfoBanner() {
       </div>
 
       <style>{`@keyframes bannerGlow{0%,100%{opacity:.72;transform:scale(1)}50%{opacity:1;transform:scale(1.035)}}@keyframes bannerSweep{0%{transform:translateX(-120%) skewX(-12deg);opacity:0}15%{opacity:1}55%{opacity:.6}100%{transform:translateX(340%) skewX(-12deg);opacity:0}}@keyframes bannerLine{0%,100%{transform:translateX(-80%);opacity:.35}50%{transform:translateX(240%);opacity:1}}@keyframes bannerTextIn{0%{opacity:0;transform:translateY(7px)}100%{opacity:1;transform:translateY(0)}}`}</style>
-    </section>
+    </details>
   );
 }
 
