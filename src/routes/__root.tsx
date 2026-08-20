@@ -146,6 +146,39 @@ function RootComponent() {
     });
   }, []);
 
+  useEffect(() => {
+    if (isAngelOSPage || isAdminPage || isStandaloneMoviesPage) return;
+
+    const replacements = new Map([
+      ["Me contacter pour une alternance", "Me contacter"],
+      ["Me contacter pour l’alternance", "Me contacter"],
+      ["Me contacter pour l'alternance", "Me contacter"],
+    ]);
+
+    const cleanLegacyContactLabels = (root: Node) => {
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      let node = walker.nextNode();
+      while (node) {
+        const current = node.nodeValue ?? "";
+        let next = current;
+        for (const [before, after] of replacements) {
+          if (next.includes(before)) next = next.replaceAll(before, after);
+        }
+        if (next !== current) node.nodeValue = next;
+        node = walker.nextNode();
+      }
+    };
+
+    cleanLegacyContactLabels(document.body);
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) cleanLegacyContactLabels(node);
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [pathname, isAngelOSPage, isAdminPage, isStandaloneMoviesPage]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <MaintenanceGate bypass={isAdminPage || isStandaloneMoviesPage}>
