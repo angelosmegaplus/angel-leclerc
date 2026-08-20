@@ -1,5 +1,20 @@
-import { BookOpen, Briefcase, CalendarDays, GraduationCap, PiggyBank, Route } from "lucide-react";
+import {
+  BookOpen,
+  Briefcase,
+  CalendarDays,
+  GraduationCap,
+  PiggyBank,
+  Route,
+  type LucideIcon,
+} from "lucide-react";
 import { AdminCard } from "./AdminShell";
+
+const weekSummary: Array<{ icon: LucideIcon; label: string; value: string }> = [
+  { icon: Briefcase, label: "Lun–Mer", value: "Travail / intérim" },
+  { icon: CalendarDays, label: "Jeudi", value: "Repos" },
+  { icon: GraduationCap, label: "Ven–Sam", value: "CNED 8h30–17h30" },
+  { icon: BookOpen, label: "Dimanche", value: "Libre" },
+];
 
 export function StudiesWorkDashboard() {
   return (
@@ -9,13 +24,8 @@ export function StudiesWorkDashboard() {
       description="BTS Communication au CNED + travail à côté : priorité à la stabilité, au revenu et à la progression."
     >
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          [Briefcase, "Lun–Mer", "Travail / intérim"],
-          [CalendarDays, "Jeudi", "Repos"],
-          [GraduationCap, "Ven–Sam", "CNED 8h30–17h30"],
-          [BookOpen, "Dimanche", "Libre"],
-        ].map(([Icon, label, value]) => (
-          <div key={String(label)} className="rounded-xl border border-border/70 bg-background px-3 py-3">
+        {weekSummary.map(({ icon: Icon, label, value }) => (
+          <div key={label} className="rounded-xl border border-border/70 bg-background px-3 py-3">
             <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
               <Icon className="h-4 w-4" /> {label}
             </div>
