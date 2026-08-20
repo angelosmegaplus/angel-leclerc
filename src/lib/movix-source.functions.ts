@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { MOVIX_PERSISTED } from "@/lib/movix-current.generated";
 
+const DIRECTORY_REFERENCE = "https://movix.online/";
 const RENTRY_REFERENCE = "https://rentry.co/movix/raw";
 const UPSTREAM_RAW = "https://raw.githubusercontent.com/movixcorp/MovixOpenSource/main/src/pages/help/MiroirsPage.tsx";
 const UPSTREAM_COMMITS = "https://api.github.com/repos/movixcorp/MovixOpenSource/commits?path=src/pages/help/MiroirsPage.tsx&per_page=1";
@@ -12,7 +13,7 @@ let lastKnownGoodUrl: string | null = null;
 export type MovixOfficialSource = {
   url: string;
   checkedAt: string;
-  source: "last_known" | "rentry" | "movix_help" | "movix_online" | "persisted" | "github" | "lovable_ai" | "fallback";
+  source: "last_known" | "directory" | "rentry" | "movix_help" | "movix_online" | "persisted" | "github" | "lovable_ai" | "fallback";
   upstreamSha: string | null;
   chain: string[];
   evidence?: string[];
@@ -70,6 +71,30 @@ function extractCandidates(source: string) {
   return [...new Set(values)];
 }
 
+function extractDirectoryActiveCandidates(source: string) {
+  if (!source) return [];
+
+  // La page movix.online distingue l'adresse active des domaines historiques et des faux sites.
+  // On ne lit que la petite zone qui suit le titre "Adresse officielle active" afin de ne jamais
+  // sélectionner accidentellement un ancien domaine ou un domaine explicitement désavoué.
+  const markers = [
+    "Adresse officielle active",
+    "adresse officielle active",
+    "adresse-officielle-active",
+  ];
+  const indexes = markers.map((marker) => source.indexOf(marker)).filter((index) => index >= 0);
+  const start = indexes.length ? Math.min(...indexes) : -1;
+  const relevant = start >= 0 ? source.slice(start, start + 3_000) : source.slice(0, 5_000);
+
+  return extractCandidates(relevant).filter((candidate) => {
+    try {
+      return new URL(candidate).hostname.toLowerCase() !== "movix.online";
+    } catch {
+      return false;
+    }
+  });
+}
+
 async function upstreamSha() {
   try {
     const response = await fetch(UPSTREAM_COMMITS, {
@@ -87,6 +112,11 @@ async function upstreamSha() {
 async function referenceCandidates(url: string) {
   const response = await probeUrl(url);
   return response ? extractCandidates(response.body) : [];
+}
+
+async function directoryActiveCandidates() {
+  const response = await probeUrl(DIRECTORY_REFERENCE);
+  return response ? extractDirectoryActiveCandidates(response.body) : [];
 }
 
 async function githubCandidates() {
@@ -136,7 +166,14 @@ async function resolveMovixSource(): Promise<MovixOfficialSource> {
   if (cache && cache.expiresAt > now) return cache.value;
   const chain: string[] = [];
 
-  // Les références actives passent AVANT l'ancien domaine enregistré.
+  // Source prioritaire temporaire : la première adresse de la section officielle active de movix.online.
+  chain.push("directory");
+  const directory = await firstVerified(await directoryActiveCandidates());
+  if (directory) {
+    return buildValue(directory, "directory", chain, now, { evidence: [DIRECTORY_REFERENCE] });
+  }
+
+  // Sources officielles complémentaires si la page principale n'est momentanément pas exploitable.
   chain.push("rentry");
   const rentry = await firstVerified(await referenceCandidates(RENTRY_REFERENCE));
   if (rentry) return buildValue(rentry, "rentry", chain, now, { evidence: [RENTRY_REFERENCE] });
@@ -154,7 +191,7 @@ async function resolveMovixSource(): Promise<MovixOfficialSource> {
   const help = await firstVerified(await referenceCandidates(HELP_REFERENCE));
   if (help) return buildValue(help, "movix_help", chain, now, { evidence: [HELP_REFERENCE] });
 
-  // movix.online n'est plus injecté ici. La valeur persistante n'est qu'un secours.
+  // L'ancien domaine enregistré ne sert qu'en dernier recours.
   chain.push("persisted");
   if (MOVIX_PERSISTED.url) {
     const persisted = await probeUrl(MOVIX_PERSISTED.url);
