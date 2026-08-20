@@ -63,6 +63,11 @@ export function resolveTheme(pref: ThemePreference): "light" | "dark" {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
+function adminThemeOwnsPage(root: HTMLElement) {
+  const theme = root.dataset.adminTheme;
+  return theme === "light" || theme === "dark" || root.dataset.angelOsUi === "core";
+}
+
 function ensureThemeGuard() {
   if (typeof window === "undefined" || typeof document === "undefined") return;
   const state = window as Window & { [ADMIN_THEME_GUARD_KEY]?: MutationObserver };
@@ -70,6 +75,10 @@ function ensureThemeGuard() {
 
   const root = document.documentElement;
   const observer = new MutationObserver(() => {
+    // L'espace administrateur possède son propre thème. Tant qu'il est monté,
+    // le gardien du thème du site public ne doit jamais réécrire la classe dark.
+    if (adminThemeOwnsPage(root)) return;
+
     const expected = resolveTheme(readPreference());
     const isDark = root.classList.contains("dark");
     const ui = root.dataset.angelOsUi;
@@ -77,13 +86,16 @@ function ensureThemeGuard() {
       queueMicrotask(() => applyTheme(readPreference()));
     }
   });
-  observer.observe(root, { attributes: true, attributeFilter: ["class", "data-angel-os-ui"] });
+  observer.observe(root, { attributes: true, attributeFilter: ["class", "data-angel-os-ui", "data-admin-theme"] });
   state[ADMIN_THEME_GUARD_KEY] = observer;
 }
 
 export function applyTheme(pref: ThemePreference) {
-  const dark = resolveTheme(pref) === "dark";
   const root = document.documentElement;
+  // Ne jamais écraser un choix clair/sombre géré par AdminShell.
+  if (adminThemeOwnsPage(root)) return;
+
+  const dark = resolveTheme(pref) === "dark";
   root.classList.toggle("dark", dark);
   root.dataset.angelOsUi = dark ? "dark" : "light";
   root.style.colorScheme = dark ? "dark" : "light";
