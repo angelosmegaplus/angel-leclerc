@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ExternalLink, Globe2, Maximize2, RefreshCw, Save, Trash2, X } from "lucide-react";
+import { Globe2, Maximize2, RefreshCw, Save, Trash2, X } from "lucide-react";
 import { getMovixOfficialSource, type MovixOfficialSource } from "@/lib/movix-source.functions";
 
 const OVERRIDE_KEY = "angel-movies-movix-override-v2";
@@ -43,24 +43,11 @@ function sourceLabel(source?: MovixOfficialSource["source"]) {
   return "résolution automatique";
 }
 
-async function enterCinemaMode() {
-  try {
-    if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
-      await document.documentElement.requestFullscreen();
-    }
-  } catch {}
-  try {
-    const orientation = screen.orientation as ScreenOrientation & { lock?: (value: string) => Promise<void> };
-    await orientation.lock?.("landscape");
-  } catch {}
-}
-
-async function leaveCinemaMode() {
-  try { screen.orientation.unlock?.(); } catch {}
-  try {
-    if (document.fullscreenElement) await document.exitFullscreen();
-  } catch {}
-}
+// Le lecteur utilise volontairement une surcouche CSS plein écran au lieu de
+// requestFullscreen(). Cela évite le gros avertissement natif de Chrome qui
+// masque les commandes sur mobile.
+async function enterCinemaMode() {}
+async function leaveCinemaMode() {}
 
 export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: string | null; targetLabel?: string | null } = {}) {
   const resolveOfficialSource = useServerFn(getMovixOfficialSource);
@@ -72,6 +59,8 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
   const [resolving, setResolving] = useState(false);
   const [testingOverride, setTestingOverride] = useState(false);
   const [overrideOk, setOverrideOk] = useState<boolean | null>(null);
+  const [showExitHint, setShowExitHint] = useState(false);
+  const exitHintTimerRef = useRef<number | null>(null);
   const lastAutoOpenedRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -80,6 +69,10 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
       setOverride(saved);
       setDraftOverride(saved);
     } catch {}
+  }, []);
+
+  useEffect(() => () => {
+    if (exitHintTimerRef.current) window.clearTimeout(exitHintTimerRef.current);
   }, []);
 
   async function resolveOfficial() {
@@ -101,17 +94,18 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
   const activeBase = override || official?.url || "";
   const targetUrl = targetPath && activeBase ? withPath(activeBase, targetPath) : null;
 
+  function flashExitHint() {
+    setShowExitHint(true);
+    if (exitHintTimerRef.current) window.clearTimeout(exitHintTimerRef.current);
+    exitHintTimerRef.current = window.setTimeout(() => setShowExitHint(false), 2200);
+  }
+
   function openIntegrated(url: string) {
     if (!url) return;
     try { localStorage.setItem(LAST_KEY, url); } catch {}
     setEmbed(url);
     setFrameKey((value) => value + 1);
-  }
-
-  function openExternal(url: string) {
-    if (!url) return;
-    try { localStorage.setItem(LAST_KEY, url); } catch {}
-    window.open(url, "_blank", "noopener,noreferrer");
+    flashExitHint();
   }
 
   useEffect(() => {
@@ -203,6 +197,7 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
 
   async function closeIntegrated() {
     setEmbed(null);
+    setShowExitHint(false);
     await leaveCinemaMode();
   }
 
@@ -253,7 +248,7 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
           <div id="movix-launcher-frame" className="rounded-2xl border border-white/10 bg-white/[.025] p-4 sm:p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div><p className="text-xs font-semibold uppercase tracking-[.12em] text-white/35">Lecteur intégré</p><p className="mt-1 max-w-[70vw] truncate font-mono text-xs text-white/30">{embed || "aucun lien chargé"}</p></div>
-              {embed ? <button type="button" onClick={() => { void enterCinemaMode(); }} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60"><Maximize2 className="h-3.5 w-3.5" />Rouvrir</button> : null}
+              {embed ? <button type="button" onClick={() => { void enterCinemaMode(); flashExitHint(); }} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60"><Maximize2 className="h-3.5 w-3.5" />Rouvrir</button> : null}
             </div>
             <p className="mt-4 rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-xs leading-5 text-white/45">Au lancement d’un film ou d’une série, le lecteur prend tout l’écran. La résolution du domaine reste invisible.</p>
             <div className="mt-4 grid min-h-[360px] place-items-center rounded-xl border border-dashed border-white/10 bg-black/20 p-8 text-center text-sm text-white/30">Choisis un film ou une série : le lecteur s’ouvrira automatiquement.</div>
@@ -272,6 +267,14 @@ export function MovixLauncherPanel({ targetPath, targetLabel }: { targetPath?: s
             sandbox="allow-forms allow-same-origin allow-scripts allow-presentation"
             className="absolute inset-0 h-full w-full border-0 bg-black"
           />
+
+          {showExitHint ? (
+            <div className="pointer-events-none absolute bottom-16 right-3 z-30 animate-in fade-in slide-in-from-bottom-2 duration-200 sm:bottom-20 sm:right-5">
+              <div className="rounded-full border border-white/15 bg-black/72 px-3 py-1.5 text-[10px] font-medium text-white/70 shadow-lg backdrop-blur-lg">
+                Quitter : ✕ en bas à droite
+              </div>
+            </div>
+          ) : null}
 
           <div className="absolute bottom-3 right-3 z-20 flex gap-2 sm:bottom-5 sm:right-5">
             <button type="button" onClick={() => setFrameKey((value) => value + 1)} className="rounded-full border border-white/15 bg-black/70 px-3 py-2 text-xs text-white/75 backdrop-blur-lg">Recharger</button>
