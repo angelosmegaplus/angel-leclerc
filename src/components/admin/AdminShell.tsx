@@ -23,7 +23,7 @@ type CompactDefinition = {
 
 const COMPACT_NAV: CompactDefinition[] = [
   { key: "dashboard", label: "Accueil", description: "Vue d'ensemble et priorités", source: "dashboard", children: ["dashboard"] },
-  { key: "travail", label: "Travail", description: "Candidatures, projets, agenda et statistiques", source: "candidatures", children: ["candidatures", "projets", "agenda", "messages", "boite-mail", "stats"] },
+  { key: "travail", label: "Travail", description: "Études, emploi, projets, agenda et statistiques", source: "candidatures", children: ["candidatures", "projets", "agenda", "messages", "boite-mail", "stats"] },
   { key: "studio", label: "Studio", description: "Articles, médias, fichiers et services", source: "articles", children: ["articles", "studio", "contenus", "fichiers", "boutique"] },
   { key: "pilotage", label: "Pilotage IA", description: "ChatGPT, automatisations et activité", source: "angel-ai", children: ["angel-ai", "automatisation", "activite"] },
   { key: "systeme", label: "Système", description: "Connexions, alertes et communauté", source: "connexions", children: ["connexions", "notifications", "abonnes", "avis", "parametres"] },
@@ -40,8 +40,6 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
   const [open, setOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
   const [editing, setEditing] = useState(false);
-  // Rendu SSR et première frame client identiques : le thème réel est appliqué
-  // après hydratation pour éviter tout écart de rendu.
   const [theme, setTheme] = useState<AdminTheme>("light");
 
   useEffect(() => {
@@ -63,7 +61,7 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
   useEffect(() => {
     const isEditable = (node: EventTarget | null) => {
       const el = node instanceof HTMLElement ? node : null;
-      return Boolean(el?.matches('input, textarea, select, [contenteditable="true"]'));
+      return Boolean(el?.closest('input, textarea, select, [contenteditable="true"], form'));
     };
     const onFocusIn = (event: FocusEvent) => setEditing(isEditable(event.target));
     const onFocusOut = () => window.setTimeout(() => setEditing(isEditable(document.activeElement)), 0);
@@ -150,16 +148,13 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
 
   const menuContents = (
     <>
-      <div className="mb-5 flex items-center justify-between gap-3 px-1">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-8 w-8 rounded-lg object-cover shadow-sm" />
-            <p className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-red-600 dark:text-red-400">Angel OS</p>
-          </div>
-          <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.04em] text-foreground">Centre de contrôle</p>
-          <p className="mt-1 text-xs text-muted-foreground">Simple, lisible, pensé mobile</p>
+      <div className="mb-5 px-1">
+        <div className="flex items-center gap-2">
+          <img src="/angel-os/logo.png" alt="Logo Angel OS" className="h-8 w-8 rounded-lg object-cover shadow-sm" />
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-[.2em] text-red-600 dark:text-red-400">Angel OS</p>
         </div>
-        {themeButton}
+        <p className="mt-2 truncate text-2xl font-semibold tracking-[-0.04em] text-foreground">Centre de contrôle</p>
+        <p className="mt-1 text-xs text-muted-foreground">Simple, lisible, pensé mobile</p>
       </div>
       {appGrid}
       <div className="mt-5 flex items-center gap-2 px-1 font-mono text-[10px] uppercase tracking-[.16em] text-muted-foreground">
@@ -233,7 +228,7 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
           </nav>
         ) : null}
 
-        <main className="mx-auto w-full min-w-0 max-w-[1500px] px-2.5 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-3 sm:px-7 sm:pb-24 sm:pt-4 lg:px-10">
+        <main className="mx-auto w-full min-w-0 max-w-[1500px] px-2.5 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-3 sm:px-7 sm:pb-24 sm:pt-4 lg:px-10">
           {isDashboard ? <div className="mb-5 space-y-4 sm:space-y-5" data-admin-dashboard-glance><PixelWidgets /></div> : null}
           <div key={active} className="min-w-0 max-w-full animate-in fade-in zoom-in-[.985] duration-300 [&_.bg-card]:bg-card [&_.bg-background]:bg-background [&_.bg-muted]:bg-muted [&_.border-border]:border-border [&_.text-foreground]:text-foreground [&_.text-muted-foreground]:text-muted-foreground [&_input]:border-border [&_textarea]:border-border [&_select]:border-border [&_input]:bg-background [&_textarea]:bg-background [&_select]:bg-background [&_input]:text-foreground [&_textarea]:text-foreground [&_select]:text-foreground [&_img]:max-w-full [&_input]:max-w-full [&_textarea]:max-w-full [&_select]:max-w-full max-sm:[&_form]:!mt-2 max-sm:[&_form]:!space-y-4 max-sm:[&_form]:!rounded-2xl max-sm:[&_form]:!p-3 max-sm:[&_input]:min-h-11 max-sm:[&_select]:min-h-11 max-sm:[&_input]:text-base max-sm:[&_textarea]:text-base max-sm:[&_select]:text-base max-sm:[&_table]:text-xs max-sm:[&_label]:leading-snug">
             {children}
@@ -249,16 +244,17 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
             <div className="max-h-[min(72dvh,42rem)] overflow-y-auto p-2 sm:p-3"><AngelCommandCenter compact /></div>
           </div>
         ) : !editing ? (
-          <div className="fixed inset-x-2 bottom-[calc(.5rem+env(safe-area-inset-bottom))] z-30 flex h-14 items-center rounded-[1.35rem] border border-border bg-card/96 shadow-xl backdrop-blur-xl sm:left-1/2 sm:right-auto sm:h-16 sm:w-[min(34rem,calc(100vw-2rem))] sm:-translate-x-1/2 sm:rounded-full lg:w-[min(38rem,calc(100vw-24rem))]">
-            <button type="button" onClick={() => setAiOpen(true)} className="flex h-full min-w-0 flex-1 items-center px-3 text-left text-muted-foreground sm:px-5">
-              <span className="min-w-0 flex-1 truncate text-sm font-medium sm:text-base">Rechercher ou demander…</span>
+          <div className="fixed bottom-[calc(.5rem+env(safe-area-inset-bottom))] right-2 z-30 flex h-14 w-auto items-center rounded-[1.35rem] border border-border bg-card/96 shadow-xl backdrop-blur-xl sm:left-1/2 sm:right-auto sm:h-16 sm:w-[min(34rem,calc(100vw-2rem))] sm:-translate-x-1/2 sm:rounded-full lg:w-[min(38rem,calc(100vw-24rem))]">
+            <button type="button" onClick={() => setAiOpen(true)} className="flex h-full min-w-12 items-center justify-center px-3 text-left text-muted-foreground sm:min-w-0 sm:flex-1 sm:justify-start sm:px-5">
+              <span className="text-xs font-semibold sm:hidden">AI</span>
+              <span className="hidden min-w-0 flex-1 truncate text-sm font-medium sm:block sm:text-base">Rechercher ou demander…</span>
               <span className="hidden rounded-lg border border-border bg-muted px-2 py-1 font-mono text-[10px] text-muted-foreground sm:inline">Ctrl K</span>
             </button>
-            <button type="button" aria-label="Notifications" onClick={() => onSelect("notifications")} className="relative mr-1.5 grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-red-300/60 bg-red-500/10 text-red-600 dark:text-red-400 sm:mr-2 sm:h-12 sm:w-12">
+            <button type="button" aria-label="Notifications" onClick={() => onSelect("notifications")} className="relative mr-1 grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-red-300/60 bg-red-500/10 text-red-600 dark:text-red-400 sm:mr-2 sm:h-12 sm:w-12">
               <Bell className="h-5 w-5" />
               {notificationBadge > 0 ? <span className="absolute -right-0.5 -top-0.5 grid min-h-5 min-w-5 place-items-center rounded-full bg-red-600 px-1 text-[9px] font-bold text-white">{notificationBadge}</span> : null}
             </button>
-            <button type="button" aria-label="Ouvrir les applications" onClick={() => setOpen(true)} className="mr-1.5 grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-border bg-muted text-muted-foreground sm:mr-2 sm:h-12 sm:w-12 lg:hidden">
+            <button type="button" aria-label="Ouvrir les applications" onClick={() => setOpen(true)} className="mr-1 grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-border bg-muted text-muted-foreground sm:mr-2 sm:h-12 sm:w-12 lg:hidden">
               <Grid2X2 className="h-5 w-5" />
             </button>
           </div>
