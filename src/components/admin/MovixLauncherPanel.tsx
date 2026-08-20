@@ -82,7 +82,10 @@ export function MovixLauncherPanel({
   const [resolving, setResolving] = useState(false);
   const [testingOverride, setTestingOverride] = useState(false);
   const [overrideOk, setOverrideOk] = useState<boolean | null>(null);
+  const [controlsVisible, setControlsVisible] = useState(true);
   const lastAutoOpenedRef = useRef<string | null>(null);
+  const iframeLoadCountRef = useRef(0);
+  const controlsTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     try {
@@ -118,13 +121,26 @@ export function MovixLauncherPanel({
     if (activeBase) updateBannerDomain(activeBase);
   }, [activeBase]);
 
+  function scheduleControlsHide(delay = 3500) {
+    if (controlsTimerRef.current) window.clearTimeout(controlsTimerRef.current);
+    controlsTimerRef.current = window.setTimeout(() => setControlsVisible(false), delay);
+  }
+
+  function revealControls() {
+    setControlsVisible(true);
+    scheduleControlsHide(3000);
+  }
+
   function openPlayer(url: string) {
     if (!url) return;
     try {
       localStorage.setItem(LAST_KEY, url);
     } catch {}
+    iframeLoadCountRef.current = 0;
+    setControlsVisible(true);
     setEmbed(url);
     setFrameKey((value) => value + 1);
+    scheduleControlsHide();
   }
 
   async function launchMovix() {
@@ -167,6 +183,7 @@ export function MovixLauncherPanel({
     body.style.width = "100%";
 
     return () => {
+      if (controlsTimerRef.current) window.clearTimeout(controlsTimerRef.current);
       body.style.overflow = previous.overflow;
       body.style.position = previous.position;
       body.style.top = previous.top;
@@ -229,8 +246,20 @@ export function MovixLauncherPanel({
   }
 
   async function closeIntegrated() {
+    if (controlsTimerRef.current) window.clearTimeout(controlsTimerRef.current);
     setEmbed(null);
+    setControlsVisible(true);
     await leaveCinemaMode();
+  }
+
+  function handleIframeLoad() {
+    iframeLoadCountRef.current += 1;
+    if (iframeLoadCountRef.current > 1) {
+      setControlsVisible(false);
+      if (controlsTimerRef.current) window.clearTimeout(controlsTimerRef.current);
+    } else {
+      scheduleControlsHide();
+    }
   }
 
   return (
@@ -309,10 +338,40 @@ export function MovixLauncherPanel({
 
       {embed ? (
         <div className="fixed inset-0 z-[9999] h-[100dvh] w-screen overflow-hidden bg-black">
-          <iframe key={frameKey} src={embed} title={`Movix — ${hostOf(embed)}`} referrerPolicy="no-referrer" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" sandbox="allow-forms allow-same-origin allow-scripts allow-presentation" className="absolute inset-0 h-full w-full border-0 bg-black" />
-          <div className="absolute bottom-3 right-3 z-20 flex items-center gap-2 sm:bottom-5 sm:right-5">
-            <button type="button" onClick={() => setFrameKey((value) => value + 1)} className="rounded-full border border-white/15 bg-black/65 px-2.5 py-1.5 text-[10px] text-white/70 shadow-lg backdrop-blur-lg">Recharger</button>
-            <button type="button" onClick={() => void closeIntegrated()} aria-label="Quitter Movix" className="grid h-9 w-9 place-items-center rounded-full border border-red-300/30 bg-black/70 text-white shadow-[0_0_16px_rgba(239,68,68,.65),0_0_32px_rgba(239,68,68,.25)] backdrop-blur-lg transition hover:scale-105"><X className="h-4 w-4" /></button>
+          <iframe
+            key={frameKey}
+            src={embed}
+            title={`Movix — ${hostOf(embed)}`}
+            referrerPolicy="no-referrer"
+            allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+            sandbox="allow-forms allow-same-origin allow-scripts allow-presentation"
+            onLoad={handleIframeLoad}
+            className="absolute inset-0 h-full w-full border-0 bg-black"
+          />
+
+          <button
+            type="button"
+            onClick={revealControls}
+            aria-label="Afficher les commandes Movix"
+            className={`absolute bottom-0 right-0 z-20 h-12 w-12 bg-transparent transition-opacity ${controlsVisible ? "pointer-events-none opacity-0" : "opacity-100"}`}
+          />
+
+          <div className={`absolute bottom-2 right-2 z-30 flex items-center gap-1.5 transition-all duration-300 sm:bottom-3 sm:right-3 ${controlsVisible ? "translate-y-0 opacity-55 hover:opacity-100" : "pointer-events-none translate-y-2 opacity-0"}`}>
+            <button
+              type="button"
+              onClick={() => { setFrameKey((value) => value + 1); revealControls(); }}
+              className="rounded-full border border-white/10 bg-black/45 px-2 py-1 text-[9px] text-white/55 shadow-sm backdrop-blur-md"
+            >
+              Recharger
+            </button>
+            <button
+              type="button"
+              onClick={() => void closeIntegrated()}
+              aria-label="Quitter Movix"
+              className="grid h-7 w-7 place-items-center rounded-full border border-white/10 bg-black/45 text-white/65 shadow-sm backdrop-blur-md transition hover:bg-black/75 hover:text-white"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
           </div>
         </div>
       ) : null}
