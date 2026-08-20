@@ -20,6 +20,7 @@ type RawMedia = {
 };
 
 type Page = { results?: RawMedia[] };
+type Seed = { mediaType: FilmMediaType; id: number };
 
 export type LiveFilmCatalogResult = {
   items: RecommendationCandidate[];
@@ -71,11 +72,26 @@ function mediaTypeFor(raw: RawMedia, fallback: FilmMediaType): FilmMediaType {
   return raw.media_type === "tv" ? "tv" : raw.media_type === "movie" ? "movie" : fallback;
 }
 
+function parseSeeds(input: unknown): Seed[] {
+  if (!Array.isArray(input)) return [];
+  const seeds: Seed[] = [];
+  for (const value of input.slice(0, 4)) {
+    if (!value || typeof value !== "object") continue;
+    const row = value as Record<string, unknown>;
+    const mediaType = row.mediaType === "tv" ? "tv" : row.mediaType === "movie" ? "movie" : null;
+    const id = Number(row.id);
+    if (!mediaType || !Number.isInteger(id) || id <= 0) continue;
+    if (!seeds.some((seed) => seed.mediaType === mediaType && seed.id === id)) seeds.push({ mediaType, id });
+  }
+  return seeds;
+}
+
 export const getLiveFilmCatalog = createServerFn({ method: "GET" })
-  .validator((input: { query?: string; page?: number; mediaType?: "all" | FilmMediaType } | undefined) => ({
+  .validator((input: { query?: string; page?: number; mediaType?: "all" | FilmMediaType; seeds?: unknown } | undefined) => ({
     query: String(input?.query ?? "").trim().slice(0, 100),
     page: Math.max(1, Math.min(5, Number(input?.page) || 1)),
     mediaType: input?.mediaType === "movie" || input?.mediaType === "tv" ? input.mediaType : "all" as const,
+    seeds: parseSeeds(input?.seeds),
   }))
   .handler(async ({ data }): Promise<LiveFilmCatalogResult> => {
     try {
@@ -89,7 +105,14 @@ export const getLiveFilmCatalog = createServerFn({ method: "GET" })
         return { items: dedupe(items).slice(0, 60), source: "tmdb", diagnostic: null };
       }
 
-      const requests: Array<Promise<{ mediaType: FilmMediaType; page: Page }>> = [];
+      const requests: Array<Promise<{ mediaType: FilmMediaType; page: Page; personalized?: boolean }>> = [];
+
+      for (const seed of data.seeds) {
+        if (data.mediaType !== "all" && data.mediaType !== seed.mediaType) continue;
+        requests.push(Promise.resolve(filmContent.recommendations(seed.mediaType, seed.id, 1) as Promise<Page>).then((page) => ({ mediaType: seed.mediaType, page, personalized: true })));
+        requests.push(Promise.resolve(filmContent.similar(seed.mediaType, seed.id, 1) as Promise<Page>).then((page) => ({ mediaType: seed.mediaType, page, personalized: true })));
+      }
+
       if (data.mediaType !== "tv") {
         requests.push(Promise.resolve(filmContent.trending("movie", "week", data.page) as Promise<Page>).then((page) => ({ mediaType: "movie", page })));
         requests.push(Promise.resolve(filmContent.movies() as Promise<Page>).then((page) => ({ mediaType: "movie", page })));
@@ -105,12 +128,21 @@ export const getLiveFilmCatalog = createServerFn({ method: "GET" })
       }
 
       const settled = await Promise.allSettled(requests);
-      const fulfilled = settled.filter((entry): entry is PromiseFulfilledResult<{ mediaType: FilmMediaType; page: Page }> => entry.status === "fulfilled");
-      const items = dedupe(fulfilled.flatMap((entry) =>
-        (entry.value.page.results ?? [])
+      const fulfilled = settled.filter((entry): entry is PromiseFulfilledResult<{ mediaType: FilmMediaType; page: Page; personalized?: boolean }> => entry.status === "fulfilled");
+
+      const personalized = fulfilled
+        .filter((entry) => entry.value.personalized)
+        .flatMap((entry) => (entry.value.page.results ?? [])
           .map((raw) => normalize(raw, entry.value.mediaType))
-          .filter((item): item is RecommendationCandidate => Boolean(item)),
-      )).slice(0, 180);
+          .filter((item): item is RecommendationCandidate => Boolean(item)));
+
+      const generic = fulfilled
+        .filter((entry) => !entry.value.personalized)
+        .flatMap((entry) => (entry.value.page.results ?? [])
+          .map((raw) => normalize(raw, entry.value.mediaType))
+          .filter((item): item is RecommendationCandidate => Boolean(item)));
+
+      const items = dedupe([...personalized, ...generic]).slice(0, 220);
 
       if (fulfilled.length > 0) return { items, source: "tmdb", diagnostic: null };
 
