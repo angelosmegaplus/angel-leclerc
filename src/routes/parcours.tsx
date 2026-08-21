@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Linkedin, Download, Mail } from "lucide-react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { Linkedin, Download, Mail, Target } from "lucide-react";
 import {
   MyJourney,
   SkillsSection,
@@ -32,10 +34,32 @@ export const Route = createFileRoute("/parcours")({
   component: ParcoursPage,
 });
 
+function ObjectivesButton() {
+  const [target, setTarget] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const toolsLink = document.querySelector<HTMLAnchorElement>('a[href="#outils"]');
+    setTarget(toolsLink?.parentElement ?? null);
+  }, []);
+
+  if (!target) return null;
+
+  return createPortal(
+    <a
+      href="/mes-objectifs"
+      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-primary/40 bg-primary/5 px-5 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/10 sm:justify-start"
+    >
+      <Target size={16} /> Mes objectifs
+    </a>,
+    target,
+  );
+}
+
 function ParcoursPage() {
   return (
     <div className="pb-24 md:pb-0" data-cv-page>
       <MyJourney />
+      <ObjectivesButton />
       <RealisationsSection />
       <SkillsSection />
       <PassionsSection />
