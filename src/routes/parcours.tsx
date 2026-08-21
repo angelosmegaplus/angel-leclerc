@@ -12,6 +12,7 @@ import { LatestArticles } from "@/components/LatestArticles";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { FeedbackBlock } from "@/components/FeedbackBlock";
 import { Logo } from "@/components/Logo";
+import { AssociationLogos } from "@/components/AssociationLogos";
 
 export const Route = createFileRoute("/parcours")({
   head: () => ({
@@ -102,6 +103,7 @@ function ParcoursPage() {
       <MyJourney />
       <ObjectivesButton />
       <PermisSection />
+      <AssociationLogos />
       <RealisationsSection />
       <SkillsSection />
       <PassionsSection />
