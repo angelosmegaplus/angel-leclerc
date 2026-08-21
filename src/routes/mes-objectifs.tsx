@@ -6,14 +6,10 @@ import {
   CircleCheck,
   Download,
   ExternalLink,
-  FileSearch,
-  GraduationCap,
-  Headphones,
   School,
   Search,
   ShieldCheck,
   Sparkles,
-  Target,
   TriangleAlert,
   Waves,
 } from "lucide-react";
@@ -32,10 +28,10 @@ export const Route = createFileRoute("/mes-objectifs")({
   component: MesObjectifsPage,
 });
 
-const LOGO_VERSION = "20260821-4";
+const LOGO_VERSION = "20260821-5";
 const local = (name: string) => `/logos/objectives/${name}.svg?v=${LOGO_VERSION}`;
 
-type BrandData = { name: string; localLogo: string; mark?: string };
+type BrandData = { name: string; localLogo: string; webLogo?: string; mark?: string };
 type SchoolEntry = BrandData & { place: string; level: string; access: string; focus: string; href: string };
 
 function SectionHeader({ eyebrow, title, intro }: { eyebrow: string; title: string; intro?: string }) {
@@ -50,14 +46,14 @@ function SectionHeader({ eyebrow, title, intro }: { eyebrow: string; title: stri
   );
 }
 
-function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <div className={`rounded-2xl border border-border bg-card p-4 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-shadow hover:shadow-md sm:p-6 ${className}`}>{children}</div>;
+function Card({ children }: { children: React.ReactNode }) {
+  return <div className="rounded-2xl border border-border bg-card p-4 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-shadow hover:shadow-md sm:p-6">{children}</div>;
 }
 
 const institutions = [
   { name: "Talis", place: "Périgueux", type: "BTS Communication · alternance", href: "https://www.talis.community/campus/perigueux/", localLogo: talisLogo, status: "accepted" },
   { name: "IBSAC", place: "Brive-la-Gaillarde", type: "BTS Communication · alternance", href: "https://www.ibsac.fr/", localLogo: local("ibsac"), status: "accepted" },
-  { name: "CNED", place: "À distance", type: "BTS Communication · formation à distance", href: "https://www.cned.fr/bts/bts-communication", localLogo: local("cned"), status: "fallback" },
+  { name: "CNED", place: "À distance", type: "BTS Communication · solution de secours", href: "https://www.cned.fr/bts/bts-communication", localLogo: local("cned"), status: "fallback" },
 ];
 
 const journalistSchools: SchoolEntry[] = [
@@ -68,24 +64,39 @@ const journalistSchools: SchoolEntry[] = [
 ];
 
 const hostSchools: SchoolEntry[] = [
-  { name: "INA campus", place: "Bry-sur-Marne", level: "TFP Animateur / Animatrice radio", access: "Formation professionnalisante en alternance", focus: "Conception, production et animation de programmes radio et podcasts, avec pratique en studio.", href: "https://campus.ina.fr/formations-radio-a-ina-campus", localLogo: local("ina"), mark: "INA" },
-  { name: "ISCPA · STUDEC", place: "Paris", level: "Animation et réalisation radio · Bac+2", access: "Accessible après le bac", focus: "Animation, réalisation, prise de parole, direct, préparation d'émission et fonctionnement d'un studio.", href: "https://www.iscpa-ecoles.com/formation/journalisme/formation-animation-radio", localLogo: local("iscpa"), mark: "ISCPA" },
+  {
+    name: "INA campus",
+    place: "Bry-sur-Marne",
+    level: "TFP Animateur / Animatrice radio",
+    access: "Formation professionnalisante en alternance",
+    focus: "Conception, production et animation de programmes radio et podcasts, avec pratique en studio.",
+    href: "https://campus.ina.fr/formations-radio-a-ina-campus",
+    webLogo: "https://logo.clearbit.com/ina.fr?size=256",
+    localLogo: local("ina"),
+    mark: "INA",
+  },
+  {
+    name: "ISCPA · STUDEC",
+    place: "Paris",
+    level: "Animation et réalisation radio · Bac+2",
+    access: "Accessible après le bac",
+    focus: "Animation, réalisation, prise de parole, direct, préparation d'émission et fonctionnement d'un studio.",
+    href: "https://www.iscpa-ecoles.com/formation/journalisme/formation-animation-radio",
+    webLogo: "https://logo.clearbit.com/iscpa-ecoles.com?size=256",
+    localLogo: local("iscpa"),
+    mark: "ISCPA",
+  },
   { name: "La Skol", place: "Rennes", level: "TFP Animateur / Animatrice radio", access: "Parcours en alternance", focus: "Animation, production, préparation éditoriale et pratique professionnelle de l'antenne.", href: "https://www.laskol.fr/", localLogo: local("la-skol"), mark: "LA SKOL" },
 ];
 
-const radios: BrandData[] = [
-  ["France Inter", "france-inter"], ["franceinfo", "franceinfo"], ["ICI", "ici"], ["RTL", "rtl"], ["Europe 1", "europe-1"],
-  ["Happy Radio", "happy-radio"], ["RCF", "rcf"], ["RMC", "rmc"], ["NRJ", "nrj"], ["Skyrock", "skyrock"],
-  ["Fun Radio", "fun-radio"], ["RFM", "rfm"], ["Europe 2", "europe-2"], ["Sud Radio", "sud-radio"], ["Radio Classique", "radio-classique"],
-].map(([name, file]) => ({ name, localLogo: local(file), mark: name }));
-
-function BrandMark({ name, localLogo, mark, size = "md" }: BrandData & { size?: "sm" | "md" }) {
-  const [failed, setFailed] = useState(false);
-  const px = size === "sm" ? 58 : 76;
+function BrandMark({ name, localLogo, webLogo, mark }: BrandData) {
+  const sources = [webLogo, localLogo].filter(Boolean) as string[];
+  const [sourceIndex, setSourceIndex] = useState(0);
+  const src = sources[sourceIndex];
   return (
-    <span className="flex shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border bg-white p-2.5 shadow-sm" style={{ width: px, height: px }}>
-      {!failed ? (
-        <img src={localLogo} alt={`Logo ${name}`} className="h-full w-full object-contain" loading="lazy" decoding="async" onError={() => setFailed(true)} />
+    <span className="flex h-[76px] w-[76px] shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border bg-white p-2.5 shadow-sm">
+      {src ? (
+        <img src={src} alt={`Logo ${name}`} className="h-full w-full object-contain" loading="lazy" decoding="async" onError={() => setSourceIndex((index) => index + 1)} />
       ) : (
         <span className="text-center font-display text-[10px] font-black leading-tight tracking-tight text-black">{mark ?? name}</span>
       )}
@@ -105,26 +116,9 @@ function SchoolCard({ school }: { school: SchoolEntry }) {
   );
 }
 
-function RadioMarquee() {
-  const loop = [...radios, ...radios];
-  return (
-    <div className="relative mt-10 overflow-hidden border-y border-border bg-background/70 py-4">
-      <div className="objectives-radio-marquee flex w-max items-center gap-3 pr-3">
-        {loop.map((radio, index) => (
-          <div key={`${radio.name}-${index}`} title={radio.name} className="flex h-[78px] w-[78px] shrink-0 items-center justify-center rounded-2xl border border-border bg-card p-2 shadow-sm">
-            <BrandMark {...radio} size="sm" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function MesObjectifsPage() {
   return (
     <main className="overflow-hidden pb-24 md:pb-0">
-      <style>{`@keyframes objectives-radio-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}.objectives-radio-marquee{animation:objectives-radio-scroll 34s linear infinite}.objectives-radio-marquee:hover{animation-play-state:paused}@media(prefers-reduced-motion:reduce){.objectives-radio-marquee{animation:none;flex-wrap:wrap;width:auto;justify-content:center}}`}</style>
-
       <AnimatedSection>
         <section className="section-padding bg-background">
           <div className="container-tight">
@@ -140,11 +134,11 @@ function MesObjectifsPage() {
       <AnimatedSection>
         <section className="section-padding bg-muted/40">
           <div className="container-tight">
-            <SectionHeader eyebrow="Formation" title="BTS Communication" intro="Une base solide pour renforcer mes compétences en stratégie, rédaction, création de contenus et gestion de projets." />
+            <SectionHeader eyebrow="Formation" title="BTS Communication" intro="Talis Périgueux et IBSAC Brive sont deux possibilités équivalentes : le choix dépend principalement de la localisation de l'entreprise d'alternance. Le CNED reste une solution de secours." />
             <div className="mt-8 grid gap-4 sm:grid-cols-3 md:mt-12">
               <Card><BookOpen className="text-primary" size={22} /><p className="mt-4 font-semibold">BTS Communication</p></Card>
-              <Card><School className="text-primary" size={22} /><p className="mt-4 font-semibold">Alternance ou distance</p></Card>
-              <Card><BriefcaseBusiness className="text-primary" size={22} /><p className="mt-4 font-semibold">Priorité : stabilité</p></Card>
+              <Card><School className="text-primary" size={22} /><p className="mt-4 font-semibold">Brive ou Périgueux</p></Card>
+              <Card><BriefcaseBusiness className="text-primary" size={22} /><p className="mt-4 font-semibold">Selon l'entreprise</p></Card>
             </div>
 
             <div className="mt-6 grid gap-4 md:grid-cols-3">
@@ -152,11 +146,7 @@ function MesObjectifsPage() {
                 <a key={item.name} href={item.href} target="_blank" rel="noopener noreferrer" className="rounded-2xl border border-border bg-card p-4 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all hover:border-primary/40 hover:shadow-md sm:p-6">
                   <div className="flex items-start justify-between gap-3">
                     <BrandMark name={item.name} localLogo={item.localLogo} mark={item.name} />
-                    {item.status === "accepted" ? (
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary"><CircleCheck size={14} /> Accepté</span>
-                    ) : (
-                      <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground">Solution de secours</span>
-                    )}
+                    {item.status === "accepted" ? <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary"><CircleCheck size={14} /> Accepté</span> : <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground">Solution de secours</span>}
                   </div>
                   <h3 className="mt-5 font-display text-lg font-semibold sm:text-xl">{item.name}</h3>
                   <p className="mt-2 text-sm text-muted-foreground">{item.place}</p>
@@ -199,7 +189,6 @@ function MesObjectifsPage() {
             <div className="mx-auto mt-8 max-w-3xl overflow-hidden rounded-2xl border border-border bg-card shadow-sm md:mt-12"><YouTubeEmbed id="2eC3bFEnTlA" title="Présentation du métier d'animateur radio" /></div>
             <p className="mt-10 text-center text-xs font-semibold uppercase tracking-widest text-primary">Formations spécialisées</p>
             <div className="mt-5 grid gap-4 md:grid-cols-3">{hostSchools.map((school) => <SchoolCard key={school.name} school={school} />)}</div>
-            <RadioMarquee />
           </div>
         </section>
       </AnimatedSection>
