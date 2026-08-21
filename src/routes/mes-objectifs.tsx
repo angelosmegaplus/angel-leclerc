@@ -1,8 +1,8 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { BookOpen, BriefcaseBusiness, Download, ExternalLink, GraduationCap, Headphones, School, Target, Waves, Search, FileSearch, ShieldCheck } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { YouTubeEmbed } from "@/components/YouTubeEmbed";
-import { Logo } from "@/components/Logo";
 import talisLogo from "@/assets/talis-logo.png";
 
 export const Route = createFileRoute("/mes-objectifs")({
@@ -20,66 +20,59 @@ const Card = ({ children, className = "" }: { children: React.ReactNode; classNa
   <div className={`rounded-2xl border border-border bg-card p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-md md:p-6 ${className}`}>{children}</div>
 );
 
-type BrandData = { name: string; domain: string; logoUrl?: string; localLogo?: string; mark?: string };
+const local = (name: string) => `/logos/objectives/${name}.svg`;
+type BrandData = { name: string; localLogo: string; mark?: string };
 type SchoolEntry = BrandData & { place: string; level: string; access: string; focus: string; href: string };
 
-const commons = (file: string) => `https://commons.wikimedia.org/wiki/Special:Redirect/file/${encodeURIComponent(file)}`;
-
 const institutions = [
-  { name: "Talis", place: "Périgueux", type: "BTS Communication · alternance", href: "https://www.talis.community/campus/perigueux/", domain: "talis.community", localLogo: talisLogo },
-  { name: "IBSAC", place: "Brive-la-Gaillarde", type: "BTS Communication · alternance envisageable", href: "https://www.ibsac.fr/", domain: "ibsac.fr", mark: "IBSAC" },
-  { name: "CNED", place: "À distance", type: "BTS Communication · formation à distance", href: "https://www.cned.fr/bts/bts-communication", domain: "cned.fr", mark: "CNED" },
+  { name: "Talis", place: "Périgueux", type: "BTS Communication · alternance", href: "https://www.talis.community/campus/perigueux/", localLogo: talisLogo, mark: "TALIS" },
+  { name: "IBSAC", place: "Brive-la-Gaillarde", type: "BTS Communication · alternance envisageable", href: "https://www.ibsac.fr/", localLogo: local("ibsac"), mark: "IBSAC" },
+  { name: "CNED", place: "À distance", type: "BTS Communication · formation à distance", href: "https://www.cned.fr/bts/bts-communication", localLogo: local("cned"), mark: "CNED" },
 ];
 
 const journalistSchools: SchoolEntry[] = [
-  { name: "CFJ", place: "Paris / Lyon", level: "Diplôme visé Bac+5", access: "Après un premier cursus supérieur et admission sélective", focus: "Enquête, terrain, vérification de l'information, sources, reportage et formats longs : une base solide pour évoluer vers le journalisme d'investigation, en presse comme en audio.", href: "https://cfjparis.com/formation/diplome-bac-plus-5/les-parcours/", domain: "cfjparis.com", logoUrl: commons("Logo CFJ.svg") },
-  { name: "IPJ Dauphine–PSL", place: "Paris", level: "Master Journalisme", access: "Admission sur concours après un cursus de niveau licence", focus: "Méthodes journalistiques, enquête, recherche documentaire, terrain, traitement des sources, déontologie et production pour plusieurs formats éditoriaux.", href: "https://ipj.eu/", domain: "ipj.eu", logoUrl: commons("New Logo IPJ Dauphine-PSL 2019.png") },
-  { name: "ESJ Lille", place: "Lille", level: "Diplôme généraliste niveau Master", access: "Plusieurs voies d'accès et diplôme généraliste", focus: "Formation généraliste reconnue avec forte pratique du terrain, vérification, reportage et journalisme multimédia, permettant ensuite de développer une spécialisation en enquête et investigation.", href: "https://esj-lille.fr/programmes/", domain: "esj-lille.fr", logoUrl: commons("ESJ-ULille.svg") },
-  { name: "EJT", place: "Toulouse", level: "Formation au métier de journaliste", access: "Admission propre à l'école", focus: "Apprentissage du reportage, du terrain, de la recherche d'informations, de l'interview et de l'écriture journalistique pour différents supports.", href: "https://ejt.fr/", domain: "ejt.fr", logoUrl: commons("EjTlogo.png") },
+  { name: "CFJ", place: "Paris / Lyon", level: "Diplôme visé Bac+5", access: "Après un premier cursus supérieur et admission sélective", focus: "Enquête, terrain, vérification de l'information, sources, reportage et formats longs : une base solide pour évoluer vers le journalisme d'investigation, en presse comme en audio.", href: "https://cfjparis.com/formation/diplome-bac-plus-5/les-parcours/", localLogo: local("cfj"), mark: "CFJ" },
+  { name: "IPJ Dauphine–PSL", place: "Paris", level: "Master Journalisme", access: "Admission sur concours après un cursus de niveau licence", focus: "Méthodes journalistiques, enquête, recherche documentaire, terrain, traitement des sources, déontologie et production pour plusieurs formats éditoriaux.", href: "https://ipj.eu/", localLogo: local("ipj"), mark: "IPJ" },
+  { name: "ESJ Lille", place: "Lille", level: "Diplôme généraliste niveau Master", access: "Plusieurs voies d'accès et diplôme généraliste", focus: "Formation généraliste reconnue avec forte pratique du terrain, vérification, reportage et journalisme multimédia, permettant ensuite de développer une spécialisation en enquête et investigation.", href: "https://esj-lille.fr/programmes/", localLogo: local("esj-lille"), mark: "ESJ LILLE" },
+  { name: "EJT", place: "Toulouse", level: "Formation au métier de journaliste", access: "Admission propre à l'école", focus: "Apprentissage du reportage, du terrain, de la recherche d'informations, de l'interview et de l'écriture journalistique pour différents supports.", href: "https://ejt.fr/", localLogo: local("ejt"), mark: "EJT" },
 ];
 
 const hostSchools: SchoolEntry[] = [
-  { name: "INA campus", place: "Bry-sur-Marne", level: "TFP Animateur / Animatrice radio", access: "Formation professionnalisante en alternance", focus: "Conception, production et animation de programmes radio et podcasts, stratégie digitale, réseaux sociaux et pratique en studio.", href: "https://campus.ina.fr/formations-radio-a-ina-campus", domain: "ina.fr", logoUrl: commons("Logo INA.svg") },
-  { name: "ISCPA · STUDEC", place: "Paris", level: "Animation et réalisation radio · Bac+2", access: "Accessible après le bac, hors Parcoursup", focus: "Animation, réalisation, prise de parole, conduite du direct, préparation d'émission et fonctionnement d'un studio professionnel.", href: "https://www.iscpa-ecoles.com/formation/journalisme/formation-animation-radio", domain: "iscpa-ecoles.com", mark: "ISCPA" },
-  { name: "La Skol", place: "Rennes", level: "TFP Animateur / Animatrice radio", access: "Parcours en alternance", focus: "Animation, production, préparation éditoriale, pratique d'antenne et application professionnelle en radio.", href: "https://www.laskol.fr/", domain: "laskol.fr", mark: "LA SKOL" },
+  { name: "INA campus", place: "Bry-sur-Marne", level: "TFP Animateur / Animatrice radio", access: "Formation professionnalisante en alternance", focus: "Conception, production et animation de programmes radio et podcasts, stratégie digitale, réseaux sociaux et pratique en studio.", href: "https://campus.ina.fr/formations-radio-a-ina-campus", localLogo: local("ina"), mark: "INA" },
+  { name: "ISCPA · STUDEC", place: "Paris", level: "Animation et réalisation radio · Bac+2", access: "Accessible après le bac, hors Parcoursup", focus: "Animation, réalisation, prise de parole, conduite du direct, préparation d'émission et fonctionnement d'un studio professionnel.", href: "https://www.iscpa-ecoles.com/formation/journalisme/formation-animation-radio", localLogo: local("iscpa"), mark: "ISCPA" },
+  { name: "La Skol", place: "Rennes", level: "TFP Animateur / Animatrice radio", access: "Parcours en alternance", focus: "Animation, production, préparation éditoriale, pratique d'antenne et application professionnelle en radio.", href: "https://www.laskol.fr/", localLogo: local("la-skol"), mark: "LA SKOL" },
 ];
 
 const radios: BrandData[] = [
-  { name: "France Inter", domain: "franceinter.fr", logoUrl: commons("France Inter logo 2021.svg") },
-  { name: "franceinfo", domain: "franceinfo.fr", mark: "franceinfo:" },
-  { name: "ICI", domain: "radiofrance.fr", mark: "ICI" },
-  { name: "RTL", domain: "rtl.fr", logoUrl: commons("RTL logo.svg") },
-  { name: "Europe 1", domain: "europe1.fr", mark: "Europe 1" },
-  { name: "Happy Radio", domain: "happyradio.fr", mark: "HAPPY" },
-  { name: "RCF Notre-Dame", domain: "rcf.fr", mark: "RCF" },
-  { name: "RMC", domain: "rmc.bfmtv.com", mark: "RMC" },
-  { name: "NRJ", domain: "nrj.fr", mark: "NRJ" },
-  { name: "Skyrock", domain: "skyrock.fm", mark: "SKYROCK" },
-  { name: "Fun Radio", domain: "funradio.fr", mark: "FUN RADIO" },
-  { name: "RFM", domain: "rfm.fr", mark: "RFM" },
-  { name: "Europe 2", domain: "europe2.fr", mark: "EUROPE 2" },
-  { name: "Sud Radio", domain: "sudradio.fr", mark: "SUD RADIO" },
-  { name: "Radio Classique", domain: "radioclassique.fr", logoUrl: commons("Logo Radio Classique.svg") },
+  { name: "France Inter", localLogo: local("france-inter"), mark: "FRANCE INTER" },
+  { name: "franceinfo", localLogo: local("franceinfo"), mark: "franceinfo:" },
+  { name: "ICI", localLogo: local("ici"), mark: "ICI" },
+  { name: "RTL", localLogo: local("rtl"), mark: "RTL" },
+  { name: "Europe 1", localLogo: local("europe-1"), mark: "EUROPE 1" },
+  { name: "Happy Radio", localLogo: local("happy-radio"), mark: "HAPPY" },
+  { name: "RCF Notre-Dame", localLogo: local("rcf"), mark: "RCF" },
+  { name: "RMC", localLogo: local("rmc"), mark: "RMC" },
+  { name: "NRJ", localLogo: local("nrj"), mark: "NRJ" },
+  { name: "Skyrock", localLogo: local("skyrock"), mark: "SKYROCK" },
+  { name: "Fun Radio", localLogo: local("fun-radio"), mark: "FUN RADIO" },
+  { name: "RFM", localLogo: local("rfm"), mark: "RFM" },
+  { name: "Europe 2", localLogo: local("europe-2"), mark: "EUROPE 2" },
+  { name: "Sud Radio", localLogo: local("sud-radio"), mark: "SUD RADIO" },
+  { name: "Radio Classique", localLogo: local("radio-classique"), mark: "RADIO CLASSIQUE" },
 ];
 
-function BrandMark({ domain, name, size = "md", localLogo, logoUrl, mark }: BrandData & { size?: "sm" | "md" }) {
+function BrandMark({ name, size = "md", localLogo, mark }: BrandData & { size?: "sm" | "md" }) {
+  const [failed, setFailed] = useState(false);
   const px = size === "sm" ? 48 : 64;
-  const image = localLogo ?? logoUrl;
-  if (image) {
-    return (
-      <span className="flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-white p-2" style={{ width: px, height: px }}>
-        <img src={image} alt={`Logo ${name}`} className="h-full w-full object-contain" loading="lazy" decoding="async" />
-      </span>
-    );
-  }
-  if (mark) {
-    return (
-      <span className="flex shrink-0 items-center justify-center rounded-xl border border-border bg-white px-2 text-center font-display text-[10px] font-black leading-tight tracking-tight text-black" style={{ width: px, height: px }} aria-label={`Identité ${name}`}>
-        {mark}
-      </span>
-    );
-  }
-  return <Logo domain={domain} alt={`Logo ${name}`} size={px} link={false} />;
+  return (
+    <span className="flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-white p-2" style={{ width: px, height: px }}>
+      {!failed ? (
+        <img src={localLogo} alt={`Logo ${name}`} className="h-full w-full object-contain" loading="lazy" decoding="async" onError={() => setFailed(true)} />
+      ) : (
+        <span className="text-center font-display text-[10px] font-black leading-tight tracking-tight text-black">{mark ?? name}</span>
+      )}
+    </span>
+  );
 }
 
 function SchoolCard({ school }: { school: SchoolEntry }) {
