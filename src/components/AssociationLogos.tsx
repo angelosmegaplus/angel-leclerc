@@ -1,56 +1,102 @@
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect } from "react";
 
-const logos = [
-  { src: "/logos/scoutisme/fraternite.jpg", alt: "Fraternité du Scoutisme" },
-  { src: "/logos/scoutisme/scoutisme-francais.jpg", alt: "Chef scout" },
-  { src: "/logos/scoutisme/reseau-baden-powell.png", alt: "Réseau Baden-Powell" },
+const associations = [
+  {
+    match: ["ancien président d'association", "fraternité du scoutisme"],
+    src: "/logos/scoutisme/fraternite.jpg",
+    alt: "Fraternité du Scoutisme",
+  },
+  {
+    match: ["chef scout"],
+    src: "/logos/scoutisme/scoutisme-francais.jpg",
+    alt: "Scoutisme Français",
+  },
+  {
+    match: ["bénévole", "réseau baden-powell"],
+    src: "/logos/scoutisme/reseau-baden-powell.png",
+    alt: "Réseau Baden-Powell",
+  },
 ];
 
-export function AssociationLogos() {
-  const [target, setTarget] = useState<HTMLElement | null>(null);
+function normalize(value: string) {
+  return value.toLowerCase().replace(/\s+/g, " ").trim();
+}
 
-  useEffect(() => {
-    const findSection = () => {
-      const nodes = Array.from(document.querySelectorAll<HTMLElement>("h2,h3,p,span"));
-      const heading = nodes.find((node) => {
-        const text = node.textContent?.toLowerCase() ?? "";
-        return (text.includes("engagement") && text.includes("associ")) || text.trim() === "association";
-      });
-      const section = heading?.closest<HTMLElement>("section");
-      const container = section?.querySelector<HTMLElement>(".container-tight") ?? section;
-      if (!container || container.querySelector("[data-association-logos]")) return false;
-      const mount = document.createElement("div");
-      mount.dataset.associationLogos = "true";
-      container.appendChild(mount);
-      setTarget(mount);
-      return true;
-    };
+function replaceAssociationIcons() {
+  const cards = Array.from(
+    document.querySelectorAll<HTMLElement>("section .rounded-2xl, section .rounded-3xl"),
+  );
 
-    if (findSection()) return;
-    const observer = new MutationObserver(() => {
-      if (findSection()) observer.disconnect();
+  let replaced = 0;
+
+  for (const association of associations) {
+    const card = cards.find((candidate) => {
+      const text = normalize(candidate.textContent ?? "");
+      return association.match.every((needle) => text.includes(normalize(needle)));
     });
+
+    if (!card) continue;
+
+    const iconBox = Array.from(card.querySelectorAll<HTMLElement>("div")).find((node) => {
+      const classes = node.className;
+      return (
+        typeof classes === "string" &&
+        classes.includes("rounded-xl") &&
+        (classes.includes("bg-primary/10") || classes.includes("bg-primary/15")) &&
+        node.querySelector("svg")
+      );
+    });
+
+    if (!iconBox || iconBox.dataset.associationLogo === association.alt) {
+      if (iconBox) replaced += 1;
+      continue;
+    }
+
+    iconBox.replaceChildren();
+    iconBox.dataset.associationLogo = association.alt;
+    iconBox.classList.remove("bg-primary/10", "bg-primary/15", "text-primary", "p-3");
+    iconBox.classList.add(
+      "h-12",
+      "w-12",
+      "shrink-0",
+      "overflow-hidden",
+      "border",
+      "border-border",
+      "bg-white",
+      "p-1.5",
+      "sm:h-14",
+      "sm:w-14",
+    );
+
+    const image = document.createElement("img");
+    image.src = association.src;
+    image.alt = association.alt;
+    image.loading = "lazy";
+    image.decoding = "async";
+    image.className = "h-full w-full object-contain";
+    iconBox.appendChild(image);
+    replaced += 1;
+  }
+
+  return replaced === associations.length;
+}
+
+export function AssociationLogos() {
+  useEffect(() => {
+    if (replaceAssociationIcons()) return;
+
+    const observer = new MutationObserver(() => {
+      if (replaceAssociationIcons()) observer.disconnect();
+    });
+
     observer.observe(document.body, { childList: true, subtree: true });
     const timeout = window.setTimeout(() => observer.disconnect(), 5000);
+
     return () => {
       observer.disconnect();
       window.clearTimeout(timeout);
     };
   }, []);
 
-  if (!target) return null;
-
-  return createPortal(
-    <div className="mx-auto mt-7 max-w-2xl border-t border-border pt-6">
-      <div className="grid grid-cols-3 gap-3 sm:gap-4">
-        {logos.map((logo) => (
-          <div key={logo.alt} className="flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-border bg-white p-2 shadow-sm sm:p-3">
-            <img src={logo.src} alt={logo.alt} className="h-full w-full object-contain" loading="lazy" />
-          </div>
-        ))}
-      </div>
-    </div>,
-    target,
-  );
+  return null;
 }
