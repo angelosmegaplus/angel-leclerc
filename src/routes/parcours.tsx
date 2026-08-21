@@ -11,6 +11,7 @@ import {
 import { LatestArticles } from "@/components/LatestArticles";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { FeedbackBlock } from "@/components/FeedbackBlock";
+import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/parcours")({
   head: () => ({
@@ -82,10 +83,12 @@ function PermisSection() {
           </div>
         </div>
 
-        <div className="mt-3 flex items-center justify-center gap-3 rounded-xl border border-dashed border-primary/30 bg-primary/5 px-4 py-2.5 text-center text-sm font-medium text-foreground/80">
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-3 rounded-xl border border-dashed border-primary/30 bg-primary/5 px-4 py-2.5 text-center text-sm font-medium text-foreground/80">
           <Bus size={17} className="shrink-0 text-primary" />
           <span>En attendant : pro des transports en commun et du stop</span>
           <ThumbsUp size={16} className="shrink-0 text-primary" />
+          <Logo domain="blablacar.fr" alt="BlaBlaCar" size={26} bare link={false} />
+          <Logo domain="sncf-connect.com" alt="SNCF" size={26} bare link={false} />
         </div>
       </div>
     </div>,
