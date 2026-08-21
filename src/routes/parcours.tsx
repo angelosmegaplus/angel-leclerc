@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Linkedin, Download, Mail, Target } from "lucide-react";
+import { Linkedin, Download, Mail, Target, Bike, CarFront, CircleCheck, CircleX, LoaderCircle } from "lucide-react";
 import {
   MyJourney,
   SkillsSection,
@@ -55,6 +55,48 @@ function ObjectivesButton() {
   );
 }
 
+function PermisSection() {
+  return (
+    <AnimatedSection>
+      <section className="py-8 md:py-10 bg-background">
+        <div className="container-tight">
+          <div className="mx-auto max-w-2xl">
+            <p className="text-center text-xs font-semibold uppercase tracking-widest text-primary">Mobilité</p>
+            <h2 className="mt-2 text-center font-display text-2xl font-bold text-foreground">Mon permis</h2>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <Bike size={21} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-foreground">Permis AM</p>
+                  <p className="mt-0.5 inline-flex items-center gap-1.5 text-xs font-medium text-primary">
+                    <CircleCheck size={14} /> Obtenu
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted text-foreground">
+                  <CarFront size={21} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-foreground">Permis B</p>
+                  <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-muted-foreground">
+                    <span className="inline-flex items-center gap-1.5"><CircleX size={14} /> Non obtenu</span>
+                    <span className="inline-flex items-center gap-1.5 text-primary"><LoaderCircle size={14} /> En cours</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </AnimatedSection>
+  );
+}
+
 function ParcoursPage() {
   return (
     <div className="pb-24 md:pb-0" data-cv-page>
@@ -63,6 +105,7 @@ function ParcoursPage() {
       <RealisationsSection />
       <SkillsSection />
       <PassionsSection />
+      <PermisSection />
       <LatestArticles
         title="Mes derniers articles"
         description="Communication, politique, société et idées pour comprendre ce qui change."
