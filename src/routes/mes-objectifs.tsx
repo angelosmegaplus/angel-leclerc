@@ -21,53 +21,70 @@ const Card = ({ children, className = "" }: { children: React.ReactNode; classNa
 );
 
 const local = (name: string) => `/logos/objectives/${name}.svg`;
-type BrandData = { name: string; localLogo: string; mark?: string };
+const commons = (name: string) => `https://commons.wikimedia.org/wiki/Special:Redirect/file/${encodeURIComponent(name)}`;
+type BrandData = { name: string; localLogo: string; webLogo?: string; mark?: string };
 type SchoolEntry = BrandData & { place: string; level: string; access: string; focus: string; href: string };
 
 const institutions = [
   { name: "Talis", place: "Périgueux", type: "BTS Communication · alternance", href: "https://www.talis.community/campus/perigueux/", localLogo: talisLogo, mark: "TALIS" },
   { name: "IBSAC", place: "Brive-la-Gaillarde", type: "BTS Communication · alternance envisageable", href: "https://www.ibsac.fr/", localLogo: local("ibsac"), mark: "IBSAC" },
-  { name: "CNED", place: "À distance", type: "BTS Communication · formation à distance", href: "https://www.cned.fr/bts/bts-communication", localLogo: local("cned"), mark: "CNED" },
+  { name: "CNED", place: "À distance", type: "BTS Communication · formation à distance", href: "https://www.cned.fr/bts/bts-communication", localLogo: local("cned"), webLogo: commons("Logo CNED.svg"), mark: "CNED" },
 ];
 
 const journalistSchools: SchoolEntry[] = [
-  { name: "CFJ", place: "Paris / Lyon", level: "Diplôme visé Bac+5", access: "Après un premier cursus supérieur et admission sélective", focus: "Enquête, terrain, vérification de l'information, sources, reportage et formats longs : une base solide pour évoluer vers le journalisme d'investigation, en presse comme en audio.", href: "https://cfjparis.com/formation/diplome-bac-plus-5/les-parcours/", localLogo: local("cfj"), mark: "CFJ" },
-  { name: "IPJ Dauphine–PSL", place: "Paris", level: "Master Journalisme", access: "Admission sur concours après un cursus de niveau licence", focus: "Méthodes journalistiques, enquête, recherche documentaire, terrain, traitement des sources, déontologie et production pour plusieurs formats éditoriaux.", href: "https://ipj.eu/", localLogo: local("ipj"), mark: "IPJ" },
-  { name: "ESJ Lille", place: "Lille", level: "Diplôme généraliste niveau Master", access: "Plusieurs voies d'accès et diplôme généraliste", focus: "Formation généraliste reconnue avec forte pratique du terrain, vérification, reportage et journalisme multimédia, permettant ensuite de développer une spécialisation en enquête et investigation.", href: "https://esj-lille.fr/programmes/", localLogo: local("esj-lille"), mark: "ESJ LILLE" },
-  { name: "EJT", place: "Toulouse", level: "Formation au métier de journaliste", access: "Admission propre à l'école", focus: "Apprentissage du reportage, du terrain, de la recherche d'informations, de l'interview et de l'écriture journalistique pour différents supports.", href: "https://ejt.fr/", localLogo: local("ejt"), mark: "EJT" },
+  { name: "CFJ", place: "Paris / Lyon", level: "Diplôme visé Bac+5", access: "Après un premier cursus supérieur et admission sélective", focus: "Enquête, terrain, vérification de l'information, sources, reportage et formats longs : une base solide pour évoluer vers le journalisme d'investigation, en presse comme en audio.", href: "https://cfjparis.com/formation/diplome-bac-plus-5/les-parcours/", localLogo: local("cfj"), webLogo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Logo_CFJ.svg", mark: "CFJ" },
+  { name: "IPJ Dauphine–PSL", place: "Paris", level: "Master Journalisme", access: "Admission sur concours après un cursus de niveau licence", focus: "Méthodes journalistiques, enquête, recherche documentaire, terrain, traitement des sources, déontologie et production pour plusieurs formats éditoriaux.", href: "https://ipj.eu/", localLogo: local("ipj"), webLogo: commons("Dauphine logo 2019 - Bleu.png"), mark: "IPJ" },
+  { name: "ESJ Lille", place: "Lille", level: "Diplôme généraliste niveau Master", access: "Plusieurs voies d'accès et diplôme généraliste", focus: "Formation généraliste reconnue avec forte pratique du terrain, vérification, reportage et journalisme multimédia, permettant ensuite de développer une spécialisation en enquête et investigation.", href: "https://esj-lille.fr/programmes/", localLogo: local("esj-lille"), webLogo: "https://upload.wikimedia.org/wikipedia/commons/f/f8/New_logo_ESJ_Lille.svg", mark: "ESJ LILLE" },
+  { name: "EJT", place: "Toulouse", level: "Formation au métier de journaliste", access: "Admission propre à l'école", focus: "Apprentissage du reportage, du terrain, de la recherche d'informations, de l'interview et de l'écriture journalistique pour différents supports.", href: "https://ejt.fr/", localLogo: local("ejt"), webLogo: commons("EjTlogo.png"), mark: "EJT" },
 ];
 
 const hostSchools: SchoolEntry[] = [
-  { name: "INA campus", place: "Bry-sur-Marne", level: "TFP Animateur / Animatrice radio", access: "Formation professionnalisante en alternance", focus: "Conception, production et animation de programmes radio et podcasts, stratégie digitale, réseaux sociaux et pratique en studio.", href: "https://campus.ina.fr/formations-radio-a-ina-campus", localLogo: local("ina"), mark: "INA" },
+  { name: "INA campus", place: "Bry-sur-Marne", level: "TFP Animateur / Animatrice radio", access: "Formation professionnalisante en alternance", focus: "Conception, production et animation de programmes radio et podcasts, stratégie digitale, réseaux sociaux et pratique en studio.", href: "https://campus.ina.fr/formations-radio-a-ina-campus", localLogo: local("ina"), webLogo: commons("Logo INA.svg"), mark: "INA" },
   { name: "ISCPA · STUDEC", place: "Paris", level: "Animation et réalisation radio · Bac+2", access: "Accessible après le bac, hors Parcoursup", focus: "Animation, réalisation, prise de parole, conduite du direct, préparation d'émission et fonctionnement d'un studio professionnel.", href: "https://www.iscpa-ecoles.com/formation/journalisme/formation-animation-radio", localLogo: local("iscpa"), mark: "ISCPA" },
   { name: "La Skol", place: "Rennes", level: "TFP Animateur / Animatrice radio", access: "Parcours en alternance", focus: "Animation, production, préparation éditoriale, pratique d'antenne et application professionnelle en radio.", href: "https://www.laskol.fr/", localLogo: local("la-skol"), mark: "LA SKOL" },
 ];
 
 const radios: BrandData[] = [
-  { name: "France Inter", localLogo: local("france-inter"), mark: "FRANCE INTER" },
-  { name: "franceinfo", localLogo: local("franceinfo"), mark: "franceinfo:" },
-  { name: "ICI", localLogo: local("ici"), mark: "ICI" },
-  { name: "RTL", localLogo: local("rtl"), mark: "RTL" },
-  { name: "Europe 1", localLogo: local("europe-1"), mark: "EUROPE 1" },
+  { name: "France Inter", localLogo: local("france-inter"), webLogo: commons("France Inter logo 2021.svg"), mark: "FRANCE INTER" },
+  { name: "franceinfo", localLogo: local("franceinfo"), webLogo: commons("Franceinfo.svg"), mark: "franceinfo:" },
+  { name: "ICI", localLogo: local("ici"), webLogo: commons("Ici Logo 2025.png"), mark: "ICI" },
+  { name: "RTL", localLogo: local("rtl"), webLogo: commons("RTL logo.svg"), mark: "RTL" },
+  { name: "Europe 1", localLogo: local("europe-1"), webLogo: commons("Europe1-logo.svg"), mark: "EUROPE 1" },
   { name: "Happy Radio", localLogo: local("happy-radio"), mark: "HAPPY" },
-  { name: "RCF Notre-Dame", localLogo: local("rcf"), mark: "RCF" },
-  { name: "RMC", localLogo: local("rmc"), mark: "RMC" },
-  { name: "NRJ", localLogo: local("nrj"), mark: "NRJ" },
-  { name: "Skyrock", localLogo: local("skyrock"), mark: "SKYROCK" },
-  { name: "Fun Radio", localLogo: local("fun-radio"), mark: "FUN RADIO" },
-  { name: "RFM", localLogo: local("rfm"), mark: "RFM" },
-  { name: "Europe 2", localLogo: local("europe-2"), mark: "EUROPE 2" },
-  { name: "Sud Radio", localLogo: local("sud-radio"), mark: "SUD RADIO" },
-  { name: "Radio Classique", localLogo: local("radio-classique"), mark: "RADIO CLASSIQUE" },
+  { name: "RCF Notre-Dame", localLogo: local("rcf"), webLogo: commons("RCF logo.svg"), mark: "RCF" },
+  { name: "RMC", localLogo: local("rmc"), webLogo: commons("RMC 2025.svg"), mark: "RMC" },
+  { name: "NRJ", localLogo: local("nrj"), webLogo: commons("NRJ 2014 logo.svg"), mark: "NRJ" },
+  { name: "Skyrock", localLogo: local("skyrock"), webLogo: commons("Skyrock 2010 logo.png"), mark: "SKYROCK" },
+  { name: "Fun Radio", localLogo: local("fun-radio"), webLogo: commons("Logo Fun Radio (2021).svg"), mark: "FUN RADIO" },
+  { name: "RFM", localLogo: local("rfm"), webLogo: commons("RFM logo.svg"), mark: "RFM" },
+  { name: "Europe 2", localLogo: local("europe-2"), webLogo: commons("Europe 2 logo 2023.svg"), mark: "EUROPE 2" },
+  { name: "Sud Radio", localLogo: local("sud-radio"), webLogo: commons("Logo Sud Radio vectorise.svg"), mark: "SUD RADIO" },
+  { name: "Radio Classique", localLogo: local("radio-classique"), webLogo: commons("Logo Radio Classique.svg"), mark: "RADIO CLASSIQUE" },
 ];
 
-function BrandMark({ name, size = "md", localLogo, mark }: BrandData & { size?: "sm" | "md" }) {
-  const [failed, setFailed] = useState(false);
+function BrandMark({ name, size = "md", localLogo, webLogo, mark }: BrandData & { size?: "sm" | "md" }) {
+  const sources = [...new Set([webLogo, localLogo].filter(Boolean) as string[])];
+  const [sourceIndex, setSourceIndex] = useState(0);
   const px = size === "sm" ? 48 : 64;
+  const src = sources[sourceIndex];
+  const exhausted = !src;
+
+  const useNextSource = () => setSourceIndex((index) => index + 1);
+  const validateImage = (event: React.SyntheticEvent<HTMLImageElement>) => {
+    const image = event.currentTarget;
+    const isRemote = sourceIndex === 0 && Boolean(webLogo);
+    if (!isRemote) return;
+    const width = image.naturalWidth;
+    const height = image.naturalHeight;
+    const tooSmall = width > 0 && height > 0 && Math.max(width, height) < 96;
+    const unusableRatio = width > 0 && height > 0 && (width / height > 8 || height / width > 8);
+    if (tooSmall || unusableRatio) useNextSource();
+  };
+
   return (
     <span className="flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-white p-2" style={{ width: px, height: px }}>
-      {!failed ? (
-        <img src={localLogo} alt={`Logo ${name}`} className="h-full w-full object-contain" loading="lazy" decoding="async" onError={() => setFailed(true)} />
+      {!exhausted ? (
+        <img key={src} src={src} alt={`Logo ${name}`} className="h-full w-full object-contain" loading="lazy" decoding="async" onLoad={validateImage} onError={useNextSource} referrerPolicy="no-referrer" />
       ) : (
         <span className="text-center font-display text-[10px] font-black leading-tight tracking-tight text-black">{mark ?? name}</span>
       )}
