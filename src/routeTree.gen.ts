@@ -15,6 +15,7 @@ import { Route as PolitiqueCookiesRouteImport } from './routes/politique-cookies
 import { Route as PolitiqueConfidentialiteRouteImport } from './routes/politique-confidentialite'
 import { Route as ParcoursRouteImport } from './routes/parcours'
 import { Route as MoviesAuthRouteImport } from './routes/movies-auth'
+import { Route as MesObjectifsRouteImport } from './routes/mes-objectifs'
 import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
 import { Route as FilmsSeriesRouteImport } from './routes/films-series'
 import { Route as EntrepriseRouteImport } from './routes/entreprise'
@@ -94,6 +95,11 @@ const ParcoursRoute = ParcoursRouteImport.update({
 const MoviesAuthRoute = MoviesAuthRouteImport.update({
   id: '/movies-auth',
   path: '/movies-auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MesObjectifsRoute = MesObjectifsRouteImport.update({
+  id: '/mes-objectifs',
+  path: '/mes-objectifs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MentionsLegalesRoute = MentionsLegalesRouteImport.update({
@@ -370,6 +376,7 @@ export interface FileRoutesByFullPath {
   '/entreprise': typeof EntrepriseRoute
   '/films-series': typeof FilmsSeriesRoute
   '/mentions-legales': typeof MentionsLegalesRoute
+  '/mes-objectifs': typeof MesObjectifsRoute
   '/movies-auth': typeof MoviesAuthRoute
   '/parcours': typeof ParcoursRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
@@ -427,6 +434,7 @@ export interface FileRoutesByTo {
   '/entreprise': typeof EntrepriseRoute
   '/films-series': typeof FilmsSeriesRoute
   '/mentions-legales': typeof MentionsLegalesRoute
+  '/mes-objectifs': typeof MesObjectifsRoute
   '/movies-auth': typeof MoviesAuthRoute
   '/parcours': typeof ParcoursRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
@@ -485,6 +493,7 @@ export interface FileRoutesById {
   '/entreprise': typeof EntrepriseRoute
   '/films-series': typeof FilmsSeriesRoute
   '/mentions-legales': typeof MentionsLegalesRoute
+  '/mes-objectifs': typeof MesObjectifsRoute
   '/movies-auth': typeof MoviesAuthRoute
   '/parcours': typeof ParcoursRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
@@ -544,6 +553,7 @@ export interface FileRouteTypes {
     | '/entreprise'
     | '/films-series'
     | '/mentions-legales'
+    | '/mes-objectifs'
     | '/movies-auth'
     | '/parcours'
     | '/politique-confidentialite'
@@ -601,6 +611,7 @@ export interface FileRouteTypes {
     | '/entreprise'
     | '/films-series'
     | '/mentions-legales'
+    | '/mes-objectifs'
     | '/movies-auth'
     | '/parcours'
     | '/politique-confidentialite'
@@ -658,6 +669,7 @@ export interface FileRouteTypes {
     | '/entreprise'
     | '/films-series'
     | '/mentions-legales'
+    | '/mes-objectifs'
     | '/movies-auth'
     | '/parcours'
     | '/politique-confidentialite'
@@ -716,6 +728,7 @@ export interface RootRouteChildren {
   EntrepriseRoute: typeof EntrepriseRoute
   FilmsSeriesRoute: typeof FilmsSeriesRoute
   MentionsLegalesRoute: typeof MentionsLegalesRoute
+  MesObjectifsRoute: typeof MesObjectifsRoute
   MoviesAuthRoute: typeof MoviesAuthRoute
   ParcoursRoute: typeof ParcoursRoute
   PolitiqueConfidentialiteRoute: typeof PolitiqueConfidentialiteRoute
@@ -797,6 +810,13 @@ declare module '@tanstack/react-router' {
       path: '/movies-auth'
       fullPath: '/movies-auth'
       preLoaderRoute: typeof MoviesAuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mes-objectifs': {
+      id: '/mes-objectifs'
+      path: '/mes-objectifs'
+      fullPath: '/mes-objectifs'
+      preLoaderRoute: typeof MesObjectifsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mentions-legales': {
@@ -1176,6 +1196,7 @@ const rootRouteChildren: RootRouteChildren = {
   EntrepriseRoute: EntrepriseRoute,
   FilmsSeriesRoute: FilmsSeriesRoute,
   MentionsLegalesRoute: MentionsLegalesRoute,
+  MesObjectifsRoute: MesObjectifsRoute,
   MoviesAuthRoute: MoviesAuthRoute,
   ParcoursRoute: ParcoursRoute,
   PolitiqueConfidentialiteRoute: PolitiqueConfidentialiteRoute,
