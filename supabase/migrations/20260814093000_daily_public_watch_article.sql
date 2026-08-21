@@ -1,8 +1,21 @@
 -- Réutilise le secret du planificateur existant sans l'écrire dans le dépôt.
+-- Les environnements de preview Supabase n'activent pas nécessairement pg_cron/vault.
+-- Dans ce cas, la migration reste rejouable sans bloquer toute la preview : le cron
+-- est une capacité de production et sera configuré là où les extensions existent.
 do $$
 declare
   scheduler_secret text;
 begin
+  if to_regclass('cron.job') is null then
+    raise notice 'pg_cron indisponible : planification daily-public-watch-article ignorée dans cet environnement';
+    return;
+  end if;
+
+  if to_regclass('vault.decrypted_secrets') is null then
+    raise notice 'Supabase Vault indisponible : planification daily-public-watch-article ignorée dans cet environnement';
+    return;
+  end if;
+
   select (regexp_match(command, 'x-newsletter-token"\s*:\s*"([^"]+)"'))[1]
     into scheduler_secret
     from cron.job
@@ -10,7 +23,8 @@ begin
    limit 1;
 
   if scheduler_secret is null then
-    raise exception 'Secret du planificateur existant introuvable';
+    raise notice 'Secret du planificateur existant introuvable : planification daily-public-watch-article ignorée';
+    return;
   end if;
 
   if not exists (select 1 from vault.decrypted_secrets where name = 'angel_daily_article_cron') then
