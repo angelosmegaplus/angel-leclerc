@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { BookOpen, BriefcaseBusiness, Download, ExternalLink, GraduationCap, Headphones, School, Target, Waves, Search, FileSearch, ShieldCheck } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
+import { YouTubeEmbed } from "@/components/YouTubeEmbed";
 import { Logo } from "@/components/Logo";
 import talisLogo from "@/assets/talis-logo.png";
 
@@ -180,6 +181,10 @@ function MesObjectifsPage() {
                 </div>
               </div>
 
+              <div className="mt-9 overflow-hidden rounded-2xl border border-border bg-background shadow-sm">
+                <YouTubeEmbed id="xcnYwQRZcGQ" title="Comment travaillent les journalistes d'investigation ?" />
+              </div>
+
               <div className="mt-9 grid gap-4 md:grid-cols-3">
                 <Card><Search className="text-primary" /><h4 className="mt-4 font-semibold">Enquêter sur le terrain</h4><p className="mt-3 text-sm leading-relaxed text-muted-foreground">Trouver des sujets, rencontrer des témoins, conduire des entretiens et suivre une enquête dans la durée.</p></Card>
                 <Card><ShieldCheck className="text-primary" /><h4 className="mt-4 font-semibold">Vérifier et protéger les sources</h4><p className="mt-3 text-sm leading-relaxed text-muted-foreground">Recouper, analyser des documents, distinguer faits et affirmations et respecter la déontologie.</p></Card>
@@ -203,6 +208,10 @@ function MesObjectifsPage() {
                   <h3 className="mt-3 font-display text-3xl font-bold leading-tight">Animateur radio</h3>
                   <p className="mt-6 max-w-2xl leading-relaxed text-muted-foreground">Concevoir une émission, maîtriser le direct, mener des interviews et développer une identité d'antenne.</p>
                 </div>
+              </div>
+
+              <div className="mt-9 overflow-hidden rounded-2xl border border-border bg-background shadow-sm">
+                <YouTubeEmbed id="2eC3bFEnTlA" title="Présentation du métier d'animateur radio" />
               </div>
 
               <p className="mt-12 text-xs font-semibold uppercase tracking-widest text-primary">Formations spécialisées</p>
