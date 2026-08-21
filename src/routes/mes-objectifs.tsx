@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Sparkles,
   Target,
+  TriangleAlert,
   Waves,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
@@ -128,6 +129,10 @@ function MesObjectifsPage() {
         <section className="section-padding bg-background">
           <div className="container-tight">
             <SectionHeader eyebrow="Projet d'avenir" title="Mes objectifs" intro="Communication, journalisme et radio : plusieurs possibilités, avec une priorité donnée à une situation stable et à un parcours cohérent." />
+            <div className="mx-auto mt-6 flex max-w-2xl items-start gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-foreground/80">
+              <TriangleAlert size={18} className="mt-0.5 shrink-0 text-amber-600" />
+              <p><span className="font-semibold text-foreground">Page en cours de construction.</span> Des erreurs de texte, d’icônes ou de visuels peuvent encore être présentes.</p>
+            </div>
           </div>
         </section>
       </AnimatedSection>
