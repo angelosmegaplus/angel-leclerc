@@ -31,7 +31,7 @@ export const Route = createFileRoute("/mes-objectifs")({
   component: MesObjectifsPage,
 });
 
-const LOGO_VERSION = "20260821-3";
+const LOGO_VERSION = "20260821-4";
 const local = (name: string) => `/logos/objectives/${name}.svg?v=${LOGO_VERSION}`;
 
 type BrandData = { name: string; localLogo: string; mark?: string };
