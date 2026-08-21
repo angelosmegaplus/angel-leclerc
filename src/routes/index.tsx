@@ -89,7 +89,7 @@ function LandingPage() {
                     <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
                     <div className="relative flex items-center gap-4"><div className="inline-flex rounded-2xl border border-border bg-muted p-3.5 transition-colors group-hover:border-primary/40 group-hover:bg-primary/10"><Icon size={22} className="text-primary" /></div><span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">{choice.eyebrow}</span></div>
                     <h2 className="relative mt-6 font-display text-2xl font-bold leading-tight text-foreground md:text-3xl">{choice.title}</h2>
-                    {"badge" in choice && choice.badge && <span className="relative mt-3 inline-flex w-fit items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-semibold text-primary">{choice.badge}</span>}
+                    
                     <p className="relative mt-4 flex-1 text-sm leading-relaxed text-muted-foreground md:text-base">{choice.text}</p>
                     <span className="relative mt-8 inline-flex items-center gap-2 text-sm font-semibold text-foreground transition-colors group-hover:text-primary">{choice.cta}<ArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-1.5" /></span>
                   </Link>
