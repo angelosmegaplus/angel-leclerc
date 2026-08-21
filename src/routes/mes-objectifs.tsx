@@ -117,9 +117,8 @@ function RadioMarquee() {
     <div className="relative mt-12 overflow-hidden border-y border-border bg-background/80 py-5">
       <div className="objectives-radio-marquee flex w-max items-center gap-4 pr-4">
         {loop.map((radio, index) => (
-          <div key={`${radio.name}-${index}`} className="flex h-20 w-44 shrink-0 items-center gap-3 rounded-2xl border border-border bg-card px-4 shadow-sm">
+          <div key={`${radio.name}-${index}`} title={radio.name} className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border border-border bg-card p-2 shadow-sm">
             <BrandMark {...radio} size="sm" />
-            <span className="text-sm font-semibold leading-tight">{radio.name}</span>
           </div>
         ))}
       </div>
