@@ -42,43 +42,54 @@ function ObjectivesButton() {
 
 function PermisSection() {
   const [target, setTarget] = useState<HTMLElement | null>(null);
+
   useEffect(() => {
-    const toolsSection = document.getElementById("outils");
-    const parent = toolsSection?.parentElement;
-    if (!toolsSection || !parent) return;
+    const certificationsSection = document.getElementById("certifications");
+    const container = certificationsSection?.querySelector<HTMLElement>(".container-tight");
+    if (!container) return;
+
     const mount = document.createElement("div");
     mount.dataset.permisSection = "true";
-    parent.insertBefore(mount, toolsSection);
+    container.appendChild(mount);
     setTarget(mount);
+
     return () => mount.remove();
   }, []);
+
   if (!target) return null;
+
   return createPortal(
-    <AnimatedSection>
-      <section className="py-8 md:py-10 bg-background">
-        <div className="container-tight">
-          <div className="mx-auto max-w-2xl">
-            <p className="text-center text-xs font-semibold uppercase tracking-widest text-primary">Mobilité</p>
-            <h2 className="mt-2 text-center font-display text-2xl font-bold text-foreground">Mon permis</h2>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Bike size={21} /></div>
-                <div className="min-w-0 flex-1"><p className="font-semibold text-foreground">Permis AM</p><p className="mt-0.5 inline-flex items-center gap-1.5 text-xs font-medium text-primary"><CircleCheck size={14} /> Obtenu</p></div>
-              </div>
-              <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted text-foreground"><CarFront size={21} /></div>
-                <div className="min-w-0 flex-1"><p className="font-semibold text-foreground">Permis B</p><p className="mt-0.5 inline-flex items-center gap-1.5 text-xs font-medium text-primary"><LoaderCircle size={14} /> En préparation</p></div>
-              </div>
+    <div className="mt-8 border-t border-border pt-7 md:mt-10 md:pt-8">
+      <div className="mx-auto max-w-2xl">
+        <p className="text-center text-xs font-semibold uppercase tracking-widest text-primary">Mobilité</p>
+        <h3 className="mt-2 text-center font-display text-2xl font-bold text-foreground">Mon permis</h3>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Bike size={21} /></div>
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-foreground">Permis AM</p>
+              <p className="mt-0.5 inline-flex items-center gap-1.5 text-xs font-medium text-primary"><CircleCheck size={14} /> Obtenu</p>
             </div>
-            <div className="mt-3 flex items-center justify-center gap-3 rounded-xl border border-dashed border-primary/30 bg-primary/5 px-4 py-2.5 text-center text-sm font-medium text-foreground/80">
-              <Bus size={17} className="shrink-0 text-primary" />
-              <span>En attendant : pro des transports en commun et du stop</span>
-              <ThumbsUp size={16} className="shrink-0 text-primary" />
+          </div>
+
+          <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted text-foreground"><CarFront size={21} /></div>
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-foreground">Permis B</p>
+              <p className="mt-0.5 inline-flex items-center gap-1.5 text-xs font-medium text-primary"><LoaderCircle size={14} /> En préparation</p>
             </div>
           </div>
         </div>
-      </section>
-    </AnimatedSection>, target,
+
+        <div className="mt-3 flex items-center justify-center gap-3 rounded-xl border border-dashed border-primary/30 bg-primary/5 px-4 py-2.5 text-center text-sm font-medium text-foreground/80">
+          <Bus size={17} className="shrink-0 text-primary" />
+          <span>En attendant : pro des transports en commun et du stop</span>
+          <ThumbsUp size={16} className="shrink-0 text-primary" />
+        </div>
+      </div>
+    </div>,
+    target,
   );
 }
 
