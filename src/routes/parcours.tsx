@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Linkedin, Download, Mail, Target, Bike, CarFront, CircleCheck, CircleX, LoaderCircle } from "lucide-react";
+import { Linkedin, Download, Mail, Target, Bike, CarFront, CircleCheck, LoaderCircle } from "lucide-react";
 import {
   MyJourney,
   SkillsSection,
@@ -56,7 +56,24 @@ function ObjectivesButton() {
 }
 
 function PermisSection() {
-  return (
+  const [target, setTarget] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const toolsSection = document.getElementById("outils");
+    const parent = toolsSection?.parentElement;
+    if (!toolsSection || !parent) return;
+
+    const mount = document.createElement("div");
+    mount.dataset.permisSection = "true";
+    parent.insertBefore(mount, toolsSection);
+    setTarget(mount);
+
+    return () => mount.remove();
+  }, []);
+
+  if (!target) return null;
+
+  return createPortal(
     <AnimatedSection>
       <section className="py-8 md:py-10 bg-background">
         <div className="container-tight">
@@ -83,17 +100,17 @@ function PermisSection() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold text-foreground">Permis B</p>
-                  <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-muted-foreground">
-                    <span className="inline-flex items-center gap-1.5"><CircleX size={14} /> Non obtenu</span>
-                    <span className="inline-flex items-center gap-1.5 text-primary"><LoaderCircle size={14} /> En cours</span>
-                  </div>
+                  <p className="mt-0.5 inline-flex items-center gap-1.5 text-xs font-medium text-primary">
+                    <LoaderCircle size={14} /> En préparation
+                  </p>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </section>
-    </AnimatedSection>
+    </AnimatedSection>,
+    target,
   );
 }
 
@@ -102,10 +119,10 @@ function ParcoursPage() {
     <div className="pb-24 md:pb-0" data-cv-page>
       <MyJourney />
       <ObjectivesButton />
+      <PermisSection />
       <RealisationsSection />
       <SkillsSection />
       <PassionsSection />
-      <PermisSection />
       <LatestArticles
         title="Mes derniers articles"
         description="Communication, politique, société et idées pour comprendre ce qui change."
