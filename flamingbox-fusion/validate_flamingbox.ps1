@@ -27,9 +27,25 @@ try {
     throw 'Unsafe Chromium switch detected in FlamingBox patch'
   }
 
+  $performance = Get-Content 'components\performance_manager\user_tuning\prefs.cc' -Raw
+  if (!$performance.Contains('kMemorySaverModeState, static_cast<int>(MemorySaverModeState::kEnabled)')) {
+    throw 'Memory Saver is not enabled by default'
+  }
+  if (!$performance.Contains("kMemorySaverModeTimeBeforeDiscardInMinutes,`n      60)")) {
+    throw 'Balanced 60-minute inactive-tab threshold missing'
+  }
+
+  $dns = Get-Content 'chrome\browser\net\default_dns_over_https_config_source.cc' -Raw
+  if (!$dns.Contains('net::SecureDnsMode::kAutomatic')) { throw 'Secure DNS automatic mode missing' }
+  if (!$dns.Contains("prefs::kDnsOverHttpsAutomaticModeFallbackToDoh,`n                                true)")) {
+    throw 'Automatic DoH fallback is not enabled'
+  }
+
   if (!(Test-Path 'FLAMINGBOX_BUILD.json')) { throw 'FLAMINGBOX_BUILD.json missing' }
   $meta = Get-Content 'FLAMINGBOX_BUILD.json' -Raw | ConvertFrom-Json
   if ($meta.chromium -ne $Expected) { throw 'Build metadata Chromium revision mismatch' }
+  if ($meta.performance.profile -ne 'balanced') { throw 'Unexpected FlamingBox performance profile' }
+  if ($meta.network.guardian -ne 'observe-first') { throw 'Guardian must start in observe-first mode' }
 
   Write-Host 'FlamingBox native validation passed.' -ForegroundColor Green
 }
