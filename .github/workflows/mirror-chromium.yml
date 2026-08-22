@@ -1,0 +1,54 @@
+name: Mirror Chromium upstream
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/mirror-chromium.yml'
+  schedule:
+    - cron: '17 4 * * 1'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: chromium-upstream-mirror
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout FlamingBox repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "FlamingBox Chromium Mirror"
+          git config user.email "actions@users.noreply.github.com"
+          git config http.postBuffer 524288000
+          git config core.compression 0
+
+      - name: Fetch latest Chromium snapshot
+        run: |
+          git remote remove chromium 2>/dev/null || true
+          git remote add chromium https://github.com/chromium/chromium.git
+          git fetch --depth=1 chromium main
+
+      - name: Publish Chromium snapshot branch
+        run: |
+          UPSTREAM_SHA=$(git rev-parse FETCH_HEAD)
+          echo "Chromium upstream: $UPSTREAM_SHA"
+          git push origin +$UPSTREAM_SHA:refs/heads/chromium-upstream
+
+      - name: Write summary
+        run: |
+          echo "## Chromium mirror" >> "$GITHUB_STEP_SUMMARY"
+          echo "Published Chromium commit \`$(git rev-parse FETCH_HEAD)\` to branch \`chromium-upstream\`." >> "$GITHUB_STEP_SUMMARY"
+          echo "Source: https://github.com/chromium/chromium" >> "$GITHUB_STEP_SUMMARY"
