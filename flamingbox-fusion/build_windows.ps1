@@ -9,6 +9,8 @@ $Src = Join-Path $Work 'chromium\src'
 $DepotTools = Join-Path $Work 'depot_tools'
 $Out = Join-Path $Src 'out\FlamingBox'
 
+& (Join-Path $Root 'validate_product_config.ps1')
+
 if (!$SkipBootstrap) {
   & (Join-Path $Root 'bootstrap_fusion_windows.ps1')
 }
@@ -40,12 +42,19 @@ try {
   Copy-Item (Join-Path $Out '*') $Dist -Recurse -Force
   Copy-Item $ChromeExe (Join-Path $Dist 'FlamingBox.exe') -Force
 
+  $PolicyDist = Join-Path $Dist 'flamingbox-policy'
+  New-Item -ItemType Directory -Force -Path $PolicyDist | Out-Null
+  Copy-Item (Join-Path $Root 'config\*.json') $PolicyDist -Force
+
   @{
     product = 'FlamingBox Native'
     chromium = '8c7281d3300aa386be904fb9ee881babe85e12dc'
     firefoxReference = '5b17b585c394a469267f65da3f9794162dd9c5a5'
     engine = 'Blink + V8 + Chromium Network Service'
     privacyDefaults = @('GPC','DNT','HTTPS-First','third-party storage partitioning')
+    performanceProfile = 'balanced'
+    guardianMode = 'observe-first'
+    secureDnsMode = 'automatic'
     generatedAt = (Get-Date).ToUniversalTime().ToString('o')
   } | ConvertTo-Json -Depth 3 | Set-Content (Join-Path $Dist 'FLAMINGBOX_VERSION.json') -Encoding UTF8
 
