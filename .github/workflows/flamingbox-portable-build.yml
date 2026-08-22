@@ -1,0 +1,110 @@
+name: FlamingBox Portable Windows EXE
+
+on:
+  push:
+    branches: [flamingbox-fusion]
+    paths:
+      - 'flamingbox-portable/**'
+      - '.github/workflows/flamingbox-portable-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout FlamingBox
+        uses: actions/checkout@v4
+        with:
+          ref: flamingbox-fusion
+
+      - name: Download official Chromium Windows x64 snapshot
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $base='https://storage.googleapis.com/chromium-browser-snapshots/Win_x64'
+          $rev=(Invoke-WebRequest "$base/LAST_CHANGE" -UseBasicParsing).Content.Trim()
+          Write-Host "Chromium snapshot revision: $rev"
+          "CHROMIUM_SNAPSHOT=$rev" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Invoke-WebRequest "$base/$rev/chrome-win.zip" -OutFile "$env:RUNNER_TEMP\chrome-win.zip" -UseBasicParsing
+          Expand-Archive "$env:RUNNER_TEMP\chrome-win.zip" "$env:RUNNER_TEMP\chromium" -Force
+
+      - name: Assemble FlamingBox runtime
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $payload=Join-Path $env:RUNNER_TEMP 'flamingbox-payload'
+          New-Item -ItemType Directory -Force -Path "$payload\App" | Out-Null
+          $source=Join-Path $env:RUNNER_TEMP 'chromium\chrome-win'
+          if(!(Test-Path "$source\chrome.exe")){throw 'Official Chromium chrome.exe missing'}
+          Copy-Item "$source\*" "$payload\App" -Recurse -Force
+          Move-Item "$payload\App\chrome.exe" "$payload\App\FlamingBox.exe" -Force
+          Copy-Item 'flamingbox-portable\extension' "$payload\flamingbox-extension" -Recurse -Force
+          Copy-Item 'flamingbox-portable\launcher.ps1' "$payload\launcher.ps1" -Force
+          @{
+            product='FlamingBox Portable'
+            runtime='Official Chromium Windows x64 snapshot'
+            chromiumSnapshot=$env:CHROMIUM_SNAPSHOT
+            nativeFork=$false
+            protections=@('declarativeNetRequest','GPC','DNT preference','HTTPS-First preference','third-party storage partitioning','notifications blocked by default')
+          } | ConvertTo-Json -Depth 5 | Set-Content "$payload\FLAMINGBOX_VERSION.json" -Encoding UTF8
+          Compress-Archive -Path "$payload\*" -DestinationPath "$env:RUNNER_TEMP\payload.zip" -CompressionLevel Optimal -Force
+
+      - name: Build self-extracting EXE with Windows IExpress
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $out=Join-Path $PWD 'flamingbox-portable\dist'
+          New-Item -ItemType Directory -Force -Path $out | Out-Null
+          $src=Join-Path $env:RUNNER_TEMP 'iexpress-src'
+          New-Item -ItemType Directory -Force -Path $src | Out-Null
+          Copy-Item "$env:RUNNER_TEMP\payload.zip" "$src\payload.zip" -Force
+          Copy-Item 'flamingbox-portable\bootstrap.cmd' "$src\bootstrap.cmd" -Force
+          $target=Join-Path $out 'FlamingBox-Portable-Windows-x64.exe'
+          $sed=Join-Path $env:RUNNER_TEMP 'flamingbox.sed'
+          @"
+          [Version]
+          Class=IEXPRESS
+          SEDVersion=3
+          [Options]
+          PackagePurpose=InstallApp
+          ShowInstallProgramWindow=1
+          HideExtractAnimation=0
+          UseLongFileName=1
+          InsideCompressed=0
+          CAB_FixedSize=0
+          CAB_ResvCodeSigning=0
+          RebootMode=N
+          InstallPrompt=
+          DisplayLicense=
+          FinishMessage=
+          TargetName=$target
+          FriendlyName=FlamingBox Portable
+          AppLaunched=bootstrap.cmd
+          PostInstallCmd=<None>
+          AdminQuietInstCmd=bootstrap.cmd
+          UserQuietInstCmd=bootstrap.cmd
+          SourceFiles=SourceFiles
+          [SourceFiles]
+          SourceFiles0=$src\
+          [SourceFiles0]
+          %FILE0%=
+          %FILE1%=
+          [Strings]
+          FILE0="payload.zip"
+          FILE1="bootstrap.cmd"
+          "@ | Set-Content $sed -Encoding ASCII
+          & "$env:SystemRoot\System32\iexpress.exe" /N $sed
+          if(!(Test-Path $target)){throw 'IExpress did not produce FlamingBox EXE'}
+          Get-FileHash $target -Algorithm SHA256 | Format-List
+
+      - name: Upload FlamingBox portable executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: FlamingBox-Portable-Windows-x64
+          path: flamingbox-portable/dist/FlamingBox-Portable-Windows-x64.exe
+          if-no-files-found: error
+          compression-level: 0
