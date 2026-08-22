@@ -1,0 +1,41 @@
+{
+  "page": "flamingbox://privacy",
+  "sections": [
+    {
+      "id": "protections",
+      "metrics": [
+        "trackersBlocked",
+        "adsBlocked",
+        "thirdPartyStoragePartitions",
+        "httpsUpgrades",
+        "popupsBlocked",
+        "temporaryExceptions"
+      ]
+    },
+    {
+      "id": "performance",
+      "metrics": [
+        "tabsDiscarded",
+        "memoryRecoveredMb",
+        "guardianInterventions",
+        "backgroundNetworkWarnings"
+      ]
+    },
+    {
+      "id": "permissions",
+      "metrics": [
+        "oneTimeGrants",
+        "blockedNotifications",
+        "cameraRequests",
+        "microphoneRequests",
+        "locationRequests"
+      ]
+    }
+  ],
+  "privacy": {
+    "localOnly": true,
+    "storeFullUrls": false,
+    "storeQueryStrings": false,
+    "sendTelemetryByDefault": false
+  }
+}
