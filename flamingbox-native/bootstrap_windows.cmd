@@ -34,10 +34,12 @@ if not exist "%CHECKOUT%\src\.git" (
 pushd "%CHECKOUT%\src"
 
 echo [FlamingBox] Generation de la configuration Release...
-call gn gen out\FlamingBox --args-file="%ROOT%args.gn" || (popd & exit /b 1)
+if not exist "out\FlamingBox" mkdir "out\FlamingBox"
+copy /Y "%ROOT%args.gn" "out\FlamingBox\args.gn" >nul || (popd & exit /b 1)
+call gn gen out\FlamingBox || (popd & exit /b 1)
 
 echo [FlamingBox] Checkout pret.
 echo Pour compiler : autoninja -C out\FlamingBox chrome
-popd
 
+popd
 endlocal
