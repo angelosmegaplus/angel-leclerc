@@ -4,12 +4,13 @@ const fs = require('fs');
 const { importBrowserData } = require('./import-data');
 
 let mainWindow;
+let dataCache = null;
 
 const TRACKER_HOSTS = [
   'doubleclick.net', 'googlesyndication.com', 'google-analytics.com', 'googletagmanager.com',
   'connect.facebook.net', 'facebook.net', 'scorecardresearch.com', 'hotjar.com', 'segment.io',
-  'mixpanel.com', 'adnxs.com', 'criteo.com', 'taboola.com', 'outbrain.com', 'branch.io',
-  'app-measurement.com', 'adjust.com'
+  'mixpanel.com', 'adnxs.com', 'criteo.com', 'criteo.net', 'taboola.com', 'outbrain.com',
+  'branch.io', 'app-measurement.com', 'adjust.com', 'adsrvr.org'
 ];
 
 const PAYMENT_HOST_HINTS = [
@@ -48,12 +49,13 @@ function defaultData() {
       blockTrackers: true,
       blockPopups: true,
       httpsFirst: true,
-      angelOSKernel: true
+      angelOSKernel: true,
+      guardian: true
     }
   };
 }
 
-function readData() {
+function loadDataFromDisk() {
   try {
     const raw = fs.readFileSync(dataFile(), 'utf8');
     const parsed = JSON.parse(raw);
@@ -63,7 +65,13 @@ function readData() {
   }
 }
 
+function readData() {
+  if (!dataCache) dataCache = loadDataFromDisk();
+  return dataCache;
+}
+
 function writeData(data) {
+  dataCache = data;
   fs.mkdirSync(path.dirname(dataFile()), { recursive: true });
   fs.writeFileSync(dataFile(), JSON.stringify(data, null, 2), { encoding: 'utf8', mode: 0o600 });
 }
@@ -71,6 +79,9 @@ function writeData(data) {
 function setupSessionProtection(ses) {
   if (ses.__flamingBoxHardened) return;
   ses.__flamingBoxHardened = true;
+
+  const requestTimes = [];
+  let lastGuardianAlert = 0;
 
   ses.setPermissionRequestHandler((webContents, permission, callback, details) => {
     const origin = details?.requestingUrl || webContents.getURL();
@@ -85,7 +96,21 @@ function setupSessionProtection(ses) {
   });
 
   ses.webRequest.onBeforeRequest({ urls: ['<all_urls>'] }, (details, callback) => {
+    const now = Date.now();
+    requestTimes.push(now);
+    while (requestTimes.length && requestTimes[0] < now - 10000) requestTimes.shift();
+
     const data = readData();
+    if (data.settings.guardian && requestTimes.length > 350 && now - lastGuardianAlert > 30000) {
+      lastGuardianAlert = now;
+      mainWindow?.webContents.send('guardian:alert', {
+        kind: 'network-burst',
+        count: requestTimes.length,
+        windowMs: 10000,
+        message: 'Cette page génère un volume inhabituel de requêtes réseau.'
+      });
+    }
+
     if (data.settings.blockTrackers && isTracker(details.url) && !isPaymentURL(details.url)) {
       callback({ cancel: true });
       return;
@@ -113,8 +138,6 @@ function secureWebContents(contents) {
       return { action: 'deny' };
     }
 
-    // Normal links are converted to tabs. Scripted advertising pop-ups are not allowed
-    // to escape into an unmanaged native window.
     if (details.disposition === 'foreground-tab' || details.disposition === 'background-tab' || details.disposition === 'new-window') {
       mainWindow?.webContents.send('open-tab', url, { payment: false });
     }
@@ -169,9 +192,10 @@ function createWindow() {
 }
 
 app.commandLine.appendSwitch('disable-features', 'AutofillServerCommunication');
-app.commandLine.appendSwitch('enable-features', 'ThirdPartyStoragePartitioning,PartitionedCookies');
+app.commandLine.appendSwitch('enable-features', 'GlobalPrivacyControlForce,ThirdPartyStoragePartitioning,PartitionedCookies');
 
 app.whenReady().then(() => {
+  dataCache = loadDataFromDisk();
   createWindow();
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -239,7 +263,7 @@ ipcMain.handle('browser:import', async () => {
 
 ipcMain.handle('settings:update', (_event, patch) => {
   const data = readData();
-  const allowed = ['home', 'blockTrackers', 'blockPopups', 'httpsFirst'];
+  const allowed = ['home', 'blockTrackers', 'blockPopups', 'httpsFirst', 'guardian'];
   for (const key of allowed) if (Object.prototype.hasOwnProperty.call(patch || {}, key)) data.settings[key] = patch[key];
   writeData(data);
   return data.settings;
