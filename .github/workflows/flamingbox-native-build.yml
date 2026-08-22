@@ -1,0 +1,52 @@
+name: FlamingBox Native Chromium Build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CHROMIUM_COMMIT: 8c7281d3300aa386be904fb9ee881babe85e12dc
+  FIREFOX_COMMIT: 5b17b585c394a469267f65da3f9794162dd9c5a5
+
+jobs:
+  build-windows:
+    # Chromium requires far more disk/RAM than a normal GitHub-hosted Windows runner.
+    # Attach a Windows x64 self-hosted runner with >= 150 GB free disk and >= 16 GB RAM.
+    runs-on: [self-hosted, Windows, X64, flamingbox-builder]
+    timeout-minutes: 720
+
+    steps:
+      - name: Checkout FlamingBox integration
+        uses: actions/checkout@v4
+        with:
+          ref: flamingbox-fusion
+
+      - name: Check builder resources
+        shell: powershell
+        run: |
+          $drive = Get-PSDrive -Name ($PWD.Drive.Name)
+          $freeGB = [math]::Round($drive.Free / 1GB, 1)
+          $ramGB = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 1)
+          Write-Host "Free disk: $freeGB GB"
+          Write-Host "RAM: $ramGB GB"
+          if ($freeGB -lt 120) { throw "FlamingBox Chromium build requires at least 120 GB free disk on this runner." }
+          if ($ramGB -lt 12) { throw "FlamingBox Chromium build requires at least 12 GB RAM; 16+ GB recommended." }
+
+      - name: Build FlamingBox Native
+        shell: powershell
+        run: |
+          Set-ExecutionPolicy -Scope Process Bypass -Force
+          .\flamingbox-fusion\build_windows.ps1
+
+      - name: Upload FlamingBox Native Windows
+        uses: actions/upload-artifact@v4
+        with:
+          name: FlamingBox-Native-Windows-x64
+          path: |
+            flamingbox-fusion/dist/FlamingBox-Native-Windows-x64.zip
+            flamingbox-fusion/dist/windows-x64/FlamingBox.exe
+            flamingbox-fusion/dist/windows-x64/FLAMINGBOX_VERSION.json
+          if-no-files-found: error
+          compression-level: 0
