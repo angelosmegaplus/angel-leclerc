@@ -1,27 +1,34 @@
 {
   "name": "flamingbox",
-  "version": "0.2.0",
-  "description": "FlamingBox - navigateur Windows léger basé sur Chromium via NW.js, avec onglets, favoris, historique, navigation privée et import Firefox/Chrome/Edge/Chromium.",
-  "main": "src/index.html",
-  "nodejs": true,
-  "node-remote": [],
-  "chromium-args": "--enable-features=OverlayScrollbar --disable-features=TranslateUI --disable-breakpad",
-  "window": {
-    "title": "FlamingBox",
-    "width": 1440,
-    "height": 900,
-    "min_width": 900,
-    "min_height": 600,
-    "position": "center",
-    "frame": true,
-    "toolbar": false,
-    "resizable": true
+  "version": "0.3.0",
+  "description": "FlamingBox — navigateur Windows Angel OS basé sur Chromium/Electron, avec protections inspirées de Firefox.",
+  "main": "src/main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win portable --x64"
   },
-  "permissions": [
-    "<all_urls>",
-    "storage",
-    "unlimitedStorage",
-    "webRequest",
-    "webRequestBlocking"
-  ]
+  "devDependencies": {
+    "electron": "43.4.0",
+    "electron-builder": "26.0.12"
+  },
+  "build": {
+    "appId": "fr.angelos.flamingbox",
+    "productName": "FlamingBox",
+    "asar": true,
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "artifactName": "FlamingBox-${version}-Windows-x64.${ext}"
+    }
+  }
 }
