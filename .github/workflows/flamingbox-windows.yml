@@ -2,6 +2,11 @@ name: FlamingBox Windows
 
 on:
   workflow_dispatch:
+  push:
+    branches: [flamingbox-browser]
+    paths:
+      - 'flamingbox/**'
+      - '.github/workflows/flamingbox-windows.yml'
   pull_request:
     branches: [main]
     paths:
