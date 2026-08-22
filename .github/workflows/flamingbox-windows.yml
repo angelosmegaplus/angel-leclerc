@@ -1,0 +1,32 @@
+name: FlamingBox Windows
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    # Chromium is too large for a normal GitHub-hosted Windows runner.
+    # Attach a Windows x64 self-hosted runner with enough disk/RAM.
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 720
+
+    steps:
+      - name: Checkout FlamingBox kit
+        uses: actions/checkout@v4
+        with:
+          ref: flamingbox-browser
+
+      - name: Build Chromium-based FlamingBox
+        shell: powershell
+        run: |
+          Set-ExecutionPolicy -Scope Process Bypass -Force
+          .\flamingbox\chromium-kit\build-windows.ps1 -Workspace C:\src\flamingbox-build
+
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: FlamingBox-Windows
+          path: |
+            flamingbox/dist-windows/FlamingBoxSetup.exe
+            flamingbox/dist-windows/FlamingBox-portable-win64.zip
+          if-no-files-found: error
