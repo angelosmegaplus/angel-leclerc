@@ -1,0 +1,22 @@
+{
+  "architecture": "Chromium engine with Firefox-inspired features ported into FlamingBox",
+  "chromium": {
+    "repository": "https://github.com/chromium/chromium",
+    "branch": "main",
+    "mirror_branch": "chromium-upstream",
+    "commit": "8c7281d3300aa386be904fb9ee881babe85e12dc",
+    "role": "primary engine: Blink, V8, network service, sandbox, multiprocess architecture and Chromium browser stack"
+  },
+  "firefox": {
+    "repository": "https://github.com/mozilla-firefox/firefox",
+    "branch": "main",
+    "mirror_branch": "firefox-upstream",
+    "commit": "5b17b585c394a469267f65da3f9794162dd9c5a5",
+    "role": "reference source for privacy, anti-tracking, security and UX features to port into Chromium-based FlamingBox"
+  },
+  "policy": {
+    "runtime_engine": "Chromium",
+    "do_not_combine": ["Blink and Gecko in the same rendering process", "SpiderMonkey and V8 as competing JavaScript runtimes"],
+    "port_targets": ["tracking protection", "cookie partitioning", "Global Privacy Control", "HTTPS-only/HTTPS-first behavior", "site privacy controls", "private browsing protections", "anti-fingerprinting ideas where compatible"]
+  }
+}
