@@ -4,7 +4,15 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $Expected = '8c7281d3300aa386be904fb9ee881babe85e12dc'
+$FirefoxExpected = '5b17b585c394a469267f65da3f9794162dd9c5a5'
 $ChromiumSrc = (Resolve-Path $ChromiumSrc).Path
+
+function Replace-Or-Throw([string]$Text, [string]$Old, [string]$New, [string]$Label) {
+  if (!$Text.Contains($Old) -and !$Text.Contains($New)) {
+    throw "FlamingBox patch target not found: $Label"
+  }
+  return $Text.Replace($Old, $New)
+}
 
 Push-Location $ChromiumSrc
 try {
@@ -29,11 +37,30 @@ MAC_TEAM_ID=
   # 2) Privacy defaults implemented in Chromium's own preference layer.
   $prefsPath = Join-Path $ChromiumSrc 'chrome\browser\ui\browser_ui_prefs.cc'
   $prefs = Get-Content $prefsPath -Raw
-  $prefs = $prefs.Replace('prefs::kEnableDoNotTrack, false,', 'prefs::kEnableDoNotTrack, true,')
-  $prefs = $prefs.Replace('prefs::kHttpsOnlyModeEnabled, false,', 'prefs::kHttpsOnlyModeEnabled, true,')
+  $prefs = Replace-Or-Throw $prefs 'prefs::kEnableDoNotTrack, false,' 'prefs::kEnableDoNotTrack, true,' 'DNT default'
+  $prefs = Replace-Or-Throw $prefs 'prefs::kHttpsOnlyModeEnabled, false,' 'prefs::kHttpsOnlyModeEnabled, true,' 'HTTPS-First default'
   Set-Content $prefsPath $prefs -Encoding UTF8
 
-  # 3) Enable native Chromium privacy primitives at startup. Do not intercept requests in JS.
+  # 3) Performance defaults. Use Chromium Performance Manager instead of a custom scheduler.
+  # Balanced profile: memory saver enabled, medium aggressiveness, 60 minute inactive-tab threshold.
+  $performancePrefsPath = Join-Path $ChromiumSrc 'components\performance_manager\user_tuning\prefs.cc'
+  $performancePrefs = Get-Content $performancePrefsPath -Raw
+  $performancePrefs = Replace-Or-Throw $performancePrefs 'registry->RegisterBooleanPref(kMemorySaverModeEnabled, false);' 'registry->RegisterBooleanPref(kMemorySaverModeEnabled, true);' 'legacy memory saver default'
+  $performancePrefs = Replace-Or-Throw $performancePrefs 'kMemorySaverModeTimeBeforeDiscardInMinutes,`r`n      kDefaultMemorySaverModeTimeBeforeDiscardInMinutes);' 'kMemorySaverModeTimeBeforeDiscardInMinutes,`r`n      60);' 'memory saver discard timeout'
+  if ($performancePrefs.Contains('static_cast<int>(MemorySaverModeState::kDisabled));')) {
+    $performancePrefs = $performancePrefs.Replace('static_cast<int>(MemorySaverModeState::kDisabled));', 'static_cast<int>(MemorySaverModeState::kEnabled));')
+  }
+  # Keep medium as the default. This avoids aggressive tab churn on normal machines.
+  Set-Content $performancePrefsPath $performancePrefs -Encoding UTF8
+
+  # 4) Secure DNS. Keep Chromium Automatic mode for captive portals/VPN compatibility,
+  # but permit automatic fallback to a known DoH path when Chromium decides it is appropriate.
+  $dnsPath = Join-Path $ChromiumSrc 'chrome\browser\net\default_dns_over_https_config_source.cc'
+  $dns = Get-Content $dnsPath -Raw
+  $dns = Replace-Or-Throw $dns 'prefs::kDnsOverHttpsAutomaticModeFallbackToDoh,`r`n                                false);' 'prefs::kDnsOverHttpsAutomaticModeFallbackToDoh,`r`n                                true);' 'Secure DNS automatic fallback'
+  Set-Content $dnsPath $dns -Encoding UTF8
+
+  # 5) Enable native Chromium privacy primitives at startup. Do not intercept requests in JS.
   $delegatePath = Join-Path $ChromiumSrc 'chrome\app\chrome_main_delegate.cc'
   $delegate = Get-Content $delegatePath -Raw
   $marker = '// FLAMINGBOX_PRIVACY_DEFAULTS'
@@ -65,22 +92,39 @@ MAC_TEAM_ID=
     Set-Content $delegatePath $delegate -Encoding UTF8
   }
 
-  # 4) Record the exact source state used for the build.
+  # 6) Record exact source state and product policy. Guardian initially relies on
+  # Chromium performance interventions; network-budget enforcement will only be
+  # enabled after native integration tests prove it does not throttle legitimate downloads/video.
   @{
     product = 'FlamingBox'
+    architecture = 'Chromium native + Firefox-inspired privacy behavior'
     chromium = $Expected
-    firefoxReference = '5b17b585c394a469267f65da3f9794162dd9c5a5'
+    firefoxReference = $FirefoxExpected
     privacy = @{
       globalPrivacyControl = $true
       doNotTrackDefault = $true
       httpsFirstDefault = $true
       thirdPartyStoragePartitioning = $true
       javascriptNetworkInterceptor = $false
+      contextualSmartBlock = 'planned-native'
     }
-  } | ConvertTo-Json -Depth 4 | Set-Content (Join-Path $ChromiumSrc 'FLAMINGBOX_BUILD.json') -Encoding UTF8
+    performance = @{
+      profile = 'balanced'
+      chromiumMemorySaver = $true
+      discardInactiveAfterMinutes = 60
+      aggressiveness = 'medium'
+      performanceInterventions = $true
+    }
+    network = @{
+      secureDns = 'automatic'
+      automaticDohFallback = $true
+      requestHotPathDiskReads = $false
+      guardian = 'observe-first'
+    }
+  } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $ChromiumSrc 'FLAMINGBOX_BUILD.json') -Encoding UTF8
 
   Write-Host 'FlamingBox native patches applied.' -ForegroundColor Green
-  git diff -- chrome/app/theme/chromium/BRANDING chrome/browser/ui/browser_ui_prefs.cc chrome/app/chrome_main_delegate.cc
+  git diff -- chrome/app/theme/chromium/BRANDING chrome/browser/ui/browser_ui_prefs.cc chrome/app/chrome_main_delegate.cc components/performance_manager/user_tuning/prefs.cc chrome/browser/net/default_dns_over_https_config_source.cc
 }
 finally {
   Pop-Location
