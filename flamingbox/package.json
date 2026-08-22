@@ -1,0 +1,34 @@
+{
+  "name": "flamingbox",
+  "version": "0.3.0",
+  "description": "FlamingBox — navigateur Windows Angel OS basé sur Chromium/Electron, avec protections inspirées de Firefox.",
+  "main": "src/main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win portable --x64"
+  },
+  "devDependencies": {
+    "electron": "43.4.0",
+    "electron-builder": "26.0.12"
+  },
+  "build": {
+    "appId": "fr.angelos.flamingbox",
+    "productName": "FlamingBox",
+    "asar": true,
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "artifactName": "FlamingBox-${version}-Windows-x64.${ext}"
+    }
+  }
+}

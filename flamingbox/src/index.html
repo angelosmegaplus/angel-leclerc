@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https:; style-src 'self'; script-src 'self'; frame-src https: http: file:; object-src 'none'; base-uri 'none'; form-action 'self';" />
+  <title>FlamingBox — Angel OS</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="chrome">
+    <div class="brand-row">
+      <div class="brand"><img src="../assets/logo.svg" alt="" /><span>FlamingBox</span><small>Angel OS</small></div>
+      <div id="tabs" class="tabs"></div>
+      <button id="privateTab" class="icon-button" title="Nouvel onglet privé">◉</button>
+      <button id="newTab" class="icon-button" title="Nouvel onglet">＋</button>
+    </div>
+
+    <div class="toolbar">
+      <button id="back" class="icon-button" title="Précédent">←</button>
+      <button id="forward" class="icon-button" title="Suivant">→</button>
+      <button id="reload" class="icon-button" title="Actualiser">↻</button>
+      <button id="home" class="icon-button" title="Accueil">⌂</button>
+      <form id="addressForm" class="address-wrap">
+        <button id="security" type="button" class="security" title="Informations de sécurité">●</button>
+        <input id="address" autocomplete="off" spellcheck="false" placeholder="Rechercher ou saisir une adresse" />
+        <button id="bookmark" type="button" class="bookmark" title="Ajouter aux favoris">☆</button>
+      </form>
+      <button id="passwords" class="icon-button wide" title="Google Password Manager">Mots de passe</button>
+      <button id="library" class="icon-button wide" title="Bibliothèque et réglages">☰</button>
+    </div>
+  </header>
+
+  <main id="viewport" class="viewport"></main>
+
+  <aside id="panel" class="panel hidden">
+    <div class="panel-header">
+      <div><h2>FlamingBox</h2><p class="kernel">Protection par Angel OS</p></div>
+      <button id="closePanel" class="icon-button">×</button>
+    </div>
+
+    <div class="shield-card">
+      <strong>Protection renforcée</strong>
+      <span>Pop-up bloquées · trackers limités · HTTPS prioritaire · pages isolées</span>
+    </div>
+
+    <button id="importData" class="primary">Importer Firefox + Chromium</button>
+    <p id="importStatus" class="status"></p>
+
+    <section>
+      <h3>Sécurité</h3>
+      <label class="setting"><input id="blockTrackers" type="checkbox" checked /> Bloquer les principaux trackers</label>
+      <label class="setting"><input id="httpsFirst" type="checkbox" checked /> HTTPS prioritaire</label>
+      <p class="status">Les fenêtres de paiement reconnues sont converties en onglets sécurisés au lieu d’être supprimées.</p>
+    </section>
+
+    <section>
+      <h3>Favoris</h3>
+      <div id="bookmarksList" class="list"></div>
+    </section>
+    <section>
+      <h3>Historique récent</h3>
+      <div id="historyList" class="list"></div>
+    </section>
+  </aside>
+
+  <div id="securityPanel" class="security-panel hidden">
+    <strong id="securityTitle">Sécurité FlamingBox</strong>
+    <p id="securityText"></p>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
