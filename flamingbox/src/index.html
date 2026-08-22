@@ -10,7 +10,7 @@
 <body>
   <header class="chrome">
     <div class="brand-row">
-      <div class="brand"><img src="../assets/logo.svg" alt="" /><span>FlamingBox</span><small>Angel OS</small></div>
+      <div class="brand"><img src="../assets/logo.svg" alt="" /><span>FlamingBox</span><small>0.5</small></div>
       <div id="tabs" class="tabs"></div>
       <button id="privateTab" class="icon-button" title="Nouvel onglet privé">◉</button>
       <button id="newTab" class="icon-button" title="Nouvel onglet">＋</button>
@@ -35,14 +35,27 @@
 
   <aside id="panel" class="panel hidden">
     <div class="panel-header">
-      <div><h2>FlamingBox</h2><p class="kernel">Protection par Angel OS</p></div>
+      <div><h2>FlamingBox Shield</h2><p class="kernel">Protection locale · télémétrie FlamingBox désactivée</p></div>
       <button id="closePanel" class="icon-button">×</button>
     </div>
 
     <div class="shield-card">
-      <strong>Protection renforcée</strong>
-      <span>Pop-up bloquées · trackers limités · HTTPS prioritaire · pages isolées</span>
+      <strong>Protection renforcée active</strong>
+      <span>GPC · DNT · HTTPS-First · stockage partitionné · Guardian</span>
     </div>
+
+    <section>
+      <h3>Tableau de confidentialité</h3>
+      <div class="privacy-grid">
+        <div class="metric"><strong id="statTrackers">0</strong><span>trackers bloqués</span></div>
+        <div class="metric"><strong id="statHttps">0</strong><span>passages en HTTPS</span></div>
+        <div class="metric"><strong id="statPopups">0</strong><span>pop-up neutralisées</span></div>
+        <div class="metric"><strong id="statGuardian">0</strong><span>alertes Guardian</span></div>
+        <div class="metric"><strong id="statDownloads">0</strong><span>téléchargements observés</span></div>
+        <div class="metric"><strong id="statRiskyDownloads">0</strong><span>téléchargements risqués bloqués</span></div>
+      </div>
+      <p id="guardianStatus" class="guardian-status hidden"></p>
+    </section>
 
     <button id="importData" class="primary">Importer Firefox + Chromium</button>
     <p id="importStatus" class="status"></p>
@@ -51,7 +64,9 @@
       <h3>Sécurité</h3>
       <label class="setting"><input id="blockTrackers" type="checkbox" checked /> Bloquer les principaux trackers</label>
       <label class="setting"><input id="httpsFirst" type="checkbox" checked /> HTTPS prioritaire</label>
-      <p class="status">Les fenêtres de paiement reconnues sont converties en onglets sécurisés au lieu d’être supprimées.</p>
+      <label class="setting"><input id="guardian" type="checkbox" checked /> FlamingBox Guardian</label>
+      <p class="status">Caméra, micro et localisation sur HTTPS utilisent une autorisation temporaire. Les notifications sont bloquées par défaut.</p>
+      <p class="status">Les fenêtres de paiement reconnues sont converties en onglets sécurisés plutôt que supprimées.</p>
     </section>
 
     <section>
