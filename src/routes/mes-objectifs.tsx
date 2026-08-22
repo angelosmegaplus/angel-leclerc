@@ -64,7 +64,7 @@ const journalistSchools: SchoolEntry[] = [
 ];
 
 const hostSchools: SchoolEntry[] = [
-  { name: "INA campus", place: "Bry-sur-Marne", level: "TFP Animateur / Animatrice radio", access: "Formation professionnalisante en alternance", focus: "Conception, production et animation de programmes radio et podcasts, avec pratique en studio.", href: "https://campus.ina.fr/formations-radio-a-ina-campus", webLogo: "https://upload.wikimedia.org/wikipedia/commons/3/3b/Logo_INA.svg", mark: "INA" },
+  { name: "INA campus", place: "Bry-sur-Marne", level: "TFP Animateur / Animatrice radio", access: "Formation professionnalisante en alternance", focus: "Conception, production et animation de programmes radio et podcasts, avec pratique en studio.", href: "https://campus.ina.fr/formations-radio-a-ina-campus", localLogo: local("ina"), mark: "INA" },
   { name: "ISCPA · STUDEC", place: "Paris", level: "Animation et réalisation radio · Bac+2", access: "Accessible après le bac", focus: "Animation, réalisation, prise de parole, direct, préparation d'émission et fonctionnement d'un studio.", href: "https://www.iscpa-ecoles.com/formation/journalisme/formation-animation-radio", webLogo: "https://www.iscpa-ecoles.com/favicon.ico", mark: "ISCPA" },
   { name: "La Skol", place: "Rennes", level: "TFP Animateur / Animatrice radio", access: "Parcours en alternance", focus: "Animation, production, préparation éditoriale et pratique professionnelle de l'antenne.", href: "https://www.laskol.fr/", webLogo: "https://www.laskol.fr/wp-content/uploads/2023/11/logo_t_vert.png", mark: "LA SKOL" },
 ];
