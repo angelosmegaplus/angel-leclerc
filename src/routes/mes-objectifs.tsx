@@ -31,7 +31,7 @@ export const Route = createFileRoute("/mes-objectifs")({
 const LOGO_VERSION = "20260821-5";
 const local = (name: string) => `/logos/objectives/${name}.svg?v=${LOGO_VERSION}`;
 
-type BrandData = { name: string; localLogo: string; webLogo?: string; mark?: string };
+type BrandData = { name: string; localLogo?: string; webLogo?: string; mark?: string };
 type SchoolEntry = BrandData & { place: string; level: string; access: string; focus: string; href: string };
 
 function SectionHeader({ eyebrow, title, intro }: { eyebrow: string; title: string; intro?: string }) {
@@ -64,9 +64,9 @@ const journalistSchools: SchoolEntry[] = [
 ];
 
 const hostSchools: SchoolEntry[] = [
-  { name: "INA campus", place: "Bry-sur-Marne", level: "TFP Animateur / Animatrice radio", access: "Formation professionnalisante en alternance", focus: "Conception, production et animation de programmes radio et podcasts, avec pratique en studio.", href: "https://campus.ina.fr/formations-radio-a-ina-campus", webLogo: "https://logo.clearbit.com/ina.fr?size=256", localLogo: local("ina"), mark: "INA" },
-  { name: "ISCPA · STUDEC", place: "Paris", level: "Animation et réalisation radio · Bac+2", access: "Accessible après le bac", focus: "Animation, réalisation, prise de parole, direct, préparation d'émission et fonctionnement d'un studio.", href: "https://www.iscpa-ecoles.com/formation/journalisme/formation-animation-radio", webLogo: "https://logo.clearbit.com/iscpa-ecoles.com?size=256", localLogo: local("iscpa"), mark: "ISCPA" },
-  { name: "La Skol", place: "Rennes", level: "TFP Animateur / Animatrice radio", access: "Parcours en alternance", focus: "Animation, production, préparation éditoriale et pratique professionnelle de l'antenne.", href: "https://www.laskol.fr/", localLogo: local("la-skol"), mark: "LA SKOL" },
+  { name: "INA campus", place: "Bry-sur-Marne", level: "TFP Animateur / Animatrice radio", access: "Formation professionnalisante en alternance", focus: "Conception, production et animation de programmes radio et podcasts, avec pratique en studio.", href: "https://campus.ina.fr/formations-radio-a-ina-campus",  mark: "INA" },
+  { name: "ISCPA · STUDEC", place: "Paris", level: "Animation et réalisation radio · Bac+2", access: "Accessible après le bac", focus: "Animation, réalisation, prise de parole, direct, préparation d'émission et fonctionnement d'un studio.", href: "https://www.iscpa-ecoles.com/formation/journalisme/formation-animation-radio",  mark: "ISCPA" },
+  { name: "La Skol", place: "Rennes", level: "TFP Animateur / Animatrice radio", access: "Parcours en alternance", focus: "Animation, production, préparation éditoriale et pratique professionnelle de l'antenne.", href: "https://www.laskol.fr/",  mark: "LA SKOL" },
 ];
 
 function BrandMark({ name, localLogo, webLogo, mark }: BrandData) {
@@ -75,7 +75,7 @@ function BrandMark({ name, localLogo, webLogo, mark }: BrandData) {
   const src = sources[sourceIndex];
   return (
     <span className="flex h-[76px] w-[76px] shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border bg-white p-2.5 shadow-sm">
-      {src ? <img src={src} alt={`Logo ${name}`} className="h-full w-full object-contain" loading="lazy" decoding="async" onError={() => setSourceIndex((index) => index + 1)} /> : <span className="text-center font-display text-[10px] font-black leading-tight tracking-tight text-black">{mark ?? name}</span>}
+      {src ? <img src={src} alt={`Logo ${name}`} className="h-full w-full object-contain" loading="lazy" decoding="async" onError={() => setSourceIndex((index) => index + 1)} /> : <span className="text-center font-display text-[13px] font-black uppercase leading-tight tracking-tight text-black">{mark ?? name}</span>}
     </span>
   );
 }
