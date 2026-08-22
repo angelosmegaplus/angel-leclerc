@@ -1,0 +1,34 @@
+{
+  "mode": "contextual",
+  "inspiredBy": "Firefox SmartBlock behavior; reimplemented for Chromium primitives",
+  "rules": {
+    "default": "block-known-tracker",
+    "allowOnlyWhen": [
+      "top-level-site-matches-exception",
+      "resource-type-matches-exception",
+      "exception-is-session-scoped"
+    ],
+    "shimWhenPossible": true,
+    "globalPaymentWhitelist": false,
+    "globalLoginWhitelist": false
+  },
+  "sessionExceptions": {
+    "ttlMinutes": 10,
+    "privateModeSeparateStore": true,
+    "persistAcrossRestart": false
+  },
+  "compatibilityContexts": [
+    "oauth-login",
+    "payment-request",
+    "3ds-challenge",
+    "embedded-media",
+    "captcha"
+  ],
+  "neverBypass": [
+    "certificate-errors",
+    "mixed-active-content-policy",
+    "sandbox",
+    "site-isolation",
+    "malware-or-phishing-interstitial"
+  ]
+}
