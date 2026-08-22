@@ -46,18 +46,44 @@ MAC_TEAM_ID=
   $performancePrefsPath = Join-Path $ChromiumSrc 'components\performance_manager\user_tuning\prefs.cc'
   $performancePrefs = Get-Content $performancePrefsPath -Raw
   $performancePrefs = Replace-Or-Throw $performancePrefs 'registry->RegisterBooleanPref(kMemorySaverModeEnabled, false);' 'registry->RegisterBooleanPref(kMemorySaverModeEnabled, true);' 'legacy memory saver default'
-  $performancePrefs = Replace-Or-Throw $performancePrefs 'kMemorySaverModeTimeBeforeDiscardInMinutes,`r`n      kDefaultMemorySaverModeTimeBeforeDiscardInMinutes);' 'kMemorySaverModeTimeBeforeDiscardInMinutes,`r`n      60);' 'memory saver discard timeout'
-  if ($performancePrefs.Contains('static_cast<int>(MemorySaverModeState::kDisabled));')) {
-    $performancePrefs = $performancePrefs.Replace('static_cast<int>(MemorySaverModeState::kDisabled));', 'static_cast<int>(MemorySaverModeState::kEnabled));')
-  }
-  # Keep medium as the default. This avoids aggressive tab churn on normal machines.
+
+  $oldState = @'
+  registry->RegisterIntegerPref(
+      kMemorySaverModeState, static_cast<int>(MemorySaverModeState::kDisabled));
+'@
+  $newState = @'
+  registry->RegisterIntegerPref(
+      kMemorySaverModeState, static_cast<int>(MemorySaverModeState::kEnabled));
+'@
+  $performancePrefs = Replace-Or-Throw $performancePrefs $oldState $newState 'memory saver state default'
+
+  $oldTimeout = @'
+  registry->RegisterIntegerPref(
+      kMemorySaverModeTimeBeforeDiscardInMinutes,
+      kDefaultMemorySaverModeTimeBeforeDiscardInMinutes);
+'@
+  $newTimeout = @'
+  registry->RegisterIntegerPref(
+      kMemorySaverModeTimeBeforeDiscardInMinutes,
+      60);
+'@
+  $performancePrefs = Replace-Or-Throw $performancePrefs $oldTimeout $newTimeout 'memory saver discard timeout'
+  # Medium aggressiveness remains Chromium's default; it is the balanced FlamingBox profile.
   Set-Content $performancePrefsPath $performancePrefs -Encoding UTF8
 
   # 4) Secure DNS. Keep Chromium Automatic mode for captive portals/VPN compatibility,
-  # but permit automatic fallback to a known DoH path when Chromium decides it is appropriate.
+  # while enabling Chromium's own automatic DoH fallback preference.
   $dnsPath = Join-Path $ChromiumSrc 'chrome\browser\net\default_dns_over_https_config_source.cc'
   $dns = Get-Content $dnsPath -Raw
-  $dns = Replace-Or-Throw $dns 'prefs::kDnsOverHttpsAutomaticModeFallbackToDoh,`r`n                                false);' 'prefs::kDnsOverHttpsAutomaticModeFallbackToDoh,`r`n                                true);' 'Secure DNS automatic fallback'
+  $oldDns = @'
+  registry->RegisterBooleanPref(prefs::kDnsOverHttpsAutomaticModeFallbackToDoh,
+                                false);
+'@
+  $newDns = @'
+  registry->RegisterBooleanPref(prefs::kDnsOverHttpsAutomaticModeFallbackToDoh,
+                                true);
+'@
+  $dns = Replace-Or-Throw $dns $oldDns $newDns 'Secure DNS automatic fallback'
   Set-Content $dnsPath $dns -Encoding UTF8
 
   # 5) Enable native Chromium privacy primitives at startup. Do not intercept requests in JS.
@@ -93,8 +119,8 @@ MAC_TEAM_ID=
   }
 
   # 6) Record exact source state and product policy. Guardian initially relies on
-  # Chromium performance interventions; network-budget enforcement will only be
-  # enabled after native integration tests prove it does not throttle legitimate downloads/video.
+  # Chromium performance interventions; network-budget enforcement stays observe-first
+  # until native integration tests prove it does not throttle legitimate downloads/video.
   @{
     product = 'FlamingBox'
     architecture = 'Chromium native + Firefox-inspired privacy behavior'
