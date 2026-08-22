@@ -1,0 +1,10 @@
+is_debug = false
+is_component_build = false
+symbol_level = 0
+target_cpu = "x64"
+use_thin_lto = true
+is_official_build = true
+enable_nacl = false
+enable_widevine = true
+proprietary_codecs = true
+ffmpeg_branding = "Chrome"

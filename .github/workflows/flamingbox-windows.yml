@@ -1,0 +1,48 @@
+name: FlamingBox Windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [flamingbox-browser]
+    paths:
+      - 'flamingbox/**'
+      - '.github/workflows/flamingbox-windows.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'flamingbox/**'
+      - '.github/workflows/flamingbox-windows.yml'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install dependencies
+        working-directory: flamingbox
+        shell: powershell
+        run: npm install --no-audit --no-fund
+
+      - name: Build portable FlamingBox.exe
+        working-directory: flamingbox
+        shell: powershell
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: npx electron-builder --win portable --x64 --publish never
+
+      - name: Upload FlamingBox Windows executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: FlamingBox-Windows-x64
+          path: flamingbox/dist/*.exe
+          if-no-files-found: error
+          compression-level: 0
