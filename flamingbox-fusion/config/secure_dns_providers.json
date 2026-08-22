@@ -1,0 +1,41 @@
+{
+  "defaultMode": "automatic",
+  "providers": [
+    {
+      "id": "automatic",
+      "name": "Automatique",
+      "template": null,
+      "recommended": true,
+      "note": "Uses Chromium automatic Secure DNS logic for best compatibility."
+    },
+    {
+      "id": "quad9",
+      "name": "Quad9",
+      "template": "https://dns.quad9.net/dns-query",
+      "recommendedFor": "security"
+    },
+    {
+      "id": "cloudflare",
+      "name": "Cloudflare",
+      "template": "https://cloudflare-dns.com/dns-query",
+      "recommendedFor": "speed"
+    },
+    {
+      "id": "google",
+      "name": "Google Public DNS",
+      "template": "https://dns.google/dns-query",
+      "recommendedFor": "compatibility"
+    },
+    {
+      "id": "custom",
+      "name": "DNS personnalisé",
+      "template": null,
+      "recommended": false
+    }
+  ],
+  "rules": {
+    "neverChangeWindowsSystemDns": true,
+    "supportCaptivePortalFallback": true,
+    "supportVpnCompatibility": true
+  }
+}
