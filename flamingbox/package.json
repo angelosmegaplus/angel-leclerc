@@ -1,7 +1,7 @@
 {
   "name": "flamingbox",
-  "version": "0.3.0",
-  "description": "FlamingBox — navigateur Windows Angel OS basé sur Chromium/Electron, avec protections inspirées de Firefox.",
+  "version": "0.4.0",
+  "description": "FlamingBox 0.4 — navigateur Windows Angel OS basé sur Chromium/Electron, avec cache réseau corrigé et protections inspirées de Firefox.",
   "main": "src/main.js",
   "private": true,
   "scripts": {
