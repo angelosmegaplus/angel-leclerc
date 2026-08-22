@@ -1,0 +1,35 @@
+{
+  "default": "balanced",
+  "profiles": {
+    "fast": {
+      "memorySaverEnabled": false,
+      "discardInactiveAfterMinutes": 180,
+      "aggressiveness": "conservative",
+      "backgroundTaskPolicy": "normal",
+      "description": "Prioritise instant tab switching and active-session responsiveness."
+    },
+    "balanced": {
+      "memorySaverEnabled": true,
+      "discardInactiveAfterMinutes": 60,
+      "aggressiveness": "medium",
+      "backgroundTaskPolicy": "balanced",
+      "description": "Default FlamingBox profile: Chromium performance manager enabled without aggressive tab churn."
+    },
+    "ultra_light": {
+      "memorySaverEnabled": true,
+      "discardInactiveAfterMinutes": 15,
+      "aggressiveness": "aggressive",
+      "backgroundTaskPolicy": "restrict-idle",
+      "description": "For low-memory machines. Never discard audible, downloading, form-active or payment/login tabs."
+    }
+  },
+  "protectedContexts": [
+    "audible",
+    "active-download",
+    "media-capture",
+    "unsaved-form",
+    "webauthn",
+    "payment-request",
+    "oauth-login"
+  ]
+}
