@@ -1,0 +1,39 @@
+{
+  "engine": "native-precompiled",
+  "defaultMode": "balanced",
+  "networkHotPathDiskReads": false,
+  "networkHotPathJsonParsing": false,
+  "lists": [
+    "EasyList-compatible",
+    "EasyPrivacy-compatible"
+  ],
+  "modes": {
+    "standard": {
+      "ads": true,
+      "trackers": true,
+      "annoyances": false
+    },
+    "balanced": {
+      "ads": true,
+      "trackers": true,
+      "annoyances": true
+    },
+    "strict": {
+      "ads": true,
+      "trackers": true,
+      "annoyances": true,
+      "thirdPartyScripts": "risk-based"
+    }
+  },
+  "exceptions": {
+    "scope": "top-level-site-and-session",
+    "defaultTtlMinutes": 10,
+    "persistByDefault": false
+  },
+  "safety": {
+    "neverDisableSafeBrowsing": true,
+    "neverDisableHttpsFirst": true,
+    "neverDisableSandbox": true,
+    "neverBlanketWhitelistPaymentProviders": true
+  }
+}
