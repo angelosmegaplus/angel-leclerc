@@ -21,6 +21,7 @@ $env:PATH = "$DepotTools;$env:PATH"
 $env:DEPOT_TOOLS_WIN_TOOLCHAIN = '0'
 
 & (Join-Path $Root 'apply_flamingbox.ps1') -ChromiumSrc $Src
+& (Join-Path $Root 'validate_flamingbox.ps1') -ChromiumSrc $Src
 
 Copy-Item (Join-Path $Root 'args.gn') (Join-Path $Src 'flamingbox.args.gn') -Force
 
@@ -45,6 +46,7 @@ try {
     chromium = '8c7281d3300aa386be904fb9ee881babe85e12dc'
     firefoxReference = '5b17b585c394a469267f65da3f9794162dd9c5a5'
     engine = 'Blink + V8 + Chromium Network Service'
+    privacyDefaults = @('GPC','DNT','HTTPS-First','third-party storage partitioning')
     generatedAt = (Get-Date).ToUniversalTime().ToString('o')
   } | ConvertTo-Json -Depth 3 | Set-Content (Join-Path $Dist 'FLAMINGBOX_VERSION.json') -Encoding UTF8
 
