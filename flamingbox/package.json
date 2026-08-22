@@ -1,47 +1,27 @@
 {
   "name": "flamingbox",
-  "version": "0.1.0",
-  "description": "FlamingBox - a Windows desktop browser built on Chromium with Firefox-inspired privacy and data migration.",
-  "main": "src/main.js",
-  "author": "FlamingBox",
-  "license": "MIT",
-  "scripts": {
-    "start": "electron .",
-    "check": "node --check src/main.js && node --check src/preload.js && node --check src/import-data.js && node --check src/renderer.js",
-    "dist:win": "electron-builder --win nsis portable"
+  "version": "0.2.0",
+  "description": "FlamingBox - navigateur Windows léger basé sur Chromium via NW.js, avec onglets, favoris, historique, navigation privée et import Firefox/Chrome/Edge/Chromium.",
+  "main": "src/index.html",
+  "nodejs": true,
+  "node-remote": [],
+  "chromium-args": "--enable-features=OverlayScrollbar --disable-features=TranslateUI --disable-breakpad",
+  "window": {
+    "title": "FlamingBox",
+    "width": 1440,
+    "height": 900,
+    "min_width": 900,
+    "min_height": 600,
+    "position": "center",
+    "frame": true,
+    "toolbar": false,
+    "resizable": true
   },
-  "dependencies": {
-    "electron-store": "^10.0.0"
-  },
-  "devDependencies": {
-    "electron": "^37.2.6",
-    "electron-builder": "^26.0.12"
-  },
-  "build": {
-    "appId": "fr.flamingbox.browser",
-    "productName": "FlamingBox",
-    "asar": true,
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "src/**/*",
-      "assets/**/*",
-      "package.json"
-    ],
-    "win": {
-      "target": [
-        { "target": "nsis", "arch": ["x64"] },
-        { "target": "portable", "arch": ["x64"] }
-      ],
-      "artifactName": "FlamingBox-${version}-${arch}.${ext}"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "FlamingBox"
-    }
-  }
+  "permissions": [
+    "<all_urls>",
+    "storage",
+    "unlimitedStorage",
+    "webRequest",
+    "webRequestBlocking"
+  ]
 }
