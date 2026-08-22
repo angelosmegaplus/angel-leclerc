@@ -1,17 +1,17 @@
-name: FlamingBox Windows
+name: FlamingBox 0.5 Windows
 
 on:
   workflow_dispatch:
   push:
-    branches: [flamingbox-browser]
+    branches: [flamingbox-release-0.5]
     paths:
       - 'flamingbox/**'
       - '.github/workflows/flamingbox-windows.yml'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'flamingbox/**'
-      - '.github/workflows/flamingbox-windows.yml'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
 
 jobs:
   build:
@@ -32,17 +32,62 @@ jobs:
         shell: powershell
         run: npm install --no-audit --no-fund
 
-      - name: Build portable FlamingBox.exe
+      - name: Syntax checks
+        working-directory: flamingbox
+        shell: powershell
+        run: |
+          node --check src/main.js
+          node --check src/preload.js
+          node --check src/renderer.js
+
+      - name: Build portable FlamingBox 0.5
         working-directory: flamingbox
         shell: powershell
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
         run: npx electron-builder --win portable --x64 --publish never
 
-      - name: Upload FlamingBox Windows executable
+      - name: Verify executable
+        id: verify
+        shell: powershell
+        run: |
+          $exe = Get-Item 'flamingbox\dist\FlamingBox-0.5.0-Windows-x64.exe'
+          $hash = (Get-FileHash $exe.FullName -Algorithm SHA256).Hash.ToLower()
+          "hash=$hash" >> $env:GITHUB_OUTPUT
+          "size=$($exe.Length)" >> $env:GITHUB_OUTPUT
+
+      - name: Upload FlamingBox 0.5 executable
         uses: actions/upload-artifact@v4
         with:
-          name: FlamingBox-Windows-x64
-          path: flamingbox/dist/*.exe
+          name: FlamingBox-0.5.0-Windows-x64
+          path: flamingbox/dist/FlamingBox-0.5.0-Windows-x64.exe
           if-no-files-found: error
           compression-level: 0
+          retention-days: 30
+
+      - name: Report success to PR 71
+        if: success()
+        uses: actions/github-script@v7
+        env:
+          BUILD_HASH: ${{ steps.verify.outputs.hash }}
+          BUILD_SIZE: ${{ steps.verify.outputs.size }}
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 71,
+              body: `FLAMINGBOX_05_BUILD_SUCCESS\nrun_id=${context.runId}\nartifact=FlamingBox-0.5.0-Windows-x64\nsha256=${process.env.BUILD_HASH}\nsize=${process.env.BUILD_SIZE}`
+            });
+
+      - name: Report failure to PR 71
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 71,
+              body: `FLAMINGBOX_05_BUILD_FAILED\nrun_id=${context.runId}`
+            });
