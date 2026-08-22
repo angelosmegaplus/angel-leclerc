@@ -1,0 +1,14 @@
+{
+  "name": "FlamingBox Fusion",
+  "strategy": "Chromium-native with Firefox feature ports",
+  "chromium": {
+    "repository": "https://github.com/chromium/chromium.git",
+    "commit": "8c7281d3300aa386be904fb9ee881babe85e12dc",
+    "role": "primary engine, Blink, V8, network stack, sandbox, GPU, extensions"
+  },
+  "firefox": {
+    "repository": "https://github.com/mozilla-firefox/firefox.git",
+    "commit": "5b17b585c394a469267f65da3f9794162dd9c5a5",
+    "role": "reference source for privacy, anti-tracking, cookie partitioning, fingerprinting defenses and private browsing behavior"
+  }
+}
