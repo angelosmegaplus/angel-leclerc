@@ -61,7 +61,7 @@ jobs:
 
           Compress-Archive -Path "$dist\*" -DestinationPath "$PWD\FlamingBox-Windows-x64.zip" -CompressionLevel Optimal
 
-      - name: Build single-file Windows installer
+      - name: Build native single-file installer
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
@@ -70,56 +70,75 @@ jobs:
           Copy-Item "$PWD\FlamingBox-Windows-x64.zip" "$work\payload.zip"
 
           @'
-          @echo off
-          setlocal
-          set "DEST=%LOCALAPPDATA%\FlamingBox"
-          if exist "%DEST%" rmdir /s /q "%DEST%"
-          mkdir "%DEST%"
-          powershell -NoProfile -ExecutionPolicy Bypass -Command "Expand-Archive -LiteralPath '%~dp0payload.zip' -DestinationPath '%DEST%' -Force"
-          powershell -NoProfile -ExecutionPolicy Bypass -Command "$w=New-Object -ComObject WScript.Shell; $d=[Environment]::GetFolderPath('Desktop'); $s=$w.CreateShortcut((Join-Path $d 'FlamingBox.lnk')); $s.TargetPath=(Join-Path $env:LOCALAPPDATA 'FlamingBox\FlamingBox.exe'); $s.WorkingDirectory=(Join-Path $env:LOCALAPPDATA 'FlamingBox'); $s.Save()"
-          powershell -NoProfile -ExecutionPolicy Bypass -Command "$w=New-Object -ComObject WScript.Shell; $m=Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'; $s=$w.CreateShortcut((Join-Path $m 'FlamingBox.lnk')); $s.TargetPath=(Join-Path $env:LOCALAPPDATA 'FlamingBox\FlamingBox.exe'); $s.WorkingDirectory=(Join-Path $env:LOCALAPPDATA 'FlamingBox'); $s.Save()"
-          start "" "%DEST%\FlamingBox.exe"
-          endlocal
-          '@ | Set-Content "$work\install.cmd" -Encoding ASCII
+          package main
 
-          $target = Join-Path $PWD 'FlamingBox-Setup.exe'
-          $sed = Join-Path $work 'setup.sed'
-          $source = $work + '\'
-          @"
-          [Version]
-          Class=IEXPRESS
-          SEDVersion=3
-          [Options]
-          PackagePurpose=InstallApp
-          ShowInstallProgramWindow=0
-          HideExtractAnimation=1
-          UseLongFileName=1
-          InsideCompressed=0
-          CAB_FixedSize=0
-          CAB_ResvCodeSigning=0
-          RebootMode=N
-          InstallPrompt=
-          DisplayLicense=
-          FinishMessage=
-          TargetName=$target
-          FriendlyName=FlamingBox Setup
-          AppLaunched=install.cmd
-          PostInstallCmd=<None>
-          AdminQuietInstCmd=install.cmd
-          UserQuietInstCmd=install.cmd
-          SourceFiles=SourceFiles
-          [SourceFiles]
-          SourceFiles0=$source
-          [SourceFiles0]
-          %FILE0%=
-          %FILE1%=
-          [Strings]
-          FILE0=install.cmd
-          FILE1=payload.zip
-          "@ | Set-Content $sed -Encoding ASCII
+          import (
+            "archive/zip"
+            "bytes"
+            _ "embed"
+            "fmt"
+            "io"
+            "os"
+            "os/exec"
+            "path/filepath"
+            "strings"
+          )
 
-          & "$env:WINDIR\System32\iexpress.exe" /N /Q $sed
-          if (!(Test-Path $target)) { throw 'IExpress did not create FlamingBox-Setup.exe' }
+          //go:embed payload.zip
+          var payload []byte
+
+          func extract(dest string) error {
+            zr, err := zip.NewReader(bytes.NewReader(payload), int64(len(payload)))
+            if err != nil { return err }
+            if err := os.RemoveAll(dest); err != nil { return err }
+            if err := os.MkdirAll(dest, 0755); err != nil { return err }
+            cleanDest := filepath.Clean(dest) + string(os.PathSeparator)
+            for _, f := range zr.File {
+              target := filepath.Join(dest, f.Name)
+              if !strings.HasPrefix(filepath.Clean(target)+string(os.PathSeparator), cleanDest) {
+                return fmt.Errorf("unsafe archive path: %s", f.Name)
+              }
+              if f.FileInfo().IsDir() {
+                if err := os.MkdirAll(target, 0755); err != nil { return err }
+                continue
+              }
+              if err := os.MkdirAll(filepath.Dir(target), 0755); err != nil { return err }
+              src, err := f.Open(); if err != nil { return err }
+              dst, err := os.OpenFile(target, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, f.Mode())
+              if err != nil { src.Close(); return err }
+              _, cpErr := io.Copy(dst, src)
+              src.Close(); dst.Close()
+              if cpErr != nil { return cpErr }
+            }
+            return nil
+          }
+
+          func shortcut(dest string) {
+            exe := filepath.Join(dest, "FlamingBox.exe")
+            ps := fmt.Sprintf(`$w=New-Object -ComObject WScript.Shell; $d=[Environment]::GetFolderPath('Desktop'); $s=$w.CreateShortcut((Join-Path $d 'FlamingBox.lnk')); $s.TargetPath='%s'; $s.WorkingDirectory='%s'; $s.Save(); $m=Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'; $s2=$w.CreateShortcut((Join-Path $m 'FlamingBox.lnk')); $s2.TargetPath='%s'; $s2.WorkingDirectory='%s'; $s2.Save()`, exe, dest, exe, dest)
+            _ = exec.Command("powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", ps).Run()
+          }
+
+          func main() {
+            local := os.Getenv("LOCALAPPDATA")
+            if local == "" { local = os.TempDir() }
+            dest := filepath.Join(local, "FlamingBox")
+            if err := extract(dest); err != nil {
+              _ = os.WriteFile(filepath.Join(os.TempDir(), "FlamingBox-install-error.txt"), []byte(err.Error()), 0644)
+              return
+            }
+            shortcut(dest)
+            exe := filepath.Join(dest, "FlamingBox.exe")
+            cmd := exec.Command(exe)
+            cmd.Dir = dest
+            _ = cmd.Start()
+          }
+          '@ | Set-Content "$work\installer.go" -Encoding UTF8
+
+          Push-Location $work
+          go build -trimpath -ldflags="-H windowsgui -s -w" -o "$PWD\..\FlamingBox-Setup.exe" installer.go
+          Pop-Location
+          if (!(Test-Path "$PWD\FlamingBox-Setup.exe")) { throw 'Go installer build failed' }
 
       - name: Upload FlamingBox Windows
         uses: actions/upload-artifact@v4
