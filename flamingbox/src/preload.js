@@ -2,6 +2,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('flamingbox', Object.freeze({
   getData: () => ipcRenderer.invoke('data:get'),
+  getPrivacyStats: () => ipcRenderer.invoke('privacy:stats'),
   addHistory: (entry) => ipcRenderer.invoke('history:add', entry),
   toggleBookmark: (entry) => ipcRenderer.invoke('bookmark:toggle', entry),
   importBrowserData: () => ipcRenderer.invoke('browser:import'),
