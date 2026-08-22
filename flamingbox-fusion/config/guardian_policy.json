@@ -1,0 +1,36 @@
+{
+  "mode": "observe-first",
+  "goal": "Detect abnormal per-tab resource use without destabilising Chromium networking.",
+  "sampling": {
+    "intervalSeconds": 5,
+    "networkWindowSeconds": 15,
+    "cpuWindowSeconds": 20
+  },
+  "thresholds": {
+    "backgroundNetworkMegabytesPer15s": 40,
+    "backgroundCpuPercentAverage": 35,
+    "rendererMemoryMegabytes": 1500,
+    "sustainedTriggerCount": 3
+  },
+  "neverAutoThrottleContexts": [
+    "top-level-download",
+    "video-or-audio-playback",
+    "video-conference",
+    "cloud-game",
+    "payment-request",
+    "oauth-login",
+    "webauthn",
+    "user-initiated-upload"
+  ],
+  "actions": {
+    "observe-first": ["record", "show-performance-intervention"],
+    "user-approved": ["lower-background-priority", "discard-when-safe"],
+    "forbidden": ["kill-network-service", "change-system-dns", "disable-sandbox", "blanket-block-origin"]
+  },
+  "privacy": {
+    "storeFullUrls": false,
+    "storeRequestBodies": false,
+    "storeQueryStrings": false,
+    "localOnly": true
+  }
+}
