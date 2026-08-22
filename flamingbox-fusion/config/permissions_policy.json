@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "notifications": "block",
+    "camera": "ask",
+    "microphone": "ask",
+    "geolocation": "ask",
+    "clipboard": "ask",
+    "midiSysex": "block",
+    "serial": "ask",
+    "usb": "ask",
+    "bluetooth": "ask"
+  },
+  "preferredGrantLifetime": "one-time-when-supported",
+  "persistentGrantRequiresExplicitUserChoice": true,
+  "clearSessionGrantsOnExit": true,
+  "privateMode": {
+    "persistGrants": false,
+    "persistExceptions": false
+  },
+  "neverAutoGrant": [
+    "camera",
+    "microphone",
+    "geolocation",
+    "screen-capture",
+    "clipboard-read",
+    "usb",
+    "serial",
+    "bluetooth"
+  ]
+}
