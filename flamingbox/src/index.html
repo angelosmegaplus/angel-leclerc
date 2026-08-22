@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https:; style-src 'self'; script-src 'self'; frame-src https: http: file:;" />
+  <title>FlamingBox</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="chrome">
+    <div class="brand-row">
+      <div class="brand"><img src="../assets/logo.svg" alt="" /><span>FlamingBox</span></div>
+      <div id="tabs" class="tabs"></div>
+      <button id="newTab" class="icon-button" title="Nouvel onglet">＋</button>
+    </div>
+
+    <div class="toolbar">
+      <button id="back" class="icon-button" title="Précédent">←</button>
+      <button id="forward" class="icon-button" title="Suivant">→</button>
+      <button id="reload" class="icon-button" title="Actualiser">↻</button>
+      <button id="home" class="icon-button" title="Accueil">⌂</button>
+      <form id="addressForm" class="address-wrap">
+        <span id="security" class="security">●</span>
+        <input id="address" autocomplete="off" spellcheck="false" placeholder="Rechercher ou saisir une adresse" />
+        <button id="bookmark" type="button" class="bookmark" title="Ajouter aux favoris">☆</button>
+      </form>
+      <button id="library" class="icon-button wide" title="Bibliothèque">☰</button>
+    </div>
+  </header>
+
+  <main id="viewport" class="viewport"></main>
+
+  <aside id="panel" class="panel hidden">
+    <div class="panel-header">
+      <h2>FlamingBox</h2>
+      <button id="closePanel" class="icon-button">×</button>
+    </div>
+    <button id="importData" class="primary">Importer Firefox + Chromium</button>
+    <p id="importStatus" class="status"></p>
+    <section>
+      <h3>Favoris</h3>
+      <div id="bookmarksList" class="list"></div>
+    </section>
+    <section>
+      <h3>Historique récent</h3>
+      <div id="historyList" class="list"></div>
+    </section>
+  </aside>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
