@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell, session } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, session, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { importBrowserData } = require('./import-data');
@@ -6,11 +6,25 @@ const { importBrowserData } = require('./import-data');
 let mainWindow;
 let dataCache = null;
 
+const privacyStats = {
+  startedAt: new Date().toISOString(),
+  totalRequests: 0,
+  blockedTrackers: 0,
+  httpsUpgrades: 0,
+  popupsBlocked: 0,
+  guardianAlerts: 0,
+  downloadsObserved: 0,
+  riskyDownloadsBlocked: 0,
+  permissionPrompts: 0
+};
+
 const TRACKER_HOSTS = [
   'doubleclick.net', 'googlesyndication.com', 'google-analytics.com', 'googletagmanager.com',
   'connect.facebook.net', 'facebook.net', 'scorecardresearch.com', 'hotjar.com', 'segment.io',
   'mixpanel.com', 'adnxs.com', 'criteo.com', 'criteo.net', 'taboola.com', 'outbrain.com',
-  'branch.io', 'app-measurement.com', 'adjust.com', 'adsrvr.org'
+  'branch.io', 'app-measurement.com', 'adjust.com', 'adsrvr.org', 'quantserve.com',
+  'zedo.com', 'mathtag.com', 'rubiconproject.com', 'pubmatic.com', 'openx.net',
+  'demdex.net', 'casalemedia.com', 'bluekai.com', 'chartbeat.com', 'newrelic.com'
 ];
 
 const PAYMENT_HOST_HINTS = [
@@ -18,6 +32,10 @@ const PAYMENT_HOST_HINTS = [
   'amazonpay.com', 'pay.google.com', 'payments.google.com', 'paylib.fr', 'lyra.com',
   'monext.fr', 'worldline.com', 'sips-services.com', '3dsecure', 'secure-payment', 'payment'
 ];
+
+const DANGEROUS_DOWNLOAD_EXTENSIONS = new Set([
+  '.exe', '.msi', '.msp', '.bat', '.cmd', '.com', '.scr', '.ps1', '.vbs', '.vbe', '.js', '.jse', '.jar'
+]);
 
 function hostname(url) {
   try { return new URL(url).hostname.toLowerCase(); } catch { return ''; }
@@ -32,6 +50,11 @@ function isPaymentURL(url) {
 function isTracker(url) {
   const host = hostname(url);
   return TRACKER_HOSTS.some((t) => host === t || host.endsWith('.' + t));
+}
+
+function isLocalHost(url) {
+  const host = hostname(url);
+  return host === 'localhost' || host === '127.0.0.1' || host === '::1' || host.endsWith('.local');
 }
 
 function dataFile() {
@@ -76,6 +99,30 @@ function writeData(data) {
   fs.writeFileSync(dataFile(), JSON.stringify(data, null, 2), { encoding: 'utf8', mode: 0o600 });
 }
 
+function sendGuardianAlert(payload) {
+  privacyStats.guardianAlerts += 1;
+  mainWindow?.webContents.send('guardian:alert', payload);
+}
+
+async function askOneTimePermission(permission, origin, details) {
+  if (!mainWindow || mainWindow.isDestroyed()) return false;
+  privacyStats.permissionPrompts += 1;
+  const host = hostname(origin) || origin;
+  const detail = permission === 'media' && details?.mediaTypes?.length
+    ? `Accès demandé : ${details.mediaTypes.join(', ')}.`
+    : `Permission demandée : ${permission}.`;
+  const result = await dialog.showMessageBox(mainWindow, {
+    type: 'question',
+    buttons: ['Autoriser cette fois', 'Bloquer'],
+    defaultId: 1,
+    cancelId: 1,
+    title: 'FlamingBox — Permission temporaire',
+    message: `${host} demande une autorisation`,
+    detail: `${detail}\nCette autorisation n'est pas enregistrée comme permission permanente par FlamingBox.`
+  });
+  return result.response === 0;
+}
+
 function setupSessionProtection(ses) {
   if (ses.__flamingBoxHardened) return;
   ses.__flamingBoxHardened = true;
@@ -86,8 +133,27 @@ function setupSessionProtection(ses) {
   ses.setPermissionRequestHandler((webContents, permission, callback, details) => {
     const origin = details?.requestingUrl || webContents.getURL();
     const secure = /^https:\/\//i.test(origin);
-    const safePermissions = new Set(['clipboard-sanitized-write', 'fullscreen', 'pointerLock']);
-    callback(Boolean(secure && safePermissions.has(permission)));
+    const silentAllow = new Set(['clipboard-sanitized-write', 'fullscreen', 'pointerLock']);
+
+    if (!secure) {
+      callback(false);
+      return;
+    }
+    if (silentAllow.has(permission)) {
+      callback(true);
+      return;
+    }
+    if (permission === 'notifications') {
+      callback(false);
+      return;
+    }
+    if (permission === 'media' || permission === 'geolocation') {
+      askOneTimePermission(permission, origin, details)
+        .then((allowed) => callback(Boolean(allowed)))
+        .catch(() => callback(false));
+      return;
+    }
+    callback(false);
   });
 
   ses.setPermissionCheckHandler((_wc, permission, requestingOrigin) => {
@@ -97,13 +163,21 @@ function setupSessionProtection(ses) {
 
   ses.webRequest.onBeforeRequest({ urls: ['<all_urls>'] }, (details, callback) => {
     const now = Date.now();
+    privacyStats.totalRequests += 1;
     requestTimes.push(now);
     while (requestTimes.length && requestTimes[0] < now - 10000) requestTimes.shift();
 
     const data = readData();
+
+    if (data.settings.httpsFirst && details.resourceType === 'mainFrame' && /^http:\/\//i.test(details.url) && !isLocalHost(details.url)) {
+      privacyStats.httpsUpgrades += 1;
+      callback({ redirectURL: details.url.replace(/^http:\/\//i, 'https://') });
+      return;
+    }
+
     if (data.settings.guardian && requestTimes.length > 350 && now - lastGuardianAlert > 30000) {
       lastGuardianAlert = now;
-      mainWindow?.webContents.send('guardian:alert', {
+      sendGuardianAlert({
         kind: 'network-burst',
         count: requestTimes.length,
         windowMs: 10000,
@@ -112,6 +186,7 @@ function setupSessionProtection(ses) {
     }
 
     if (data.settings.blockTrackers && isTracker(details.url) && !isPaymentURL(details.url)) {
+      privacyStats.blockedTrackers += 1;
       callback({ cancel: true });
       return;
     }
@@ -124,6 +199,26 @@ function setupSessionProtection(ses) {
     headers['Sec-GPC'] = '1';
     callback({ requestHeaders: headers });
   });
+
+  ses.on('will-download', (event, item) => {
+    privacyStats.downloadsObserved += 1;
+    const filename = item.getFilename();
+    const url = item.getURL();
+    const ext = path.extname(filename).toLowerCase();
+    const risky = DANGEROUS_DOWNLOAD_EXTENSIONS.has(ext);
+    const insecure = !/^https:\/\//i.test(url);
+    const doubleExtension = /\.(pdf|jpg|jpeg|png|gif|docx?|xlsx?|pptx?|txt)\.(exe|scr|bat|cmd|js|vbs)$/i.test(filename);
+
+    if (risky && (insecure || doubleExtension)) {
+      event.preventDefault();
+      privacyStats.riskyDownloadsBlocked += 1;
+      sendGuardianAlert({
+        kind: 'download-risk',
+        message: `Téléchargement bloqué : ${filename}`,
+        reason: doubleExtension ? 'double-extension' : 'insecure-executable'
+      });
+    }
+  });
 }
 
 function secureWebContents(contents) {
@@ -131,7 +226,10 @@ function secureWebContents(contents) {
 
   contents.setWindowOpenHandler((details) => {
     const url = details.url;
-    if (!/^https?:\/\//i.test(url)) return { action: 'deny' };
+    if (!/^https?:\/\//i.test(url)) {
+      privacyStats.popupsBlocked += 1;
+      return { action: 'deny' };
+    }
 
     if (isPaymentURL(url)) {
       mainWindow?.webContents.send('open-tab', url, { payment: true });
@@ -140,7 +238,10 @@ function secureWebContents(contents) {
 
     if (details.disposition === 'foreground-tab' || details.disposition === 'background-tab' || details.disposition === 'new-window') {
       mainWindow?.webContents.send('open-tab', url, { payment: false });
+      return { action: 'deny' };
     }
+
+    privacyStats.popupsBlocked += 1;
     return { action: 'deny' };
   });
 
@@ -207,6 +308,7 @@ app.on('window-all-closed', () => {
 });
 
 ipcMain.handle('data:get', () => readData());
+ipcMain.handle('privacy:stats', () => ({ ...privacyStats }));
 
 ipcMain.handle('history:add', (_event, entry) => {
   if (!entry || typeof entry.url !== 'string' || !/^https?:\/\//i.test(entry.url)) return false;
@@ -264,7 +366,9 @@ ipcMain.handle('browser:import', async () => {
 ipcMain.handle('settings:update', (_event, patch) => {
   const data = readData();
   const allowed = ['home', 'blockTrackers', 'blockPopups', 'httpsFirst', 'guardian'];
-  for (const key of allowed) if (Object.prototype.hasOwnProperty.call(patch || {}, key)) data.settings[key] = patch[key];
+  for (const key of allowed) {
+    if (Object.prototype.hasOwnProperty.call(patch || {}, key)) data.settings[key] = patch[key];
+  }
   writeData(data);
   return data.settings;
 });
