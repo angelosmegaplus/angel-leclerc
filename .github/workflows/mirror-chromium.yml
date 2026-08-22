@@ -1,4 +1,4 @@
-name: Mirror Chromium upstream
+name: Mirror Chromium + Firefox upstreams
 
 on:
   workflow_dispatch:
@@ -13,7 +13,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: chromium-upstream-mirror
+  group: flamingbox-upstream-mirror
   cancel-in-progress: false
 
 jobs:
@@ -30,25 +30,77 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config user.name "FlamingBox Chromium Mirror"
+          git config user.name "FlamingBox Upstream Mirror"
           git config user.email "actions@users.noreply.github.com"
           git config http.postBuffer 524288000
           git config core.compression 0
 
       - name: Fetch latest Chromium snapshot
+        shell: bash
         run: |
           git remote remove chromium 2>/dev/null || true
           git remote add chromium https://github.com/chromium/chromium.git
           git fetch --depth=1 chromium main
+          CHROMIUM_SHA=$(git rev-parse FETCH_HEAD)
+          echo "CHROMIUM_SHA=$CHROMIUM_SHA" >> "$GITHUB_ENV"
+          echo "Chromium upstream: $CHROMIUM_SHA"
 
       - name: Publish Chromium snapshot branch
+        shell: bash
         run: |
-          UPSTREAM_SHA=$(git rev-parse FETCH_HEAD)
-          echo "Chromium upstream: $UPSTREAM_SHA"
-          git push origin +$UPSTREAM_SHA:refs/heads/chromium-upstream
+          git push origin +$CHROMIUM_SHA:refs/heads/chromium-upstream
+
+      - name: Fetch latest Firefox snapshot
+        shell: bash
+        run: |
+          git remote remove firefox 2>/dev/null || true
+          git remote add firefox https://github.com/mozilla-firefox/firefox.git
+          git fetch --depth=1 firefox main
+          FIREFOX_SHA=$(git rev-parse FETCH_HEAD)
+          echo "FIREFOX_SHA=$FIREFOX_SHA" >> "$GITHUB_ENV"
+          echo "Firefox upstream: $FIREFOX_SHA"
+
+      - name: Publish Firefox snapshot branch
+        shell: bash
+        run: |
+          git push origin +$FIREFOX_SHA:refs/heads/firefox-upstream
+
+      - name: Update FlamingBox integration manifest
+        shell: bash
+        run: |
+          git fetch origin flamingbox-native-chromium
+          git checkout -B flamingbox-native-chromium origin/flamingbox-native-chromium
+          mkdir -p .flamingbox
+          cat > .flamingbox/upstreams.json <<EOF
+          {
+            "architecture": "Chromium engine with Firefox-inspired features ported into FlamingBox",
+            "chromium": {
+              "repository": "https://github.com/chromium/chromium",
+              "branch": "chromium-upstream",
+              "commit": "$CHROMIUM_SHA",
+              "role": "primary browser engine, Blink, V8, network service, sandbox and Chromium UI stack"
+            },
+            "firefox": {
+              "repository": "https://github.com/mozilla-firefox/firefox",
+              "branch": "firefox-upstream",
+              "commit": "$FIREFOX_SHA",
+              "role": "reference upstream for privacy, anti-tracking, UX and security features to port"
+            }
+          }
+          EOF
+          git add .flamingbox/upstreams.json
+          if git diff --cached --quiet; then
+            echo "Integration manifest already current."
+          else
+            git commit -m "Sync Chromium and Firefox upstream references"
+            git push origin flamingbox-native-chromium
+          fi
 
       - name: Write summary
+        shell: bash
         run: |
-          echo "## Chromium mirror" >> "$GITHUB_STEP_SUMMARY"
-          echo "Published Chromium commit \`$(git rev-parse FETCH_HEAD)\` to branch \`chromium-upstream\`." >> "$GITHUB_STEP_SUMMARY"
-          echo "Source: https://github.com/chromium/chromium" >> "$GITHUB_STEP_SUMMARY"
+          echo "## FlamingBox upstream fusion" >> "$GITHUB_STEP_SUMMARY"
+          echo "Chromium \`$CHROMIUM_SHA\` -> \`chromium-upstream\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "Firefox \`$FIREFOX_SHA\` -> \`firefox-upstream\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "Integration metadata -> \`flamingbox-native-chromium/.flamingbox/upstreams.json\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "Chromium stays the executable engine; Firefox features are ported selectively rather than merging Gecko and Blink into one runtime." >> "$GITHUB_STEP_SUMMARY"
