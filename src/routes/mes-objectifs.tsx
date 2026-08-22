@@ -31,7 +31,7 @@ export const Route = createFileRoute("/mes-objectifs")({
 const LOGO_VERSION = "20260821-5";
 const local = (name: string) => `/logos/objectives/${name}.svg?v=${LOGO_VERSION}`;
 
-type BrandData = { name: string; localLogo: string; webLogo?: string; mark?: string };
+type BrandData = { name: string; localLogo?: string; webLogo?: string; mark?: string };
 type SchoolEntry = BrandData & { place: string; level: string; access: string; focus: string; href: string };
 
 function SectionHeader({ eyebrow, title, intro }: { eyebrow: string; title: string; intro?: string }) {
@@ -75,7 +75,7 @@ function BrandMark({ name, localLogo, webLogo, mark }: BrandData) {
   const src = sources[sourceIndex];
   return (
     <span className="flex h-[76px] w-[76px] shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border bg-white p-2.5 shadow-sm">
-      {src ? <img src={src} alt={`Logo ${name}`} className="h-full w-full object-contain" loading="lazy" decoding="async" onError={() => setSourceIndex((index) => index + 1)} /> : <span className="text-center font-display text-[10px] font-black leading-tight tracking-tight text-black">{mark ?? name}</span>}
+      {src ? <img src={src} alt={`Logo ${name}`} className="h-full w-full object-contain" loading="lazy" decoding="async" onError={() => setSourceIndex((index) => index + 1)} /> : <span className="text-center font-display text-[13px] font-black uppercase leading-tight tracking-tight text-black">{mark ?? name}</span>}
     </span>
   );
 }
