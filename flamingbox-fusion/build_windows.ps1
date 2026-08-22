@@ -37,7 +37,6 @@ try {
   if (Test-Path $Dist) { Remove-Item $Dist -Recurse -Force }
   New-Item -ItemType Directory -Force -Path $Dist | Out-Null
 
-  # Copy the complete runtime output. Chromium relies on PAK/DLL/resource files beside the executable.
   Copy-Item (Join-Path $Out '*') $Dist -Recurse -Force
   Copy-Item $ChromeExe (Join-Path $Dist 'FlamingBox.exe') -Force
 
@@ -50,12 +49,14 @@ try {
     generatedAt = (Get-Date).ToUniversalTime().ToString('o')
   } | ConvertTo-Json -Depth 3 | Set-Content (Join-Path $Dist 'FLAMINGBOX_VERSION.json') -Encoding UTF8
 
+  & (Join-Path $Root 'smoke_test_windows.ps1') -FlamingBoxExe (Join-Path $Dist 'FlamingBox.exe')
+
   $Zip = Join-Path $Root 'dist\FlamingBox-Native-Windows-x64.zip'
   if (Test-Path $Zip) { Remove-Item $Zip -Force }
   Compress-Archive -Path (Join-Path $Dist '*') -DestinationPath $Zip -CompressionLevel Optimal
 
   Write-Host ''
-  Write-Host 'FlamingBox native build complete.' -ForegroundColor Green
+  Write-Host 'FlamingBox native build complete and smoke-tested.' -ForegroundColor Green
   Write-Host "Executable: $(Join-Path $Dist 'FlamingBox.exe')"
   Write-Host "Archive:    $Zip"
 }
