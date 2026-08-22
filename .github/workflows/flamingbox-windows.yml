@@ -7,6 +7,11 @@ on:
     paths:
       - 'flamingbox/**'
       - '.github/workflows/flamingbox-windows.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'flamingbox/**'
+      - '.github/workflows/flamingbox-windows.yml'
 
 jobs:
   build:
