@@ -7,11 +7,6 @@ on:
     paths:
       - 'flamingbox/**'
       - '.github/workflows/flamingbox-windows.yml'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'flamingbox/**'
-      - '.github/workflows/flamingbox-windows.yml'
 
 jobs:
   build:
@@ -22,131 +17,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download NW.js Chromium runtime
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install dependencies
+        working-directory: flamingbox
         shell: powershell
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $version = '0.114.2'
-          $url = "https://dl.nwjs.io/v$version/nwjs-v$version-win-x64.zip"
-          curl.exe -L --fail --retry 3 --connect-timeout 30 -o nwjs.zip $url
-          Expand-Archive nwjs.zip -DestinationPath runtime
+        run: npm install --no-audit --no-fund
 
-      - name: Package FlamingBox
+      - name: Build portable FlamingBox.exe
+        working-directory: flamingbox
         shell: powershell
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $version = '0.114.2'
-          $runtime = Join-Path $PWD "runtime\nwjs-v$version-win-x64"
-          $dist = Join-Path $PWD 'flamingbox-dist'
-          $appZip = Join-Path $PWD 'flamingbox-app.zip'
-          $appNw = Join-Path $PWD 'flamingbox-app.nw'
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: npx electron-builder --win portable --x64 --publish never
 
-          if (Test-Path $dist) { Remove-Item $dist -Recurse -Force }
-          New-Item -ItemType Directory -Path $dist | Out-Null
-
-          Compress-Archive -Path 'flamingbox\package.json','flamingbox\src','flamingbox\assets' -DestinationPath $appZip -CompressionLevel Optimal
-          Copy-Item $appZip $appNw
-          Copy-Item "$runtime\*" $dist -Recurse -Force
-
-          cmd /c copy /b "`"$runtime\nw.exe`"+`"$appNw`"" "`"$dist\FlamingBox.exe`""
-          Remove-Item "$dist\nw.exe" -Force
-
-          @'
-          FlamingBox 0.2.0
-          Chromium runtime: NW.js 0.114.2 / Chromium 151
-
-          Lancez FlamingBox.exe.
-          Les fichiers DLL et PAK présents dans ce dossier font partie du moteur Chromium et doivent rester à côté de l'exécutable.
-          '@ | Set-Content "$dist\LISEZ-MOI.txt" -Encoding UTF8
-
-          Compress-Archive -Path "$dist\*" -DestinationPath "$PWD\FlamingBox-Windows-x64.zip" -CompressionLevel Optimal
-
-      - name: Build native single-file installer
-        shell: powershell
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $work = Join-Path $PWD 'installer-work'
-          New-Item -ItemType Directory -Path $work -Force | Out-Null
-          Copy-Item "$PWD\FlamingBox-Windows-x64.zip" "$work\payload.zip"
-
-          @'
-          package main
-
-          import (
-            "archive/zip"
-            "bytes"
-            _ "embed"
-            "fmt"
-            "io"
-            "os"
-            "os/exec"
-            "path/filepath"
-            "strings"
-          )
-
-          //go:embed payload.zip
-          var payload []byte
-
-          func extract(dest string) error {
-            zr, err := zip.NewReader(bytes.NewReader(payload), int64(len(payload)))
-            if err != nil { return err }
-            if err := os.RemoveAll(dest); err != nil { return err }
-            if err := os.MkdirAll(dest, 0755); err != nil { return err }
-            cleanDest := filepath.Clean(dest) + string(os.PathSeparator)
-            for _, f := range zr.File {
-              target := filepath.Join(dest, f.Name)
-              if !strings.HasPrefix(filepath.Clean(target)+string(os.PathSeparator), cleanDest) {
-                return fmt.Errorf("unsafe archive path: %s", f.Name)
-              }
-              if f.FileInfo().IsDir() {
-                if err := os.MkdirAll(target, 0755); err != nil { return err }
-                continue
-              }
-              if err := os.MkdirAll(filepath.Dir(target), 0755); err != nil { return err }
-              src, err := f.Open(); if err != nil { return err }
-              dst, err := os.OpenFile(target, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, f.Mode())
-              if err != nil { src.Close(); return err }
-              _, cpErr := io.Copy(dst, src)
-              src.Close(); dst.Close()
-              if cpErr != nil { return cpErr }
-            }
-            return nil
-          }
-
-          func shortcut(dest string) {
-            exe := filepath.Join(dest, "FlamingBox.exe")
-            ps := fmt.Sprintf(`$w=New-Object -ComObject WScript.Shell; $d=[Environment]::GetFolderPath('Desktop'); $s=$w.CreateShortcut((Join-Path $d 'FlamingBox.lnk')); $s.TargetPath='%s'; $s.WorkingDirectory='%s'; $s.Save(); $m=Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'; $s2=$w.CreateShortcut((Join-Path $m 'FlamingBox.lnk')); $s2.TargetPath='%s'; $s2.WorkingDirectory='%s'; $s2.Save()`, exe, dest, exe, dest)
-            _ = exec.Command("powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", ps).Run()
-          }
-
-          func main() {
-            local := os.Getenv("LOCALAPPDATA")
-            if local == "" { local = os.TempDir() }
-            dest := filepath.Join(local, "FlamingBox")
-            if err := extract(dest); err != nil {
-              _ = os.WriteFile(filepath.Join(os.TempDir(), "FlamingBox-install-error.txt"), []byte(err.Error()), 0644)
-              return
-            }
-            shortcut(dest)
-            exe := filepath.Join(dest, "FlamingBox.exe")
-            cmd := exec.Command(exe)
-            cmd.Dir = dest
-            _ = cmd.Start()
-          }
-          '@ | Set-Content "$work\installer.go" -Encoding UTF8
-
-          Push-Location $work
-          go build -trimpath -ldflags="-H windowsgui -s -w" -o "$PWD\..\FlamingBox-Setup.exe" installer.go
-          Pop-Location
-          if (!(Test-Path "$PWD\FlamingBox-Setup.exe")) { throw 'Go installer build failed' }
-
-      - name: Upload FlamingBox Windows
+      - name: Upload FlamingBox Windows executable
         uses: actions/upload-artifact@v4
         with:
-          name: FlamingBox-Windows
-          path: |
-            FlamingBox-Setup.exe
-            FlamingBox-Windows-x64.zip
-            flamingbox-dist/FlamingBox.exe
+          name: FlamingBox-Windows-x64
+          path: flamingbox/dist/*.exe
           if-no-files-found: error
           compression-level: 0
