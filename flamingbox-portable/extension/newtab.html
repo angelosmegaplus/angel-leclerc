@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FlamingBox</title>
+<style>
+:root{color-scheme:dark;background:#0d0f14;color:#f4f7fb;font-family:Segoe UI,Arial,sans-serif}body{margin:0;min-height:100vh;display:grid;place-items:center;background:radial-gradient(circle at 50% 25%,#252b38 0,#12151c 35%,#090b0f 100%)}main{width:min(840px,88vw)}h1{font-size:54px;margin:0 0 6px;letter-spacing:-2px}p{color:#aeb7c6}.box{margin-top:28px;background:#151922;border:1px solid #2b3240;border-radius:22px;padding:22px}.search{display:flex;gap:10px}.search input{flex:1;padding:16px 18px;border:1px solid #343d4d;border-radius:14px;background:#0c1017;color:white;font-size:17px;outline:none}.search button{border:0;border-radius:14px;padding:0 22px;font-weight:700;cursor:pointer}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:18px}.card{background:#10141c;border-radius:14px;padding:15px}.ok{font-weight:700}.small{font-size:13px;color:#8d98aa}@media(max-width:650px){.grid{grid-template-columns:1fr}h1{font-size:42px}}</style>
+</head>
+<body><main><h1>FlamingBox</h1><p>Chromium renforcé par les protections FlamingBox.</p><div class="box"><form class="search" id="search"><input id="q" autofocus placeholder="Rechercher sur Google ou saisir une adresse"><button>Ouvrir</button></form><div class="grid"><div class="card"><div class="ok">Protection anti-pistage</div><div class="small">Règles exécutées par declarativeNetRequest, sans intercepteur JavaScript par requête.</div></div><div class="card"><div class="ok">HTTPS prioritaire</div><div class="small">Le profil FlamingBox demande HTTPS-First par défaut.</div></div><div class="card"><div class="ok">GPC + DNT</div><div class="small">Global Privacy Control et Do Not Track sont demandés au navigateur.</div></div><div class="card"><div class="ok">Sandbox Chromium</div><div class="small">Aucun --no-sandbox et aucune désactivation de webSecurity.</div></div></div></div></main><script src="newtab.js"></script></body>
+</html>
