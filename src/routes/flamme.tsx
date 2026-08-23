@@ -311,8 +311,16 @@ function FlammeBetaPage() {
 
       <main className="mx-auto flex w-full max-w-[652px] flex-col px-4 pb-5 sm:px-5 md:min-h-[calc(100dvh-170px)] md:justify-center md:pb-16 md:pt-0">
         <div className="mt-7 flex justify-center sm:mt-12 md:mt-0">
-          <div className={`relative left-[5px] flex justify-center sm:left-[7px] ${darkMode ? "rounded-2xl bg-white/92 px-5 py-3 shadow-[0_1px_10px_rgba(0,0,0,.35)]" : ""}`}>
-            <img src="/logos/qwant.svg" alt="Qwant" width={272} height={92} className="h-[58px] w-auto sm:h-[80px]" />
+          <div className="flex select-none items-end justify-center gap-2">
+            <span
+              className={`text-[46px] font-extrabold leading-none tracking-[-0.045em] sm:text-[64px] ${darkMode ? "text-[#f1f3f4]" : "text-[#181716]"}`}
+            >
+              Flamme
+            </span>
+            <span className="mb-[10px] h-[9px] w-[9px] shrink-0 rounded-full bg-[#e2372f] sm:mb-[14px] sm:h-[12px] sm:w-[12px]" aria-hidden="true" />
+            <span className={`mb-[6px] text-[15px] font-medium lowercase tracking-tight sm:mb-[9px] sm:text-[20px] ${darkMode ? "text-[#9aa0a6]" : "text-[#6b6f76]"}`}>
+              bêta
+            </span>
           </div>
         </div>
 
@@ -329,20 +337,25 @@ function FlammeBetaPage() {
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setTimeout(() => setSearchFocused(false), 140)}
                 className="h-full min-w-0 flex-1 bg-transparent px-1 text-[16px] outline-none"
-                placeholder="Rechercher"
-                aria-label="Rechercher"
+                placeholder="Rechercher sur Qwant"
+                aria-label="Rechercher sur Qwant"
                 autoComplete="off"
               />
-              <button type="button" onClick={startVoiceSearch} className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f8f9fa]"}`} title="Recherche vocale" aria-label="Recherche vocale">
-                <Mic className="h-5 w-5 text-[#4285f4]" />
-              </button>
-              <button type="button" onClick={() => fileInputRef.current?.click()} className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f8f9fa]"}`} title="Recherche par image — bêta" aria-label="Recherche par image — bêta">
-                <Camera className="h-5 w-5 text-[#4285f4]" />
+              <button type="button" onClick={startVoiceSearch} className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f8f9fa]"}`} title="Recherche vocale" aria-label="Recherche vocale" aria-pressed={isListening}>
+                {isListening ? (
+                  <span className="flex items-center gap-[3px]" aria-hidden="true">
+                    <span className="h-[5px] w-[5px] animate-bounce rounded-full bg-[#4285f4] [animation-duration:.9s]" />
+                    <span className="h-[5px] w-[5px] animate-bounce rounded-full bg-[#4285f4] [animation-delay:.15s] [animation-duration:.9s]" />
+                    <span className="h-[5px] w-[5px] animate-bounce rounded-full bg-[#4285f4] [animation-delay:.3s] [animation-duration:.9s]" />
+                  </span>
+                ) : (
+                  <Mic className="h-5 w-5 text-[#4285f4]" />
+                )}
               </button>
               <button type="button" onClick={askMistral} className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f8f9fa]"}`} title="IA" aria-label="Ouvrir l’IA">
                 <Sparkles className="h-5 w-5 text-[#f97316]" />
               </button>
-              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageFile} />
+
             </div>
 
             {searchFocused && (suggestions.history.length > 0 || suggestions.local.length > 0 || suggestions.services.length > 0) && (
