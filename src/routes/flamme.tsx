@@ -141,9 +141,7 @@ function FlammeBetaPage() {
   const [historyItems, setHistoryItems] = useState<string[]>([]);
   const [darkMode, setDarkMode] = useState(false);
   const [voiceMessage, setVoiceMessage] = useState("");
-  const [imageName, setImageName] = useState("");
-  const [imagePreview, setImagePreview] = useState("");
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isListening, setIsListening] = useState(false);
 
   useEffect(() => {
     try {
@@ -158,11 +156,7 @@ function FlammeBetaPage() {
     }
   }, []);
 
-  useEffect(() => {
-    return () => {
-      if (imagePreview) URL.revokeObjectURL(imagePreview);
-    };
-  }, [imagePreview]);
+
 
   const suggestions = useMemo(() => {
     const q = query.trim().toLowerCase();
