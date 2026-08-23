@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Flamme bêta</string>
+    <string name="flamme_widget_search">Rechercher sur Qwant</string>
+    <string name="flamme_widget_voice">Recherche vocale</string>
+    <string name="flamme_widget_open">Ouvrir Flamme</string>
+    <string name="flamme_widget_description">Recherche Flamme avec Qwant et accès vocal.</string>
+</resources>
