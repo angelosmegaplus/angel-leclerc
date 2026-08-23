@@ -4,5 +4,9 @@
     <string name="flamme_widget_search">Rechercher sur Qwant</string>
     <string name="flamme_widget_voice">Recherche vocale</string>
     <string name="flamme_widget_open">Ouvrir Flamme</string>
-    <string name="flamme_widget_description">Recherche Flamme avec Qwant et accès vocal.</string>
+    <string name="flamme_widget_news">Actus</string>
+    <string name="flamme_widget_mail">Mail</string>
+    <string name="flamme_widget_maps">Carte</string>
+    <string name="flamme_widget_ai">IA</string>
+    <string name="flamme_widget_description">Recherche Qwant, raccourcis Flamme et recherche vocale.</string>
 </resources>
