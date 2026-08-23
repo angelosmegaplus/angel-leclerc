@@ -321,12 +321,12 @@ function FlammeBetaPage() {
               {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
               {darkMode ? "Apparence claire" : "Apparence sombre"}
             </button>
-            <button type="button" onClick={() => { setProfileOpen(false); document.getElementById("flamme-settings")?.scrollIntoView({ behavior: "smooth" }); }} className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[14px] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
+            <button type="button" onClick={() => { setProfileOpen(false); setPanel("settings"); }} className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[14px] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
               <Settings className="h-5 w-5" /> Paramètres
             </button>
-            <a href="/flamme" className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-[14px] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
+            <button type="button" onClick={() => { setProfileOpen(false); setPanel("about"); }} className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[14px] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
               <Info className="h-5 w-5" /> À propos de Flamme
-            </a>
+            </button>
           </div>
         </>
       )}
