@@ -14,7 +14,6 @@ import {
   BookOpen,
   Sparkles,
   Languages,
-  Grid3X3,
   Mic,
   Camera,
   History,
@@ -67,7 +66,19 @@ const services: Service[] = [
   { name: "Traduction", description: "Avec Reverso", url: "https://www.reverso.net/traduction-texte", icon: Languages, accent: "#0369a1" },
 ];
 
-const shortcuts = services.slice(0, 7);
+function readableAccent(hex: string, dark: boolean) {
+  if (!dark) return hex;
+  const value = hex.replace("#", "");
+  const full = value.length === 3 ? value.split("").map((c) => c + c).join("") : value;
+  const r = parseInt(full.slice(0, 2), 16);
+  const g = parseInt(full.slice(2, 4), 16);
+  const b = parseInt(full.slice(4, 6), 16);
+  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  if (luminance >= 0.42) return hex;
+  const lighten = (channel: number) => Math.round(channel + (255 - channel) * 0.62);
+  return `rgb(${lighten(r)}, ${lighten(g)}, ${lighten(b)})`;
+}
+
 const localSuggestions = [
   "actualités France",
   "météo aujourd’hui",
@@ -124,7 +135,6 @@ function newsVisual(topic: NewsTopic) {
 
 function FlammeBetaPage() {
   const [query, setQuery] = useState("");
-  const [appsOpen, setAppsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [activeTab, setActiveTab] = useState<SearchType>("all");
@@ -275,34 +285,10 @@ function FlammeBetaPage() {
         <a href="https://www.qwant.com/?l=fr" className="hidden text-[13px] hover:underline sm:inline">Qwant</a>
         <a href="https://webmail.mailo.com/" className="hidden text-[13px] hover:underline sm:inline">Mail</a>
         <a href="https://account.joomeo.com/" className="hidden text-[13px] hover:underline sm:inline">Photos</a>
-        <button type="button" aria-label="Applications Flamme" aria-expanded={appsOpen} className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10" onClick={() => { setAppsOpen((value) => !value); setProfileOpen(false); }}>
-          <Grid3X3 className={`h-5 w-5 ${muted}`} />
-        </button>
-        <button type="button" aria-label="Compte et paramètres Flamme" aria-expanded={profileOpen} onClick={() => { setProfileOpen((value) => !value); setAppsOpen(false); }} className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1a73e8] text-[14px] font-medium text-white shadow-sm">
+        <button type="button" aria-label="Compte et paramètres Flamme" aria-expanded={profileOpen} onClick={() => setProfileOpen((value) => !value)} className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1a73e8] text-[14px] font-medium text-white shadow-sm">
           F
         </button>
       </header>
-
-      {appsOpen && (
-        <>
-          <button type="button" aria-label="Fermer les applications" className="fixed inset-0 z-40 cursor-default bg-transparent" onClick={() => setAppsOpen(false)} />
-          <div className={`fixed right-3 top-[58px] z-50 max-h-[68dvh] w-[min(340px,calc(100vw-24px))] overflow-y-auto rounded-3xl border p-3 shadow-[0_8px_28px_rgba(60,64,67,.28)] sm:right-4 sm:top-14 sm:max-h-[520px] sm:w-[340px] ${surface}`}>
-            <div className="grid grid-cols-3 gap-2">
-              {services.map((service) => {
-                const Icon = service.icon;
-                return (
-                  <a key={service.name} href={service.url} target="_blank" rel="noreferrer" title={service.description} onClick={() => setAppsOpen(false)} className={`flex min-h-[96px] flex-col items-center justify-center gap-2 rounded-2xl p-2 text-center ${darkMode ? "hover:bg-white/10 active:bg-white/10" : "hover:bg-[#f1f3f4] active:bg-[#f1f3f4]"}`}>
-                    <span className="flex h-11 w-11 items-center justify-center rounded-full" style={{ backgroundColor: `${service.accent}18`, color: service.accent }}>
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <span className="text-[12px] leading-4 sm:text-[13px]">{service.name}</span>
-                  </a>
-                );
-              })}
-            </div>
-          </div>
-        </>
-      )}
 
       {profileOpen && (
         <>
@@ -332,7 +318,7 @@ function FlammeBetaPage() {
 
       <main className="mx-auto flex w-full max-w-[652px] flex-col px-4 pb-5 sm:px-5 md:min-h-[calc(100dvh-170px)] md:justify-center md:pb-16 md:pt-0">
         <div className="mt-7 flex justify-center sm:mt-12 md:mt-0">
-          <div className="relative left-[5px] flex justify-center sm:left-[7px]">
+          <div className={`relative left-[5px] flex justify-center sm:left-[7px] ${darkMode ? "rounded-2xl bg-white/92 px-5 py-3 shadow-[0_1px_10px_rgba(0,0,0,.35)]" : ""}`}>
             <img src="/logos/qwant.svg" alt="Qwant" width={272} height={92} className="h-[58px] w-auto sm:h-[80px]" />
           </div>
         </div>
@@ -347,8 +333,8 @@ function FlammeBetaPage() {
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setTimeout(() => setSearchFocused(false), 140)}
                 className="h-full min-w-0 flex-1 bg-transparent px-1 text-[16px] outline-none"
-                placeholder={tabPlaceholders[activeTab]}
-                aria-label={tabPlaceholders[activeTab]}
+                placeholder="Rechercher"
+                aria-label="Rechercher"
                 autoComplete="off"
               />
               <button type="button" onClick={startVoiceSearch} className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f8f9fa]"}`} title="Recherche vocale" aria-label="Recherche vocale">
@@ -428,13 +414,13 @@ function FlammeBetaPage() {
           </div>
         </div>
 
-        <div className="-mx-4 mt-5 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:hidden">
-          <div className="flex min-w-max gap-4 pb-2">
-            {shortcuts.map((service) => {
+        <nav aria-label="Services Flamme" className="-mx-4 mt-5 overflow-x-auto overscroll-x-contain px-4 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex min-w-max gap-4 pb-3">
+            {services.map((service) => {
               const Icon = service.icon;
               return (
-                <a key={service.name} href={service.url} target="_blank" rel="noreferrer" className="flex w-[68px] flex-col items-center gap-2 text-center">
-                  <span className={`flex h-12 w-12 items-center justify-center rounded-full ${darkMode ? "bg-[#303134]" : "bg-[#f1f3f4]"}`} style={{ color: service.accent }}>
+                <a key={service.name} href={service.url} target="_blank" rel="noreferrer" title={service.description} className="flex w-[68px] shrink-0 flex-col items-center gap-2 text-center">
+                  <span className={`flex h-12 w-12 items-center justify-center rounded-full ${darkMode ? "bg-[#3c4043]" : "bg-[#f1f3f4]"}`} style={{ color: readableAccent(service.accent, darkMode) }}>
                     <Icon className="h-5 w-5" />
                   </span>
                   <span className="max-w-[68px] truncate text-[12px]">{service.name}</span>
@@ -442,7 +428,7 @@ function FlammeBetaPage() {
               );
             })}
           </div>
-        </div>
+        </nav>
       </main>
 
       <section className="mx-auto w-full max-w-[720px] px-4 pb-14 md:hidden">
