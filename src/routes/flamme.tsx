@@ -309,8 +309,8 @@ const tvGroups: LinkGroup[] = [
       {
         name: "M6+",
         description: "Direct et replay du groupe M6, avec création de compte.",
-        url: "https://www.6play.fr/",
-        host: "6play.fr",
+        url: "https://www.m6.fr/",
+        host: "m6.fr",
         badge: "🇫🇷 Compte requis",
         icon: MonitorPlay,
         accent: "#7c3aed",
