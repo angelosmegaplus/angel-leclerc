@@ -1494,7 +1494,7 @@ function FlammeBetaPage() {
             </p>
           </div>
           {visibleNews.length > 0 ? (
-            <FlammeNewsRefresh onRefresh={() => void loadNews()} loading={newsLoading} label="Actualiser" darkMode={darkMode} />
+            <FlammeNewsRefresh onRefresh={() => void loadNews(newsRegion)} loading={newsLoading} label="Actualiser" darkMode={darkMode} />
           ) : (
             <a href="https://www.qwant.com/?l=fr&t=news&q=actualités" target="_blank" rel="noreferrer" className="min-h-11 px-2 py-3 text-[14px] font-medium text-[#1a73e8]">Voir plus</a>
           )}
