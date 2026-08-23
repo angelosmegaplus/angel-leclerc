@@ -530,7 +530,7 @@ function FlammeBetaPage() {
                 <p>Flamme ne prétend pas gérer ni contrôler les données traitées par ces services tiers. Ressources externes :</p>
                 <div className="flex flex-wrap gap-x-4 gap-y-2 text-[13px]">
                   <a href="https://about.qwant.com/legal/confidentialite/" target="_blank" rel="noreferrer" className="text-[#1a73e8] hover:underline">Confidentialité Qwant</a>
-                  <a href="https://www.mailo.com/mailo/fr/confidentialite.php" target="_blank" rel="noreferrer" className="text-[#1a73e8] hover:underline">Confidentialité Mailo</a>
+                  <a href="https://pro.mailo.com/mailo/fr/regles-de-confidentialite.php" target="_blank" rel="noreferrer" className="text-[#1a73e8] hover:underline">Confidentialité Mailo</a>
                   <a href="https://cartes.gouv.fr/" target="_blank" rel="noreferrer" className="text-[#1a73e8] hover:underline">cartes.gouv.fr (IGN)</a>
                 </div>
               </div>
