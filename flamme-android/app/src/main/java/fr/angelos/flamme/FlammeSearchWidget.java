@@ -13,13 +13,22 @@ public final class FlammeSearchWidget extends AppWidgetProvider {
         for (int appWidgetId : appWidgetIds) {
             RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.flamme_search_widget);
 
-            PendingIntent homeIntent = buildPendingIntent(context, Intent.ACTION_MAIN, appWidgetId * 10);
-            PendingIntent searchIntent = buildPendingIntent(context, MainActivity.ACTION_FOCUS_SEARCH, appWidgetId * 10 + 1);
-            PendingIntent voiceIntent = buildPendingIntent(context, MainActivity.ACTION_VOICE_SEARCH, appWidgetId * 10 + 2);
+            int baseRequestCode = appWidgetId * 20;
+            PendingIntent homeIntent = buildPendingIntent(context, Intent.ACTION_MAIN, baseRequestCode);
+            PendingIntent searchIntent = buildPendingIntent(context, MainActivity.ACTION_FOCUS_SEARCH, baseRequestCode + 1);
+            PendingIntent voiceIntent = buildPendingIntent(context, MainActivity.ACTION_VOICE_SEARCH, baseRequestCode + 2);
+            PendingIntent newsIntent = buildPendingIntent(context, MainActivity.ACTION_OPEN_NEWS, baseRequestCode + 3);
+            PendingIntent mailIntent = buildPendingIntent(context, MainActivity.ACTION_OPEN_MAIL, baseRequestCode + 4);
+            PendingIntent mapsIntent = buildPendingIntent(context, MainActivity.ACTION_OPEN_MAPS, baseRequestCode + 5);
+            PendingIntent aiIntent = buildPendingIntent(context, MainActivity.ACTION_OPEN_AI, baseRequestCode + 6);
 
             views.setOnClickPendingIntent(R.id.widget_logo, homeIntent);
             views.setOnClickPendingIntent(R.id.widget_search_area, searchIntent);
             views.setOnClickPendingIntent(R.id.widget_voice, voiceIntent);
+            views.setOnClickPendingIntent(R.id.widget_news, newsIntent);
+            views.setOnClickPendingIntent(R.id.widget_mail, mailIntent);
+            views.setOnClickPendingIntent(R.id.widget_maps, mapsIntent);
+            views.setOnClickPendingIntent(R.id.widget_ai, aiIntent);
 
             appWidgetManager.updateAppWidget(appWidgetId, views);
         }
