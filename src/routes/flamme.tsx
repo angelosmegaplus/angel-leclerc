@@ -700,36 +700,39 @@ function FlammeBetaPage() {
 
             </div>
 
-            {searchFocused && (suggestions.history.length > 0 || suggestions.local.length > 0 || suggestions.services.length > 0) && (
-              <div className={`border-t pb-2 pt-1 ${darkMode ? "border-[#5f6368]" : "border-[#e8eaed]"}`}>
-                {suggestions.history.map((suggestion) => (
-                  <div key={`history-${suggestion}`} className={`group flex min-h-11 items-center ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
-                    <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => goToSearch(suggestion)} className="flex min-h-11 min-w-0 flex-1 items-center gap-3 px-4 text-left text-[15px]">
-                      <History className="h-4 w-4 shrink-0 text-[#9aa0a6]" />
-                      <span className="truncate">{suggestion}</span>
-                    </button>
-                    <button type="button" aria-label={`Supprimer ${suggestion}`} onMouseDown={(event) => event.preventDefault()} onClick={() => removeHistoryItem(suggestion)} className={`mr-2 flex h-9 w-9 items-center justify-center rounded-full opacity-70 ${darkMode ? "hover:bg-white/10" : "hover:bg-white"}`}>
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-                {suggestions.services.map((service) => {
-                  const Icon = service.icon;
+            {searchFocused && suggestions.length > 0 && (
+              <ul role="listbox" aria-label="Suggestions de recherche" className={`border-t pb-2 pt-1 ${darkMode ? "border-[#5f6368]" : "border-[#e8eaed]"}`}>
+                {suggestions.map((item, index) => {
+                  const Icon = item.icon;
+                  const highlighted = index === highlightIndex;
+                  const rowClass = highlighted ? (darkMode ? "bg-white/10" : "bg-[#f1f3f4]") : darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]";
                   return (
-                    <a key={`service-${service.name}`} href={service.url} target="_blank" rel="noreferrer" onMouseDown={(event) => event.preventDefault()} className={`flex min-h-11 items-center gap-3 px-4 text-[15px] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
-                      <Icon className="h-4 w-4 shrink-0" style={{ color: readableAccent(service.accent, darkMode) }} />
-                      <span className="truncate"><strong className="font-medium">{service.name}</strong> <span className={muted}>— {service.description}</span></span>
-                    </a>
+                    <li key={item.id} role="option" aria-selected={highlighted} className={`group flex min-h-11 items-center ${rowClass}`}>
+                      <button
+                        type="button"
+                        onMouseDown={(event) => event.preventDefault()}
+                        onMouseEnter={() => setHighlightIndex(index)}
+                        onClick={() => runSuggestion(item)}
+                        className="flex min-h-11 min-w-0 flex-1 items-center gap-3 px-4 text-left text-[15px]"
+                      >
+                        <Icon className="h-4 w-4 shrink-0 text-[#9aa0a6]" style={item.accent ? { color: readableAccent(item.accent, darkMode) } : undefined} />
+                        <span className="min-w-0 flex-1 truncate">
+                          <span className={item.kind === "service" ? "font-medium" : undefined}>{item.label}</span>
+                          {item.description && <span className={muted}> — {item.description}</span>}
+                        </span>
+                        <span className={`ml-2 hidden shrink-0 text-[11px] sm:inline ${muted}`}>{suggestionMeta[item.kind].label}</span>
+                      </button>
+                      {item.kind === "history" && (
+                        <button type="button" aria-label={`Supprimer ${item.value}`} onMouseDown={(event) => event.preventDefault()} onClick={() => removeHistoryItem(item.value)} className={`mr-2 flex h-9 w-9 items-center justify-center rounded-full opacity-70 ${darkMode ? "hover:bg-white/10" : "hover:bg-white"}`}>
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                    </li>
                   );
                 })}
-                {suggestions.local.map((suggestion) => (
-                  <button key={`local-${suggestion}`} type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => goToSearch(suggestion)} className={`flex min-h-11 w-full items-center gap-3 px-4 text-left text-[15px] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
-                    <Search className="h-4 w-4 shrink-0 text-[#9aa0a6]" />
-                    <span className="truncate">{suggestion}</span>
-                  </button>
-                ))}
-              </div>
+              </ul>
             )}
+
           </div>
         </form>
 
