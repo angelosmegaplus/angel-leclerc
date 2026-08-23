@@ -133,6 +133,15 @@ function newsVisual(topic: NewsTopic) {
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
+type PanelKey = "about" | "privacy" | "help" | "settings";
+
+const panelTitles: Record<PanelKey, string> = {
+  about: "À propos de Flamme",
+  privacy: "Confidentialité",
+  help: "Aide",
+  settings: "Paramètres",
+};
+
 function FlammeBetaPage() {
   const [query, setQuery] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
@@ -142,6 +151,17 @@ function FlammeBetaPage() {
   const [darkMode, setDarkMode] = useState(false);
   const [voiceMessage, setVoiceMessage] = useState("");
   const [isListening, setIsListening] = useState(false);
+  const [panel, setPanel] = useState<PanelKey | null>(null);
+
+  useEffect(() => {
+    if (!panel) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setPanel(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [panel]);
+
 
   useEffect(() => {
     try {
