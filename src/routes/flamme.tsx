@@ -15,7 +15,6 @@ import {
   Sparkles,
   Languages,
   Grid3X3,
-  X,
 } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
 
@@ -140,33 +139,30 @@ function FlammeBetaPage() {
         <a href="https://www.qwant.com/?l=fr" className="hidden text-[13px] hover:underline sm:inline">Qwant</a>
         <a href="https://webmail.mailo.com/" className="hidden text-[13px] hover:underline sm:inline">Mail</a>
         <a href="https://account.joomeo.com/" className="hidden text-[13px] hover:underline sm:inline">Photos</a>
-        <button type="button" aria-label="Applications Flamme" className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-[#f1f3f4]" onClick={() => setAppsOpen(true)}>
+        <button type="button" aria-label="Applications Flamme" aria-expanded={appsOpen} className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-[#f1f3f4]" onClick={() => setAppsOpen((value) => !value)}>
           <Grid3X3 className="h-5 w-5 text-[#5f6368]" />
         </button>
       </header>
 
       {appsOpen && (
-        <div className="fixed inset-0 z-50 bg-white sm:inset-auto sm:right-4 sm:top-14 sm:h-auto sm:max-h-[520px] sm:w-[340px] sm:overflow-y-auto sm:rounded-3xl sm:border sm:border-[#dadce0] sm:shadow-[0_8px_28px_rgba(60,64,67,.28)]">
-          <div className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-[#e8eaed] bg-white px-4 sm:hidden">
-            <strong className="text-[17px] font-medium">Applications</strong>
-            <button type="button" onClick={() => setAppsOpen(false)} className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-[#f1f3f4]" aria-label="Fermer">
-              <X className="h-5 w-5" />
-            </button>
+        <>
+          <button type="button" aria-label="Fermer les applications" className="fixed inset-0 z-40 cursor-default bg-transparent" onClick={() => setAppsOpen(false)} />
+          <div className="fixed right-3 top-[58px] z-50 max-h-[68dvh] w-[min(340px,calc(100vw-24px))] overflow-y-auto rounded-3xl border border-[#dadce0] bg-white p-3 shadow-[0_8px_28px_rgba(60,64,67,.28)] sm:right-4 sm:top-14 sm:max-h-[520px] sm:w-[340px]">
+            <div className="grid grid-cols-3 gap-2">
+              {services.map((service) => {
+                const Icon = service.icon;
+                return (
+                  <a key={service.name} href={service.url} target="_blank" rel="noreferrer" title={service.description} onClick={() => setAppsOpen(false)} className="flex min-h-[96px] flex-col items-center justify-center gap-2 rounded-2xl p-2 text-center active:bg-[#f1f3f4] sm:hover:bg-[#f1f3f4]">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full" style={{ backgroundColor: `${service.accent}14`, color: service.accent }}>
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span className="text-[12px] leading-4 text-[#3c4043] sm:text-[13px]">{service.name}</span>
+                  </a>
+                );
+              })}
+            </div>
           </div>
-          <div className="grid grid-cols-3 gap-2 p-4 sm:p-3">
-            {services.map((service) => {
-              const Icon = service.icon;
-              return (
-                <a key={service.name} href={service.url} target="_blank" rel="noreferrer" title={service.description} className="flex min-h-[108px] flex-col items-center justify-center gap-2 rounded-2xl p-2 text-center active:bg-[#f1f3f4] sm:min-h-[96px] sm:hover:bg-[#f1f3f4]">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-full sm:h-11 sm:w-11" style={{ backgroundColor: `${service.accent}14`, color: service.accent }}>
-                    <Icon className="h-6 w-6" />
-                  </span>
-                  <span className="text-[13px] leading-4 text-[#3c4043]">{service.name}</span>
-                </a>
-              );
-            })}
-          </div>
-        </div>
+        </>
       )}
 
       <main className="mx-auto w-full max-w-[652px] px-4 pb-6 sm:px-5 sm:pb-12">
