@@ -1453,6 +1453,63 @@ function FlammeBetaPage() {
                 <p className={`text-center text-[11px] leading-4 ${muted}`}>Flamme n’est affiliée à aucun de ces services.</p>
               </div>
             )}
+
+            {panel === "good" && (
+              <div className="space-y-3">
+                <p className={`text-[13px] leading-5 ${muted}`}>Des façons simples d’aider en France : chercher solidaire, donner ou devenir bénévole.</p>
+
+                <a
+                  href="https://www.lilo.org/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-start gap-3 rounded-2xl border border-[#1a73e8]/60 bg-[#1a73e8]/5 p-3 text-left"
+                >
+                  <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "bg-[#3c4043]" : "bg-[#f1f3f4]"}`} style={{ color: readableAccent("#16a34a", darkMode) }}>
+                    <Sprout className="h-5 w-5" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex flex-wrap items-center gap-2">
+                      <span className="text-[15px] font-medium">Lilo</span>
+                      <span className={`inline-flex items-center gap-1 rounded-full px-2 py-[2px] text-[11px] font-medium ${darkMode ? "bg-[#1a73e8]/20 text-[#a8c7fa]" : "bg-[#1a73e8]/10 text-[#1a73e8]"}`}>
+                        <ShieldCheck className="h-3 w-3" /> Moteur solidaire
+                      </span>
+                    </span>
+                    <span className={`mt-1 block text-[13px] leading-5 ${muted}`}>Moteur de recherche français qui finance des projets sociaux et environnementaux avec ses revenus publicitaires. Vous pouvez le choisir comme moteur par défaut dans Paramètres.</span>
+                    <span className="mt-1 inline-flex items-center gap-1 text-[12px] text-[#1a73e8]"><ExternalLink className="h-3 w-3" /> lilo.org</span>
+                  </span>
+                </a>
+
+                <p className={`pt-1 text-[12px] font-medium uppercase tracking-wide ${muted}`}>Associations françaises</p>
+
+                {goodCauses.map((cause) => {
+                  const Icon = cause.icon;
+                  return (
+                    <a
+                      key={cause.name}
+                      href={cause.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={`flex items-start gap-3 rounded-2xl border p-3 text-left ${darkMode ? "border-[#5f6368] hover:bg-white/10" : "border-[#dfe1e5] hover:bg-[#f1f3f4]"}`}
+                    >
+                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "bg-[#3c4043]" : "bg-[#f1f3f4]"}`} style={{ color: readableAccent(cause.accent, darkMode) }}>
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="flex flex-wrap items-center gap-2">
+                          <span className="text-[15px] font-medium">{cause.name}</span>
+                          <span className={`rounded-full px-2 py-[1px] text-[11px] ${darkMode ? "bg-[#3c4043] text-[#e8eaed]" : "bg-[#f1f3f4] text-[#3c4043]"}`}>{cause.badge}</span>
+                        </span>
+                        <span className={`mt-1 block text-[13px] leading-5 ${muted}`}>{cause.description}</span>
+                        <span className="mt-1 inline-flex items-center gap-1 text-[12px] text-[#1a73e8]"><ExternalLink className="h-3 w-3" /> {cause.host}</span>
+                      </span>
+                    </a>
+                  );
+                })}
+
+                <p className={`text-center text-[11px] leading-4 ${muted}`}>Flamme n’est affiliée à aucune de ces organisations et ne collecte aucun don.</p>
+              </div>
+            )}
+
           </div>
         </div>
       )}
