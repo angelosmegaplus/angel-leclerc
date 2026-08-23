@@ -7,7 +7,6 @@ import {
   Images,
   Navigation,
   ContactRound,
-  Landmark,
   Map,
   Video,
   Clapperboard,
@@ -52,8 +51,8 @@ const services: Service[] = [
     accent: "#2b6cb0",
   },
   {
-    name: "Drive",
-    description: "Fichiers et cloud avec Mailo",
+    name: "Stockage",
+    description: "Fichiers et espace en ligne avec Mailo",
     url: "https://webmail.mailo.com/",
     icon: Cloud,
     accent: "#0f766e",
@@ -73,8 +72,8 @@ const services: Service[] = [
     accent: "#e11d48",
   },
   {
-    name: "GPS",
-    description: "Plans et itinéraires avec Mappy",
+    name: "Itinéraires",
+    description: "Plans et guidage avec Mappy",
     url: "https://fr.mappy.com/",
     icon: Navigation,
     accent: "#7c3aed",
@@ -85,21 +84,6 @@ const services: Service[] = [
     url: "https://www.pagesjaunes.fr/",
     icon: ContactRound,
     accent: "#eab308",
-  },
-  {
-    name: "Poste",
-    description: "Courrier et colis avec La Poste",
-    url: "https://www.laposte.fr/",
-    icon: Landmark,
-    accent: "#facc15",
-  },
-  {
-    name: "Connexion",
-    description: "Services publics avec FranceConnect",
-    url: "https://franceconnect.gouv.fr/",
-    icon: Landmark,
-    accent: "#000091",
-    badge: "Service public",
   },
   {
     name: "Carte",
@@ -159,7 +143,7 @@ const newsTopics = [
   { label: "France", query: "politique France", headline: "Politique et société" },
   { label: "International", query: "actualité internationale", headline: "Le monde en continu" },
   { label: "Économie", query: "économie entreprises", headline: "Entreprises, emploi et marchés" },
-  { label: "Tech", query: "technologie numérique", headline: "Numérique, IA et innovation" },
+  { label: "Technologies", query: "technologie numérique", headline: "Numérique, IA et innovation" },
   { label: "Sport", query: "sport résultats", headline: "Résultats et compétitions" },
 ];
 
@@ -226,7 +210,9 @@ function FlammeBetaPage() {
 
       <main className="mx-auto w-full max-w-[652px] px-5 pb-16">
         <div className="mt-[80px] flex justify-center sm:mt-[120px]">
-          <img src="/logos/qwant.svg" alt="Qwant" width={272} height={92} className="h-[64px] w-auto sm:h-[80px]" />
+          <div className="relative left-[7px] flex justify-center">
+            <img src="/logos/qwant.svg" alt="Qwant" width={272} height={92} className="h-[64px] w-auto sm:h-[80px]" />
+          </div>
         </div>
 
         <form onSubmit={searchQwant} className="mt-[26px]">
@@ -236,7 +222,7 @@ function FlammeBetaPage() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               className="h-full min-w-0 flex-1 bg-transparent text-[16px] text-[#202124] outline-none"
-              placeholder="Rechercher sur le Web"
+              placeholder="Rechercher sur Internet"
               aria-label="Recherche Qwant"
             />
             <button
