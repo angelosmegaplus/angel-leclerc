@@ -100,14 +100,6 @@ const searchTabs = [
 
 type SearchType = (typeof searchTabs)[number]["type"];
 
-const tabPlaceholders: Record<SearchType, string> = {
-  all: "Rechercher sur Internet",
-  news: "Rechercher dans les actualités",
-  images: "Rechercher des images",
-  videos: "Rechercher des vidéos",
-  maps: "Rechercher un lieu sur la carte",
-};
-
 
 type NewsTopic = {
   label: string;
@@ -366,7 +358,7 @@ function FlammeBetaPage() {
                   const Icon = service.icon;
                   return (
                     <a key={`service-${service.name}`} href={service.url} target="_blank" rel="noreferrer" onMouseDown={(event) => event.preventDefault()} className={`flex min-h-11 items-center gap-3 px-4 text-[15px] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
-                      <Icon className="h-4 w-4 shrink-0" style={{ color: service.accent }} />
+                      <Icon className="h-4 w-4 shrink-0" style={{ color: readableAccent(service.accent, darkMode) }} />
                       <span className="truncate"><strong className="font-medium">{service.name}</strong> <span className={muted}>— {service.description}</span></span>
                     </a>
                   );
