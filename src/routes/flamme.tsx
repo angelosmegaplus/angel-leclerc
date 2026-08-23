@@ -101,7 +101,7 @@ export const Route = createFileRoute("/flamme")({
       {
         name: "description",
         content:
-          "Flamme est une page bêta de recherche et d’accès rapide à des services numériques français, avec Qwant comme moteur de recherche.",
+          "Flamme est une page bêta de recherche et d’accès rapide à des services numériques français, avec Qwant ou Lilo comme moteur de recherche.",
       },
       { name: "robots", content: "noindex,nofollow" },
     ],
