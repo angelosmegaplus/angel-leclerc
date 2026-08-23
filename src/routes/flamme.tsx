@@ -40,7 +40,21 @@ import {
   ExternalLink,
   ShieldCheck,
   UsersRound,
+  UserSearch,
+  TentTree,
   MessageCircleMore,
+  LibraryBig,
+  Landmark,
+  ShoppingBag,
+  GraduationCap,
+  Cpu,
+  HeartPulse,
+  Briefcase,
+  TrainFront,
+  Receipt,
+  HandCoins,
+  Handshake,
+  Radio,
 } from "lucide-react";
 import { FormEvent, KeyboardEvent as ReactKeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
