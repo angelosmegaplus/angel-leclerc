@@ -1,0 +1,94 @@
+name: Flamme 0.7 Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/flamme-07-release.yml'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout Flamme 0.7
+        uses: actions/checkout@v4
+        with:
+          ref: flamme-release-0.7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install dependencies
+        working-directory: flamingbox
+        shell: powershell
+        run: npm install --no-audit --no-fund
+
+      - name: Syntax checks
+        working-directory: flamingbox
+        shell: powershell
+        run: |
+          node --check src/main.js
+          node --check src/preload.js
+          node --check src/renderer.js
+          node --check src/search.js
+          node --check src/services.js
+
+      - name: Architecture guard
+        working-directory: flamingbox
+        shell: powershell
+        run: |
+          $main = Get-Content src/main.js -Raw
+          if ($main -match '--no-sandbox|disable-web-security') { throw 'Unsafe Chromium flag detected' }
+          if ($main -match 'Gecko|SpiderMonkey') { throw 'Second browser runtime detected' }
+          Write-Host 'Chromium-only runtime policy OK.'
+
+      - name: Build Flamme 0.7
+        working-directory: flamingbox
+        shell: powershell
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: npx electron-builder --win portable --x64 --publish never
+
+      - name: Verify executable
+        id: verify
+        shell: powershell
+        run: |
+          $exe = Get-Item 'flamingbox\dist\Flamme-0.7.0-Windows-x64.exe'
+          $hash = (Get-FileHash $exe.FullName -Algorithm SHA256).Hash.ToLower()
+          "hash=$hash" >> $env:GITHUB_OUTPUT
+          "size=$($exe.Length)" >> $env:GITHUB_OUTPUT
+
+      - name: Upload executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: Flamme-0.7.0-Windows-x64
+          path: flamingbox/dist/Flamme-0.7.0-Windows-x64.exe
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
+
+      - name: Report success to PR 73
+        if: success()
+        uses: actions/github-script@v7
+        env:
+          BUILD_HASH: ${{ steps.verify.outputs.hash }}
+          BUILD_SIZE: ${{ steps.verify.outputs.size }}
+        with:
+          script: |
+            await github.rest.issues.createComment({owner:context.repo.owner,repo:context.repo.repo,issue_number:73,body:`FLAMME_07_BUILD_SUCCESS\nrun_id=${context.runId}\nartifact=Flamme-0.7.0-Windows-x64\nsha256=${process.env.BUILD_HASH}\nsize=${process.env.BUILD_SIZE}`});
+
+      - name: Report failure to PR 73
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({owner:context.repo.owner,repo:context.repo.repo,issue_number:73,body:`FLAMME_07_BUILD_FAILED\nrun_id=${context.runId}`});
