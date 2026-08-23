@@ -184,7 +184,16 @@ const services: Service[] = [
   { name: "Stockage", description: "Fichiers avec Mailo", url: "https://www.mailo.com/?language=fr&page=id", icon: Cloud, accent: "#0f766e" },
   { name: "Agenda", description: "Calendrier avec Mailo", url: "https://www.mailo.com/?language=fr&page=id", icon: CalendarDays, accent: "#2563eb" },
   { name: "Photos", description: "Photos avec Photoweb Cloud", url: "https://account.photowebcloud.fr/login.php", icon: Images, accent: "#e11d48" },
-  { name: "Itinéraires", description: "Guidage avec Mappy", url: "https://fr.mappy.com/itineraire", icon: Navigation, accent: "#7c3aed" },
+  {
+    name: "Itinéraires",
+    description: "Itinéraires & cartes françaises",
+    url: "#itineraires",
+    icon: Navigation,
+    accent: "#7c3aed",
+    panel: "routes",
+    keywords: ["itinéraire", "itineraires", "trajet", "route", "gps", "guidage", "mappy", "viamichelin", "carte"],
+  },
+
   { name: "Annuaire", description: "PagesJaunes et PagesBlanches", url: "https://www.pagesjaunes.fr/", icon: ContactRound, accent: "#eab308" },
   { name: "Carte", description: "Cartes avec l’IGN", url: "https://cartes.gouv.fr/decouvrir/explorer-les-cartes/", icon: Map, accent: "#15803d" },
   { name: "Vidéo", description: "Avec Dailymotion", url: "https://www.dailymotion.com/fr", icon: Video, accent: "#111827" },
