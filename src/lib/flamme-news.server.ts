@@ -204,10 +204,26 @@ function normalizeTitle(title: string): string {
     .trim();
 }
 
-export async function loadFlammeNews(): Promise<FlammeNewsPayload> {
-  if (cache && Date.now() - cache.at < CACHE_TTL) return cache.payload;
+export async function loadFlammeNews(regionId?: string | null): Promise<FlammeNewsPayload> {
+  const region = findRegion(regionId);
+  const cacheKey = region ? region.id : "__all__";
+  const cached = cache.get(cacheKey);
+  if (cached && Date.now() - cached.at < CACHE_TTL) return cached.payload;
 
-  const results = await Promise.all(FEEDS.map((feed) => fetchFeed(feed)));
+  // On ne charge que le flux de la région sélectionnée, en plus du pool global.
+  const feeds: FeedConfig[] = region
+    ? [
+        ...FEEDS,
+        {
+          source: region.source,
+          urls: [`https://france3-regions.franceinfo.fr/${region.slug}/actu/rss`],
+          categories: ["france", "general"],
+          regional: true,
+        },
+      ]
+    : FEEDS;
+
+  const results = await Promise.all(feeds.map((feed) => fetchFeed(feed)));
   const seenUrl = new Set<string>();
   const seenTitle = new Set<string>();
   const items: FlammeNewsItem[] = [];
@@ -223,18 +239,25 @@ export async function loadFlammeNews(): Promise<FlammeNewsPayload> {
     items.push(item);
   });
 
-  items.sort((a, b) => {
+  const byDate = (a: FlammeNewsItem, b: FlammeNewsItem) => {
     const da = a.publishedAt ? Date.parse(a.publishedAt) : 0;
     const db = b.publishedAt ? Date.parse(b.publishedAt) : 0;
     return db - da;
-  });
+  };
+  items.sort(byDate);
+
+  // Les articles régionaux sont conservés hors quota pour ne pas être coupés.
+  const regional = items.filter((item) => item.regional).slice(0, 12);
+  const global = items.filter((item) => !item.regional).slice(0, 120);
 
   const payload: FlammeNewsPayload = {
     // Pool tagué : le client filtre par couches puis mélange les sources.
-    items: items.slice(0, 120),
+    items: [...global, ...regional].sort(byDate),
     fetchedAt: new Date().toISOString(),
     sources: Array.from(sources),
+    region: region ? region.id : null,
   };
-  cache = { payload, at: Date.now() };
+  cache.set(cacheKey, { payload, at: Date.now() });
   return payload;
+
 }
