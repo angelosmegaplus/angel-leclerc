@@ -1035,6 +1035,46 @@ function FlammeBetaPage() {
 
               </div>
             )}
+
+            {panel === "forum" && (
+              <div className="space-y-3">
+                <p className={`text-[13px] leading-5 ${muted}`}>Quelques alternatives françaises pour discuter, suivre des communautés ou partager.</p>
+
+                {forumCommunities.map((community) => {
+                  const Icon = community.icon;
+                  return (
+                    <a
+                      key={community.name}
+                      href={community.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={`flex items-start gap-3 rounded-2xl border p-3 text-left ${community.recommended ? "border-[#1a73e8]/60 bg-[#1a73e8]/5" : darkMode ? "border-[#5f6368] hover:bg-white/10" : "border-[#dfe1e5] hover:bg-[#f1f3f4]"}`}
+                    >
+                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "bg-[#3c4043]" : "bg-[#f1f3f4]"}`} style={{ color: readableAccent(community.accent, darkMode) }}>
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="flex flex-wrap items-center gap-2">
+                          <span className="text-[15px] font-medium">{community.name}</span>
+                          {community.recommended && (
+                            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-[2px] text-[11px] font-medium ${darkMode ? "bg-[#1a73e8]/20 text-[#a8c7fa]" : "bg-[#1a73e8]/10 text-[#1a73e8]"}`}>
+                              <ShieldCheck className="h-3 w-3" /> Recommandé pour Flamme
+                            </span>
+                          )}
+                        </span>
+                        <span className="mt-1 block text-[13px] leading-5 text-[#5f6368] dark:text-[#bdc1c6]">{community.description}</span>
+                        <span className="mt-1 flex items-center gap-2">
+                          <span className={`rounded-full px-2 py-[1px] text-[11px] ${darkMode ? "bg-[#3c4043] text-[#e8eaed]" : "bg-[#f1f3f4] text-[#3c4043]"}`}>{community.badge}</span>
+                          <span className="inline-flex items-center gap-1 text-[12px] text-[#1a73e8]"><ExternalLink className="h-3 w-3" /> {community.host}</span>
+                        </span>
+                      </span>
+                    </a>
+                  );
+                })}
+
+                <p className={`text-center text-[11px] leading-4 ${muted}`}>Flamme n’est affiliée à aucun de ces services.</p>
+              </div>
+            )}
           </div>
         </div>
       )}
