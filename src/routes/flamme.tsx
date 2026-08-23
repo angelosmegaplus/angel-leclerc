@@ -52,9 +52,9 @@ type Service = {
 };
 
 const services: Service[] = [
-  { name: "Mail", description: "Messagerie avec Mailo", url: "https://webmail.mailo.com/", icon: Mail, accent: "#2b6cb0" },
-  { name: "Stockage", description: "Fichiers avec Mailo", url: "https://webmail.mailo.com/", icon: Cloud, accent: "#0f766e" },
-  { name: "Agenda", description: "Calendrier avec Mailo", url: "https://webmail.mailo.com/", icon: CalendarDays, accent: "#2563eb" },
+  { name: "Mail", description: "Messagerie avec Mailo", url: "https://www.mailo.com/?language=fr&page=id", icon: Mail, accent: "#2b6cb0" },
+  { name: "Stockage", description: "Fichiers avec Mailo", url: "https://www.mailo.com/?language=fr&page=id", icon: Cloud, accent: "#0f766e" },
+  { name: "Agenda", description: "Calendrier avec Mailo", url: "https://www.mailo.com/?language=fr&page=id", icon: CalendarDays, accent: "#2563eb" },
   { name: "Photos", description: "Photos avec Joomeo", url: "https://account.joomeo.com/", icon: Images, accent: "#e11d48" },
   { name: "Itinéraires", description: "Guidage avec Mappy", url: "https://fr.mappy.com/", icon: Navigation, accent: "#7c3aed" },
   { name: "Annuaire", description: "PagesJaunes et PagesBlanches", url: "https://www.pagesjaunes.fr/", icon: ContactRound, accent: "#eab308" },
@@ -284,7 +284,7 @@ function FlammeBetaPage() {
     <div className={`fixed inset-0 z-[100] min-h-[100dvh] overflow-y-auto ${pageBg}`} style={{ fontFamily: "Roboto, arial, sans-serif" }}>
       <header className={`sticky top-0 z-30 flex h-[56px] items-center justify-end gap-2 px-3 backdrop-blur sm:h-[60px] sm:gap-3 sm:px-5 ${darkMode ? "bg-[#202124]/95" : "bg-white/95"}`}>
         <a href="https://www.qwant.com/?l=fr" className="hidden text-[13px] hover:underline sm:inline">Qwant</a>
-        <a href="https://webmail.mailo.com/" className="hidden text-[13px] hover:underline sm:inline">Mail</a>
+        <a href="https://www.mailo.com/?language=fr&page=id" className="hidden text-[13px] hover:underline sm:inline">Mail</a>
         <a href="https://account.joomeo.com/" className="hidden text-[13px] hover:underline sm:inline">Photos</a>
         <button type="button" aria-label="Compte et paramètres Flamme" aria-expanded={profileOpen} onClick={() => setProfileOpen((value) => !value)} className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1a73e8] text-[14px] font-medium text-white shadow-sm">
           F
