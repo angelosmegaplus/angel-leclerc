@@ -163,6 +163,7 @@ type SuggestionItem = {
   label: string;
   description?: string;
   url?: string;
+  panel?: "forum";
   icon: typeof Search;
   accent?: string;
 };
