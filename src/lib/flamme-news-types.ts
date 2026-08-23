@@ -32,6 +32,8 @@ export type FlammeNewsItem = {
   categories: FlammeNewsCategory[];
   /** Article issu du flux régional choisi par l'utilisateur. */
   regional?: boolean;
+  /** Rang de diversification proposé côté serveur par Mistral. */
+  curationRank?: number;
 };
 
 export type FlammeNewsPayload = {
@@ -39,5 +41,7 @@ export type FlammeNewsPayload = {
   fetchedAt: string;
   sources: string[];
   region?: string | null;
+  /** Vrai quand le pool a reçu un classement de diversification Mistral. */
+  curatedByMistral?: boolean;
 };
 
