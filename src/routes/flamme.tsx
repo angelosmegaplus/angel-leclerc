@@ -61,6 +61,11 @@ import {
   Cross,
   HandHeart,
   Rss,
+  RadioTower,
+  Tv,
+  MonitorPlay,
+  MessageSquareLock,
+
 } from "lucide-react";
 
 import { FormEvent, KeyboardEvent as ReactKeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -89,6 +94,8 @@ import {
   type SearchEngine,
 } from "@/lib/flamme-prefs";
 import { getFlammeNews } from "@/lib/flamme-news.functions";
+import { FLAMME_REGIONS, findRegion, readNewsRegion, writeNewsRegion } from "@/lib/flamme-regions";
+
 
 import { FlammeInstallCard } from "@/components/flamme/FlammeInstallCard";
 import { FlammeNewsList, FlammeNewsRefresh, FlammeNewsSkeleton, formatUpdatedAt } from "@/components/flamme/FlammeNews";
@@ -121,6 +128,42 @@ type Service = {
 
 const services: Service[] = [
   {
+    name: "Radio",
+    description: "Radios & podcasts français",
+    url: "#radio",
+    icon: RadioTower,
+    accent: "#c5221f",
+    panel: "radio",
+    keywords: ["radio", "radios", "webradio", "podcast", "podcasts", "écouter", "france inter", "rtl", "nrj", "skyrock"],
+  },
+  {
+    name: "TV",
+    description: "Chaînes & replay français",
+    url: "#tv",
+    icon: Tv,
+    accent: "#1d4ed8",
+    panel: "tv",
+    keywords: ["tv", "télé", "television", "replay", "direct", "france.tv", "tf1", "m6", "arte", "canal"],
+  },
+  {
+    name: "Mail",
+    description: "Messageries e-mail françaises",
+    url: "#mail",
+    icon: Mail,
+    accent: "#2b6cb0",
+    panel: "mail",
+    keywords: ["mail", "email", "e-mail", "courriel", "boîte", "mailo", "laposte", "caramail"],
+  },
+  {
+    name: "Messageries",
+    description: "Messageries instantanées chiffrées",
+    url: "#messageries",
+    icon: MessageSquareLock,
+    accent: "#0f766e",
+    panel: "messages",
+    keywords: ["messagerie", "messageries", "chat", "chiffré", "olvid", "skred", "treebal", "signal"],
+  },
+  {
     name: "Réseaux",
     description: "Réseaux & forums français",
     url: "#reseaux",
@@ -138,16 +181,6 @@ const services: Service[] = [
     panel: "useful",
     keywords: ["sites utiles", "démarches", "administration", "services publics", "quotidien", "annonces", "santé", "emploi", "impôts"],
   },
-  {
-    name: "Bonne action",
-    description: "Solidarité & associations françaises",
-    url: "#bonne-action",
-    icon: HeartHandshake,
-    accent: "#c2185b",
-    panel: "good",
-    keywords: ["bonne action", "association", "associations", "don", "dons", "solidaire", "solidarité", "bénévolat", "caritatif", "lilo"],
-  },
-  { name: "Mail", description: "Messagerie avec Mailo", url: "https://www.mailo.com/?language=fr&page=id", icon: Mail, accent: "#2b6cb0" },
   { name: "Stockage", description: "Fichiers avec Mailo", url: "https://www.mailo.com/?language=fr&page=id", icon: Cloud, accent: "#0f766e" },
   { name: "Agenda", description: "Calendrier avec Mailo", url: "https://www.mailo.com/?language=fr&page=id", icon: CalendarDays, accent: "#2563eb" },
   { name: "Photos", description: "Photos avec Photoweb Cloud", url: "https://account.photowebcloud.fr/login.php", icon: Images, accent: "#e11d48" },
@@ -161,7 +194,243 @@ const services: Service[] = [
   { name: "IA", description: "Avec Mistral", url: "https://chat.mistral.ai/chat", icon: Sparkles, accent: "#f97316" },
   { name: "Météo", description: "Prévisions avec Météo-France", url: "https://meteofrance.com/", icon: CloudSun, accent: "#0284c7" },
   { name: "Traduction", description: "Avec Reverso", url: "https://www.reverso.net/traduction-texte", icon: Languages, accent: "#0369a1" },
+  {
+    name: "Bonne action",
+    description: "Solidarité & associations françaises",
+    url: "#bonne-action",
+    icon: HeartHandshake,
+    accent: "#c2185b",
+    panel: "good",
+    keywords: ["bonne action", "association", "associations", "don", "dons", "solidaire", "solidarité", "bénévolat", "caritatif", "lilo"],
+  },
 ];
+
+type LinkCard = {
+  name: string;
+  description: string;
+  url: string;
+  host: string;
+  badge: string;
+  icon: typeof Search;
+  accent: string;
+  recommended?: boolean;
+};
+
+type LinkGroup = { title: string; note?: string; secondary?: boolean; items: LinkCard[] };
+
+// Radio : Radioplayer France en premier choix, puis accès rapides vers les sites officiels.
+const radioGroups: LinkGroup[] = [
+  {
+    title: "Écouter toutes les radios",
+    items: [
+      {
+        name: "Radioplayer France",
+        description: "Plateforme officielle et gratuite des radios françaises : radios, webradios et podcasts.",
+        url: "https://www.radioplayer.fr/",
+        host: "radioplayer.fr",
+        badge: "🇫🇷 Recommandé",
+        icon: RadioTower,
+        accent: "#c5221f",
+        recommended: true,
+      },
+    ],
+  },
+  {
+    title: "Podcasts",
+    note: "Contenus fournis par leurs éditeurs : Flamme n’héberge aucun programme.",
+    items: [
+      {
+        name: "Podcasts des radios",
+        description: "Podcasts et rediffusions des radios françaises sur Radioplayer.",
+        url: "https://www.radioplayer.fr/",
+        host: "radioplayer.fr",
+        badge: "🇫🇷 Radios",
+        icon: Rss,
+        accent: "#c5221f",
+      },
+      {
+        name: "Podcasts sur Deezer",
+        description: "Catalogue de podcasts de Deezer, service français de streaming.",
+        url: "https://www.deezer.com/fr/channels/podcasts",
+        host: "deezer.com",
+        badge: "🇫🇷 Deezer",
+        icon: Music2,
+        accent: "#a21caf",
+      },
+    ],
+  },
+];
+
+const radioStations: Array<{ name: string; url: string }> = [
+  { name: "France Inter", url: "https://www.radiofrance.fr/franceinter" },
+  { name: "franceinfo", url: "https://www.radiofrance.fr/franceinfo" },
+  { name: "RTL", url: "https://www.rtl.fr/" },
+  { name: "Europe 1", url: "https://www.europe1.fr/" },
+  { name: "RMC", url: "https://rmc.bfmtv.com/" },
+  { name: "NRJ", url: "https://www.nrj.fr/" },
+  { name: "Skyrock", url: "https://www.skyrock.fm/" },
+  { name: "Fun Radio", url: "https://www.funradio.fr/" },
+  { name: "RTL2", url: "https://www.rtl2.fr/" },
+  { name: "Nostalgie", url: "https://www.nostalgie.fr/" },
+  { name: "RFM", url: "https://www.rfm.fr/" },
+  { name: "Chérie FM", url: "https://www.cheriefm.fr/" },
+];
+
+// TV : chaînes publiques françaises d'abord, puis les autres plateformes.
+const tvGroups: LinkGroup[] = [
+  {
+    title: "Chaînes publiques françaises",
+    items: [
+      {
+        name: "france.tv",
+        description: "France 2, France 3, France 4, France 5 et franceinfo : direct et replay gratuits.",
+        url: "https://www.france.tv/",
+        host: "france.tv",
+        badge: "🇫🇷 Gratuit",
+        icon: Tv,
+        accent: "#1d4ed8",
+        recommended: true,
+      },
+    ],
+  },
+  {
+    title: "Autres chaînes et plateformes",
+    note: "Direct et replay selon le service ; certaines offres nécessitent un compte ou un abonnement.",
+    items: [
+      {
+        name: "TF1+",
+        description: "Direct et replay du groupe TF1, avec création de compte.",
+        url: "https://www.tf1.fr/",
+        host: "tf1.fr",
+        badge: "🇫🇷 Compte requis",
+        icon: MonitorPlay,
+        accent: "#0ea5e9",
+      },
+      {
+        name: "M6+",
+        description: "Direct et replay du groupe M6, avec création de compte.",
+        url: "https://www.6play.fr/",
+        host: "6play.fr",
+        badge: "🇫🇷 Compte requis",
+        icon: MonitorPlay,
+        accent: "#7c3aed",
+      },
+      {
+        name: "ARTE",
+        description: "Chaîne culturelle franco-allemande 🇫🇷🇩🇪, en accès libre.",
+        url: "https://www.arte.tv/fr/",
+        host: "arte.tv",
+        badge: "🇫🇷🇩🇪 Gratuit",
+        icon: Tv,
+        accent: "#f97316",
+      },
+      {
+        name: "CANAL+",
+        description: "Chaînes et contenus CANAL+, selon offre et abonnement.",
+        url: "https://www.canalplus.com/",
+        host: "canalplus.com",
+        badge: "🇫🇷 Abonnement",
+        icon: MonitorPlay,
+        accent: "#111827",
+      },
+    ],
+  },
+];
+
+const mailGroups: LinkGroup[] = [
+  {
+    title: "Messageries françaises",
+    items: [
+      {
+        name: "Mailo",
+        description: "Mail, agenda et cloud, données hébergées en France.",
+        url: "https://www.mailo.com/fr/",
+        host: "mailo.com",
+        badge: "🇫🇷 Recommandé",
+        icon: Mail,
+        accent: "#2b6cb0",
+        recommended: true,
+      },
+      {
+        name: "Laposte.net",
+        description: "Boîte mail gratuite du groupe La Poste.",
+        url: "https://www.laposte.net/accueil",
+        host: "laposte.net",
+        badge: "🇫🇷 Gratuit",
+        icon: Mail,
+        accent: "#1a73e8",
+      },
+    ],
+  },
+  {
+    title: "Exception historique",
+    secondary: true,
+    note: "CaraMail, service historique français, existe aujourd’hui via GMX CaraMail, opéré par un acteur allemand.",
+    items: [
+      {
+        name: "GMX CaraMail",
+        description: "Service allemand qui héberge aujourd’hui les adresses CaraMail.",
+        url: "https://www.gmx.fr/",
+        host: "gmx.fr",
+        badge: "🇩🇪 Exception historique",
+        icon: Mail,
+        accent: "#6b7280",
+      },
+    ],
+  },
+];
+
+const messagingGroups: LinkGroup[] = [
+  {
+    title: "Messageries françaises",
+    items: [
+      {
+        name: "Olvid",
+        description: "Messagerie française chiffrée, sans numéro de téléphone ni annuaire.",
+        url: "https://www.olvid.io/fr/",
+        host: "olvid.io",
+        badge: "🇫🇷 Recommandé",
+        icon: MessageSquareLock,
+        accent: "#0f766e",
+        recommended: true,
+      },
+      {
+        name: "Skred",
+        description: "Messagerie française orientée confidentialité.",
+        url: "https://skred.mobi/",
+        host: "skred.mobi",
+        badge: "🇫🇷 Confidentialité",
+        icon: MessageCircleMore,
+        accent: "#1a73e8",
+      },
+      {
+        name: "Treebal",
+        description: "Messagerie française chiffrée et écoresponsable.",
+        url: "https://www.treebal.green/",
+        host: "treebal.green",
+        badge: "🇫🇷 Écoresponsable",
+        icon: Sprout,
+        accent: "#15803d",
+      },
+    ],
+  },
+  {
+    title: "Alternatives indépendantes à l’étranger",
+    secondary: true,
+    items: [
+      {
+        name: "Signal",
+        description: "Organisme indépendant à but non lucratif, sans publicité ni trackers.",
+        url: "https://signal.org/",
+        host: "signal.org",
+        badge: "🇺🇸 Indépendant",
+        icon: MessageSquareLock,
+        accent: "#6b7280",
+      },
+    ],
+  },
+];
+
 
 
 type UsefulSite = {
@@ -274,7 +543,17 @@ const forumCommunities: ForumCommunity[] = [
     icon: MessagesSquare,
     accent: "#c5221f",
   },
+  {
+    name: "Skyrock Chat",
+    description: "Chat et communauté Skyrock ; un compte ou l’application peut être nécessaire.",
+    url: "https://skyrock.com/chat",
+    host: "skyrock.com",
+    badge: "🇫🇷 Chat / communauté",
+    icon: MessageCircleMore,
+    accent: "#f97316",
+  },
 ];
+
 
 type GoodCause = {
   name: string;
@@ -484,7 +763,7 @@ function newsVisual(topic: NewsTopic) {
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
-type PanelServiceKey = "forum" | "useful" | "good";
+type PanelServiceKey = "forum" | "useful" | "good" | "radio" | "tv" | "mail" | "messages";
 
 type PanelKey = "about" | "privacy" | "help" | "settings" | PanelServiceKey;
 
@@ -496,8 +775,12 @@ const panelTitles: Record<PanelKey, string> = {
   forum: "Réseaux & forums français",
   useful: "Sites utiles en France",
   good: "Bonne action",
-
+  radio: "Radios & podcasts français",
+  tv: "Télévision française",
+  mail: "Messageries e-mail",
+  messages: "Messageries instantanées",
 };
+
 
 function FlammeBetaPage() {
   const [query, setQuery] = useState("");
@@ -524,6 +807,9 @@ function FlammeBetaPage() {
   const [newsFailed, setNewsFailed] = useState(false);
   const [searchEngine, setSearchEngine] = useState<SearchEngine>("qwant");
   const [newsLayers, setNewsLayers] = useState<FlammeNewsCategory[]>(ALL_LAYERS);
+  const [newsRegion, setNewsRegion] = useState<string | null>(null);
+  const [prefsReady, setPrefsReady] = useState(false);
+
 
   const engineLabel = SEARCH_ENGINE_LABELS[searchEngine];
 
@@ -531,6 +817,12 @@ function FlammeBetaPage() {
     setSearchEngine(engine);
     writeSearchEngine(engine);
   };
+
+  const chooseRegion = (id: string | null) => {
+    setNewsRegion(id);
+    writeNewsRegion(id);
+  };
+
 
   const toggleLayer = (category: FlammeNewsCategory) => {
     setNewsLayers((current) => {
@@ -578,10 +870,10 @@ function FlammeBetaPage() {
     };
   }, []);
 
-  const loadNews = useCallback(async () => {
+  const loadNews = useCallback(async (region: string | null) => {
     setNewsLoading(true);
     try {
-      const payload = await getFlammeNews();
+      const payload = await getFlammeNews({ data: { region } });
       if (payload?.items?.length) {
         setNewsItems(payload.items);
         setNewsFetchedAt(payload.fetchedAt);
@@ -596,9 +888,11 @@ function FlammeBetaPage() {
     }
   }, []);
 
+  // Les préférences locales sont lues avant le premier chargement du fil.
   useEffect(() => {
-    void loadNews();
-  }, [loadNews]);
+    if (!prefsReady) return;
+    void loadNews(newsRegion);
+  }, [loadNews, newsRegion, prefsReady]);
 
   useEffect(() => {
     try {
@@ -613,6 +907,9 @@ function FlammeBetaPage() {
     }
     setSearchEngine(readSearchEngine());
     setNewsLayers(readNewsLayers());
+    setNewsRegion(readNewsRegion());
+    setPrefsReady(true);
+
     const storedProfiles = readProfiles();
     setProfiles(storedProfiles);
     const key = readActiveKey();
@@ -945,6 +1242,59 @@ function FlammeBetaPage() {
   const surface = darkMode ? "bg-[#303134] border-[#5f6368]" : "bg-white border-[#dfe1e5]";
   const muted = darkMode ? "text-[#bdc1c6]" : "text-[#5f6368]";
 
+  // Rendu commun aux panneaux de raccourcis (Radio, TV, Mail, Messageries).
+  const renderLinkGroups = (groups: LinkGroup[]) =>
+    groups.map((group) => (
+      <div key={group.title} className={`space-y-2 ${group.secondary ? "opacity-90" : ""}`}>
+        <p className={`text-[12px] font-medium uppercase tracking-wide ${muted}`}>{group.title}</p>
+        {group.items.map((item) => {
+          const Icon = item.icon;
+          return (
+            <a
+              key={item.name}
+              href={item.url}
+              target="_blank"
+              rel="noreferrer"
+              className={`flex items-start gap-3 rounded-2xl border p-3 text-left ${
+                item.recommended
+                  ? "border-[#1a73e8]/60 bg-[#1a73e8]/5"
+                  : group.secondary
+                    ? darkMode
+                      ? "border-[#3c4043] hover:bg-white/5"
+                      : "border-[#eceff1] bg-[#fafafa] hover:bg-[#f1f3f4]"
+                    : darkMode
+                      ? "border-[#5f6368] hover:bg-white/10"
+                      : "border-[#dfe1e5] hover:bg-[#f1f3f4]"
+              }`}
+            >
+              <span
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "bg-[#3c4043]" : "bg-[#f1f3f4]"}`}
+                style={{ color: readableAccent(item.accent, darkMode) }}
+              >
+                <Icon className={group.secondary ? "h-4.5 w-4.5" : "h-5 w-5"} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="flex flex-wrap items-center gap-2">
+                  <span className={`${group.secondary ? "text-[14px]" : "text-[15px]"} font-medium`}>{item.name}</span>
+                  <span className={`rounded-full px-2 py-[1px] text-[11px] ${darkMode ? "bg-[#3c4043] text-[#e8eaed]" : "bg-[#f1f3f4] text-[#3c4043]"}`}>{item.badge}</span>
+                  {item.recommended && (
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-[2px] text-[11px] font-medium ${darkMode ? "bg-[#1a73e8]/20 text-[#a8c7fa]" : "bg-[#1a73e8]/10 text-[#1a73e8]"}`}>
+                      <ShieldCheck className="h-3 w-3" /> Recommandé
+                    </span>
+                  )}
+                </span>
+                <span className={`mt-1 block text-[13px] leading-5 ${muted}`}>{item.description}</span>
+                <span className="mt-1 inline-flex items-center gap-1 text-[12px] text-[#1a73e8]"><ExternalLink className="h-3 w-3" /> {item.host}</span>
+              </span>
+            </a>
+          );
+        })}
+        {group.note && <p className={`text-[12px] leading-4 ${muted}`}>{group.note}</p>}
+      </div>
+    ));
+
+
+
   return (
     <div className={`fixed inset-0 z-[100] min-h-[100dvh] overflow-y-auto ${pageBg}`} style={{ fontFamily: "Roboto, arial, sans-serif" }}>
       <header className={`sticky top-0 z-30 flex h-[56px] items-center justify-end gap-2 px-3 backdrop-blur sm:h-[60px] sm:gap-3 sm:px-5 ${darkMode ? "bg-[#202124]/95" : "bg-white/95"}`}>
@@ -1030,7 +1380,8 @@ function FlammeBetaPage() {
             )}
 
             <div className={`my-2 h-px ${darkMode ? "bg-[#5f6368]" : "bg-[#e8eaed]"}`} />
-            <FlammeInstallCard darkMode={darkMode} />
+            <FlammeInstallCard darkMode={darkMode} compact />
+
             <div className={`my-2 h-px ${darkMode ? "bg-[#5f6368]" : "bg-[#e8eaed]"}`} />
             <button type="button" onClick={toggleTheme} className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[14px] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
               {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
@@ -1197,7 +1548,7 @@ function FlammeBetaPage() {
             </p>
           </div>
           {visibleNews.length > 0 ? (
-            <FlammeNewsRefresh onRefresh={() => void loadNews()} loading={newsLoading} label="Actualiser" darkMode={darkMode} />
+            <FlammeNewsRefresh onRefresh={() => void loadNews(newsRegion)} loading={newsLoading} label="Actualiser" darkMode={darkMode} />
           ) : (
             <a href="https://www.qwant.com/?l=fr&t=news&q=actualités" target="_blank" rel="noreferrer" className="min-h-11 px-2 py-3 text-[14px] font-medium text-[#1a73e8]">Voir plus</a>
           )}
@@ -1276,7 +1627,7 @@ function FlammeBetaPage() {
                 <p>Les actualités affichées proviennent directement de flux RSS publics de médias et services français et francophones (Franceinfo, Service-Public, Vie-publique, CNRS Le Journal, Ouest-France, Sud Ouest, La Dépêche, RFI, France 24…). Les titres appartiennent à leurs éditeurs et les liens ouvrent l’article d’origine.</p>
                 <p>La recherche est effectuée par le moteur choisi : Flamme se contente d’ouvrir Qwant ou Lilo avec votre requête et le type choisi (Tous, Actualités, Images, Vidéos). Les Cartes ouvrent le service public IGN.</p>
 
-                <p>Le carrousel de services est une liste de raccourcis vers des sites tiers (Mailo, Photoweb Cloud, Mappy, PagesJaunes, Dailymotion, AlloCiné, Deezer, Vivlio, Mistral, Reverso…). Chaque service reste géré par son éditeur.</p>
+                <p>Le carrousel de services est une liste de raccourcis vers des sites tiers : Radioplayer France, france.tv, Mailo, Olvid, Photoweb Cloud, Mappy, PagesJaunes, Dailymotion, AlloCiné, Deezer, Vivlio, Mistral, Reverso… Chaque service reste géré par son éditeur. Les rares services étrangers cités le sont à titre d’alternative indépendante, avec leur drapeau d’origine.</p>
                 <p>Flamme n’héberge aucun compte, n’indexe aucun contenu et ne stocke aucune donnée sur un serveur.</p>
               </div>
             )}
@@ -1285,7 +1636,7 @@ function FlammeBetaPage() {
               <div className={`space-y-3 text-[14px] leading-6 ${muted}`}>
                 <p>Flamme ne dispose pas de serveur propre pour la recherche : voici exactement ce qui se passe.</p>
                 <ul className="list-disc space-y-2 pl-5">
-                  <li>Votre <strong className="font-medium">historique de recherche</strong>, vos <strong className="font-medium">profils locaux</strong> (nom et avatar), votre <strong className="font-medium">thème clair/sombre</strong>, votre <strong className="font-medium">moteur choisi</strong> (<code>flamme-search-engine</code>) et vos <strong className="font-medium">couches d’actualités</strong> (<code>flamme-news-layers</code>) sont enregistrés uniquement dans le stockage local de votre navigateur, sans compte ni serveur. Vous pouvez les effacer depuis Paramètres.</li>
+                  <li>Votre <strong className="font-medium">historique de recherche</strong>, vos <strong className="font-medium">profils locaux</strong> (nom et avatar), votre <strong className="font-medium">thème clair/sombre</strong>, votre <strong className="font-medium">moteur choisi</strong> (<code>flamme-search-engine</code>), vos <strong className="font-medium">couches d’actualités</strong> (<code>flamme-news-layers</code>) et votre <strong className="font-medium">région facultative</strong> (<code>flamme-news-region</code>) sont enregistrés uniquement dans le stockage local de votre navigateur, sans compte ni serveur. Vous pouvez les effacer depuis Paramètres.</li>
                   <li>Lorsque vous lancez une recherche, la requête est <strong className="font-medium">envoyée au moteur choisi</strong> (Qwant ou Lilo) pour le Web ; les modes spécialisés encore utilisés (Actualités, Vidéos) passent par Qwant, et l’onglet Cartes par le service public IGN.</li>
                   <li>Cliquer sur un service du carrousel ouvre directement le site de l’éditeur concerné, qui applique ses propres règles.</li>
                   <li>La <strong className="font-medium">recherche vocale</strong> utilise la reconnaissance vocale de votre navigateur ou de votre appareil ; l’audio peut être traité par le fournisseur de ce navigateur/système.</li>
@@ -1305,7 +1656,10 @@ function FlammeBetaPage() {
               <div className={`space-y-3 text-[14px] leading-6 ${muted}`}>
                 <p><strong className="font-medium">Onglets de recherche</strong> — Tous, Actualités, Images et Vidéos préparent le type de recherche ; Cartes envoie la requête au service de cartes IGN. Cliquer sur un onglet ne lance pas de recherche : il sélectionne le mode, utilisé lors de la recherche suivante. Le pictogramme à gauche du champ reflète le mode actif.</p>
                 <p><strong className="font-medium">Choix du moteur</strong> — Dans Paramètres, vous pouvez choisir Qwant 🇫🇷 ou Lilo 🇫🇷. Quand Lilo est sélectionné, le Web et les Images passent par Lilo ; les Actualités et Vidéos restent sur Qwant et les Cartes sur l’IGN. Le choix est mémorisé dans votre navigateur.</p>
-                <p><strong className="font-medium">Couches d’actualités</strong> — Toujours dans Paramètres, activez ou désactivez les thèmes (France, Monde, Économie, Sciences…). Le fil « Découvrir » mélange alors les sources françaises les plus récentes correspondant aux thèmes activés.</p>
+                <p><strong className="font-medium">Couches d’actualités et région</strong> — Toujours dans Paramètres, activez ou désactivez les thèmes (France, Monde, Économie, Sciences…). Le fil « Découvrir » mélange alors les sources françaises les plus récentes correspondant aux thèmes activés. Vous pouvez aussi choisir une région facultative : quelques actualités France 3 Régions viennent s’ajouter au fil national, sans le remplacer.</p>
+                <p><strong className="font-medium">Radio, TV, Mail et Messageries</strong> — Ces quatre premiers raccourcis du carrousel ouvrent un panneau de choix : radios et podcasts, chaînes et replay, boîtes mail et messageries chiffrées, avec les solutions françaises en tête.</p>
+                <p><strong className="font-medium">Installer Flamme</strong> — Dans Paramètres, la carte « Installer Flamme » propose l’installation directe quand le navigateur le permet, sinon un assistant en trois étapes (appareil, navigateur, marche à suivre).</p>
+
                 <p><strong className="font-medium">Recherche vocale</strong> — Touchez le micro et dictez : trois points animés indiquent l’écoute. La recherche se lance dès que la phrase est reconnue. Si le navigateur ne prend pas en charge la dictée, un message s’affiche.</p>
                 <p><strong className="font-medium">Carrousel de services</strong> — Faites glisser horizontalement pour accéder à l’ensemble des raccourcis ; chaque service s’ouvre dans un nouvel onglet.</p>
                 <p><strong className="font-medium">Qwant IA</strong> — L’icône ✦ dans la barre de recherche ouvre le chat IA de Qwant. Le raccourci « IA » du carrousel ouvre Mistral.</p>
@@ -1355,7 +1709,32 @@ function FlammeBetaPage() {
                     })}
                   </div>
                   <p className={`mt-2 text-[12px] leading-4 ${muted}`}>Le fil « Découvrir » mélange les sources selon les couches activées.</p>
+
+                  <div className={`mt-3 border-t pt-3 ${darkMode ? "border-[#5f6368]" : "border-[#dfe1e5]"}`}>
+                    <label htmlFor="flamme-region" className="flex items-center gap-3 text-[14px]">
+                      <Map className="h-5 w-5" /> Ma région (facultatif)
+                    </label>
+                    <select
+                      id="flamme-region"
+                      value={newsRegion ?? ""}
+                      onChange={(event) => chooseRegion(event.target.value || null)}
+                      className={`mt-2 min-h-11 w-full rounded-xl border px-3 text-[14px] ${darkMode ? "border-[#5f6368] bg-[#303134] text-[#e8eaed]" : "border-[#dfe1e5] bg-white text-[#202124]"}`}
+                    >
+                      <option value="">Toute la France</option>
+                      {FLAMME_REGIONS.map((region) => (
+                        <option key={region.id} value={region.id}>{region.label}</option>
+                      ))}
+                    </select>
+                    <p className={`mt-2 text-[12px] leading-4 ${muted}`}>
+                      {newsRegion
+                        ? `Quelques actualités ${findRegion(newsRegion)?.source ?? "régionales"} sont ajoutées au fil national et international.`
+                        : "Choisissez une région pour ajouter quelques actualités locales au fil, sans le rendre 100 % local."}
+                    </p>
+                  </div>
                 </div>
+
+                <FlammeInstallCard darkMode={darkMode} />
+
 
                 <button type="button" onClick={toggleTheme} className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border px-4 text-left text-[14px] ${darkMode ? "border-[#5f6368] hover:bg-white/10" : "border-[#dfe1e5] hover:bg-[#f1f3f4]"}`}>
                   <span className="flex items-center gap-3">{darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />} Apparence</span>
@@ -1391,6 +1770,56 @@ function FlammeBetaPage() {
 
               </div>
             )}
+
+            {panel === "radio" && (
+              <div className="space-y-4">
+                <p className={`text-[13px] leading-5 ${muted}`}>Écouter la radio et les podcasts français, directement chez leurs éditeurs.</p>
+                {renderLinkGroups(radioGroups)}
+                <div className="space-y-2">
+                  <p className={`text-[12px] font-medium uppercase tracking-wide ${muted}`}>Accès rapides</p>
+                  <div className="flex flex-wrap gap-2">
+                    {radioStations.map((station) => (
+                      <a
+                        key={station.name}
+                        href={station.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={`inline-flex min-h-9 items-center gap-1 rounded-full border px-3 text-[13px] ${darkMode ? "border-[#5f6368] hover:bg-white/10" : "border-[#dfe1e5] hover:bg-[#f1f3f4]"}`}
+                      >
+                        {station.name}
+                      </a>
+                    ))}
+                  </div>
+                  <p className={`text-[12px] leading-4 ${muted}`}>Ces liens ouvrent les sites officiels des stations : Flamme ne diffuse aucun flux audio.</p>
+                </div>
+                <p className={`text-center text-[11px] leading-4 ${muted}`}>Flamme n’est affiliée à aucun de ces services.</p>
+              </div>
+            )}
+
+            {panel === "tv" && (
+              <div className="space-y-4">
+                <p className={`text-[13px] leading-5 ${muted}`}>Les chaînes et plateformes françaises, en direct ou en replay selon le service.</p>
+                {renderLinkGroups(tvGroups)}
+                <p className={`text-center text-[11px] leading-4 ${muted}`}>Flamme n’est affiliée à aucune de ces chaînes.</p>
+              </div>
+            )}
+
+            {panel === "mail" && (
+              <div className="space-y-4">
+                <p className={`text-[13px] leading-5 ${muted}`}>Choisissez votre boîte mail. Les raccourcis Stockage et Agenda ouvrent directement Mailo.</p>
+                {renderLinkGroups(mailGroups)}
+                <p className={`text-center text-[11px] leading-4 ${muted}`}>Flamme n’est affiliée à aucun de ces services.</p>
+              </div>
+            )}
+
+            {panel === "messages" && (
+              <div className="space-y-4">
+                <p className={`text-[13px] leading-5 ${muted}`}>Des messageries instantanées chiffrées, françaises en priorité.</p>
+                {renderLinkGroups(messagingGroups)}
+                <p className={`text-center text-[11px] leading-4 ${muted}`}>Flamme n’est affiliée à aucun de ces services.</p>
+              </div>
+            )}
+
 
             {panel === "forum" && (
               <div className="space-y-3">

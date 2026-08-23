@@ -57,9 +57,14 @@ export function writeNewsLayers(layers: FlammeNewsCategory[]) {
 
 const RECENT_WINDOW = 72 * 60 * 60 * 1000;
 
+/** Nombre maximum d'articles régionaux injectés dans le fil. */
+const MAX_REGIONAL = 3;
+
 /**
  * Filtre le pool selon les couches actives, privilégie les articles récents,
  * puis mélange les sources (max 2 articles consécutifs et 3 au total par média).
+ * Quand une région est choisie, quelques actualités régionales récentes sont
+ * injectées dans le fil sans le transformer en fil 100 % local.
  */
 export function selectNewsFeed(
   pool: FlammeNewsItem[],
@@ -67,11 +72,18 @@ export function selectNewsFeed(
   limit = 12,
 ): FlammeNewsItem[] {
   const active = new Set(layers.length ? layers : ALL_LAYERS);
-  const filtered = pool.filter((item) => item.categories.some((category) => active.has(category)));
-  const now = Date.now();
+  const all = pool.filter((item) => item.categories.some((category) => active.has(category)));
   const time = (item: FlammeNewsItem) => (item.publishedAt ? Date.parse(item.publishedAt) : 0);
+  const regionalPicks = all
+    .filter((item) => item.regional)
+    .sort((a, b) => time(b) - time(a))
+    .slice(0, MAX_REGIONAL);
+  const filtered = all.filter((item) => !item.regional);
+  const now = Date.now();
+  const nationalLimit = Math.max(1, limit - regionalPicks.length);
   const recent = filtered.filter((item) => time(item) && now - time(item) <= RECENT_WINDOW);
-  const base = recent.length >= limit ? recent : filtered;
+  const base = recent.length >= nationalLimit ? recent : filtered;
+
 
   const byDate = [...base].sort((a, b) => time(b) - time(a));
   const perSource = new Map<string, FlammeNewsItem[]>();
@@ -86,13 +98,13 @@ export function selectNewsFeed(
   const out: FlammeNewsItem[] = [];
   let guard = 0;
 
-  while (out.length < limit && guard < 500) {
+  while (out.length < nationalLimit && guard < 500) {
     guard += 1;
     let progressed = false;
     // Round-robin : on parcourt les sources par ordre de fraîcheur de leur tête de file.
     const ordered = queues.filter((queue) => queue.length > 0).sort((a, b) => time(b[0]!) - time(a[0]!));
     for (const queue of ordered) {
-      if (out.length >= limit) break;
+      if (out.length >= nationalLimit) break;
       const candidate = queue[0]!;
       const used = counts.get(candidate.source) ?? 0;
       if (used >= 3) {
@@ -110,12 +122,20 @@ export function selectNewsFeed(
     if (!progressed) break;
   }
 
-  if (out.length < limit) {
+  if (out.length < nationalLimit) {
     for (const item of byDate) {
-      if (out.length >= limit) break;
+      if (out.length >= nationalLimit) break;
       if (!out.includes(item)) out.push(item);
     }
   }
 
-  return out.slice(0, limit);
+  // Injection régionale : positions 2, 5 et 8 pour rester visible sans dominer.
+  const merged = [...out];
+  regionalPicks.forEach((item, index) => {
+    const position = Math.min(merged.length, 1 + index * 3);
+    merged.splice(position, 0, item);
+  });
+
+  return merged.slice(0, limit);
 }
+
