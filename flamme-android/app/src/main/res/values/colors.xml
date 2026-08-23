@@ -2,4 +2,5 @@
     <color name="flamme_red">#EA4335</color>
     <color name="flamme_red_dark">#C5221F</color>
     <color name="flamme_surface">#FFFFFF</color>
+    <color name="widget_text_secondary">#5F6368</color>
 </resources>
