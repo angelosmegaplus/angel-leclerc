@@ -25,7 +25,7 @@ import {
   Trash2,
   Newspaper,
 } from "lucide-react";
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 
 export const Route = createFileRoute("/flamme")({
   head: () => ({
