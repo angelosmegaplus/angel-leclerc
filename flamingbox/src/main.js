@@ -58,6 +58,7 @@ function isLocalHost(url) {
 }
 
 function dataFile() {
+  // Keep the historic filename so upgrades preserve existing bookmarks/history.
   return path.join(app.getPath('userData'), 'angel-os', 'flamingbox-data.json');
 }
 
@@ -66,8 +67,8 @@ function defaultData() {
     bookmarks: [],
     history: [],
     settings: {
-      home: 'https://www.google.com/',
-      search: 'https://www.google.com/search?q=%s',
+      home: 'file://flamme-search',
+      search: 'https://www.qwant.com/?l=fr&r=FR&t=all&q=%s',
       telemetry: false,
       blockTrackers: true,
       blockPopups: true,
@@ -82,7 +83,11 @@ function loadDataFromDisk() {
   try {
     const raw = fs.readFileSync(dataFile(), 'utf8');
     const parsed = JSON.parse(raw);
-    return { ...defaultData(), ...parsed, settings: { ...defaultData().settings, ...(parsed.settings || {}) } };
+    const merged = { ...defaultData(), ...parsed, settings: { ...defaultData().settings, ...(parsed.settings || {}) } };
+    // Migrate old Google defaults without touching explicit user choices unrelated to those defaults.
+    if (/google\.com/i.test(String(merged.settings.home || ''))) merged.settings.home = defaultData().settings.home;
+    if (/google\.com\/search/i.test(String(merged.settings.search || ''))) merged.settings.search = defaultData().settings.search;
+    return merged;
   } catch {
     return defaultData();
   }
@@ -116,16 +121,16 @@ async function askOneTimePermission(permission, origin, details) {
     buttons: ['Autoriser cette fois', 'Bloquer'],
     defaultId: 1,
     cancelId: 1,
-    title: 'FlamingBox — Permission temporaire',
+    title: 'Flamme — Permission temporaire',
     message: `${host} demande une autorisation`,
-    detail: `${detail}\nCette autorisation n'est pas enregistrée comme permission permanente par FlamingBox.`
+    detail: `${detail}\nCette autorisation n'est pas enregistrée comme permission permanente par Flamme.`
   });
   return result.response === 0;
 }
 
 function setupSessionProtection(ses) {
-  if (ses.__flamingBoxHardened) return;
-  ses.__flamingBoxHardened = true;
+  if (ses.__flammeHardened) return;
+  ses.__flammeHardened = true;
 
   const requestTimes = [];
   let lastGuardianAlert = 0;
@@ -135,18 +140,9 @@ function setupSessionProtection(ses) {
     const secure = /^https:\/\//i.test(origin);
     const silentAllow = new Set(['clipboard-sanitized-write', 'fullscreen', 'pointerLock']);
 
-    if (!secure) {
-      callback(false);
-      return;
-    }
-    if (silentAllow.has(permission)) {
-      callback(true);
-      return;
-    }
-    if (permission === 'notifications') {
-      callback(false);
-      return;
-    }
+    if (!secure) return callback(false);
+    if (silentAllow.has(permission)) return callback(true);
+    if (permission === 'notifications') return callback(false);
     if (permission === 'media' || permission === 'geolocation') {
       askOneTimePermission(permission, origin, details)
         .then((allowed) => callback(Boolean(allowed)))
@@ -168,7 +164,6 @@ function setupSessionProtection(ses) {
     while (requestTimes.length && requestTimes[0] < now - 10000) requestTimes.shift();
 
     const data = readData();
-
     if (data.settings.httpsFirst && details.resourceType === 'mainFrame' && /^http:\/\//i.test(details.url) && !isLocalHost(details.url)) {
       privacyStats.httpsUpgrades += 1;
       callback({ redirectURL: details.url.replace(/^http:\/\//i, 'https://') });
@@ -177,12 +172,7 @@ function setupSessionProtection(ses) {
 
     if (data.settings.guardian && requestTimes.length > 350 && now - lastGuardianAlert > 30000) {
       lastGuardianAlert = now;
-      sendGuardianAlert({
-        kind: 'network-burst',
-        count: requestTimes.length,
-        windowMs: 10000,
-        message: 'Cette page génère un volume inhabituel de requêtes réseau.'
-      });
+      sendGuardianAlert({ kind: 'network-burst', count: requestTimes.length, windowMs: 10000, message: 'Cette page génère un volume inhabituel de requêtes réseau.' });
     }
 
     if (data.settings.blockTrackers && isTracker(details.url) && !isPaymentURL(details.url)) {
@@ -194,9 +184,7 @@ function setupSessionProtection(ses) {
   });
 
   ses.webRequest.onBeforeSendHeaders({ urls: ['<all_urls>'] }, (details, callback) => {
-    const headers = { ...details.requestHeaders };
-    headers['DNT'] = '1';
-    headers['Sec-GPC'] = '1';
+    const headers = { ...details.requestHeaders, DNT: '1', 'Sec-GPC': '1' };
     callback({ requestHeaders: headers });
   });
 
@@ -212,39 +200,22 @@ function setupSessionProtection(ses) {
     if (risky && (insecure || doubleExtension)) {
       event.preventDefault();
       privacyStats.riskyDownloadsBlocked += 1;
-      sendGuardianAlert({
-        kind: 'download-risk',
-        message: `Téléchargement bloqué : ${filename}`,
-        reason: doubleExtension ? 'double-extension' : 'insecure-executable'
-      });
+      sendGuardianAlert({ kind: 'download-risk', message: `Téléchargement bloqué : ${filename}`, reason: doubleExtension ? 'double-extension' : 'insecure-executable' });
     }
   });
 }
 
 function secureWebContents(contents) {
   setupSessionProtection(contents.session);
-
   contents.setWindowOpenHandler((details) => {
     const url = details.url;
     if (!/^https?:\/\//i.test(url)) {
       privacyStats.popupsBlocked += 1;
       return { action: 'deny' };
     }
-
-    if (isPaymentURL(url)) {
-      mainWindow?.webContents.send('open-tab', url, { payment: true });
-      return { action: 'deny' };
-    }
-
-    if (details.disposition === 'foreground-tab' || details.disposition === 'background-tab' || details.disposition === 'new-window') {
-      mainWindow?.webContents.send('open-tab', url, { payment: false });
-      return { action: 'deny' };
-    }
-
-    privacyStats.popupsBlocked += 1;
+    mainWindow?.webContents.send('open-tab', url, { payment: isPaymentURL(url) });
     return { action: 'deny' };
   });
-
   contents.on('will-navigate', (event, url) => {
     if (!/^(https?:|file:)/i.test(url)) event.preventDefault();
   });
@@ -256,7 +227,7 @@ function createWindow() {
     height: 900,
     minWidth: 900,
     minHeight: 600,
-    title: 'FlamingBox — Angel OS',
+    title: 'Flamme',
     backgroundColor: '#11131a',
     autoHideMenuBar: true,
     show: false,
@@ -282,12 +253,9 @@ function createWindow() {
     webPreferences.sandbox = true;
     webPreferences.webSecurity = true;
     webPreferences.allowRunningInsecureContent = false;
-
     if (!/^(https?:|file:)/i.test(params.src || '')) params.src = 'about:blank';
   });
-
   mainWindow.webContents.on('did-attach-webview', (_event, contents) => secureWebContents(contents));
-
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
   mainWindow.once('ready-to-show', () => mainWindow.show());
 }
@@ -298,59 +266,40 @@ app.commandLine.appendSwitch('enable-features', 'GlobalPrivacyControlForce,Third
 app.whenReady().then(() => {
   dataCache = loadDataFromDisk();
   createWindow();
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
+  app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 });
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
-});
+app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 
 ipcMain.handle('data:get', () => readData());
 ipcMain.handle('privacy:stats', () => ({ ...privacyStats }));
-
 ipcMain.handle('history:add', (_event, entry) => {
   if (!entry || typeof entry.url !== 'string' || !/^https?:\/\//i.test(entry.url)) return false;
   const data = readData();
-  data.history.unshift({
-    url: entry.url,
-    title: String(entry.title || entry.url).slice(0, 300),
-    visitedAt: new Date().toISOString()
-  });
+  data.history.unshift({ url: entry.url, title: String(entry.title || entry.url).slice(0, 300), visitedAt: new Date().toISOString() });
   const seen = new Set();
   data.history = data.history.filter((item) => item.url && !seen.has(item.url) && seen.add(item.url)).slice(0, 3000);
   writeData(data);
   return true;
 });
-
 ipcMain.handle('bookmark:toggle', (_event, entry) => {
   if (!entry || typeof entry.url !== 'string' || !/^https?:\/\//i.test(entry.url)) return { added: false, bookmarks: [] };
   const data = readData();
   const index = data.bookmarks.findIndex((item) => item.url === entry.url);
   let added = false;
-
   if (index >= 0) data.bookmarks.splice(index, 1);
   else {
-    data.bookmarks.unshift({
-      url: entry.url,
-      title: String(entry.title || entry.url).slice(0, 300),
-      addedAt: new Date().toISOString(),
-      source: 'FlamingBox'
-    });
+    data.bookmarks.unshift({ url: entry.url, title: String(entry.title || entry.url).slice(0, 300), addedAt: new Date().toISOString(), source: 'Flamme' });
     added = true;
   }
-
   writeData(data);
   return { added, bookmarks: data.bookmarks };
 });
-
 ipcMain.handle('browser:import', async () => {
   const current = readData();
   const result = await importBrowserData(app);
   const seenBookmarks = new Set(current.bookmarks.map((b) => b.url));
   let added = 0;
-
   for (const bookmark of result.bookmarks) {
     if (bookmark.url && !seenBookmarks.has(bookmark.url)) {
       current.bookmarks.push(bookmark);
@@ -358,22 +307,14 @@ ipcMain.handle('browser:import', async () => {
       added++;
     }
   }
-
   writeData(current);
   return { importedBookmarks: added, sources: result.sources, warnings: result.warnings };
 });
-
 ipcMain.handle('settings:update', (_event, patch) => {
   const data = readData();
   const allowed = ['home', 'blockTrackers', 'blockPopups', 'httpsFirst', 'guardian'];
-  for (const key of allowed) {
-    if (Object.prototype.hasOwnProperty.call(patch || {}, key)) data.settings[key] = patch[key];
-  }
+  for (const key of allowed) if (Object.prototype.hasOwnProperty.call(patch || {}, key)) data.settings[key] = patch[key];
   writeData(data);
   return data.settings;
 });
-
-ipcMain.handle('external:open', (_event, url) => {
-  if (/^https?:\/\//i.test(url)) return shell.openExternal(url);
-  return false;
-});
+ipcMain.handle('external:open', (_event, url) => /^https?:\/\//i.test(url) ? shell.openExternal(url) : false);
