@@ -248,10 +248,33 @@ function FlammeBetaPage() {
             </button>
           </div>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
-            <button type="submit" className="rounded-md bg-[#f8f9fa] px-4 py-2 text-sm hover:ring-1 hover:ring-[#dadce0]">Recherche Flamme</button>
+            <button type="submit" className="rounded-md bg-[#f8f9fa] px-4 py-2 text-sm hover:ring-1 hover:ring-[#dadce0]">Recherche Qwant</button>
             <button type="button" onClick={askMistral} className="rounded-md bg-[#f8f9fa] px-4 py-2 text-sm hover:ring-1 hover:ring-[#dadce0]">Demander à Mistral</button>
           </div>
         </form>
+
+        <section className="mt-12 w-full max-w-5xl">
+          <div className="mb-4 flex items-center gap-2 text-[#5f6368]">
+            <Newspaper className="h-4 w-4" />
+            <h2 className="text-sm font-medium">Actualités</h2>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {newsTopics.map((topic) => (
+              <a
+                key={topic.label}
+                href={`https://www.qwant.com/?l=fr&t=news&q=${encodeURIComponent(topic.query)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-2xl border border-[#e5e7eb] bg-white p-4 transition hover:border-[#d2d6dc] hover:shadow-md"
+              >
+                <span className="text-[11px] font-medium uppercase tracking-wide text-[#1a73e8]">{topic.label}</span>
+                <p className="mt-1 text-sm font-medium leading-5 text-[#202124]">{topic.headline}</p>
+                <p className="mt-2 text-xs text-[#5f6368]">Voir les dernières actualités sur Qwant Actualités</p>
+              </a>
+            ))}
+          </div>
+        </section>
+
 
         <section className="mt-14 w-full max-w-5xl">
           <div className="mb-5 flex items-end justify-between gap-4">
