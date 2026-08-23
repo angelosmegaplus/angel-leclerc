@@ -96,7 +96,8 @@ type Service = {
   url: string;
   icon: typeof Search;
   accent: string;
-  panel?: "forum";
+  panel?: PanelServiceKey;
+  keywords?: string[];
 };
 
 const services: Service[] = [
