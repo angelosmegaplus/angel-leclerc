@@ -3,6 +3,7 @@ import {
   Search,
   Mail,
   Cloud,
+  CloudSun,
   CalendarDays,
   Images,
   Navigation,
@@ -36,7 +37,7 @@ import {
   Users,
   Check,
 } from "lucide-react";
-import { FormEvent, KeyboardEvent as ReactKeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, KeyboardEvent as ReactKeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   FLAMME_AVATAR_IDS,
   FlammeAvatarId,
@@ -49,6 +50,10 @@ import {
   writeActiveKey,
   writeProfiles,
 } from "@/lib/flamme-profile";
+import type { FlammeNewsItem } from "@/lib/flamme-news-types";
+import { getFlammeNews } from "@/lib/flamme-news.functions";
+import { FlammeInstallCard } from "@/components/flamme/FlammeInstallCard";
+import { FlammeNewsList, FlammeNewsRefresh, FlammeNewsSkeleton, formatUpdatedAt } from "@/components/flamme/FlammeNews";
 
 
 export const Route = createFileRoute("/flamme")({
@@ -87,6 +92,7 @@ const services: Service[] = [
   { name: "Musique", description: "Avec Deezer", url: "https://www.deezer.com/fr/", icon: Music2, accent: "#a21caf" },
   { name: "Livres", description: "Avec Vivlio", url: "https://www.vivlio.com/", icon: BookOpen, accent: "#c2410c" },
   { name: "IA", description: "Avec Mistral", url: "https://chat.mistral.ai/chat", icon: Sparkles, accent: "#f97316" },
+  { name: "Météo", description: "Prévisions avec Météo-France", url: "https://meteofrance.com/", icon: CloudSun, accent: "#0284c7" },
   { name: "Traduction", description: "Avec Reverso", url: "https://www.reverso.net/traduction-texte", icon: Languages, accent: "#0369a1" },
 ];
 
@@ -255,6 +261,10 @@ function FlammeBetaPage() {
   const [profileAvatarDraft, setProfileAvatarDraft] = useState<FlammeAvatarId>("user");
   const [profileError, setProfileError] = useState("");
   const remoteAbort = useRef<AbortController | null>(null);
+  const [newsItems, setNewsItems] = useState<FlammeNewsItem[]>([]);
+  const [newsFetchedAt, setNewsFetchedAt] = useState<string | null>(null);
+  const [newsLoading, setNewsLoading] = useState(true);
+  const [newsFailed, setNewsFailed] = useState(false);
 
   useEffect(() => {
     if (!panel) return;
@@ -265,6 +275,47 @@ function FlammeBetaPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [panel]);
 
+
+  useEffect(() => {
+    const link = document.querySelector<HTMLLinkElement>('link[rel="manifest"]');
+    if (!link) {
+      const created = document.createElement("link");
+      created.rel = "manifest";
+      created.href = "/flamme.webmanifest";
+      created.dataset["flammeManifest"] = "true";
+      document.head.appendChild(created);
+      return () => {
+        created.remove();
+      };
+    }
+    const previous = link.getAttribute("href");
+    link.setAttribute("href", "/flamme.webmanifest");
+    return () => {
+      if (previous) link.setAttribute("href", previous);
+    };
+  }, []);
+
+  const loadNews = useCallback(async () => {
+    setNewsLoading(true);
+    try {
+      const payload = await getFlammeNews();
+      if (payload?.items?.length) {
+        setNewsItems(payload.items);
+        setNewsFetchedAt(payload.fetchedAt);
+        setNewsFailed(false);
+      } else {
+        setNewsFailed(true);
+      }
+    } catch {
+      setNewsFailed(true);
+    } finally {
+      setNewsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadNews();
+  }, [loadNews]);
 
   useEffect(() => {
     try {
@@ -661,6 +712,8 @@ function FlammeBetaPage() {
               </div>
             )}
 
+            <div className={`my-2 h-px ${darkMode ? "bg-[#5f6368]" : "bg-[#e8eaed]"}`} />
+            <FlammeInstallCard darkMode={darkMode} />
             <div className={`my-2 h-px ${darkMode ? "bg-[#5f6368]" : "bg-[#e8eaed]"}`} />
             <button type="button" onClick={toggleTheme} className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[14px] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
               {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
