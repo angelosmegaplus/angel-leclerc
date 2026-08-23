@@ -36,6 +36,11 @@ import {
   Pencil,
   Users,
   Check,
+  MessagesSquare,
+  ExternalLink,
+  ShieldCheck,
+  UsersRound,
+  MessageCircleMore,
 } from "lucide-react";
 import { FormEvent, KeyboardEvent as ReactKeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -77,6 +82,7 @@ type Service = {
   url: string;
   icon: typeof Search;
   accent: string;
+  panel?: "forum";
 };
 
 const services: Service[] = [
@@ -94,6 +100,58 @@ const services: Service[] = [
   { name: "IA", description: "Avec Mistral", url: "https://chat.mistral.ai/chat", icon: Sparkles, accent: "#f97316" },
   { name: "Météo", description: "Prévisions avec Météo-France", url: "https://meteofrance.com/", icon: CloudSun, accent: "#0284c7" },
   { name: "Traduction", description: "Avec Reverso", url: "https://www.reverso.net/traduction-texte", icon: Languages, accent: "#0369a1" },
+  { name: "Forum", description: "Réseaux & communautés français", url: "#forum", icon: MessagesSquare, accent: "#1a73e8", panel: "forum" },
+];
+
+type ForumCommunity = {
+  name: string;
+  description: string;
+  url: string;
+  host: string;
+  badge: string;
+  icon: typeof Search;
+  accent: string;
+  recommended?: boolean;
+};
+
+const forumCommunities: ForumCommunity[] = [
+  {
+    name: "Whaller",
+    description: "Réseau social et communautés, solution française hébergée en France.",
+    url: "https://whaller.com/fr",
+    host: "whaller.com",
+    badge: "🇫🇷 Souverain",
+    icon: UsersRound,
+    accent: "#1a73e8",
+    recommended: true,
+  },
+  {
+    name: "Piaille",
+    description: "Communauté française du Fediverse / Mastodon.",
+    url: "https://piaille.fr/",
+    host: "piaille.fr",
+    badge: "🇫🇷 Fediverse",
+    icon: MessageCircleMore,
+    accent: "#6366f1",
+  },
+  {
+    name: "BeReal",
+    description: "Réseau social français centré sur les moments du quotidien.",
+    url: "https://bereal.com/fr/",
+    host: "bereal.com",
+    badge: "🇫🇷 Grand public",
+    icon: Users,
+    accent: "#111827",
+  },
+  {
+    name: "Forums JV",
+    description: "Forums communautaires français historiques et toujours actifs.",
+    url: "https://www.jeuxvideo.com/forums.htm",
+    host: "jeuxvideo.com",
+    badge: "🇫🇷 Forum",
+    icon: MessagesSquare,
+    accent: "#c5221f",
+  },
 ];
 
 function readableAccent(hex: string, dark: boolean) {
@@ -158,6 +216,7 @@ type SuggestionItem = {
   label: string;
   description?: string;
   url?: string;
+  panel?: "forum";
   icon: typeof Search;
   accent?: string;
 };
@@ -233,13 +292,14 @@ function newsVisual(topic: NewsTopic) {
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
-type PanelKey = "about" | "privacy" | "help" | "settings";
+type PanelKey = "about" | "privacy" | "help" | "settings" | "forum";
 
 const panelTitles: Record<PanelKey, string> = {
   about: "À propos de Flamme",
   privacy: "Confidentialité",
   help: "Aide",
   settings: "Paramètres",
+  forum: "Forum & réseaux français",
 };
 
 function FlammeBetaPage() {
@@ -398,6 +458,7 @@ function FlammeBetaPage() {
         label: service.name,
         description: service.description,
         url: service.url,
+        panel: service.panel,
         icon: service.icon,
         accent: service.accent,
       }),
@@ -509,9 +570,15 @@ function FlammeBetaPage() {
   const activeProfile = activeProfileKey ? profiles[activeProfileKey] ?? null : null;
 
   const runSuggestion = (item: SuggestionItem) => {
-    if (item.kind === "service" && item.url) {
-      window.open(item.url, "_blank", "noopener,noreferrer");
-      return;
+    if (item.kind === "service") {
+      if (item.panel === "forum") {
+        setPanel("forum");
+        return;
+      }
+      if (item.url) {
+        window.open(item.url, "_blank", "noopener,noreferrer");
+        return;
+      }
     }
     goToSearch(item.value);
   };
@@ -840,12 +907,25 @@ function FlammeBetaPage() {
           <div className="flex min-w-max gap-4 pb-3">
             {services.map((service) => {
               const Icon = service.icon;
-              return (
-                <a key={service.name} href={service.url} target="_blank" rel="noreferrer" title={service.description} className="flex w-[68px] shrink-0 flex-col items-center gap-2 text-center">
-                  <span className={`flex h-12 w-12 items-center justify-center rounded-full ${darkMode ? "bg-[#3c4043]" : "bg-[#f1f3f4]"}`} style={{ color: readableAccent(service.accent, darkMode) }}>
+              const accentColor = readableAccent(service.accent, darkMode);
+              const inner = (
+                <>
+                  <span className={`flex h-12 w-12 items-center justify-center rounded-full ${darkMode ? "bg-[#3c4043]" : "bg-[#f1f3f4]"}`} style={{ color: accentColor }}>
                     <Icon className="h-5 w-5" />
                   </span>
                   <span className="max-w-[68px] truncate text-[12px]">{service.name}</span>
+                </>
+              );
+              if (service.panel === "forum") {
+                return (
+                  <button key={service.name} type="button" onClick={() => setPanel("forum")} title={service.description} className="flex w-[68px] shrink-0 flex-col items-center gap-2 text-center">
+                    {inner}
+                  </button>
+                );
+              }
+              return (
+                <a key={service.name} href={service.url} target="_blank" rel="noreferrer" title={service.description} className="flex w-[68px] shrink-0 flex-col items-center gap-2 text-center">
+                  {inner}
                 </a>
               );
             })}
@@ -1006,6 +1086,46 @@ function FlammeBetaPage() {
 
                 <p className={`text-[12px] leading-5 ${muted}`}>Ces réglages, l’historique et les profils sont enregistrés uniquement dans ce navigateur.</p>
 
+              </div>
+            )}
+
+            {panel === "forum" && (
+              <div className="space-y-3">
+                <p className={`text-[13px] leading-5 ${muted}`}>Quelques alternatives françaises pour discuter, suivre des communautés ou partager.</p>
+
+                {forumCommunities.map((community) => {
+                  const Icon = community.icon;
+                  return (
+                    <a
+                      key={community.name}
+                      href={community.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={`flex items-start gap-3 rounded-2xl border p-3 text-left ${community.recommended ? "border-[#1a73e8]/60 bg-[#1a73e8]/5" : darkMode ? "border-[#5f6368] hover:bg-white/10" : "border-[#dfe1e5] hover:bg-[#f1f3f4]"}`}
+                    >
+                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "bg-[#3c4043]" : "bg-[#f1f3f4]"}`} style={{ color: readableAccent(community.accent, darkMode) }}>
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="flex flex-wrap items-center gap-2">
+                          <span className="text-[15px] font-medium">{community.name}</span>
+                          {community.recommended && (
+                            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-[2px] text-[11px] font-medium ${darkMode ? "bg-[#1a73e8]/20 text-[#a8c7fa]" : "bg-[#1a73e8]/10 text-[#1a73e8]"}`}>
+                              <ShieldCheck className="h-3 w-3" /> Recommandé pour Flamme
+                            </span>
+                          )}
+                        </span>
+                        <span className={`mt-1 block text-[13px] leading-5 ${muted}`}>{community.description}</span>
+                        <span className="mt-1 flex items-center gap-2">
+                          <span className={`rounded-full px-2 py-[1px] text-[11px] ${darkMode ? "bg-[#3c4043] text-[#e8eaed]" : "bg-[#f1f3f4] text-[#3c4043]"}`}>{community.badge}</span>
+                          <span className="inline-flex items-center gap-1 text-[12px] text-[#1a73e8]"><ExternalLink className="h-3 w-3" /> {community.host}</span>
+                        </span>
+                      </span>
+                    </a>
+                  );
+                })}
+
+                <p className={`text-center text-[11px] leading-4 ${muted}`}>Flamme n’est affiliée à aucun de ces services.</p>
               </div>
             )}
           </div>
