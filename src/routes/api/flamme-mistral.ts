@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { checkMistralRate } from "@/lib/mistral-rate.server";
+import { loadFlammeNews } from "@/lib/flamme-news.server";
 
 const jsonHeaders = {
   "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
@@ -19,6 +20,28 @@ type IncomingBody = { message?: unknown; history?: unknown };
 function clientIp(request: Request) {
   const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
   return forwarded || request.headers.get("x-real-ip") || "unknown";
+}
+
+function asksForFreshNews(message: string) {
+  return /(actu|actualité|actualites|actualité du jour|aujourd'hui|aujourd’hui|ce jour|dernières nouvelles|infos du jour|news)/i.test(message);
+}
+
+async function freshNewsContext(message: string): Promise<string | null> {
+  if (!asksForFreshNews(message)) return null;
+  try {
+    const payload = await loadFlammeNews(null);
+    const cutoff = Date.now() - 48 * 60 * 60 * 1000;
+    const recent = payload.items
+      .filter((item) => !item.publishedAt || Date.parse(item.publishedAt) >= cutoff)
+      .slice(0, 22);
+    if (!recent.length) return null;
+    return [
+      "Contexte d'actualité fourni en temps réel par le fil RSS Flamme. Utilise uniquement ces éléments pour les faits récents et cite le média quand c'est utile. N'invente pas un événement absent de cette liste :",
+      ...recent.map((item) => `- ${item.source} — ${item.title}${item.publishedAt ? ` — ${item.publishedAt}` : ""} — ${item.url}`),
+    ].join("\n");
+  } catch {
+    return null;
+  }
 }
 
 export const Route = createFileRoute("/api/flamme-mistral")({
@@ -48,6 +71,7 @@ export const Route = createFileRoute("/api/flamme-mistral")({
             return role && content ? [{ role, content }] : [];
           });
 
+          const newsContext = await freshNewsContext(message);
           const controller = new AbortController();
           const timeout = setTimeout(() => controller.abort(), 30_000);
           let response: Response;
@@ -58,14 +82,15 @@ export const Route = createFileRoute("/api/flamme-mistral")({
               headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
               body: JSON.stringify({
                 model: MODEL,
-                max_tokens: 600,
-                temperature: 0.4,
+                max_tokens: 700,
+                temperature: 0.35,
                 messages: [
                   {
                     role: "system",
                     content:
-                      "Tu es l'assistant IA français intégré au moteur Flamme. Réponds en français, de façon claire, brève et utile. N'utilise jamais de HTML : uniquement du texte simple ou du markdown léger.",
+                      "Tu es l'assistant IA français intégré à Flamme. Réponds en français, de façon claire, brève et utile. N'utilise jamais de HTML : uniquement du texte simple ou du markdown léger. Si l'utilisateur demande une URL, ne fabrique jamais de lien : donne uniquement les adresses dont tu es suffisamment certain, sinon dis que tu n'es pas sûr et propose une recherche Flamme.",
                   },
+                  ...(newsContext ? [{ role: "system" as const, content: newsContext }] : []),
                   ...history,
                   { role: "user", content: message },
                 ],
@@ -87,7 +112,7 @@ export const Route = createFileRoute("/api/flamme-mistral")({
             return Response.json({ text: null, reason: "empty_answer" }, { status: 502, headers: jsonHeaders });
           }
 
-          return Response.json({ text: text.slice(0, 6000), reason: null }, { headers: jsonHeaders });
+          return Response.json({ text: text.slice(0, 7000), reason: null }, { headers: jsonHeaders });
         } catch (error) {
           const aborted = error instanceof Error && error.name === "AbortError";
           return Response.json({ text: null, reason: aborted ? "timeout" : "server_error" }, { status: aborted ? 504 : 500, headers: jsonHeaders });
