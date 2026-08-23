@@ -1115,7 +1115,7 @@ function FlammeBetaPage() {
                             </span>
                           )}
                         </span>
-                        <span className="mt-1 block text-[13px] leading-5 text-[#5f6368] dark:text-[#bdc1c6]">{community.description}</span>
+                        <span className={`mt-1 block text-[13px] leading-5 ${muted}`}>{community.description}</span>
                         <span className="mt-1 flex items-center gap-2">
                           <span className={`rounded-full px-2 py-[1px] text-[11px] ${darkMode ? "bg-[#3c4043] text-[#e8eaed]" : "bg-[#f1f3f4] text-[#3c4043]"}`}>{community.badge}</span>
                           <span className="inline-flex items-center gap-1 text-[12px] text-[#1a73e8]"><ExternalLink className="h-3 w-3" /> {community.host}</span>
