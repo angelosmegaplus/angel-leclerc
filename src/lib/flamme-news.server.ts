@@ -67,7 +67,8 @@ function categoriesFor(url: string, base: FlammeNewsCategory[]): FlammeNewsCateg
 
 
 const CACHE_TTL = 5 * 60 * 1000;
-let cache: { payload: FlammeNewsPayload; at: number } | null = null;
+const cache = new Map<string, { payload: FlammeNewsPayload; at: number }>();
+
 
 const ENTITIES: Record<string, string> = {
   amp: "&",
