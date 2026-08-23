@@ -121,6 +121,42 @@ type Service = {
 
 const services: Service[] = [
   {
+    name: "Radio",
+    description: "Radios & podcasts français",
+    url: "#radio",
+    icon: RadioTower,
+    accent: "#c5221f",
+    panel: "radio",
+    keywords: ["radio", "radios", "webradio", "podcast", "podcasts", "écouter", "france inter", "rtl", "nrj", "skyrock"],
+  },
+  {
+    name: "TV",
+    description: "Chaînes & replay français",
+    url: "#tv",
+    icon: Tv,
+    accent: "#1d4ed8",
+    panel: "tv",
+    keywords: ["tv", "télé", "television", "replay", "direct", "france.tv", "tf1", "m6", "arte", "canal"],
+  },
+  {
+    name: "Mail",
+    description: "Messageries e-mail françaises",
+    url: "#mail",
+    icon: Mail,
+    accent: "#2b6cb0",
+    panel: "mail",
+    keywords: ["mail", "email", "e-mail", "courriel", "boîte", "mailo", "laposte", "caramail"],
+  },
+  {
+    name: "Messageries",
+    description: "Messageries instantanées chiffrées",
+    url: "#messageries",
+    icon: MessageSquareLock,
+    accent: "#0f766e",
+    panel: "messages",
+    keywords: ["messagerie", "messageries", "chat", "chiffré", "olvid", "skred", "treebal", "signal"],
+  },
+  {
     name: "Réseaux",
     description: "Réseaux & forums français",
     url: "#reseaux",
@@ -138,16 +174,6 @@ const services: Service[] = [
     panel: "useful",
     keywords: ["sites utiles", "démarches", "administration", "services publics", "quotidien", "annonces", "santé", "emploi", "impôts"],
   },
-  {
-    name: "Bonne action",
-    description: "Solidarité & associations françaises",
-    url: "#bonne-action",
-    icon: HeartHandshake,
-    accent: "#c2185b",
-    panel: "good",
-    keywords: ["bonne action", "association", "associations", "don", "dons", "solidaire", "solidarité", "bénévolat", "caritatif", "lilo"],
-  },
-  { name: "Mail", description: "Messagerie avec Mailo", url: "https://www.mailo.com/?language=fr&page=id", icon: Mail, accent: "#2b6cb0" },
   { name: "Stockage", description: "Fichiers avec Mailo", url: "https://www.mailo.com/?language=fr&page=id", icon: Cloud, accent: "#0f766e" },
   { name: "Agenda", description: "Calendrier avec Mailo", url: "https://www.mailo.com/?language=fr&page=id", icon: CalendarDays, accent: "#2563eb" },
   { name: "Photos", description: "Photos avec Photoweb Cloud", url: "https://account.photowebcloud.fr/login.php", icon: Images, accent: "#e11d48" },
@@ -161,7 +187,243 @@ const services: Service[] = [
   { name: "IA", description: "Avec Mistral", url: "https://chat.mistral.ai/chat", icon: Sparkles, accent: "#f97316" },
   { name: "Météo", description: "Prévisions avec Météo-France", url: "https://meteofrance.com/", icon: CloudSun, accent: "#0284c7" },
   { name: "Traduction", description: "Avec Reverso", url: "https://www.reverso.net/traduction-texte", icon: Languages, accent: "#0369a1" },
+  {
+    name: "Bonne action",
+    description: "Solidarité & associations françaises",
+    url: "#bonne-action",
+    icon: HeartHandshake,
+    accent: "#c2185b",
+    panel: "good",
+    keywords: ["bonne action", "association", "associations", "don", "dons", "solidaire", "solidarité", "bénévolat", "caritatif", "lilo"],
+  },
 ];
+
+type LinkCard = {
+  name: string;
+  description: string;
+  url: string;
+  host: string;
+  badge: string;
+  icon: typeof Search;
+  accent: string;
+  recommended?: boolean;
+};
+
+type LinkGroup = { title: string; note?: string; secondary?: boolean; items: LinkCard[] };
+
+// Radio : Radioplayer France en premier choix, puis accès rapides vers les sites officiels.
+const radioGroups: LinkGroup[] = [
+  {
+    title: "Écouter toutes les radios",
+    items: [
+      {
+        name: "Radioplayer France",
+        description: "Plateforme officielle et gratuite des radios françaises : radios, webradios et podcasts.",
+        url: "https://www.radioplayer.fr/",
+        host: "radioplayer.fr",
+        badge: "🇫🇷 Recommandé",
+        icon: RadioTower,
+        accent: "#c5221f",
+        recommended: true,
+      },
+    ],
+  },
+  {
+    title: "Podcasts",
+    note: "Contenus fournis par leurs éditeurs : Flamme n’héberge aucun programme.",
+    items: [
+      {
+        name: "Podcasts des radios",
+        description: "Podcasts et rediffusions des radios françaises sur Radioplayer.",
+        url: "https://www.radioplayer.fr/",
+        host: "radioplayer.fr",
+        badge: "🇫🇷 Radios",
+        icon: Rss,
+        accent: "#c5221f",
+      },
+      {
+        name: "Podcasts sur Deezer",
+        description: "Catalogue de podcasts de Deezer, service français de streaming.",
+        url: "https://www.deezer.com/fr/channels/podcasts",
+        host: "deezer.com",
+        badge: "🇫🇷 Deezer",
+        icon: Music2,
+        accent: "#a21caf",
+      },
+    ],
+  },
+];
+
+const radioStations: Array<{ name: string; url: string }> = [
+  { name: "France Inter", url: "https://www.radiofrance.fr/franceinter" },
+  { name: "franceinfo", url: "https://www.radiofrance.fr/franceinfo" },
+  { name: "RTL", url: "https://www.rtl.fr/" },
+  { name: "Europe 1", url: "https://www.europe1.fr/" },
+  { name: "RMC", url: "https://rmc.bfmtv.com/" },
+  { name: "NRJ", url: "https://www.nrj.fr/" },
+  { name: "Skyrock", url: "https://www.skyrock.fm/" },
+  { name: "Fun Radio", url: "https://www.funradio.fr/" },
+  { name: "RTL2", url: "https://www.rtl2.fr/" },
+  { name: "Nostalgie", url: "https://www.nostalgie.fr/" },
+  { name: "RFM", url: "https://www.rfm.fr/" },
+  { name: "Chérie FM", url: "https://www.cheriefm.fr/" },
+];
+
+// TV : chaînes publiques françaises d'abord, puis les autres plateformes.
+const tvGroups: LinkGroup[] = [
+  {
+    title: "Chaînes publiques françaises",
+    items: [
+      {
+        name: "france.tv",
+        description: "France 2, France 3, France 4, France 5 et franceinfo : direct et replay gratuits.",
+        url: "https://www.france.tv/",
+        host: "france.tv",
+        badge: "🇫🇷 Gratuit",
+        icon: Tv,
+        accent: "#1d4ed8",
+        recommended: true,
+      },
+    ],
+  },
+  {
+    title: "Autres chaînes et plateformes",
+    note: "Direct et replay selon le service ; certaines offres nécessitent un compte ou un abonnement.",
+    items: [
+      {
+        name: "TF1+",
+        description: "Direct et replay du groupe TF1, avec création de compte.",
+        url: "https://www.tf1.fr/",
+        host: "tf1.fr",
+        badge: "🇫🇷 Compte requis",
+        icon: MonitorPlay,
+        accent: "#0ea5e9",
+      },
+      {
+        name: "M6+",
+        description: "Direct et replay du groupe M6, avec création de compte.",
+        url: "https://www.6play.fr/",
+        host: "6play.fr",
+        badge: "🇫🇷 Compte requis",
+        icon: MonitorPlay,
+        accent: "#7c3aed",
+      },
+      {
+        name: "ARTE",
+        description: "Chaîne culturelle franco-allemande 🇫🇷🇩🇪, en accès libre.",
+        url: "https://www.arte.tv/fr/",
+        host: "arte.tv",
+        badge: "🇫🇷🇩🇪 Gratuit",
+        icon: Tv,
+        accent: "#f97316",
+      },
+      {
+        name: "CANAL+",
+        description: "Chaînes et contenus CANAL+, selon offre et abonnement.",
+        url: "https://www.canalplus.com/",
+        host: "canalplus.com",
+        badge: "🇫🇷 Abonnement",
+        icon: MonitorPlay,
+        accent: "#111827",
+      },
+    ],
+  },
+];
+
+const mailGroups: LinkGroup[] = [
+  {
+    title: "Messageries françaises",
+    items: [
+      {
+        name: "Mailo",
+        description: "Mail, agenda et cloud, données hébergées en France.",
+        url: "https://www.mailo.com/fr/",
+        host: "mailo.com",
+        badge: "🇫🇷 Recommandé",
+        icon: Mail,
+        accent: "#2b6cb0",
+        recommended: true,
+      },
+      {
+        name: "Laposte.net",
+        description: "Boîte mail gratuite du groupe La Poste.",
+        url: "https://www.laposte.net/accueil",
+        host: "laposte.net",
+        badge: "🇫🇷 Gratuit",
+        icon: Mail,
+        accent: "#1a73e8",
+      },
+    ],
+  },
+  {
+    title: "Exception historique",
+    secondary: true,
+    note: "CaraMail, service historique français, existe aujourd’hui via GMX CaraMail, opéré par un acteur allemand.",
+    items: [
+      {
+        name: "GMX CaraMail",
+        description: "Service allemand qui héberge aujourd’hui les adresses CaraMail.",
+        url: "https://www.gmx.fr/",
+        host: "gmx.fr",
+        badge: "🇩🇪 Exception historique",
+        icon: Mail,
+        accent: "#6b7280",
+      },
+    ],
+  },
+];
+
+const messagingGroups: LinkGroup[] = [
+  {
+    title: "Messageries françaises",
+    items: [
+      {
+        name: "Olvid",
+        description: "Messagerie française chiffrée, sans numéro de téléphone ni annuaire.",
+        url: "https://www.olvid.io/fr/",
+        host: "olvid.io",
+        badge: "🇫🇷 Recommandé",
+        icon: MessageSquareLock,
+        accent: "#0f766e",
+        recommended: true,
+      },
+      {
+        name: "Skred",
+        description: "Messagerie française orientée confidentialité.",
+        url: "https://skred.mobi/",
+        host: "skred.mobi",
+        badge: "🇫🇷 Confidentialité",
+        icon: MessageCircleMore,
+        accent: "#1a73e8",
+      },
+      {
+        name: "Treebal",
+        description: "Messagerie française chiffrée et écoresponsable.",
+        url: "https://www.treebal.green/",
+        host: "treebal.green",
+        badge: "🇫🇷 Écoresponsable",
+        icon: Sprout,
+        accent: "#15803d",
+      },
+    ],
+  },
+  {
+    title: "Alternatives indépendantes à l’étranger",
+    secondary: true,
+    items: [
+      {
+        name: "Signal",
+        description: "Organisme indépendant à but non lucratif, sans publicité ni trackers.",
+        url: "https://signal.org/",
+        host: "signal.org",
+        badge: "🇺🇸 Indépendant",
+        icon: MessageSquareLock,
+        accent: "#6b7280",
+      },
+    ],
+  },
+];
+
 
 
 type UsefulSite = {
