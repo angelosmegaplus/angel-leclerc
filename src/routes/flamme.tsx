@@ -55,7 +55,14 @@ import {
   HandCoins,
   Handshake,
   Radio,
+  HeartHandshake,
+  Sprout,
+  PawPrint,
+  Cross,
+  HandHeart,
+  Rss,
 } from "lucide-react";
+
 import { FormEvent, KeyboardEvent as ReactKeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   FLAMME_AVATAR_IDS,
@@ -69,8 +76,20 @@ import {
   writeActiveKey,
   writeProfiles,
 } from "@/lib/flamme-profile";
-import type { FlammeNewsItem } from "@/lib/flamme-news-types";
+import type { FlammeNewsCategory, FlammeNewsItem } from "@/lib/flamme-news-types";
+import { FLAMME_NEWS_CATEGORY_LABELS } from "@/lib/flamme-news-types";
+import {
+  ALL_LAYERS,
+  SEARCH_ENGINE_LABELS,
+  readNewsLayers,
+  readSearchEngine,
+  selectNewsFeed,
+  writeNewsLayers,
+  writeSearchEngine,
+  type SearchEngine,
+} from "@/lib/flamme-prefs";
 import { getFlammeNews } from "@/lib/flamme-news.functions";
+
 import { FlammeInstallCard } from "@/components/flamme/FlammeInstallCard";
 import { FlammeNewsList, FlammeNewsRefresh, FlammeNewsSkeleton, formatUpdatedAt } from "@/components/flamme/FlammeNews";
 
@@ -101,6 +120,33 @@ type Service = {
 };
 
 const services: Service[] = [
+  {
+    name: "Réseaux",
+    description: "Réseaux & forums français",
+    url: "#reseaux",
+    icon: MessagesSquare,
+    accent: "#1a73e8",
+    panel: "forum",
+    keywords: ["réseaux", "reseaux", "forum", "communauté", "discussion", "social", "mastodon"],
+  },
+  {
+    name: "Sites utiles",
+    description: "Sites français du quotidien",
+    url: "#sites-utiles",
+    icon: LibraryBig,
+    accent: "#0f766e",
+    panel: "useful",
+    keywords: ["sites utiles", "démarches", "administration", "services publics", "quotidien", "annonces", "santé", "emploi", "impôts"],
+  },
+  {
+    name: "Bonne action",
+    description: "Solidarité & associations françaises",
+    url: "#bonne-action",
+    icon: HeartHandshake,
+    accent: "#c2185b",
+    panel: "good",
+    keywords: ["bonne action", "association", "associations", "don", "dons", "solidaire", "solidarité", "bénévolat", "caritatif", "lilo"],
+  },
   { name: "Mail", description: "Messagerie avec Mailo", url: "https://www.mailo.com/?language=fr&page=id", icon: Mail, accent: "#2b6cb0" },
   { name: "Stockage", description: "Fichiers avec Mailo", url: "https://www.mailo.com/?language=fr&page=id", icon: Cloud, accent: "#0f766e" },
   { name: "Agenda", description: "Calendrier avec Mailo", url: "https://www.mailo.com/?language=fr&page=id", icon: CalendarDays, accent: "#2563eb" },
@@ -115,18 +161,8 @@ const services: Service[] = [
   { name: "IA", description: "Avec Mistral", url: "https://chat.mistral.ai/chat", icon: Sparkles, accent: "#f97316" },
   { name: "Météo", description: "Prévisions avec Météo-France", url: "https://meteofrance.com/", icon: CloudSun, accent: "#0284c7" },
   { name: "Traduction", description: "Avec Reverso", url: "https://www.reverso.net/traduction-texte", icon: Languages, accent: "#0369a1" },
-  
-  { name: "Forum", description: "Réseaux & communautés français", url: "#forum", icon: MessagesSquare, accent: "#1a73e8", panel: "forum", keywords: ["forum", "réseaux", "communauté", "discussion", "social"] },
-  {
-    name: "Sites utiles",
-    description: "Sites français du quotidien",
-    url: "#sites-utiles",
-    icon: LibraryBig,
-    accent: "#0f766e",
-    panel: "useful",
-    keywords: ["sites utiles", "démarches", "administration", "services publics", "quotidien", "annonces", "santé", "emploi", "impôts"],
-  },
 ];
+
 
 type UsefulSite = {
   name: string;
@@ -239,6 +275,76 @@ const forumCommunities: ForumCommunity[] = [
     accent: "#c5221f",
   },
 ];
+
+type GoodCause = {
+  name: string;
+  description: string;
+  url: string;
+  host: string;
+  badge: string;
+  icon: typeof Search;
+  accent: string;
+};
+
+// URLs vérifiées (HTTP 200 en suivant les redirections) avant intégration.
+const goodCauses: GoodCause[] = [
+  {
+    name: "Restos du Cœur",
+    description: "Aide alimentaire, actions de terrain, dons et bénévolat.",
+    url: "https://www.restosducoeur.org/",
+    host: "restosducoeur.org",
+    badge: "Solidarité",
+    icon: HandHeart,
+    accent: "#c2185b",
+  },
+  {
+    name: "SPA",
+    description: "Protection animale, refuges et adoptions.",
+    url: "https://www.la-spa.fr/",
+    host: "la-spa.fr",
+    badge: "Animaux",
+    icon: PawPrint,
+    accent: "#15803d",
+  },
+  {
+    name: "Croix-Rouge française",
+    description: "Aide humanitaire, secourisme et action sociale.",
+    url: "https://www.croix-rouge.fr/",
+    host: "croix-rouge.fr",
+    badge: "Humanitaire",
+    icon: Cross,
+    accent: "#c5221f",
+  },
+  {
+    name: "Secours populaire",
+    description: "Lutte contre la précarité et solidarité de proximité.",
+    url: "https://www.secourspopulaire.fr/",
+    host: "secourspopulaire.fr",
+    badge: "Solidarité",
+    icon: Handshake,
+    accent: "#0f766e",
+  },
+  {
+    name: "Fondation de France",
+    description: "Soutien à de nombreuses causes d’intérêt général.",
+    url: "https://www.fondationdefrance.org/fr/",
+    host: "fondationdefrance.org",
+    badge: "Causes multiples",
+    icon: Sprout,
+    accent: "#7c3aed",
+  },
+  {
+    name: "Téléthon (AFM-Téléthon)",
+    description: "Recherche sur les maladies rares et soutien aux malades.",
+    url: "https://www.telethon.fr/",
+    host: "telethon.fr",
+    badge: "Recherche",
+    icon: Heart,
+    accent: "#1d4ed8",
+  },
+];
+
+
 
 function readableAccent(hex: string, dark: boolean) {
   if (!dark) return hex;
@@ -378,7 +484,7 @@ function newsVisual(topic: NewsTopic) {
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
-type PanelServiceKey = "forum" | "useful";
+type PanelServiceKey = "forum" | "useful" | "good";
 
 type PanelKey = "about" | "privacy" | "help" | "settings" | PanelServiceKey;
 
@@ -387,8 +493,10 @@ const panelTitles: Record<PanelKey, string> = {
   privacy: "Confidentialité",
   help: "Aide",
   settings: "Paramètres",
-  forum: "Forum & réseaux français",
+  forum: "Réseaux & forums français",
   useful: "Sites utiles en France",
+  good: "Bonne action",
+
 };
 
 function FlammeBetaPage() {
@@ -414,6 +522,32 @@ function FlammeBetaPage() {
   const [newsFetchedAt, setNewsFetchedAt] = useState<string | null>(null);
   const [newsLoading, setNewsLoading] = useState(true);
   const [newsFailed, setNewsFailed] = useState(false);
+  const [searchEngine, setSearchEngine] = useState<SearchEngine>("qwant");
+  const [newsLayers, setNewsLayers] = useState<FlammeNewsCategory[]>(ALL_LAYERS);
+
+  const engineLabel = SEARCH_ENGINE_LABELS[searchEngine];
+
+  const chooseEngine = (engine: SearchEngine) => {
+    setSearchEngine(engine);
+    writeSearchEngine(engine);
+  };
+
+  const toggleLayer = (category: FlammeNewsCategory) => {
+    setNewsLayers((current) => {
+      const active = current.includes(category);
+      // Au moins une couche doit rester active.
+      if (active && current.length === 1) return current;
+      const next = active ? current.filter((item) => item !== category) : [...current, category];
+      writeNewsLayers(next);
+      return next;
+    });
+  };
+
+  const enableAllLayers = () => {
+    setNewsLayers(ALL_LAYERS);
+    writeNewsLayers(ALL_LAYERS);
+  };
+
 
   useEffect(() => {
     if (!panel) return;
@@ -477,11 +611,14 @@ function FlammeBetaPage() {
     } catch {
       setHistoryItems([]);
     }
+    setSearchEngine(readSearchEngine());
+    setNewsLayers(readNewsLayers());
     const storedProfiles = readProfiles();
     setProfiles(storedProfiles);
     const key = readActiveKey();
     setActiveProfileKey(key && storedProfiles[key] ? key : null);
   }, []);
+
 
   useEffect(() => {
     const q = query.trim();
@@ -581,12 +718,19 @@ function FlammeBetaPage() {
     const q = value.trim();
     if (!q) return;
     saveHistory(q);
+    const encoded = encodeURIComponent(q);
     if (type === "maps") {
-      window.location.href = `https://cartes.gouv.fr/?q=${encodeURIComponent(q)}`;
+      window.location.href = `https://cartes.gouv.fr/?q=${encoded}`;
       return;
     }
-    window.location.href = `https://www.qwant.com/?l=fr&t=${type}&q=${encodeURIComponent(q)}`;
+    // Lilo assure la recherche Web et Images ; Actualités et Vidéos restent sur Qwant.
+    if (searchEngine === "lilo" && (type === "all" || type === "images")) {
+      window.location.href = type === "images" ? `https://search.lilo.org/?q=${encoded}&tab=images` : `https://search.lilo.org/?q=${encoded}`;
+      return;
+    }
+    window.location.href = `https://www.qwant.com/?l=fr&t=${type}&q=${encoded}`;
   };
+
 
   const searchQwant = (event: FormEvent) => {
     event.preventDefault();
@@ -783,7 +927,9 @@ function FlammeBetaPage() {
   const ActiveAvatarIcon = activeProfile ? avatarIcons[activeProfile.avatar] : UserRound;
 
 
+  const visibleNews = useMemo(() => selectNewsFeed(newsItems, newsLayers, 12), [newsItems, newsLayers]);
   const mainNews = newsTopics[0];
+
   const secondaryNews = newsTopics.slice(1);
   const pageBg = darkMode ? "bg-[#202124] text-[#e8eaed]" : "bg-white text-[#202124]";
   const surface = darkMode ? "bg-[#303134] border-[#5f6368]" : "bg-white border-[#dfe1e5]";
@@ -921,8 +1067,9 @@ function FlammeBetaPage() {
                 onKeyDown={onSearchKeyDown}
 
                 className="h-full min-w-0 flex-1 bg-transparent px-1 text-[16px] outline-none"
-                placeholder="Rechercher sur Qwant"
-                aria-label="Rechercher sur Qwant"
+                placeholder={`Rechercher sur ${engineLabel}`}
+                aria-label={`Rechercher sur ${engineLabel}`}
+
                 autoComplete="off"
               />
               <button type="button" onClick={startVoiceSearch} className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f8f9fa]"}`} title="Recherche vocale" aria-label="Recherche vocale" aria-pressed={isListening}>
@@ -983,7 +1130,7 @@ function FlammeBetaPage() {
 
 
         <div className="mt-6 hidden justify-center gap-3 md:flex">
-          <button type="button" onClick={() => goToSearch(query)} className={`h-9 rounded border border-transparent px-4 text-[14px] ${darkMode ? "bg-[#303134] text-[#e8eaed] hover:border-[#5f6368]" : "bg-[#f8f9fa] text-[#3c4043] hover:border-[#dadce0]"}`}>Recherche Qwant</button>
+          <button type="button" onClick={() => goToSearch(query)} className={`h-9 rounded border border-transparent px-4 text-[14px] ${darkMode ? "bg-[#303134] text-[#e8eaed] hover:border-[#5f6368]" : "bg-[#f8f9fa] text-[#3c4043] hover:border-[#dadce0]"}`}>Recherche {engineLabel}</button>
           <button type="button" onClick={askMistral} className={`h-9 rounded border border-transparent px-4 text-[14px] ${darkMode ? "bg-[#303134] text-[#e8eaed] hover:border-[#5f6368]" : "bg-[#f8f9fa] text-[#3c4043] hover:border-[#dadce0]"}`}>IA</button>
         </div>
 
@@ -1033,29 +1180,30 @@ function FlammeBetaPage() {
           <div className="min-w-0">
             <h1 className="text-[21px] font-normal">Découvrir</h1>
             <p className={`mt-1 text-[12px] ${muted}`}>
-              {newsItems.length > 0
+              {visibleNews.length > 0
                 ? `Sources françaises — mise à jour ${formatUpdatedAt(newsFetchedAt)}`
                 : "Actualités et sujets du moment avec Qwant"}
             </p>
           </div>
-          {newsItems.length > 0 ? (
+          {visibleNews.length > 0 ? (
             <FlammeNewsRefresh onRefresh={() => void loadNews()} loading={newsLoading} label="Actualiser" darkMode={darkMode} />
           ) : (
             <a href="https://www.qwant.com/?l=fr&t=news&q=actualités" target="_blank" rel="noreferrer" className="min-h-11 px-2 py-3 text-[14px] font-medium text-[#1a73e8]">Voir plus</a>
           )}
         </div>
 
-        {newsLoading && newsItems.length === 0 && !newsFailed ? (
+        {newsLoading && visibleNews.length === 0 && !newsFailed ? (
           <FlammeNewsSkeleton surface={surface} darkMode={darkMode} />
-        ) : newsItems.length > 0 ? (
+        ) : visibleNews.length > 0 ? (
           <FlammeNewsList
-            items={newsItems}
+            items={visibleNews}
             fallbackImage={newsVisual(mainNews)}
             surface={surface}
             muted={muted}
             darkMode={darkMode}
           />
         ) : (
+
           <div className="grid gap-4">
             <a href={`https://www.qwant.com/?l=fr&t=news&q=${encodeURIComponent(mainNews.query)}`} target="_blank" rel="noreferrer" className={`group overflow-hidden rounded-2xl border ${surface}`}>
               <img src={newsVisual(mainNews)} alt="Illustration des actualités à la une" className="aspect-[16/9] w-full object-cover" />
@@ -1111,11 +1259,12 @@ function FlammeBetaPage() {
 
             {panel === "about" && (
               <div className={`space-y-3 text-[14px] leading-6 ${muted}`}>
-                <p>Flamme bêta est une interface de démarrage indépendante, développée pour ce site. Elle n’est affiliée à aucun des services qu’elle référence.</p>
-                <p>L’objectif du projet est de proposer une <strong className="font-medium">porte d’entrée numérique</strong> qui met en avant des services français et européens, comme alternative aux grands écosystèmes américains (Google, Microsoft, Meta, Apple, Amazon…). Flamme regroupe simplement des raccourcis et une recherche, sans imposer de compte unique.</p>
-                <p><strong className="font-medium">Qwant reste le moteur de recherche de Flamme.</strong> Flamme ne possède ni ne contrôle Qwant, Mailo, Météo-France, Mappy, l’IGN, Dailymotion, Deezer ou les autres services listés : chacun reste fourni et administré par son éditeur, avec ses propres conditions.</p>
-                <p>Les actualités affichées proviennent directement de flux RSS publics de médias et services français (Franceinfo, Service-Public). Les titres appartiennent à leurs éditeurs et les liens ouvrent l’article d’origine.</p>
-                <p>La recherche est effectuée par <strong className="font-medium">Qwant</strong> : Flamme se contente d’ouvrir Qwant avec votre requête et le type choisi (Tous, Actualités, Images, Vidéos). Les Cartes ouvrent le service public IGN.</p>
+                <p>🇫🇷 Flamme bêta est une interface de démarrage indépendante, développée en France pour ce site. Elle n’est affiliée à aucun des services qu’elle référence.</p>
+                <p>L’objectif du projet est de proposer une <strong className="font-medium">alternative souveraine française et européenne</strong> : une porte d’entrée numérique qui met en avant des services 🇫🇷 et 🇪🇺, face aux grands écosystèmes américains (Google, Microsoft, Meta, Apple, Amazon…). Flamme regroupe simplement des raccourcis et une recherche, sans imposer de compte unique.</p>
+                <p><strong className="font-medium">Deux moteurs de recherche au choix : Qwant 🇫🇷 (par défaut) ou Lilo 🇫🇷</strong>, sélectionnables dans Paramètres. Flamme ne possède ni ne contrôle Qwant, Lilo, Mailo, Météo-France, Mappy, l’IGN, Dailymotion, Deezer ou les autres services listés : chacun reste fourni et administré par son éditeur, avec ses propres conditions.</p>
+                <p>Les actualités affichées proviennent directement de flux RSS publics de médias et services français et francophones (Franceinfo, Service-Public, Vie-publique, CNRS Le Journal, Ouest-France, Sud Ouest, La Dépêche, RFI, France 24…). Les titres appartiennent à leurs éditeurs et les liens ouvrent l’article d’origine.</p>
+                <p>La recherche est effectuée par le moteur choisi : Flamme se contente d’ouvrir Qwant ou Lilo avec votre requête et le type choisi (Tous, Actualités, Images, Vidéos). Les Cartes ouvrent le service public IGN.</p>
+
                 <p>Le carrousel de services est une liste de raccourcis vers des sites tiers (Mailo, Photoweb Cloud, Mappy, PagesJaunes, Dailymotion, AlloCiné, Deezer, Vivlio, Mistral, Reverso…). Chaque service reste géré par son éditeur.</p>
                 <p>Flamme n’héberge aucun compte, n’indexe aucun contenu et ne stocke aucune donnée sur un serveur.</p>
               </div>
@@ -1150,10 +1299,53 @@ function FlammeBetaPage() {
 
             {panel === "settings" && (
               <div className="space-y-3">
+                <div className={`rounded-2xl border px-4 py-3 ${darkMode ? "border-[#5f6368]" : "border-[#dfe1e5]"}`}>
+                  <div className="flex items-center gap-3 text-[14px]"><Search className="h-5 w-5" /> Moteur de recherche</div>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    {(["qwant", "lilo"] as SearchEngine[]).map((engine) => (
+                      <button
+                        key={engine}
+                        type="button"
+                        onClick={() => chooseEngine(engine)}
+                        aria-pressed={searchEngine === engine}
+                        className={`min-h-11 rounded-xl border px-3 text-[14px] ${searchEngine === engine ? "border-[#1a73e8] bg-[#1a73e8]/10 text-[#1a73e8]" : darkMode ? "border-[#5f6368] hover:bg-white/10" : "border-[#dfe1e5] hover:bg-[#f1f3f4]"}`}
+                      >
+                        {SEARCH_ENGINE_LABELS[engine]} 🇫🇷
+                      </button>
+                    ))}
+                  </div>
+                  <p className={`mt-2 text-[12px] leading-4 ${muted}`}>Lilo reverse une partie de ses revenus à des projets solidaires. Les onglets Actualités et Vidéos restent servis par Qwant, les Cartes par l’IGN.</p>
+                </div>
+
+                <div className={`rounded-2xl border px-4 py-3 ${darkMode ? "border-[#5f6368]" : "border-[#dfe1e5]"}`}>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="flex items-center gap-3 text-[14px]"><Rss className="h-5 w-5" /> Couches d’actualités</span>
+                    <button type="button" onClick={enableAllLayers} className="min-h-9 px-2 text-[13px] font-medium text-[#1a73e8]">Tout activer</button>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {ALL_LAYERS.map((category) => {
+                      const active = newsLayers.includes(category);
+                      return (
+                        <button
+                          key={category}
+                          type="button"
+                          onClick={() => toggleLayer(category)}
+                          aria-pressed={active}
+                          className={`min-h-9 rounded-full border px-3 text-[13px] ${active ? "border-[#1a73e8] bg-[#1a73e8]/10 text-[#1a73e8]" : darkMode ? "border-[#5f6368] text-[#bdc1c6] hover:bg-white/10" : "border-[#dfe1e5] text-[#3c4043] hover:bg-[#f1f3f4]"}`}
+                        >
+                          {FLAMME_NEWS_CATEGORY_LABELS[category]}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className={`mt-2 text-[12px] leading-4 ${muted}`}>Le fil « Découvrir » mélange les sources selon les couches activées.</p>
+                </div>
+
                 <button type="button" onClick={toggleTheme} className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border px-4 text-left text-[14px] ${darkMode ? "border-[#5f6368] hover:bg-white/10" : "border-[#dfe1e5] hover:bg-[#f1f3f4]"}`}>
                   <span className="flex items-center gap-3">{darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />} Apparence</span>
                   <span className={`text-[13px] ${muted}`}>{darkMode ? "Sombre" : "Claire"}</span>
                 </button>
+
                 <div className={`flex min-h-12 items-center justify-between gap-3 rounded-2xl border px-4 text-[14px] ${darkMode ? "border-[#5f6368]" : "border-[#dfe1e5]"}`}>
                   <span className="flex items-center gap-3"><History className="h-5 w-5" /> Historique local</span>
                   <span className={`text-[13px] ${muted}`}>{historyItems.length} élément{historyItems.length > 1 ? "s" : ""}</span>
