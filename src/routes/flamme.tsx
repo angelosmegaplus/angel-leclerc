@@ -640,8 +640,11 @@ const usefulGroups: UsefulGroup[] = [
       { name: "Actu.fr", description: "Actualités locales et nationales.", url: "https://actu.fr/", host: "actu.fr", badge: "Actu", icon: Radio, accent: "#c5221f" },
       { name: "L’Étudiant", description: "Orientation, études, jobs et alternance.", url: "https://www.letudiant.fr/", host: "letudiant.fr", badge: "Études", icon: GraduationCap, accent: "#1d4ed8" },
       { name: "Les Numériques", description: "Tests et actualité tech.", url: "https://www.lesnumeriques.com/", host: "lesnumeriques.com", badge: "Tech", icon: Cpu, accent: "#0891b2" },
+      { name: "Gallica (BnF)", description: "Bibliothèque numérique de la Bibliothèque nationale de France.", url: "https://gallica.bnf.fr/accueil/fr/content/accueil-fr", host: "gallica.bnf.fr", badge: "Culture", icon: LibraryBig, accent: "#7c3aed" },
+      { name: "France Identité", description: "Identité numérique officielle et justificatifs sécurisés.", url: "https://france-identite.gouv.fr/", host: "france-identite.gouv.fr", badge: "Public", icon: ShieldCheck, accent: "#1a73e8" },
     ],
   },
+
 ];
 
 
