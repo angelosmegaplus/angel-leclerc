@@ -164,7 +164,9 @@ function parseFeed(xml: string, config: FeedConfig): FlammeNewsItem[] {
       categories: categoriesFor(url, config.categories),
       ...(description ? { description } : {}),
       ...(imageUrl ? { imageUrl } : {}),
+      ...(config.regional ? { regional: true as const } : {}),
     });
+
   }
   return items;
 }
