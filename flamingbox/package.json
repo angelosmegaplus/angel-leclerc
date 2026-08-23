@@ -1,7 +1,7 @@
 {
-  "name": "flamingbox",
-  "version": "0.6.0",
-  "description": "FlamingBox 0.6 — navigateur Windows Angel OS avec Flaming Search propulsé par Qwant, HTTPS-First, Guardian et protections de confidentialité.",
+  "name": "flamme",
+  "version": "0.7.0",
+  "description": "Flamme 0.7 — navigateur français basé presque entièrement sur Chromium, avec recherche Qwant et portail de services numériques français.",
   "main": "src/main.js",
   "private": true,
   "scripts": {
@@ -13,8 +13,8 @@
     "electron-builder": "26.0.12"
   },
   "build": {
-    "appId": "fr.angelos.flamingbox",
-    "productName": "FlamingBox",
+    "appId": "fr.angelos.flamme",
+    "productName": "Flamme",
     "asar": true,
     "files": [
       "src/**/*",
@@ -28,7 +28,7 @@
           "arch": ["x64"]
         }
       ],
-      "artifactName": "FlamingBox-${version}-Windows-x64.${ext}"
+      "artifactName": "Flamme-${version}-Windows-x64.${ext}"
     }
   }
 }
