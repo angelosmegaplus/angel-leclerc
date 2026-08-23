@@ -87,6 +87,17 @@ const searchTabs = [
   { name: "Cartes", type: "maps" },
 ] as const;
 
+type SearchType = (typeof searchTabs)[number]["type"];
+
+const tabPlaceholders: Record<SearchType, string> = {
+  all: "Rechercher sur Internet",
+  news: "Rechercher dans les actualités",
+  images: "Rechercher des images",
+  videos: "Rechercher des vidéos",
+  maps: "Rechercher un lieu sur la carte",
+};
+
+
 type NewsTopic = {
   label: string;
   query: string;
