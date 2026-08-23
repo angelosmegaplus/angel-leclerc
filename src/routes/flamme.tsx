@@ -36,7 +36,7 @@ import {
   Users,
   Check,
 } from "lucide-react";
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, KeyboardEvent as ReactKeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   FLAMME_AVATAR_IDS,
   FlammeAvatarId,
@@ -465,7 +465,7 @@ function FlammeBetaPage() {
     goToSearch(item.value);
   };
 
-  const onSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  const onSearchKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
     if (!searchFocused || suggestions.length === 0) return;
     if (event.key === "ArrowDown") {
       event.preventDefault();
