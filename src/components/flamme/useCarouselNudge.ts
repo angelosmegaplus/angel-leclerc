@@ -31,6 +31,10 @@ const EXTRA_SHORTCUTS: ExtraShortcut[] = [
   { id: "actu-fr", name: "Actu.fr", description: "Actualités nationales et locales", url: "https://actu.fr/", glyph: "A", accent: "#dc2626" },
 ];
 
+function isDarkTheme() {
+  return window.localStorage.getItem("flamme-theme") === "dark";
+}
+
 function serviceName(node: Element): string {
   return (node.textContent ?? "").replace(/\s+/g, " ").trim();
 }
@@ -43,20 +47,36 @@ function createShortcut(shortcut: ExtraShortcut): HTMLAnchorElement {
   anchor.title = shortcut.description;
   anchor.setAttribute("aria-label", `${shortcut.name} — ${shortcut.description}`);
   anchor.dataset.flammeExtraShortcut = shortcut.id;
+  anchor.dataset.flammeAccent = shortcut.accent;
   anchor.className = "flex w-[68px] shrink-0 flex-col items-center gap-2 text-center";
 
   const icon = document.createElement("span");
-  icon.className = "flex h-12 w-12 items-center justify-center rounded-full border border-[#dfe1e5] bg-white text-[19px] font-semibold shadow-sm transition-transform hover:scale-105";
-  icon.style.color = shortcut.accent;
+  icon.dataset.flammeShortcutIcon = "true";
+  icon.className = "flex h-12 w-12 items-center justify-center rounded-full border text-[19px] font-semibold shadow-sm transition-transform hover:scale-105";
   icon.textContent = shortcut.glyph;
   icon.setAttribute("aria-hidden", "true");
 
   const label = document.createElement("span");
-  label.className = "max-w-[68px] truncate text-[11px] leading-4 text-[#3c4043]";
+  label.dataset.flammeShortcutLabel = "true";
+  label.className = "max-w-[68px] truncate text-[11px] leading-4";
   label.textContent = shortcut.name;
 
   anchor.append(icon, label);
   return anchor;
+}
+
+function syncShortcutTheme(rail: HTMLElement) {
+  const dark = isDarkTheme();
+  rail.querySelectorAll<HTMLAnchorElement>("[data-flamme-extra-shortcut]").forEach((anchor) => {
+    const icon = anchor.querySelector<HTMLElement>("[data-flamme-shortcut-icon]");
+    const label = anchor.querySelector<HTMLElement>("[data-flamme-shortcut-label]");
+    if (icon) {
+      icon.style.color = anchor.dataset.flammeAccent ?? "#1a73e8";
+      icon.style.backgroundColor = dark ? "#303134" : "#ffffff";
+      icon.style.borderColor = dark ? "#5f6368" : "#dfe1e5";
+    }
+    if (label) label.style.color = dark ? "#e8eaed" : "#3c4043";
+  });
 }
 
 function enhanceCarousel() {
@@ -69,16 +89,20 @@ function enhanceCarousel() {
   const tv = children.find((node) => serviceName(node).startsWith("TV"));
   const good = children.find((node) => serviceName(node).startsWith("Bonne action"));
 
-  // Radio et TV restent accessibles mais deviennent des raccourcis secondaires,
-  // juste avant Bonne action qui demeure systématiquement en dernière position.
-  if (good && radio && radio.nextElementSibling !== tv) rail.insertBefore(radio, good);
-  if (good && tv && tv.nextElementSibling !== good) rail.insertBefore(tv, good);
+  // Radio et TV restent accessibles mais deviennent les deux raccourcis secondaires
+  // placés juste avant Bonne action, qui demeure systématiquement en dernier.
+  const alreadySecondary = Boolean(radio && tv && good && radio.nextElementSibling === tv && tv.nextElementSibling === good);
+  if (!alreadySecondary && good) {
+    if (radio) rail.insertBefore(radio, good);
+    if (tv) rail.insertBefore(tv, good);
+  }
 
   const secondaryAnchor = radio ?? tv ?? good ?? null;
   for (const shortcut of EXTRA_SHORTCUTS) {
     if (rail.querySelector(`[data-flamme-extra-shortcut="${shortcut.id}"]`)) continue;
     rail.insertBefore(createShortcut(shortcut), secondaryAnchor);
   }
+  syncShortcutTheme(rail);
 }
 
 function firstRow(anchor: HTMLAnchorElement): HTMLElement | null {
@@ -126,6 +150,7 @@ function enhanceMessagingPanel() {
 
   skred.style.borderColor = "rgba(26,115,232,.6)";
   skred.style.background = "rgba(26,115,232,.05)";
+  olvid.style.borderColor = isDarkTheme() ? "#5f6368" : "#dfe1e5";
   olvid.style.background = "transparent";
 
   const dialog = skred.closest('[role="dialog"]');
