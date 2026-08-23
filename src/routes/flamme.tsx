@@ -847,7 +847,7 @@ function FlammeBetaPage() {
               <div className={`space-y-3 text-[14px] leading-6 ${muted}`}>
                 <p>Flamme ne dispose pas de serveur propre pour la recherche : voici exactement ce qui se passe.</p>
                 <ul className="list-disc space-y-2 pl-5">
-                  <li>Votre <strong className="font-medium">historique de recherche</strong> et votre <strong className="font-medium">thème clair/sombre</strong> sont enregistrés uniquement dans le stockage local de votre navigateur. Vous pouvez les effacer depuis Paramètres.</li>
+                  <li>Votre <strong className="font-medium">historique de recherche</strong>, vos <strong className="font-medium">profils locaux</strong> (nom et avatar) et votre <strong className="font-medium">thème clair/sombre</strong> sont enregistrés uniquement dans le stockage local de votre navigateur, sans compte ni serveur. Vous pouvez les effacer depuis Paramètres.</li>
                   <li>Lorsque vous lancez une recherche, la requête est <strong className="font-medium">envoyée à Qwant</strong> (ou au service de cartes IGN pour l’onglet Cartes).</li>
                   <li>Cliquer sur un service du carrousel ouvre directement le site de l’éditeur concerné, qui applique ses propres règles.</li>
                   <li>La <strong className="font-medium">recherche vocale</strong> utilise la reconnaissance vocale de votre navigateur ou de votre appareil ; l’audio peut être traité par le fournisseur de ce navigateur/système.</li>
