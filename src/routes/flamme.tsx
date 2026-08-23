@@ -116,7 +116,60 @@ const services: Service[] = [
   { name: "Météo", description: "Prévisions avec Météo-France", url: "https://meteofrance.com/", icon: CloudSun, accent: "#0284c7" },
   { name: "Traduction", description: "Avec Reverso", url: "https://www.reverso.net/traduction-texte", icon: Languages, accent: "#0369a1" },
   { name: "Forum", description: "Réseaux & communautés français", url: "#forum", icon: MessagesSquare, accent: "#1a73e8", panel: "forum" },
+  { name: "Forum", description: "Réseaux & communautés français", url: "#forum", icon: MessagesSquare, accent: "#1a73e8", panel: "forum", keywords: ["forum", "réseaux", "communauté", "discussion", "social"] },
+  {
+    name: "Sites utiles",
+    description: "Sites français du quotidien",
+    url: "#sites-utiles",
+    icon: LibraryBig,
+    accent: "#0f766e",
+    panel: "useful",
+    keywords: ["sites utiles", "démarches", "administration", "services publics", "quotidien", "annonces", "santé", "emploi", "impôts"],
+  },
 ];
+
+type UsefulSite = {
+  name: string;
+  description: string;
+  url: string;
+  host: string;
+  badge: string;
+  icon: typeof Search;
+  accent: string;
+};
+
+type UsefulGroup = { title: string; items: UsefulSite[] };
+
+const usefulGroups: UsefulGroup[] = [
+  {
+    title: "Démarches & services publics",
+    items: [
+      { name: "Service-Public", description: "Démarches et informations administratives.", url: "https://www.service-public.gouv.fr/", host: "service-public.gouv.fr", badge: "Public", icon: Landmark, accent: "#1a73e8" },
+      { name: "Ameli", description: "Assurance Maladie, remboursements et carte Vitale.", url: "https://www.ameli.fr/", host: "ameli.fr", badge: "Public", icon: HeartPulse, accent: "#0e7490" },
+      { name: "Impots.gouv", description: "Impôts, déclaration et démarches fiscales.", url: "https://www.impots.gouv.fr/accueil", host: "impots.gouv.fr", badge: "Public", icon: Receipt, accent: "#7c3aed" },
+      { name: "France Travail", description: "Emploi, inscription et démarches.", url: "https://www.francetravail.fr/accueil/", host: "francetravail.fr", badge: "Public", icon: Briefcase, accent: "#c2410c" },
+      { name: "Mes Droits Sociaux", description: "Droits et aides sociales en un seul point d’entrée.", url: "https://www.mesdroitssociaux.gouv.fr/accueil/", host: "mesdroitssociaux.gouv.fr", badge: "Public", icon: HandCoins, accent: "#15803d" },
+    ],
+  },
+  {
+    title: "Quotidien",
+    items: [
+      { name: "leboncoin", description: "Petites annonces entre particuliers et pros.", url: "https://www.leboncoin.fr/", host: "leboncoin.fr", badge: "Quotidien", icon: ShoppingBag, accent: "#ea580c" },
+      { name: "Gens de Confiance", description: "Petites annonces sur recommandation.", url: "https://gensdeconfiance.com/fr", host: "gensdeconfiance.com", badge: "Quotidien", icon: Handshake, accent: "#0f766e" },
+      { name: "Doctolib", description: "Rendez-vous de santé et téléconsultation.", url: "https://www.doctolib.fr/", host: "doctolib.fr", badge: "Santé", icon: HeartPulse, accent: "#2563eb" },
+      { name: "SNCF Connect", description: "Trains, billets et mobilité.", url: "https://www.sncf-connect.com/", host: "sncf-connect.com", badge: "Mobilité", icon: TrainFront, accent: "#7c3aed" },
+    ],
+  },
+  {
+    title: "Info, études & tech",
+    items: [
+      { name: "Actu.fr", description: "Actualités locales et nationales.", url: "https://actu.fr/", host: "actu.fr", badge: "Actu", icon: Radio, accent: "#c5221f" },
+      { name: "L’Étudiant", description: "Orientation, études, jobs et alternance.", url: "https://www.letudiant.fr/", host: "letudiant.fr", badge: "Études", icon: GraduationCap, accent: "#1d4ed8" },
+      { name: "Les Numériques", description: "Tests et actualité tech.", url: "https://www.lesnumeriques.com/", host: "lesnumeriques.com", badge: "Tech", icon: Cpu, accent: "#0891b2" },
+    ],
+  },
+];
+
 
 type ForumCommunity = {
   name: string;
