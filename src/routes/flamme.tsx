@@ -658,6 +658,16 @@ type ForumCommunity = {
 
 const forumCommunities: ForumCommunity[] = [
   {
+    name: "Piaille",
+    description: "Communauté française du Fediverse / Mastodon, pour les échanges publics.",
+    url: "https://piaille.fr/",
+    host: "piaille.fr",
+    badge: "🇫🇷 Fediverse",
+    icon: MessageCircleMore,
+    accent: "#6366f1",
+    recommended: true,
+  },
+  {
     name: "Whaller",
     description: "Réseau social et communautés, solution française hébergée en France.",
     url: "https://whaller.com/fr",
@@ -665,17 +675,8 @@ const forumCommunities: ForumCommunity[] = [
     badge: "🇫🇷 Souverain",
     icon: UsersRound,
     accent: "#1a73e8",
-    recommended: true,
   },
-  {
-    name: "Piaille",
-    description: "Communauté française du Fediverse / Mastodon.",
-    url: "https://piaille.fr/",
-    host: "piaille.fr",
-    badge: "🇫🇷 Fediverse",
-    icon: MessageCircleMore,
-    accent: "#6366f1",
-  },
+
   {
     name: "BeReal",
     description: "Réseau social français centré sur les moments du quotidien.",
