@@ -98,13 +98,13 @@ export function selectNewsFeed(
   const out: FlammeNewsItem[] = [];
   let guard = 0;
 
-  while (out.length < limit && guard < 500) {
+  while (out.length < nationalLimit && guard < 500) {
     guard += 1;
     let progressed = false;
     // Round-robin : on parcourt les sources par ordre de fraîcheur de leur tête de file.
     const ordered = queues.filter((queue) => queue.length > 0).sort((a, b) => time(b[0]!) - time(a[0]!));
     for (const queue of ordered) {
-      if (out.length >= limit) break;
+      if (out.length >= nationalLimit) break;
       const candidate = queue[0]!;
       const used = counts.get(candidate.source) ?? 0;
       if (used >= 3) {
@@ -122,12 +122,20 @@ export function selectNewsFeed(
     if (!progressed) break;
   }
 
-  if (out.length < limit) {
+  if (out.length < nationalLimit) {
     for (const item of byDate) {
-      if (out.length >= limit) break;
+      if (out.length >= nationalLimit) break;
       if (!out.includes(item)) out.push(item);
     }
   }
 
-  return out.slice(0, limit);
+  // Injection régionale : positions 2, 5 et 8 pour rester visible sans dominer.
+  const merged = [...out];
+  regionalPicks.forEach((item, index) => {
+    const position = Math.min(merged.length, 1 + index * 3);
+    merged.splice(position, 0, item);
+  });
+
+  return merged.slice(0, limit);
 }
+
