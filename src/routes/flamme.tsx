@@ -132,6 +132,76 @@ const searchIcon: Record<SearchType, typeof Search> = {
   maps: Map,
 };
 
+const avatarIcons: Record<FlammeAvatarId, typeof Search> = {
+  user: UserRound,
+  flame: Flame,
+  star: Star,
+  heart: Heart,
+  leaf: Leaf,
+  smile: Smile,
+  cat: Cat,
+  sparkles: Sparkles,
+};
+
+type SuggestionKind = "history" | "qwant" | "service" | "local";
+
+type SuggestionItem = {
+  id: string;
+  kind: SuggestionKind;
+  value: string;
+  label: string;
+  description?: string;
+  url?: string;
+  icon: typeof Search;
+  accent?: string;
+};
+
+const suggestionMeta: Record<SuggestionKind, { label: string; icon: typeof Search }> = {
+  history: { label: "Historique", icon: History },
+  qwant: { label: "Qwant", icon: Globe },
+  service: { label: "Service", icon: LayoutGrid },
+  local: { label: "Suggestion", icon: Search },
+};
+
+function foldText(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+async function fetchQwantSuggestions(query: string, signal: AbortSignal): Promise<string[]> {
+  const encoded = encodeURIComponent(query);
+  try {
+    const response = await fetch(`https://api.qwant.com/v3/suggest?q=${encoded}&locale=fr_FR&version=2`, { signal });
+    if (response.ok) {
+      const payload = (await response.json()) as any;
+      if (payload?.status === "success" && Array.isArray(payload?.data?.items)) {
+        const values = payload.data.items
+          .map((item: any) => (typeof item?.value === "string" ? item.value : ""))
+          .filter(Boolean) as string[];
+        if (values.length) return values;
+      }
+    }
+  } catch (error) {
+    if ((error as Error)?.name === "AbortError") throw error;
+  }
+  try {
+    const response = await fetch(`https://api.qwant.com/api/suggest/?client=opensearch&q=${encoded}`, { signal });
+    if (!response.ok) return [];
+    const payload = (await response.json()) as unknown;
+    if (Array.isArray(payload)) {
+      const list = payload.find((entry) => Array.isArray(entry)) as unknown[] | undefined;
+      if (list) return list.filter((entry): entry is string => typeof entry === "string");
+    }
+    return [];
+  } catch (error) {
+    if ((error as Error)?.name === "AbortError") throw error;
+    return [];
+  }
+}
+
 
 type NewsTopic = {
   label: string;
