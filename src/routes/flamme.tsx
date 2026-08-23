@@ -198,7 +198,16 @@ const services: Service[] = [
   { name: "Carte", description: "Cartes avec l’IGN", url: "https://cartes.gouv.fr/decouvrir/explorer-les-cartes/", icon: Map, accent: "#15803d" },
   { name: "Vidéo", description: "Avec Dailymotion", url: "https://www.dailymotion.com/fr", icon: Video, accent: "#111827" },
   { name: "Films & Séries", description: "Films et séries avec AlloCiné", url: "https://www.allocine.fr/", icon: Clapperboard, accent: "#111827" },
-  { name: "Musique", description: "Avec Deezer", url: "https://www.deezer.com/fr/", icon: Music2, accent: "#a21caf" },
+  {
+    name: "Musique",
+    description: "Musique en ligne française",
+    url: "#musique",
+    icon: Music2,
+    accent: "#a21caf",
+    panel: "music",
+    keywords: ["musique", "streaming", "écouter", "deezer", "qobuz", "album", "playlist"],
+  },
+
   { name: "Livres", description: "Avec Vivlio", url: "https://www.vivlio.com/", icon: BookOpen, accent: "#c2410c" },
   { name: "IA", description: "Avec Mistral", url: "https://chat.mistral.ai/chat", icon: Sparkles, accent: "#f97316" },
   { name: "Météo", description: "Prévisions avec Météo-France", url: "https://meteofrance.com/", icon: CloudSun, accent: "#0284c7" },
