@@ -498,6 +498,9 @@ function FlammeBetaPage() {
     setProfileNameDraft(activeProfile ? activeProfile.name : "");
     setProfileAvatarDraft(activeProfile ? activeProfile.avatar : "user");
     setProfileOpen(true);
+  };
+
+
 
 
   const persistProfiles = (next: Record<string, FlammeProfile>, activeKey: string | null) => {
