@@ -1,13 +1,15 @@
 import type { FlammeNewsCategory, FlammeNewsItem, FlammeNewsPayload } from "./flamme-news-types";
+import { findRegion } from "./flamme-regions";
 
 export type { FlammeNewsItem, FlammeNewsPayload };
 
-type FeedConfig = { source: string; urls: string[]; categories: FlammeNewsCategory[] };
+type FeedConfig = { source: string; urls: string[]; categories: FlammeNewsCategory[]; regional?: boolean };
 
 // Flux réellement testés côté serveur (GET 200 + contenu RSS/Atom).
 // Écartés : Marianne (405 anti-bot), Public Sénat (404 sur /rss.xml),
 // Le Monde (conditions RSS : usage strictement personnel).
 const FEEDS: FeedConfig[] = [
+
   {
     source: "Franceinfo",
     urls: ["https://www.franceinfo.fr/titres.rss", "https://www.francetvinfo.fr/titres.rss"],
