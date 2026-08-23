@@ -30,10 +30,14 @@ export type FlammeNewsItem = {
   description?: string;
   imageUrl?: string;
   categories: FlammeNewsCategory[];
+  /** Article issu du flux régional choisi par l'utilisateur. */
+  regional?: boolean;
 };
 
 export type FlammeNewsPayload = {
   items: FlammeNewsItem[];
   fetchedAt: string;
   sources: string[];
+  region?: string | null;
 };
+
