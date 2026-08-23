@@ -5,11 +5,11 @@ export type { FlammeNewsItem, FlammeNewsPayload };
 
 type FeedConfig = { source: string; urls: string[]; categories: FlammeNewsCategory[]; regional?: boolean };
 
-// Flux réellement testés côté serveur (GET 200 + contenu RSS/Atom).
-// Écartés : Marianne (405 anti-bot), Public Sénat (404 sur /rss.xml),
-// Le Monde (conditions RSS : usage strictement personnel).
+// Flux RSS/Atom officiels ou directement fournis par les éditeurs.
+// Écartés volontairement : CNEWS (conditions RSS réservant l'usage à un cadre
+// personnel/individuel/non commercial), Le Monde (usage RSS personnel) et les
+// endpoints morts/anti-bot. Un flux qui échoue est simplement ignoré au runtime.
 const FEEDS: FeedConfig[] = [
-
   {
     source: "Franceinfo",
     urls: ["https://www.franceinfo.fr/titres.rss", "https://www.francetvinfo.fr/titres.rss"],
@@ -50,7 +50,6 @@ const FEEDS: FeedConfig[] = [
     urls: ["https://www.franceinfo.fr/replay-radio/l-info-de-l-histoire.rss"],
     categories: ["culture-history"],
   },
-
   {
     source: "Service-Public",
     urls: ["https://www.service-public.gouv.fr/abonnements/rss/actu-actualites-particuliers.rss"],
@@ -77,6 +76,77 @@ const FEEDS: FeedConfig[] = [
   { source: "HuffPost", urls: ["https://www.huffingtonpost.fr/feeds/index.xml"], categories: ["general", "france"] },
   { source: "RFI", urls: ["https://www.rfi.fr/fr/france/rss"], categories: ["france", "world"] },
   { source: "France 24", urls: ["https://www.france24.com/fr/rss"], categories: ["world", "general"] },
+
+  // Diversification éditoriale / généraliste.
+  {
+    source: "L’Express",
+    urls: ["https://www.lexpress.fr/arc/outboundfeeds/rss/alaune.xml"],
+    categories: ["general", "france"],
+  },
+  {
+    source: "Mediapart",
+    urls: ["https://www.mediapart.fr/articles/feed"],
+    categories: ["general", "france", "public-life"],
+  },
+  {
+    source: "BFMTV",
+    urls: ["https://www.bfmtv.com/rss/news-24-7/"],
+    categories: ["general", "france", "world"],
+  },
+  {
+    source: "Euronews",
+    urls: ["https://fr.euronews.com/rss?level=theme&name=news"],
+    categories: ["world", "general"],
+  },
+  {
+    source: "RMC Crime",
+    urls: ["https://rmccrime.bfmtv.com/rss/affaires-criminelles/"],
+    categories: ["general", "france"],
+  },
+
+  // Sciences, numérique et technologies.
+  {
+    source: "Frandroid",
+    urls: ["https://www.frandroid.com/feed"],
+    categories: ["science-tech"],
+  },
+  {
+    source: "Clubic",
+    urls: ["https://www.clubic.com/feed/rss"],
+    categories: ["science-tech"],
+  },
+  {
+    source: "Futura",
+    urls: ["https://www.futura-sciences.com/rss/actualites.xml"],
+    categories: ["science-tech"],
+  },
+  {
+    source: "Journal du Geek",
+    urls: ["https://www.journaldugeek.com/feed/"],
+    categories: ["science-tech", "culture-history"],
+  },
+  {
+    source: "01net",
+    urls: ["https://www.01net.com/rss/actus.xml"],
+    categories: ["science-tech"],
+  },
+  {
+    source: "Les Numériques",
+    urls: ["https://www.lesnumeriques.com/rss.xml"],
+    categories: ["science-tech"],
+  },
+  {
+    source: "Korben",
+    urls: ["https://korben.info/feed"],
+    categories: ["science-tech"],
+  },
+
+  // Culture, cinéma et divertissement.
+  {
+    source: "AlloCiné",
+    urls: ["https://www.allocine.fr/rss/news.xml"],
+    categories: ["culture-history"],
+  },
 ];
 
 const CATEGORY_HINTS: Array<{ category: FlammeNewsCategory; re: RegExp }> = [
@@ -96,10 +166,8 @@ function categoriesFor(url: string, base: FlammeNewsCategory[]): FlammeNewsCateg
   return Array.from(set);
 }
 
-
 const CACHE_TTL = 5 * 60 * 1000;
 const cache = new Map<string, { payload: FlammeNewsPayload; at: number }>();
-
 
 const ENTITIES: Record<string, string> = {
   amp: "&",
@@ -197,7 +265,6 @@ function parseFeed(xml: string, config: FeedConfig): FlammeNewsItem[] {
       ...(imageUrl ? { imageUrl } : {}),
       ...(config.regional ? { regional: true as const } : {}),
     });
-
   }
   return items;
 }
@@ -216,7 +283,7 @@ async function fetchFeed(config: FeedConfig): Promise<FlammeNewsItem[]> {
       const body = await response.text();
       if (!/<rss|<feed|<channel/i.test(body)) continue;
       const items = parseFeed(body, config);
-      // On borne chaque source pour éviter qu'un gros flux écrase les autres.
+      // Un flux individuel reste borné ; un second cap est appliqué ensuite par média.
       if (items.length) return items.slice(0, 14);
     } catch {
       // Flux indisponible : on tente l'URL suivante.
@@ -277,9 +344,20 @@ export async function loadFlammeNews(regionId?: string | null): Promise<FlammeNe
   };
   items.sort(byDate);
 
-  // Les articles régionaux sont conservés hors quota pour ne pas être coupés.
-  const regional = items.filter((item) => item.regional).slice(0, 12);
-  const global = items.filter((item) => !item.regional).slice(0, 120);
+  // Cap réel par média (et non par URL de flux) : les quatre flux Franceinfo,
+  // par exemple, partagent le même quota. On garde ainsi beaucoup plus de diversité.
+  const MAX_PER_SOURCE = 10;
+  const sourceCounts = new Map<string, number>();
+  const diversifiedItems = items.filter((item) => {
+    const count = sourceCounts.get(item.source) ?? 0;
+    if (count >= MAX_PER_SOURCE) return false;
+    sourceCounts.set(item.source, count + 1);
+    return true;
+  });
+
+  // Les articles régionaux sont conservés hors quota global pour ne pas être coupés.
+  const regional = diversifiedItems.filter((item) => item.regional).slice(0, 12);
+  const global = diversifiedItems.filter((item) => !item.regional).slice(0, 260);
 
   const payload: FlammeNewsPayload = {
     // Pool tagué : le client filtre par couches puis mélange les sources.
@@ -290,5 +368,4 @@ export async function loadFlammeNews(regionId?: string | null): Promise<FlammeNe
   };
   cache.set(cacheKey, { payload, at: Date.now() });
   return payload;
-
 }
