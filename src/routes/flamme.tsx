@@ -928,6 +928,16 @@ function FlammeBetaPage() {
 
 
   const visibleNews = useMemo(() => selectNewsFeed(newsItems, newsLayers, 12), [newsItems, newsLayers]);
+  const newsSourcesLabel = useMemo(() => {
+    const unique: string[] = [];
+    for (const item of visibleNews) {
+      if (item.source && !unique.includes(item.source)) unique.push(item.source);
+    }
+    if (unique.length === 0) return "Sources françaises";
+    const head = unique.slice(0, 3).join(" • ");
+    return unique.length > 3 ? `${head} +${unique.length - 3}` : head;
+  }, [visibleNews]);
+
   const mainNews = newsTopics[0];
 
   const secondaryNews = newsTopics.slice(1);
