@@ -327,7 +327,10 @@ function FlammeBetaPage() {
         <form onSubmit={searchQwant} className="mt-6">
           <div className={`relative mx-auto rounded-[26px] border transition-shadow ${surface} ${searchFocused ? "shadow-[0_1px_8px_rgba(32,33,36,.28)]" : "hover:shadow-[0_1px_6px_rgba(32,33,36,.2)]"}`}>
             <div className="flex h-[52px] items-center gap-1 px-3 sm:h-[46px] sm:gap-2 sm:px-4">
-              <Search className={`h-5 w-5 shrink-0 ${darkMode ? "text-[#9aa0a6]" : "text-[#9aa0a6]"}`} />
+              {(() => {
+                const ActiveIcon = searchIcon[activeTab];
+                return <ActiveIcon className="h-5 w-5 shrink-0 text-[#9aa0a6]" />;
+              })()}
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
