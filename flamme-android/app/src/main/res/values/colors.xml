@@ -1,0 +1,5 @@
+<resources>
+    <color name="flamme_red">#EA4335</color>
+    <color name="flamme_red_dark">#C5221F</color>
+    <color name="flamme_surface">#FFFFFF</color>
+</resources>
