@@ -40,7 +40,21 @@ import {
   ExternalLink,
   ShieldCheck,
   UsersRound,
+  UserSearch,
+  TentTree,
   MessageCircleMore,
+  LibraryBig,
+  Landmark,
+  ShoppingBag,
+  GraduationCap,
+  Cpu,
+  HeartPulse,
+  Briefcase,
+  TrainFront,
+  Receipt,
+  HandCoins,
+  Handshake,
+  Radio,
 } from "lucide-react";
 import { FormEvent, KeyboardEvent as ReactKeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -82,7 +96,8 @@ type Service = {
   url: string;
   icon: typeof Search;
   accent: string;
-  panel?: "forum";
+  panel?: PanelServiceKey;
+  keywords?: string[];
 };
 
 const services: Service[] = [
@@ -100,8 +115,61 @@ const services: Service[] = [
   { name: "IA", description: "Avec Mistral", url: "https://chat.mistral.ai/chat", icon: Sparkles, accent: "#f97316" },
   { name: "Météo", description: "Prévisions avec Météo-France", url: "https://meteofrance.com/", icon: CloudSun, accent: "#0284c7" },
   { name: "Traduction", description: "Avec Reverso", url: "https://www.reverso.net/traduction-texte", icon: Languages, accent: "#0369a1" },
-  { name: "Forum", description: "Réseaux & communautés français", url: "#forum", icon: MessagesSquare, accent: "#1a73e8", panel: "forum" },
+  
+  { name: "Forum", description: "Réseaux & communautés français", url: "#forum", icon: MessagesSquare, accent: "#1a73e8", panel: "forum", keywords: ["forum", "réseaux", "communauté", "discussion", "social"] },
+  {
+    name: "Sites utiles",
+    description: "Sites français du quotidien",
+    url: "#sites-utiles",
+    icon: LibraryBig,
+    accent: "#0f766e",
+    panel: "useful",
+    keywords: ["sites utiles", "démarches", "administration", "services publics", "quotidien", "annonces", "santé", "emploi", "impôts"],
+  },
 ];
+
+type UsefulSite = {
+  name: string;
+  description: string;
+  url: string;
+  host: string;
+  badge: string;
+  icon: typeof Search;
+  accent: string;
+};
+
+type UsefulGroup = { title: string; items: UsefulSite[] };
+
+const usefulGroups: UsefulGroup[] = [
+  {
+    title: "Démarches & services publics",
+    items: [
+      { name: "Service-Public", description: "Démarches et informations administratives.", url: "https://www.service-public.gouv.fr/", host: "service-public.gouv.fr", badge: "Public", icon: Landmark, accent: "#1a73e8" },
+      { name: "Ameli", description: "Assurance Maladie, remboursements et carte Vitale.", url: "https://www.ameli.fr/", host: "ameli.fr", badge: "Public", icon: HeartPulse, accent: "#0e7490" },
+      { name: "Impots.gouv", description: "Impôts, déclaration et démarches fiscales.", url: "https://www.impots.gouv.fr/accueil", host: "impots.gouv.fr", badge: "Public", icon: Receipt, accent: "#7c3aed" },
+      { name: "France Travail", description: "Emploi, inscription et démarches.", url: "https://www.francetravail.fr/accueil/", host: "francetravail.fr", badge: "Public", icon: Briefcase, accent: "#c2410c" },
+      { name: "Mes Droits Sociaux", description: "Droits et aides sociales en un seul point d’entrée.", url: "https://www.mesdroitssociaux.gouv.fr/accueil/", host: "mesdroitssociaux.gouv.fr", badge: "Public", icon: HandCoins, accent: "#15803d" },
+    ],
+  },
+  {
+    title: "Quotidien",
+    items: [
+      { name: "leboncoin", description: "Petites annonces entre particuliers et pros.", url: "https://www.leboncoin.fr/", host: "leboncoin.fr", badge: "Quotidien", icon: ShoppingBag, accent: "#ea580c" },
+      { name: "Gens de Confiance", description: "Petites annonces sur recommandation.", url: "https://gensdeconfiance.com/fr", host: "gensdeconfiance.com", badge: "Quotidien", icon: Handshake, accent: "#0f766e" },
+      { name: "Doctolib", description: "Rendez-vous de santé et téléconsultation.", url: "https://www.doctolib.fr/", host: "doctolib.fr", badge: "Santé", icon: HeartPulse, accent: "#2563eb" },
+      { name: "SNCF Connect", description: "Trains, billets et mobilité.", url: "https://www.sncf-connect.com/", host: "sncf-connect.com", badge: "Mobilité", icon: TrainFront, accent: "#7c3aed" },
+    ],
+  },
+  {
+    title: "Info, études & tech",
+    items: [
+      { name: "Actu.fr", description: "Actualités locales et nationales.", url: "https://actu.fr/", host: "actu.fr", badge: "Actu", icon: Radio, accent: "#c5221f" },
+      { name: "L’Étudiant", description: "Orientation, études, jobs et alternance.", url: "https://www.letudiant.fr/", host: "letudiant.fr", badge: "Études", icon: GraduationCap, accent: "#1d4ed8" },
+      { name: "Les Numériques", description: "Tests et actualité tech.", url: "https://www.lesnumeriques.com/", host: "lesnumeriques.com", badge: "Tech", icon: Cpu, accent: "#0891b2" },
+    ],
+  },
+];
+
 
 type ForumCommunity = {
   name: string;
@@ -142,6 +210,24 @@ const forumCommunities: ForumCommunity[] = [
     badge: "🇫🇷 Grand public",
     icon: Users,
     accent: "#111827",
+  },
+  {
+    name: "Copains d’avant",
+    description: "Retrouver d’anciens camarades, photos de classe et connaissances.",
+    url: "https://copainsdavant.linternaute.com/",
+    host: "copainsdavant.linternaute.com",
+    badge: "🇫🇷 Réseau historique",
+    icon: UserSearch,
+    accent: "#0f766e",
+  },
+  {
+    name: "Fraternité du Scoutisme",
+    description: "Communauté et ressources autour du scoutisme et de l’interscoutisme.",
+    url: "https://www.fraternite.net/",
+    host: "fraternite.net",
+    badge: "🇫🇷 Scoutisme",
+    icon: TentTree,
+    accent: "#15803d",
   },
   {
     name: "Forums JV",
@@ -216,7 +302,7 @@ type SuggestionItem = {
   label: string;
   description?: string;
   url?: string;
-  panel?: "forum";
+  panel?: PanelServiceKey;
   icon: typeof Search;
   accent?: string;
 };
@@ -292,7 +378,9 @@ function newsVisual(topic: NewsTopic) {
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
-type PanelKey = "about" | "privacy" | "help" | "settings" | "forum";
+type PanelServiceKey = "forum" | "useful";
+
+type PanelKey = "about" | "privacy" | "help" | "settings" | PanelServiceKey;
 
 const panelTitles: Record<PanelKey, string> = {
   about: "À propos de Flamme",
@@ -300,6 +388,7 @@ const panelTitles: Record<PanelKey, string> = {
   help: "Aide",
   settings: "Paramètres",
   forum: "Forum & réseaux français",
+  useful: "Sites utiles en France",
 };
 
 function FlammeBetaPage() {
@@ -438,7 +527,12 @@ function FlammeBetaPage() {
     const historyMatches = historyItems.filter((item) => !q || foldText(item).includes(q));
     const localMatches = localSuggestions.filter((item) => !q || foldText(item).includes(q));
     const serviceMatches = q
-      ? services.filter((service) => foldText(service.name).includes(q) || foldText(service.description).includes(q))
+      ? services.filter(
+          (service) =>
+            foldText(service.name).includes(q) ||
+            foldText(service.description).includes(q) ||
+            (service.keywords ?? []).some((keyword) => foldText(keyword).includes(q)),
+        )
       : [];
 
     if (q) {
@@ -571,8 +665,8 @@ function FlammeBetaPage() {
 
   const runSuggestion = (item: SuggestionItem) => {
     if (item.kind === "service") {
-      if (item.panel === "forum") {
-        setPanel("forum");
+      if (item.panel) {
+        setPanel(item.panel);
         return;
       }
       if (item.url) {
@@ -913,12 +1007,13 @@ function FlammeBetaPage() {
                   <span className={`flex h-12 w-12 items-center justify-center rounded-full ${darkMode ? "bg-[#3c4043]" : "bg-[#f1f3f4]"}`} style={{ color: accentColor }}>
                     <Icon className="h-5 w-5" />
                   </span>
-                  <span className="max-w-[68px] truncate text-[12px]">{service.name}</span>
+                  <span className="w-[68px] text-[12px] leading-tight line-clamp-2">{service.name}</span>
                 </>
               );
-              if (service.panel === "forum") {
+              if (service.panel) {
+                const panelKey = service.panel;
                 return (
-                  <button key={service.name} type="button" onClick={() => setPanel("forum")} title={service.description} className="flex w-[68px] shrink-0 flex-col items-center gap-2 text-center">
+                  <button key={service.name} type="button" onClick={() => setPanel(panelKey)} title={service.description} className="flex w-[68px] shrink-0 flex-col items-center gap-2 text-center">
                     {inner}
                   </button>
                 );
@@ -1124,6 +1219,44 @@ function FlammeBetaPage() {
                     </a>
                   );
                 })}
+
+                <p className={`text-center text-[11px] leading-4 ${muted}`}>Flamme n’est affiliée à aucun de ces services.</p>
+              </div>
+            )}
+
+            {panel === "useful" && (
+              <div className="space-y-4">
+                <p className={`text-[13px] leading-5 ${muted}`}>Une sélection de sites français utiles au quotidien, pour les démarches, l’info et la vie pratique.</p>
+
+                {usefulGroups.map((group) => (
+                  <div key={group.title} className="space-y-2">
+                    <p className={`text-[12px] font-medium uppercase tracking-wide ${muted}`}>{group.title}</p>
+                    {group.items.map((site) => {
+                      const Icon = site.icon;
+                      return (
+                        <a
+                          key={site.name}
+                          href={site.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={`flex items-start gap-3 rounded-2xl border p-3 text-left ${darkMode ? "border-[#5f6368] hover:bg-white/10" : "border-[#dfe1e5] hover:bg-[#f1f3f4]"}`}
+                        >
+                          <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "bg-[#3c4043]" : "bg-[#f1f3f4]"}`} style={{ color: readableAccent(site.accent, darkMode) }}>
+                            <Icon className="h-5 w-5" />
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="flex flex-wrap items-center gap-2">
+                              <span className="text-[15px] font-medium">{site.name}</span>
+                              <span className={`rounded-full px-2 py-[1px] text-[11px] ${darkMode ? "bg-[#3c4043] text-[#e8eaed]" : "bg-[#f1f3f4] text-[#3c4043]"}`}>{site.badge}</span>
+                            </span>
+                            <span className={`mt-1 block text-[13px] leading-5 ${muted}`}>{site.description}</span>
+                            <span className="mt-1 inline-flex items-center gap-1 text-[12px] text-[#1a73e8]"><ExternalLink className="h-3 w-3" /> {site.host}</span>
+                          </span>
+                        </a>
+                      );
+                    })}
+                  </div>
+                ))}
 
                 <p className={`text-center text-[11px] leading-4 ${muted}`}>Flamme n’est affiliée à aucun de ces services.</p>
               </div>
