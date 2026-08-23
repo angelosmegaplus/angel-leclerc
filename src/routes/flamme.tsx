@@ -1458,26 +1458,44 @@ function FlammeBetaPage() {
               <div className="space-y-3">
                 <p className={`text-[13px] leading-5 ${muted}`}>Des façons simples d’aider en France : chercher solidaire, donner ou devenir bénévole.</p>
 
-                <a
-                  href="https://www.lilo.org/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-start gap-3 rounded-2xl border border-[#1a73e8]/60 bg-[#1a73e8]/5 p-3 text-left"
-                >
-                  <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "bg-[#3c4043]" : "bg-[#f1f3f4]"}`} style={{ color: readableAccent("#16a34a", darkMode) }}>
-                    <Sprout className="h-5 w-5" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="flex flex-wrap items-center gap-2">
-                      <span className="text-[15px] font-medium">Lilo</span>
-                      <span className={`inline-flex items-center gap-1 rounded-full px-2 py-[2px] text-[11px] font-medium ${darkMode ? "bg-[#1a73e8]/20 text-[#a8c7fa]" : "bg-[#1a73e8]/10 text-[#1a73e8]"}`}>
-                        <ShieldCheck className="h-3 w-3" /> Moteur solidaire
-                      </span>
+                <div className="rounded-2xl border border-[#1a73e8]/60 bg-[#1a73e8]/5 p-3 text-left">
+                  <div className="flex items-start gap-3">
+                    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "bg-[#3c4043]" : "bg-[#f1f3f4]"}`} style={{ color: readableAccent("#16a34a", darkMode) }}>
+                      <Sprout className="h-5 w-5" />
                     </span>
-                    <span className={`mt-1 block text-[13px] leading-5 ${muted}`}>Moteur de recherche français qui finance des projets sociaux et environnementaux avec ses revenus publicitaires. Vous pouvez le choisir comme moteur par défaut dans Paramètres.</span>
-                    <span className="mt-1 inline-flex items-center gap-1 text-[12px] text-[#1a73e8]"><ExternalLink className="h-3 w-3" /> lilo.org</span>
-                  </span>
-                </a>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[15px] font-medium">Lilo</span>
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-[2px] text-[11px] font-medium ${darkMode ? "bg-[#1a73e8]/20 text-[#a8c7fa]" : "bg-[#1a73e8]/10 text-[#1a73e8]"}`}>
+                          <ShieldCheck className="h-3 w-3" /> Moteur solidaire
+                        </span>
+                      </div>
+                      <p className={`mt-1 text-[13px] leading-5 ${muted}`}>Moteur de recherche français qui finance des projets sociaux et environnementaux avec ses revenus publicitaires.</p>
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          disabled={searchEngine === "lilo"}
+                          aria-pressed={searchEngine === "lilo"}
+                          onClick={() => {
+                            chooseEngine("lilo");
+                            setPanel(null);
+                          }}
+                          className={`inline-flex min-h-9 items-center gap-1 rounded-full px-3 text-[13px] font-medium ${
+                            searchEngine === "lilo"
+                              ? "cursor-default border border-[#1a73e8] bg-[#1a73e8]/15 text-[#1a73e8]"
+                              : "bg-[#1a73e8] text-white hover:bg-[#1765cc]"
+                          }`}
+                        >
+                          {searchEngine === "lilo" ? (<><ShieldCheck className="h-3.5 w-3.5" /> Lilo est votre moteur</>) : "Utiliser Lilo comme moteur"}
+                        </button>
+                        <a href="https://www.lilo.org/" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[12px] text-[#1a73e8] hover:underline">
+                          <ExternalLink className="h-3 w-3" /> lilo.org
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
 
                 <p className={`pt-1 text-[12px] font-medium uppercase tracking-wide ${muted}`}>Associations françaises</p>
 
