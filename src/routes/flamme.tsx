@@ -1243,7 +1243,7 @@ function FlammeBetaPage() {
             <button type="button" onClick={() => setPanel("settings")} className="inline-flex min-h-11 items-center gap-1 hover:underline sm:min-h-0"><Settings className="h-3.5 w-3.5" /> Paramètres</button>
           </div>
         </div>
-        <div className={`px-5 pb-3 text-center text-[11px] ${darkMode ? "text-[#9aa0a6]" : "text-[#80868b]"}`}>Flamme est une bêta indépendante. Qwant effectue les recherches ; les services restent fournis par leurs éditeurs respectifs.</div>
+        <div className={`px-5 pb-3 text-center text-[11px] ${darkMode ? "text-[#9aa0a6]" : "text-[#80868b]"}`}>Flamme est une bêta indépendante. Les recherches sont fournies par Qwant ou Lilo selon vos réglages ; les services restent fournis par leurs éditeurs respectifs.</div>
       </footer>
 
       {panel && (
