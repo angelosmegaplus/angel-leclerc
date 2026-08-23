@@ -255,7 +255,7 @@ const radioGroups: LinkGroup[] = [
   },
   {
     title: "Podcasts",
-    note: "Contenus fournis par leurs éditeurs : Flamme n’héberge aucun programme.",
+    note: "Contenus fournis par leurs éditeurs : Flamme n’héberge aucun programme. Si Deezer refuse l’accès avec un VPN, essayez sans VPN ou utilisez Radioplayer.",
     items: [
       {
         name: "Podcasts des radios",
@@ -2017,7 +2017,7 @@ function FlammeBetaPage() {
 
             {panel === "forum" && (
               <div className="space-y-3">
-                <p className={`text-[13px] leading-5 ${muted}`}>Quelques alternatives françaises pour discuter, suivre des communautés ou partager.</p>
+                <p className={`text-[13px] leading-5 ${muted}`}>Quelques alternatives françaises pour discuter, suivre des communautés ou partager. Piaille est le choix recommandé par Flamme pour les échanges publics.</p>
 
                 {forumCommunities.map((community) => {
                   const Icon = community.icon;
