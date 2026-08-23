@@ -127,7 +127,7 @@ function FlammeBetaPage() {
   const [appsOpen, setAppsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
-  const [activeTab, setActiveTab] = useState<(typeof searchTabs)[number]["type"]>("all");
+  const [activeTab, setActiveTab] = useState<SearchType>("all");
   const [historyItems, setHistoryItems] = useState<string[]>([]);
   const [darkMode, setDarkMode] = useState(false);
   const [voiceMessage, setVoiceMessage] = useState("");
@@ -180,7 +180,7 @@ function FlammeBetaPage() {
     });
   };
 
-  const goToSearch = (value: string, type = activeTab) => {
+  const goToSearch = (value: string, type: SearchType = activeTab) => {
     const q = value.trim();
     if (!q) return;
     saveHistory(q);
@@ -347,8 +347,8 @@ function FlammeBetaPage() {
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setTimeout(() => setSearchFocused(false), 140)}
                 className="h-full min-w-0 flex-1 bg-transparent px-1 text-[16px] outline-none"
-                placeholder="Rechercher sur Internet"
-                aria-label="Recherche Qwant"
+                placeholder={tabPlaceholders[activeTab]}
+                aria-label={tabPlaceholders[activeTab]}
                 autoComplete="off"
               />
               <button type="button" onClick={startVoiceSearch} className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f8f9fa]"}`} title="Recherche vocale" aria-label="Recherche vocale">
@@ -414,14 +414,14 @@ function FlammeBetaPage() {
         )}
 
         <div className="mt-6 hidden justify-center gap-3 md:flex">
-          <button type="submit" onClick={() => goToSearch(query)} className={`h-9 rounded border border-transparent px-4 text-[14px] ${darkMode ? "bg-[#303134] text-[#e8eaed] hover:border-[#5f6368]" : "bg-[#f8f9fa] text-[#3c4043] hover:border-[#dadce0]"}`}>Recherche Qwant</button>
+          <button type="button" onClick={() => goToSearch(query)} className={`h-9 rounded border border-transparent px-4 text-[14px] ${darkMode ? "bg-[#303134] text-[#e8eaed] hover:border-[#5f6368]" : "bg-[#f8f9fa] text-[#3c4043] hover:border-[#dadce0]"}`}>Recherche Qwant</button>
           <button type="button" onClick={askMistral} className={`h-9 rounded border border-transparent px-4 text-[14px] ${darkMode ? "bg-[#303134] text-[#e8eaed] hover:border-[#5f6368]" : "bg-[#f8f9fa] text-[#3c4043] hover:border-[#dadce0]"}`}>IA</button>
         </div>
 
         <div className="-mx-4 mt-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:hidden">
-          <div className={`flex min-w-max gap-1 border-b ${darkMode ? "border-[#5f6368]" : "border-[#e8eaed]"}`}>
+          <div role="tablist" aria-label="Type de recherche" className={`flex min-w-max gap-1 border-b ${darkMode ? "border-[#5f6368]" : "border-[#e8eaed]"}`}>
             {searchTabs.map((tab) => (
-              <button key={tab.type} type="button" onClick={() => setActiveTab(tab.type)} className={`min-h-11 whitespace-nowrap border-b-2 px-4 text-[14px] ${activeTab === tab.type ? "border-[#1a73e8] font-medium text-[#1a73e8]" : `border-transparent ${muted}`}`}>
+              <button key={tab.type} type="button" role="tab" aria-selected={activeTab === tab.type} aria-current={activeTab === tab.type ? "true" : undefined} onClick={() => setActiveTab(tab.type)} className={`min-h-11 whitespace-nowrap border-b-2 px-4 text-[14px] ${activeTab === tab.type ? "border-[#1a73e8] font-medium text-[#1a73e8]" : `border-transparent ${muted}`}`}>
                 {tab.name}
               </button>
             ))}
