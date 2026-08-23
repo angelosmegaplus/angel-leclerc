@@ -1274,17 +1274,19 @@ function FlammeBetaPage() {
               <div className={`space-y-3 text-[14px] leading-6 ${muted}`}>
                 <p>Flamme ne dispose pas de serveur propre pour la recherche : voici exactement ce qui se passe.</p>
                 <ul className="list-disc space-y-2 pl-5">
-                  <li>Votre <strong className="font-medium">historique de recherche</strong>, vos <strong className="font-medium">profils locaux</strong> (nom et avatar) et votre <strong className="font-medium">thème clair/sombre</strong> sont enregistrés uniquement dans le stockage local de votre navigateur, sans compte ni serveur. Vous pouvez les effacer depuis Paramètres.</li>
-                  <li>Lorsque vous lancez une recherche, la requête est <strong className="font-medium">envoyée à Qwant</strong> (ou au service de cartes IGN pour l’onglet Cartes).</li>
+                  <li>Votre <strong className="font-medium">historique de recherche</strong>, vos <strong className="font-medium">profils locaux</strong> (nom et avatar), votre <strong className="font-medium">thème clair/sombre</strong>, votre <strong className="font-medium">moteur choisi</strong> (<code>flamme-search-engine</code>) et vos <strong className="font-medium">couches d’actualités</strong> (<code>flamme-news-layers</code>) sont enregistrés uniquement dans le stockage local de votre navigateur, sans compte ni serveur. Vous pouvez les effacer depuis Paramètres.</li>
+                  <li>Lorsque vous lancez une recherche, la requête est <strong className="font-medium">envoyée au moteur choisi</strong> (Qwant ou Lilo) pour le Web ; les modes spécialisés encore utilisés (Actualités, Vidéos) passent par Qwant, et l’onglet Cartes par le service public IGN.</li>
                   <li>Cliquer sur un service du carrousel ouvre directement le site de l’éditeur concerné, qui applique ses propres règles.</li>
                   <li>La <strong className="font-medium">recherche vocale</strong> utilise la reconnaissance vocale de votre navigateur ou de votre appareil ; l’audio peut être traité par le fournisseur de ce navigateur/système.</li>
                 </ul>
                 <p>Flamme ne prétend pas gérer ni contrôler les données traitées par ces services tiers. Ressources externes :</p>
                 <div className="flex flex-wrap gap-x-4 gap-y-2 text-[13px]">
                   <a href="https://about.qwant.com/legal/confidentialite/" target="_blank" rel="noreferrer" className="text-[#1a73e8] hover:underline">Confidentialité Qwant</a>
+                  <a href="https://www.lilo.org/politique-de-confidentialite/" target="_blank" rel="noreferrer" className="text-[#1a73e8] hover:underline">Confidentialité Lilo</a>
                   <a href="https://pro.mailo.com/mailo/fr/regles-de-confidentialite.php" target="_blank" rel="noreferrer" className="text-[#1a73e8] hover:underline">Confidentialité Mailo</a>
                   <a href="https://cartes.gouv.fr/" target="_blank" rel="noreferrer" className="text-[#1a73e8] hover:underline">cartes.gouv.fr (IGN)</a>
                 </div>
+
               </div>
             )}
 
