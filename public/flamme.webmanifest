@@ -1,0 +1,20 @@
+{
+  "id": "/flamme?source=pwa",
+  "name": "Flamme bêta",
+  "short_name": "Flamme",
+  "description": "Flamme bêta — porte d'entrée numérique vers des services français et européens, recherche assurée par Qwant.",
+  "start_url": "/flamme?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "lang": "fr",
+  "dir": "ltr",
+  "background_color": "#ffffff",
+  "theme_color": "#e2372f",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

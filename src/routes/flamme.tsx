@@ -3,6 +3,7 @@ import {
   Search,
   Mail,
   Cloud,
+  CloudSun,
   CalendarDays,
   Images,
   Navigation,
@@ -36,7 +37,7 @@ import {
   Users,
   Check,
 } from "lucide-react";
-import { FormEvent, KeyboardEvent as ReactKeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, KeyboardEvent as ReactKeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   FLAMME_AVATAR_IDS,
   FlammeAvatarId,
@@ -49,6 +50,10 @@ import {
   writeActiveKey,
   writeProfiles,
 } from "@/lib/flamme-profile";
+import type { FlammeNewsItem } from "@/lib/flamme-news-types";
+import { getFlammeNews } from "@/lib/flamme-news.functions";
+import { FlammeInstallCard } from "@/components/flamme/FlammeInstallCard";
+import { FlammeNewsList, FlammeNewsRefresh, FlammeNewsSkeleton, formatUpdatedAt } from "@/components/flamme/FlammeNews";
 
 
 export const Route = createFileRoute("/flamme")({
@@ -87,6 +92,7 @@ const services: Service[] = [
   { name: "Musique", description: "Avec Deezer", url: "https://www.deezer.com/fr/", icon: Music2, accent: "#a21caf" },
   { name: "Livres", description: "Avec Vivlio", url: "https://www.vivlio.com/", icon: BookOpen, accent: "#c2410c" },
   { name: "IA", description: "Avec Mistral", url: "https://chat.mistral.ai/chat", icon: Sparkles, accent: "#f97316" },
+  { name: "Météo", description: "Prévisions avec Météo-France", url: "https://meteofrance.com/", icon: CloudSun, accent: "#0284c7" },
   { name: "Traduction", description: "Avec Reverso", url: "https://www.reverso.net/traduction-texte", icon: Languages, accent: "#0369a1" },
 ];
 
@@ -255,6 +261,10 @@ function FlammeBetaPage() {
   const [profileAvatarDraft, setProfileAvatarDraft] = useState<FlammeAvatarId>("user");
   const [profileError, setProfileError] = useState("");
   const remoteAbort = useRef<AbortController | null>(null);
+  const [newsItems, setNewsItems] = useState<FlammeNewsItem[]>([]);
+  const [newsFetchedAt, setNewsFetchedAt] = useState<string | null>(null);
+  const [newsLoading, setNewsLoading] = useState(true);
+  const [newsFailed, setNewsFailed] = useState(false);
 
   useEffect(() => {
     if (!panel) return;
@@ -265,6 +275,47 @@ function FlammeBetaPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [panel]);
 
+
+  useEffect(() => {
+    const link = document.querySelector<HTMLLinkElement>('link[rel="manifest"]');
+    if (!link) {
+      const created = document.createElement("link");
+      created.rel = "manifest";
+      created.href = "/flamme.webmanifest";
+      created.dataset["flammeManifest"] = "true";
+      document.head.appendChild(created);
+      return () => {
+        created.remove();
+      };
+    }
+    const previous = link.getAttribute("href");
+    link.setAttribute("href", "/flamme.webmanifest");
+    return () => {
+      if (previous) link.setAttribute("href", previous);
+    };
+  }, []);
+
+  const loadNews = useCallback(async () => {
+    setNewsLoading(true);
+    try {
+      const payload = await getFlammeNews();
+      if (payload?.items?.length) {
+        setNewsItems(payload.items);
+        setNewsFetchedAt(payload.fetchedAt);
+        setNewsFailed(false);
+      } else {
+        setNewsFailed(true);
+      }
+    } catch {
+      setNewsFailed(true);
+    } finally {
+      setNewsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadNews();
+  }, [loadNews]);
 
   useEffect(() => {
     try {
@@ -662,6 +713,8 @@ function FlammeBetaPage() {
             )}
 
             <div className={`my-2 h-px ${darkMode ? "bg-[#5f6368]" : "bg-[#e8eaed]"}`} />
+            <FlammeInstallCard darkMode={darkMode} />
+            <div className={`my-2 h-px ${darkMode ? "bg-[#5f6368]" : "bg-[#e8eaed]"}`} />
             <button type="button" onClick={toggleTheme} className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[14px] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
               {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
               {darkMode ? "Apparence claire" : "Apparence sombre"}
@@ -801,38 +854,59 @@ function FlammeBetaPage() {
       </main>
 
       <section className="mx-auto w-full max-w-[720px] px-4 pb-14 md:hidden">
-        <div className={`mb-4 flex items-end justify-between border-b pb-3 ${darkMode ? "border-[#5f6368]" : "border-[#dadce0]"}`}>
-          <div>
+        <div className={`mb-4 flex items-end justify-between gap-3 border-b pb-3 ${darkMode ? "border-[#5f6368]" : "border-[#dadce0]"}`}>
+          <div className="min-w-0">
             <h1 className="text-[21px] font-normal">Découvrir</h1>
-            <p className={`mt-1 text-[12px] ${muted}`}>Actualités et sujets du moment avec Qwant</p>
+            <p className={`mt-1 text-[12px] ${muted}`}>
+              {newsItems.length > 0
+                ? `Sources françaises — mise à jour ${formatUpdatedAt(newsFetchedAt)}`
+                : "Actualités et sujets du moment avec Qwant"}
+            </p>
           </div>
-          <a href="https://www.qwant.com/?l=fr&t=news&q=actualités" target="_blank" rel="noreferrer" className="min-h-11 px-2 py-3 text-[14px] font-medium text-[#1a73e8]">Voir plus</a>
+          {newsItems.length > 0 ? (
+            <FlammeNewsRefresh onRefresh={() => void loadNews()} loading={newsLoading} label="Actualiser" darkMode={darkMode} />
+          ) : (
+            <a href="https://www.qwant.com/?l=fr&t=news&q=actualités" target="_blank" rel="noreferrer" className="min-h-11 px-2 py-3 text-[14px] font-medium text-[#1a73e8]">Voir plus</a>
+          )}
         </div>
 
-        <div className="grid gap-4">
-          <a href={`https://www.qwant.com/?l=fr&t=news&q=${encodeURIComponent(mainNews.query)}`} target="_blank" rel="noreferrer" className={`group overflow-hidden rounded-2xl border ${surface}`}>
-            <img src={newsVisual(mainNews)} alt="Illustration des actualités à la une" className="aspect-[16/9] w-full object-cover" />
-            <div className="p-4">
-              <div className={`mb-2 flex items-center gap-2 text-[12px] ${muted}`}><span className="font-medium text-[#1a73e8]">{mainNews.label}</span><span>•</span><span>Qwant Actualités</span></div>
-              <h2 className="text-[20px] font-normal leading-7 group-hover:underline">{mainNews.headline}</h2>
-              <p className={`mt-2 text-[14px] leading-5 ${muted}`}>{mainNews.subline}</p>
+        {newsLoading && newsItems.length === 0 && !newsFailed ? (
+          <FlammeNewsSkeleton surface={surface} darkMode={darkMode} />
+        ) : newsItems.length > 0 ? (
+          <FlammeNewsList
+            items={newsItems}
+            fallbackImage={newsVisual(mainNews)}
+            surface={surface}
+            muted={muted}
+            darkMode={darkMode}
+          />
+        ) : (
+          <div className="grid gap-4">
+            <a href={`https://www.qwant.com/?l=fr&t=news&q=${encodeURIComponent(mainNews.query)}`} target="_blank" rel="noreferrer" className={`group overflow-hidden rounded-2xl border ${surface}`}>
+              <img src={newsVisual(mainNews)} alt="Illustration des actualités à la une" className="aspect-[16/9] w-full object-cover" />
+              <div className="p-4">
+                <div className={`mb-2 flex items-center gap-2 text-[12px] ${muted}`}><span className="font-medium text-[#1a73e8]">{mainNews.label}</span><span>•</span><span>Recherche Qwant</span></div>
+                <h2 className="text-[20px] font-normal leading-7 group-hover:underline">{mainNews.headline}</h2>
+                <p className={`mt-2 text-[14px] leading-5 ${muted}`}>{mainNews.subline}</p>
+              </div>
+            </a>
+
+            <div className={`overflow-hidden rounded-2xl border ${surface}`}>
+              {secondaryNews.map((topic, index) => (
+                <a key={topic.label} href={`https://www.qwant.com/?l=fr&t=news&q=${encodeURIComponent(topic.query)}`} target="_blank" rel="noreferrer" className={`group grid min-h-[112px] grid-cols-[1fr_104px] gap-3 p-3.5 ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f8f9fa]"} ${index > 0 ? darkMode ? "border-t border-[#5f6368]" : "border-t border-[#e8eaed]" : ""}`}>
+                  <div className="min-w-0 py-1">
+                    <div className={`mb-1 text-[12px] font-medium ${muted}`}>{topic.label}</div>
+                    <h3 className="text-[15px] leading-5 group-hover:underline">{topic.headline}</h3>
+                    <p className={`mt-1 line-clamp-2 text-[12px] leading-4 ${muted}`}>{topic.subline}</p>
+                  </div>
+                  <img src={newsVisual(topic)} alt={`Illustration ${topic.label}`} className="h-[82px] w-[104px] rounded-xl object-cover" />
+                </a>
+              ))}
             </div>
-          </a>
-
-          <div className={`overflow-hidden rounded-2xl border ${surface}`}>
-            {secondaryNews.map((topic, index) => (
-              <a key={topic.label} href={`https://www.qwant.com/?l=fr&t=news&q=${encodeURIComponent(topic.query)}`} target="_blank" rel="noreferrer" className={`group grid min-h-[112px] grid-cols-[1fr_104px] gap-3 p-3.5 ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f8f9fa]"} ${index > 0 ? darkMode ? "border-t border-[#5f6368]" : "border-t border-[#e8eaed]" : ""}`}>
-                <div className="min-w-0 py-1">
-                  <div className={`mb-1 text-[12px] font-medium ${muted}`}>{topic.label}</div>
-                  <h3 className="text-[15px] leading-5 group-hover:underline">{topic.headline}</h3>
-                  <p className={`mt-1 line-clamp-2 text-[12px] leading-4 ${muted}`}>{topic.subline}</p>
-                </div>
-                <img src={newsVisual(topic)} alt={`Illustration ${topic.label}`} className="h-[82px] w-[104px] rounded-xl object-cover" />
-              </a>
-            ))}
           </div>
-        </div>
+        )}
       </section>
+
 
       <footer className={`${darkMode ? "bg-[#171717] text-[#bdc1c6]" : "bg-[#f2f2f2] text-[#70757a]"} md:mt-auto`}>
         <div className={`border-b px-6 py-3 text-[14px] ${darkMode ? "border-[#3c4043]" : "border-[#dadce0]"}`}>France</div>
@@ -863,6 +937,9 @@ function FlammeBetaPage() {
             {panel === "about" && (
               <div className={`space-y-3 text-[14px] leading-6 ${muted}`}>
                 <p>Flamme bêta est une interface de démarrage indépendante, développée pour ce site. Elle n’est affiliée à aucun des services qu’elle référence.</p>
+                <p>L’objectif du projet est de proposer une <strong className="font-medium">porte d’entrée numérique</strong> qui met en avant des services français et européens, comme alternative aux grands écosystèmes américains (Google, Microsoft, Meta, Apple, Amazon…). Flamme regroupe simplement des raccourcis et une recherche, sans imposer de compte unique.</p>
+                <p><strong className="font-medium">Qwant reste le moteur de recherche de Flamme.</strong> Flamme ne possède ni ne contrôle Qwant, Mailo, Météo-France, Mappy, l’IGN, Dailymotion, Deezer ou les autres services listés : chacun reste fourni et administré par son éditeur, avec ses propres conditions.</p>
+                <p>Les actualités affichées proviennent directement de flux RSS publics de médias et services français (Franceinfo, Service-Public). Les titres appartiennent à leurs éditeurs et les liens ouvrent l’article d’origine.</p>
                 <p>La recherche est effectuée par <strong className="font-medium">Qwant</strong> : Flamme se contente d’ouvrir Qwant avec votre requête et le type choisi (Tous, Actualités, Images, Vidéos). Les Cartes ouvrent le service public IGN.</p>
                 <p>Le carrousel de services est une liste de raccourcis vers des sites tiers (Mailo, Photoweb Cloud, Mappy, PagesJaunes, Dailymotion, AlloCiné, Deezer, Vivlio, Mistral, Reverso…). Chaque service reste géré par son éditeur.</p>
                 <p>Flamme n’héberge aucun compte, n’indexe aucun contenu et ne stocke aucune donnée sur un serveur.</p>
