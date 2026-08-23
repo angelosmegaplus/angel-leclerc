@@ -53,7 +53,6 @@ jobs:
           gradle-version: '8.9'
 
       - name: Prepare optional stable release signature
-        if: ${{ secrets.FLAMME_KEYSTORE_BASE64 != '' }}
         shell: bash
         env:
           KEYSTORE_BASE64: ${{ secrets.FLAMME_KEYSTORE_BASE64 }}
@@ -61,11 +60,15 @@ jobs:
           KEY_ALIAS: ${{ secrets.FLAMME_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.FLAMME_KEY_PASSWORD }}
         run: |
-          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$GITHUB_WORKSPACE/flamme-android/release.keystore"
-          echo "FLAMME_KEYSTORE_PATH=$GITHUB_WORKSPACE/flamme-android/release.keystore" >> "$GITHUB_ENV"
-          echo "FLAMME_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> "$GITHUB_ENV"
-          echo "FLAMME_KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
-          echo "FLAMME_KEY_PASSWORD=$KEY_PASSWORD" >> "$GITHUB_ENV"
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$GITHUB_WORKSPACE/flamme-android/release.keystore"
+            echo "FLAMME_KEYSTORE_PATH=$GITHUB_WORKSPACE/flamme-android/release.keystore" >> "$GITHUB_ENV"
+            echo "FLAMME_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> "$GITHUB_ENV"
+            echo "FLAMME_KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
+            echo "FLAMME_KEY_PASSWORD=$KEY_PASSWORD" >> "$GITHUB_ENV"
+          else
+            echo 'No release keystore configured; beta APK will use Android debug signing.'
+          fi
 
       - name: Lint and build optimized beta
         working-directory: flamme-android
