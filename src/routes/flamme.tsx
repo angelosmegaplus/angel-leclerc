@@ -302,7 +302,7 @@ type SuggestionItem = {
   label: string;
   description?: string;
   url?: string;
-  panel?: "forum";
+  panel?: PanelServiceKey;
   icon: typeof Search;
   accent?: string;
 };
