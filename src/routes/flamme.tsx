@@ -1996,6 +1996,24 @@ function FlammeBetaPage() {
               </div>
             )}
 
+            {panel === "routes" && (
+              <div className="space-y-4">
+                <p className={`text-[13px] leading-5 ${muted}`}>Préparer un trajet ou consulter une carte, avec plusieurs services français au choix.</p>
+                {renderLinkGroups(routeGroups)}
+                <p className={`text-center text-[11px] leading-4 ${muted}`}>Flamme n’est affiliée à aucun de ces services.</p>
+              </div>
+            )}
+
+            {panel === "music" && (
+              <div className="space-y-4">
+                <p className={`text-[13px] leading-5 ${muted}`}>Écouter de la musique chez des services français.</p>
+                {renderLinkGroups(musicGroups)}
+                <p className={`text-center text-[11px] leading-4 ${muted}`}>Flamme n’est affiliée à aucun de ces services.</p>
+              </div>
+            )}
+
+
+
 
             {panel === "forum" && (
               <div className="space-y-3">
