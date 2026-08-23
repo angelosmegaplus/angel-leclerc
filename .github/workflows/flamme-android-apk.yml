@@ -7,6 +7,12 @@ on:
     paths:
       - 'flamme-android/**'
       - '.github/workflows/flamme-android-apk.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'flamme-android/**'
+      - '.github/workflows/flamme-android-apk.yml'
   workflow_dispatch:
 
 permissions:
@@ -103,7 +109,7 @@ jobs:
           retention-days: 30
 
       - name: Publish build result and direct APK
-        if: always()
+        if: ${{ always() && github.event_name != 'pull_request' }}
         shell: bash
         env:
           BUILD_STATUS: ${{ job.status }}
