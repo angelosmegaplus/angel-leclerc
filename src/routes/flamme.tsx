@@ -426,6 +426,22 @@ const mailGroups: LinkGroup[] = [
       },
     ],
   },
+  {
+    title: "Plus de choix",
+    secondary: true,
+    items: [
+      {
+        name: "Proton Mail",
+        description: "Messagerie suisse chiffrée de bout en bout, éditée par Proton AG.",
+        url: "https://proton.me/fr/mail",
+        host: "proton.me",
+        badge: "🇨🇭 Alternative indépendante",
+        icon: MessageSquareLock,
+        accent: "#6b7280",
+      },
+    ],
+  },
+
 ];
 
 const messagingGroups: LinkGroup[] = [
