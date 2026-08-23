@@ -98,6 +98,7 @@ import { FLAMME_REGIONS, findRegion, readNewsRegion, writeNewsRegion } from "@/l
 
 
 import { motion } from "framer-motion";
+import { FlammeMistralChat } from "@/components/flamme/FlammeMistralChat";
 import { FlammeInstallCard } from "@/components/flamme/FlammeInstallCard";
 import { FlammeWordmark } from "@/components/flamme/FlammeWordmark";
 import { useCarouselNudge } from "@/components/flamme/useCarouselNudge";
@@ -212,7 +213,15 @@ const services: Service[] = [
   },
 
   { name: "Livres", description: "Avec Vivlio", url: "https://www.vivlio.com/", icon: BookOpen, accent: "#c2410c" },
-  { name: "IA", description: "Avec Mistral", url: "https://chat.mistral.ai/chat", icon: Sparkles, accent: "#f97316" },
+  {
+    name: "IA",
+    description: "Avec Mistral",
+    url: "#ia-mistral",
+    icon: Sparkles,
+    accent: "#f97316",
+    panel: "ai",
+    keywords: ["ia", "i.a", "intelligence artificielle", "mistral", "chat ia", "assistant", "chatbot"],
+  },
   { name: "Météo", description: "Prévisions avec Météo-France", url: "https://meteofrance.com/", icon: CloudSun, accent: "#0284c7" },
   { name: "Traduction", description: "Avec Reverso", url: "https://www.reverso.net/traduction-texte", icon: Languages, accent: "#0369a1" },
   {
@@ -939,7 +948,7 @@ function newsVisual(topic: NewsTopic) {
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
-type PanelServiceKey = "forum" | "useful" | "good" | "radio" | "tv" | "mail" | "messages" | "routes" | "music";
+type PanelServiceKey = "forum" | "useful" | "good" | "radio" | "tv" | "mail" | "messages" | "routes" | "music" | "ai";
 
 type PanelKey = "about" | "privacy" | "help" | "settings" | PanelServiceKey;
 
@@ -957,6 +966,7 @@ const panelTitles: Record<PanelKey, string> = {
   messages: "Messageries instantanées",
   routes: "Itinéraires & cartes",
   music: "Musique en ligne",
+  ai: "IA Mistral",
 
 };
 
@@ -1215,7 +1225,7 @@ function FlammeBetaPage() {
     goToSearch(query);
   };
 
-  const askMistral = () => window.open("https://chat.mistral.ai/chat", "_blank", "noopener,noreferrer");
+  const askMistral = () => setPanel("ai");
 
   const askQwantAi = () => window.open("https://www.qwant.com/ai?l=fr", "_blank", "noopener,noreferrer");
 
@@ -2006,6 +2016,8 @@ function FlammeBetaPage() {
                 <p className={`text-center text-[11px] leading-4 ${muted}`}>Flamme n’est affiliée à aucun de ces services.</p>
               </div>
             )}
+
+            {panel === "ai" && <FlammeMistralChat darkMode={darkMode} />}
 
             {panel === "music" && (
               <div className="space-y-4">
