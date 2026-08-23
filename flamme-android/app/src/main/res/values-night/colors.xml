@@ -1,3 +1,4 @@
 <resources>
     <color name="flamme_surface">#202124</color>
+    <color name="widget_text_secondary">#BDC1C6</color>
 </resources>
