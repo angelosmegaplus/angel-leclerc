@@ -2040,7 +2040,7 @@ function FlammeBetaPage() {
                           <span className="text-[15px] font-medium">{community.name}</span>
                           {community.recommended && (
                             <span className={`inline-flex items-center gap-1 rounded-full px-2 py-[2px] text-[11px] font-medium ${darkMode ? "bg-[#1a73e8]/20 text-[#a8c7fa]" : "bg-[#1a73e8]/10 text-[#1a73e8]"}`}>
-                              <ShieldCheck className="h-3 w-3" /> Recommandé pour Flamme
+                              <ShieldCheck className="h-3 w-3" /> Recommandé par Flamme
                             </span>
                           )}
                         </span>
