@@ -1223,6 +1223,44 @@ function FlammeBetaPage() {
                 <p className={`text-center text-[11px] leading-4 ${muted}`}>Flamme n’est affiliée à aucun de ces services.</p>
               </div>
             )}
+
+            {panel === "useful" && (
+              <div className="space-y-4">
+                <p className={`text-[13px] leading-5 ${muted}`}>Une sélection de sites français utiles au quotidien, pour les démarches, l’info et la vie pratique.</p>
+
+                {usefulGroups.map((group) => (
+                  <div key={group.title} className="space-y-2">
+                    <p className={`text-[12px] font-medium uppercase tracking-wide ${muted}`}>{group.title}</p>
+                    {group.items.map((site) => {
+                      const Icon = site.icon;
+                      return (
+                        <a
+                          key={site.name}
+                          href={site.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={`flex items-start gap-3 rounded-2xl border p-3 text-left ${darkMode ? "border-[#5f6368] hover:bg-white/10" : "border-[#dfe1e5] hover:bg-[#f1f3f4]"}`}
+                        >
+                          <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "bg-[#3c4043]" : "bg-[#f1f3f4]"}`} style={{ color: readableAccent(site.accent, darkMode) }}>
+                            <Icon className="h-5 w-5" />
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="flex flex-wrap items-center gap-2">
+                              <span className="text-[15px] font-medium">{site.name}</span>
+                              <span className={`rounded-full px-2 py-[1px] text-[11px] ${darkMode ? "bg-[#3c4043] text-[#e8eaed]" : "bg-[#f1f3f4] text-[#3c4043]"}`}>{site.badge}</span>
+                            </span>
+                            <span className={`mt-1 block text-[13px] leading-5 ${muted}`}>{site.description}</span>
+                            <span className="mt-1 inline-flex items-center gap-1 text-[12px] text-[#1a73e8]"><ExternalLink className="h-3 w-3" /> {site.host}</span>
+                          </span>
+                        </a>
+                      );
+                    })}
+                  </div>
+                ))}
+
+                <p className={`text-center text-[11px] leading-4 ${muted}`}>Flamme n’est affiliée à aucun de ces services.</p>
+              </div>
+            )}
           </div>
         </div>
       )}
