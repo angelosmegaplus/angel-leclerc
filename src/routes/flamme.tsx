@@ -39,6 +39,8 @@ import {
   MessagesSquare,
   ExternalLink,
   ShieldCheck,
+  UsersRound,
+  MessageCircleMore,
 } from "lucide-react";
 import { FormEvent, KeyboardEvent as ReactKeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
