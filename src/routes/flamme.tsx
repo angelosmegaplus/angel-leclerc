@@ -16,6 +16,8 @@ import {
   Sparkles,
   Languages,
   ExternalLink,
+  Newspaper,
+
   Grid3X3,
 } from "lucide-react";
 import { FormEvent, useState } from "react";
