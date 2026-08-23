@@ -2,10 +2,10 @@ import type { FlammeNewsItem, FlammeNewsPayload } from "./flamme-news-types";
 
 const MISTRAL_ENDPOINT = "https://api.mistral.ai/v1/chat/completions";
 const MODEL = "mistral-small-latest";
-const CACHE_TTL = 15 * 60 * 1000;
+const CACHE_TTL = 10 * 60 * 1000;
 const RECENT_WINDOW = 72 * 60 * 60 * 1000;
-const MAX_CANDIDATES = 80;
-const MAX_RANKED = 48;
+const MAX_CANDIDATES = 100;
+const MAX_RANKED = 64;
 
 type CachedRanks = { at: number; ranks: Map<string, number> };
 const cache = new Map<string, CachedRanks>();
@@ -15,8 +15,9 @@ function time(item: FlammeNewsItem) {
 }
 
 /**
- * Pré-sélection déterministe et équilibrée avant l'appel IA : aucune source ne
- * peut remplir à elle seule le contexte envoyé à Mistral.
+ * Pré-sélection technique avant l'appel IA : on conserve de la fraîcheur et on
+ * évite qu'une seule source remplisse tout le contexte. À partir de ce pool,
+ * Mistral assume la composition éditoriale principale du fil.
  */
 function buildCandidatePool(items: FlammeNewsItem[]): FlammeNewsItem[] {
   const now = Date.now();
@@ -24,7 +25,7 @@ function buildCandidatePool(items: FlammeNewsItem[]): FlammeNewsItem[] {
     const value = time(item);
     return !value || now - value <= RECENT_WINDOW;
   });
-  const base = recent.length >= 30 ? recent : items;
+  const base = recent.length >= 36 ? recent : items;
   const bySource = new Map<string, FlammeNewsItem[]>();
 
   [...base]
@@ -38,7 +39,7 @@ function buildCandidatePool(items: FlammeNewsItem[]): FlammeNewsItem[] {
   const queues = Array.from(bySource.values());
   const out: FlammeNewsItem[] = [];
   let guard = 0;
-  while (out.length < MAX_CANDIDATES && guard < 500) {
+  while (out.length < MAX_CANDIDATES && guard < 800) {
     guard += 1;
     let progressed = false;
     for (const queue of queues) {
@@ -78,6 +79,7 @@ async function askMistral(items: FlammeNewsItem[]): Promise<Map<string, number> 
     id: `n${index}`,
     media: item.source,
     titre: item.title,
+    resume: item.description?.slice(0, 220) || null,
     date: item.publishedAt,
     themes: item.categories,
     regional: Boolean(item.regional),
@@ -85,7 +87,7 @@ async function askMistral(items: FlammeNewsItem[]): Promise<Map<string, number> 
   const validIds = new Set(candidates.map((item) => item.id));
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 4500);
+  const timeout = setTimeout(() => controller.abort(), 6500);
   try {
     const response = await fetch(MISTRAL_ENDPOINT, {
       method: "POST",
@@ -93,17 +95,17 @@ async function askMistral(items: FlammeNewsItem[]): Promise<Map<string, number> 
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
       body: JSON.stringify({
         model: MODEL,
-        temperature: 0.1,
-        max_tokens: 500,
+        temperature: 0.05,
+        max_tokens: 900,
         messages: [
           {
             role: "system",
             content:
-              "Tu es un moteur de diversification éditoriale neutre. Tu ne juges ni l'orientation politique ni la qualité idéologique d'un média. Ton unique rôle est d'ordonner des titres déjà collectés pour maximiser fraîcheur, diversité de médias, diversité de sujets et diversité de thèmes. Évite plusieurs titres parlant du même événement. Dans les 20 premiers, vise un maximum de médias distincts et jamais plus de 3 titres du même média. Privilégie les contenus de moins de 24 h, puis moins de 72 h. Les sujets régionaux complètent le national sans dominer. Réponds STRICTEMENT par un tableau JSON d'identifiants, sans texte autour.",
+              "Tu es le rédacteur en chef algorithmique du fil d'actualités Flamme. Tu composes réellement la une à partir d'articles déjà collectés. Tu ne réécris pas les titres et tu n'inventes aucun fait. Tu ne classes jamais un média selon son orientation politique, ses opinions ou une préférence idéologique.\n\nTa mission, dans cet ordre :\n1. Identifier les articles qui parlent du même événement ou de la même information et éviter les doublons ; garde le représentant le plus clair, récent et utile.\n2. Choisir ce qui doit apparaître en priorité en combinant importance générale, fraîcheur et intérêt informatif, sans privilégier le sensationnel.\n3. Construire une vraie diversité : médias différents, France, monde, économie, sciences/tech, culture/histoire, sport et vie publique quand ces sujets existent dans le pool.\n4. Dans les 12 premières positions, viser au moins 8 médias distincts si le pool le permet, ne jamais mettre plus de 3 articles du même média et éviter deux sujets quasi identiques.\n5. Si des articles régionaux sont présents, en sélectionner normalement 1 à 3 dans les 12 premiers lorsqu'ils apportent une information distincte, sans faire dominer le régional.\n6. Privilégier fortement les moins de 24 h, puis les moins de 72 h. Un article plus ancien ne passe devant que s'il apporte une valeur éditoriale réellement différente.\n7. Les positions 1 à 12 constituent la composition principale de la page d'accueil. Les positions suivantes sont des réserves, elles aussi diverses, pour permettre les filtres personnalisés de l'utilisateur.\n\nRéponds STRICTEMENT par un tableau JSON d'identifiants, dans l'ordre éditorial choisi, sans aucun texte autour.",
           },
           {
             role: "user",
-            content: `Classe jusqu'à ${MAX_RANKED} identifiants parmi ces actualités :\n${JSON.stringify(candidates)}`,
+            content: `Compose le fil et classe jusqu'à ${MAX_RANKED} identifiants parmi ces actualités :\n${JSON.stringify(candidates)}`,
           },
         ],
       }),
@@ -113,7 +115,7 @@ async function askMistral(items: FlammeNewsItem[]): Promise<Map<string, number> 
     const content = payload.choices?.[0]?.message?.content;
     if (typeof content !== "string") return null;
     const ids = parseIds(content, validIds);
-    if (ids.length < 8) return null;
+    if (ids.length < 10) return null;
 
     const ranks = new Map<string, number>();
     ids.forEach((id, rank) => {
