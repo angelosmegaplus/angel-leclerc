@@ -246,6 +246,15 @@ function FlammeBetaPage() {
   const [voiceMessage, setVoiceMessage] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [panel, setPanel] = useState<PanelKey | null>(null);
+  const [remoteSuggestions, setRemoteSuggestions] = useState<string[]>([]);
+  const [highlightIndex, setHighlightIndex] = useState(-1);
+  const [profiles, setProfiles] = useState<Record<string, FlammeProfile>>({});
+  const [activeProfileKey, setActiveProfileKey] = useState<string | null>(null);
+  const [profileMode, setProfileMode] = useState<"view" | "create" | "edit" | "switch">("view");
+  const [profileNameDraft, setProfileNameDraft] = useState("");
+  const [profileAvatarDraft, setProfileAvatarDraft] = useState<FlammeAvatarId>("user");
+  const [profileError, setProfileError] = useState("");
+  const remoteAbort = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (!panel) return;
@@ -268,21 +277,85 @@ function FlammeBetaPage() {
     } catch {
       setHistoryItems([]);
     }
+    const storedProfiles = readProfiles();
+    setProfiles(storedProfiles);
+    const key = readActiveKey();
+    setActiveProfileKey(key && storedProfiles[key] ? key : null);
   }, []);
 
-
-
-  const suggestions = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const historyMatches = historyItems.filter((item) => !q || item.toLowerCase().includes(q));
-    const localMatches = localSuggestions.filter((item) => !q || item.toLowerCase().includes(q));
-    const serviceMatches = services.filter((service) => q && (service.name.toLowerCase().includes(q) || service.description.toLowerCase().includes(q)));
-    return {
-      history: historyMatches.slice(0, q ? 3 : 5),
-      local: [...new Set(localMatches.filter((item) => !historyMatches.includes(item)))].slice(0, 5),
-      services: serviceMatches.slice(0, 3),
+  useEffect(() => {
+    const q = query.trim();
+    remoteAbort.current?.abort();
+    if (q.length < 2) {
+      setRemoteSuggestions([]);
+      return;
+    }
+    const controller = new AbortController();
+    remoteAbort.current = controller;
+    const timer = window.setTimeout(() => {
+      fetchQwantSuggestions(q, controller.signal)
+        .then((values) => {
+          if (!controller.signal.aborted) setRemoteSuggestions(values.slice(0, 8));
+        })
+        .catch(() => {
+          if (!controller.signal.aborted) setRemoteSuggestions([]);
+        });
+    }, 250);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
     };
-  }, [historyItems, query]);
+  }, [query]);
+
+  useEffect(() => {
+    setHighlightIndex(-1);
+  }, [query]);
+
+  const suggestions = useMemo<SuggestionItem[]>(() => {
+    const raw = query.trim();
+    const q = foldText(raw);
+    const seen = new Set<string>();
+    const items: SuggestionItem[] = [];
+
+    const push = (item: SuggestionItem) => {
+      const dedupeKey = `${item.kind === "service" ? "service:" : "query:"}${foldText(item.value)}`;
+      if (!item.value || seen.has(dedupeKey)) return;
+      seen.add(dedupeKey);
+      items.push(item);
+    };
+
+    const historyMatches = historyItems.filter((item) => !q || foldText(item).includes(q));
+    const localMatches = localSuggestions.filter((item) => !q || foldText(item).includes(q));
+    const serviceMatches = q
+      ? services.filter((service) => foldText(service.name).includes(q) || foldText(service.description).includes(q))
+      : [];
+
+    if (q) {
+      const completion = [...historyMatches, ...remoteSuggestions, ...localMatches].find((item) => foldText(item).startsWith(q));
+      if (completion) push({ id: `top-${completion}`, kind: foldText(completion) === q ? "local" : "qwant", value: completion, label: completion, icon: Search });
+    }
+
+    historyMatches.slice(0, q ? 3 : 5).forEach((item) =>
+      push({ id: `history-${item}`, kind: "history", value: item, label: item, icon: History }),
+    );
+    remoteSuggestions.forEach((item) => push({ id: `qwant-${item}`, kind: "qwant", value: item, label: item, icon: Globe }));
+    serviceMatches.slice(0, 3).forEach((service) =>
+      push({
+        id: `service-${service.name}`,
+        kind: "service",
+        value: service.name,
+        label: service.name,
+        description: service.description,
+        url: service.url,
+        icon: service.icon,
+        accent: service.accent,
+      }),
+    );
+    localMatches.slice(0, 5).forEach((item) => push({ id: `local-${item}`, kind: "local", value: item, label: item, icon: Search }));
+
+    return items.slice(0, 10);
+  }, [historyItems, query, remoteSuggestions]);
+
 
   const saveHistory = (value: string) => {
     const clean = value.trim();
