@@ -1007,12 +1007,13 @@ function FlammeBetaPage() {
                   <span className={`flex h-12 w-12 items-center justify-center rounded-full ${darkMode ? "bg-[#3c4043]" : "bg-[#f1f3f4]"}`} style={{ color: accentColor }}>
                     <Icon className="h-5 w-5" />
                   </span>
-                  <span className="max-w-[68px] truncate text-[12px]">{service.name}</span>
+                  <span className="w-[68px] text-[12px] leading-tight line-clamp-2">{service.name}</span>
                 </>
               );
-              if (service.panel === "forum") {
+              if (service.panel) {
+                const panelKey = service.panel;
                 return (
-                  <button key={service.name} type="button" onClick={() => setPanel("forum")} title={service.description} className="flex w-[68px] shrink-0 flex-col items-center gap-2 text-center">
+                  <button key={service.name} type="button" onClick={() => setPanel(panelKey)} title={service.description} className="flex w-[68px] shrink-0 flex-col items-center gap-2 text-center">
                     {inner}
                   </button>
                 );
