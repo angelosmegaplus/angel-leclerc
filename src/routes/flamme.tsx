@@ -677,7 +677,9 @@ function FlammeBetaPage() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 onFocus={() => setSearchFocused(true)}
-                onBlur={() => setTimeout(() => setSearchFocused(false), 140)}
+                onBlur={() => setTimeout(() => { setSearchFocused(false); setHighlightIndex(-1); }, 140)}
+                onKeyDown={onSearchKeyDown}
+
                 className="h-full min-w-0 flex-1 bg-transparent px-1 text-[16px] outline-none"
                 placeholder="Rechercher sur Qwant"
                 aria-label="Rechercher sur Qwant"
