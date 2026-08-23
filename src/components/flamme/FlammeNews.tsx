@@ -1,5 +1,5 @@
 import { RefreshCw } from "lucide-react";
-import type { FlammeNewsItem } from "@/lib/flamme-news.server";
+import type { FlammeNewsItem } from "@/lib/flamme-news-types";
 
 function relativeTime(iso: string | null): string {
   if (!iso) return "";

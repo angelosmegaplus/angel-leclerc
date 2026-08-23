@@ -1,17 +1,6 @@
-export type FlammeNewsItem = {
-  title: string;
-  url: string;
-  source: string;
-  publishedAt: string | null;
-  description?: string;
-  imageUrl?: string;
-};
+import type { FlammeNewsItem, FlammeNewsPayload } from "./flamme-news-types";
 
-export type FlammeNewsPayload = {
-  items: FlammeNewsItem[];
-  fetchedAt: string;
-  sources: string[];
-};
+export type { FlammeNewsItem, FlammeNewsPayload };
 
 type FeedConfig = { source: string; urls: string[] };
 
