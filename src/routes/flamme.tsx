@@ -220,7 +220,9 @@ function FlammeBetaPage() {
     goToSearch(query);
   };
 
-  const askMistral = () => window.open("https://chat.mistral.ai/", "_blank", "noopener,noreferrer");
+  const askMistral = () => window.open("https://chat.mistral.ai/chat", "_blank", "noopener,noreferrer");
+
+  const askQwantAi = () => window.open("https://www.qwant.com/ai?l=fr", "_blank", "noopener,noreferrer");
 
   const startVoiceSearch = () => {
     if (isListening) return;
