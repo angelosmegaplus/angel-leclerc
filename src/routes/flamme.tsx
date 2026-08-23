@@ -97,7 +97,10 @@ import { getFlammeNews } from "@/lib/flamme-news.functions";
 import { FLAMME_REGIONS, findRegion, readNewsRegion, writeNewsRegion } from "@/lib/flamme-regions";
 
 
+import { motion } from "framer-motion";
 import { FlammeInstallCard } from "@/components/flamme/FlammeInstallCard";
+import { FlammeWordmark } from "@/components/flamme/FlammeWordmark";
+import { useCarouselNudge } from "@/components/flamme/useCarouselNudge";
 import { FlammeNewsList, FlammeNewsRefresh, FlammeNewsSkeleton, formatUpdatedAt } from "@/components/flamme/FlammeNews";
 
 
@@ -986,6 +989,8 @@ function FlammeBetaPage() {
   const [newsRegion, setNewsRegion] = useState<string | null>(null);
   const [prefsReady, setPrefsReady] = useState(false);
 
+
+  const { controls: carouselNudge, markInteraction: markCarouselInteraction } = useCarouselNudge();
 
   const engineLabel = SEARCH_ENGINE_LABELS[searchEngine];
 
