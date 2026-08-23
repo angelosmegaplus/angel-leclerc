@@ -10,14 +10,14 @@ permissions:
   pull-requests: write
 
 env:
-  RELEASE_BRANCH: flamingbox-release-0.5
+  RELEASE_BRANCH: flamingbox-release-0.6
 
 jobs:
   build:
     if: >-
       github.event.issue.pull_request &&
       github.event.comment.user.login == 'angelosmegaplus' &&
-      contains(github.event.comment.body, '/build-flamingbox-0.5')
+      contains(github.event.comment.body, '/build-flamingbox-0.6')
     runs-on: windows-latest
     timeout-minutes: 45
     steps:
@@ -36,15 +36,16 @@ jobs:
         shell: powershell
         run: npm install --no-audit --no-fund
 
-      - name: Syntax check main process
+      - name: Syntax checks
         working-directory: flamingbox
         shell: powershell
         run: |
           node --check src/main.js
           node --check src/preload.js
           node --check src/renderer.js
+          node --check src/search.js
 
-      - name: Build FlamingBox 0.5 portable Windows executable
+      - name: Build FlamingBox 0.6 portable Windows executable
         working-directory: flamingbox
         shell: powershell
         env:
@@ -55,17 +56,16 @@ jobs:
         id: verify
         shell: powershell
         run: |
-          $exe = Get-ChildItem 'flamingbox\dist\FlamingBox-0.5.0-Windows-x64.exe' -ErrorAction Stop
+          $exe = Get-ChildItem 'flamingbox\dist\FlamingBox-0.6.0-Windows-x64.exe' -ErrorAction Stop
           $hash = (Get-FileHash $exe.FullName -Algorithm SHA256).Hash.ToLower()
           "hash=$hash" >> $env:GITHUB_OUTPUT
           "size=$($exe.Length)" >> $env:GITHUB_OUTPUT
-          Write-Host "SHA256: $hash"
 
-      - name: Upload FlamingBox 0.5
+      - name: Upload FlamingBox 0.6
         uses: actions/upload-artifact@v4
         with:
-          name: FlamingBox-0.5.0-Windows-x64
-          path: flamingbox/dist/FlamingBox-0.5.0-Windows-x64.exe
+          name: FlamingBox-0.6.0-Windows-x64
+          path: flamingbox/dist/FlamingBox-0.6.0-Windows-x64.exe
           if-no-files-found: error
           compression-level: 0
           retention-days: 30
@@ -81,7 +81,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: `FLAMINGBOX_05_BUILD_SUCCESS\nrun_id=${context.runId}\nartifact=FlamingBox-0.5.0-Windows-x64\nsha256=${process.env.BUILD_HASH}\nsize=${process.env.BUILD_SIZE}`
+              body: `FLAMINGBOX_06_BUILD_SUCCESS\nrun_id=${context.runId}\nartifact=FlamingBox-0.6.0-Windows-x64\nsha256=${process.env.BUILD_HASH}\nsize=${process.env.BUILD_SIZE}`
             });
 
       - name: Report failure
@@ -93,5 +93,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: `FLAMINGBOX_05_BUILD_FAILED\nrun_id=${context.runId}`
+              body: `FLAMINGBOX_06_BUILD_FAILED\nrun_id=${context.runId}`
             });
