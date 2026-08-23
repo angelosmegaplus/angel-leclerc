@@ -505,13 +505,27 @@ function FlammeBetaPage() {
       return;
     }
     const key = normalizeProfileName(name);
+    const isEditingActive = profileMode === "edit" && activeProfileKey !== null;
+    const existing = profiles[key];
+
+    if (existing && !(isEditingActive && activeProfileKey === key)) {
+      // Profil déjà enregistré sur cet appareil : on le réactive sans écraser son avatar.
+      persistProfiles(profiles, key);
+      setProfileNameDraft(existing.name);
+      setProfileAvatarDraft(existing.avatar);
+      setProfileMode("view");
+      setProfileError("");
+      return;
+    }
+
     const next = { ...profiles };
-    if (profileMode === "edit" && activeProfileKey && activeProfileKey !== key) delete next[activeProfileKey];
+    if (isEditingActive && activeProfileKey && activeProfileKey !== key) delete next[activeProfileKey];
     next[key] = { key, name, avatar: profileAvatarDraft };
     persistProfiles(next, key);
     setProfileMode("view");
     setProfileError("");
   };
+
 
   const switchToProfile = () => {
     const name = sanitizeProfileName(profileNameDraft).trim();
