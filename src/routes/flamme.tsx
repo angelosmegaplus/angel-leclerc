@@ -491,6 +491,15 @@ function FlammeBetaPage() {
     setProfileOpen((value) => !value);
   };
 
+  const openProfileManager = () => {
+    setPanel(null);
+    setProfileError("");
+    setProfileMode(activeProfile ? "view" : "create");
+    setProfileNameDraft(activeProfile ? activeProfile.name : "");
+    setProfileAvatarDraft(activeProfile ? activeProfile.avatar : "user");
+    setProfileOpen(true);
+
+
   const persistProfiles = (next: Record<string, FlammeProfile>, activeKey: string | null) => {
     setProfiles(next);
     setActiveProfileKey(activeKey);
