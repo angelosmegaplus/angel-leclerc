@@ -80,6 +80,7 @@ type Service = {
   url: string;
   icon: typeof Search;
   accent: string;
+  panel?: "forum";
 };
 
 const services: Service[] = [
