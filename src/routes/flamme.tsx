@@ -1627,7 +1627,7 @@ function FlammeBetaPage() {
                 <p>Les actualités affichées proviennent directement de flux RSS publics de médias et services français et francophones (Franceinfo, Service-Public, Vie-publique, CNRS Le Journal, Ouest-France, Sud Ouest, La Dépêche, RFI, France 24…). Les titres appartiennent à leurs éditeurs et les liens ouvrent l’article d’origine.</p>
                 <p>La recherche est effectuée par le moteur choisi : Flamme se contente d’ouvrir Qwant ou Lilo avec votre requête et le type choisi (Tous, Actualités, Images, Vidéos). Les Cartes ouvrent le service public IGN.</p>
 
-                <p>Le carrousel de services est une liste de raccourcis vers des sites tiers (Mailo, Photoweb Cloud, Mappy, PagesJaunes, Dailymotion, AlloCiné, Deezer, Vivlio, Mistral, Reverso…). Chaque service reste géré par son éditeur.</p>
+                <p>Le carrousel de services est une liste de raccourcis vers des sites tiers : Radioplayer France, france.tv, Mailo, Olvid, Photoweb Cloud, Mappy, PagesJaunes, Dailymotion, AlloCiné, Deezer, Vivlio, Mistral, Reverso… Chaque service reste géré par son éditeur. Les rares services étrangers cités le sont à titre d’alternative indépendante, avec leur drapeau d’origine.</p>
                 <p>Flamme n’héberge aucun compte, n’indexe aucun contenu et ne stocke aucune donnée sur un serveur.</p>
               </div>
             )}
