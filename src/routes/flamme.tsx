@@ -527,7 +527,12 @@ function FlammeBetaPage() {
     const historyMatches = historyItems.filter((item) => !q || foldText(item).includes(q));
     const localMatches = localSuggestions.filter((item) => !q || foldText(item).includes(q));
     const serviceMatches = q
-      ? services.filter((service) => foldText(service.name).includes(q) || foldText(service.description).includes(q))
+      ? services.filter(
+          (service) =>
+            foldText(service.name).includes(q) ||
+            foldText(service.description).includes(q) ||
+            (service.keywords ?? []).some((keyword) => foldText(keyword).includes(q)),
+        )
       : [];
 
     if (q) {
