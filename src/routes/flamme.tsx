@@ -854,38 +854,59 @@ function FlammeBetaPage() {
       </main>
 
       <section className="mx-auto w-full max-w-[720px] px-4 pb-14 md:hidden">
-        <div className={`mb-4 flex items-end justify-between border-b pb-3 ${darkMode ? "border-[#5f6368]" : "border-[#dadce0]"}`}>
-          <div>
+        <div className={`mb-4 flex items-end justify-between gap-3 border-b pb-3 ${darkMode ? "border-[#5f6368]" : "border-[#dadce0]"}`}>
+          <div className="min-w-0">
             <h1 className="text-[21px] font-normal">Découvrir</h1>
-            <p className={`mt-1 text-[12px] ${muted}`}>Actualités et sujets du moment avec Qwant</p>
+            <p className={`mt-1 text-[12px] ${muted}`}>
+              {newsItems.length > 0
+                ? `Sources françaises — mise à jour ${formatUpdatedAt(newsFetchedAt)}`
+                : "Actualités et sujets du moment avec Qwant"}
+            </p>
           </div>
-          <a href="https://www.qwant.com/?l=fr&t=news&q=actualités" target="_blank" rel="noreferrer" className="min-h-11 px-2 py-3 text-[14px] font-medium text-[#1a73e8]">Voir plus</a>
+          {newsItems.length > 0 ? (
+            <FlammeNewsRefresh onRefresh={() => void loadNews()} loading={newsLoading} label="Actualiser" darkMode={darkMode} />
+          ) : (
+            <a href="https://www.qwant.com/?l=fr&t=news&q=actualités" target="_blank" rel="noreferrer" className="min-h-11 px-2 py-3 text-[14px] font-medium text-[#1a73e8]">Voir plus</a>
+          )}
         </div>
 
-        <div className="grid gap-4">
-          <a href={`https://www.qwant.com/?l=fr&t=news&q=${encodeURIComponent(mainNews.query)}`} target="_blank" rel="noreferrer" className={`group overflow-hidden rounded-2xl border ${surface}`}>
-            <img src={newsVisual(mainNews)} alt="Illustration des actualités à la une" className="aspect-[16/9] w-full object-cover" />
-            <div className="p-4">
-              <div className={`mb-2 flex items-center gap-2 text-[12px] ${muted}`}><span className="font-medium text-[#1a73e8]">{mainNews.label}</span><span>•</span><span>Qwant Actualités</span></div>
-              <h2 className="text-[20px] font-normal leading-7 group-hover:underline">{mainNews.headline}</h2>
-              <p className={`mt-2 text-[14px] leading-5 ${muted}`}>{mainNews.subline}</p>
+        {newsLoading && newsItems.length === 0 && !newsFailed ? (
+          <FlammeNewsSkeleton surface={surface} darkMode={darkMode} />
+        ) : newsItems.length > 0 ? (
+          <FlammeNewsList
+            items={newsItems}
+            fallbackImage={newsVisual(mainNews)}
+            surface={surface}
+            muted={muted}
+            darkMode={darkMode}
+          />
+        ) : (
+          <div className="grid gap-4">
+            <a href={`https://www.qwant.com/?l=fr&t=news&q=${encodeURIComponent(mainNews.query)}`} target="_blank" rel="noreferrer" className={`group overflow-hidden rounded-2xl border ${surface}`}>
+              <img src={newsVisual(mainNews)} alt="Illustration des actualités à la une" className="aspect-[16/9] w-full object-cover" />
+              <div className="p-4">
+                <div className={`mb-2 flex items-center gap-2 text-[12px] ${muted}`}><span className="font-medium text-[#1a73e8]">{mainNews.label}</span><span>•</span><span>Recherche Qwant</span></div>
+                <h2 className="text-[20px] font-normal leading-7 group-hover:underline">{mainNews.headline}</h2>
+                <p className={`mt-2 text-[14px] leading-5 ${muted}`}>{mainNews.subline}</p>
+              </div>
+            </a>
+
+            <div className={`overflow-hidden rounded-2xl border ${surface}`}>
+              {secondaryNews.map((topic, index) => (
+                <a key={topic.label} href={`https://www.qwant.com/?l=fr&t=news&q=${encodeURIComponent(topic.query)}`} target="_blank" rel="noreferrer" className={`group grid min-h-[112px] grid-cols-[1fr_104px] gap-3 p-3.5 ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f8f9fa]"} ${index > 0 ? darkMode ? "border-t border-[#5f6368]" : "border-t border-[#e8eaed]" : ""}`}>
+                  <div className="min-w-0 py-1">
+                    <div className={`mb-1 text-[12px] font-medium ${muted}`}>{topic.label}</div>
+                    <h3 className="text-[15px] leading-5 group-hover:underline">{topic.headline}</h3>
+                    <p className={`mt-1 line-clamp-2 text-[12px] leading-4 ${muted}`}>{topic.subline}</p>
+                  </div>
+                  <img src={newsVisual(topic)} alt={`Illustration ${topic.label}`} className="h-[82px] w-[104px] rounded-xl object-cover" />
+                </a>
+              ))}
             </div>
-          </a>
-
-          <div className={`overflow-hidden rounded-2xl border ${surface}`}>
-            {secondaryNews.map((topic, index) => (
-              <a key={topic.label} href={`https://www.qwant.com/?l=fr&t=news&q=${encodeURIComponent(topic.query)}`} target="_blank" rel="noreferrer" className={`group grid min-h-[112px] grid-cols-[1fr_104px] gap-3 p-3.5 ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f8f9fa]"} ${index > 0 ? darkMode ? "border-t border-[#5f6368]" : "border-t border-[#e8eaed]" : ""}`}>
-                <div className="min-w-0 py-1">
-                  <div className={`mb-1 text-[12px] font-medium ${muted}`}>{topic.label}</div>
-                  <h3 className="text-[15px] leading-5 group-hover:underline">{topic.headline}</h3>
-                  <p className={`mt-1 line-clamp-2 text-[12px] leading-4 ${muted}`}>{topic.subline}</p>
-                </div>
-                <img src={newsVisual(topic)} alt={`Illustration ${topic.label}`} className="h-[82px] w-[104px] rounded-xl object-cover" />
-              </a>
-            ))}
           </div>
-        </div>
+        )}
       </section>
+
 
       <footer className={`${darkMode ? "bg-[#171717] text-[#bdc1c6]" : "bg-[#f2f2f2] text-[#70757a]"} md:mt-auto`}>
         <div className={`border-b px-6 py-3 text-[14px] ${darkMode ? "border-[#3c4043]" : "border-[#dadce0]"}`}>France</div>
