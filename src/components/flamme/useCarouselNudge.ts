@@ -1,15 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useAnimationControls } from "framer-motion";
 
-type ExtraShortcut = {
-  id: string;
-  name: string;
-  description: string;
-  url: string;
-  glyph: string;
-  accent: string;
-};
-
 type CustomShortcut = {
   id: string;
   name: string;
@@ -19,24 +10,6 @@ type CustomShortcut = {
 const CUSTOM_SHORTCUTS_KEY = "flamme-custom-shortcuts";
 const CUSTOM_SHORTCUTS_EVENT = "flamme-custom-shortcuts-changed";
 const MAX_CUSTOM_SHORTCUTS = 20;
-
-// Raccourcis directs supplémentaires : ils complètent les panneaux existants sans
-// supprimer les services déjà présents dans Flamme. Les médias d’actualité restent
-// dans le fil Découvrir et ne sont volontairement pas ajoutés au carrousel principal.
-const EXTRA_SHORTCUTS: ExtraShortcut[] = [
-  { id: "service-public", name: "Service-Public", description: "Droits et démarches administratives", url: "https://www.service-public.gouv.fr/", glyph: "🏛", accent: "#1d4ed8" },
-  { id: "france-identite", name: "France Identité", description: "Identité numérique officielle", url: "https://france-identite.gouv.fr/", glyph: "🪪", accent: "#2563eb" },
-  { id: "ameli", name: "Ameli", description: "Assurance Maladie", url: "https://www.ameli.fr/", glyph: "✚", accent: "#0ea5e9" },
-  { id: "france-travail", name: "France Travail", description: "Emploi et démarches", url: "https://www.francetravail.fr/accueil/", glyph: "💼", accent: "#2563eb" },
-  { id: "impots", name: "Impôts", description: "Impôts et espace fiscal", url: "https://www.impots.gouv.fr/", glyph: "€", accent: "#166534" },
-  { id: "doctolib", name: "Doctolib", description: "Rendez-vous de santé", url: "https://www.doctolib.fr/", glyph: "♡", accent: "#0f766e" },
-  { id: "sncf", name: "SNCF", description: "Billets et trajets", url: "https://www.sncf-connect.com/", glyph: "🚆", accent: "#7c3aed" },
-  { id: "leboncoin", name: "leboncoin", description: "Petites annonces", url: "https://www.leboncoin.fr/", glyph: "🏷", accent: "#f97316" },
-  { id: "blablacar", name: "BlaBlaCar", description: "Covoiturage, bus et train", url: "https://www.blablacar.fr/", glyph: "🚗", accent: "#0284c7" },
-  { id: "gallica", name: "Gallica", description: "Bibliothèque numérique de la BnF", url: "https://gallica.bnf.fr/", glyph: "📚", accent: "#7c3aed" },
-  { id: "legifrance", name: "Légifrance", description: "Droit français officiel", url: "https://www.legifrance.gouv.fr/", glyph: "⚖", accent: "#1e3a8a" },
-  { id: "caf", name: "CAF", description: "Allocations et démarches CAF", url: "https://www.caf.fr/", glyph: "◇", accent: "#2563eb" },
-];
 
 function isDarkTheme() {
   return window.localStorage.getItem("flamme-theme") === "dark";
@@ -91,21 +64,23 @@ function customGlyph(name: string) {
   return first ? first.toLocaleUpperCase("fr-FR") : "↗";
 }
 
-function createShortcut(shortcut: ExtraShortcut): HTMLAnchorElement {
+function createCustomShortcut(shortcut: CustomShortcut): HTMLAnchorElement {
   const anchor = document.createElement("a");
   anchor.href = shortcut.url;
   anchor.target = "_blank";
   anchor.rel = "noreferrer";
-  anchor.title = shortcut.description;
-  anchor.setAttribute("aria-label", `${shortcut.name} — ${shortcut.description}`);
-  anchor.dataset.flammeExtraShortcut = shortcut.id;
-  anchor.dataset.flammeAccent = shortcut.accent;
+  anchor.title = `Raccourci personnel — ${shortcut.name}`;
+  anchor.setAttribute("aria-label", `${shortcut.name} — raccourci personnel`);
+  anchor.dataset.flammeExtraShortcut = `custom-${shortcut.id}`;
+  anchor.dataset.flammeCustomShortcut = shortcut.id;
+  anchor.dataset.flammeAccent = "#1a73e8";
   anchor.className = "flex w-[68px] shrink-0 flex-col items-center gap-2 text-center";
 
   const icon = document.createElement("span");
   icon.dataset.flammeShortcutIcon = "true";
-  icon.className = "flex h-12 w-12 items-center justify-center rounded-full border text-[19px] font-semibold shadow-sm transition-transform hover:scale-105";
-  icon.textContent = shortcut.glyph;
+  icon.className =
+    "flex h-12 w-12 items-center justify-center rounded-full border text-[19px] font-semibold shadow-sm transition-transform hover:scale-105";
+  icon.textContent = customGlyph(shortcut.name);
   icon.setAttribute("aria-hidden", "true");
 
   const label = document.createElement("span");
@@ -117,30 +92,26 @@ function createShortcut(shortcut: ExtraShortcut): HTMLAnchorElement {
   return anchor;
 }
 
-function createCustomShortcut(shortcut: CustomShortcut): HTMLAnchorElement {
-  const anchor = createShortcut({
-    id: `custom-${shortcut.id}`,
-    name: shortcut.name,
-    description: `Raccourci personnel — ${shortcut.name}`,
-    url: shortcut.url,
-    glyph: customGlyph(shortcut.name),
-    accent: "#1a73e8",
-  });
-  anchor.dataset.flammeCustomShortcut = shortcut.id;
-  return anchor;
-}
-
 function syncShortcutTheme(rail: HTMLElement) {
   const dark = isDarkTheme();
-  rail.querySelectorAll<HTMLAnchorElement>("[data-flamme-extra-shortcut]").forEach((anchor) => {
+  rail.querySelectorAll<HTMLAnchorElement>("[data-flamme-custom-shortcut]").forEach((anchor) => {
     const icon = anchor.querySelector<HTMLElement>("[data-flamme-shortcut-icon]");
     const label = anchor.querySelector<HTMLElement>("[data-flamme-shortcut-label]");
     if (icon) {
-      icon.style.color = anchor.dataset.flammeAccent ?? "#1a73e8";
+      icon.style.color = "#1a73e8";
       icon.style.backgroundColor = dark ? "#303134" : "#ffffff";
       icon.style.borderColor = dark ? "#5f6368" : "#dfe1e5";
     }
     if (label) label.style.color = dark ? "#e8eaed" : "#3c4043";
+  });
+}
+
+function removeLegacyAutomaticShortcuts(rail: HTMLElement) {
+  // Les anciens raccourcis automatiques (Ameli, France Travail, Impôts,
+  // Doctolib, SNCF, etc.) n'ont plus leur place dans le carrousel principal.
+  // On conserve uniquement les raccourcis créés volontairement par l'utilisateur.
+  rail.querySelectorAll<HTMLElement>("[data-flamme-extra-shortcut]").forEach((node) => {
+    if (!node.dataset.flammeCustomShortcut) node.remove();
   });
 }
 
@@ -154,7 +125,8 @@ function syncCustomShortcuts(rail: HTMLElement, secondaryAnchor: Element | null)
   });
 
   for (const shortcut of current) {
-    if (rail.querySelector(`[data-flamme-custom-shortcut="${CSS.escape(shortcut.id)}"]`)) continue;
+    const selector = `[data-flamme-custom-shortcut="${CSS.escape(shortcut.id)}"]`;
+    if (rail.querySelector(selector)) continue;
     rail.insertBefore(createCustomShortcut(shortcut), secondaryAnchor);
   }
 }
@@ -164,15 +136,14 @@ function enhanceCarousel() {
   const rail = nav?.firstElementChild as HTMLElement | null;
   if (!rail) return;
 
-  ["franceinfo", "cnews", "tf1-info", "actu-fr"].forEach((id) => {
-    rail.querySelector(`[data-flamme-extra-shortcut="${id}"]`)?.remove();
-  });
+  removeLegacyAutomaticShortcuts(rail);
 
   const children = Array.from(rail.children);
   const radio = children.find((node) => serviceName(node).startsWith("Radio"));
   const tv = children.find((node) => serviceName(node).startsWith("TV"));
   const good = children.find((node) => serviceName(node).startsWith("Bonne action"));
 
+  // Radio et TV restent secondaires, juste avant Bonne action.
   const alreadySecondary = Boolean(radio && tv && good && radio.nextElementSibling === tv && tv.nextElementSibling === good);
   if (!alreadySecondary && good) {
     if (radio) rail.insertBefore(radio, good);
@@ -180,11 +151,6 @@ function enhanceCarousel() {
   }
 
   const secondaryAnchor = radio ?? tv ?? good ?? null;
-  for (const shortcut of EXTRA_SHORTCUTS) {
-    if (rail.querySelector(`[data-flamme-extra-shortcut="${shortcut.id}"]`)) continue;
-    rail.insertBefore(createShortcut(shortcut), secondaryAnchor);
-  }
-
   syncCustomShortcuts(rail, secondaryAnchor);
   syncShortcutTheme(rail);
 }
@@ -222,7 +188,8 @@ function renderCustomShortcutList(section: HTMLElement) {
     row.className = "flex min-h-11 items-center gap-3 rounded-xl border px-3 py-2";
 
     const icon = document.createElement("span");
-    icon.className = "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1a73e8]/10 text-[13px] font-semibold text-[#1a73e8]";
+    icon.className =
+      "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1a73e8]/10 text-[13px] font-semibold text-[#1a73e8]";
     icon.textContent = customGlyph(item.name);
 
     const text = document.createElement("div");
@@ -241,7 +208,8 @@ function renderCustomShortcutList(section: HTMLElement) {
 
     const remove = document.createElement("button");
     remove.type = "button";
-    remove.className = "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[16px] hover:bg-black/5 dark:hover:bg-white/10";
+    remove.className =
+      "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[16px] hover:bg-black/5 dark:hover:bg-white/10";
     remove.title = `Supprimer ${item.name}`;
     remove.setAttribute("aria-label", `Supprimer ${item.name}`);
     remove.textContent = "×";
@@ -399,7 +367,8 @@ function enhanceMessagingPanel() {
   const dialog = skred.closest('[role="dialog"]');
   const intro = dialog?.querySelector("p.text-\\[13px\\]") as HTMLParagraphElement | null;
   if (intro && !intro.textContent?.includes("Skred est le choix recommandé")) {
-    intro.textContent = "Des messageries instantanées qui mettent la confidentialité en avant. Skred est le choix recommandé par Flamme.";
+    intro.textContent =
+      "Des messageries instantanées qui mettent la confidentialité en avant. Skred est le choix recommandé par Flamme.";
   }
 }
 
