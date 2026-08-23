@@ -203,6 +203,7 @@ function FlammeBetaPage() {
   const askMistral = () => window.open("https://chat.mistral.ai/", "_blank", "noopener,noreferrer");
 
   const startVoiceSearch = () => {
+    if (isListening) return;
     setVoiceMessage("");
     const SpeechRecognitionCtor = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognitionCtor) {
@@ -213,30 +214,28 @@ function FlammeBetaPage() {
     recognition.lang = "fr-FR";
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => setIsListening(false);
     recognition.onresult = (event: any) => {
+      setIsListening(false);
       const transcript = event?.results?.[0]?.[0]?.transcript || "";
       if (!transcript) return;
       setQuery(transcript);
       goToSearch(transcript);
     };
-    recognition.onerror = () => setVoiceMessage("Impossible d’utiliser le micro pour le moment.");
-    recognition.start();
+    recognition.onerror = () => {
+      setIsListening(false);
+      setVoiceMessage("Impossible d’utiliser le micro pour le moment.");
+    };
+    try {
+      recognition.start();
+    } catch {
+      setIsListening(false);
+      setVoiceMessage("Impossible de démarrer la recherche vocale.");
+    }
   };
 
-  const handleImageFile = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
-    setImageName(file.name);
-    setImagePreview(URL.createObjectURL(file));
-    event.target.value = "";
-  };
 
-  const closeImagePreview = () => {
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
-    setImagePreview("");
-    setImageName("");
-  };
 
   const toggleTheme = () => {
     setDarkMode((current) => {
