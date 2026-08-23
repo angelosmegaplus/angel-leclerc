@@ -94,6 +94,8 @@ import {
   type SearchEngine,
 } from "@/lib/flamme-prefs";
 import { getFlammeNews } from "@/lib/flamme-news.functions";
+import { FLAMME_REGIONS, findRegion, readNewsRegion, writeNewsRegion } from "@/lib/flamme-regions";
+
 
 import { FlammeInstallCard } from "@/components/flamme/FlammeInstallCard";
 import { FlammeNewsList, FlammeNewsRefresh, FlammeNewsSkeleton, formatUpdatedAt } from "@/components/flamme/FlammeNews";
