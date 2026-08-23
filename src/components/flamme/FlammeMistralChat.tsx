@@ -1,10 +1,18 @@
 import { useRef, useState, type FormEvent } from "react";
-import { Loader2, RotateCcw, Send } from "lucide-react";
+import { Loader2, RotateCcw, Send, ShieldCheck, Sparkles } from "lucide-react";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 const MAX_LENGTH = 2500;
 const MISTRAL_URL = "https://chat.mistral.ai/chat";
+const MISTRAL_PRIVACY_URL = "https://legal.mistral.ai/terms/privacy-policy?language=fr-FR";
+
+const SUGGESTIONS = [
+  "Résume-moi les actualités du jour",
+  "Quels sites français consulter pour suivre l’actualité ?",
+  "Donne-moi des liens vers des magazines français de culture",
+  "Explique-moi simplement un sujet compliqué",
+];
 
 const ERRORS: Record<string, string> = {
   not_configured: "Mistral n’est pas encore activé dans Flamme.",
@@ -41,9 +49,8 @@ export function FlammeMistralChat({ darkMode }: { darkMode: boolean }) {
     setLoading(false);
   };
 
-  const send = async (event: FormEvent) => {
-    event.preventDefault();
-    const question = input.trim();
+  const ask = async (rawQuestion: string) => {
+    const question = rawQuestion.trim();
     if (!question || loading || disabled) return;
     if (question.length > MAX_LENGTH) {
       setError(ERRORS.invalid_message);
@@ -51,7 +58,7 @@ export function FlammeMistralChat({ darkMode }: { darkMode: boolean }) {
     }
 
     const history = [...messages].slice(-8);
-    setMessages([...messages, { role: "user", content: question }]);
+    setMessages((current) => [...current, { role: "user", content: question }]);
     setInput("");
     setError("");
     setLoading(true);
@@ -79,18 +86,53 @@ export function FlammeMistralChat({ darkMode }: { darkMode: boolean }) {
     }
   };
 
+  const send = (event: FormEvent) => {
+    event.preventDefault();
+    void ask(input);
+  };
+
   return (
     <div className="space-y-3">
-      <p className={`text-[13px] leading-5 ${muted}`}>Mistral, IA française intégrée à Flamme.</p>
+      <div>
+        <p className="flex items-center gap-2 text-[14px] font-medium">
+          <Sparkles className="h-4 w-4 text-[#1a73e8]" /> Mistral 🇫🇷 — IA française intégrée à Flamme
+        </p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] ${border} ${muted}`}>
+            <ShieldCheck className="h-3.5 w-3.5" /> Sans compte Flamme
+          </span>
+          <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] ${border} ${muted}`}>
+            Non enregistré par Flamme
+          </span>
+        </div>
+        <p className={`mt-2 text-[12px] leading-5 ${muted}`}>
+          Vos messages sont transmis à l’API Mistral uniquement pour produire la réponse. Flamme ne crée aucun compte et ne conserve pas cette conversation sur son serveur. Mistral indique que les données envoyées via son API ne sont pas utilisées pour entraîner ses modèles ; leur traitement reste soumis aux règles de Mistral.
+        </p>
+      </div>
 
       <div
         ref={listRef}
         role="log"
         aria-live="polite"
-        className={`max-h-[46vh] min-h-[140px] space-y-2 overflow-y-auto rounded-2xl border p-3 ${border} ${darkMode ? "bg-[#26282b]" : "bg-[#fafafa]"}`}
+        className={`max-h-[46vh] min-h-[150px] space-y-2 overflow-y-auto rounded-2xl border p-3 ${border} ${darkMode ? "bg-[#26282b]" : "bg-[#fafafa]"}`}
       >
         {messages.length === 0 && !loading && (
-          <p className={`text-[13px] leading-5 ${muted}`}>Posez votre question, la réponse s’affiche ici.</p>
+          <div>
+            <p className={`text-[13px] leading-5 ${muted}`}>Posez votre question ou choisissez une idée :</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {SUGGESTIONS.map((suggestion) => (
+                <button
+                  key={suggestion}
+                  type="button"
+                  onClick={() => void ask(suggestion)}
+                  disabled={disabled}
+                  className={`rounded-full border px-3 py-2 text-left text-[12px] leading-4 transition ${border} ${darkMode ? "hover:bg-white/10" : "bg-white hover:bg-[#f1f3f4]"}`}
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
         {messages.map((message, index) => (
           <div
@@ -122,7 +164,7 @@ export function FlammeMistralChat({ darkMode }: { darkMode: boolean }) {
           onKeyDown={(event) => {
             if (event.key === "Enter" && !event.shiftKey) {
               event.preventDefault();
-              void send(event as unknown as FormEvent);
+              void ask(input);
             }
           }}
           rows={2}
@@ -149,13 +191,18 @@ export function FlammeMistralChat({ darkMode }: { darkMode: boolean }) {
         >
           <RotateCcw className="h-4 w-4" /> Nouvelle conversation
         </button>
-        <a href={MISTRAL_URL} target="_blank" rel="noreferrer" className={`text-[12px] underline ${muted}`}>
-          Ouvrir Mistral
-        </a>
+        <div className="flex items-center gap-3">
+          <a href={MISTRAL_PRIVACY_URL} target="_blank" rel="noreferrer" className={`text-[12px] underline ${muted}`}>
+            Confidentialité
+          </a>
+          <a href={MISTRAL_URL} target="_blank" rel="noreferrer" className={`text-[12px] underline ${muted}`}>
+            Ouvrir Mistral
+          </a>
+        </div>
       </div>
 
       <p className={`text-center text-[11px] leading-4 ${muted}`}>
-        Conversation gardée uniquement dans cet onglet, jamais enregistrée par Flamme.
+        La conversation reste seulement dans cet onglet côté Flamme et disparaît en le rechargeant ou en cliquant sur « Nouvelle conversation ».
       </p>
     </div>
   );
