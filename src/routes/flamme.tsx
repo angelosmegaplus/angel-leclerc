@@ -101,7 +101,7 @@ export const Route = createFileRoute("/flamme")({
       {
         name: "description",
         content:
-          "Flamme est une page bêta de recherche et d’accès rapide à des services numériques français, avec Qwant comme moteur de recherche.",
+          "Flamme est une page bêta de recherche et d’accès rapide à des services numériques français, avec Qwant ou Lilo comme moteur de recherche.",
       },
       { name: "robots", content: "noindex,nofollow" },
     ],
@@ -928,6 +928,16 @@ function FlammeBetaPage() {
 
 
   const visibleNews = useMemo(() => selectNewsFeed(newsItems, newsLayers, 12), [newsItems, newsLayers]);
+  const newsSourcesLabel = useMemo(() => {
+    const unique: string[] = [];
+    for (const item of visibleNews) {
+      if (item.source && !unique.includes(item.source)) unique.push(item.source);
+    }
+    if (unique.length === 0) return "Sources françaises";
+    const head = unique.slice(0, 3).join(" • ");
+    return unique.length > 3 ? `${head} +${unique.length - 3}` : head;
+  }, [visibleNews]);
+
   const mainNews = newsTopics[0];
 
   const secondaryNews = newsTopics.slice(1);
@@ -1181,8 +1191,9 @@ function FlammeBetaPage() {
             <h1 className="text-[21px] font-normal">Découvrir</h1>
             <p className={`mt-1 text-[12px] ${muted}`}>
               {visibleNews.length > 0
-                ? `Sources françaises — mise à jour ${formatUpdatedAt(newsFetchedAt)}`
-                : "Actualités et sujets du moment avec Qwant"}
+                ? `${newsSourcesLabel} — ${formatUpdatedAt(newsFetchedAt)}`
+                : "Actualités et sujets du moment"}
+
             </p>
           </div>
           {visibleNews.length > 0 ? (
@@ -1243,7 +1254,7 @@ function FlammeBetaPage() {
             <button type="button" onClick={() => setPanel("settings")} className="inline-flex min-h-11 items-center gap-1 hover:underline sm:min-h-0"><Settings className="h-3.5 w-3.5" /> Paramètres</button>
           </div>
         </div>
-        <div className={`px-5 pb-3 text-center text-[11px] ${darkMode ? "text-[#9aa0a6]" : "text-[#80868b]"}`}>Flamme est une bêta indépendante. Qwant effectue les recherches ; les services restent fournis par leurs éditeurs respectifs.</div>
+        <div className={`px-5 pb-3 text-center text-[11px] ${darkMode ? "text-[#9aa0a6]" : "text-[#80868b]"}`}>Flamme est une bêta indépendante. Les recherches sont fournies par Qwant ou Lilo selon vos réglages ; les services restent fournis par leurs éditeurs respectifs.</div>
       </footer>
 
       {panel && (
@@ -1274,26 +1285,31 @@ function FlammeBetaPage() {
               <div className={`space-y-3 text-[14px] leading-6 ${muted}`}>
                 <p>Flamme ne dispose pas de serveur propre pour la recherche : voici exactement ce qui se passe.</p>
                 <ul className="list-disc space-y-2 pl-5">
-                  <li>Votre <strong className="font-medium">historique de recherche</strong>, vos <strong className="font-medium">profils locaux</strong> (nom et avatar) et votre <strong className="font-medium">thème clair/sombre</strong> sont enregistrés uniquement dans le stockage local de votre navigateur, sans compte ni serveur. Vous pouvez les effacer depuis Paramètres.</li>
-                  <li>Lorsque vous lancez une recherche, la requête est <strong className="font-medium">envoyée à Qwant</strong> (ou au service de cartes IGN pour l’onglet Cartes).</li>
+                  <li>Votre <strong className="font-medium">historique de recherche</strong>, vos <strong className="font-medium">profils locaux</strong> (nom et avatar), votre <strong className="font-medium">thème clair/sombre</strong>, votre <strong className="font-medium">moteur choisi</strong> (<code>flamme-search-engine</code>) et vos <strong className="font-medium">couches d’actualités</strong> (<code>flamme-news-layers</code>) sont enregistrés uniquement dans le stockage local de votre navigateur, sans compte ni serveur. Vous pouvez les effacer depuis Paramètres.</li>
+                  <li>Lorsque vous lancez une recherche, la requête est <strong className="font-medium">envoyée au moteur choisi</strong> (Qwant ou Lilo) pour le Web ; les modes spécialisés encore utilisés (Actualités, Vidéos) passent par Qwant, et l’onglet Cartes par le service public IGN.</li>
                   <li>Cliquer sur un service du carrousel ouvre directement le site de l’éditeur concerné, qui applique ses propres règles.</li>
                   <li>La <strong className="font-medium">recherche vocale</strong> utilise la reconnaissance vocale de votre navigateur ou de votre appareil ; l’audio peut être traité par le fournisseur de ce navigateur/système.</li>
                 </ul>
                 <p>Flamme ne prétend pas gérer ni contrôler les données traitées par ces services tiers. Ressources externes :</p>
                 <div className="flex flex-wrap gap-x-4 gap-y-2 text-[13px]">
                   <a href="https://about.qwant.com/legal/confidentialite/" target="_blank" rel="noreferrer" className="text-[#1a73e8] hover:underline">Confidentialité Qwant</a>
+                  <a href="https://www.lilo.org/politique-de-confidentialite/" target="_blank" rel="noreferrer" className="text-[#1a73e8] hover:underline">Confidentialité Lilo</a>
                   <a href="https://pro.mailo.com/mailo/fr/regles-de-confidentialite.php" target="_blank" rel="noreferrer" className="text-[#1a73e8] hover:underline">Confidentialité Mailo</a>
                   <a href="https://cartes.gouv.fr/" target="_blank" rel="noreferrer" className="text-[#1a73e8] hover:underline">cartes.gouv.fr (IGN)</a>
                 </div>
+
               </div>
             )}
 
             {panel === "help" && (
               <div className={`space-y-3 text-[14px] leading-6 ${muted}`}>
-                <p><strong className="font-medium">Onglets de recherche</strong> — Tous, Actualités, Images et Vidéos préparent le type de recherche envoyé à Qwant ; Cartes envoie la requête au service de cartes IGN. Cliquer sur un onglet ne lance pas de recherche : il sélectionne le mode, utilisé lors de la recherche suivante. Le pictogramme à gauche du champ reflète le mode actif.</p>
+                <p><strong className="font-medium">Onglets de recherche</strong> — Tous, Actualités, Images et Vidéos préparent le type de recherche ; Cartes envoie la requête au service de cartes IGN. Cliquer sur un onglet ne lance pas de recherche : il sélectionne le mode, utilisé lors de la recherche suivante. Le pictogramme à gauche du champ reflète le mode actif.</p>
+                <p><strong className="font-medium">Choix du moteur</strong> — Dans Paramètres, vous pouvez choisir Qwant 🇫🇷 ou Lilo 🇫🇷. Quand Lilo est sélectionné, le Web et les Images passent par Lilo ; les Actualités et Vidéos restent sur Qwant et les Cartes sur l’IGN. Le choix est mémorisé dans votre navigateur.</p>
+                <p><strong className="font-medium">Couches d’actualités</strong> — Toujours dans Paramètres, activez ou désactivez les thèmes (France, Monde, Économie, Sciences…). Le fil « Découvrir » mélange alors les sources françaises les plus récentes correspondant aux thèmes activés.</p>
                 <p><strong className="font-medium">Recherche vocale</strong> — Touchez le micro et dictez : trois points animés indiquent l’écoute. La recherche se lance dès que la phrase est reconnue. Si le navigateur ne prend pas en charge la dictée, un message s’affiche.</p>
                 <p><strong className="font-medium">Carrousel de services</strong> — Faites glisser horizontalement pour accéder à l’ensemble des raccourcis ; chaque service s’ouvre dans un nouvel onglet.</p>
                 <p><strong className="font-medium">Qwant IA</strong> — L’icône ✦ dans la barre de recherche ouvre le chat IA de Qwant. Le raccourci « IA » du carrousel ouvre Mistral.</p>
+
               </div>
             )}
 
@@ -1458,26 +1474,44 @@ function FlammeBetaPage() {
               <div className="space-y-3">
                 <p className={`text-[13px] leading-5 ${muted}`}>Des façons simples d’aider en France : chercher solidaire, donner ou devenir bénévole.</p>
 
-                <a
-                  href="https://www.lilo.org/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-start gap-3 rounded-2xl border border-[#1a73e8]/60 bg-[#1a73e8]/5 p-3 text-left"
-                >
-                  <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "bg-[#3c4043]" : "bg-[#f1f3f4]"}`} style={{ color: readableAccent("#16a34a", darkMode) }}>
-                    <Sprout className="h-5 w-5" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="flex flex-wrap items-center gap-2">
-                      <span className="text-[15px] font-medium">Lilo</span>
-                      <span className={`inline-flex items-center gap-1 rounded-full px-2 py-[2px] text-[11px] font-medium ${darkMode ? "bg-[#1a73e8]/20 text-[#a8c7fa]" : "bg-[#1a73e8]/10 text-[#1a73e8]"}`}>
-                        <ShieldCheck className="h-3 w-3" /> Moteur solidaire
-                      </span>
+                <div className="rounded-2xl border border-[#1a73e8]/60 bg-[#1a73e8]/5 p-3 text-left">
+                  <div className="flex items-start gap-3">
+                    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "bg-[#3c4043]" : "bg-[#f1f3f4]"}`} style={{ color: readableAccent("#16a34a", darkMode) }}>
+                      <Sprout className="h-5 w-5" />
                     </span>
-                    <span className={`mt-1 block text-[13px] leading-5 ${muted}`}>Moteur de recherche français qui finance des projets sociaux et environnementaux avec ses revenus publicitaires. Vous pouvez le choisir comme moteur par défaut dans Paramètres.</span>
-                    <span className="mt-1 inline-flex items-center gap-1 text-[12px] text-[#1a73e8]"><ExternalLink className="h-3 w-3" /> lilo.org</span>
-                  </span>
-                </a>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[15px] font-medium">Lilo</span>
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-[2px] text-[11px] font-medium ${darkMode ? "bg-[#1a73e8]/20 text-[#a8c7fa]" : "bg-[#1a73e8]/10 text-[#1a73e8]"}`}>
+                          <ShieldCheck className="h-3 w-3" /> Moteur solidaire
+                        </span>
+                      </div>
+                      <p className={`mt-1 text-[13px] leading-5 ${muted}`}>Moteur de recherche français qui finance des projets sociaux et environnementaux avec ses revenus publicitaires.</p>
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          disabled={searchEngine === "lilo"}
+                          aria-pressed={searchEngine === "lilo"}
+                          onClick={() => {
+                            chooseEngine("lilo");
+                            setPanel(null);
+                          }}
+                          className={`inline-flex min-h-9 items-center gap-1 rounded-full px-3 text-[13px] font-medium ${
+                            searchEngine === "lilo"
+                              ? "cursor-default border border-[#1a73e8] bg-[#1a73e8]/15 text-[#1a73e8]"
+                              : "bg-[#1a73e8] text-white hover:bg-[#1765cc]"
+                          }`}
+                        >
+                          {searchEngine === "lilo" ? (<><ShieldCheck className="h-3.5 w-3.5" /> Lilo est votre moteur</>) : "Utiliser Lilo comme moteur"}
+                        </button>
+                        <a href="https://www.lilo.org/" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[12px] text-[#1a73e8] hover:underline">
+                          <ExternalLink className="h-3 w-3" /> lilo.org
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
 
                 <p className={`pt-1 text-[12px] font-medium uppercase tracking-wide ${muted}`}>Associations françaises</p>
 
