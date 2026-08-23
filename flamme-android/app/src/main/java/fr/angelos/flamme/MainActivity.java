@@ -21,6 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.CookieManager;
+import android.webkit.JavascriptInterface;
 import android.webkit.PermissionRequest;
 import android.webkit.RenderProcessGoneDetail;
 import android.webkit.ValueCallback;
@@ -60,6 +61,10 @@ public final class MainActivity extends AppCompatActivity {
 
     public static final String ACTION_FOCUS_SEARCH = "fr.angelos.flamme.action.FOCUS_SEARCH";
     public static final String ACTION_VOICE_SEARCH = "fr.angelos.flamme.action.VOICE_SEARCH";
+    public static final String ACTION_OPEN_NEWS = "fr.angelos.flamme.action.OPEN_NEWS";
+    public static final String ACTION_OPEN_MAIL = "fr.angelos.flamme.action.OPEN_MAIL";
+    public static final String ACTION_OPEN_MAPS = "fr.angelos.flamme.action.OPEN_MAPS";
+    public static final String ACTION_OPEN_AI = "fr.angelos.flamme.action.OPEN_AI";
 
     private static final int REQUEST_AUDIO = 4001;
     private static final int REQUEST_FILE = 4002;
@@ -80,6 +85,10 @@ public final class MainActivity extends AppCompatActivity {
     private boolean showingError;
     private boolean focusSearchAfterLoad;
     private boolean voiceSearchAfterLoad;
+    private boolean scrollNewsAfterLoad;
+    private boolean openAiAfterLoad;
+    private volatile boolean flammeContentAtTop = true;
+    private volatile boolean trustedPageActive;
 
     private final ConnectivityManager.NetworkCallback networkCallback = new ConnectivityManager.NetworkCallback() {
         @Override
@@ -112,10 +121,11 @@ public final class MainActivity extends AppCompatActivity {
         loadIntentOrHome(intent);
     }
 
-    @SuppressLint("SetJavaScriptEnabled")
+    @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     private WebView createConfiguredWebView() {
         WebView view = new WebView(this);
         view.setBackgroundColor(resolveBackgroundColor());
+        view.setOverScrollMode(View.OVER_SCROLL_NEVER);
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);
 
         WebSettings settings = view.getSettings();
@@ -143,6 +153,7 @@ public final class MainActivity extends AppCompatActivity {
         cookies.setAcceptCookie(true);
         cookies.setAcceptThirdPartyCookies(view, false);
 
+        view.addJavascriptInterface(new FlammeAndroidBridge(), "FlammeAndroid");
         view.setWebViewClient(new FlammeWebViewClient());
         view.setWebChromeClient(new FlammeWebChromeClient());
         view.setDownloadListener((url, userAgent, contentDisposition, mimeType, contentLength) -> {
@@ -161,7 +172,15 @@ public final class MainActivity extends AppCompatActivity {
 
         swipeRefresh = new SwipeRefreshLayout(this);
         swipeRefresh.setColorSchemeColors(Color.rgb(234, 67, 53), Color.rgb(66, 133, 244));
+        swipeRefresh.setDistanceToTriggerSync(dp(150));
+        swipeRefresh.setSlingshotDistance(dp(96));
+        swipeRefresh.setProgressViewOffset(false, dp(4), dp(52));
         swipeRefresh.setOnRefreshListener(this::retryCurrentPage);
+        swipeRefresh.setOnChildScrollUpCallback((parent, child) -> {
+            if (trustedPageActive) return !flammeContentAtTop;
+            return webView != null && webView.canScrollVertically(-1);
+        });
+        swipeRefresh.setEnabled(false);
 
         webView = createConfiguredWebView();
         swipeRefresh.addView(webView, new ViewGroup.LayoutParams(
@@ -268,6 +287,17 @@ public final class MainActivity extends AppCompatActivity {
         String action = intent != null ? intent.getAction() : null;
         focusSearchAfterLoad = ACTION_FOCUS_SEARCH.equals(action);
         voiceSearchAfterLoad = ACTION_VOICE_SEARCH.equals(action);
+        scrollNewsAfterLoad = ACTION_OPEN_NEWS.equals(action);
+        openAiAfterLoad = ACTION_OPEN_AI.equals(action);
+
+        if (ACTION_OPEN_MAIL.equals(action)) {
+            webView.loadUrl("https://www.mailo.com/?language=fr&page=id");
+            return;
+        }
+        if (ACTION_OPEN_MAPS.equals(action)) {
+            webView.loadUrl("https://fr.mappy.com/");
+            return;
+        }
 
         Uri data = intent != null ? intent.getData() : null;
         if (data != null && isTrusted(data) && data.getPath() != null && data.getPath().startsWith("/flamme")) {
@@ -378,6 +408,22 @@ public final class MainActivity extends AppCompatActivity {
         webView.loadUrl("https://www.qwant.com/?l=fr&t=all&q=" + Uri.encode(clean));
     }
 
+    private void openFlammeAiPanel() {
+        if (webView == null) return;
+        String script = "(function(){var nodes=Array.from(document.querySelectorAll('button'));"
+                + "var b=nodes.find(function(x){return (x.textContent||'').trim()==='IA';});"
+                + "if(!b)return false;b.click();return true;})()";
+        webView.evaluateJavascript(script, null);
+    }
+
+    private void scrollToFlammeNews() {
+        if (webView == null) return;
+        String script = "(function(){var nodes=Array.from(document.querySelectorAll('h1,h2,h3,p,span'));"
+                + "var n=nodes.find(function(x){return /^Actualit[ée]s/.test((x.textContent||'').trim());});"
+                + "if(!n)return false;n.scrollIntoView({behavior:'smooth',block:'start'});return true;})()";
+        webView.evaluateJavascript(script, null);
+    }
+
     private void applyFlammeAndroidStyleFix(WebView view, String url) {
         Uri uri;
         try {
@@ -390,12 +436,24 @@ public final class MainActivity extends AppCompatActivity {
         String script = "(function(){"
                 + "var id='flamme-android-search-fix';"
                 + "if(!document.getElementById(id)){var s=document.createElement('style');s.id=id;"
-                + "s.textContent='input[aria-label^=\"Rechercher sur\"]{background:transparent!important;background-color:transparent!important;-webkit-appearance:none!important;appearance:none!important;border:0!important;outline:0!important;box-shadow:none!important;-webkit-box-shadow:none!important;color:inherit!important;color-scheme:normal!important;}"
-                + "input[aria-label^=\"Rechercher sur\"]:focus{background:transparent!important;background-color:transparent!important;box-shadow:none!important;-webkit-box-shadow:none!important;}"
-                + "input[aria-label^=\"Rechercher sur\"]:-webkit-autofill,input[aria-label^=\"Rechercher sur\"]:-webkit-autofill:focus{-webkit-text-fill-color:inherit!important;background-color:transparent!important;box-shadow:0 0 0 1000px transparent inset!important;-webkit-box-shadow:0 0 0 1000px transparent inset!important;}';"
+                + "s.textContent='html,body{overscroll-behavior-y:none!important;}'"
+                + "+'input[aria-label^=\"Rechercher sur\"]{background:transparent!important;background-color:transparent!important;-webkit-appearance:none!important;appearance:none!important;border:0!important;outline:0!important;box-shadow:none!important;-webkit-box-shadow:none!important;color:inherit!important;color-scheme:normal!important;font-size:16px!important;}'"
+                + "+'input[aria-label^=\"Rechercher sur\"]:focus{background:transparent!important;background-color:transparent!important;box-shadow:none!important;-webkit-box-shadow:none!important;}'"
+                + "+'input[aria-label^=\"Rechercher sur\"]:-webkit-autofill,input[aria-label^=\"Rechercher sur\"]:-webkit-autofill:focus{-webkit-text-fill-color:inherit!important;background-color:transparent!important;box-shadow:0 0 0 1000px transparent inset!important;-webkit-box-shadow:0 0 0 1000px transparent inset!important;}'"
+                + "+'[data-flamme-android-search=\"1\"]{margin-top:20px!important;}'"
+                + "+'[data-flamme-android-search-box=\"1\"]{border-radius:28px!important;}'"
+                + "+'[data-flamme-android-search-box=\"1\"]>div:first-child{height:54px!important;min-height:54px!important;padding-left:14px!important;padding-right:10px!important;}'"
+                + "+'iframe[src*=\"lovable\" i],iframe[src*=\"feedback\" i],[aria-label*=\"feedback\" i],[title*=\"feedback\" i],[aria-label*=\"donner votre avis\" i],[title*=\"donner votre avis\" i]{display:none!important;}';"
                 + "document.head.appendChild(s);}"
                 + "var i=document.querySelector('input[aria-label^=\"Rechercher sur\"]');"
-                + "if(i){i.style.setProperty('background','transparent','important');i.style.setProperty('background-color','transparent','important');i.style.setProperty('-webkit-appearance','none','important');i.style.setProperty('box-shadow','none','important');i.style.setProperty('border','0','important');}"
+                + "if(i){i.style.setProperty('background','transparent','important');i.style.setProperty('background-color','transparent','important');i.style.setProperty('-webkit-appearance','none','important');i.style.setProperty('box-shadow','none','important');i.style.setProperty('border','0','important');"
+                + "var row=i.parentElement;var box=row&&row.parentElement;var form=i.closest('form');if(form)form.setAttribute('data-flamme-android-search','1');if(box)box.setAttribute('data-flamme-android-search-box','1');}"
+                + "var scroller=null;var children=document.body?document.body.children:[];"
+                + "for(var k=0;k<children.length;k++){var el=children[k],cs=getComputedStyle(el);if(cs.position==='fixed'&&(cs.overflowY==='auto'||cs.overflowY==='scroll')){scroller=el;break;}}"
+                + "if(!scroller)scroller=document.scrollingElement||document.documentElement;"
+                + "var report=function(){try{FlammeAndroid.setContentAtTop((scroller.scrollTop||0)<=2);}catch(e){}};"
+                + "if(scroller&&scroller.getAttribute('data-flamme-android-scroll')!=='1'){scroller.setAttribute('data-flamme-android-scroll','1');scroller.addEventListener('scroll',report,{passive:true});scroller.addEventListener('touchend',report,{passive:true});}"
+                + "report();"
                 + "})()";
         view.evaluateJavascript(script, null);
     }
@@ -662,6 +720,14 @@ public final class MainActivity extends AppCompatActivity {
         return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
+    private final class FlammeAndroidBridge {
+        @JavascriptInterface
+        public void setContentAtTop(boolean atTop) {
+            if (!trustedPageActive) return;
+            flammeContentAtTop = atTop;
+        }
+    }
+
     private final class FlammeWebViewClient extends WebViewClient {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
@@ -677,6 +743,15 @@ public final class MainActivity extends AppCompatActivity {
         @Override
         public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
             super.onPageStarted(view, url, favicon);
+            Uri uri;
+            try {
+                uri = Uri.parse(url);
+            } catch (Exception ignored) {
+                uri = null;
+            }
+            trustedPageActive = isTrusted(uri);
+            flammeContentAtTop = true;
+            swipeRefresh.setEnabled(trustedPageActive);
             if (isOnline()) hideError();
             progressBar.setVisibility(View.VISIBLE);
         }
@@ -690,14 +765,27 @@ public final class MainActivity extends AppCompatActivity {
 
             applyFlammeAndroidStyleFix(view, url);
             Uri uri = Uri.parse(url);
-            if (isTrusted(uri)) {
+            trustedPageActive = isTrusted(uri);
+            swipeRefresh.setEnabled(trustedPageActive);
+            if (trustedPageActive) {
                 if (voiceSearchAfterLoad) {
                     voiceSearchAfterLoad = false;
                     focusSearchAfterLoad = false;
+                    scrollNewsAfterLoad = false;
+                    openAiAfterLoad = false;
                     view.postDelayed(MainActivity.this::startNativeVoiceSearch, 180);
                 } else if (focusSearchAfterLoad) {
                     focusSearchAfterLoad = false;
+                    scrollNewsAfterLoad = false;
+                    openAiAfterLoad = false;
                     view.postDelayed(MainActivity.this::focusFlammeSearchField, 120);
+                } else if (openAiAfterLoad) {
+                    openAiAfterLoad = false;
+                    scrollNewsAfterLoad = false;
+                    view.postDelayed(MainActivity.this::openFlammeAiPanel, 180);
+                } else if (scrollNewsAfterLoad) {
+                    scrollNewsAfterLoad = false;
+                    view.postDelayed(MainActivity.this::scrollToFlammeNews, 180);
                 }
             }
         }
