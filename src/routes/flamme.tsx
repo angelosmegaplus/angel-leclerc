@@ -15,7 +15,7 @@ import {
   BookOpen,
   Sparkles,
   Languages,
-  ExternalLink,
+  
   Newspaper,
 
   Grid3X3,
