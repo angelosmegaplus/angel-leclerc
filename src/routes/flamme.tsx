@@ -378,7 +378,9 @@ function newsVisual(topic: NewsTopic) {
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
-type PanelKey = "about" | "privacy" | "help" | "settings" | "forum";
+type PanelServiceKey = "forum" | "useful";
+
+type PanelKey = "about" | "privacy" | "help" | "settings" | PanelServiceKey;
 
 const panelTitles: Record<PanelKey, string> = {
   about: "À propos de Flamme",
@@ -386,6 +388,7 @@ const panelTitles: Record<PanelKey, string> = {
   help: "Aide",
   settings: "Paramètres",
   forum: "Forum & réseaux français",
+  useful: "Sites utiles en France",
 };
 
 function FlammeBetaPage() {
