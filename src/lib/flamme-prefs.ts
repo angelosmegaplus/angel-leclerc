@@ -61,10 +61,10 @@ const RECENT_WINDOW = 72 * 60 * 60 * 1000;
 const MAX_REGIONAL = 3;
 
 /**
- * Filtre le pool selon les couches actives, privilégie les articles récents,
- * puis mélange les sources (max 2 articles consécutifs et 3 au total par média).
- * Quand une région est choisie, quelques actualités régionales récentes sont
- * injectées dans le fil sans le transformer en fil 100 % local.
+ * Filtre le pool selon les couches actives puis applique le classement de
+ * diversification Mistral lorsqu'il est disponible. Les garde-fous locaux
+ * restent prioritaires : fraîcheur, maximum 3 articles par média, jamais plus
+ * de 2 consécutifs et injection régionale limitée.
  */
 export function selectNewsFeed(
   pool: FlammeNewsItem[],
@@ -74,9 +74,16 @@ export function selectNewsFeed(
   const active = new Set(layers.length ? layers : ALL_LAYERS);
   const all = pool.filter((item) => item.categories.some((category) => active.has(category)));
   const time = (item: FlammeNewsItem) => (item.publishedAt ? Date.parse(item.publishedAt) : 0);
+  const rank = (item: FlammeNewsItem) =>
+    typeof item.curationRank === "number" ? item.curationRank : Number.MAX_SAFE_INTEGER;
+  const comparePriority = (a: FlammeNewsItem, b: FlammeNewsItem) => {
+    const rankDiff = rank(a) - rank(b);
+    return rankDiff !== 0 ? rankDiff : time(b) - time(a);
+  };
+
   const regionalPicks = all
     .filter((item) => item.regional)
-    .sort((a, b) => time(b) - time(a))
+    .sort(comparePriority)
     .slice(0, MAX_REGIONAL);
   const filtered = all.filter((item) => !item.regional);
   const now = Date.now();
@@ -84,10 +91,9 @@ export function selectNewsFeed(
   const recent = filtered.filter((item) => time(item) && now - time(item) <= RECENT_WINDOW);
   const base = recent.length >= nationalLimit ? recent : filtered;
 
-
-  const byDate = [...base].sort((a, b) => time(b) - time(a));
+  const byPriority = [...base].sort(comparePriority);
   const perSource = new Map<string, FlammeNewsItem[]>();
-  byDate.forEach((item) => {
+  byPriority.forEach((item) => {
     const list = perSource.get(item.source) ?? [];
     list.push(item);
     perSource.set(item.source, list);
@@ -101,8 +107,10 @@ export function selectNewsFeed(
   while (out.length < nationalLimit && guard < 500) {
     guard += 1;
     let progressed = false;
-    // Round-robin : on parcourt les sources par ordre de fraîcheur de leur tête de file.
-    const ordered = queues.filter((queue) => queue.length > 0).sort((a, b) => time(b[0]!) - time(a[0]!));
+    // Le rang Mistral départage les têtes de file ; sans rang, on retombe sur la fraîcheur.
+    const ordered = queues
+      .filter((queue) => queue.length > 0)
+      .sort((a, b) => comparePriority(a[0]!, b[0]!));
     for (const queue of ordered) {
       if (out.length >= nationalLimit) break;
       const candidate = queue[0]!;
@@ -123,7 +131,7 @@ export function selectNewsFeed(
   }
 
   if (out.length < nationalLimit) {
-    for (const item of byDate) {
+    for (const item of byPriority) {
       if (out.length >= nationalLimit) break;
       if (!out.includes(item)) out.push(item);
     }
@@ -138,4 +146,3 @@ export function selectNewsFeed(
 
   return merged.slice(0, limit);
 }
-
