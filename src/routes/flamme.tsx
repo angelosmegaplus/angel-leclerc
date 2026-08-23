@@ -282,6 +282,10 @@ const radioGroups: LinkGroup[] = [
 const radioStations: Array<{ name: string; url: string }> = [
   { name: "France Inter", url: "https://www.radiofrance.fr/franceinter" },
   { name: "franceinfo", url: "https://www.radiofrance.fr/franceinfo" },
+  { name: "FIP", url: "https://www.radiofrance.fr/fip" },
+  { name: "France Culture", url: "https://www.radiofrance.fr/franceculture" },
+  { name: "France Musique", url: "https://www.radiofrance.fr/francemusique" },
+
   { name: "RTL", url: "https://www.rtl.fr/" },
   { name: "Europe 1", url: "https://www.europe1.fr/" },
   { name: "RMC", url: "https://rmc.bfmtv.com/" },
