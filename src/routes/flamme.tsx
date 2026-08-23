@@ -806,6 +806,8 @@ function FlammeBetaPage() {
   const [searchEngine, setSearchEngine] = useState<SearchEngine>("qwant");
   const [newsLayers, setNewsLayers] = useState<FlammeNewsCategory[]>(ALL_LAYERS);
   const [newsRegion, setNewsRegion] = useState<string | null>(null);
+  const [prefsReady, setPrefsReady] = useState(false);
+
 
   const engineLabel = SEARCH_ENGINE_LABELS[searchEngine];
 
