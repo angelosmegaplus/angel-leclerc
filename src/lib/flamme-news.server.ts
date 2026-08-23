@@ -16,10 +16,41 @@ const FEEDS: FeedConfig[] = [
     categories: ["general", "france"],
   },
   {
+    source: "Franceinfo Économie",
+    urls: ["https://www.franceinfo.fr/economie.rss", "https://www.francetvinfo.fr/economie.rss"],
+    categories: ["economy", "france"],
+  },
+  {
+    source: "Franceinfo Sport",
+    urls: ["https://www.franceinfo.fr/sports.rss"],
+    categories: ["sport"],
+  },
+  {
+    source: "Franceinfo Culture",
+    urls: ["https://www.franceinfo.fr/culture.rss"],
+    categories: ["culture-history"],
+  },
+  {
+    source: "20 Minutes",
+    urls: ["https://www.20minutes.fr/feeds/rss-une.xml"],
+    categories: ["general", "france"],
+  },
+  {
+    source: "Numerama",
+    urls: ["https://www.numerama.com/feed/"],
+    categories: ["science-tech"],
+  },
+  {
+    source: "La Croix",
+    urls: ["https://www.la-croix.com/RSS/UNIVERS"],
+    categories: ["general", "france"],
+  },
+  {
     source: "Franceinfo Histoire",
     urls: ["https://www.franceinfo.fr/replay-radio/l-info-de-l-histoire.rss"],
     categories: ["culture-history"],
   },
+
   {
     source: "Service-Public",
     urls: ["https://www.service-public.gouv.fr/abonnements/rss/actu-actualites-particuliers.rss"],

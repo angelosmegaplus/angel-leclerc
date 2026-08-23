@@ -97,7 +97,10 @@ import { getFlammeNews } from "@/lib/flamme-news.functions";
 import { FLAMME_REGIONS, findRegion, readNewsRegion, writeNewsRegion } from "@/lib/flamme-regions";
 
 
+import { motion } from "framer-motion";
 import { FlammeInstallCard } from "@/components/flamme/FlammeInstallCard";
+import { FlammeWordmark } from "@/components/flamme/FlammeWordmark";
+import { useCarouselNudge } from "@/components/flamme/useCarouselNudge";
 import { FlammeNewsList, FlammeNewsRefresh, FlammeNewsSkeleton, formatUpdatedAt } from "@/components/flamme/FlammeNews";
 
 
@@ -184,12 +187,30 @@ const services: Service[] = [
   { name: "Stockage", description: "Fichiers avec Mailo", url: "https://www.mailo.com/?language=fr&page=id", icon: Cloud, accent: "#0f766e" },
   { name: "Agenda", description: "Calendrier avec Mailo", url: "https://www.mailo.com/?language=fr&page=id", icon: CalendarDays, accent: "#2563eb" },
   { name: "Photos", description: "Photos avec Photoweb Cloud", url: "https://account.photowebcloud.fr/login.php", icon: Images, accent: "#e11d48" },
-  { name: "Itinéraires", description: "Guidage avec Mappy", url: "https://fr.mappy.com/itineraire", icon: Navigation, accent: "#7c3aed" },
+  {
+    name: "Itinéraires",
+    description: "Itinéraires & cartes françaises",
+    url: "#itineraires",
+    icon: Navigation,
+    accent: "#7c3aed",
+    panel: "routes",
+    keywords: ["itinéraire", "itineraires", "trajet", "route", "gps", "guidage", "mappy", "viamichelin", "carte"],
+  },
+
   { name: "Annuaire", description: "PagesJaunes et PagesBlanches", url: "https://www.pagesjaunes.fr/", icon: ContactRound, accent: "#eab308" },
   { name: "Carte", description: "Cartes avec l’IGN", url: "https://cartes.gouv.fr/decouvrir/explorer-les-cartes/", icon: Map, accent: "#15803d" },
   { name: "Vidéo", description: "Avec Dailymotion", url: "https://www.dailymotion.com/fr", icon: Video, accent: "#111827" },
   { name: "Films & Séries", description: "Films et séries avec AlloCiné", url: "https://www.allocine.fr/", icon: Clapperboard, accent: "#111827" },
-  { name: "Musique", description: "Avec Deezer", url: "https://www.deezer.com/fr/", icon: Music2, accent: "#a21caf" },
+  {
+    name: "Musique",
+    description: "Musique en ligne française",
+    url: "#musique",
+    icon: Music2,
+    accent: "#a21caf",
+    panel: "music",
+    keywords: ["musique", "streaming", "écouter", "deezer", "qobuz", "album", "playlist"],
+  },
+
   { name: "Livres", description: "Avec Vivlio", url: "https://www.vivlio.com/", icon: BookOpen, accent: "#c2410c" },
   { name: "IA", description: "Avec Mistral", url: "https://chat.mistral.ai/chat", icon: Sparkles, accent: "#f97316" },
   { name: "Météo", description: "Prévisions avec Météo-France", url: "https://meteofrance.com/", icon: CloudSun, accent: "#0284c7" },
@@ -237,7 +258,7 @@ const radioGroups: LinkGroup[] = [
   },
   {
     title: "Podcasts",
-    note: "Contenus fournis par leurs éditeurs : Flamme n’héberge aucun programme.",
+    note: "Contenus fournis par leurs éditeurs : Flamme n’héberge aucun programme. Si Deezer refuse l’accès avec un VPN, essayez sans VPN ou utilisez Radioplayer.",
     items: [
       {
         name: "Podcasts des radios",
@@ -264,6 +285,10 @@ const radioGroups: LinkGroup[] = [
 const radioStations: Array<{ name: string; url: string }> = [
   { name: "France Inter", url: "https://www.radiofrance.fr/franceinter" },
   { name: "franceinfo", url: "https://www.radiofrance.fr/franceinfo" },
+  { name: "FIP", url: "https://www.radiofrance.fr/fip" },
+  { name: "France Culture", url: "https://www.radiofrance.fr/franceculture" },
+  { name: "France Musique", url: "https://www.radiofrance.fr/francemusique" },
+
   { name: "RTL", url: "https://www.rtl.fr/" },
   { name: "Europe 1", url: "https://www.europe1.fr/" },
   { name: "RMC", url: "https://rmc.bfmtv.com/" },
@@ -335,7 +360,33 @@ const tvGroups: LinkGroup[] = [
       },
     ],
   },
+  {
+    title: "Plus de choix",
+    secondary: true,
+    note: "Chaînes parlementaires et publiques, en direct et en rediffusion.",
+    items: [
+      {
+        name: "LCP – Assemblée nationale",
+        description: "Séances, débats et magazines de la chaîne parlementaire.",
+        url: "https://www.lcp.fr/",
+        host: "lcp.fr",
+        badge: "🇫🇷 Public",
+        icon: Landmark,
+        accent: "#1d4ed8",
+      },
+      {
+        name: "Public Sénat",
+        description: "Travaux du Sénat, débats et documentaires en accès libre.",
+        url: "https://www.publicsenat.fr/",
+        host: "publicsenat.fr",
+        badge: "🇫🇷 Public",
+        icon: Landmark,
+        accent: "#0f766e",
+      },
+    ],
+  },
 ];
+
 
 const mailGroups: LinkGroup[] = [
   {
@@ -378,6 +429,22 @@ const mailGroups: LinkGroup[] = [
       },
     ],
   },
+  {
+    title: "Plus de choix",
+    secondary: true,
+    items: [
+      {
+        name: "Proton Mail",
+        description: "Messagerie suisse chiffrée de bout en bout, éditée par Proton AG.",
+        url: "https://proton.me/fr/mail",
+        host: "proton.me",
+        badge: "🇨🇭 Alternative indépendante",
+        icon: MessageSquareLock,
+        accent: "#6b7280",
+      },
+    ],
+  },
+
 ];
 
 const messagingGroups: LinkGroup[] = [
@@ -427,9 +494,114 @@ const messagingGroups: LinkGroup[] = [
         icon: MessageSquareLock,
         accent: "#6b7280",
       },
+      {
+        name: "Threema",
+        description: "Messagerie suisse payante, utilisable sans numéro de téléphone.",
+        url: "https://threema.ch/fr",
+        host: "threema.ch",
+        badge: "🇨🇭 Indépendant",
+        icon: MessageSquareLock,
+        accent: "#6b7280",
+      },
     ],
   },
 ];
+
+// Itinéraires : plusieurs solutions françaises pour qu'une panne n'empêche pas de préparer un trajet.
+const routeGroups: LinkGroup[] = [
+  {
+    title: "Itinéraires en France",
+    items: [
+      {
+        name: "Mappy",
+        description: "Itinéraires voiture, transports et à pied, service français historique.",
+        url: "https://fr.mappy.com/",
+        host: "fr.mappy.com",
+        badge: "🇫🇷 Recommandé",
+        icon: Navigation,
+        accent: "#7c3aed",
+        recommended: true,
+      },
+      {
+        name: "ViaMichelin",
+        description: "Itinéraires, coûts de trajet et cartes routières Michelin.",
+        url: "https://www.viamichelin.fr/",
+        host: "viamichelin.fr",
+        badge: "🇫🇷 Itinéraires",
+        icon: Map,
+        accent: "#1d4ed8",
+      },
+    ],
+  },
+  {
+    title: "Plus de choix",
+    secondary: true,
+    items: [
+      {
+        name: "cartes.gouv.fr (IGN)",
+        description: "Cartes officielles de l’Institut national de l’information géographique et forestière.",
+        url: "https://cartes.gouv.fr/",
+        host: "cartes.gouv.fr",
+        badge: "🇫🇷 Public",
+        icon: Map,
+        accent: "#15803d",
+      },
+      {
+        name: "SNCF Connect",
+        description: "Trajets en train et mobilité longue distance.",
+        url: "https://www.sncf-connect.com/",
+        host: "sncf-connect.com",
+        badge: "🇫🇷 Train",
+        icon: TrainFront,
+        accent: "#7c3aed",
+      },
+    ],
+  },
+];
+
+const musicGroups: LinkGroup[] = [
+  {
+    title: "Musique en ligne",
+    note: "Si Deezer refuse l’accès avec un VPN, essayez sans VPN ou utilisez Radioplayer.",
+    items: [
+      {
+        name: "Deezer",
+        description: "Service français de streaming musical et de podcasts.",
+        url: "https://www.deezer.com/fr/",
+        host: "deezer.com",
+        badge: "🇫🇷 Recommandé",
+        icon: Music2,
+        accent: "#a21caf",
+        recommended: true,
+      },
+      {
+        name: "Qobuz",
+        description: "Plateforme française de streaming et de téléchargement en haute qualité.",
+        url: "https://www.qobuz.com/fr-fr/",
+        host: "qobuz.com",
+        badge: "🇫🇷 Haute qualité",
+        icon: Music2,
+        accent: "#0f766e",
+      },
+    ],
+  },
+  {
+    title: "Plus de choix",
+    secondary: true,
+    items: [
+      {
+        name: "Radioplayer France",
+        description: "Radios, webradios musicales et podcasts, sans compte.",
+        url: "https://www.radioplayer.fr/",
+        host: "radioplayer.fr",
+        badge: "🇫🇷 Gratuit",
+        icon: RadioTower,
+        accent: "#c5221f",
+      },
+    ],
+  },
+];
+
 
 
 
@@ -471,8 +643,11 @@ const usefulGroups: UsefulGroup[] = [
       { name: "Actu.fr", description: "Actualités locales et nationales.", url: "https://actu.fr/", host: "actu.fr", badge: "Actu", icon: Radio, accent: "#c5221f" },
       { name: "L’Étudiant", description: "Orientation, études, jobs et alternance.", url: "https://www.letudiant.fr/", host: "letudiant.fr", badge: "Études", icon: GraduationCap, accent: "#1d4ed8" },
       { name: "Les Numériques", description: "Tests et actualité tech.", url: "https://www.lesnumeriques.com/", host: "lesnumeriques.com", badge: "Tech", icon: Cpu, accent: "#0891b2" },
+      { name: "Gallica (BnF)", description: "Bibliothèque numérique de la Bibliothèque nationale de France.", url: "https://gallica.bnf.fr/accueil/fr/content/accueil-fr", host: "gallica.bnf.fr", badge: "Culture", icon: LibraryBig, accent: "#7c3aed" },
+      { name: "France Identité", description: "Identité numérique officielle et justificatifs sécurisés.", url: "https://france-identite.gouv.fr/", host: "france-identite.gouv.fr", badge: "Public", icon: ShieldCheck, accent: "#1a73e8" },
     ],
   },
+
 ];
 
 
@@ -489,6 +664,16 @@ type ForumCommunity = {
 
 const forumCommunities: ForumCommunity[] = [
   {
+    name: "Piaille",
+    description: "Communauté française du Fediverse / Mastodon, pour les échanges publics.",
+    url: "https://piaille.fr/",
+    host: "piaille.fr",
+    badge: "🇫🇷 Fediverse",
+    icon: MessageCircleMore,
+    accent: "#6366f1",
+    recommended: true,
+  },
+  {
     name: "Whaller",
     description: "Réseau social et communautés, solution française hébergée en France.",
     url: "https://whaller.com/fr",
@@ -496,17 +681,8 @@ const forumCommunities: ForumCommunity[] = [
     badge: "🇫🇷 Souverain",
     icon: UsersRound,
     accent: "#1a73e8",
-    recommended: true,
   },
-  {
-    name: "Piaille",
-    description: "Communauté française du Fediverse / Mastodon.",
-    url: "https://piaille.fr/",
-    host: "piaille.fr",
-    badge: "🇫🇷 Fediverse",
-    icon: MessageCircleMore,
-    accent: "#6366f1",
-  },
+
   {
     name: "BeReal",
     description: "Réseau social français centré sur les moments du quotidien.",
@@ -763,7 +939,7 @@ function newsVisual(topic: NewsTopic) {
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
-type PanelServiceKey = "forum" | "useful" | "good" | "radio" | "tv" | "mail" | "messages";
+type PanelServiceKey = "forum" | "useful" | "good" | "radio" | "tv" | "mail" | "messages" | "routes" | "music";
 
 type PanelKey = "about" | "privacy" | "help" | "settings" | PanelServiceKey;
 
@@ -779,6 +955,9 @@ const panelTitles: Record<PanelKey, string> = {
   tv: "Télévision française",
   mail: "Messageries e-mail",
   messages: "Messageries instantanées",
+  routes: "Itinéraires & cartes",
+  music: "Musique en ligne",
+
 };
 
 
@@ -810,6 +989,8 @@ function FlammeBetaPage() {
   const [newsRegion, setNewsRegion] = useState<string | null>(null);
   const [prefsReady, setPrefsReady] = useState(false);
 
+
+  const { controls: carouselNudge, markInteraction: markCarouselInteraction } = useCarouselNudge();
 
   const engineLabel = SEARCH_ENGINE_LABELS[searchEngine];
 
@@ -1400,18 +1581,9 @@ function FlammeBetaPage() {
 
       <main className="mx-auto flex w-full max-w-[652px] flex-col px-4 pb-5 sm:px-5 md:min-h-[calc(100dvh-170px)] md:justify-center md:pb-16 md:pt-0">
         <div className="mt-7 flex justify-center sm:mt-12 md:mt-0">
-          <div className="flex select-none items-end justify-center gap-2">
-            <span
-              className={`text-[46px] font-extrabold leading-none tracking-[-0.045em] sm:text-[64px] ${darkMode ? "text-[#f1f3f4]" : "text-[#181716]"}`}
-            >
-              Flamme
-            </span>
-            <span className="mb-[10px] h-[9px] w-[9px] shrink-0 rounded-full bg-[#e2372f] sm:mb-[14px] sm:h-[12px] sm:w-[12px]" aria-hidden="true" />
-            <span className={`mb-[6px] text-[15px] font-medium lowercase tracking-tight sm:mb-[9px] sm:text-[20px] ${darkMode ? "text-[#9aa0a6]" : "text-[#6b6f76]"}`}>
-              bêta
-            </span>
-          </div>
+          <FlammeWordmark darkMode={darkMode} />
         </div>
+
 
         <form onSubmit={searchQwant} className="mt-6">
           <div className={`relative mx-auto rounded-[26px] border transition-shadow ${surface} ${searchFocused ? "shadow-[0_1px_8px_rgba(32,33,36,.28)]" : "hover:shadow-[0_1px_6px_rgba(32,33,36,.2)]"}`}>
@@ -1505,8 +1677,14 @@ function FlammeBetaPage() {
           </div>
         </div>
 
-        <nav aria-label="Services Flamme" className="-mx-4 mt-5 overflow-x-auto overscroll-x-contain px-4 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="flex min-w-max gap-4 pb-3">
+        <nav
+          aria-label="Services Flamme"
+          onScroll={markCarouselInteraction}
+          onPointerDown={markCarouselInteraction}
+          className="-mx-4 mt-5 overflow-x-auto overscroll-x-contain px-4 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          <motion.div animate={carouselNudge} className="flex min-w-max gap-4 pb-3">
+
             {services.map((service) => {
               const Icon = service.icon;
               const accentColor = readableAccent(service.accent, darkMode);
@@ -1532,7 +1710,8 @@ function FlammeBetaPage() {
                 </a>
               );
             })}
-          </div>
+          </motion.div>
+
         </nav>
       </main>
 
@@ -1657,7 +1836,7 @@ function FlammeBetaPage() {
                 <p><strong className="font-medium">Onglets de recherche</strong> — Tous, Actualités, Images et Vidéos préparent le type de recherche ; Cartes envoie la requête au service de cartes IGN. Cliquer sur un onglet ne lance pas de recherche : il sélectionne le mode, utilisé lors de la recherche suivante. Le pictogramme à gauche du champ reflète le mode actif.</p>
                 <p><strong className="font-medium">Choix du moteur</strong> — Dans Paramètres, vous pouvez choisir Qwant 🇫🇷 ou Lilo 🇫🇷. Quand Lilo est sélectionné, le Web et les Images passent par Lilo ; les Actualités et Vidéos restent sur Qwant et les Cartes sur l’IGN. Le choix est mémorisé dans votre navigateur.</p>
                 <p><strong className="font-medium">Couches d’actualités et région</strong> — Toujours dans Paramètres, activez ou désactivez les thèmes (France, Monde, Économie, Sciences…). Le fil « Découvrir » mélange alors les sources françaises les plus récentes correspondant aux thèmes activés. Vous pouvez aussi choisir une région facultative : quelques actualités France 3 Régions viennent s’ajouter au fil national, sans le remplacer.</p>
-                <p><strong className="font-medium">Radio, TV, Mail et Messageries</strong> — Ces quatre premiers raccourcis du carrousel ouvrent un panneau de choix : radios et podcasts, chaînes et replay, boîtes mail et messageries chiffrées, avec les solutions françaises en tête.</p>
+                <p><strong className="font-medium">Radio, TV, Mail et Messageries</strong> — Ces quatre premiers raccourcis du carrousel ouvrent un panneau de choix : radios et podcasts, chaînes et replay, boîtes mail et messageries chiffrées, avec les solutions françaises en tête. Les raccourcis Itinéraires et Musique ouvrent eux aussi un panneau (Mappy, ViaMichelin, IGN ; Deezer, Qobuz), pour qu’une panne d’un site ne bloque pas la fonction.</p>
                 <p><strong className="font-medium">Installer Flamme</strong> — Dans Paramètres, la carte « Installer Flamme » propose l’installation directe quand le navigateur le permet, sinon un assistant en trois étapes (appareil, navigateur, marche à suivre).</p>
 
                 <p><strong className="font-medium">Recherche vocale</strong> — Touchez le micro et dictez : trois points animés indiquent l’écoute. La recherche se lance dès que la phrase est reconnue. Si le navigateur ne prend pas en charge la dictée, un message s’affiche.</p>
@@ -1820,10 +1999,28 @@ function FlammeBetaPage() {
               </div>
             )}
 
+            {panel === "routes" && (
+              <div className="space-y-4">
+                <p className={`text-[13px] leading-5 ${muted}`}>Préparer un trajet ou consulter une carte, avec plusieurs services français au choix.</p>
+                {renderLinkGroups(routeGroups)}
+                <p className={`text-center text-[11px] leading-4 ${muted}`}>Flamme n’est affiliée à aucun de ces services.</p>
+              </div>
+            )}
+
+            {panel === "music" && (
+              <div className="space-y-4">
+                <p className={`text-[13px] leading-5 ${muted}`}>Écouter de la musique chez des services français.</p>
+                {renderLinkGroups(musicGroups)}
+                <p className={`text-center text-[11px] leading-4 ${muted}`}>Flamme n’est affiliée à aucun de ces services.</p>
+              </div>
+            )}
+
+
+
 
             {panel === "forum" && (
               <div className="space-y-3">
-                <p className={`text-[13px] leading-5 ${muted}`}>Quelques alternatives françaises pour discuter, suivre des communautés ou partager.</p>
+                <p className={`text-[13px] leading-5 ${muted}`}>Quelques alternatives françaises pour discuter, suivre des communautés ou partager. Piaille est le choix recommandé par Flamme pour les échanges publics.</p>
 
                 {forumCommunities.map((community) => {
                   const Icon = community.icon;
