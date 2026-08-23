@@ -866,10 +866,10 @@ function FlammeBetaPage() {
     };
   }, []);
 
-  const loadNews = useCallback(async () => {
+  const loadNews = useCallback(async (region: string | null) => {
     setNewsLoading(true);
     try {
-      const payload = await getFlammeNews();
+      const payload = await getFlammeNews({ data: { region } });
       if (payload?.items?.length) {
         setNewsItems(payload.items);
         setNewsFetchedAt(payload.fetchedAt);
@@ -884,9 +884,11 @@ function FlammeBetaPage() {
     }
   }, []);
 
+  // Les préférences locales sont lues avant le premier chargement du fil.
   useEffect(() => {
-    void loadNews();
-  }, [loadNews]);
+    if (!prefsReady) return;
+    void loadNews(newsRegion);
+  }, [loadNews, newsRegion, prefsReady]);
 
   useEffect(() => {
     try {
@@ -901,6 +903,9 @@ function FlammeBetaPage() {
     }
     setSearchEngine(readSearchEngine());
     setNewsLayers(readNewsLayers());
+    setNewsRegion(readNewsRegion());
+    setPrefsReady(true);
+
     const storedProfiles = readProfiles();
     setProfiles(storedProfiles);
     const key = readActiveKey();
