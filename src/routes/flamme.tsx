@@ -937,6 +937,9 @@ function FlammeBetaPage() {
             {panel === "about" && (
               <div className={`space-y-3 text-[14px] leading-6 ${muted}`}>
                 <p>Flamme bêta est une interface de démarrage indépendante, développée pour ce site. Elle n’est affiliée à aucun des services qu’elle référence.</p>
+                <p>L’objectif du projet est de proposer une <strong className="font-medium">porte d’entrée numérique</strong> qui met en avant des services français et européens, comme alternative aux grands écosystèmes américains (Google, Microsoft, Meta, Apple, Amazon…). Flamme regroupe simplement des raccourcis et une recherche, sans imposer de compte unique.</p>
+                <p><strong className="font-medium">Qwant reste le moteur de recherche de Flamme.</strong> Flamme ne possède ni ne contrôle Qwant, Mailo, Météo-France, Mappy, l’IGN, Dailymotion, Deezer ou les autres services listés : chacun reste fourni et administré par son éditeur, avec ses propres conditions.</p>
+                <p>Les actualités affichées proviennent directement de flux RSS publics de médias et services français (Franceinfo, Service-Public). Les titres appartiennent à leurs éditeurs et les liens ouvrent l’article d’origine.</p>
                 <p>La recherche est effectuée par <strong className="font-medium">Qwant</strong> : Flamme se contente d’ouvrir Qwant avec votre requête et le type choisi (Tous, Actualités, Images, Vidéos). Les Cartes ouvrent le service public IGN.</p>
                 <p>Le carrousel de services est une liste de raccourcis vers des sites tiers (Mailo, Photoweb Cloud, Mappy, PagesJaunes, Dailymotion, AlloCiné, Deezer, Vivlio, Mistral, Reverso…). Chaque service reste géré par son éditeur.</p>
                 <p>Flamme n’héberge aucun compte, n’indexe aucun contenu et ne stocke aucune donnée sur un serveur.</p>
