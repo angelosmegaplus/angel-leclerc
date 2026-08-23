@@ -15,8 +15,9 @@ import {
   Sparkles,
   Languages,
   Grid3X3,
+  X,
 } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 
 export const Route = createFileRoute("/flamme")({
   head: () => ({
@@ -39,24 +40,43 @@ type Service = {
   url: string;
   icon: typeof Search;
   accent: string;
-  badge?: string;
 };
 
 const services: Service[] = [
   { name: "Mail", description: "Messagerie avec Mailo", url: "https://webmail.mailo.com/", icon: Mail, accent: "#2b6cb0" },
-  { name: "Stockage", description: "Fichiers et espace en ligne avec Mailo", url: "https://webmail.mailo.com/", icon: Cloud, accent: "#0f766e" },
+  { name: "Stockage", description: "Fichiers avec Mailo", url: "https://webmail.mailo.com/", icon: Cloud, accent: "#0f766e" },
   { name: "Agenda", description: "Calendrier avec Mailo", url: "https://webmail.mailo.com/", icon: CalendarDays, accent: "#2563eb" },
   { name: "Photos", description: "Photos avec Joomeo", url: "https://account.joomeo.com/", icon: Images, accent: "#e11d48" },
-  { name: "Itinéraires", description: "Plans et guidage avec Mappy", url: "https://fr.mappy.com/", icon: Navigation, accent: "#7c3aed" },
+  { name: "Itinéraires", description: "Guidage avec Mappy", url: "https://fr.mappy.com/", icon: Navigation, accent: "#7c3aed" },
   { name: "Annuaire", description: "PagesJaunes et PagesBlanches", url: "https://www.pagesjaunes.fr/", icon: ContactRound, accent: "#eab308" },
-  { name: "Carte", description: "Cartes et données avec l’IGN", url: "https://cartes.gouv.fr/", icon: Map, accent: "#15803d", badge: "Public" },
+  { name: "Carte", description: "Cartes avec l’IGN", url: "https://cartes.gouv.fr/", icon: Map, accent: "#15803d" },
   { name: "Vidéo", description: "Avec Dailymotion", url: "https://www.dailymotion.com/fr", icon: Video, accent: "#111827" },
   { name: "Films & Séries", description: "Avec CANAL+", url: "https://www.canalplus.com/", icon: Clapperboard, accent: "#111827" },
   { name: "Musique", description: "Avec Deezer", url: "https://www.deezer.com/fr/", icon: Music2, accent: "#a21caf" },
   { name: "Livres", description: "Avec Vivlio", url: "https://www.vivlio.com/", icon: BookOpen, accent: "#c2410c" },
-  { name: "IA", description: "Avec Mistral", url: "https://chat.mistral.ai/", icon: Sparkles, accent: "#f97316", badge: "IA" },
+  { name: "IA", description: "Avec Mistral", url: "https://chat.mistral.ai/", icon: Sparkles, accent: "#f97316" },
   { name: "Traduction", description: "Avec Reverso", url: "https://www.reverso.net/traduction-texte", icon: Languages, accent: "#0369a1" },
 ];
+
+const shortcuts = services.slice(0, 7);
+const localSuggestions = [
+  "actualités France",
+  "météo aujourd’hui",
+  "programme TV ce soir",
+  "résultats sportifs",
+  "itinéraire",
+  "traduction français anglais",
+  "intelligence artificielle française",
+  "actualités économie",
+];
+
+const searchTabs = [
+  { name: "Tous", type: "all" },
+  { name: "Actualités", type: "news" },
+  { name: "Images", type: "images" },
+  { name: "Vidéos", type: "videos" },
+  { name: "Cartes", type: "maps" },
+] as const;
 
 type NewsTopic = {
   label: string;
@@ -69,60 +89,12 @@ type NewsTopic = {
 };
 
 const newsTopics: NewsTopic[] = [
-  {
-    label: "À la une",
-    query: "actualités France",
-    headline: "Les principaux titres du jour",
-    subline: "Retrouvez les informations les plus suivies en France et dans le monde.",
-    from: "#1a73e8",
-    to: "#7baaf7",
-    symbol: "FR",
-  },
-  {
-    label: "France",
-    query: "politique France société",
-    headline: "Politique et société",
-    subline: "Les sujets qui font l’actualité nationale.",
-    from: "#0b57d0",
-    to: "#a8c7fa",
-    symbol: "FR",
-  },
-  {
-    label: "International",
-    query: "actualité internationale",
-    headline: "Le monde en continu",
-    subline: "Les événements majeurs à l’étranger.",
-    from: "#146c43",
-    to: "#6dd58c",
-    symbol: "MONDE",
-  },
-  {
-    label: "Économie",
-    query: "économie entreprises emploi",
-    headline: "Entreprises, emploi et économie",
-    subline: "Marchés, entreprises, travail et pouvoir d’achat.",
-    from: "#b06000",
-    to: "#fdd663",
-    symbol: "€",
-  },
-  {
-    label: "Technologies",
-    query: "technologie numérique intelligence artificielle",
-    headline: "Numérique, IA et innovation",
-    subline: "Les nouveautés technologiques et numériques.",
-    from: "#9334e6",
-    to: "#d7aefb",
-    symbol: "IA",
-  },
-  {
-    label: "Sport",
-    query: "sport résultats compétitions",
-    headline: "Résultats et compétitions",
-    subline: "L’essentiel de l’actualité sportive.",
-    from: "#c5221f",
-    to: "#f28b82",
-    symbol: "SPORT",
-  },
+  { label: "À la une", query: "actualités France", headline: "Les principaux titres du jour", subline: "Retrouvez les informations les plus suivies en France et dans le monde.", from: "#1a73e8", to: "#7baaf7", symbol: "FR" },
+  { label: "France", query: "politique France société", headline: "Politique et société", subline: "Les sujets qui font l’actualité nationale.", from: "#0b57d0", to: "#a8c7fa", symbol: "FR" },
+  { label: "International", query: "actualité internationale", headline: "Le monde en continu", subline: "Les événements majeurs à l’étranger.", from: "#146c43", to: "#6dd58c", symbol: "MONDE" },
+  { label: "Économie", query: "économie entreprises emploi", headline: "Entreprises, emploi et économie", subline: "Marchés, entreprises, travail et pouvoir d’achat.", from: "#b06000", to: "#fdd663", symbol: "€" },
+  { label: "Technologies", query: "technologie numérique intelligence artificielle", headline: "Numérique, IA et innovation", subline: "Les nouveautés technologiques et numériques.", from: "#9334e6", to: "#d7aefb", symbol: "IA" },
+  { label: "Sport", query: "sport résultats compétitions", headline: "Résultats et compétitions", subline: "L’essentiel de l’actualité sportive.", from: "#c5221f", to: "#f28b82", symbol: "SPORT" },
 ];
 
 function newsVisual(topic: NewsTopic) {
@@ -133,110 +105,170 @@ function newsVisual(topic: NewsTopic) {
 function FlammeBetaPage() {
   const [query, setQuery] = useState("");
   const [appsOpen, setAppsOpen] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [activeTab, setActiveTab] = useState<(typeof searchTabs)[number]["type"]>("all");
+
+  const suggestions = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return localSuggestions.slice(0, 5);
+    const matching = localSuggestions.filter((item) => item.toLowerCase().includes(q));
+    return [...new Set([query.trim(), ...matching])].filter(Boolean).slice(0, 5);
+  }, [query]);
+
+  const goToSearch = (value: string, type = activeTab) => {
+    const q = value.trim();
+    if (!q) return;
+    if (type === "maps") {
+      window.location.href = `https://cartes.gouv.fr/?q=${encodeURIComponent(q)}`;
+      return;
+    }
+    window.location.href = `https://www.qwant.com/?l=fr&t=${type}&q=${encodeURIComponent(q)}`;
+  };
 
   const searchQwant = (event: FormEvent) => {
     event.preventDefault();
-    const q = query.trim();
-    if (!q) return;
-    window.location.href = `https://www.qwant.com/?l=fr&t=all&q=${encodeURIComponent(q)}`;
+    goToSearch(query);
   };
 
-  const askMistral = () => {
-    window.open("https://chat.mistral.ai/", "_blank", "noopener,noreferrer");
-  };
-
+  const askMistral = () => window.open("https://chat.mistral.ai/", "_blank", "noopener,noreferrer");
   const mainNews = newsTopics[0];
   const secondaryNews = newsTopics.slice(1);
 
   return (
-    <div className="fixed inset-0 z-[100] overflow-y-auto bg-white text-[#202124]" style={{ fontFamily: "Roboto, arial, sans-serif" }}>
-      <header className="flex h-[60px] items-center justify-end gap-4 px-5 text-[13px] text-[#202124]">
-        <a href="https://www.qwant.com/?l=fr" className="hidden hover:underline sm:inline">Qwant</a>
-        <a href="https://webmail.mailo.com/" className="hidden hover:underline sm:inline">Mail</a>
-        <a href="https://account.joomeo.com/" className="hidden hover:underline sm:inline">Photos</a>
-        <div className="relative">
-          <button type="button" aria-label="Applications Flamme" className="rounded-full p-2 hover:bg-[#f1f3f4]" onClick={() => setAppsOpen((value) => !value)}>
-            <Grid3X3 className="h-5 w-5 text-[#5f6368]" />
-          </button>
-          {appsOpen && (
-            <div className="absolute right-0 top-11 z-20 grid max-h-[420px] w-[320px] grid-cols-3 gap-1 overflow-y-auto rounded-2xl border border-[#dadce0] bg-white p-3 shadow-[0_4px_18px_rgba(60,64,67,0.24)]">
-              {services.map((service) => {
-                const Icon = service.icon;
-                return (
-                  <a key={service.name} href={service.url} target="_blank" rel="noreferrer" title={service.description} className="flex min-h-[92px] flex-col items-center justify-center gap-2 rounded-xl p-2 text-center hover:bg-[#f1f3f4]">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full" style={{ backgroundColor: `${service.accent}14`, color: service.accent }}>
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <span className="text-[12px] leading-4 text-[#3c4043]">{service.name}</span>
-                  </a>
-                );
-              })}
-            </div>
-          )}
-        </div>
+    <div className="fixed inset-0 z-[100] min-h-[100dvh] overflow-y-auto bg-white text-[#202124]" style={{ fontFamily: "Roboto, arial, sans-serif" }}>
+      <header className="sticky top-0 z-30 flex h-[56px] items-center justify-end gap-3 bg-white/95 px-3 backdrop-blur sm:h-[60px] sm:px-5">
+        <a href="https://www.qwant.com/?l=fr" className="hidden text-[13px] hover:underline sm:inline">Qwant</a>
+        <a href="https://webmail.mailo.com/" className="hidden text-[13px] hover:underline sm:inline">Mail</a>
+        <a href="https://account.joomeo.com/" className="hidden text-[13px] hover:underline sm:inline">Photos</a>
+        <button type="button" aria-label="Applications Flamme" className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-[#f1f3f4]" onClick={() => setAppsOpen(true)}>
+          <Grid3X3 className="h-5 w-5 text-[#5f6368]" />
+        </button>
       </header>
 
-      <main className="mx-auto w-full max-w-[652px] px-5 pb-14">
-        <div className="mt-[80px] flex justify-center sm:mt-[120px]">
-          <div className="relative left-[7px] flex justify-center">
-            <img src="/logos/qwant.svg" alt="Qwant" width={272} height={92} className="h-[64px] w-auto sm:h-[80px]" />
-          </div>
-        </div>
-
-        <form onSubmit={searchQwant} className="mt-[26px]">
-          <div className="mx-auto flex h-11 w-full items-center gap-3 rounded-full border border-[#dfe1e5] bg-white px-4 hover:border-transparent hover:shadow-[0_1px_6px_rgba(32,33,36,0.28)] focus-within:border-transparent focus-within:shadow-[0_1px_6px_rgba(32,33,36,0.28)]">
-            <Search className="h-5 w-5 shrink-0 text-[#9aa0a6]" />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} className="h-full min-w-0 flex-1 bg-transparent text-[16px] text-[#202124] outline-none" placeholder="Rechercher sur Internet" aria-label="Recherche Qwant" />
-            <button type="button" onClick={askMistral} className="rounded-full p-1.5 text-[#f97316] hover:bg-[#f8f9fa]" title="IA" aria-label="Ouvrir l’IA">
-              <Sparkles className="h-5 w-5" />
+      {appsOpen && (
+        <div className="fixed inset-0 z-50 bg-white sm:inset-auto sm:right-4 sm:top-14 sm:h-auto sm:max-h-[520px] sm:w-[340px] sm:overflow-y-auto sm:rounded-3xl sm:border sm:border-[#dadce0] sm:shadow-[0_8px_28px_rgba(60,64,67,.28)]">
+          <div className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-[#e8eaed] bg-white px-4 sm:hidden">
+            <strong className="text-[17px] font-medium">Applications</strong>
+            <button type="button" onClick={() => setAppsOpen(false)} className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-[#f1f3f4]" aria-label="Fermer">
+              <X className="h-5 w-5" />
             </button>
           </div>
-          <div className="mt-[29px] flex flex-wrap justify-center gap-3">
-            <button type="submit" className="h-9 rounded border border-transparent bg-[#f8f9fa] px-4 text-[14px] text-[#3c4043] hover:border-[#dadce0] hover:shadow-sm">Recherche Qwant</button>
-            <button type="button" onClick={askMistral} className="h-9 rounded border border-transparent bg-[#f8f9fa] px-4 text-[14px] text-[#3c4043] hover:border-[#dadce0] hover:shadow-sm">IA</button>
+          <div className="grid grid-cols-3 gap-2 p-4 sm:p-3">
+            {services.map((service) => {
+              const Icon = service.icon;
+              return (
+                <a key={service.name} href={service.url} target="_blank" rel="noreferrer" title={service.description} className="flex min-h-[108px] flex-col items-center justify-center gap-2 rounded-2xl p-2 text-center active:bg-[#f1f3f4] sm:min-h-[96px] sm:hover:bg-[#f1f3f4]">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full sm:h-11 sm:w-11" style={{ backgroundColor: `${service.accent}14`, color: service.accent }}>
+                    <Icon className="h-6 w-6" />
+                  </span>
+                  <span className="text-[13px] leading-4 text-[#3c4043]">{service.name}</span>
+                </a>
+              );
+            })}
           </div>
-        </form>
-      </main>
+        </div>
+      )}
 
-      <section className="mx-auto w-full max-w-[1040px] px-5 pb-20 sm:px-7">
-        <div className="mb-4 flex items-center justify-between border-b border-[#dadce0] pb-3">
-          <div>
-            <h1 className="text-[22px] font-normal text-[#202124]">Actualités</h1>
-            <p className="mt-1 text-[13px] text-[#5f6368]">Explorer les sujets du moment avec Qwant Actualités</p>
+      <main className="mx-auto w-full max-w-[652px] px-4 pb-6 sm:px-5 sm:pb-12">
+        <div className="mt-8 flex justify-center sm:mt-16">
+          <div className="relative left-[5px] flex justify-center sm:left-[7px]">
+            <img src="/logos/qwant.svg" alt="Qwant" width={272} height={92} className="h-[58px] w-auto sm:h-[80px]" />
           </div>
-          <a href="https://www.qwant.com/?l=fr&t=news&q=actualités" target="_blank" rel="noreferrer" className="text-[14px] font-medium text-[#1a73e8] hover:underline">Voir plus</a>
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-[1.15fr_.85fr]">
-          <a href={`https://www.qwant.com/?l=fr&t=news&q=${encodeURIComponent(mainNews.query)}`} target="_blank" rel="noreferrer" className="group overflow-hidden rounded-2xl border border-[#dadce0] bg-white transition-shadow hover:shadow-[0_2px_10px_rgba(60,64,67,.18)]">
-            <img src={newsVisual(mainNews)} alt="Illustration des actualités à la une" className="aspect-[16/8.6] w-full object-cover" />
-            <div className="p-5">
-              <div className="mb-2 flex items-center gap-2 text-[12px] text-[#5f6368]">
-                <span className="font-medium text-[#1a73e8]">{mainNews.label}</span>
-                <span>•</span>
-                <span>Qwant Actualités</span>
+        <form onSubmit={searchQwant} className="mt-6">
+          <div className={`relative mx-auto rounded-[26px] border bg-white transition-shadow ${searchFocused ? "border-transparent shadow-[0_1px_8px_rgba(32,33,36,.28)]" : "border-[#dfe1e5]"}`}>
+            <div className="flex h-[52px] items-center gap-3 px-4 sm:h-[46px]">
+              <Search className="h-5 w-5 shrink-0 text-[#9aa0a6]" />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setTimeout(() => setSearchFocused(false), 120)}
+                className="h-full min-w-0 flex-1 bg-transparent text-[16px] outline-none"
+                placeholder="Rechercher sur Internet"
+                aria-label="Recherche Qwant"
+                autoComplete="off"
+              />
+              <button type="button" onClick={askMistral} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#f97316] hover:bg-[#f8f9fa]" title="IA" aria-label="Ouvrir l’IA">
+                <Sparkles className="h-5 w-5" />
+              </button>
+            </div>
+            {searchFocused && suggestions.length > 0 && (
+              <div className="border-t border-[#e8eaed] pb-2 pt-1">
+                {suggestions.map((suggestion) => (
+                  <button key={suggestion} type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => goToSearch(suggestion)} className="flex min-h-11 w-full items-center gap-3 px-4 text-left text-[15px] hover:bg-[#f1f3f4]">
+                    <Search className="h-4 w-4 text-[#9aa0a6]" />
+                    <span className="truncate">{suggestion}</span>
+                  </button>
+                ))}
               </div>
-              <h2 className="text-[23px] font-normal leading-8 text-[#202124] group-hover:underline">{mainNews.headline}</h2>
+            )}
+          </div>
+        </form>
+
+        <div className="-mx-4 mt-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex min-w-max gap-1 border-b border-[#e8eaed]">
+            {searchTabs.map((tab) => (
+              <button key={tab.type} type="button" onClick={() => setActiveTab(tab.type)} className={`min-h-11 whitespace-nowrap border-b-2 px-4 text-[14px] ${activeTab === tab.type ? "border-[#1a73e8] font-medium text-[#1a73e8]" : "border-transparent text-[#5f6368]"}`}>
+                {tab.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="-mx-4 mt-5 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex min-w-max gap-4 pb-2">
+            {shortcuts.map((service) => {
+              const Icon = service.icon;
+              return (
+                <a key={service.name} href={service.url} target="_blank" rel="noreferrer" className="flex w-[68px] flex-col items-center gap-2 text-center">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f1f3f4]" style={{ color: service.accent }}>
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <span className="max-w-[68px] truncate text-[12px] text-[#3c4043]">{service.name}</span>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      </main>
+
+      <section className="mx-auto w-full max-w-[1040px] px-4 pb-16 sm:px-7 sm:pb-20">
+        <div className="mb-4 flex items-end justify-between border-b border-[#dadce0] pb-3">
+          <div>
+            <h1 className="text-[21px] font-normal text-[#202124] sm:text-[22px]">Actualités</h1>
+            <p className="mt-1 text-[12px] text-[#5f6368] sm:text-[13px]">Sujets du moment avec Qwant Actualités</p>
+          </div>
+          <a href="https://www.qwant.com/?l=fr&t=news&q=actualités" target="_blank" rel="noreferrer" className="min-h-11 px-2 py-3 text-[14px] font-medium text-[#1a73e8]">Voir plus</a>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-[1.15fr_.85fr] lg:gap-5">
+          <a href={`https://www.qwant.com/?l=fr&t=news&q=${encodeURIComponent(mainNews.query)}`} target="_blank" rel="noreferrer" className="group overflow-hidden rounded-2xl border border-[#dadce0] bg-white transition-shadow hover:shadow-[0_2px_10px_rgba(60,64,67,.18)]">
+            <img src={newsVisual(mainNews)} alt="Illustration des actualités à la une" className="aspect-[16/9] w-full object-cover sm:aspect-[16/8.6]" />
+            <div className="p-4 sm:p-5">
+              <div className="mb-2 flex items-center gap-2 text-[12px] text-[#5f6368]"><span className="font-medium text-[#1a73e8]">{mainNews.label}</span><span>•</span><span>Qwant Actualités</span></div>
+              <h2 className="text-[20px] font-normal leading-7 text-[#202124] group-hover:underline sm:text-[23px] sm:leading-8">{mainNews.headline}</h2>
               <p className="mt-2 text-[14px] leading-5 text-[#5f6368]">{mainNews.subline}</p>
             </div>
           </a>
 
           <div className="overflow-hidden rounded-2xl border border-[#dadce0] bg-white">
             {secondaryNews.map((topic, index) => (
-              <a key={topic.label} href={`https://www.qwant.com/?l=fr&t=news&q=${encodeURIComponent(topic.query)}`} target="_blank" rel="noreferrer" className={`group grid grid-cols-[1fr_118px] gap-4 p-4 hover:bg-[#f8f9fa] ${index > 0 ? "border-t border-[#e8eaed]" : ""}`}>
+              <a key={topic.label} href={`https://www.qwant.com/?l=fr&t=news&q=${encodeURIComponent(topic.query)}`} target="_blank" rel="noreferrer" className={`group grid min-h-[112px] grid-cols-[1fr_104px] gap-3 p-3.5 hover:bg-[#f8f9fa] sm:grid-cols-[1fr_118px] sm:gap-4 sm:p-4 ${index > 0 ? "border-t border-[#e8eaed]" : ""}`}>
                 <div className="min-w-0 py-1">
                   <div className="mb-1 text-[12px] font-medium text-[#5f6368]">{topic.label}</div>
-                  <h3 className="text-[16px] leading-5 text-[#202124] group-hover:underline">{topic.headline}</h3>
+                  <h3 className="text-[15px] leading-5 text-[#202124] group-hover:underline sm:text-[16px]">{topic.headline}</h3>
                   <p className="mt-1 line-clamp-2 text-[12px] leading-4 text-[#70757a]">{topic.subline}</p>
                 </div>
-                <img src={newsVisual(topic)} alt={`Illustration ${topic.label}`} className="h-[82px] w-[118px] rounded-xl object-cover" />
+                <img src={newsVisual(topic)} alt={`Illustration ${topic.label}`} className="h-[82px] w-[104px] rounded-xl object-cover sm:w-[118px]" />
               </a>
             ))}
           </div>
         </div>
       </section>
 
-      <footer className="border-t border-[#dadce0] bg-[#f2f2f2] px-5 py-4 text-[14px] text-[#70757a]">
+      <footer className="border-t border-[#dadce0] bg-[#f2f2f2] px-4 py-4 text-center text-[12px] leading-5 text-[#70757a] sm:px-5 sm:text-left sm:text-[14px]">
         Flamme est une bêta indépendante. Recherches effectuées par Qwant ; les services ouverts restent fournis par leurs éditeurs respectifs.
       </footer>
     </div>
