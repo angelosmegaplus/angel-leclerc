@@ -1,0 +1,93 @@
+plugins {
+    id 'com.android.application'
+}
+
+def releaseKeystore = System.getenv('FLAMME_KEYSTORE_PATH')
+def releaseStorePassword = System.getenv('FLAMME_KEYSTORE_PASSWORD')
+def releaseKeyAlias = System.getenv('FLAMME_KEY_ALIAS')
+def releaseKeyPassword = System.getenv('FLAMME_KEY_PASSWORD')
+def hasReleaseSigning = releaseKeystore && releaseStorePassword && releaseKeyAlias && releaseKeyPassword
+
+android {
+    namespace 'fr.angelos.flamme'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'fr.angelos.flamme'
+        minSdk 26
+        targetSdk 35
+        versionCode 90
+        versionName '0.9.0-beta.1'
+
+        vectorDrawables {
+            useSupportLibrary true
+        }
+    }
+
+    if (hasReleaseSigning) {
+        signingConfigs {
+            release {
+                storeFile file(releaseKeystore)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+                enableV1Signing true
+                enableV2Signing true
+                enableV3Signing true
+                enableV4Signing true
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            versionNameSuffix '-debug'
+            debuggable true
+        }
+        beta {
+            initWith release
+            signingConfig signingConfigs.debug
+            debuggable false
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            matchingFallbacks = ['release']
+        }
+        release {
+            minifyEnabled true
+            shrinkResources true
+            debuggable false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    lint {
+        abortOnError true
+        checkReleaseBuilds true
+    }
+
+    packaging {
+        resources {
+            excludes += ['/META-INF/{AL2.0,LGPL2.1}']
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.core:core:1.15.0'
+    implementation 'androidx.webkit:webkit:1.12.1'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+}

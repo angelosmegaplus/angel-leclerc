@@ -1,0 +1,130 @@
+name: Flamme Android APK
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'flamme-android/**'
+      - '.github/workflows/flamme-android-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: flamme-android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-apk:
+    name: Build and verify APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 35 SDK
+        shell: bash
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager 'platform-tools' 'platforms;android-35' 'build-tools;35.0.0'
+
+      - name: Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Prepare optional stable release signature
+        if: ${{ secrets.FLAMME_KEYSTORE_BASE64 != '' }}
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.FLAMME_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.FLAMME_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.FLAMME_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.FLAMME_KEY_PASSWORD }}
+        run: |
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$GITHUB_WORKSPACE/flamme-android/release.keystore"
+          echo "FLAMME_KEYSTORE_PATH=$GITHUB_WORKSPACE/flamme-android/release.keystore" >> "$GITHUB_ENV"
+          echo "FLAMME_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> "$GITHUB_ENV"
+          echo "FLAMME_KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
+          echo "FLAMME_KEY_PASSWORD=$KEY_PASSWORD" >> "$GITHUB_ENV"
+
+      - name: Lint and build optimized beta
+        working-directory: flamme-android
+        shell: bash
+        run: |
+          gradle --no-daemon --stacktrace clean lintBeta assembleBeta assembleRelease
+
+      - name: Verify APK signature and prepare artifacts
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp flamme-android/app/build/outputs/apk/beta/app-beta.apk dist/Flamme-beta-Android.apk
+          apksigner verify --verbose --print-certs dist/Flamme-beta-Android.apk
+          if [ -f flamme-android/app/build/outputs/apk/release/app-release.apk ]; then
+            cp flamme-android/app/build/outputs/apk/release/app-release.apk dist/Flamme-beta-Android-release.apk
+            apksigner verify --verbose --print-certs dist/Flamme-beta-Android-release.apk
+          fi
+          if [ -f flamme-android/app/build/outputs/apk/release/app-release-unsigned.apk ]; then
+            cp flamme-android/app/build/outputs/apk/release/app-release-unsigned.apk dist/Flamme-beta-Android-release-unsigned.apk
+          fi
+          sha256sum dist/*.apk > dist/SHA256SUMS.txt
+          ls -lh dist
+
+      - name: Upload installable beta APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Flamme-beta-Android
+          path: |
+            dist/Flamme-beta-Android.apk
+            dist/Flamme-beta-Android-release.apk
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Upload unsigned release for verification
+        if: ${{ hashFiles('dist/Flamme-beta-Android-release-unsigned.apk') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Flamme-beta-Android-unsigned-release
+          path: dist/Flamme-beta-Android-release-unsigned.apk
+          retention-days: 30
+
+      - name: Publish build result and direct APK
+        if: always()
+        shell: bash
+        env:
+          BUILD_STATUS: ${{ job.status }}
+          SOURCE_SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
+          TARGET_BRANCH: ${{ github.ref_name }}
+        run: |
+          mkdir -p releases/flamme-android
+          if [ "$BUILD_STATUS" = "success" ] && [ -f dist/Flamme-beta-Android.apk ]; then
+            cp dist/Flamme-beta-Android.apk releases/flamme-android/Flamme-beta-Android.apk
+            cp dist/SHA256SUMS.txt releases/flamme-android/SHA256SUMS.txt
+          fi
+          printf '{\n  "status": "%s",\n  "source_sha": "%s",\n  "run_id": "%s",\n  "built_at": "%s"\n}\n' \
+            "$BUILD_STATUS" "$SOURCE_SHA" "$RUN_ID" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            > releases/flamme-android/build-status.json
+
+          git config user.name 'Flamme Android Builder'
+          git config user.email 'actions@users.noreply.github.com'
+          git pull --rebase origin "$TARGET_BRANCH"
+          git add releases/flamme-android/
+          if ! git diff --cached --quiet; then
+            git commit -m "Flamme Android: publish APK build ${RUN_ID} [skip ci]"
+            git push origin "HEAD:${TARGET_BRANCH}"
+          fi
