@@ -24,8 +24,32 @@ import {
   UserRound,
   Trash2,
   Newspaper,
+  Flame,
+  Star,
+  Heart,
+  Leaf,
+  Smile,
+  Cat,
+  Globe,
+  LayoutGrid,
+  Pencil,
+  Users,
+  Check,
 } from "lucide-react";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, KeyboardEvent as ReactKeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  FLAMME_AVATAR_IDS,
+  FlammeAvatarId,
+  FlammeProfile,
+  MAX_PROFILE_NAME,
+  normalizeProfileName,
+  readActiveKey,
+  readProfiles,
+  sanitizeProfileName,
+  writeActiveKey,
+  writeProfiles,
+} from "@/lib/flamme-profile";
+
 
 export const Route = createFileRoute("/flamme")({
   head: () => ({
@@ -108,6 +132,76 @@ const searchIcon: Record<SearchType, typeof Search> = {
   maps: Map,
 };
 
+const avatarIcons: Record<FlammeAvatarId, typeof Search> = {
+  user: UserRound,
+  flame: Flame,
+  star: Star,
+  heart: Heart,
+  leaf: Leaf,
+  smile: Smile,
+  cat: Cat,
+  sparkles: Sparkles,
+};
+
+type SuggestionKind = "history" | "qwant" | "service" | "local";
+
+type SuggestionItem = {
+  id: string;
+  kind: SuggestionKind;
+  value: string;
+  label: string;
+  description?: string;
+  url?: string;
+  icon: typeof Search;
+  accent?: string;
+};
+
+const suggestionMeta: Record<SuggestionKind, { label: string; icon: typeof Search }> = {
+  history: { label: "Historique", icon: History },
+  qwant: { label: "Qwant", icon: Globe },
+  service: { label: "Service", icon: LayoutGrid },
+  local: { label: "Suggestion", icon: Search },
+};
+
+function foldText(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+async function fetchQwantSuggestions(query: string, signal: AbortSignal): Promise<string[]> {
+  const encoded = encodeURIComponent(query);
+  try {
+    const response = await fetch(`https://api.qwant.com/v3/suggest?q=${encoded}&locale=fr_FR&version=2`, { signal });
+    if (response.ok) {
+      const payload = (await response.json()) as any;
+      if (payload?.status === "success" && Array.isArray(payload?.data?.items)) {
+        const values = payload.data.items
+          .map((item: any) => (typeof item?.value === "string" ? item.value : ""))
+          .filter(Boolean) as string[];
+        if (values.length) return values;
+      }
+    }
+  } catch (error) {
+    if ((error as Error)?.name === "AbortError") throw error;
+  }
+  try {
+    const response = await fetch(`https://api.qwant.com/api/suggest/?client=opensearch&q=${encoded}`, { signal });
+    if (!response.ok) return [];
+    const payload = (await response.json()) as unknown;
+    if (Array.isArray(payload)) {
+      const list = payload.find((entry) => Array.isArray(entry)) as unknown[] | undefined;
+      if (list) return list.filter((entry): entry is string => typeof entry === "string");
+    }
+    return [];
+  } catch (error) {
+    if ((error as Error)?.name === "AbortError") throw error;
+    return [];
+  }
+}
+
 
 type NewsTopic = {
   label: string;
@@ -152,6 +246,15 @@ function FlammeBetaPage() {
   const [voiceMessage, setVoiceMessage] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [panel, setPanel] = useState<PanelKey | null>(null);
+  const [remoteSuggestions, setRemoteSuggestions] = useState<string[]>([]);
+  const [highlightIndex, setHighlightIndex] = useState(-1);
+  const [profiles, setProfiles] = useState<Record<string, FlammeProfile>>({});
+  const [activeProfileKey, setActiveProfileKey] = useState<string | null>(null);
+  const [profileMode, setProfileMode] = useState<"view" | "create" | "edit" | "switch">("view");
+  const [profileNameDraft, setProfileNameDraft] = useState("");
+  const [profileAvatarDraft, setProfileAvatarDraft] = useState<FlammeAvatarId>("user");
+  const [profileError, setProfileError] = useState("");
+  const remoteAbort = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (!panel) return;
@@ -174,21 +277,85 @@ function FlammeBetaPage() {
     } catch {
       setHistoryItems([]);
     }
+    const storedProfiles = readProfiles();
+    setProfiles(storedProfiles);
+    const key = readActiveKey();
+    setActiveProfileKey(key && storedProfiles[key] ? key : null);
   }, []);
 
-
-
-  const suggestions = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const historyMatches = historyItems.filter((item) => !q || item.toLowerCase().includes(q));
-    const localMatches = localSuggestions.filter((item) => !q || item.toLowerCase().includes(q));
-    const serviceMatches = services.filter((service) => q && (service.name.toLowerCase().includes(q) || service.description.toLowerCase().includes(q)));
-    return {
-      history: historyMatches.slice(0, q ? 3 : 5),
-      local: [...new Set(localMatches.filter((item) => !historyMatches.includes(item)))].slice(0, 5),
-      services: serviceMatches.slice(0, 3),
+  useEffect(() => {
+    const q = query.trim();
+    remoteAbort.current?.abort();
+    if (q.length < 2) {
+      setRemoteSuggestions([]);
+      return;
+    }
+    const controller = new AbortController();
+    remoteAbort.current = controller;
+    const timer = window.setTimeout(() => {
+      fetchQwantSuggestions(q, controller.signal)
+        .then((values) => {
+          if (!controller.signal.aborted) setRemoteSuggestions(values.slice(0, 8));
+        })
+        .catch(() => {
+          if (!controller.signal.aborted) setRemoteSuggestions([]);
+        });
+    }, 250);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
     };
-  }, [historyItems, query]);
+  }, [query]);
+
+  useEffect(() => {
+    setHighlightIndex(-1);
+  }, [query]);
+
+  const suggestions = useMemo<SuggestionItem[]>(() => {
+    const raw = query.trim();
+    const q = foldText(raw);
+    const seen = new Set<string>();
+    const items: SuggestionItem[] = [];
+
+    const push = (item: SuggestionItem) => {
+      const dedupeKey = `${item.kind === "service" ? "service:" : "query:"}${foldText(item.value)}`;
+      if (!item.value || seen.has(dedupeKey)) return;
+      seen.add(dedupeKey);
+      items.push(item);
+    };
+
+    const historyMatches = historyItems.filter((item) => !q || foldText(item).includes(q));
+    const localMatches = localSuggestions.filter((item) => !q || foldText(item).includes(q));
+    const serviceMatches = q
+      ? services.filter((service) => foldText(service.name).includes(q) || foldText(service.description).includes(q))
+      : [];
+
+    if (q) {
+      const completion = [...historyMatches, ...remoteSuggestions, ...localMatches].find((item) => foldText(item).startsWith(q));
+      if (completion) push({ id: `top-${completion}`, kind: foldText(completion) === q ? "local" : "qwant", value: completion, label: completion, icon: Search });
+    }
+
+    historyMatches.slice(0, q ? 3 : 5).forEach((item) =>
+      push({ id: `history-${item}`, kind: "history", value: item, label: item, icon: History }),
+    );
+    remoteSuggestions.forEach((item) => push({ id: `qwant-${item}`, kind: "qwant", value: item, label: item, icon: Globe }));
+    serviceMatches.slice(0, 3).forEach((service) =>
+      push({
+        id: `service-${service.name}`,
+        kind: "service",
+        value: service.name,
+        label: service.name,
+        description: service.description,
+        url: service.url,
+        icon: service.icon,
+        accent: service.accent,
+      }),
+    );
+    localMatches.slice(0, 5).forEach((item) => push({ id: `local-${item}`, kind: "local", value: item, label: item, icon: Search }));
+
+    return items.slice(0, 10);
+  }, [historyItems, query, remoteSuggestions]);
+
 
   const saveHistory = (value: string) => {
     const clean = value.trim();
@@ -288,6 +455,96 @@ function FlammeBetaPage() {
     } catch {}
   };
 
+  const activeProfile = activeProfileKey ? profiles[activeProfileKey] ?? null : null;
+
+  const runSuggestion = (item: SuggestionItem) => {
+    if (item.kind === "service" && item.url) {
+      window.open(item.url, "_blank", "noopener,noreferrer");
+      return;
+    }
+    goToSearch(item.value);
+  };
+
+  const onSearchKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
+    if (!searchFocused || suggestions.length === 0) return;
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setHighlightIndex((current) => (current + 1) % suggestions.length);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setHighlightIndex((current) => (current <= 0 ? suggestions.length - 1 : current - 1));
+    } else if (event.key === "Escape") {
+      setSearchFocused(false);
+      setHighlightIndex(-1);
+    } else if (event.key === "Enter" && highlightIndex >= 0) {
+      event.preventDefault();
+      const item = suggestions[highlightIndex];
+      if (item) runSuggestion(item);
+    }
+  };
+
+  const openProfileMenu = () => {
+    setProfileError("");
+    setProfileMode(activeProfile ? "view" : "create");
+    setProfileNameDraft(activeProfile ? activeProfile.name : "");
+    setProfileAvatarDraft(activeProfile ? activeProfile.avatar : "user");
+    setProfileOpen((value) => !value);
+  };
+
+  const persistProfiles = (next: Record<string, FlammeProfile>, activeKey: string | null) => {
+    setProfiles(next);
+    setActiveProfileKey(activeKey);
+    writeProfiles(next);
+    writeActiveKey(activeKey);
+  };
+
+  const saveProfileDraft = () => {
+    const name = sanitizeProfileName(profileNameDraft).trim();
+    if (!name) {
+      setProfileError("Indiquez un nom d’utilisateur.");
+      return;
+    }
+    const key = normalizeProfileName(name);
+    const next = { ...profiles };
+    if (profileMode === "edit" && activeProfileKey && activeProfileKey !== key) delete next[activeProfileKey];
+    next[key] = { key, name, avatar: profileAvatarDraft };
+    persistProfiles(next, key);
+    setProfileMode("view");
+    setProfileError("");
+  };
+
+  const switchToProfile = () => {
+    const name = sanitizeProfileName(profileNameDraft).trim();
+    if (!name) {
+      setProfileError("Indiquez un nom d’utilisateur.");
+      return;
+    }
+    const key = normalizeProfileName(name);
+    const existing = profiles[key];
+    if (existing) {
+      persistProfiles(profiles, key);
+      setProfileMode("view");
+      setProfileError("");
+      return;
+    }
+    setProfileMode("create");
+    setProfileAvatarDraft("user");
+    setProfileError("Nouveau profil : choisissez un avatar puis enregistrez.");
+  };
+
+  const deleteActiveProfile = () => {
+    if (!activeProfileKey) return;
+    const next = { ...profiles };
+    delete next[activeProfileKey];
+    persistProfiles(next, null);
+    setProfileMode("create");
+    setProfileNameDraft("");
+    setProfileAvatarDraft("user");
+  };
+
+  const ActiveAvatarIcon = activeProfile ? avatarIcons[activeProfile.avatar] : UserRound;
+
+
   const mainNews = newsTopics[0];
   const secondaryNews = newsTopics.slice(1);
   const pageBg = darkMode ? "bg-[#202124] text-[#e8eaed]" : "bg-white text-[#202124]";
@@ -300,22 +557,84 @@ function FlammeBetaPage() {
         <a href="https://www.qwant.com/?l=fr" className="hidden text-[13px] hover:underline sm:inline">Qwant</a>
         <a href="https://www.mailo.com/?language=fr&page=id" className="hidden text-[13px] hover:underline sm:inline">Mail</a>
         <a href="https://account.photowebcloud.fr/login.php" className="hidden text-[13px] hover:underline sm:inline">Photos</a>
-        <button type="button" aria-label="Compte et paramètres Flamme" aria-expanded={profileOpen} onClick={() => setProfileOpen((value) => !value)} className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1a73e8] text-[14px] font-medium text-white shadow-sm">
-          F
+        <button type="button" aria-label={activeProfile ? `Profil local ${activeProfile.name}` : "Profil local Flamme"} aria-expanded={profileOpen} onClick={openProfileMenu} className={`flex h-9 w-9 items-center justify-center rounded-full shadow-sm ${activeProfile ? "bg-[#1a73e8] text-white" : darkMode ? "border border-[#5f6368] text-[#e8eaed]" : "border border-[#dfe1e5] text-[#3c4043]"}`}>
+          <ActiveAvatarIcon className="h-[18px] w-[18px]" />
         </button>
       </header>
 
       {profileOpen && (
         <>
           <button type="button" aria-label="Fermer le menu" className="fixed inset-0 z-40 cursor-default bg-transparent" onClick={() => setProfileOpen(false)} />
-          <div className={`fixed right-3 top-[58px] z-50 w-[min(300px,calc(100vw-24px))] rounded-3xl border p-3 shadow-[0_8px_28px_rgba(60,64,67,.28)] sm:right-4 sm:top-14 ${surface}`}>
+          <div className={`fixed right-3 top-[58px] z-50 w-[min(320px,calc(100vw-24px))] rounded-3xl border p-3 shadow-[0_8px_28px_rgba(60,64,67,.28)] sm:right-4 sm:top-14 ${surface}`}>
             <div className="flex items-center gap-3 px-2 py-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#1a73e8] font-medium text-white">F</span>
-              <div>
-                <div className="text-[15px] font-medium">Flamme</div>
-                <div className={`text-[12px] ${muted}`}>Bêta indépendante</div>
+              <span className={`flex h-11 w-11 items-center justify-center rounded-full ${activeProfile ? "bg-[#1a73e8] text-white" : darkMode ? "bg-[#3c4043]" : "bg-[#f1f3f4]"}`}>
+                <ActiveAvatarIcon className="h-5 w-5" />
+              </span>
+              <div className="min-w-0">
+                <div className="truncate text-[15px] font-medium">{activeProfile ? activeProfile.name : "Flamme"}</div>
+                <div className={`text-[12px] ${muted}`}>{activeProfile ? "Profil local" : "Aucun profil local"}</div>
               </div>
             </div>
+            <p className={`px-2 pb-1 text-[11px] leading-4 ${muted}`}>Profil enregistré uniquement sur cet appareil.</p>
+            <div className={`my-2 h-px ${darkMode ? "bg-[#5f6368]" : "bg-[#e8eaed]"}`} />
+
+            {profileMode === "view" && activeProfile && (
+              <>
+                <button type="button" onClick={() => { setProfileMode("edit"); setProfileNameDraft(activeProfile.name); setProfileAvatarDraft(activeProfile.avatar); setProfileError(""); }} className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[14px] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
+                  <Pencil className="h-5 w-5" /> Modifier le profil
+                </button>
+                <button type="button" onClick={() => { setProfileMode("switch"); setProfileNameDraft(""); setProfileError(""); }} className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[14px] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
+                  <Users className="h-5 w-5" /> Changer d’utilisateur
+                </button>
+                <button type="button" onClick={deleteActiveProfile} className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[14px] text-[#d93025] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
+                  <Trash2 className="h-5 w-5" /> Supprimer ce profil de cet appareil
+                </button>
+              </>
+            )}
+
+            {(profileMode === "create" || profileMode === "edit" || profileMode === "switch") && (
+              <div className="space-y-3 px-2 pb-1">
+                <label className="block">
+                  <span className={`text-[12px] ${muted}`}>Nom d’utilisateur</span>
+                  <input
+                    value={profileNameDraft}
+                    onChange={(event) => setProfileNameDraft(sanitizeProfileName(event.target.value))}
+                    maxLength={MAX_PROFILE_NAME}
+                    placeholder="Votre prénom ou pseudo"
+                    className={`mt-1 h-10 w-full rounded-xl border px-3 text-[14px] outline-none ${darkMode ? "border-[#5f6368] bg-transparent" : "border-[#dfe1e5] bg-white"}`}
+                  />
+                </label>
+
+                {profileMode !== "switch" && (
+                  <div>
+                    <span className={`text-[12px] ${muted}`}>Avatar</span>
+                    <div className="mt-1 grid grid-cols-4 gap-2">
+                      {FLAMME_AVATAR_IDS.map((id) => {
+                        const Icon = avatarIcons[id];
+                        const selected = profileAvatarDraft === id;
+                        return (
+                          <button key={id} type="button" aria-label={`Avatar ${id}`} aria-pressed={selected} onClick={() => setProfileAvatarDraft(id)} className={`flex h-11 items-center justify-center rounded-xl border ${selected ? "border-[#1a73e8] text-[#1a73e8]" : darkMode ? "border-[#5f6368]" : "border-[#dfe1e5]"}`}>
+                            <Icon className="h-5 w-5" />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {profileError && <p className="text-[12px] text-[#d93025]">{profileError}</p>}
+
+                <div className="flex gap-2">
+                  <button type="button" onClick={profileMode === "switch" ? switchToProfile : saveProfileDraft} className="flex min-h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-[#1a73e8] px-3 text-[14px] font-medium text-white">
+                    <Check className="h-4 w-4" /> {profileMode === "switch" ? "Continuer" : "Enregistrer"}
+                  </button>
+                  {activeProfile && (
+                    <button type="button" onClick={() => { setProfileMode("view"); setProfileError(""); }} className={`min-h-10 rounded-xl border px-3 text-[14px] ${darkMode ? "border-[#5f6368]" : "border-[#dfe1e5]"}`}>Annuler</button>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className={`my-2 h-px ${darkMode ? "bg-[#5f6368]" : "bg-[#e8eaed]"}`} />
             <button type="button" onClick={toggleTheme} className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[14px] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
               {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
@@ -330,6 +649,7 @@ function FlammeBetaPage() {
           </div>
         </>
       )}
+
 
       <main className="mx-auto flex w-full max-w-[652px] flex-col px-4 pb-5 sm:px-5 md:min-h-[calc(100dvh-170px)] md:justify-center md:pb-16 md:pt-0">
         <div className="mt-7 flex justify-center sm:mt-12 md:mt-0">
@@ -357,7 +677,9 @@ function FlammeBetaPage() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 onFocus={() => setSearchFocused(true)}
-                onBlur={() => setTimeout(() => setSearchFocused(false), 140)}
+                onBlur={() => setTimeout(() => { setSearchFocused(false); setHighlightIndex(-1); }, 140)}
+                onKeyDown={onSearchKeyDown}
+
                 className="h-full min-w-0 flex-1 bg-transparent px-1 text-[16px] outline-none"
                 placeholder="Rechercher sur Qwant"
                 aria-label="Rechercher sur Qwant"
@@ -380,36 +702,39 @@ function FlammeBetaPage() {
 
             </div>
 
-            {searchFocused && (suggestions.history.length > 0 || suggestions.local.length > 0 || suggestions.services.length > 0) && (
-              <div className={`border-t pb-2 pt-1 ${darkMode ? "border-[#5f6368]" : "border-[#e8eaed]"}`}>
-                {suggestions.history.map((suggestion) => (
-                  <div key={`history-${suggestion}`} className={`group flex min-h-11 items-center ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
-                    <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => goToSearch(suggestion)} className="flex min-h-11 min-w-0 flex-1 items-center gap-3 px-4 text-left text-[15px]">
-                      <History className="h-4 w-4 shrink-0 text-[#9aa0a6]" />
-                      <span className="truncate">{suggestion}</span>
-                    </button>
-                    <button type="button" aria-label={`Supprimer ${suggestion}`} onMouseDown={(event) => event.preventDefault()} onClick={() => removeHistoryItem(suggestion)} className={`mr-2 flex h-9 w-9 items-center justify-center rounded-full opacity-70 ${darkMode ? "hover:bg-white/10" : "hover:bg-white"}`}>
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-                {suggestions.services.map((service) => {
-                  const Icon = service.icon;
+            {searchFocused && suggestions.length > 0 && (
+              <ul role="listbox" aria-label="Suggestions de recherche" className={`border-t pb-2 pt-1 ${darkMode ? "border-[#5f6368]" : "border-[#e8eaed]"}`}>
+                {suggestions.map((item, index) => {
+                  const Icon = item.icon;
+                  const highlighted = index === highlightIndex;
+                  const rowClass = highlighted ? (darkMode ? "bg-white/10" : "bg-[#f1f3f4]") : darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]";
                   return (
-                    <a key={`service-${service.name}`} href={service.url} target="_blank" rel="noreferrer" onMouseDown={(event) => event.preventDefault()} className={`flex min-h-11 items-center gap-3 px-4 text-[15px] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
-                      <Icon className="h-4 w-4 shrink-0" style={{ color: readableAccent(service.accent, darkMode) }} />
-                      <span className="truncate"><strong className="font-medium">{service.name}</strong> <span className={muted}>— {service.description}</span></span>
-                    </a>
+                    <li key={item.id} role="option" aria-selected={highlighted} className={`group flex min-h-11 items-center ${rowClass}`}>
+                      <button
+                        type="button"
+                        onMouseDown={(event) => event.preventDefault()}
+                        onMouseEnter={() => setHighlightIndex(index)}
+                        onClick={() => runSuggestion(item)}
+                        className="flex min-h-11 min-w-0 flex-1 items-center gap-3 px-4 text-left text-[15px]"
+                      >
+                        <Icon className="h-4 w-4 shrink-0 text-[#9aa0a6]" style={item.accent ? { color: readableAccent(item.accent, darkMode) } : undefined} />
+                        <span className="min-w-0 flex-1 truncate">
+                          <span className={item.kind === "service" ? "font-medium" : undefined}>{item.label}</span>
+                          {item.description && <span className={muted}> — {item.description}</span>}
+                        </span>
+                        <span className={`ml-2 hidden shrink-0 text-[11px] sm:inline ${muted}`}>{suggestionMeta[item.kind].label}</span>
+                      </button>
+                      {item.kind === "history" && (
+                        <button type="button" aria-label={`Supprimer ${item.value}`} onMouseDown={(event) => event.preventDefault()} onClick={() => removeHistoryItem(item.value)} className={`mr-2 flex h-9 w-9 items-center justify-center rounded-full opacity-70 ${darkMode ? "hover:bg-white/10" : "hover:bg-white"}`}>
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                    </li>
                   );
                 })}
-                {suggestions.local.map((suggestion) => (
-                  <button key={`local-${suggestion}`} type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => goToSearch(suggestion)} className={`flex min-h-11 w-full items-center gap-3 px-4 text-left text-[15px] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
-                    <Search className="h-4 w-4 shrink-0 text-[#9aa0a6]" />
-                    <span className="truncate">{suggestion}</span>
-                  </button>
-                ))}
-              </div>
+              </ul>
             )}
+
           </div>
         </form>
 
@@ -522,7 +847,7 @@ function FlammeBetaPage() {
               <div className={`space-y-3 text-[14px] leading-6 ${muted}`}>
                 <p>Flamme ne dispose pas de serveur propre pour la recherche : voici exactement ce qui se passe.</p>
                 <ul className="list-disc space-y-2 pl-5">
-                  <li>Votre <strong className="font-medium">historique de recherche</strong> et votre <strong className="font-medium">thème clair/sombre</strong> sont enregistrés uniquement dans le stockage local de votre navigateur. Vous pouvez les effacer depuis Paramètres.</li>
+                  <li>Votre <strong className="font-medium">historique de recherche</strong>, vos <strong className="font-medium">profils locaux</strong> (nom et avatar) et votre <strong className="font-medium">thème clair/sombre</strong> sont enregistrés uniquement dans le stockage local de votre navigateur, sans compte ni serveur. Vous pouvez les effacer depuis Paramètres.</li>
                   <li>Lorsque vous lancez une recherche, la requête est <strong className="font-medium">envoyée à Qwant</strong> (ou au service de cartes IGN pour l’onglet Cartes).</li>
                   <li>Cliquer sur un service du carrousel ouvre directement le site de l’éditeur concerné, qui applique ses propres règles.</li>
                   <li>La <strong className="font-medium">recherche vocale</strong> utilise la reconnaissance vocale de votre navigateur ou de votre appareil ; l’audio peut être traité par le fournisseur de ce navigateur/système.</li>
@@ -558,7 +883,12 @@ function FlammeBetaPage() {
                 <button type="button" onClick={clearHistory} disabled={historyItems.length === 0} className={`flex min-h-12 w-full items-center gap-3 rounded-2xl border px-4 text-left text-[14px] disabled:opacity-50 ${darkMode ? "border-[#5f6368] hover:bg-white/10" : "border-[#dfe1e5] hover:bg-[#f1f3f4]"}`}>
                   <Trash2 className="h-5 w-5" /> Effacer l’historique
                 </button>
-                <p className={`text-[12px] leading-5 ${muted}`}>Ces réglages sont enregistrés uniquement dans ce navigateur.</p>
+                <div className={`flex min-h-12 items-center justify-between gap-3 rounded-2xl border px-4 text-[14px] ${darkMode ? "border-[#5f6368]" : "border-[#dfe1e5]"}`}>
+                  <span className="flex items-center gap-3"><Users className="h-5 w-5" /> Profils locaux</span>
+                  <span className={`text-[13px] ${muted}`}>{Object.keys(profiles).length}</span>
+                </div>
+                <p className={`text-[12px] leading-5 ${muted}`}>Ces réglages, l’historique et les profils sont enregistrés uniquement dans ce navigateur.</p>
+
               </div>
             )}
           </div>
