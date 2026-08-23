@@ -15,7 +15,6 @@ import {
   Sparkles,
   Languages,
   Mic,
-  Camera,
   History,
   X,
   Settings,
@@ -26,7 +25,7 @@ import {
   Trash2,
   Newspaper,
 } from "lucide-react";
-import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 
 export const Route = createFileRoute("/flamme")({
   head: () => ({
@@ -142,9 +141,7 @@ function FlammeBetaPage() {
   const [historyItems, setHistoryItems] = useState<string[]>([]);
   const [darkMode, setDarkMode] = useState(false);
   const [voiceMessage, setVoiceMessage] = useState("");
-  const [imageName, setImageName] = useState("");
-  const [imagePreview, setImagePreview] = useState("");
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isListening, setIsListening] = useState(false);
 
   useEffect(() => {
     try {
@@ -159,11 +156,7 @@ function FlammeBetaPage() {
     }
   }, []);
 
-  useEffect(() => {
-    return () => {
-      if (imagePreview) URL.revokeObjectURL(imagePreview);
-    };
-  }, [imagePreview]);
+
 
   const suggestions = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -210,6 +203,7 @@ function FlammeBetaPage() {
   const askMistral = () => window.open("https://chat.mistral.ai/", "_blank", "noopener,noreferrer");
 
   const startVoiceSearch = () => {
+    if (isListening) return;
     setVoiceMessage("");
     const SpeechRecognitionCtor = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognitionCtor) {
@@ -220,30 +214,28 @@ function FlammeBetaPage() {
     recognition.lang = "fr-FR";
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => setIsListening(false);
     recognition.onresult = (event: any) => {
+      setIsListening(false);
       const transcript = event?.results?.[0]?.[0]?.transcript || "";
       if (!transcript) return;
       setQuery(transcript);
       goToSearch(transcript);
     };
-    recognition.onerror = () => setVoiceMessage("Impossible d’utiliser le micro pour le moment.");
-    recognition.start();
+    recognition.onerror = () => {
+      setIsListening(false);
+      setVoiceMessage("Impossible d’utiliser le micro pour le moment.");
+    };
+    try {
+      recognition.start();
+    } catch {
+      setIsListening(false);
+      setVoiceMessage("Impossible de démarrer la recherche vocale.");
+    }
   };
 
-  const handleImageFile = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
-    setImageName(file.name);
-    setImagePreview(URL.createObjectURL(file));
-    event.target.value = "";
-  };
 
-  const closeImagePreview = () => {
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
-    setImagePreview("");
-    setImageName("");
-  };
 
   const toggleTheme = () => {
     setDarkMode((current) => {
@@ -319,8 +311,16 @@ function FlammeBetaPage() {
 
       <main className="mx-auto flex w-full max-w-[652px] flex-col px-4 pb-5 sm:px-5 md:min-h-[calc(100dvh-170px)] md:justify-center md:pb-16 md:pt-0">
         <div className="mt-7 flex justify-center sm:mt-12 md:mt-0">
-          <div className={`relative left-[5px] flex justify-center sm:left-[7px] ${darkMode ? "rounded-2xl bg-white/92 px-5 py-3 shadow-[0_1px_10px_rgba(0,0,0,.35)]" : ""}`}>
-            <img src="/logos/qwant.svg" alt="Qwant" width={272} height={92} className="h-[58px] w-auto sm:h-[80px]" />
+          <div className="flex select-none items-end justify-center gap-2">
+            <span
+              className={`text-[46px] font-extrabold leading-none tracking-[-0.045em] sm:text-[64px] ${darkMode ? "text-[#f1f3f4]" : "text-[#181716]"}`}
+            >
+              Flamme
+            </span>
+            <span className="mb-[10px] h-[9px] w-[9px] shrink-0 rounded-full bg-[#e2372f] sm:mb-[14px] sm:h-[12px] sm:w-[12px]" aria-hidden="true" />
+            <span className={`mb-[6px] text-[15px] font-medium lowercase tracking-tight sm:mb-[9px] sm:text-[20px] ${darkMode ? "text-[#9aa0a6]" : "text-[#6b6f76]"}`}>
+              bêta
+            </span>
           </div>
         </div>
 
@@ -337,20 +337,25 @@ function FlammeBetaPage() {
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setTimeout(() => setSearchFocused(false), 140)}
                 className="h-full min-w-0 flex-1 bg-transparent px-1 text-[16px] outline-none"
-                placeholder="Rechercher"
-                aria-label="Rechercher"
+                placeholder="Rechercher sur Qwant"
+                aria-label="Rechercher sur Qwant"
                 autoComplete="off"
               />
-              <button type="button" onClick={startVoiceSearch} className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f8f9fa]"}`} title="Recherche vocale" aria-label="Recherche vocale">
-                <Mic className="h-5 w-5 text-[#4285f4]" />
-              </button>
-              <button type="button" onClick={() => fileInputRef.current?.click()} className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f8f9fa]"}`} title="Recherche par image — bêta" aria-label="Recherche par image — bêta">
-                <Camera className="h-5 w-5 text-[#4285f4]" />
+              <button type="button" onClick={startVoiceSearch} className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f8f9fa]"}`} title="Recherche vocale" aria-label="Recherche vocale" aria-pressed={isListening}>
+                {isListening ? (
+                  <span className="flex items-center gap-[3px]" aria-hidden="true">
+                    <span className="h-[5px] w-[5px] animate-bounce rounded-full bg-[#4285f4] [animation-duration:.9s]" />
+                    <span className="h-[5px] w-[5px] animate-bounce rounded-full bg-[#4285f4] [animation-delay:.15s] [animation-duration:.9s]" />
+                    <span className="h-[5px] w-[5px] animate-bounce rounded-full bg-[#4285f4] [animation-delay:.3s] [animation-duration:.9s]" />
+                  </span>
+                ) : (
+                  <Mic className="h-5 w-5 text-[#4285f4]" />
+                )}
               </button>
               <button type="button" onClick={askMistral} className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f8f9fa]"}`} title="IA" aria-label="Ouvrir l’IA">
                 <Sparkles className="h-5 w-5 text-[#f97316]" />
               </button>
-              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageFile} />
+
             </div>
 
             {searchFocused && (suggestions.history.length > 0 || suggestions.local.length > 0 || suggestions.services.length > 0) && (
@@ -388,20 +393,7 @@ function FlammeBetaPage() {
 
         {voiceMessage && <p className={`mt-2 text-center text-[12px] ${muted}`}>{voiceMessage}</p>}
 
-        {imagePreview && (
-          <div className={`mx-auto mt-3 flex w-full items-center gap-3 rounded-2xl border p-3 ${surface}`}>
-            <img src={imagePreview} alt="Aperçu de l’image sélectionnée" className="h-14 w-14 rounded-xl object-cover" />
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-[13px] font-medium">{imageName}</div>
-              <div className={`text-[11px] ${muted}`}>Recherche par image bêta : Qwant ne propose pas de recherche visuelle directe.</div>
-              <div className="mt-2 flex gap-2">
-                <button type="button" onClick={() => goToSearch(imageName.replace(/\.[^.]+$/, ""), "images")} className="rounded-full bg-[#1a73e8] px-3 py-1.5 text-[12px] font-medium text-white">Chercher le nom</button>
-                <button type="button" onClick={askMistral} className={`rounded-full px-3 py-1.5 text-[12px] font-medium ${darkMode ? "bg-white/10" : "bg-[#f1f3f4]"}`}>Ouvrir l’IA</button>
-              </div>
-            </div>
-            <button type="button" onClick={closeImagePreview} aria-label="Fermer" className={`flex h-9 w-9 items-center justify-center rounded-full ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}><X className="h-4 w-4" /></button>
-          </div>
-        )}
+
 
         <div className="mt-6 hidden justify-center gap-3 md:flex">
           <button type="button" onClick={() => goToSearch(query)} className={`h-9 rounded border border-transparent px-4 text-[14px] ${darkMode ? "bg-[#303134] text-[#e8eaed] hover:border-[#5f6368]" : "bg-[#f8f9fa] text-[#3c4043] hover:border-[#dadce0]"}`}>Recherche Qwant</button>
