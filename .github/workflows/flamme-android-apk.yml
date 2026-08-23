@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: flamme-android-${{ github.ref }}
@@ -25,6 +25,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: flamme-android-1.0
 
       - name: Java 17
         uses: actions/setup-java@v4
@@ -101,3 +103,29 @@ jobs:
           name: Flamme-beta-Android-unsigned-release
           path: dist/Flamme-beta-Android-release-unsigned.apk
           retention-days: 30
+
+      - name: Publish build result and direct APK
+        if: always()
+        shell: bash
+        env:
+          BUILD_STATUS: ${{ job.status }}
+          SOURCE_SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          mkdir -p releases/flamme-android
+          if [ "$BUILD_STATUS" = "success" ] && [ -f dist/Flamme-beta-Android.apk ]; then
+            cp dist/Flamme-beta-Android.apk releases/flamme-android/Flamme-beta-Android.apk
+            cp dist/SHA256SUMS.txt releases/flamme-android/SHA256SUMS.txt
+          fi
+          printf '{\n  "status": "%s",\n  "source_sha": "%s",\n  "run_id": "%s",\n  "built_at": "%s"\n}\n' \
+            "$BUILD_STATUS" "$SOURCE_SHA" "$RUN_ID" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            > releases/flamme-android/build-status.json
+
+          git config user.name 'Flamme Android Builder'
+          git config user.email 'actions@users.noreply.github.com'
+          git pull --rebase origin flamme-android-1.0
+          git add releases/flamme-android/
+          if ! git diff --cached --quiet; then
+            git commit -m "Flamme Android: publish APK build ${RUN_ID} [skip ci]"
+            git push origin HEAD:flamme-android-1.0
+          fi
