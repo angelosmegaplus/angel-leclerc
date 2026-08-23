@@ -1181,8 +1181,9 @@ function FlammeBetaPage() {
             <h1 className="text-[21px] font-normal">Découvrir</h1>
             <p className={`mt-1 text-[12px] ${muted}`}>
               {visibleNews.length > 0
-                ? `Sources françaises — mise à jour ${formatUpdatedAt(newsFetchedAt)}`
-                : "Actualités et sujets du moment avec Qwant"}
+                ? `${newsSourcesLabel} — ${formatUpdatedAt(newsFetchedAt)}`
+                : "Actualités et sujets du moment"}
+
             </p>
           </div>
           {visibleNews.length > 0 ? (
