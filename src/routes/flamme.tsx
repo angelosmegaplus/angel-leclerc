@@ -15,7 +15,6 @@ import {
   Sparkles,
   Languages,
   Mic,
-  Camera,
   History,
   X,
   Settings,
@@ -26,7 +25,7 @@ import {
   Trash2,
   Newspaper,
 } from "lucide-react";
-import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 export const Route = createFileRoute("/flamme")({
   head: () => ({
