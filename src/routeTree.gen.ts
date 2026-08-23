@@ -43,6 +43,7 @@ import { Route as BoutiqueCommandeRouteImport } from './routes/boutique/commande
 import { Route as BoutiqueHandleRouteImport } from './routes/boutique/$handle'
 import { Route as ArticlesReponseArticleChniTombolaPatrimoineRouteImport } from './routes/articles/reponse-article-chni-tombola-patrimoine'
 import { Route as ArticlesSlugRouteImport } from './routes/articles/$slug'
+import { Route as ApiFlammeMistralRouteImport } from './routes/api/flamme-mistral'
 import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
 import { Route as AdminMovixIdRouteImport } from './routes/admin-movix.$id'
 import { Route as ActualitesSlugRouteImport } from './routes/actualites/$slug'
@@ -240,6 +241,11 @@ const ArticlesSlugRoute = ArticlesSlugRouteImport.update({
   path: '/articles/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiFlammeMistralRoute = ApiFlammeMistralRouteImport.update({
+  id: '/api/flamme-mistral',
+  path: '/api/flamme-mistral',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAssistantRoute = ApiAssistantRouteImport.update({
   id: '/api/assistant',
   path: '/api/assistant',
@@ -393,6 +399,7 @@ export interface FileRoutesByFullPath {
   '/actualites/$slug': typeof ActualitesSlugRoute
   '/admin-movix/$id': typeof AdminMovixIdRoute
   '/api/assistant': typeof ApiAssistantRoute
+  '/api/flamme-mistral': typeof ApiFlammeMistralRoute
   '/articles/$slug': typeof ArticlesSlugRoute
   '/articles/reponse-article-chni-tombola-patrimoine': typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
   '/boutique/$handle': typeof BoutiqueHandleRoute
@@ -452,6 +459,7 @@ export interface FileRoutesByTo {
   '/actualites/$slug': typeof ActualitesSlugRoute
   '/admin-movix/$id': typeof AdminMovixIdRoute
   '/api/assistant': typeof ApiAssistantRoute
+  '/api/flamme-mistral': typeof ApiFlammeMistralRoute
   '/articles/$slug': typeof ArticlesSlugRoute
   '/articles/reponse-article-chni-tombola-patrimoine': typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
   '/boutique/$handle': typeof BoutiqueHandleRoute
@@ -512,6 +520,7 @@ export interface FileRoutesById {
   '/actualites/$slug': typeof ActualitesSlugRoute
   '/admin-movix/$id': typeof AdminMovixIdRoute
   '/api/assistant': typeof ApiAssistantRoute
+  '/api/flamme-mistral': typeof ApiFlammeMistralRoute
   '/articles/$slug': typeof ArticlesSlugRoute
   '/articles/reponse-article-chni-tombola-patrimoine': typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
   '/boutique/$handle': typeof BoutiqueHandleRoute
@@ -573,6 +582,7 @@ export interface FileRouteTypes {
     | '/actualites/$slug'
     | '/admin-movix/$id'
     | '/api/assistant'
+    | '/api/flamme-mistral'
     | '/articles/$slug'
     | '/articles/reponse-article-chni-tombola-patrimoine'
     | '/boutique/$handle'
@@ -632,6 +642,7 @@ export interface FileRouteTypes {
     | '/actualites/$slug'
     | '/admin-movix/$id'
     | '/api/assistant'
+    | '/api/flamme-mistral'
     | '/articles/$slug'
     | '/articles/reponse-article-chni-tombola-patrimoine'
     | '/boutique/$handle'
@@ -691,6 +702,7 @@ export interface FileRouteTypes {
     | '/actualites/$slug'
     | '/admin-movix/$id'
     | '/api/assistant'
+    | '/api/flamme-mistral'
     | '/articles/$slug'
     | '/articles/reponse-article-chni-tombola-patrimoine'
     | '/boutique/$handle'
@@ -750,6 +762,7 @@ export interface RootRouteChildren {
   SystemStatusRoute: typeof SystemStatusRoute
   ActualitesSlugRoute: typeof ActualitesSlugRoute
   ApiAssistantRoute: typeof ApiAssistantRoute
+  ApiFlammeMistralRoute: typeof ApiFlammeMistralRoute
   ArticlesSlugRoute: typeof ArticlesSlugRoute
   ArticlesReponseArticleChniTombolaPatrimoineRoute: typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
   BoutiqueHandleRoute: typeof BoutiqueHandleRoute
@@ -1021,6 +1034,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArticlesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/flamme-mistral': {
+      id: '/api/flamme-mistral'
+      path: '/api/flamme-mistral'
+      fullPath: '/api/flamme-mistral'
+      preLoaderRoute: typeof ApiFlammeMistralRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/assistant': {
       id: '/api/assistant'
       path: '/api/assistant'
@@ -1226,6 +1246,7 @@ const rootRouteChildren: RootRouteChildren = {
   SystemStatusRoute: SystemStatusRoute,
   ActualitesSlugRoute: ActualitesSlugRoute,
   ApiAssistantRoute: ApiAssistantRoute,
+  ApiFlammeMistralRoute: ApiFlammeMistralRoute,
   ArticlesSlugRoute: ArticlesSlugRoute,
   ArticlesReponseArticleChniTombolaPatrimoineRoute:
     ArticlesReponseArticleChniTombolaPatrimoineRoute,
