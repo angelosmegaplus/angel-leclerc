@@ -854,12 +854,25 @@ function FlammeBetaPage() {
           <div className="flex min-w-max gap-4 pb-3">
             {services.map((service) => {
               const Icon = service.icon;
-              return (
-                <a key={service.name} href={service.url} target="_blank" rel="noreferrer" title={service.description} className="flex w-[68px] shrink-0 flex-col items-center gap-2 text-center">
-                  <span className={`flex h-12 w-12 items-center justify-center rounded-full ${darkMode ? "bg-[#3c4043]" : "bg-[#f1f3f4]"}`} style={{ color: readableAccent(service.accent, darkMode) }}>
+              const accentColor = readableAccent(service.accent, darkMode);
+              const inner = (
+                <>
+                  <span className={`flex h-12 w-12 items-center justify-center rounded-full ${darkMode ? "bg-[#3c4043]" : "bg-[#f1f3f4]"}`} style={{ color: accentColor }}>
                     <Icon className="h-5 w-5" />
                   </span>
                   <span className="max-w-[68px] truncate text-[12px]">{service.name}</span>
+                </>
+              );
+              if (service.panel === "forum") {
+                return (
+                  <button key={service.name} type="button" onClick={() => setPanel("forum")} title={service.description} className="flex w-[68px] shrink-0 flex-col items-center gap-2 text-center">
+                    {inner}
+                  </button>
+                );
+              }
+              return (
+                <a key={service.name} href={service.url} target="_blank" rel="noreferrer" title={service.description} className="flex w-[68px] shrink-0 flex-col items-center gap-2 text-center">
+                  {inner}
                 </a>
               );
             })}
