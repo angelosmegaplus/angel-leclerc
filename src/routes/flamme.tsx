@@ -238,13 +238,14 @@ function newsVisual(topic: NewsTopic) {
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
-type PanelKey = "about" | "privacy" | "help" | "settings";
+type PanelKey = "about" | "privacy" | "help" | "settings" | "forum";
 
 const panelTitles: Record<PanelKey, string> = {
   about: "À propos de Flamme",
   privacy: "Confidentialité",
   help: "Aide",
   settings: "Paramètres",
+  forum: "Forum & réseaux français",
 };
 
 function FlammeBetaPage() {
