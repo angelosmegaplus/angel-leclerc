@@ -1672,8 +1672,14 @@ function FlammeBetaPage() {
           </div>
         </div>
 
-        <nav aria-label="Services Flamme" className="-mx-4 mt-5 overflow-x-auto overscroll-x-contain px-4 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="flex min-w-max gap-4 pb-3">
+        <nav
+          aria-label="Services Flamme"
+          onScroll={markCarouselInteraction}
+          onPointerDown={markCarouselInteraction}
+          className="-mx-4 mt-5 overflow-x-auto overscroll-x-contain px-4 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          <motion.div animate={carouselNudge} className="flex min-w-max gap-4 pb-3">
+
             {services.map((service) => {
               const Icon = service.icon;
               const accentColor = readableAccent(service.accent, darkMode);
