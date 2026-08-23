@@ -56,15 +56,51 @@ export function writeNewsLayers(layers: FlammeNewsCategory[]) {
 }
 
 const RECENT_WINDOW = 72 * 60 * 60 * 1000;
-
-/** Nombre maximum d'articles régionaux injectés dans le fil. */
+const MAX_PER_SOURCE = 3;
 const MAX_REGIONAL = 3;
 
+function fallbackSelection(items: FlammeNewsItem[], limit: number): FlammeNewsItem[] {
+  const time = (item: FlammeNewsItem) => (item.publishedAt ? Date.parse(item.publishedAt) || 0 : 0);
+  const byDate = [...items].sort((a, b) => time(b) - time(a));
+  const queues = new Map<string, FlammeNewsItem[]>();
+  byDate.forEach((item) => {
+    const list = queues.get(item.source) ?? [];
+    list.push(item);
+    queues.set(item.source, list);
+  });
+
+  const out: FlammeNewsItem[] = [];
+  const counts = new Map<string, number>();
+  let guard = 0;
+  while (out.length < limit && guard < 500) {
+    guard += 1;
+    let progressed = false;
+    const ordered = Array.from(queues.values())
+      .filter((queue) => queue.length)
+      .sort((a, b) => time(b[0]!) - time(a[0]!));
+    for (const queue of ordered) {
+      if (out.length >= limit) break;
+      const item = queue.shift();
+      if (!item) continue;
+      const used = counts.get(item.source) ?? 0;
+      if (used >= MAX_PER_SOURCE) {
+        progressed = true;
+        continue;
+      }
+      counts.set(item.source, used + 1);
+      out.push(item);
+      progressed = true;
+    }
+    if (!progressed) break;
+  }
+  return out.slice(0, limit);
+}
+
 /**
- * Filtre le pool selon les couches actives puis applique le classement de
- * diversification Mistral lorsqu'il est disponible. Les garde-fous locaux
- * restent prioritaires : fraîcheur, maximum 3 articles par média, jamais plus
- * de 2 consécutifs et injection régionale limitée.
+ * Quand Mistral a composé le fil, son ordre éditorial devient la source
+ * principale de vérité. Le client se limite à appliquer les préférences de
+ * couches de l'utilisateur et quelques garde-fous techniques. Si Mistral est
+ * indisponible, l'ancien mélange déterministe reprend automatiquement.
  */
 export function selectNewsFeed(
   pool: FlammeNewsItem[],
@@ -72,77 +108,55 @@ export function selectNewsFeed(
   limit = 12,
 ): FlammeNewsItem[] {
   const active = new Set(layers.length ? layers : ALL_LAYERS);
-  const all = pool.filter((item) => item.categories.some((category) => active.has(category)));
-  const time = (item: FlammeNewsItem) => (item.publishedAt ? Date.parse(item.publishedAt) : 0);
-  const rank = (item: FlammeNewsItem) =>
-    typeof item.curationRank === "number" ? item.curationRank : Number.MAX_SAFE_INTEGER;
-  const comparePriority = (a: FlammeNewsItem, b: FlammeNewsItem) => {
-    const rankDiff = rank(a) - rank(b);
-    return rankDiff !== 0 ? rankDiff : time(b) - time(a);
-  };
-
-  const regionalPicks = all
-    .filter((item) => item.regional)
-    .sort(comparePriority)
-    .slice(0, MAX_REGIONAL);
-  const filtered = all.filter((item) => !item.regional);
+  const filtered = pool.filter((item) => item.categories.some((category) => active.has(category)));
+  const time = (item: FlammeNewsItem) => (item.publishedAt ? Date.parse(item.publishedAt) || 0 : 0);
   const now = Date.now();
-  const nationalLimit = Math.max(1, limit - regionalPicks.length);
-  const recent = filtered.filter((item) => time(item) && now - time(item) <= RECENT_WINDOW);
-  const base = recent.length >= nationalLimit ? recent : filtered;
+  const recent = filtered.filter((item) => !time(item) || now - time(item) <= RECENT_WINDOW);
+  const base = recent.length >= limit ? recent : filtered;
 
-  const byPriority = [...base].sort(comparePriority);
-  const perSource = new Map<string, FlammeNewsItem[]>();
-  byPriority.forEach((item) => {
-    const list = perSource.get(item.source) ?? [];
-    list.push(item);
-    perSource.set(item.source, list);
-  });
+  const aiOrdered = base
+    .filter((item) => typeof item.curationRank === "number")
+    .sort((a, b) => (a.curationRank as number) - (b.curationRank as number));
 
-  const queues = Array.from(perSource.values());
-  const counts = new Map<string, number>();
+  if (!aiOrdered.length) return fallbackSelection(base, limit);
+
   const out: FlammeNewsItem[] = [];
-  let guard = 0;
+  const counts = new Map<string, number>();
+  let regionalCount = 0;
 
-  while (out.length < nationalLimit && guard < 500) {
-    guard += 1;
-    let progressed = false;
-    // Le rang Mistral départage les têtes de file ; sans rang, on retombe sur la fraîcheur.
-    const ordered = queues
-      .filter((queue) => queue.length > 0)
-      .sort((a, b) => comparePriority(a[0]!, b[0]!));
-    for (const queue of ordered) {
-      if (out.length >= nationalLimit) break;
-      const candidate = queue[0]!;
-      const used = counts.get(candidate.source) ?? 0;
-      if (used >= 3) {
-        queue.shift();
-        progressed = true;
-        continue;
-      }
-      const lastTwo = out.slice(-2);
-      if (lastTwo.length === 2 && lastTwo.every((item) => item.source === candidate.source)) continue;
-      queue.shift();
-      counts.set(candidate.source, used + 1);
-      out.push(candidate);
-      progressed = true;
-    }
-    if (!progressed) break;
+  // L'ordre vient de Mistral. Le code ne fait que bloquer une répétition
+  // excessive d'un même média ou du régional.
+  for (const item of aiOrdered) {
+    if (out.length >= limit) break;
+    const used = counts.get(item.source) ?? 0;
+    if (used >= MAX_PER_SOURCE) continue;
+    if (item.regional && regionalCount >= MAX_REGIONAL) continue;
+
+    const lastTwo = out.slice(-2);
+    if (lastTwo.length === 2 && lastTwo.every((entry) => entry.source === item.source)) continue;
+
+    counts.set(item.source, used + 1);
+    if (item.regional) regionalCount += 1;
+    out.push(item);
   }
 
-  if (out.length < nationalLimit) {
-    for (const item of byPriority) {
-      if (out.length >= nationalLimit) break;
-      if (!out.includes(item)) out.push(item);
+  // Si les couches choisies ont éliminé trop d'articles de la sélection IA,
+  // on complète seulement les places manquantes avec le tri de secours.
+  if (out.length < limit) {
+    const fallback = fallbackSelection(
+      base.filter((item) => !out.includes(item)),
+      limit - out.length,
+    );
+    for (const item of fallback) {
+      if (out.length >= limit) break;
+      const used = counts.get(item.source) ?? 0;
+      if (used >= MAX_PER_SOURCE) continue;
+      if (item.regional && regionalCount >= MAX_REGIONAL) continue;
+      counts.set(item.source, used + 1);
+      if (item.regional) regionalCount += 1;
+      out.push(item);
     }
   }
 
-  // Injection régionale : positions 2, 5 et 8 pour rester visible sans dominer.
-  const merged = [...out];
-  regionalPicks.forEach((item, index) => {
-    const position = Math.min(merged.length, 1 + index * 3);
-    merged.splice(position, 0, item);
-  });
-
-  return merged.slice(0, limit);
+  return out.slice(0, limit);
 }
