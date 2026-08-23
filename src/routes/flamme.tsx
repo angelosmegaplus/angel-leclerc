@@ -1705,7 +1705,32 @@ function FlammeBetaPage() {
                     })}
                   </div>
                   <p className={`mt-2 text-[12px] leading-4 ${muted}`}>Le fil « Découvrir » mélange les sources selon les couches activées.</p>
+
+                  <div className={`mt-3 border-t pt-3 ${darkMode ? "border-[#5f6368]" : "border-[#dfe1e5]"}`}>
+                    <label htmlFor="flamme-region" className="flex items-center gap-3 text-[14px]">
+                      <Map className="h-5 w-5" /> Ma région (facultatif)
+                    </label>
+                    <select
+                      id="flamme-region"
+                      value={newsRegion ?? ""}
+                      onChange={(event) => chooseRegion(event.target.value || null)}
+                      className={`mt-2 min-h-11 w-full rounded-xl border px-3 text-[14px] ${darkMode ? "border-[#5f6368] bg-[#303134] text-[#e8eaed]" : "border-[#dfe1e5] bg-white text-[#202124]"}`}
+                    >
+                      <option value="">Toute la France</option>
+                      {FLAMME_REGIONS.map((region) => (
+                        <option key={region.id} value={region.id}>{region.label}</option>
+                      ))}
+                    </select>
+                    <p className={`mt-2 text-[12px] leading-4 ${muted}`}>
+                      {newsRegion
+                        ? `Quelques actualités ${findRegion(newsRegion)?.source ?? "régionales"} sont ajoutées au fil national et international.`
+                        : "Choisissez une région pour ajouter quelques actualités locales au fil, sans le rendre 100 % local."}
+                    </p>
+                  </div>
                 </div>
+
+                <FlammeInstallCard darkMode={darkMode} />
+
 
                 <button type="button" onClick={toggleTheme} className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border px-4 text-left text-[14px] ${darkMode ? "border-[#5f6368] hover:bg-white/10" : "border-[#dfe1e5] hover:bg-[#f1f3f4]"}`}>
                   <span className="flex items-center gap-3">{darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />} Apparence</span>
