@@ -16,17 +16,17 @@ const FEEDS: FeedConfig[] = [
     categories: ["general", "france"],
   },
   {
-    source: "Franceinfo Économie",
+    source: "Franceinfo",
     urls: ["https://www.franceinfo.fr/economie.rss", "https://www.francetvinfo.fr/economie.rss"],
     categories: ["economy", "france"],
   },
   {
-    source: "Franceinfo Sport",
+    source: "Franceinfo",
     urls: ["https://www.franceinfo.fr/sports.rss"],
     categories: ["sport"],
   },
   {
-    source: "Franceinfo Culture",
+    source: "Franceinfo",
     urls: ["https://www.franceinfo.fr/culture.rss"],
     categories: ["culture-history"],
   },
