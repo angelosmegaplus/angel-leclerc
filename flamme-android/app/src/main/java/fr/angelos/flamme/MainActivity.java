@@ -15,9 +15,11 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
+import android.speech.RecognizerIntent;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.webkit.CookieManager;
 import android.webkit.PermissionRequest;
 import android.webkit.RenderProcessGoneDetail;
@@ -42,6 +44,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.webkit.WebSettingsCompat;
+import androidx.webkit.WebViewFeature;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,8 +58,12 @@ public final class MainActivity extends AppCompatActivity {
     private static final String WWW_HOST = "www.angel-leclerc.fr";
     private static final String LOVABLE_HOST = "angel-leclerc.lovable.app";
 
+    public static final String ACTION_FOCUS_SEARCH = "fr.angelos.flamme.action.FOCUS_SEARCH";
+    public static final String ACTION_VOICE_SEARCH = "fr.angelos.flamme.action.VOICE_SEARCH";
+
     private static final int REQUEST_AUDIO = 4001;
     private static final int REQUEST_FILE = 4002;
+    private static final int REQUEST_VOICE = 4003;
 
     private FrameLayout root;
     private SwipeRefreshLayout swipeRefresh;
@@ -70,6 +78,8 @@ public final class MainActivity extends AppCompatActivity {
     private ConnectivityManager connectivityManager;
     private boolean networkCallbackRegistered;
     private boolean showingError;
+    private boolean focusSearchAfterLoad;
+    private boolean voiceSearchAfterLoad;
 
     private final ConnectivityManager.NetworkCallback networkCallback = new ConnectivityManager.NetworkCallback() {
         @Override
@@ -123,7 +133,11 @@ public final class MainActivity extends AppCompatActivity {
         settings.setDisplayZoomControls(false);
         settings.setTextZoom(100);
         settings.setSafeBrowsingEnabled(true);
-        settings.setUserAgentString(settings.getUserAgentString() + " FlammeAndroid/0.9");
+        settings.setUserAgentString(settings.getUserAgentString() + " FlammeAndroid/0.9.1");
+
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING)) {
+            WebSettingsCompat.setAlgorithmicDarkeningAllowed(settings, false);
+        }
 
         CookieManager cookies = CookieManager.getInstance();
         cookies.setAcceptCookie(true);
@@ -251,6 +265,10 @@ public final class MainActivity extends AppCompatActivity {
     }
 
     private void loadIntentOrHome(Intent intent) {
+        String action = intent != null ? intent.getAction() : null;
+        focusSearchAfterLoad = ACTION_FOCUS_SEARCH.equals(action);
+        voiceSearchAfterLoad = ACTION_VOICE_SEARCH.equals(action);
+
         Uri data = intent != null ? intent.getData() : null;
         if (data != null && isTrusted(data) && data.getPath() != null && data.getPath().startsWith("/flamme")) {
             webView.loadUrl(data.toString());
@@ -267,25 +285,32 @@ public final class MainActivity extends AppCompatActivity {
         return PRIMARY_HOST.equals(host) || WWW_HOST.equals(host) || LOVABLE_HOST.equals(host);
     }
 
+    private boolean isWebUri(Uri uri) {
+        if (uri == null || uri.getScheme() == null) return false;
+        String scheme = uri.getScheme().toLowerCase(Locale.ROOT);
+        return "http".equals(scheme) || "https".equals(scheme);
+    }
+
     private boolean handleNavigation(Uri uri) {
         if (uri == null) return true;
         String scheme = uri.getScheme() == null ? "" : uri.getScheme().toLowerCase(Locale.ROOT);
 
         if (isTrusted(uri)) return false;
 
-        if ("http".equals(scheme)) {
+        if ("http".equals(scheme) || "https".equals(scheme)) {
             String host = uri.getHost();
-            if (host != null && (PRIMARY_HOST.equalsIgnoreCase(host) || WWW_HOST.equalsIgnoreCase(host))) {
-                Uri secure = uri.buildUpon().scheme("https").build();
-                webView.loadUrl(secure.toString());
-                return true;
+            if ("http".equals(scheme) && host != null
+                    && (PRIMARY_HOST.equalsIgnoreCase(host) || WWW_HOST.equalsIgnoreCase(host))) {
+                webView.loadUrl(uri.buildUpon().scheme("https").build().toString());
+            } else {
+                // Flamme se comporte comme un mini-navigateur : Qwant et les services restent dans l'app.
+                webView.loadUrl(uri.toString());
             }
-            openExternal(uri);
             return true;
         }
 
-        if ("https".equals(scheme) || "mailto".equals(scheme) || "tel".equals(scheme)
-                || "sms".equals(scheme) || "geo".equals(scheme) || "market".equals(scheme)) {
+        if ("mailto".equals(scheme) || "tel".equals(scheme) || "sms".equals(scheme)
+                || "geo".equals(scheme) || "market".equals(scheme)) {
             openExternal(uri);
             return true;
         }
@@ -297,7 +322,11 @@ public final class MainActivity extends AppCompatActivity {
                     startActivity(parsed);
                 } else {
                     String fallback = parsed.getStringExtra("browser_fallback_url");
-                    if (fallback != null) openExternal(Uri.parse(fallback));
+                    if (fallback != null) {
+                        Uri fallbackUri = Uri.parse(fallback);
+                        if (isWebUri(fallbackUri)) webView.loadUrl(fallbackUri.toString());
+                        else openExternal(fallbackUri);
+                    }
                 }
             } catch (Exception ignored) {
                 Toast.makeText(this, "Lien non pris en charge", Toast.LENGTH_SHORT).show();
@@ -312,9 +341,63 @@ public final class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         if (intent.resolveActivity(getPackageManager()) != null) {
             startActivity(intent);
+        } else if (isWebUri(uri) && webView != null) {
+            webView.loadUrl(uri.toString());
         } else {
-            Toast.makeText(this, "Aucune application ne peut ouvrir ce lien", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Lien non pris en charge", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void focusFlammeSearchField() {
+        if (webView == null) return;
+        webView.requestFocus(View.FOCUS_DOWN);
+        String script = "(function(){var i=document.querySelector('input[aria-label^=\"Rechercher sur\"]');"
+                + "if(!i)return false;i.focus();i.click();return true;})()";
+        webView.evaluateJavascript(script, ignored -> webView.postDelayed(() -> {
+            InputMethodManager input = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (input != null) input.showSoftInput(webView, InputMethodManager.SHOW_IMPLICIT);
+        }, 160));
+    }
+
+    private void startNativeVoiceSearch() {
+        Intent speech = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        speech.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
+        speech.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "fr-FR");
+        speech.putExtra(RecognizerIntent.EXTRA_PROMPT, "Rechercher avec Flamme");
+        if (speech.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(speech, REQUEST_VOICE);
+        } else {
+            focusFlammeSearchField();
+            Toast.makeText(this, "Recherche vocale indisponible sur cet appareil", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void searchQwant(String value) {
+        String clean = value == null ? "" : value.trim();
+        if (clean.isEmpty() || webView == null) return;
+        webView.loadUrl("https://www.qwant.com/?l=fr&t=all&q=" + Uri.encode(clean));
+    }
+
+    private void applyFlammeAndroidStyleFix(WebView view, String url) {
+        Uri uri;
+        try {
+            uri = Uri.parse(url);
+        } catch (Exception ignored) {
+            return;
+        }
+        if (!isTrusted(uri)) return;
+
+        String script = "(function(){"
+                + "var id='flamme-android-search-fix';"
+                + "if(!document.getElementById(id)){var s=document.createElement('style');s.id=id;"
+                + "s.textContent='input[aria-label^=\"Rechercher sur\"]{background:transparent!important;background-color:transparent!important;-webkit-appearance:none!important;appearance:none!important;border:0!important;outline:0!important;box-shadow:none!important;-webkit-box-shadow:none!important;color:inherit!important;color-scheme:normal!important;}"
+                + "input[aria-label^=\"Rechercher sur\"]:focus{background:transparent!important;background-color:transparent!important;box-shadow:none!important;-webkit-box-shadow:none!important;}"
+                + "input[aria-label^=\"Rechercher sur\"]:-webkit-autofill,input[aria-label^=\"Rechercher sur\"]:-webkit-autofill:focus{-webkit-text-fill-color:inherit!important;background-color:transparent!important;box-shadow:0 0 0 1000px transparent inset!important;-webkit-box-shadow:0 0 0 1000px transparent inset!important;}';"
+                + "document.head.appendChild(s);}"
+                + "var i=document.querySelector('input[aria-label^=\"Rechercher sur\"]');"
+                + "if(i){i.style.setProperty('background','transparent','important');i.style.setProperty('background-color','transparent','important');i.style.setProperty('-webkit-appearance','none','important');i.style.setProperty('box-shadow','none','important');i.style.setProperty('border','0','important');}"
+                + "})()";
+        view.evaluateJavascript(script, null);
     }
 
     private void retryCurrentPage() {
@@ -381,7 +464,7 @@ public final class MainActivity extends AppCompatActivity {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
         ));
-        if (lastUrl != null && isTrusted(Uri.parse(lastUrl))) {
+        if (lastUrl != null && isWebUri(Uri.parse(lastUrl))) {
             webView.loadUrl(lastUrl);
         } else {
             webView.loadUrl(START_URL);
@@ -462,6 +545,19 @@ public final class MainActivity extends AppCompatActivity {
     @SuppressWarnings("deprecation")
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_VOICE) {
+            if (resultCode == RESULT_OK && data != null) {
+                ArrayList<String> results = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                if (results != null && !results.isEmpty()) {
+                    searchQwant(results.get(0));
+                    return;
+                }
+            }
+            focusFlammeSearchField();
+            return;
+        }
+
         if (requestCode != REQUEST_FILE || pendingFileCallback == null) return;
 
         ValueCallback<Uri[]> callback = pendingFileCallback;
@@ -591,6 +687,19 @@ public final class MainActivity extends AppCompatActivity {
             progressBar.setVisibility(View.GONE);
             swipeRefresh.setRefreshing(false);
             if (isOnline() && !showingError) hideError();
+
+            applyFlammeAndroidStyleFix(view, url);
+            Uri uri = Uri.parse(url);
+            if (isTrusted(uri)) {
+                if (voiceSearchAfterLoad) {
+                    voiceSearchAfterLoad = false;
+                    focusSearchAfterLoad = false;
+                    view.postDelayed(MainActivity.this::startNativeVoiceSearch, 180);
+                } else if (focusSearchAfterLoad) {
+                    focusSearchAfterLoad = false;
+                    view.postDelayed(MainActivity.this::focusFlammeSearchField, 120);
+                }
+            }
         }
 
         @Override
@@ -649,21 +758,35 @@ public final class MainActivity extends AppCompatActivity {
         @Override
         public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
             WebView popup = new WebView(MainActivity.this);
+            popup.getSettings().setJavaScriptEnabled(true);
             popup.setWebViewClient(new WebViewClient() {
+                private boolean route(Uri uri, WebView child) {
+                    if (uri == null || "about".equalsIgnoreCase(uri.getScheme())) return false;
+                    if (isWebUri(uri)) {
+                        webView.loadUrl(uri.toString());
+                    } else {
+                        openExternal(uri);
+                    }
+                    child.stopLoading();
+                    child.destroy();
+                    return true;
+                }
+
+                @Override
+                public boolean shouldOverrideUrlLoading(WebView child, WebResourceRequest request) {
+                    return route(request.getUrl(), child);
+                }
+
+                @Override
+                @SuppressWarnings("deprecation")
+                public boolean shouldOverrideUrlLoading(WebView child, String url) {
+                    return route(Uri.parse(url), child);
+                }
+
                 @Override
                 public void onPageStarted(WebView child, String url, android.graphics.Bitmap favicon) {
                     super.onPageStarted(child, url, favicon);
-                    try {
-                        Uri uri = Uri.parse(url);
-                        if (isTrusted(uri)) {
-                            webView.loadUrl(uri.toString());
-                        } else {
-                            openExternal(uri);
-                        }
-                    } finally {
-                        child.stopLoading();
-                        child.destroy();
-                    }
+                    route(Uri.parse(url), child);
                 }
             });
             WebView.WebViewTransport transport = (WebView.WebViewTransport) resultMsg.obj;
