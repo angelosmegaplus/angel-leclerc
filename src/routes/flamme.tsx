@@ -15,9 +15,6 @@ import {
   BookOpen,
   Sparkles,
   Languages,
-  
-  Newspaper,
-
   Grid3X3,
 } from "lucide-react";
 import { FormEvent, useState } from "react";
@@ -48,116 +45,109 @@ type Service = {
 
 const services: Service[] = [
   {
-    name: "Mailo",
-    description: "Mail, cloud et agenda",
+    name: "Mail",
+    description: "Messagerie avec Mailo",
     url: "https://webmail.mailo.com/",
     icon: Mail,
     accent: "#2b6cb0",
   },
   {
-    name: "CaraMail",
-    description: "Messagerie GMX CaraMail",
-    url: "https://www.gmx.fr/",
-    icon: Mail,
-    accent: "#1d4ed8",
-  },
-  {
-    name: "Cloud Mailo",
-    description: "Documents et fichiers",
+    name: "Drive",
+    description: "Fichiers et cloud avec Mailo",
     url: "https://webmail.mailo.com/",
     icon: Cloud,
     accent: "#0f766e",
   },
   {
-    name: "Agenda Mailo",
-    description: "Calendrier et rendez-vous",
+    name: "Agenda",
+    description: "Calendrier avec Mailo",
     url: "https://webmail.mailo.com/",
     icon: CalendarDays,
     accent: "#2563eb",
   },
   {
-    name: "Joomeo",
-    description: "Photos et vidéos personnelles",
+    name: "Photos",
+    description: "Photos avec Joomeo",
     url: "https://account.joomeo.com/",
     icon: Images,
     accent: "#e11d48",
   },
   {
-    name: "Mappy",
-    description: "GPS, plans et itinéraires",
+    name: "GPS",
+    description: "Plans et itinéraires avec Mappy",
     url: "https://fr.mappy.com/",
     icon: Navigation,
     accent: "#7c3aed",
   },
   {
-    name: "PagesJaunes",
-    description: "Professionnels et PagesBlanches",
+    name: "Annuaire",
+    description: "PagesJaunes et PagesBlanches",
     url: "https://www.pagesjaunes.fr/",
     icon: ContactRound,
     accent: "#eab308",
   },
   {
-    name: "La Poste",
-    description: "Courrier, colis et services",
+    name: "Poste",
+    description: "Courrier et colis avec La Poste",
     url: "https://www.laposte.fr/",
     icon: Landmark,
     accent: "#facc15",
   },
   {
-    name: "FranceConnect",
-    description: "Connexion aux services publics",
+    name: "Connexion",
+    description: "Services publics avec FranceConnect",
     url: "https://franceconnect.gouv.fr/",
     icon: Landmark,
     accent: "#000091",
     badge: "Service public",
   },
   {
-    name: "IGN",
-    description: "Terre, cartes et données géographiques",
+    name: "Terre",
+    description: "Cartes et données avec l’IGN",
     url: "https://cartes.gouv.fr/",
     icon: Map,
     accent: "#15803d",
     badge: "Public",
   },
   {
-    name: "Dailymotion",
-    description: "Vidéo",
+    name: "Vidéo",
+    description: "Avec Dailymotion",
     url: "https://www.dailymotion.com/fr",
     icon: Video,
     accent: "#111827",
   },
   {
-    name: "CANAL+",
-    description: "Films et séries",
+    name: "Films & Séries",
+    description: "Avec CANAL+",
     url: "https://www.canalplus.com/",
     icon: Clapperboard,
     accent: "#111827",
   },
   {
-    name: "Deezer",
-    description: "Musique",
+    name: "Musique",
+    description: "Avec Deezer",
     url: "https://www.deezer.com/fr/",
     icon: Music2,
     accent: "#a21caf",
   },
   {
-    name: "Vivlio",
-    description: "Livres numériques",
+    name: "Livres",
+    description: "Avec Vivlio",
     url: "https://www.vivlio.com/",
     icon: BookOpen,
     accent: "#c2410c",
   },
   {
-    name: "Mistral Vibe",
-    description: "IA française",
+    name: "IA",
+    description: "Avec Mistral",
     url: "https://chat.mistral.ai/",
     icon: Sparkles,
     accent: "#f97316",
     badge: "IA",
   },
   {
-    name: "Reverso",
-    description: "Traduction et langues",
+    name: "Traduction",
+    description: "Avec Reverso",
     url: "https://www.reverso.net/traduction-texte",
     icon: Languages,
     accent: "#0369a1",
@@ -174,7 +164,6 @@ const newsTopics = [
 ];
 
 function FlammeBetaPage() {
-
   const [query, setQuery] = useState("");
   const [appsOpen, setAppsOpen] = useState(false);
 
@@ -195,9 +184,9 @@ function FlammeBetaPage() {
       style={{ fontFamily: "Roboto, arial, sans-serif" }}
     >
       <header className="flex h-[60px] items-center justify-end gap-4 px-5 text-[13px] text-[#202124]">
-        <a href="https://www.qwant.com/?l=fr" className="hidden hover:underline sm:inline">Recherche</a>
+        <a href="https://www.qwant.com/?l=fr" className="hidden hover:underline sm:inline">Qwant</a>
         <a href="https://webmail.mailo.com/" className="hidden hover:underline sm:inline">Mail</a>
-        <a href="https://account.joomeo.com/" className="hidden hover:underline sm:inline">Images</a>
+        <a href="https://account.joomeo.com/" className="hidden hover:underline sm:inline">Photos</a>
         <div className="relative">
           <button
             type="button"
@@ -217,6 +206,7 @@ function FlammeBetaPage() {
                     href={service.url}
                     target="_blank"
                     rel="noreferrer"
+                    title={service.description}
                     className="flex min-h-[92px] flex-col items-center justify-center gap-2 rounded-lg p-2 text-center hover:bg-[#f1f3f4]"
                   >
                     <span
@@ -253,8 +243,8 @@ function FlammeBetaPage() {
               type="button"
               onClick={askMistral}
               className="rounded-full p-1.5 text-[#f97316] hover:bg-[#f8f9fa]"
-              title="Demander à Mistral Vibe"
-              aria-label="Demander à Mistral Vibe"
+              title="IA"
+              aria-label="Ouvrir l’IA"
             >
               <Sparkles className="h-5 w-5" />
             </button>
@@ -271,7 +261,7 @@ function FlammeBetaPage() {
               onClick={askMistral}
               className="h-9 rounded border border-transparent bg-[#f8f9fa] px-4 text-[14px] text-[#3c4043] hover:border-[#dadce0] hover:shadow-sm"
             >
-              Demander à Mistral
+              IA
             </button>
           </div>
         </form>
@@ -296,9 +286,8 @@ function FlammeBetaPage() {
       </section>
 
       <footer className="border-t border-[#dadce0] bg-[#f2f2f2] px-5 py-4 text-[14px] text-[#70757a]">
-        Flamme est une bêta indépendante. Recherches effectuées par Qwant ; les marques citées restent la propriété de leurs éditeurs.
+        Flamme est une bêta indépendante. Recherches effectuées par Qwant ; les services ouverts restent fournis par leurs éditeurs respectifs.
       </footer>
     </div>
   );
 }
-
