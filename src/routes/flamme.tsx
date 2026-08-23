@@ -59,7 +59,7 @@ const services: Service[] = [
   { name: "Annuaire", description: "PagesJaunes et PagesBlanches", url: "https://www.pagesjaunes.fr/", icon: ContactRound, accent: "#eab308" },
   { name: "Carte", description: "Cartes avec l’IGN", url: "https://cartes.gouv.fr/", icon: Map, accent: "#15803d" },
   { name: "Vidéo", description: "Avec Dailymotion", url: "https://www.dailymotion.com/fr", icon: Video, accent: "#111827" },
-  { name: "Films & Séries", description: "Films et séries avec Dailymotion", url: "https://www.dailymotion.com/fr", icon: Clapperboard, accent: "#111827" },
+  { name: "Films & Séries", description: "Films et séries avec AlloCiné", url: "https://www.allocine.fr/", icon: Clapperboard, accent: "#111827" },
   { name: "Musique", description: "Avec Deezer", url: "https://www.deezer.com/fr/", icon: Music2, accent: "#a21caf" },
   { name: "Livres", description: "Avec Vivlio", url: "https://www.vivlio.com/", icon: BookOpen, accent: "#c2410c" },
   { name: "IA", description: "Avec Mistral", url: "https://chat.mistral.ai/", icon: Sparkles, accent: "#f97316" },
