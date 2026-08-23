@@ -27,6 +27,7 @@ import {
   Brain,
   Lightbulb,
   Heart,
+  Flame,
   type LucideIcon,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
@@ -223,6 +224,23 @@ const projects: Project[] = [
     icon: Brain,
   },
   {
+    title: "Flamme — moteur de recherche bêta",
+    context:
+      "Conception d'une page d'accès rapide à des services numériques français, avec Qwant comme moteur de recherche et une mise en page inspirée des grands portails.",
+    missions: [
+      "Conception d'une interface épurée centrée sur la recherche et l'accès direct",
+      "Rattachement de services utiles : actualités, météo, cartes, vidéos, musique, traduction",
+      "Optimisation de la lisibilité et de la navigation sur mobile",
+      "Itérations visuelles pour rapprocher l'expérience des standards de recherche les plus connus",
+    ],
+    tools: "React · TanStack Start · Qwant · Lovable",
+    results:
+      "Une page bêta fonctionnelle, intégrée à angel-leclerc.fr, qui centralise la recherche et l'accès aux services du quotidien.",
+    href: "/flamme",
+    linkLabel: "Essayer Flamme",
+    icon: Flame,
+  },
+  {
     title: "Blog et espace éditorial",
     context:
       "Création et développement du blog d'Angel Leclerc Communication pour publier des analyses, articles et retours d'expérience.",
@@ -286,6 +304,7 @@ export function RealisationsSection() {
       : projects;
   const featuredTitles = new Set([
     "Angel OS — centre de contrôle numérique",
+    "Flamme — moteur de recherche bêta",
     "Blog et espace éditorial",
   ]);
   const featured = projects.filter((project) => featuredTitles.has(project.title));
