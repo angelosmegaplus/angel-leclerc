@@ -393,20 +393,7 @@ function FlammeBetaPage() {
 
         {voiceMessage && <p className={`mt-2 text-center text-[12px] ${muted}`}>{voiceMessage}</p>}
 
-        {imagePreview && (
-          <div className={`mx-auto mt-3 flex w-full items-center gap-3 rounded-2xl border p-3 ${surface}`}>
-            <img src={imagePreview} alt="Aperçu de l’image sélectionnée" className="h-14 w-14 rounded-xl object-cover" />
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-[13px] font-medium">{imageName}</div>
-              <div className={`text-[11px] ${muted}`}>Recherche par image bêta : Qwant ne propose pas de recherche visuelle directe.</div>
-              <div className="mt-2 flex gap-2">
-                <button type="button" onClick={() => goToSearch(imageName.replace(/\.[^.]+$/, ""), "images")} className="rounded-full bg-[#1a73e8] px-3 py-1.5 text-[12px] font-medium text-white">Chercher le nom</button>
-                <button type="button" onClick={askMistral} className={`rounded-full px-3 py-1.5 text-[12px] font-medium ${darkMode ? "bg-white/10" : "bg-[#f1f3f4]"}`}>Ouvrir l’IA</button>
-              </div>
-            </div>
-            <button type="button" onClick={closeImagePreview} aria-label="Fermer" className={`flex h-9 w-9 items-center justify-center rounded-full ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}><X className="h-4 w-4" /></button>
-          </div>
-        )}
+
 
         <div className="mt-6 hidden justify-center gap-3 md:flex">
           <button type="button" onClick={() => goToSearch(query)} className={`h-9 rounded border border-transparent px-4 text-[14px] ${darkMode ? "bg-[#303134] text-[#e8eaed] hover:border-[#5f6368]" : "bg-[#f8f9fa] text-[#3c4043] hover:border-[#dadce0]"}`}>Recherche Qwant</button>
