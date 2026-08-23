@@ -103,6 +103,57 @@ const services: Service[] = [
   { name: "Forum", description: "Réseaux & communautés français", url: "#forum", icon: MessagesSquare, accent: "#1a73e8", panel: "forum" },
 ];
 
+type ForumCommunity = {
+  name: string;
+  description: string;
+  url: string;
+  host: string;
+  badge: string;
+  icon: typeof Search;
+  accent: string;
+  recommended?: boolean;
+};
+
+const forumCommunities: ForumCommunity[] = [
+  {
+    name: "Whaller",
+    description: "Réseau social et communautés, solution française hébergée en France.",
+    url: "https://whaller.com/fr",
+    host: "whaller.com",
+    badge: "🇫🇷 Souverain",
+    icon: UsersRound,
+    accent: "#1a73e8",
+    recommended: true,
+  },
+  {
+    name: "Piaille",
+    description: "Communauté française du Fediverse / Mastodon.",
+    url: "https://piaille.fr/",
+    host: "piaille.fr",
+    badge: "🇫🇷 Fediverse",
+    icon: MessageCircleMore,
+    accent: "#6366f1",
+  },
+  {
+    name: "BeReal",
+    description: "Réseau social français centré sur les moments du quotidien.",
+    url: "https://bereal.com/fr/",
+    host: "bereal.com",
+    badge: "🇫🇷 Grand public",
+    icon: Users,
+    accent: "#111827",
+  },
+  {
+    name: "Forums JV",
+    description: "Forums communautaires français historiques et toujours actifs.",
+    url: "https://www.jeuxvideo.com/forums.htm",
+    host: "jeuxvideo.com",
+    badge: "🇫🇷 Forum",
+    icon: MessagesSquare,
+    accent: "#c5221f",
+  },
+];
+
 function readableAccent(hex: string, dark: boolean) {
   if (!dark) return hex;
   const value = hex.replace("#", "");
