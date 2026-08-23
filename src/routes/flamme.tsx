@@ -1742,6 +1742,56 @@ function FlammeBetaPage() {
               </div>
             )}
 
+            {panel === "radio" && (
+              <div className="space-y-4">
+                <p className={`text-[13px] leading-5 ${muted}`}>Écouter la radio et les podcasts français, directement chez leurs éditeurs.</p>
+                {renderLinkGroups(radioGroups)}
+                <div className="space-y-2">
+                  <p className={`text-[12px] font-medium uppercase tracking-wide ${muted}`}>Accès rapides</p>
+                  <div className="flex flex-wrap gap-2">
+                    {radioStations.map((station) => (
+                      <a
+                        key={station.name}
+                        href={station.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={`inline-flex min-h-9 items-center gap-1 rounded-full border px-3 text-[13px] ${darkMode ? "border-[#5f6368] hover:bg-white/10" : "border-[#dfe1e5] hover:bg-[#f1f3f4]"}`}
+                      >
+                        {station.name}
+                      </a>
+                    ))}
+                  </div>
+                  <p className={`text-[12px] leading-4 ${muted}`}>Ces liens ouvrent les sites officiels des stations : Flamme ne diffuse aucun flux audio.</p>
+                </div>
+                <p className={`text-center text-[11px] leading-4 ${muted}`}>Flamme n’est affiliée à aucun de ces services.</p>
+              </div>
+            )}
+
+            {panel === "tv" && (
+              <div className="space-y-4">
+                <p className={`text-[13px] leading-5 ${muted}`}>Les chaînes et plateformes françaises, en direct ou en replay selon le service.</p>
+                {renderLinkGroups(tvGroups)}
+                <p className={`text-center text-[11px] leading-4 ${muted}`}>Flamme n’est affiliée à aucune de ces chaînes.</p>
+              </div>
+            )}
+
+            {panel === "mail" && (
+              <div className="space-y-4">
+                <p className={`text-[13px] leading-5 ${muted}`}>Choisissez votre boîte mail. Les raccourcis Stockage et Agenda ouvrent directement Mailo.</p>
+                {renderLinkGroups(mailGroups)}
+                <p className={`text-center text-[11px] leading-4 ${muted}`}>Flamme n’est affiliée à aucun de ces services.</p>
+              </div>
+            )}
+
+            {panel === "messages" && (
+              <div className="space-y-4">
+                <p className={`text-[13px] leading-5 ${muted}`}>Des messageries instantanées chiffrées, françaises en priorité.</p>
+                {renderLinkGroups(messagingGroups)}
+                <p className={`text-center text-[11px] leading-4 ${muted}`}>Flamme n’est affiliée à aucun de ces services.</p>
+              </div>
+            )}
+
+
             {panel === "forum" && (
               <div className="space-y-3">
                 <p className={`text-[13px] leading-5 ${muted}`}>Quelques alternatives françaises pour discuter, suivre des communautés ou partager.</p>
