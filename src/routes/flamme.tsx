@@ -1705,7 +1705,8 @@ function FlammeBetaPage() {
                 </a>
               );
             })}
-          </div>
+          </motion.div>
+
         </nav>
       </main>
 
