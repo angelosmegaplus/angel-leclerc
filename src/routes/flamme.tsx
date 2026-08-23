@@ -102,7 +102,7 @@ const services: Service[] = [
     badge: "Service public",
   },
   {
-    name: "Terre",
+    name: "Carte",
     description: "Cartes et données avec l’IGN",
     url: "https://cartes.gouv.fr/",
     icon: Map,
