@@ -221,16 +221,16 @@ function FlammeBetaPage() {
 
       <main className="mx-auto flex min-h-[calc(100vh-64px)] w-full max-w-6xl flex-col items-center px-4 pb-16 pt-14 sm:pt-20">
         <div className="select-none text-center">
-          <div className="text-6xl font-semibold tracking-[-0.055em] sm:text-7xl">
-            <span className="text-[#2563eb]">F</span>
-            <span className="text-[#dc2626]">l</span>
-            <span className="text-[#eab308]">a</span>
-            <span className="text-[#2563eb]">m</span>
-            <span className="text-[#16a34a]">m</span>
-            <span className="text-[#dc2626]">e</span>
-          </div>
+          <img
+            src="/logos/qwant.svg"
+            alt="Qwant"
+            width={272}
+            height={87}
+            className="mx-auto h-[68px] w-auto sm:h-[87px]"
+          />
           <p className="mt-2 text-sm text-[#5f6368]">Recherche propulsée par Qwant</p>
         </div>
+
 
         <form onSubmit={searchQwant} className="mt-8 w-full max-w-[640px]">
           <div className="flex h-12 items-center gap-3 rounded-full border border-[#dfe1e5] bg-white px-4 shadow-sm transition hover:shadow-md focus-within:shadow-md">

@@ -17,6 +17,7 @@ import { Route as ParcoursRouteImport } from './routes/parcours'
 import { Route as MoviesAuthRouteImport } from './routes/movies-auth'
 import { Route as MesObjectifsRouteImport } from './routes/mes-objectifs'
 import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
+import { Route as FlammeRouteImport } from './routes/flamme'
 import { Route as FilmsSeriesRouteImport } from './routes/films-series'
 import { Route as EntrepriseRouteImport } from './routes/entreprise'
 import { Route as DesabonnementRouteImport } from './routes/desabonnement'
@@ -105,6 +106,11 @@ const MesObjectifsRoute = MesObjectifsRouteImport.update({
 const MentionsLegalesRoute = MentionsLegalesRouteImport.update({
   id: '/mentions-legales',
   path: '/mentions-legales',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FlammeRoute = FlammeRouteImport.update({
+  id: '/flamme',
+  path: '/flamme',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FilmsSeriesRoute = FilmsSeriesRouteImport.update({
@@ -375,6 +381,7 @@ export interface FileRoutesByFullPath {
   '/desabonnement': typeof DesabonnementRoute
   '/entreprise': typeof EntrepriseRoute
   '/films-series': typeof FilmsSeriesRoute
+  '/flamme': typeof FlammeRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/mes-objectifs': typeof MesObjectifsRoute
   '/movies-auth': typeof MoviesAuthRoute
@@ -433,6 +440,7 @@ export interface FileRoutesByTo {
   '/desabonnement': typeof DesabonnementRoute
   '/entreprise': typeof EntrepriseRoute
   '/films-series': typeof FilmsSeriesRoute
+  '/flamme': typeof FlammeRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/mes-objectifs': typeof MesObjectifsRoute
   '/movies-auth': typeof MoviesAuthRoute
@@ -492,6 +500,7 @@ export interface FileRoutesById {
   '/desabonnement': typeof DesabonnementRoute
   '/entreprise': typeof EntrepriseRoute
   '/films-series': typeof FilmsSeriesRoute
+  '/flamme': typeof FlammeRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/mes-objectifs': typeof MesObjectifsRoute
   '/movies-auth': typeof MoviesAuthRoute
@@ -552,6 +561,7 @@ export interface FileRouteTypes {
     | '/desabonnement'
     | '/entreprise'
     | '/films-series'
+    | '/flamme'
     | '/mentions-legales'
     | '/mes-objectifs'
     | '/movies-auth'
@@ -610,6 +620,7 @@ export interface FileRouteTypes {
     | '/desabonnement'
     | '/entreprise'
     | '/films-series'
+    | '/flamme'
     | '/mentions-legales'
     | '/mes-objectifs'
     | '/movies-auth'
@@ -668,6 +679,7 @@ export interface FileRouteTypes {
     | '/desabonnement'
     | '/entreprise'
     | '/films-series'
+    | '/flamme'
     | '/mentions-legales'
     | '/mes-objectifs'
     | '/movies-auth'
@@ -727,6 +739,7 @@ export interface RootRouteChildren {
   DesabonnementRoute: typeof DesabonnementRoute
   EntrepriseRoute: typeof EntrepriseRoute
   FilmsSeriesRoute: typeof FilmsSeriesRoute
+  FlammeRoute: typeof FlammeRoute
   MentionsLegalesRoute: typeof MentionsLegalesRoute
   MesObjectifsRoute: typeof MesObjectifsRoute
   MoviesAuthRoute: typeof MoviesAuthRoute
@@ -824,6 +837,13 @@ declare module '@tanstack/react-router' {
       path: '/mentions-legales'
       fullPath: '/mentions-legales'
       preLoaderRoute: typeof MentionsLegalesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/flamme': {
+      id: '/flamme'
+      path: '/flamme'
+      fullPath: '/flamme'
+      preLoaderRoute: typeof FlammeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/films-series': {
@@ -1195,6 +1215,7 @@ const rootRouteChildren: RootRouteChildren = {
   DesabonnementRoute: DesabonnementRoute,
   EntrepriseRoute: EntrepriseRoute,
   FilmsSeriesRoute: FilmsSeriesRoute,
+  FlammeRoute: FlammeRoute,
   MentionsLegalesRoute: MentionsLegalesRoute,
   MesObjectifsRoute: MesObjectifsRoute,
   MoviesAuthRoute: MoviesAuthRoute,
