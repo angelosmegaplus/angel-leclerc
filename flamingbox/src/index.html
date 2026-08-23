@@ -4,13 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https:; style-src 'self'; script-src 'self'; frame-src https: http: file:; object-src 'none'; base-uri 'none'; form-action 'self';" />
-  <title>FlamingBox — Angel OS</title>
+  <title>Flamme</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="chrome">
     <div class="brand-row">
-      <div class="brand"><img src="../assets/logo.svg" alt="" /><span>FlamingBox</span><small>0.5</small></div>
+      <div class="brand"><img src="../assets/logo.svg" alt="" /><span>Flamme</span><small>0.7</small></div>
       <div id="tabs" class="tabs"></div>
       <button id="privateTab" class="icon-button" title="Nouvel onglet privé">◉</button>
       <button id="newTab" class="icon-button" title="Nouvel onglet">＋</button>
@@ -23,10 +23,10 @@
       <button id="home" class="icon-button" title="Accueil">⌂</button>
       <form id="addressForm" class="address-wrap">
         <button id="security" type="button" class="security" title="Informations de sécurité">●</button>
-        <input id="address" autocomplete="off" spellcheck="false" placeholder="Rechercher ou saisir une adresse" />
+        <input id="address" autocomplete="off" spellcheck="false" placeholder="Rechercher avec Qwant ou saisir une adresse" />
         <button id="bookmark" type="button" class="bookmark" title="Ajouter aux favoris">☆</button>
       </form>
-      <button id="passwords" class="icon-button wide" title="Google Password Manager">Mots de passe</button>
+      <button id="passwords" class="icon-button wide" title="Services numériques français">Services FR</button>
       <button id="library" class="icon-button wide" title="Bibliothèque et réglages">☰</button>
     </div>
   </header>
@@ -35,7 +35,7 @@
 
   <aside id="panel" class="panel hidden">
     <div class="panel-header">
-      <div><h2>FlamingBox Shield</h2><p class="kernel">Protection locale · télémétrie FlamingBox désactivée</p></div>
+      <div><h2>Flamme Shield</h2><p class="kernel">Protection locale · télémétrie Flamme désactivée</p></div>
       <button id="closePanel" class="icon-button">×</button>
     </div>
 
@@ -64,7 +64,7 @@
       <h3>Sécurité</h3>
       <label class="setting"><input id="blockTrackers" type="checkbox" checked /> Bloquer les principaux trackers</label>
       <label class="setting"><input id="httpsFirst" type="checkbox" checked /> HTTPS prioritaire</label>
-      <label class="setting"><input id="guardian" type="checkbox" checked /> FlamingBox Guardian</label>
+      <label class="setting"><input id="guardian" type="checkbox" checked /> Flamme Guardian</label>
       <p class="status">Caméra, micro et localisation sur HTTPS utilisent une autorisation temporaire. Les notifications sont bloquées par défaut.</p>
       <p class="status">Les fenêtres de paiement reconnues sont converties en onglets sécurisés plutôt que supprimées.</p>
     </section>
@@ -80,7 +80,7 @@
   </aside>
 
   <div id="securityPanel" class="security-panel hidden">
-    <strong id="securityTitle">Sécurité FlamingBox</strong>
+    <strong id="securityTitle">Sécurité Flamme</strong>
     <p id="securityText"></p>
   </div>
 
