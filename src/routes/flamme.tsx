@@ -1292,10 +1292,13 @@ function FlammeBetaPage() {
 
             {panel === "help" && (
               <div className={`space-y-3 text-[14px] leading-6 ${muted}`}>
-                <p><strong className="font-medium">Onglets de recherche</strong> — Tous, Actualités, Images et Vidéos préparent le type de recherche envoyé à Qwant ; Cartes envoie la requête au service de cartes IGN. Cliquer sur un onglet ne lance pas de recherche : il sélectionne le mode, utilisé lors de la recherche suivante. Le pictogramme à gauche du champ reflète le mode actif.</p>
+                <p><strong className="font-medium">Onglets de recherche</strong> — Tous, Actualités, Images et Vidéos préparent le type de recherche ; Cartes envoie la requête au service de cartes IGN. Cliquer sur un onglet ne lance pas de recherche : il sélectionne le mode, utilisé lors de la recherche suivante. Le pictogramme à gauche du champ reflète le mode actif.</p>
+                <p><strong className="font-medium">Choix du moteur</strong> — Dans Paramètres, vous pouvez choisir Qwant 🇫🇷 ou Lilo 🇫🇷. Quand Lilo est sélectionné, le Web et les Images passent par Lilo ; les Actualités et Vidéos restent sur Qwant et les Cartes sur l’IGN. Le choix est mémorisé dans votre navigateur.</p>
+                <p><strong className="font-medium">Couches d’actualités</strong> — Toujours dans Paramètres, activez ou désactivez les thèmes (France, Monde, Économie, Sciences…). Le fil « Découvrir » mélange alors les sources françaises les plus récentes correspondant aux thèmes activés.</p>
                 <p><strong className="font-medium">Recherche vocale</strong> — Touchez le micro et dictez : trois points animés indiquent l’écoute. La recherche se lance dès que la phrase est reconnue. Si le navigateur ne prend pas en charge la dictée, un message s’affiche.</p>
                 <p><strong className="font-medium">Carrousel de services</strong> — Faites glisser horizontalement pour accéder à l’ensemble des raccourcis ; chaque service s’ouvre dans un nouvel onglet.</p>
                 <p><strong className="font-medium">Qwant IA</strong> — L’icône ✦ dans la barre de recherche ouvre le chat IA de Qwant. Le raccourci « IA » du carrousel ouvre Mistral.</p>
+
               </div>
             )}
 
