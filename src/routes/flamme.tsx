@@ -665,8 +665,8 @@ function FlammeBetaPage() {
 
   const runSuggestion = (item: SuggestionItem) => {
     if (item.kind === "service") {
-      if (item.panel === "forum") {
-        setPanel("forum");
+      if (item.panel) {
+        setPanel(item.panel);
         return;
       }
       if (item.url) {
