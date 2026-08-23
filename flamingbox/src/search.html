@@ -4,16 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; form-action https://www.qwant.com; base-uri 'none'; object-src 'none';" />
-  <title>Flaming Search</title>
+  <title>Flamme</title>
   <link rel="stylesheet" href="search.css" />
 </head>
 <body>
   <main class="search-shell">
     <div class="mark" aria-hidden="true">F</div>
-    <h1>Flaming Search</h1>
-    <p class="powered">Propulsé par Qwant</p>
+    <h1>Flamme</h1>
+    <p class="powered">Recherche propulsée par Qwant</p>
     <form class="search-form" action="https://www.qwant.com/" method="get">
       <input type="hidden" name="l" value="fr" />
+      <input type="hidden" name="r" value="FR" />
       <input type="hidden" name="t" value="all" />
       <div class="search-box">
         <span class="magnifier" aria-hidden="true">⌕</span>
@@ -27,7 +28,7 @@
       <button data-query="Wikipedia">Wikipédia</button>
       <button data-query="YouTube">Vidéos</button>
     </div>
-    <p class="privacy">Vos recherches sont envoyées à Qwant. FlamingBox n'ajoute aucun identifiant publicitaire à la requête.</p>
+    <p class="privacy">Vos recherches sont envoyées à Qwant uniquement après validation. Flamme n'ajoute aucun identifiant publicitaire à la requête.</p>
   </main>
   <script src="search.js"></script>
 </body>
