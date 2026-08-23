@@ -515,9 +515,15 @@ function FlammeBetaPage() {
   const activeProfile = activeProfileKey ? profiles[activeProfileKey] ?? null : null;
 
   const runSuggestion = (item: SuggestionItem) => {
-    if (item.kind === "service" && item.url) {
-      window.open(item.url, "_blank", "noopener,noreferrer");
-      return;
+    if (item.kind === "service") {
+      if (item.panel === "forum") {
+        setPanel("forum");
+        return;
+      }
+      if (item.url) {
+        window.open(item.url, "_blank", "noopener,noreferrer");
+        return;
+      }
     }
     goToSearch(item.value);
   };
