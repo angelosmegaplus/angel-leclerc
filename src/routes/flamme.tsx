@@ -405,6 +405,7 @@ function FlammeBetaPage() {
         label: service.name,
         description: service.description,
         url: service.url,
+        panel: service.panel,
         icon: service.icon,
         accent: service.accent,
       }),
