@@ -936,7 +936,7 @@ function newsVisual(topic: NewsTopic) {
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
-type PanelServiceKey = "forum" | "useful" | "good" | "radio" | "tv" | "mail" | "messages";
+type PanelServiceKey = "forum" | "useful" | "good" | "radio" | "tv" | "mail" | "messages" | "routes" | "music";
 
 type PanelKey = "about" | "privacy" | "help" | "settings" | PanelServiceKey;
 
