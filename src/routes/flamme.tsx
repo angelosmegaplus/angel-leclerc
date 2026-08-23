@@ -1242,6 +1242,59 @@ function FlammeBetaPage() {
   const surface = darkMode ? "bg-[#303134] border-[#5f6368]" : "bg-white border-[#dfe1e5]";
   const muted = darkMode ? "text-[#bdc1c6]" : "text-[#5f6368]";
 
+  // Rendu commun aux panneaux de raccourcis (Radio, TV, Mail, Messageries).
+  const renderLinkGroups = (groups: LinkGroup[]) =>
+    groups.map((group) => (
+      <div key={group.title} className={`space-y-2 ${group.secondary ? "opacity-90" : ""}`}>
+        <p className={`text-[12px] font-medium uppercase tracking-wide ${muted}`}>{group.title}</p>
+        {group.items.map((item) => {
+          const Icon = item.icon;
+          return (
+            <a
+              key={item.name}
+              href={item.url}
+              target="_blank"
+              rel="noreferrer"
+              className={`flex items-start gap-3 rounded-2xl border p-3 text-left ${
+                item.recommended
+                  ? "border-[#1a73e8]/60 bg-[#1a73e8]/5"
+                  : group.secondary
+                    ? darkMode
+                      ? "border-[#3c4043] hover:bg-white/5"
+                      : "border-[#eceff1] bg-[#fafafa] hover:bg-[#f1f3f4]"
+                    : darkMode
+                      ? "border-[#5f6368] hover:bg-white/10"
+                      : "border-[#dfe1e5] hover:bg-[#f1f3f4]"
+              }`}
+            >
+              <span
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "bg-[#3c4043]" : "bg-[#f1f3f4]"}`}
+                style={{ color: readableAccent(item.accent, darkMode) }}
+              >
+                <Icon className={group.secondary ? "h-4.5 w-4.5" : "h-5 w-5"} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="flex flex-wrap items-center gap-2">
+                  <span className={`${group.secondary ? "text-[14px]" : "text-[15px]"} font-medium`}>{item.name}</span>
+                  <span className={`rounded-full px-2 py-[1px] text-[11px] ${darkMode ? "bg-[#3c4043] text-[#e8eaed]" : "bg-[#f1f3f4] text-[#3c4043]"}`}>{item.badge}</span>
+                  {item.recommended && (
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-[2px] text-[11px] font-medium ${darkMode ? "bg-[#1a73e8]/20 text-[#a8c7fa]" : "bg-[#1a73e8]/10 text-[#1a73e8]"}`}>
+                      <ShieldCheck className="h-3 w-3" /> Recommandé
+                    </span>
+                  )}
+                </span>
+                <span className={`mt-1 block text-[13px] leading-5 ${muted}`}>{item.description}</span>
+                <span className="mt-1 inline-flex items-center gap-1 text-[12px] text-[#1a73e8]"><ExternalLink className="h-3 w-3" /> {item.host}</span>
+              </span>
+            </a>
+          );
+        })}
+        {group.note && <p className={`text-[12px] leading-4 ${muted}`}>{group.note}</p>}
+      </div>
+    ));
+
+
+
   return (
     <div className={`fixed inset-0 z-[100] min-h-[100dvh] overflow-y-auto ${pageBg}`} style={{ fontFamily: "Roboto, arial, sans-serif" }}>
       <header className={`sticky top-0 z-30 flex h-[56px] items-center justify-end gap-2 px-3 backdrop-blur sm:h-[60px] sm:gap-3 sm:px-5 ${darkMode ? "bg-[#202124]/95" : "bg-white/95"}`}>
