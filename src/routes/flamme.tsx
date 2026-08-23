@@ -101,6 +101,14 @@ const searchTabs = [
 
 type SearchType = (typeof searchTabs)[number]["type"];
 
+const searchIcon: Record<SearchType, typeof Search> = {
+  all: Search,
+  news: Newspaper,
+  images: Images,
+  videos: Video,
+  maps: Map,
+};
+
 
 type NewsTopic = {
   label: string;
