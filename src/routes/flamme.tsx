@@ -24,6 +24,7 @@ import {
   Sun,
   UserRound,
   Trash2,
+  Newspaper,
 } from "lucide-react";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
