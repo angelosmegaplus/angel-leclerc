@@ -883,7 +883,12 @@ function FlammeBetaPage() {
                 <button type="button" onClick={clearHistory} disabled={historyItems.length === 0} className={`flex min-h-12 w-full items-center gap-3 rounded-2xl border px-4 text-left text-[14px] disabled:opacity-50 ${darkMode ? "border-[#5f6368] hover:bg-white/10" : "border-[#dfe1e5] hover:bg-[#f1f3f4]"}`}>
                   <Trash2 className="h-5 w-5" /> Effacer l’historique
                 </button>
-                <p className={`text-[12px] leading-5 ${muted}`}>Ces réglages sont enregistrés uniquement dans ce navigateur.</p>
+                <div className={`flex min-h-12 items-center justify-between gap-3 rounded-2xl border px-4 text-[14px] ${darkMode ? "border-[#5f6368]" : "border-[#dfe1e5]"}`}>
+                  <span className="flex items-center gap-3"><Users className="h-5 w-5" /> Profils locaux</span>
+                  <span className={`text-[13px] ${muted}`}>{profiles.length}</span>
+                </div>
+                <p className={`text-[12px] leading-5 ${muted}`}>Ces réglages, l’historique et les profils sont enregistrés uniquement dans ce navigateur.</p>
+
               </div>
             )}
           </div>
