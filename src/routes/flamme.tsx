@@ -36,6 +36,9 @@ import {
   Pencil,
   Users,
   Check,
+  MessagesSquare,
+  ExternalLink,
+  ShieldCheck,
 } from "lucide-react";
 import { FormEvent, KeyboardEvent as ReactKeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
