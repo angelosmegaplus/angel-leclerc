@@ -54,15 +54,15 @@ const services: Service[] = [
   { name: "Mail", description: "Messagerie avec Mailo", url: "https://www.mailo.com/?language=fr&page=id", icon: Mail, accent: "#2b6cb0" },
   { name: "Stockage", description: "Fichiers avec Mailo", url: "https://www.mailo.com/?language=fr&page=id", icon: Cloud, accent: "#0f766e" },
   { name: "Agenda", description: "Calendrier avec Mailo", url: "https://www.mailo.com/?language=fr&page=id", icon: CalendarDays, accent: "#2563eb" },
-  { name: "Photos", description: "Photos avec Joomeo", url: "https://account.joomeo.com/", icon: Images, accent: "#e11d48" },
-  { name: "Itinéraires", description: "Guidage avec Mappy", url: "https://fr.mappy.com/", icon: Navigation, accent: "#7c3aed" },
+  { name: "Photos", description: "Photos avec Photoweb Cloud", url: "https://account.photowebcloud.fr/login.php", icon: Images, accent: "#e11d48" },
+  { name: "Itinéraires", description: "Guidage avec Mappy", url: "https://fr.mappy.com/itineraire", icon: Navigation, accent: "#7c3aed" },
   { name: "Annuaire", description: "PagesJaunes et PagesBlanches", url: "https://www.pagesjaunes.fr/", icon: ContactRound, accent: "#eab308" },
-  { name: "Carte", description: "Cartes avec l’IGN", url: "https://cartes.gouv.fr/", icon: Map, accent: "#15803d" },
+  { name: "Carte", description: "Cartes avec l’IGN", url: "https://cartes.gouv.fr/decouvrir/explorer-les-cartes/", icon: Map, accent: "#15803d" },
   { name: "Vidéo", description: "Avec Dailymotion", url: "https://www.dailymotion.com/fr", icon: Video, accent: "#111827" },
   { name: "Films & Séries", description: "Films et séries avec AlloCiné", url: "https://www.allocine.fr/", icon: Clapperboard, accent: "#111827" },
   { name: "Musique", description: "Avec Deezer", url: "https://www.deezer.com/fr/", icon: Music2, accent: "#a21caf" },
   { name: "Livres", description: "Avec Vivlio", url: "https://www.vivlio.com/", icon: BookOpen, accent: "#c2410c" },
-  { name: "IA", description: "Avec Mistral", url: "https://chat.mistral.ai/", icon: Sparkles, accent: "#f97316" },
+  { name: "IA", description: "Avec Mistral", url: "https://chat.mistral.ai/chat", icon: Sparkles, accent: "#f97316" },
   { name: "Traduction", description: "Avec Reverso", url: "https://www.reverso.net/traduction-texte", icon: Languages, accent: "#0369a1" },
 ];
 
@@ -133,6 +133,15 @@ function newsVisual(topic: NewsTopic) {
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
+type PanelKey = "about" | "privacy" | "help" | "settings";
+
+const panelTitles: Record<PanelKey, string> = {
+  about: "À propos de Flamme",
+  privacy: "Confidentialité",
+  help: "Aide",
+  settings: "Paramètres",
+};
+
 function FlammeBetaPage() {
   const [query, setQuery] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
@@ -142,6 +151,17 @@ function FlammeBetaPage() {
   const [darkMode, setDarkMode] = useState(false);
   const [voiceMessage, setVoiceMessage] = useState("");
   const [isListening, setIsListening] = useState(false);
+  const [panel, setPanel] = useState<PanelKey | null>(null);
+
+  useEffect(() => {
+    if (!panel) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setPanel(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [panel]);
+
 
   useEffect(() => {
     try {
@@ -200,7 +220,9 @@ function FlammeBetaPage() {
     goToSearch(query);
   };
 
-  const askMistral = () => window.open("https://chat.mistral.ai/", "_blank", "noopener,noreferrer");
+  const askMistral = () => window.open("https://chat.mistral.ai/chat", "_blank", "noopener,noreferrer");
+
+  const askQwantAi = () => window.open("https://www.qwant.com/ai?l=fr", "_blank", "noopener,noreferrer");
 
   const startVoiceSearch = () => {
     if (isListening) return;
@@ -277,7 +299,7 @@ function FlammeBetaPage() {
       <header className={`sticky top-0 z-30 flex h-[56px] items-center justify-end gap-2 px-3 backdrop-blur sm:h-[60px] sm:gap-3 sm:px-5 ${darkMode ? "bg-[#202124]/95" : "bg-white/95"}`}>
         <a href="https://www.qwant.com/?l=fr" className="hidden text-[13px] hover:underline sm:inline">Qwant</a>
         <a href="https://www.mailo.com/?language=fr&page=id" className="hidden text-[13px] hover:underline sm:inline">Mail</a>
-        <a href="https://account.joomeo.com/" className="hidden text-[13px] hover:underline sm:inline">Photos</a>
+        <a href="https://account.photowebcloud.fr/login.php" className="hidden text-[13px] hover:underline sm:inline">Photos</a>
         <button type="button" aria-label="Compte et paramètres Flamme" aria-expanded={profileOpen} onClick={() => setProfileOpen((value) => !value)} className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1a73e8] text-[14px] font-medium text-white shadow-sm">
           F
         </button>
@@ -299,12 +321,12 @@ function FlammeBetaPage() {
               {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
               {darkMode ? "Apparence claire" : "Apparence sombre"}
             </button>
-            <button type="button" onClick={() => { setProfileOpen(false); document.getElementById("flamme-settings")?.scrollIntoView({ behavior: "smooth" }); }} className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[14px] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
+            <button type="button" onClick={() => { setProfileOpen(false); setPanel("settings"); }} className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[14px] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
               <Settings className="h-5 w-5" /> Paramètres
             </button>
-            <a href="/flamme" className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-[14px] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
+            <button type="button" onClick={() => { setProfileOpen(false); setPanel("about"); }} className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[14px] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
               <Info className="h-5 w-5" /> À propos de Flamme
-            </a>
+            </button>
           </div>
         </>
       )}
@@ -352,7 +374,7 @@ function FlammeBetaPage() {
                   <Mic className="h-5 w-5 text-[#4285f4]" />
                 )}
               </button>
-              <button type="button" onClick={askMistral} className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f8f9fa]"}`} title="IA" aria-label="Ouvrir l’IA">
+              <button type="button" onClick={askQwantAi} className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f8f9fa]"}`} title="Rechercher avec l’IA de Qwant" aria-label="Rechercher avec l’IA de Qwant">
                 <Sparkles className="h-5 w-5 text-[#f97316]" />
               </button>
 
@@ -461,21 +483,88 @@ function FlammeBetaPage() {
         </div>
       </section>
 
-      <footer id="flamme-settings" className={`${darkMode ? "bg-[#171717] text-[#bdc1c6]" : "bg-[#f2f2f2] text-[#70757a]"} md:mt-auto`}>
+      <footer className={`${darkMode ? "bg-[#171717] text-[#bdc1c6]" : "bg-[#f2f2f2] text-[#70757a]"} md:mt-auto`}>
         <div className={`border-b px-6 py-3 text-[14px] ${darkMode ? "border-[#3c4043]" : "border-[#dadce0]"}`}>France</div>
         <div className="flex flex-col items-center justify-between gap-2 px-5 py-3 text-[13px] sm:flex-row sm:text-[14px]">
           <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 sm:justify-start">
-            <a href="/flamme" className="hover:underline">À propos</a>
-            <a href="https://www.qwant.com/privacy" target="_blank" rel="noreferrer" className="hover:underline">Confidentialité</a>
-            <a href="https://help.qwant.com/" target="_blank" rel="noreferrer" className="hover:underline">Aide</a>
+            <button type="button" onClick={() => setPanel("about")} className="min-h-11 hover:underline sm:min-h-0">À propos</button>
+            <button type="button" onClick={() => setPanel("privacy")} className="min-h-11 hover:underline sm:min-h-0">Confidentialité</button>
+            <button type="button" onClick={() => setPanel("help")} className="min-h-11 hover:underline sm:min-h-0">Aide</button>
           </div>
           <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 sm:justify-end">
-            {historyItems.length > 0 && <button type="button" onClick={clearHistory} className="inline-flex items-center gap-1 hover:underline"><Trash2 className="h-3.5 w-3.5" /> Effacer l’historique</button>}
-            <button type="button" onClick={toggleTheme} className="inline-flex items-center gap-1 hover:underline"><Settings className="h-3.5 w-3.5" /> Paramètres</button>
+            <button type="button" onClick={() => setPanel("settings")} className="inline-flex min-h-11 items-center gap-1 hover:underline sm:min-h-0"><Settings className="h-3.5 w-3.5" /> Paramètres</button>
           </div>
         </div>
         <div className={`px-5 pb-3 text-center text-[11px] ${darkMode ? "text-[#9aa0a6]" : "text-[#80868b]"}`}>Flamme est une bêta indépendante. Qwant effectue les recherches ; les services restent fournis par leurs éditeurs respectifs.</div>
       </footer>
+
+      {panel && (
+        <div className="fixed inset-0 z-[120] flex items-end justify-center sm:items-center" role="dialog" aria-modal="true" aria-labelledby="flamme-panel-title">
+          <button type="button" aria-label="Fermer la fenêtre" onClick={() => setPanel(null)} className="absolute inset-0 cursor-default bg-black/45" />
+          <div className={`relative max-h-[85dvh] w-full overflow-y-auto rounded-t-3xl border p-5 shadow-[0_8px_28px_rgba(0,0,0,.35)] sm:max-w-[560px] sm:rounded-3xl ${surface}`}>
+            <div className="mb-3 flex items-start justify-between gap-4">
+              <h2 id="flamme-panel-title" className="text-[19px] font-medium">{panelTitles[panel]}</h2>
+              <button type="button" onClick={() => setPanel(null)} aria-label="Fermer" className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {panel === "about" && (
+              <div className={`space-y-3 text-[14px] leading-6 ${muted}`}>
+                <p>Flamme bêta est une interface de démarrage indépendante, développée pour ce site. Elle n’est affiliée à aucun des services qu’elle référence.</p>
+                <p>La recherche est effectuée par <strong className="font-medium">Qwant</strong> : Flamme se contente d’ouvrir Qwant avec votre requête et le type choisi (Tous, Actualités, Images, Vidéos). Les Cartes ouvrent le service public IGN.</p>
+                <p>Le carrousel de services est une liste de raccourcis vers des sites tiers (Mailo, Photoweb Cloud, Mappy, PagesJaunes, Dailymotion, AlloCiné, Deezer, Vivlio, Mistral, Reverso…). Chaque service reste géré par son éditeur.</p>
+                <p>Flamme n’héberge aucun compte, n’indexe aucun contenu et ne stocke aucune donnée sur un serveur.</p>
+              </div>
+            )}
+
+            {panel === "privacy" && (
+              <div className={`space-y-3 text-[14px] leading-6 ${muted}`}>
+                <p>Flamme ne dispose pas de serveur propre pour la recherche : voici exactement ce qui se passe.</p>
+                <ul className="list-disc space-y-2 pl-5">
+                  <li>Votre <strong className="font-medium">historique de recherche</strong> et votre <strong className="font-medium">thème clair/sombre</strong> sont enregistrés uniquement dans le stockage local de votre navigateur. Vous pouvez les effacer depuis Paramètres.</li>
+                  <li>Lorsque vous lancez une recherche, la requête est <strong className="font-medium">envoyée à Qwant</strong> (ou au service de cartes IGN pour l’onglet Cartes).</li>
+                  <li>Cliquer sur un service du carrousel ouvre directement le site de l’éditeur concerné, qui applique ses propres règles.</li>
+                  <li>La <strong className="font-medium">recherche vocale</strong> utilise la reconnaissance vocale de votre navigateur ou de votre appareil ; l’audio peut être traité par le fournisseur de ce navigateur/système.</li>
+                </ul>
+                <p>Flamme ne prétend pas gérer ni contrôler les données traitées par ces services tiers. Ressources externes :</p>
+                <div className="flex flex-wrap gap-x-4 gap-y-2 text-[13px]">
+                  <a href="https://about.qwant.com/legal/confidentialite/" target="_blank" rel="noreferrer" className="text-[#1a73e8] hover:underline">Confidentialité Qwant</a>
+                  <a href="https://www.mailo.com/mailo/fr/confidentialite.php" target="_blank" rel="noreferrer" className="text-[#1a73e8] hover:underline">Confidentialité Mailo</a>
+                  <a href="https://cartes.gouv.fr/" target="_blank" rel="noreferrer" className="text-[#1a73e8] hover:underline">cartes.gouv.fr (IGN)</a>
+                </div>
+              </div>
+            )}
+
+            {panel === "help" && (
+              <div className={`space-y-3 text-[14px] leading-6 ${muted}`}>
+                <p><strong className="font-medium">Onglets de recherche</strong> — Tous, Actualités, Images et Vidéos préparent le type de recherche envoyé à Qwant ; Cartes envoie la requête au service de cartes IGN. Cliquer sur un onglet ne lance pas de recherche : il sélectionne le mode, utilisé lors de la recherche suivante. Le pictogramme à gauche du champ reflète le mode actif.</p>
+                <p><strong className="font-medium">Recherche vocale</strong> — Touchez le micro et dictez : trois points animés indiquent l’écoute. La recherche se lance dès que la phrase est reconnue. Si le navigateur ne prend pas en charge la dictée, un message s’affiche.</p>
+                <p><strong className="font-medium">Carrousel de services</strong> — Faites glisser horizontalement pour accéder à l’ensemble des raccourcis ; chaque service s’ouvre dans un nouvel onglet.</p>
+                <p><strong className="font-medium">Qwant IA</strong> — L’icône ✦ dans la barre de recherche ouvre le chat IA de Qwant. Le raccourci « IA » du carrousel ouvre Mistral.</p>
+              </div>
+            )}
+
+            {panel === "settings" && (
+              <div className="space-y-3">
+                <button type="button" onClick={toggleTheme} className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border px-4 text-left text-[14px] ${darkMode ? "border-[#5f6368] hover:bg-white/10" : "border-[#dfe1e5] hover:bg-[#f1f3f4]"}`}>
+                  <span className="flex items-center gap-3">{darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />} Apparence</span>
+                  <span className={`text-[13px] ${muted}`}>{darkMode ? "Sombre" : "Claire"}</span>
+                </button>
+                <div className={`flex min-h-12 items-center justify-between gap-3 rounded-2xl border px-4 text-[14px] ${darkMode ? "border-[#5f6368]" : "border-[#dfe1e5]"}`}>
+                  <span className="flex items-center gap-3"><History className="h-5 w-5" /> Historique local</span>
+                  <span className={`text-[13px] ${muted}`}>{historyItems.length} élément{historyItems.length > 1 ? "s" : ""}</span>
+                </div>
+                <button type="button" onClick={clearHistory} disabled={historyItems.length === 0} className={`flex min-h-12 w-full items-center gap-3 rounded-2xl border px-4 text-left text-[14px] disabled:opacity-50 ${darkMode ? "border-[#5f6368] hover:bg-white/10" : "border-[#dfe1e5] hover:bg-[#f1f3f4]"}`}>
+                  <Trash2 className="h-5 w-5" /> Effacer l’historique
+                </button>
+                <p className={`text-[12px] leading-5 ${muted}`}>Ces réglages sont enregistrés uniquement dans ce navigateur.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
