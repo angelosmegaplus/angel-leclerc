@@ -1,18 +1,68 @@
-import type { FlammeNewsItem, FlammeNewsPayload } from "./flamme-news-types";
+import type { FlammeNewsCategory, FlammeNewsItem, FlammeNewsPayload } from "./flamme-news-types";
 
 export type { FlammeNewsItem, FlammeNewsPayload };
 
-type FeedConfig = { source: string; urls: string[] };
+type FeedConfig = { source: string; urls: string[]; categories: FlammeNewsCategory[] };
 
-// Flux réellement testés côté serveur (GET 200 + contenu RSS).
-// Marianne (https://www.marianne.net/rss.xml) répond 405 + page anti-bot : écarté.
+// Flux réellement testés côté serveur (GET 200 + contenu RSS/Atom).
+// Écartés : Marianne (405 anti-bot), Public Sénat (404 sur /rss.xml),
+// Le Monde (conditions RSS : usage strictement personnel).
 const FEEDS: FeedConfig[] = [
-  { source: "Franceinfo", urls: ["https://www.franceinfo.fr/titres.rss", "https://www.francetvinfo.fr/titres.rss"] },
+  {
+    source: "Franceinfo",
+    urls: ["https://www.franceinfo.fr/titres.rss", "https://www.francetvinfo.fr/titres.rss"],
+    categories: ["general", "france"],
+  },
+  {
+    source: "Franceinfo Histoire",
+    urls: ["https://www.franceinfo.fr/replay-radio/l-info-de-l-histoire.rss"],
+    categories: ["culture-history"],
+  },
   {
     source: "Service-Public",
     urls: ["https://www.service-public.gouv.fr/abonnements/rss/actu-actualites-particuliers.rss"],
+    categories: ["public-life"],
   },
+  {
+    source: "Vie publique",
+    urls: ["https://feeds.feedburner.com/vie-publique/nnRKrX8naq2"],
+    categories: ["public-life", "france"],
+  },
+  {
+    source: "CNRS Le Journal",
+    urls: ["https://lejournal.cnrs.fr/rss"],
+    categories: ["science-tech", "culture-history"],
+  },
+  {
+    source: "Ouest-France",
+    urls: ["https://www.ouest-france.fr/rss-en-continu.xml", "https://www.ouest-france.fr/rss/une"],
+    categories: ["general", "france"],
+  },
+  { source: "Sud Ouest", urls: ["https://www.sudouest.fr/essentiel/rss.xml"], categories: ["france", "general"] },
+  { source: "La Dépêche", urls: ["https://www.ladepeche.fr/rss.xml"], categories: ["france", "general"] },
+  { source: "L’Obs", urls: ["https://www.nouvelobs.com/a-la-une/rss.xml"], categories: ["general", "france"] },
+  { source: "HuffPost", urls: ["https://www.huffingtonpost.fr/feeds/index.xml"], categories: ["general", "france"] },
+  { source: "RFI", urls: ["https://www.rfi.fr/fr/france/rss"], categories: ["france", "world"] },
+  { source: "France 24", urls: ["https://www.france24.com/fr/rss"], categories: ["world", "general"] },
 ];
+
+const CATEGORY_HINTS: Array<{ category: FlammeNewsCategory; re: RegExp }> = [
+  { category: "sport", re: /\/sport|\/rugby|\/football|\/tennis|\/jeux-olympiques|\/cyclisme/i },
+  { category: "economy", re: /\/economie|\/entreprise|\/emploi|\/immobilier|\/conso|\/argent|\/bourse/i },
+  { category: "world", re: /\/monde|\/international|\/europe|\/afrique|\/moyen-orient|\/ameriques|\/asie/i },
+  { category: "science-tech", re: /\/sciences|\/science|\/tech|\/numerique|\/high-tech|\/internet|\/espace|\/sante/i },
+  { category: "culture-history", re: /\/culture|\/histoire|\/patrimoine|\/livres|\/cinema|\/musique|\/arts/i },
+  { category: "public-life", re: /\/politique|\/vie-publique|\/service-public|\/administration/i },
+];
+
+function categoriesFor(url: string, base: FlammeNewsCategory[]): FlammeNewsCategory[] {
+  const set = new Set<FlammeNewsCategory>(base);
+  for (const hint of CATEGORY_HINTS) {
+    if (hint.re.test(url)) set.add(hint.category);
+  }
+  return Array.from(set);
+}
+
 
 const CACHE_TTL = 5 * 60 * 1000;
 let cache: { payload: FlammeNewsPayload; at: number } | null = null;
@@ -90,23 +140,25 @@ function extractImage(block: string): string | undefined {
   return undefined;
 }
 
-function parseFeed(xml: string, source: string): FlammeNewsItem[] {
-  const blocks = xml.match(/<item\b[\s\S]*?<\/item>/gi) ?? [];
+function parseFeed(xml: string, config: FeedConfig): FlammeNewsItem[] {
+  const blocks = xml.match(/<item\b[\s\S]*?<\/item>/gi) ?? xml.match(/<entry\b[\s\S]*?<\/entry>/gi) ?? [];
   const items: FlammeNewsItem[] = [];
   for (const block of blocks) {
     const title = cleanText(tagContent(block, "title"), 180);
     const rawLink = tagContent(block, "link") || attrFrom(block, "link", "href") || "";
     const url = decodeEntities(rawLink).trim();
     if (!title || !/^https?:\/\//i.test(url)) continue;
-    const dateRaw = tagContent(block, "pubDate") || tagContent(block, "dc:date") || tagContent(block, "date");
+    const dateRaw =
+      tagContent(block, "pubDate") || tagContent(block, "dc:date") || tagContent(block, "updated") || tagContent(block, "date");
     const parsed = dateRaw ? new Date(dateRaw) : null;
-    const description = cleanText(tagContent(block, "description"));
+    const description = cleanText(tagContent(block, "description") ?? tagContent(block, "summary"));
     const imageUrl = extractImage(block);
     items.push({
       title,
       url,
-      source,
+      source: config.source,
       publishedAt: parsed && !Number.isNaN(parsed.getTime()) ? parsed.toISOString() : null,
+      categories: categoriesFor(url, config.categories),
       ...(description ? { description } : {}),
       ...(imageUrl ? { imageUrl } : {}),
     });
@@ -118,7 +170,7 @@ async function fetchFeed(config: FeedConfig): Promise<FlammeNewsItem[]> {
   for (const url of config.urls) {
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 5000);
+      const timer = setTimeout(() => controller.abort(), 6000);
       const response = await fetch(url, {
         signal: controller.signal,
         headers: { accept: "application/rss+xml, application/xml, text/xml, */*", "user-agent": "FlammeBeta/1.0" },
@@ -127,13 +179,24 @@ async function fetchFeed(config: FeedConfig): Promise<FlammeNewsItem[]> {
       if (!response.ok) continue;
       const body = await response.text();
       if (!/<rss|<feed|<channel/i.test(body)) continue;
-      const items = parseFeed(body, config.source);
-      if (items.length) return items;
+      const items = parseFeed(body, config);
+      // On borne chaque source pour éviter qu'un gros flux écrase les autres.
+      if (items.length) return items.slice(0, 14);
     } catch {
       // Flux indisponible : on tente l'URL suivante.
     }
   }
   return [];
+}
+
+function normalizeTitle(title: string): string {
+  return title
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export async function loadFlammeNews(): Promise<FlammeNewsPayload> {
@@ -147,8 +210,8 @@ export async function loadFlammeNews(): Promise<FlammeNewsPayload> {
 
   results.flat().forEach((item) => {
     const urlKey = item.url.split("?")[0].toLowerCase();
-    const titleKey = item.title.toLowerCase();
-    if (seenUrl.has(urlKey) || seenTitle.has(titleKey)) return;
+    const titleKey = normalizeTitle(item.title);
+    if (!titleKey || seenUrl.has(urlKey) || seenTitle.has(titleKey)) return;
     seenUrl.add(urlKey);
     seenTitle.add(titleKey);
     sources.add(item.source);
@@ -162,7 +225,8 @@ export async function loadFlammeNews(): Promise<FlammeNewsPayload> {
   });
 
   const payload: FlammeNewsPayload = {
-    items: items.slice(0, 8),
+    // Pool tagué : le client filtre par couches puis mélange les sources.
+    items: items.slice(0, 120),
     fetchedAt: new Date().toISOString(),
     sources: Array.from(sources),
   };
