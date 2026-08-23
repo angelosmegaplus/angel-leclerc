@@ -491,9 +491,114 @@ const messagingGroups: LinkGroup[] = [
         icon: MessageSquareLock,
         accent: "#6b7280",
       },
+      {
+        name: "Threema",
+        description: "Messagerie suisse payante, utilisable sans numéro de téléphone.",
+        url: "https://threema.ch/fr",
+        host: "threema.ch",
+        badge: "🇨🇭 Indépendant",
+        icon: MessageSquareLock,
+        accent: "#6b7280",
+      },
     ],
   },
 ];
+
+// Itinéraires : plusieurs solutions françaises pour qu'une panne n'empêche pas de préparer un trajet.
+const routeGroups: LinkGroup[] = [
+  {
+    title: "Itinéraires en France",
+    items: [
+      {
+        name: "Mappy",
+        description: "Itinéraires voiture, transports et à pied, service français historique.",
+        url: "https://fr.mappy.com/",
+        host: "fr.mappy.com",
+        badge: "🇫🇷 Recommandé",
+        icon: Navigation,
+        accent: "#7c3aed",
+        recommended: true,
+      },
+      {
+        name: "ViaMichelin",
+        description: "Itinéraires, coûts de trajet et cartes routières Michelin.",
+        url: "https://www.viamichelin.fr/",
+        host: "viamichelin.fr",
+        badge: "🇫🇷 Itinéraires",
+        icon: Map,
+        accent: "#1d4ed8",
+      },
+    ],
+  },
+  {
+    title: "Plus de choix",
+    secondary: true,
+    items: [
+      {
+        name: "cartes.gouv.fr (IGN)",
+        description: "Cartes officielles de l’Institut national de l’information géographique et forestière.",
+        url: "https://cartes.gouv.fr/",
+        host: "cartes.gouv.fr",
+        badge: "🇫🇷 Public",
+        icon: Map,
+        accent: "#15803d",
+      },
+      {
+        name: "SNCF Connect",
+        description: "Trajets en train et mobilité longue distance.",
+        url: "https://www.sncf-connect.com/",
+        host: "sncf-connect.com",
+        badge: "🇫🇷 Train",
+        icon: TrainFront,
+        accent: "#7c3aed",
+      },
+    ],
+  },
+];
+
+const musicGroups: LinkGroup[] = [
+  {
+    title: "Musique en ligne",
+    note: "Si Deezer refuse l’accès avec un VPN, essayez sans VPN ou utilisez Radioplayer.",
+    items: [
+      {
+        name: "Deezer",
+        description: "Service français de streaming musical et de podcasts.",
+        url: "https://www.deezer.com/fr/",
+        host: "deezer.com",
+        badge: "🇫🇷 Recommandé",
+        icon: Music2,
+        accent: "#a21caf",
+        recommended: true,
+      },
+      {
+        name: "Qobuz",
+        description: "Plateforme française de streaming et de téléchargement en haute qualité.",
+        url: "https://www.qobuz.com/fr-fr/",
+        host: "qobuz.com",
+        badge: "🇫🇷 Haute qualité",
+        icon: Music2,
+        accent: "#0f766e",
+      },
+    ],
+  },
+  {
+    title: "Plus de choix",
+    secondary: true,
+    items: [
+      {
+        name: "Radioplayer France",
+        description: "Radios, webradios musicales et podcasts, sans compte.",
+        url: "https://www.radioplayer.fr/",
+        host: "radioplayer.fr",
+        badge: "🇫🇷 Gratuit",
+        icon: RadioTower,
+        accent: "#c5221f",
+      },
+    ],
+  },
+];
+
 
 
 
