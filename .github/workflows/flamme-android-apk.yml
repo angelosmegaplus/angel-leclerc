@@ -79,12 +79,15 @@ jobs:
       - name: Verify APK signature and prepare artifacts
         shell: bash
         run: |
+          set -euo pipefail
+          APKSIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
+          test -x "$APKSIGNER"
           mkdir -p dist
           cp flamme-android/app/build/outputs/apk/beta/app-beta.apk dist/Flamme-beta-Android.apk
-          apksigner verify --verbose --print-certs dist/Flamme-beta-Android.apk
+          "$APKSIGNER" verify --verbose --print-certs dist/Flamme-beta-Android.apk
           if [ -f flamme-android/app/build/outputs/apk/release/app-release.apk ]; then
             cp flamme-android/app/build/outputs/apk/release/app-release.apk dist/Flamme-beta-Android-release.apk
-            apksigner verify --verbose --print-certs dist/Flamme-beta-Android-release.apk
+            "$APKSIGNER" verify --verbose --print-certs dist/Flamme-beta-Android-release.apk
           fi
           if [ -f flamme-android/app/build/outputs/apk/release/app-release-unsigned.apk ]; then
             cp flamme-android/app/build/outputs/apk/release/app-release-unsigned.apk dist/Flamme-beta-Android-release-unsigned.apk
