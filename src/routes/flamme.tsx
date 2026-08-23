@@ -805,6 +805,7 @@ function FlammeBetaPage() {
   const [newsFailed, setNewsFailed] = useState(false);
   const [searchEngine, setSearchEngine] = useState<SearchEngine>("qwant");
   const [newsLayers, setNewsLayers] = useState<FlammeNewsCategory[]>(ALL_LAYERS);
+  const [newsRegion, setNewsRegion] = useState<string | null>(null);
 
   const engineLabel = SEARCH_ENGINE_LABELS[searchEngine];
 
@@ -812,6 +813,12 @@ function FlammeBetaPage() {
     setSearchEngine(engine);
     writeSearchEngine(engine);
   };
+
+  const chooseRegion = (id: string | null) => {
+    setNewsRegion(id);
+    writeNewsRegion(id);
+  };
+
 
   const toggleLayer = (category: FlammeNewsCategory) => {
     setNewsLayers((current) => {
