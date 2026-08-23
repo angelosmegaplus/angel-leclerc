@@ -24,8 +24,32 @@ import {
   UserRound,
   Trash2,
   Newspaper,
+  Flame,
+  Star,
+  Heart,
+  Leaf,
+  Smile,
+  Cat,
+  Globe,
+  LayoutGrid,
+  Pencil,
+  Users,
+  Check,
 } from "lucide-react";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  FLAMME_AVATAR_IDS,
+  FlammeAvatarId,
+  FlammeProfile,
+  MAX_PROFILE_NAME,
+  normalizeProfileName,
+  readActiveKey,
+  readProfiles,
+  sanitizeProfileName,
+  writeActiveKey,
+  writeProfiles,
+} from "@/lib/flamme-profile";
+
 
 export const Route = createFileRoute("/flamme")({
   head: () => ({
