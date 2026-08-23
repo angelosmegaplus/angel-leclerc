@@ -491,6 +491,18 @@ function FlammeBetaPage() {
     setProfileOpen((value) => !value);
   };
 
+  const openProfileManager = () => {
+    setPanel(null);
+    setProfileError("");
+    setProfileMode(activeProfile ? "view" : "create");
+    setProfileNameDraft(activeProfile ? activeProfile.name : "");
+    setProfileAvatarDraft(activeProfile ? activeProfile.avatar : "user");
+    setProfileOpen(true);
+  };
+
+
+
+
   const persistProfiles = (next: Record<string, FlammeProfile>, activeKey: string | null) => {
     setProfiles(next);
     setActiveProfileKey(activeKey);
@@ -505,13 +517,27 @@ function FlammeBetaPage() {
       return;
     }
     const key = normalizeProfileName(name);
+    const isEditingActive = profileMode === "edit" && activeProfileKey !== null;
+    const existing = profiles[key];
+
+    if (existing && !(isEditingActive && activeProfileKey === key)) {
+      // Profil déjà enregistré sur cet appareil : on le réactive sans écraser son avatar.
+      persistProfiles(profiles, key);
+      setProfileNameDraft(existing.name);
+      setProfileAvatarDraft(existing.avatar);
+      setProfileMode("view");
+      setProfileError("");
+      return;
+    }
+
     const next = { ...profiles };
-    if (profileMode === "edit" && activeProfileKey && activeProfileKey !== key) delete next[activeProfileKey];
+    if (isEditingActive && activeProfileKey && activeProfileKey !== key) delete next[activeProfileKey];
     next[key] = { key, name, avatar: profileAvatarDraft };
     persistProfiles(next, key);
     setProfileMode("view");
     setProfileError("");
   };
+
 
   const switchToProfile = () => {
     const name = sanitizeProfileName(profileNameDraft).trim();
@@ -883,10 +909,24 @@ function FlammeBetaPage() {
                 <button type="button" onClick={clearHistory} disabled={historyItems.length === 0} className={`flex min-h-12 w-full items-center gap-3 rounded-2xl border px-4 text-left text-[14px] disabled:opacity-50 ${darkMode ? "border-[#5f6368] hover:bg-white/10" : "border-[#dfe1e5] hover:bg-[#f1f3f4]"}`}>
                   <Trash2 className="h-5 w-5" /> Effacer l’historique
                 </button>
-                <div className={`flex min-h-12 items-center justify-between gap-3 rounded-2xl border px-4 text-[14px] ${darkMode ? "border-[#5f6368]" : "border-[#dfe1e5]"}`}>
-                  <span className="flex items-center gap-3"><Users className="h-5 w-5" /> Profils locaux</span>
-                  <span className={`text-[13px] ${muted}`}>{Object.keys(profiles).length}</span>
+                <div className={`rounded-2xl border px-4 py-3 ${darkMode ? "border-[#5f6368]" : "border-[#dfe1e5]"}`}>
+                  <div className="flex items-center gap-3">
+                    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${activeProfile ? "bg-[#1a73e8] text-white" : darkMode ? "bg-[#3c4043]" : "bg-[#f1f3f4]"}`}>
+                      <ActiveAvatarIcon className="h-5 w-5" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-[14px] font-medium">{activeProfile ? activeProfile.name : "Aucun profil"}</div>
+                      <div className={`text-[12px] leading-4 ${muted}`}>Profil enregistré uniquement sur cet appareil.</div>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between gap-3">
+                    <button type="button" onClick={openProfileManager} className={`flex min-h-10 items-center gap-2 rounded-xl border px-3 text-[14px] ${darkMode ? "border-[#5f6368] hover:bg-white/10" : "border-[#dfe1e5] hover:bg-[#f1f3f4]"}`}>
+                      <Users className="h-4 w-4" /> Gérer le profil
+                    </button>
+                    <span className={`text-[12px] ${muted}`}>{Object.keys(profiles).length} profil{Object.keys(profiles).length > 1 ? "s" : ""} sur cet appareil</span>
+                  </div>
                 </div>
+
                 <p className={`text-[12px] leading-5 ${muted}`}>Ces réglages, l’historique et les profils sont enregistrés uniquement dans ce navigateur.</p>
 
               </div>
