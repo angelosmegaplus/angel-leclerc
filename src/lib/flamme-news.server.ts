@@ -233,5 +233,3 @@ export async function loadFlammeNews(): Promise<FlammeNewsPayload> {
   cache = { payload, at: Date.now() };
   return payload;
 }
-
-}
