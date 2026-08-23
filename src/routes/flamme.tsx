@@ -885,7 +885,7 @@ function FlammeBetaPage() {
                 </button>
                 <div className={`flex min-h-12 items-center justify-between gap-3 rounded-2xl border px-4 text-[14px] ${darkMode ? "border-[#5f6368]" : "border-[#dfe1e5]"}`}>
                   <span className="flex items-center gap-3"><Users className="h-5 w-5" /> Profils locaux</span>
-                  <span className={`text-[13px] ${muted}`}>{profiles.length}</span>
+                  <span className={`text-[13px] ${muted}`}>{Object.keys(profiles).length}</span>
                 </div>
                 <p className={`text-[12px] leading-5 ${muted}`}>Ces réglages, l’historique et les profils sont enregistrés uniquement dans ce navigateur.</p>
 
