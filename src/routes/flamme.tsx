@@ -357,7 +357,33 @@ const tvGroups: LinkGroup[] = [
       },
     ],
   },
+  {
+    title: "Plus de choix",
+    secondary: true,
+    note: "Chaînes parlementaires et publiques, en direct et en rediffusion.",
+    items: [
+      {
+        name: "LCP – Assemblée nationale",
+        description: "Séances, débats et magazines de la chaîne parlementaire.",
+        url: "https://www.lcp.fr/",
+        host: "lcp.fr",
+        badge: "🇫🇷 Public",
+        icon: Landmark,
+        accent: "#1d4ed8",
+      },
+      {
+        name: "Public Sénat",
+        description: "Travaux du Sénat, débats et documentaires en accès libre.",
+        url: "https://www.publicsenat.fr/",
+        host: "publicsenat.fr",
+        badge: "🇫🇷 Public",
+        icon: Landmark,
+        accent: "#0f766e",
+      },
+    ],
+  },
 ];
+
 
 const mailGroups: LinkGroup[] = [
   {
