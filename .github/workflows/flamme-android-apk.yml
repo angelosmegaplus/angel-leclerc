@@ -61,19 +61,21 @@ jobs:
           echo "FLAMME_KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
           echo "FLAMME_KEY_PASSWORD=$KEY_PASSWORD" >> "$GITHUB_ENV"
 
-      - name: Lint and build
+      - name: Lint and build optimized beta
         working-directory: flamme-android
         shell: bash
         run: |
-          gradle --no-daemon --stacktrace clean lintDebug assembleDebug assembleRelease
+          gradle --no-daemon --stacktrace clean lintBeta assembleBeta assembleRelease
 
-      - name: Prepare artifacts
+      - name: Verify APK signature and prepare artifacts
         shell: bash
         run: |
           mkdir -p dist
-          cp flamme-android/app/build/outputs/apk/debug/app-debug.apk dist/Flamme-beta-Android-debug.apk
+          cp flamme-android/app/build/outputs/apk/beta/app-beta.apk dist/Flamme-beta-Android.apk
+          apksigner verify --verbose --print-certs dist/Flamme-beta-Android.apk
           if [ -f flamme-android/app/build/outputs/apk/release/app-release.apk ]; then
             cp flamme-android/app/build/outputs/apk/release/app-release.apk dist/Flamme-beta-Android-release.apk
+            apksigner verify --verbose --print-certs dist/Flamme-beta-Android-release.apk
           fi
           if [ -f flamme-android/app/build/outputs/apk/release/app-release-unsigned.apk ]; then
             cp flamme-android/app/build/outputs/apk/release/app-release-unsigned.apk dist/Flamme-beta-Android-release-unsigned.apk
@@ -86,7 +88,7 @@ jobs:
         with:
           name: Flamme-beta-Android
           path: |
-            dist/Flamme-beta-Android-debug.apk
+            dist/Flamme-beta-Android.apk
             dist/Flamme-beta-Android-release.apk
             dist/SHA256SUMS.txt
           if-no-files-found: error
