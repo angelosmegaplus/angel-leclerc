@@ -374,7 +374,7 @@ function FlammeBetaPage() {
                   <Mic className="h-5 w-5 text-[#4285f4]" />
                 )}
               </button>
-              <button type="button" onClick={askMistral} className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f8f9fa]"}`} title="IA" aria-label="Ouvrir l’IA">
+              <button type="button" onClick={askQwantAi} className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f8f9fa]"}`} title="Rechercher avec l’IA de Qwant" aria-label="Rechercher avec l’IA de Qwant">
                 <Sparkles className="h-5 w-5 text-[#f97316]" />
               </button>
 
