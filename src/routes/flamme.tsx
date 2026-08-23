@@ -190,26 +190,26 @@ function FlammeBetaPage() {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] overflow-y-auto bg-white text-[#202124]">
-      <header className="flex h-16 items-center justify-between px-4 text-sm sm:px-6">
-        <div className="flex items-center gap-4 text-[#3c4043]">
-          <span className="rounded-full bg-[#f1f3f4] px-3 py-1 text-xs font-medium">Bêta</span>
-          <a href="https://www.qwant.com/?l=fr" className="hover:underline">Recherche</a>
-        </div>
-        <div className="relative flex items-center gap-4">
-          <a href="https://webmail.mailo.com/" className="hidden hover:underline sm:inline">Mail</a>
-          <a href="https://account.joomeo.com/" className="hidden hover:underline sm:inline">Photos</a>
+    <div
+      className="fixed inset-0 z-[100] overflow-y-auto bg-white text-[#202124]"
+      style={{ fontFamily: "Roboto, arial, sans-serif" }}
+    >
+      <header className="flex h-[60px] items-center justify-end gap-4 px-5 text-[13px] text-[#202124]">
+        <a href="https://www.qwant.com/?l=fr" className="hidden hover:underline sm:inline">Recherche</a>
+        <a href="https://webmail.mailo.com/" className="hidden hover:underline sm:inline">Mail</a>
+        <a href="https://account.joomeo.com/" className="hidden hover:underline sm:inline">Images</a>
+        <div className="relative">
           <button
             type="button"
             aria-label="Applications Flamme"
             className="rounded-full p-2 hover:bg-[#f1f3f4]"
             onClick={() => setAppsOpen((value) => !value)}
           >
-            <Grid3X3 className="h-5 w-5" />
+            <Grid3X3 className="h-5 w-5 text-[#5f6368]" />
           </button>
           {appsOpen && (
-            <div className="absolute right-0 top-12 z-20 grid w-[320px] grid-cols-3 gap-2 rounded-3xl border border-[#dadce0] bg-white p-4 shadow-xl">
-              {services.slice(0, 12).map((service) => {
+            <div className="absolute right-0 top-11 z-20 grid max-h-[420px] w-[320px] grid-cols-3 gap-1 overflow-y-auto rounded-lg border border-[#dadce0] bg-white p-3 shadow-[0_2px_10px_rgba(0,0,0,0.2)]">
+              {services.map((service) => {
                 const Icon = service.icon;
                 return (
                   <a
@@ -217,12 +217,15 @@ function FlammeBetaPage() {
                     href={service.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex min-h-24 flex-col items-center justify-center rounded-2xl p-2 text-center hover:bg-[#f8fafd]"
+                    className="flex min-h-[92px] flex-col items-center justify-center gap-2 rounded-lg p-2 text-center hover:bg-[#f1f3f4]"
                   >
-                    <span className="mb-2 flex h-11 w-11 items-center justify-center rounded-2xl" style={{ backgroundColor: `${service.accent}14`, color: service.accent }}>
+                    <span
+                      className="flex h-10 w-10 items-center justify-center rounded-full"
+                      style={{ backgroundColor: `${service.accent}14`, color: service.accent }}
+                    >
                       <Icon className="h-5 w-5" />
                     </span>
-                    <span className="text-xs font-medium">{service.name}</span>
+                    <span className="text-[12px] leading-4 text-[#3c4043]">{service.name}</span>
                   </a>
                 );
               })}
@@ -231,124 +234,71 @@ function FlammeBetaPage() {
         </div>
       </header>
 
-      <main className="mx-auto flex min-h-[calc(100vh-64px)] w-full max-w-6xl flex-col items-center px-4 pb-16 pt-14 sm:pt-20">
-        <div className="select-none text-center">
-          <img
-            src="/logos/qwant.svg"
-            alt="Qwant"
-            width={272}
-            height={87}
-            className="mx-auto h-[68px] w-auto sm:h-[87px]"
-          />
-          <p className="mt-2 text-sm text-[#5f6368]">Recherche propulsée par Qwant</p>
+      <main className="mx-auto w-full max-w-[652px] px-5 pb-16">
+        <div className="mt-[80px] flex justify-center sm:mt-[120px]">
+          <img src="/logos/qwant.svg" alt="Qwant" width={272} height={92} className="h-[64px] w-auto sm:h-[80px]" />
         </div>
 
-
-        <form onSubmit={searchQwant} className="mt-8 w-full max-w-[640px]">
-          <div className="flex h-12 items-center gap-3 rounded-full border border-[#dfe1e5] bg-white px-4 shadow-sm transition hover:shadow-md focus-within:shadow-md">
+        <form onSubmit={searchQwant} className="mt-[26px]">
+          <div className="mx-auto flex h-11 w-full items-center gap-3 rounded-full border border-[#dfe1e5] bg-white px-4 hover:border-transparent hover:shadow-[0_1px_6px_rgba(32,33,36,0.28)] focus-within:border-transparent focus-within:shadow-[0_1px_6px_rgba(32,33,36,0.28)]">
             <Search className="h-5 w-5 shrink-0 text-[#9aa0a6]" />
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              autoFocus
-              className="h-full min-w-0 flex-1 bg-transparent text-base outline-none"
+              className="h-full min-w-0 flex-1 bg-transparent text-[16px] text-[#202124] outline-none"
               placeholder="Rechercher sur le Web"
               aria-label="Recherche Qwant"
             />
-            <button type="button" onClick={askMistral} className="rounded-full p-2 text-[#f97316] hover:bg-[#fff7ed]" title="Demander à Mistral Vibe">
+            <button
+              type="button"
+              onClick={askMistral}
+              className="rounded-full p-1.5 text-[#f97316] hover:bg-[#f8f9fa]"
+              title="Demander à Mistral Vibe"
+              aria-label="Demander à Mistral Vibe"
+            >
               <Sparkles className="h-5 w-5" />
             </button>
           </div>
-          <div className="mt-7 flex flex-wrap justify-center gap-3">
-            <button type="submit" className="rounded-md bg-[#f8f9fa] px-4 py-2 text-sm hover:ring-1 hover:ring-[#dadce0]">Recherche Qwant</button>
-            <button type="button" onClick={askMistral} className="rounded-md bg-[#f8f9fa] px-4 py-2 text-sm hover:ring-1 hover:ring-[#dadce0]">Demander à Mistral</button>
+          <div className="mt-[29px] flex flex-wrap justify-center gap-3">
+            <button
+              type="submit"
+              className="h-9 rounded border border-transparent bg-[#f8f9fa] px-4 text-[14px] text-[#3c4043] hover:border-[#dadce0] hover:shadow-sm"
+            >
+              Recherche Qwant
+            </button>
+            <button
+              type="button"
+              onClick={askMistral}
+              className="h-9 rounded border border-transparent bg-[#f8f9fa] px-4 text-[14px] text-[#3c4043] hover:border-[#dadce0] hover:shadow-sm"
+            >
+              Demander à Mistral
+            </button>
           </div>
         </form>
-
-        <section className="mt-12 w-full max-w-5xl">
-          <div className="mb-4 flex items-center gap-2 text-[#5f6368]">
-            <Newspaper className="h-4 w-4" />
-            <h2 className="text-sm font-medium">Actualités</h2>
-          </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {newsTopics.map((topic) => (
-              <a
-                key={topic.label}
-                href={`https://www.qwant.com/?l=fr&t=news&q=${encodeURIComponent(topic.query)}`}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-2xl border border-[#e5e7eb] bg-white p-4 transition hover:border-[#d2d6dc] hover:shadow-md"
-              >
-                <span className="text-[11px] font-medium uppercase tracking-wide text-[#1a73e8]">{topic.label}</span>
-                <p className="mt-1 text-sm font-medium leading-5 text-[#202124]">{topic.headline}</p>
-                <p className="mt-2 text-xs text-[#5f6368]">Voir les dernières actualités sur Qwant Actualités</p>
-              </a>
-            ))}
-          </div>
-        </section>
-
-
-        <section className="mt-14 w-full max-w-5xl">
-          <div className="mb-5 flex items-end justify-between gap-4">
-            <div>
-              <h1 className="text-lg font-medium text-[#202124]">Services Flamme</h1>
-              <p className="mt-1 text-sm text-[#5f6368]">Un point d’entrée unique vers des services français et francophones.</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {services.map((service) => {
-              const Icon = service.icon;
-              return (
-                <a
-                  key={service.name}
-                  href={service.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="group rounded-2xl border border-[#e5e7eb] bg-white p-4 transition hover:-translate-y-0.5 hover:border-[#d2d6dc] hover:shadow-md"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl" style={{ backgroundColor: `${service.accent}14`, color: service.accent }}>
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <ExternalLink className="h-4 w-4 text-[#9aa0a6] opacity-0 transition group-hover:opacity-100" />
-                  </div>
-                  <div className="mt-4">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-sm font-semibold">{service.name}</h2>
-                      {service.badge && <span className="rounded-full bg-[#f1f3f4] px-2 py-0.5 text-[10px] font-medium text-[#5f6368]">{service.badge}</span>}
-                    </div>
-                    <p className="mt-1 text-xs leading-5 text-[#5f6368]">{service.description}</p>
-                  </div>
-                </a>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="mt-10 w-full max-w-5xl rounded-3xl border border-[#fed7aa] bg-[#fff7ed] p-5 sm:p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex gap-4">
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-[#f97316] shadow-sm">
-                <Sparkles className="h-6 w-6" />
-              </span>
-              <div>
-                <h2 className="font-semibold">IA Flamme · Mistral Vibe</h2>
-                <p className="mt-1 max-w-2xl text-sm leading-6 text-[#6b7280]">
-                  L’intelligence artificielle de Flamme pointe en priorité vers Mistral Vibe. Le bouton étoile dans la barre de recherche permet d’y accéder immédiatement.
-                </p>
-              </div>
-            </div>
-            <a href="https://chat.mistral.ai/" target="_blank" rel="noreferrer" className="shrink-0 rounded-full bg-[#f97316] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#ea580c]">
-              Ouvrir Mistral
-            </a>
-          </div>
-        </section>
-
-        <footer className="mt-14 w-full border-t border-[#e5e7eb] pt-6 text-center text-xs leading-5 text-[#6b7280]">
-          Flamme est une bêta indépendante. Les marques citées restent la propriété de leurs éditeurs respectifs. Les recherches sont effectuées par Qwant.
-        </footer>
       </main>
+
+      <section className="mx-auto w-full max-w-[652px] px-5 pb-20">
+        <h1 className="mb-3 text-[14px] font-medium text-[#5f6368]">Actualités</h1>
+        <div className="overflow-hidden rounded-lg border border-[#dadce0]">
+          {newsTopics.map((topic, index) => (
+            <a
+              key={topic.label}
+              href={`https://www.qwant.com/?l=fr&t=news&q=${encodeURIComponent(topic.query)}`}
+              target="_blank"
+              rel="noreferrer"
+              className={`block px-4 py-3 hover:bg-[#f8f9fa] ${index > 0 ? "border-t border-[#e8eaed]" : ""}`}
+            >
+              <span className="text-[12px] text-[#5f6368]">{topic.label}</span>
+              <p className="mt-0.5 text-[16px] leading-6 text-[#1a0dab]">{topic.headline}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <footer className="border-t border-[#dadce0] bg-[#f2f2f2] px-5 py-4 text-[14px] text-[#70757a]">
+        Flamme est une bêta indépendante. Recherches effectuées par Qwant ; les marques citées restent la propriété de leurs éditeurs.
+      </footer>
     </div>
   );
 }
+
