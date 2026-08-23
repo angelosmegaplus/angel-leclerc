@@ -952,6 +952,9 @@ const panelTitles: Record<PanelKey, string> = {
   tv: "Télévision française",
   mail: "Messageries e-mail",
   messages: "Messageries instantanées",
+  routes: "Itinéraires & cartes",
+  music: "Musique en ligne",
+
 };
 
 
