@@ -1,5 +1,6 @@
 name: Flamme 0.7 Release
 
+# Trigger revision 1
 on:
   workflow_dispatch:
   push:
