@@ -164,7 +164,17 @@ const services: Service[] = [
   },
 ];
 
+const newsTopics = [
+  { label: "À la une", query: "actualités France", headline: "Les principaux titres du jour" },
+  { label: "France", query: "politique France", headline: "Politique et société" },
+  { label: "International", query: "actualité internationale", headline: "Le monde en continu" },
+  { label: "Économie", query: "économie entreprises", headline: "Entreprises, emploi et marchés" },
+  { label: "Tech", query: "technologie numérique", headline: "Numérique, IA et innovation" },
+  { label: "Sport", query: "sport résultats", headline: "Résultats et compétitions" },
+];
+
 function FlammeBetaPage() {
+
   const [query, setQuery] = useState("");
   const [appsOpen, setAppsOpen] = useState(false);
 
