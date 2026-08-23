@@ -455,6 +455,96 @@ function FlammeBetaPage() {
     } catch {}
   };
 
+  const activeProfile = activeProfileKey ? profiles[activeProfileKey] ?? null : null;
+
+  const runSuggestion = (item: SuggestionItem) => {
+    if (item.kind === "service" && item.url) {
+      window.open(item.url, "_blank", "noopener,noreferrer");
+      return;
+    }
+    goToSearch(item.value);
+  };
+
+  const onSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!searchFocused || suggestions.length === 0) return;
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setHighlightIndex((current) => (current + 1) % suggestions.length);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setHighlightIndex((current) => (current <= 0 ? suggestions.length - 1 : current - 1));
+    } else if (event.key === "Escape") {
+      setSearchFocused(false);
+      setHighlightIndex(-1);
+    } else if (event.key === "Enter" && highlightIndex >= 0) {
+      event.preventDefault();
+      const item = suggestions[highlightIndex];
+      if (item) runSuggestion(item);
+    }
+  };
+
+  const openProfileMenu = () => {
+    setProfileError("");
+    setProfileMode(activeProfile ? "view" : "create");
+    setProfileNameDraft(activeProfile ? activeProfile.name : "");
+    setProfileAvatarDraft(activeProfile ? activeProfile.avatar : "user");
+    setProfileOpen((value) => !value);
+  };
+
+  const persistProfiles = (next: Record<string, FlammeProfile>, activeKey: string | null) => {
+    setProfiles(next);
+    setActiveProfileKey(activeKey);
+    writeProfiles(next);
+    writeActiveKey(activeKey);
+  };
+
+  const saveProfileDraft = () => {
+    const name = sanitizeProfileName(profileNameDraft).trim();
+    if (!name) {
+      setProfileError("Indiquez un nom d’utilisateur.");
+      return;
+    }
+    const key = normalizeProfileName(name);
+    const next = { ...profiles };
+    if (profileMode === "edit" && activeProfileKey && activeProfileKey !== key) delete next[activeProfileKey];
+    next[key] = { key, name, avatar: profileAvatarDraft };
+    persistProfiles(next, key);
+    setProfileMode("view");
+    setProfileError("");
+  };
+
+  const switchToProfile = () => {
+    const name = sanitizeProfileName(profileNameDraft).trim();
+    if (!name) {
+      setProfileError("Indiquez un nom d’utilisateur.");
+      return;
+    }
+    const key = normalizeProfileName(name);
+    const existing = profiles[key];
+    if (existing) {
+      persistProfiles(profiles, key);
+      setProfileMode("view");
+      setProfileError("");
+      return;
+    }
+    setProfileMode("create");
+    setProfileAvatarDraft("user");
+    setProfileError("Nouveau profil : choisissez un avatar puis enregistrez.");
+  };
+
+  const deleteActiveProfile = () => {
+    if (!activeProfileKey) return;
+    const next = { ...profiles };
+    delete next[activeProfileKey];
+    persistProfiles(next, null);
+    setProfileMode("create");
+    setProfileNameDraft("");
+    setProfileAvatarDraft("user");
+  };
+
+  const ActiveAvatarIcon = activeProfile ? avatarIcons[activeProfile.avatar] : UserRound;
+
+
   const mainNews = newsTopics[0];
   const secondaryNews = newsTopics.slice(1);
   const pageBg = darkMode ? "bg-[#202124] text-[#e8eaed]" : "bg-white text-[#202124]";
