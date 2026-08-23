@@ -24,6 +24,7 @@ import {
   Sun,
   UserRound,
   Trash2,
+  Newspaper,
 } from "lucide-react";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
@@ -59,7 +60,7 @@ const services: Service[] = [
   { name: "Annuaire", description: "PagesJaunes et PagesBlanches", url: "https://www.pagesjaunes.fr/", icon: ContactRound, accent: "#eab308" },
   { name: "Carte", description: "Cartes avec l’IGN", url: "https://cartes.gouv.fr/", icon: Map, accent: "#15803d" },
   { name: "Vidéo", description: "Avec Dailymotion", url: "https://www.dailymotion.com/fr", icon: Video, accent: "#111827" },
-  { name: "Films & Séries", description: "Films et séries avec Dailymotion", url: "https://www.dailymotion.com/fr", icon: Clapperboard, accent: "#111827" },
+  { name: "Films & Séries", description: "Films et séries avec AlloCiné", url: "https://www.allocine.fr/", icon: Clapperboard, accent: "#111827" },
   { name: "Musique", description: "Avec Deezer", url: "https://www.deezer.com/fr/", icon: Music2, accent: "#a21caf" },
   { name: "Livres", description: "Avec Vivlio", url: "https://www.vivlio.com/", icon: BookOpen, accent: "#c2410c" },
   { name: "IA", description: "Avec Mistral", url: "https://chat.mistral.ai/", icon: Sparkles, accent: "#f97316" },
@@ -99,6 +100,14 @@ const searchTabs = [
 ] as const;
 
 type SearchType = (typeof searchTabs)[number]["type"];
+
+const searchIcon: Record<SearchType, typeof Search> = {
+  all: Search,
+  news: Newspaper,
+  images: Images,
+  videos: Video,
+  maps: Map,
+};
 
 
 type NewsTopic = {
@@ -318,7 +327,10 @@ function FlammeBetaPage() {
         <form onSubmit={searchQwant} className="mt-6">
           <div className={`relative mx-auto rounded-[26px] border transition-shadow ${surface} ${searchFocused ? "shadow-[0_1px_8px_rgba(32,33,36,.28)]" : "hover:shadow-[0_1px_6px_rgba(32,33,36,.2)]"}`}>
             <div className="flex h-[52px] items-center gap-1 px-3 sm:h-[46px] sm:gap-2 sm:px-4">
-              <Search className={`h-5 w-5 shrink-0 ${darkMode ? "text-[#9aa0a6]" : "text-[#9aa0a6]"}`} />
+              {(() => {
+                const ActiveIcon = searchIcon[activeTab];
+                return <ActiveIcon className="h-5 w-5 shrink-0 text-[#9aa0a6]" />;
+              })()}
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
