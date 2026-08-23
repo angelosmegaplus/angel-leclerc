@@ -11,7 +11,8 @@ type ExtraShortcut = {
 };
 
 // Raccourcis directs supplémentaires : ils complètent les panneaux existants sans
-// supprimer les services déjà présents dans Flamme.
+// supprimer les services déjà présents dans Flamme. Les médias d’actualité restent
+// dans le fil Découvrir et ne sont volontairement pas ajoutés au carrousel principal.
 const EXTRA_SHORTCUTS: ExtraShortcut[] = [
   { id: "service-public", name: "Service-Public", description: "Droits et démarches administratives", url: "https://www.service-public.gouv.fr/", glyph: "🏛", accent: "#1d4ed8" },
   { id: "france-identite", name: "France Identité", description: "Identité numérique officielle", url: "https://france-identite.gouv.fr/", glyph: "🪪", accent: "#2563eb" },
@@ -25,10 +26,6 @@ const EXTRA_SHORTCUTS: ExtraShortcut[] = [
   { id: "gallica", name: "Gallica", description: "Bibliothèque numérique de la BnF", url: "https://gallica.bnf.fr/", glyph: "📚", accent: "#7c3aed" },
   { id: "legifrance", name: "Légifrance", description: "Droit français officiel", url: "https://www.legifrance.gouv.fr/", glyph: "⚖", accent: "#1e3a8a" },
   { id: "caf", name: "CAF", description: "Allocations et démarches CAF", url: "https://www.caf.fr/", glyph: "◇", accent: "#2563eb" },
-  { id: "franceinfo", name: "franceinfo", description: "Actualités France et monde", url: "https://www.franceinfo.fr/", glyph: "●", accent: "#facc15" },
-  { id: "cnews", name: "CNEWS", description: "Actualités CNEWS", url: "https://www.cnews.fr/", glyph: "C", accent: "#dc2626" },
-  { id: "tf1-info", name: "TF1 Info", description: "Actualités TF1 et LCI", url: "https://www.tf1info.fr/", glyph: "1", accent: "#2563eb" },
-  { id: "actu-fr", name: "Actu.fr", description: "Actualités nationales et locales", url: "https://actu.fr/", glyph: "A", accent: "#dc2626" },
 ];
 
 function isDarkTheme() {
@@ -83,6 +80,12 @@ function enhanceCarousel() {
   const nav = document.querySelector<HTMLElement>('nav[aria-label="Services Flamme"]');
   const rail = nav?.firstElementChild as HTMLElement | null;
   if (!rail) return;
+
+  // Nettoyage des quatre médias ajoutés dans une passe précédente : ils doivent
+  // alimenter Découvrir, pas apparaître comme raccourcis principaux.
+  ["franceinfo", "cnews", "tf1-info", "actu-fr"].forEach((id) => {
+    rail.querySelector(`[data-flamme-extra-shortcut="${id}"]`)?.remove();
+  });
 
   const children = Array.from(rail.children);
   const radio = children.find((node) => serviceName(node).startsWith("Radio"));
@@ -160,6 +163,32 @@ function enhanceMessagingPanel() {
   }
 }
 
+function enhanceAiSearchButton() {
+  const button = document.querySelector<HTMLButtonElement>(
+    'button[aria-label="Rechercher avec l’IA de Qwant"], button[title="Rechercher avec l’IA de Qwant"], button[data-flamme-mistral-trigger="true"]',
+  );
+  if (!button) return;
+  button.dataset.flammeMistralTrigger = "true";
+  button.title = "Ouvrir l’IA Mistral dans Flamme";
+  button.setAttribute("aria-label", "Ouvrir l’IA Mistral dans Flamme");
+}
+
+function openInternalMistral() {
+  const nav = document.querySelector<HTMLElement>('nav[aria-label="Services Flamme"]');
+  const serviceButton = Array.from(nav?.querySelectorAll<HTMLButtonElement>("button") ?? []).find(
+    (button) => serviceName(button) === "IA",
+  );
+  if (serviceButton) {
+    serviceButton.click();
+    return;
+  }
+
+  const desktopButton = Array.from(document.querySelectorAll<HTMLButtonElement>("button")).find(
+    (button) => button.textContent?.trim() === "IA" && button.dataset.flammeMistralTrigger !== "true",
+  );
+  desktopButton?.click();
+}
+
 function fixHelpCopy() {
   document.querySelectorAll("p").forEach((node) => {
     if (node.textContent?.includes("Ces quatre premiers raccourcis du carrousel ouvrent un panneau de choix")) {
@@ -167,6 +196,11 @@ function fixHelpCopy() {
         "Ces quatre premiers raccourcis du carrousel ouvrent un panneau de choix",
         "Ces raccourcis ouvrent un panneau de choix",
       );
+    }
+
+    if (node.textContent?.includes("L’icône ✦ dans la barre de recherche ouvre le chat IA de Qwant")) {
+      node.textContent =
+        "IA Mistral — L’icône ✦ dans la barre de recherche ouvre l’assistant Mistral intégré à Flamme. Le raccourci « IA » du carrousel ouvre le même assistant.";
     }
   });
 }
@@ -192,6 +226,20 @@ export function useCarouselNudge() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    const onAiClickCapture = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const button = target.closest<HTMLButtonElement>('button[data-flamme-mistral-trigger="true"]');
+      if (!button) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      openInternalMistral();
+    };
+
+    document.addEventListener("click", onAiClickCapture, true);
+
     let queued = false;
     const applyEnhancements = () => {
       if (queued) return;
@@ -200,6 +248,7 @@ export function useCarouselNudge() {
         queued = false;
         enhanceCarousel();
         enhanceMessagingPanel();
+        enhanceAiSearchButton();
         fixHelpCopy();
       });
     };
@@ -207,7 +256,10 @@ export function useCarouselNudge() {
     applyEnhancements();
     const observer = new MutationObserver(applyEnhancements);
     observer.observe(document.body, { childList: true, subtree: true });
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("click", onAiClickCapture, true);
+    };
   }, []);
 
   useEffect(() => {
