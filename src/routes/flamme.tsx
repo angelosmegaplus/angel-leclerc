@@ -557,22 +557,84 @@ function FlammeBetaPage() {
         <a href="https://www.qwant.com/?l=fr" className="hidden text-[13px] hover:underline sm:inline">Qwant</a>
         <a href="https://www.mailo.com/?language=fr&page=id" className="hidden text-[13px] hover:underline sm:inline">Mail</a>
         <a href="https://account.photowebcloud.fr/login.php" className="hidden text-[13px] hover:underline sm:inline">Photos</a>
-        <button type="button" aria-label="Compte et paramètres Flamme" aria-expanded={profileOpen} onClick={() => setProfileOpen((value) => !value)} className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1a73e8] text-[14px] font-medium text-white shadow-sm">
-          F
+        <button type="button" aria-label={activeProfile ? `Profil local ${activeProfile.name}` : "Profil local Flamme"} aria-expanded={profileOpen} onClick={openProfileMenu} className={`flex h-9 w-9 items-center justify-center rounded-full shadow-sm ${activeProfile ? "bg-[#1a73e8] text-white" : darkMode ? "border border-[#5f6368] text-[#e8eaed]" : "border border-[#dfe1e5] text-[#3c4043]"}`}>
+          <ActiveAvatarIcon className="h-[18px] w-[18px]" />
         </button>
       </header>
 
       {profileOpen && (
         <>
           <button type="button" aria-label="Fermer le menu" className="fixed inset-0 z-40 cursor-default bg-transparent" onClick={() => setProfileOpen(false)} />
-          <div className={`fixed right-3 top-[58px] z-50 w-[min(300px,calc(100vw-24px))] rounded-3xl border p-3 shadow-[0_8px_28px_rgba(60,64,67,.28)] sm:right-4 sm:top-14 ${surface}`}>
+          <div className={`fixed right-3 top-[58px] z-50 w-[min(320px,calc(100vw-24px))] rounded-3xl border p-3 shadow-[0_8px_28px_rgba(60,64,67,.28)] sm:right-4 sm:top-14 ${surface}`}>
             <div className="flex items-center gap-3 px-2 py-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#1a73e8] font-medium text-white">F</span>
-              <div>
-                <div className="text-[15px] font-medium">Flamme</div>
-                <div className={`text-[12px] ${muted}`}>Bêta indépendante</div>
+              <span className={`flex h-11 w-11 items-center justify-center rounded-full ${activeProfile ? "bg-[#1a73e8] text-white" : darkMode ? "bg-[#3c4043]" : "bg-[#f1f3f4]"}`}>
+                <ActiveAvatarIcon className="h-5 w-5" />
+              </span>
+              <div className="min-w-0">
+                <div className="truncate text-[15px] font-medium">{activeProfile ? activeProfile.name : "Flamme"}</div>
+                <div className={`text-[12px] ${muted}`}>{activeProfile ? "Profil local" : "Aucun profil local"}</div>
               </div>
             </div>
+            <p className={`px-2 pb-1 text-[11px] leading-4 ${muted}`}>Profil enregistré uniquement sur cet appareil.</p>
+            <div className={`my-2 h-px ${darkMode ? "bg-[#5f6368]" : "bg-[#e8eaed]"}`} />
+
+            {profileMode === "view" && activeProfile && (
+              <>
+                <button type="button" onClick={() => { setProfileMode("edit"); setProfileNameDraft(activeProfile.name); setProfileAvatarDraft(activeProfile.avatar); setProfileError(""); }} className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[14px] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
+                  <Pencil className="h-5 w-5" /> Modifier le profil
+                </button>
+                <button type="button" onClick={() => { setProfileMode("switch"); setProfileNameDraft(""); setProfileError(""); }} className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[14px] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
+                  <Users className="h-5 w-5" /> Changer d’utilisateur
+                </button>
+                <button type="button" onClick={deleteActiveProfile} className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[14px] text-[#d93025] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
+                  <Trash2 className="h-5 w-5" /> Supprimer ce profil de cet appareil
+                </button>
+              </>
+            )}
+
+            {(profileMode === "create" || profileMode === "edit" || profileMode === "switch") && (
+              <div className="space-y-3 px-2 pb-1">
+                <label className="block">
+                  <span className={`text-[12px] ${muted}`}>Nom d’utilisateur</span>
+                  <input
+                    value={profileNameDraft}
+                    onChange={(event) => setProfileNameDraft(sanitizeProfileName(event.target.value))}
+                    maxLength={MAX_PROFILE_NAME}
+                    placeholder="Votre prénom ou pseudo"
+                    className={`mt-1 h-10 w-full rounded-xl border px-3 text-[14px] outline-none ${darkMode ? "border-[#5f6368] bg-transparent" : "border-[#dfe1e5] bg-white"}`}
+                  />
+                </label>
+
+                {profileMode !== "switch" && (
+                  <div>
+                    <span className={`text-[12px] ${muted}`}>Avatar</span>
+                    <div className="mt-1 grid grid-cols-4 gap-2">
+                      {FLAMME_AVATAR_IDS.map((id) => {
+                        const Icon = avatarIcons[id];
+                        const selected = profileAvatarDraft === id;
+                        return (
+                          <button key={id} type="button" aria-label={`Avatar ${id}`} aria-pressed={selected} onClick={() => setProfileAvatarDraft(id)} className={`flex h-11 items-center justify-center rounded-xl border ${selected ? "border-[#1a73e8] text-[#1a73e8]" : darkMode ? "border-[#5f6368]" : "border-[#dfe1e5]"}`}>
+                            <Icon className="h-5 w-5" />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {profileError && <p className="text-[12px] text-[#d93025]">{profileError}</p>}
+
+                <div className="flex gap-2">
+                  <button type="button" onClick={profileMode === "switch" ? switchToProfile : saveProfileDraft} className="flex min-h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-[#1a73e8] px-3 text-[14px] font-medium text-white">
+                    <Check className="h-4 w-4" /> {profileMode === "switch" ? "Continuer" : "Enregistrer"}
+                  </button>
+                  {activeProfile && (
+                    <button type="button" onClick={() => { setProfileMode("view"); setProfileError(""); }} className={`min-h-10 rounded-xl border px-3 text-[14px] ${darkMode ? "border-[#5f6368]" : "border-[#dfe1e5]"}`}>Annuler</button>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className={`my-2 h-px ${darkMode ? "bg-[#5f6368]" : "bg-[#e8eaed]"}`} />
             <button type="button" onClick={toggleTheme} className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[14px] ${darkMode ? "hover:bg-white/10" : "hover:bg-[#f1f3f4]"}`}>
               {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
@@ -587,6 +649,7 @@ function FlammeBetaPage() {
           </div>
         </>
       )}
+
 
       <main className="mx-auto flex w-full max-w-[652px] flex-col px-4 pb-5 sm:px-5 md:min-h-[calc(100dvh-170px)] md:justify-center md:pb-16 md:pt-0">
         <div className="mt-7 flex justify-center sm:mt-12 md:mt-0">
