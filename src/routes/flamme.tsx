@@ -541,7 +541,17 @@ const forumCommunities: ForumCommunity[] = [
     icon: MessagesSquare,
     accent: "#c5221f",
   },
+  {
+    name: "Skyrock Chat",
+    description: "Chat et communauté Skyrock ; un compte ou l’application peut être nécessaire.",
+    url: "https://skyrock.com/chat",
+    host: "skyrock.com",
+    badge: "🇫🇷 Chat / communauté",
+    icon: MessageCircleMore,
+    accent: "#f97316",
+  },
 ];
+
 
 type GoodCause = {
   name: string;
