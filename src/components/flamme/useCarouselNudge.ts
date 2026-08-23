@@ -10,6 +10,16 @@ type ExtraShortcut = {
   accent: string;
 };
 
+type CustomShortcut = {
+  id: string;
+  name: string;
+  url: string;
+};
+
+const CUSTOM_SHORTCUTS_KEY = "flamme-custom-shortcuts";
+const CUSTOM_SHORTCUTS_EVENT = "flamme-custom-shortcuts-changed";
+const MAX_CUSTOM_SHORTCUTS = 20;
+
 // Raccourcis directs supplémentaires : ils complètent les panneaux existants sans
 // supprimer les services déjà présents dans Flamme. Les médias d’actualité restent
 // dans le fil Découvrir et ne sont volontairement pas ajoutés au carrousel principal.
@@ -34,6 +44,51 @@ function isDarkTheme() {
 
 function serviceName(node: Element): string {
   return (node.textContent ?? "").replace(/\s+/g, " ").trim();
+}
+
+function normalizeCustomUrl(value: string): string | null {
+  const raw = value.trim();
+  if (!raw) return null;
+  const candidate = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+  try {
+    const url = new URL(candidate);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+function readCustomShortcuts(): CustomShortcut[] {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(CUSTOM_SHORTCUTS_KEY) || "[]");
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .flatMap((item): CustomShortcut[] => {
+        if (!item || typeof item !== "object") return [];
+        const name = typeof item.name === "string" ? item.name.trim().slice(0, 24) : "";
+        const url = typeof item.url === "string" ? normalizeCustomUrl(item.url) : null;
+        const id = typeof item.id === "string" ? item.id : "";
+        return name && url && id ? [{ id, name, url }] : [];
+      })
+      .slice(0, MAX_CUSTOM_SHORTCUTS);
+  } catch {
+    return [];
+  }
+}
+
+function writeCustomShortcuts(items: CustomShortcut[]) {
+  try {
+    localStorage.setItem(CUSTOM_SHORTCUTS_KEY, JSON.stringify(items.slice(0, MAX_CUSTOM_SHORTCUTS)));
+  } catch {
+    // Le stockage local peut être indisponible en navigation privée stricte.
+  }
+  window.dispatchEvent(new CustomEvent(CUSTOM_SHORTCUTS_EVENT));
+}
+
+function customGlyph(name: string) {
+  const first = Array.from(name.trim())[0];
+  return first ? first.toLocaleUpperCase("fr-FR") : "↗";
 }
 
 function createShortcut(shortcut: ExtraShortcut): HTMLAnchorElement {
@@ -62,6 +117,19 @@ function createShortcut(shortcut: ExtraShortcut): HTMLAnchorElement {
   return anchor;
 }
 
+function createCustomShortcut(shortcut: CustomShortcut): HTMLAnchorElement {
+  const anchor = createShortcut({
+    id: `custom-${shortcut.id}`,
+    name: shortcut.name,
+    description: `Raccourci personnel — ${shortcut.name}`,
+    url: shortcut.url,
+    glyph: customGlyph(shortcut.name),
+    accent: "#1a73e8",
+  });
+  anchor.dataset.flammeCustomShortcut = shortcut.id;
+  return anchor;
+}
+
 function syncShortcutTheme(rail: HTMLElement) {
   const dark = isDarkTheme();
   rail.querySelectorAll<HTMLAnchorElement>("[data-flamme-extra-shortcut]").forEach((anchor) => {
@@ -76,13 +144,26 @@ function syncShortcutTheme(rail: HTMLElement) {
   });
 }
 
+function syncCustomShortcuts(rail: HTMLElement, secondaryAnchor: Element | null) {
+  const current = readCustomShortcuts();
+  const validIds = new Set(current.map((item) => item.id));
+
+  rail.querySelectorAll<HTMLElement>("[data-flamme-custom-shortcut]").forEach((node) => {
+    const id = node.dataset.flammeCustomShortcut;
+    if (!id || !validIds.has(id)) node.remove();
+  });
+
+  for (const shortcut of current) {
+    if (rail.querySelector(`[data-flamme-custom-shortcut="${CSS.escape(shortcut.id)}"]`)) continue;
+    rail.insertBefore(createCustomShortcut(shortcut), secondaryAnchor);
+  }
+}
+
 function enhanceCarousel() {
   const nav = document.querySelector<HTMLElement>('nav[aria-label="Services Flamme"]');
   const rail = nav?.firstElementChild as HTMLElement | null;
   if (!rail) return;
 
-  // Nettoyage des quatre médias ajoutés dans une passe précédente : ils doivent
-  // alimenter Découvrir, pas apparaître comme raccourcis principaux.
   ["franceinfo", "cnews", "tf1-info", "actu-fr"].forEach((id) => {
     rail.querySelector(`[data-flamme-extra-shortcut="${id}"]`)?.remove();
   });
@@ -92,8 +173,6 @@ function enhanceCarousel() {
   const tv = children.find((node) => serviceName(node).startsWith("TV"));
   const good = children.find((node) => serviceName(node).startsWith("Bonne action"));
 
-  // Radio et TV restent accessibles mais deviennent les deux raccourcis secondaires
-  // placés juste avant Bonne action, qui demeure systématiquement en dernier.
   const alreadySecondary = Boolean(radio && tv && good && radio.nextElementSibling === tv && tv.nextElementSibling === good);
   if (!alreadySecondary && good) {
     if (radio) rail.insertBefore(radio, good);
@@ -105,7 +184,168 @@ function enhanceCarousel() {
     if (rail.querySelector(`[data-flamme-extra-shortcut="${shortcut.id}"]`)) continue;
     rail.insertBefore(createShortcut(shortcut), secondaryAnchor);
   }
+
+  syncCustomShortcuts(rail, secondaryAnchor);
   syncShortcutTheme(rail);
+}
+
+function settingsField(label: string, placeholder: string, type: "text" | "url") {
+  const wrapper = document.createElement("label");
+  wrapper.className = "block text-[12px] font-medium";
+  wrapper.textContent = label;
+
+  const input = document.createElement("input");
+  input.type = type;
+  input.placeholder = placeholder;
+  input.className = "mt-1 min-h-11 w-full rounded-xl border px-3 text-[14px] outline-none";
+  input.dataset.flammeCustomField = type === "url" ? "url" : "name";
+  wrapper.appendChild(input);
+  return wrapper;
+}
+
+function renderCustomShortcutList(section: HTMLElement) {
+  const list = section.querySelector<HTMLElement>("[data-flamme-custom-list]");
+  if (!list) return;
+  list.replaceChildren();
+  const items = readCustomShortcuts();
+
+  if (items.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "text-[12px] leading-4 opacity-70";
+    empty.textContent = "Aucun raccourci personnel pour le moment.";
+    list.appendChild(empty);
+    return;
+  }
+
+  for (const item of items) {
+    const row = document.createElement("div");
+    row.className = "flex min-h-11 items-center gap-3 rounded-xl border px-3 py-2";
+
+    const icon = document.createElement("span");
+    icon.className = "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1a73e8]/10 text-[13px] font-semibold text-[#1a73e8]";
+    icon.textContent = customGlyph(item.name);
+
+    const text = document.createElement("div");
+    text.className = "min-w-0 flex-1";
+    const name = document.createElement("div");
+    name.className = "truncate text-[13px] font-medium";
+    name.textContent = item.name;
+    const host = document.createElement("div");
+    host.className = "truncate text-[11px] opacity-65";
+    try {
+      host.textContent = new URL(item.url).hostname.replace(/^www\./, "");
+    } catch {
+      host.textContent = item.url;
+    }
+    text.append(name, host);
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[16px] hover:bg-black/5 dark:hover:bg-white/10";
+    remove.title = `Supprimer ${item.name}`;
+    remove.setAttribute("aria-label", `Supprimer ${item.name}`);
+    remove.textContent = "×";
+    remove.addEventListener("click", () => {
+      writeCustomShortcuts(readCustomShortcuts().filter((shortcut) => shortcut.id !== item.id));
+      renderCustomShortcutList(section);
+    });
+
+    row.append(icon, text, remove);
+    list.appendChild(row);
+  }
+}
+
+function enhanceSettingsPanel() {
+  const dialog = document.querySelector<HTMLElement>('[role="dialog"]');
+  const title = dialog?.querySelector<HTMLElement>("#flamme-panel-title");
+  if (!dialog || title?.textContent?.trim() !== "Paramètres") return;
+  if (dialog.querySelector("[data-flamme-custom-shortcuts-settings]")) return;
+
+  const surface = title.parentElement?.parentElement;
+  if (!surface) return;
+
+  const appearanceButton = Array.from(surface.querySelectorAll<HTMLButtonElement>("button")).find((button) =>
+    button.textContent?.includes("Apparence"),
+  );
+
+  const section = document.createElement("section");
+  section.dataset.flammeCustomShortcutsSettings = "true";
+  section.className = "rounded-2xl border px-4 py-3";
+
+  const heading = document.createElement("div");
+  heading.className = "flex items-center justify-between gap-3";
+  const headingText = document.createElement("div");
+  headingText.className = "text-[14px] font-medium";
+  headingText.textContent = "Mes raccourcis";
+  const count = document.createElement("span");
+  count.className = "text-[11px] opacity-60";
+  count.textContent = `jusqu’à ${MAX_CUSTOM_SHORTCUTS}`;
+  heading.append(headingText, count);
+
+  const intro = document.createElement("p");
+  intro.className = "mt-1 text-[12px] leading-4 opacity-70";
+  intro.textContent = "Ajoutez vos sites préférés au carrousel. Ils restent uniquement sur cet appareil.";
+
+  const form = document.createElement("form");
+  form.className = "mt-3 grid gap-2";
+  const nameField = settingsField("Nom", "Ex. Mon site", "text");
+  const urlField = settingsField("Adresse", "exemple.fr", "url");
+  const error = document.createElement("p");
+  error.className = "hidden text-[12px] leading-4 text-[#d93025]";
+  error.dataset.flammeCustomError = "true";
+  const add = document.createElement("button");
+  add.type = "submit";
+  add.className = "min-h-11 rounded-xl bg-[#1a73e8] px-4 text-[13px] font-semibold text-white hover:brightness-95";
+  add.textContent = "+ Ajouter au carrousel";
+  form.append(nameField, urlField, error, add);
+
+  const list = document.createElement("div");
+  list.dataset.flammeCustomList = "true";
+  list.className = "mt-3 space-y-2";
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const nameInput = form.querySelector<HTMLInputElement>('[data-flamme-custom-field="name"]');
+    const urlInput = form.querySelector<HTMLInputElement>('[data-flamme-custom-field="url"]');
+    const name = nameInput?.value.trim().slice(0, 24) ?? "";
+    const url = normalizeCustomUrl(urlInput?.value ?? "");
+    const current = readCustomShortcuts();
+
+    if (!name || !url) {
+      error.textContent = "Indiquez un nom et une adresse de site valide.";
+      error.classList.remove("hidden");
+      return;
+    }
+    if (current.length >= MAX_CUSTOM_SHORTCUTS) {
+      error.textContent = `Maximum ${MAX_CUSTOM_SHORTCUTS} raccourcis personnels.`;
+      error.classList.remove("hidden");
+      return;
+    }
+
+    const shortcut: CustomShortcut = {
+      id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
+      name,
+      url,
+    };
+    writeCustomShortcuts([...current, shortcut]);
+    if (nameInput) nameInput.value = "";
+    if (urlInput) urlInput.value = "";
+    error.classList.add("hidden");
+    renderCustomShortcutList(section);
+  });
+
+  section.append(heading, intro, form, list);
+  if (appearanceButton?.parentElement === surface) surface.insertBefore(section, appearanceButton);
+  else surface.appendChild(section);
+
+  const dark = isDarkTheme();
+  section.style.borderColor = dark ? "#5f6368" : "#dfe1e5";
+  section.querySelectorAll<HTMLInputElement>("input").forEach((input) => {
+    input.style.borderColor = dark ? "#5f6368" : "#dfe1e5";
+    input.style.background = dark ? "#303134" : "#ffffff";
+    input.style.color = dark ? "#e8eaed" : "#202124";
+  });
+  renderCustomShortcutList(section);
 }
 
 function firstRow(anchor: HTMLAnchorElement): HTMLElement | null {
@@ -206,12 +446,9 @@ function fixHelpCopy() {
 }
 
 /**
- * Suggère discrètement que le carrousel de services se fait défiler
- * horizontalement : une micro-translation visuelle, jamais en boucle,
- * jamais si l'utilisateur vient d'interagir, jamais en reduced-motion.
- *
- * Le hook applique également les préférences de présentation demandées pour
- * Flamme sans toucher aux moteurs de recherche ni aux panneaux existants.
+ * Suggère très rarement que le carrousel se fait défiler horizontalement.
+ * Le mouvement est volontairement minuscule, jamais continu et désactivé avec
+ * prefers-reduced-motion. Les interactions utilisateur repoussent encore le rappel.
  */
 export function useCarouselNudge() {
   const controls = useAnimationControls();
@@ -238,7 +475,14 @@ export function useCarouselNudge() {
       openInternalMistral();
     };
 
+    const refresh = () => {
+      enhanceCarousel();
+      enhanceSettingsPanel();
+    };
+
     document.addEventListener("click", onAiClickCapture, true);
+    window.addEventListener(CUSTOM_SHORTCUTS_EVENT, refresh);
+    window.addEventListener("storage", refresh);
 
     let queued = false;
     const applyEnhancements = () => {
@@ -249,6 +493,7 @@ export function useCarouselNudge() {
         enhanceCarousel();
         enhanceMessagingPanel();
         enhanceAiSearchButton();
+        enhanceSettingsPanel();
         fixHelpCopy();
       });
     };
@@ -259,6 +504,8 @@ export function useCarouselNudge() {
     return () => {
       observer.disconnect();
       document.removeEventListener("click", onAiClickCapture, true);
+      window.removeEventListener(CUSTOM_SHORTCUTS_EVENT, refresh);
+      window.removeEventListener("storage", refresh);
     };
   }, []);
 
@@ -273,18 +520,19 @@ export function useCarouselNudge() {
 
     const play = () => {
       if (cancelled) return;
-      const idle = Date.now() - lastInteraction.current > 15000;
+      const idle = Date.now() - lastInteraction.current > 45000;
       if (!interacted.current || idle) {
         void controls.start({
-          x: [0, direction * 14, 0],
-          transition: { duration: 1.1, ease: [0.22, 1, 0.36, 1], times: [0, 0.45, 1] },
+          x: [0, direction * 8, 0],
+          transition: { duration: 0.85, ease: [0.22, 1, 0.36, 1], times: [0, 0.45, 1] },
         });
         direction = direction === -1 ? 1 : -1;
       }
-      timers.push(setTimeout(play, 28000));
+      timers.push(setTimeout(play, 180000));
     };
 
-    timers.push(setTimeout(play, 2000));
+    // Une seule petite indication après quelques secondes, puis au maximum toutes les 3 minutes.
+    timers.push(setTimeout(play, 7000));
     return () => {
       cancelled = true;
       timers.forEach(clearTimeout);
