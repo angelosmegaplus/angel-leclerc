@@ -761,7 +761,7 @@ function newsVisual(topic: NewsTopic) {
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
-type PanelServiceKey = "forum" | "useful" | "good";
+type PanelServiceKey = "forum" | "useful" | "good" | "radio" | "tv" | "mail" | "messages";
 
 type PanelKey = "about" | "privacy" | "help" | "settings" | PanelServiceKey;
 
@@ -773,8 +773,12 @@ const panelTitles: Record<PanelKey, string> = {
   forum: "Réseaux & forums français",
   useful: "Sites utiles en France",
   good: "Bonne action",
-
+  radio: "Radios & podcasts français",
+  tv: "Télévision française",
+  mail: "Messageries e-mail",
+  messages: "Messageries instantanées",
 };
+
 
 function FlammeBetaPage() {
   const [query, setQuery] = useState("");
