@@ -1,6 +1,7 @@
 // Browser/SSR Supabase client. Public configuration only.
 import { createClient, type Session } from '@supabase/supabase-js';
 import type { Database } from './types';
+import { brokeredPreviewStorage } from './previewAuthStorage';
 
 // Configuration native du projet uniquement : plus aucun repli vers une base externe.
 const PUBLIC_SUPABASE_URL = 'https://mzlxscmgxrylfkofjwzn.supabase.co';
@@ -32,7 +33,7 @@ function createSupabaseClient() {
   return createClient<Database>(url, publishableKey, {
     global: { fetch: createSupabaseFetch(publishableKey) },
     auth: {
-      storage: typeof window !== 'undefined' ? localStorage : undefined,
+      storage: brokeredPreviewStorage(),
       persistSession: true,
       autoRefreshToken: true,
     },
