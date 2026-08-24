@@ -17,7 +17,7 @@ function Terms() {
   return (
     <section className="section-padding bg-background">
       <div className="container-tight max-w-3xl">
-        <Link to="/angel-os" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft size={16} />Retour à Angel OS</Link>
+        <Link to="/experiences" hash="angel-os" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft size={16} />Retour aux expériences</Link>
         <h1 className="mt-6 font-display text-4xl font-bold tracking-tight text-foreground md:text-5xl">Conditions d’utilisation d’Angel OS</h1>
         <div className="mt-10 space-y-9 text-sm leading-7 text-muted-foreground">
           <section><h2 className="font-display text-xl font-semibold text-foreground">Objet</h2><p className="mt-3">Angel OS est une application personnelle de productivité, d’administration et d’automatisation. Elle centralise notamment l’administration du site, l’assistance IA, les communications, l’agenda, les fichiers, les candidatures et des connecteurs de services externes.</p></section>
