@@ -11,5 +11,13 @@ export const Route = createFileRoute("/flamme/social")({
     ],
     links: [{ rel: "canonical", href: "/flamme/social" }],
   }),
-  component: FlammeSocialApp,
+  component: FlammeSocialRoute,
 });
+
+function FlammeSocialRoute() {
+  return (
+    <div className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain bg-[#F6F1E8]">
+      <FlammeSocialApp />
+    </div>
+  );
+}
