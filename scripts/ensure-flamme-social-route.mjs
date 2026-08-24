@@ -19,7 +19,7 @@ function replaceOnce(search, replacement, label) {
 
 replaceOnce(
   "import { Route as FlammeRouteImport } from './routes/flamme'\n",
-  "import { Route as FlammeRouteImport } from './routes/flamme'\nimport { Route as FlammeSocialRouteImport } from './routes/flamme/social'\n",
+  "import { Route as FlammeRouteImport } from './routes/flamme'\nimport { Route as FlammeSocialRouteImport } from './routes/flamme_.social'\n",
   "import Flamme",
 );
 
@@ -35,7 +35,6 @@ replaceOnce(
   "FileRoutesByFullPath",
 );
 
-// La même ligne existe ensuite dans FileRoutesByTo puis FileRoutesById.
 replaceOnce(
   "export interface FileRoutesByTo {\n  '/': typeof IndexRoute",
   "export interface FileRoutesByTo {\n  '/': typeof IndexRoute",
@@ -63,7 +62,6 @@ idStart = source.indexOf("export interface FileRoutesById {");
 let typesStart = source.indexOf("export interface FileRouteTypes {");
 insertInSection(idStart, typesStart, "  '/flamme': typeof FlammeRoute\n", "  '/flamme/social': typeof FlammeSocialRoute\n", "Flamme dans FileRoutesById");
 
-// Ajoute le chemin aux trois unions générées : fullPaths, to et id.
 let cursor = source.indexOf("export interface FileRouteTypes {");
 for (let index = 0; index < 3; index += 1) {
   const position = source.indexOf("    | '/flamme'\n", cursor);
@@ -92,4 +90,4 @@ replaceOnce(
 );
 
 await writeFile(routeTreePath, source, "utf8");
-console.log("[routes] /flamme/social ajouté à l’arbre TanStack généré.");
+console.log("[routes] /flamme/social ajouté à l’arbre TanStack généré comme route non imbriquée.");
