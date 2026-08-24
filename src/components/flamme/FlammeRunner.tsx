@@ -16,7 +16,7 @@ const PLAYER_WIDTH = 18;
 const PLAYER_HEIGHT = 32;
 
 export function FlammeRunner({ darkMode, onClose }: { darkMode: boolean; onClose: () => void }) {
-  const fieldRef = useRef<HTMLDivElement | null>(null);
+  const fieldRef = useRef<HTMLButtonElement | null>(null);
   const frameRef = useRef<number | null>(null);
   const lastRef = useRef<number | null>(null);
   const spawnRef = useRef(0);
@@ -180,12 +180,7 @@ export function FlammeRunner({ darkMode, onClose }: { darkMode: boolean; onClose
           aria-label="Zone de jeu. Touchez pour sauter."
         >
           <span className={`absolute inset-x-0 bottom-[17px] h-px ${darkMode ? "bg-[#5f6368]" : "bg-[#dadce0]"}`} />
-
-          <span
-            className="absolute left-[42px] flex w-[18px] flex-col items-center"
-            style={{ bottom: GROUND + renderY, height: PLAYER_HEIGHT }}
-            aria-hidden="true"
-          >
+          <span className="absolute left-[42px] flex w-[18px] flex-col items-center" style={{ bottom: GROUND + renderY, height: PLAYER_HEIGHT }} aria-hidden="true">
             <span className={`h-[11px] w-[11px] rounded-full ${darkMode ? "bg-[#e8eaed]" : "bg-[#5f6368]"}`} />
             <span className={`mt-[2px] h-[16px] w-[7px] rounded-[3px] ${darkMode ? "bg-[#e8eaed]" : "bg-[#5f6368]"}`} />
             <span className="mt-[-1px] flex gap-[3px]">
@@ -195,12 +190,7 @@ export function FlammeRunner({ darkMode, onClose }: { darkMode: boolean; onClose
           </span>
 
           {obstacles.map((item) => (
-            <span
-              key={item.id}
-              className="absolute"
-              style={{ left: item.x, bottom: GROUND, width: item.width, height: item.height }}
-              aria-hidden="true"
-            >
+            <span key={item.id} className="absolute" style={{ left: item.x, bottom: GROUND, width: item.width, height: item.height }} aria-hidden="true">
               {item.kind === "flame" ? (
                 <span className="flex h-full w-full items-end justify-center text-[22px] leading-none">🔥</span>
               ) : item.kind === "spike" ? (
@@ -211,18 +201,8 @@ export function FlammeRunner({ darkMode, onClose }: { darkMode: boolean; onClose
             </span>
           ))}
 
-          {!started && !gameOver && (
-            <span className={`absolute inset-0 flex items-center justify-center text-center text-[14px] ${muted}`}>
-              Touchez l’écran ou appuyez sur Espace pour commencer
-            </span>
-          )}
-
-          {gameOver && (
-            <span className="absolute inset-0 flex flex-col items-center justify-center bg-black/15 text-center">
-              <span className="text-[20px] font-semibold">Perdu !</span>
-              <span className={`mt-1 text-[13px] ${muted}`}>Touchez pour recommencer</span>
-            </span>
-          )}
+          {!started && !gameOver && <span className={`absolute inset-0 flex items-center justify-center text-center text-[14px] ${muted}`}>Touchez l’écran ou appuyez sur Espace pour commencer</span>}
+          {gameOver && <span className="absolute inset-0 flex flex-col items-center justify-center bg-black/15 text-center"><span className="text-[20px] font-semibold">Perdu !</span><span className={`mt-1 text-[13px] ${muted}`}>Touchez pour recommencer</span></span>}
         </button>
 
         <div className="mt-3 flex items-center justify-between gap-3">
