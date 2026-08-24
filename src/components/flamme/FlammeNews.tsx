@@ -53,13 +53,17 @@ export function FlammeNewsSkeleton({ surface, darkMode }: { surface: string; dar
 
 type Props = {
   items: FlammeNewsItem[];
-  fallbackImage: string;
+  fallbackImage?: string;
   surface: string;
   muted: string;
   darkMode: string | boolean;
 };
 
-export function FlammeNewsList({ items, fallbackImage, surface, muted, darkMode }: Props) {
+const DEFAULT_FALLBACK_IMAGE =
+  "data:image/svg+xml;charset=UTF-8," +
+  encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#CE654B"/><stop offset="1" stop-color="#172638"/></linearGradient></defs><rect width="640" height="360" rx="28" fill="url(#g)"/><circle cx="520" cy="70" r="95" fill="white" fill-opacity=".12"/><text x="48" y="95" fill="white" font-family="Arial,sans-serif" font-size="30" font-weight="700">FLAMME ACTUALITÉS</text><text x="48" y="285" fill="white" font-family="Arial,sans-serif" font-size="72" font-weight="800">F</text></svg>');
+
+export function FlammeNewsList({ items, fallbackImage = DEFAULT_FALLBACK_IMAGE, surface, muted, darkMode }: Props) {
   const [first, ...rest] = items;
   if (!first) return null;
   const isDark = Boolean(darkMode);
@@ -79,7 +83,7 @@ export function FlammeNewsList({ items, fallbackImage, surface, muted, darkMode 
         />
         <div className="p-4">
           <div className={`mb-2 flex items-center gap-2 text-[12px] ${muted}`}>
-            <span className="font-medium text-[#1a73e8]">{first.source}</span>
+            <span className="font-medium text-[#CE654B]">{first.source}</span>
             {first.publishedAt && (
               <>
                 <span>•</span>
