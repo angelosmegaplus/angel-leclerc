@@ -24,7 +24,6 @@ type Profile = {
   avatar_path?: string | null;
   allow_messages?: "everyone" | "contacts" | "nobody";
 };
-
 type DeviceRow = { id: string; user_id: string; public_jwk: JsonWebKey; label: string };
 type ConversationRow = { id: string; kind: "direct" | "group"; title?: string | null; created_at: string };
 type ConversationCard = ConversationRow & { peer?: Profile; memberIds: string[] };
@@ -48,20 +47,21 @@ function avatarUrl(path?: string | null) {
 
 function Avatar({ profile, small = false }: { profile?: Profile; small?: boolean }) {
   const src = avatarUrl(profile?.avatar_path);
-  const label = profile?.display_name?.slice(0, 1)?.toUpperCase() || "?";
+  const size = small ? "h-9 w-9" : "h-11 w-11";
   return src ? (
-    <img src={src} alt="" className={`${small ? "h-9 w-9" : "h-11 w-11"} rounded-full object-cover`} />
+    <img src={src} alt="" className={`${size} rounded-full object-cover`} />
   ) : (
-    <span className={`${small ? "h-9 w-9" : "h-11 w-11"} flex shrink-0 items-center justify-center rounded-full bg-[#CE654B]/15 font-bold text-[#A84D38]`}>
-      {label}
+    <span className={`${size} flex shrink-0 items-center justify-center rounded-full bg-[#CE654B]/15 font-bold text-[#A84D38]`}>
+      {profile?.display_name?.slice(0, 1)?.toUpperCase() || "?"}
     </span>
   );
 }
 
 function timeLabel(value: string) {
   const date = new Date(value);
-  const today = new Date();
-  if (date.toDateString() === today.toDateString()) return date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  if (date.toDateString() === new Date().toDateString()) {
+    return date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  }
   return date.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" });
 }
 
@@ -79,7 +79,10 @@ export function FlammeSocialMessages({ me }: Props) {
   const [error, setError] = useState<string | null>(null);
   const channelRef = useRef<any>(null);
 
-  const selected = useMemo(() => conversations.find((item) => item.id === selectedId) ?? null, [conversations, selectedId]);
+  const selected = useMemo(
+    () => conversations.find((item) => item.id === selectedId) ?? null,
+    [conversations, selectedId],
+  );
 
   const ensureDevice = useCallback(async () => {
     const localIdentity = await getOrCreateLocalIdentity(me.id);
@@ -90,7 +93,7 @@ export function FlammeSocialMessages({ me }: Props) {
       if (data?.id) {
         await db.from("flamme_device_keys").update({ public_jwk: localIdentity.publicJwk, last_seen_at: new Date().toISOString() }).eq("id", stored);
         setDeviceId(stored);
-        return { identity: localIdentity, deviceId: stored };
+        return;
       }
     }
     const { data, error: insertError } = await db
@@ -102,7 +105,6 @@ export function FlammeSocialMessages({ me }: Props) {
     stored = data.id as string;
     await setStoredDeviceId(me.id, stored);
     setDeviceId(stored);
-    return { identity: localIdentity, deviceId: stored };
   }, [me.id]);
 
   const loadConversations = useCallback(async () => {
@@ -114,13 +116,18 @@ export function FlammeSocialMessages({ me }: Props) {
     const ids = (ownMemberships ?? []).map((row: any) => row.conversation_id as string);
     if (!ids.length) {
       setConversations([]);
+      setSelectedId(null);
       setLoading(false);
       return;
     }
-    const [{ data: rows }, { data: members }] = await Promise.all([
+
+    const [{ data: rows, error: conversationError }, { data: members, error: memberError }] = await Promise.all([
       db.from("flamme_conversations").select("id,kind,title,created_at").in("id", ids).order("created_at", { ascending: false }),
       db.from("flamme_conversation_members").select("conversation_id,user_id").in("conversation_id", ids),
     ]);
+    if (conversationError) throw conversationError;
+    if (memberError) throw memberError;
+
     const memberRows = members ?? [];
     const peerIds = Array.from(new Set(memberRows.map((row: any) => row.user_id as string).filter((id: string) => id !== me.id)));
     let profileMap = new Map<string, Profile>();
@@ -128,6 +135,7 @@ export function FlammeSocialMessages({ me }: Props) {
       const { data: profiles } = await db.from("flamme_profiles").select("id,handle,display_name,avatar_path,allow_messages").in("id", peerIds);
       profileMap = new Map((profiles ?? []).map((profile: Profile) => [profile.id, profile]));
     }
+
     const cards: ConversationCard[] = (rows ?? []).map((row: ConversationRow) => {
       const memberIds = memberRows.filter((member: any) => member.conversation_id === row.id).map((member: any) => member.user_id as string);
       const peerId = memberIds.find((id: string) => id !== me.id);
@@ -140,7 +148,7 @@ export function FlammeSocialMessages({ me }: Props) {
 
   useEffect(() => {
     let active = true;
-    (async () => {
+    void (async () => {
       try {
         setLoading(true);
         await ensureDevice();
@@ -157,6 +165,7 @@ export function FlammeSocialMessages({ me }: Props) {
     const cached = await getConversationKey(conversationId);
     if (cached) return cached;
     if (!identity || !deviceId) throw new Error("La clé de cet appareil n’est pas prête.");
+
     const { data: wrapped, error: wrappedError } = await db
       .from("flamme_conversation_keys")
       .select("wrapped_key,iv,sender_device_id")
@@ -166,12 +175,14 @@ export function FlammeSocialMessages({ me }: Props) {
       .maybeSingle();
     if (wrappedError) throw wrappedError;
     if (!wrapped) throw new Error("Aucune clé de conversation n’est disponible sur cet appareil. L’historique ancien peut rester illisible en bêta.");
+
     const { data: senderDevice, error: senderError } = await db
       .from("flamme_device_keys")
       .select("public_jwk")
       .eq("id", wrapped.sender_device_id)
       .single();
     if (senderError || !senderDevice?.public_jwk) throw senderError ?? new Error("Clé publique d’origine introuvable.");
+
     const key = await unwrapConversationKey(
       wrapped.wrapped_key,
       wrapped.iv,
@@ -218,17 +229,12 @@ export function FlammeSocialMessages({ me }: Props) {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "flamme_messages", filter: `conversation_id=eq.${selectedId}` }, () => void loadMessages(selectedId))
       .subscribe();
     channelRef.current = channel;
-    return () => {
-      if (channel) void db.removeChannel(channel);
-    };
+    return () => { if (channel) void db.removeChannel(channel); };
   }, [deviceId, identity, loadMessages, selectedId]);
 
   useEffect(() => {
     const value = search.trim();
-    if (value.length < 2) {
-      setPeople([]);
-      return;
-    }
+    if (value.length < 2) { setPeople([]); return; }
     const timer = window.setTimeout(async () => {
       const escaped = value.replace(/[%_]/g, "");
       const { data } = await db
@@ -246,13 +252,13 @@ export function FlammeSocialMessages({ me }: Props) {
     setError(null);
     try {
       if (!identity || !deviceId) throw new Error("Le chiffrement de cet appareil n’est pas prêt.");
-      if (peer.allow_messages === "nobody") throw new Error("Cette personne n’accepte pas de nouveaux messages.");
       const existing = conversations.find((conversation) => conversation.kind === "direct" && conversation.memberIds.includes(peer.id));
-      if (existing) {
-        setSelectedId(existing.id);
-        setSearch("");
-        return;
-      }
+      if (existing) { setSelectedId(existing.id); setSearch(""); return; }
+
+      const { data: permission, error: permissionError } = await db.rpc("flamme_can_message", { sender: me.id, recipient: peer.id });
+      if (permissionError) throw permissionError;
+      if (!permission) throw new Error("Cette personne n’accepte pas de nouveau message de ta part.");
+
       const { data: peerDevices, error: deviceError } = await db
         .from("flamme_device_keys")
         .select("id,user_id,public_jwk,label")
@@ -269,37 +275,31 @@ export function FlammeSocialMessages({ me }: Props) {
         .single();
       if (conversationError || !conversation?.id) throw conversationError ?? new Error("Création de conversation impossible.");
       const conversationId = conversation.id as string;
+
       const memberResult = await db.from("flamme_conversation_members").insert([
         { conversation_id: conversationId, user_id: me.id },
         { conversation_id: conversationId, user_id: peer.id },
       ]);
-      if (memberResult.error) throw memberResult.error;
+      if (memberResult.error) {
+        await db.from("flamme_conversations").delete().eq("id", conversationId);
+        throw memberResult.error;
+      }
 
       const key = await generateConversationKey();
       await saveConversationKey(conversationId, key);
       const wraps: any[] = [];
       const selfWrap = await wrapConversationKey(key, identity.privateKey, identity.publicJwk, conversationId);
-      wraps.push({
-        conversation_id: conversationId,
-        recipient_user_id: me.id,
-        recipient_device_id: deviceId,
-        sender_device_id: deviceId,
-        wrapped_key: selfWrap.wrappedKey,
-        iv: selfWrap.iv,
-      });
+      wraps.push({ conversation_id: conversationId, recipient_user_id: me.id, recipient_device_id: deviceId, sender_device_id: deviceId, wrapped_key: selfWrap.wrappedKey, iv: selfWrap.iv });
       for (const peerDevice of peerDevices as DeviceRow[]) {
         const wrapped = await wrapConversationKey(key, identity.privateKey, peerDevice.public_jwk, conversationId);
-        wraps.push({
-          conversation_id: conversationId,
-          recipient_user_id: peer.id,
-          recipient_device_id: peerDevice.id,
-          sender_device_id: deviceId,
-          wrapped_key: wrapped.wrappedKey,
-          iv: wrapped.iv,
-        });
+        wraps.push({ conversation_id: conversationId, recipient_user_id: peer.id, recipient_device_id: peerDevice.id, sender_device_id: deviceId, wrapped_key: wrapped.wrappedKey, iv: wrapped.iv });
       }
       const keyResult = await db.from("flamme_conversation_keys").insert(wraps);
-      if (keyResult.error) throw keyResult.error;
+      if (keyResult.error) {
+        await db.from("flamme_conversations").delete().eq("id", conversationId);
+        throw keyResult.error;
+      }
+
       setSearch("");
       setPeople([]);
       await loadConversations();
@@ -326,6 +326,7 @@ export function FlammeSocialMessages({ me }: Props) {
       });
       if (sendError) throw sendError;
       setDraft("");
+
       const peerId = selected?.memberIds.find((id) => id !== me.id);
       if (peerId) {
         await db.from("flamme_notifications").insert({
@@ -334,7 +335,7 @@ export function FlammeSocialMessages({ me }: Props) {
           kind: "message",
           entity_type: "conversation",
           entity_id: selectedId,
-        }).catch(() => undefined);
+        });
       }
       await loadMessages(selectedId);
     } catch (cause) {
