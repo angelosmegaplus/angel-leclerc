@@ -1,1 +1,2 @@
 Validation complète après ajout de la modification des publications.
+Déclenchement CI branche dédiée.
