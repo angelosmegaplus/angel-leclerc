@@ -80,7 +80,10 @@ export async function getOrCreateLocalIdentity(userId: string): Promise<LocalIde
 }
 
 export async function getStoredDeviceId(userId: string) { return (await getValue<string>(META_STORE, `device:${userId}`)) ?? null; }
-export async function setStoredDeviceId(userId: string, deviceId: string) { await setValue(META_STORE, `device:${userId}`, deviceId); }
+export async function setStoredDeviceId(userId: string, deviceId: string | null) {
+  if (!deviceId) throw new Error("Identifiant d’appareil Flamme manquant.");
+  await setValue(META_STORE, `device:${userId}`, deviceId);
+}
 export async function saveConversationKey(conversationId: string, key: CryptoKey) { await setValue(CONVERSATION_STORE, `conversation:${conversationId}`, key); }
 export async function getConversationKey(conversationId: string) { return (await getValue<CryptoKey>(CONVERSATION_STORE, `conversation:${conversationId}`)) ?? null; }
 export async function generateConversationKey() { return crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]); }
