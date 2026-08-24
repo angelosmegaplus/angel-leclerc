@@ -43,6 +43,202 @@
   min-height: 40px;
 }
 
+/*
+ * Publications Flamme = structure visuelle Instagram + réactions Facebook.
+ * On cible uniquement les cartes de publication, sans toucher aux stories,
+ * groupes, événements, profils ou conversations.
+ */
+.flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"]) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 14px;
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* En-tête compact comme Instagram. */
+.flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+  > div[class*="p-4"][class*="pb-2"] {
+  order: 1;
+  padding: 11px 12px 9px;
+  align-items: center;
+}
+
+/* Texte seul : il reste au-dessus des actions. */
+.flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+  > p[class*="whitespace-pre-wrap"] {
+  order: 2;
+  padding: 8px 12px 12px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* Médias : grande zone visuelle, ratio 4:5 quand il n'y a qu'un média. */
+.flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+  > div[class*="grid"][class*="overflow-hidden"] {
+  order: 2;
+  width: 100%;
+  margin: 0;
+  border-radius: 0;
+  background: #000;
+}
+
+.flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+  > div[class*="grid"][class*="overflow-hidden"]:has(> :only-child) {
+  aspect-ratio: 4 / 5;
+}
+
+.flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+  > div[class*="grid"][class*="overflow-hidden"]:has(> :only-child)
+  > * {
+  height: 100% !important;
+  max-height: none !important;
+}
+
+.flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+  > div[class*="grid"][class*="overflow-hidden"]:has(> :only-child)
+  img,
+.flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+  > div[class*="grid"][class*="overflow-hidden"]:has(> :only-child)
+  video {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+  object-fit: cover !important;
+}
+
+/* Avec média, la légende passe sous les boutons comme sur Instagram. */
+.flamme-social-route main section:has(> div[class*="grid"][class*="overflow-hidden"]):has(> div[class*="grid-cols-"])
+  > p[class*="whitespace-pre-wrap"] {
+  order: 5;
+  padding: 3px 12px 13px;
+}
+
+/* Sondage : sous la légende / compteur, sans casser la carte. */
+.flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+  > div[class*="mx-4"] {
+  order: 5;
+  margin: 4px 12px 12px;
+}
+
+/* Barre d'actions Instagram : icônes seules, enregistrement à droite. */
+.flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+  > div[class*="grid-cols-"] {
+  order: 3;
+  display: flex !important;
+  align-items: center;
+  gap: 1px;
+  padding: 4px 7px 0 !important;
+  border-top: 0 !important;
+}
+
+.flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+  > div[class*="grid-cols-"]
+  > div,
+.flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+  > div[class*="grid-cols-"]
+  > button {
+  flex: 0 0 auto;
+}
+
+.flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+  > div[class*="grid-cols-"]
+  > button:last-child {
+  margin-left: auto;
+}
+
+.flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+  > div[class*="grid-cols-"]
+  > button,
+.flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+  > div[class*="grid-cols-"]
+  > div
+  > button:first-child {
+  min-width: 42px;
+  width: 42px;
+  height: 42px;
+  min-height: 42px;
+  padding: 0 !important;
+  gap: 0 !important;
+  border-radius: 50%;
+  font-size: 0 !important;
+  background: transparent !important;
+  transition: transform 120ms ease, background-color 120ms ease;
+}
+
+.flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+  > div[class*="grid-cols-"]
+  button:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+.flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+  > div[class*="grid-cols-"]
+  button:active {
+  transform: scale(0.9);
+}
+
+.flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+  > div[class*="grid-cols-"]
+  svg {
+  width: 22px !important;
+  height: 22px !important;
+  stroke-width: 2;
+}
+
+/* Si une réaction Facebook est choisie, son emoji remplace visuellement le cœur. */
+.flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+  > div[class*="grid-cols-"]
+  > div
+  > button:first-child
+  > span {
+  font-size: 22px !important;
+  line-height: 1;
+}
+
+/* Palette de réactions façon Facebook, flottante au-dessus du cœur. */
+.flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+  > div[class*="grid-cols-"]
+  > div
+  > div[class*="bottom-full"] {
+  gap: 2px;
+  padding: 5px 7px !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.18) !important;
+}
+
+.flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+  > div[class*="grid-cols-"]
+  > div
+  > div[class*="bottom-full"]
+  button {
+  min-width: 38px;
+  width: 38px;
+  min-height: 38px;
+  height: 38px;
+  padding: 0 !important;
+  font-size: 24px !important;
+}
+
+/* Compteur réactions/commentaires sous la barre d'actions. */
+.flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+  > div[class*="justify-between"][class*="px-4"][class*="py-2"] {
+  order: 4;
+  min-height: 28px;
+  padding: 0 12px 5px !important;
+  font-size: 12px !important;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+/* Zone commentaires après la légende. */
+.flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+  > div[class*="border-t"][class*="bg-"] {
+  order: 6;
+}
+
 @media (pointer: coarse) {
   .flamme-social-route [role="button"],
   .flamme-social-route button {
@@ -60,6 +256,11 @@
     border-right-width: 0;
   }
 
+  .flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"]) {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
   .flamme-social-route textarea,
   .flamme-social-route input,
   .flamme-social-route select {
@@ -68,6 +269,19 @@
 
   .flamme-social-route video:fullscreen {
     object-fit: contain;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+    > div[class*="grid-cols-"]
+    button:hover {
+    background: rgba(255, 255, 255, 0.07) !important;
+  }
+
+  .flamme-social-route main section:has(> div[class*="p-4"][class*="pb-2"]):has(> div[class*="grid-cols-"])
+    > div[class*="justify-between"][class*="px-4"][class*="py-2"] {
+    color: #cbd5e1;
   }
 }
 
