@@ -17,6 +17,18 @@ function replaceOnce(search, replacement, label) {
   source = source.replace(search, replacement);
 }
 
+function insertInSection(startMarker, endMarker, needle, addition, label) {
+  const start = source.indexOf(startMarker);
+  const end = source.indexOf(endMarker, start + startMarker.length);
+  if (start < 0 || end < 0) throw new Error(`[routes] Section introuvable : ${label}`);
+  const before = source.slice(0, start);
+  let section = source.slice(start, end);
+  const after = source.slice(end);
+  if (!section.includes(needle)) throw new Error(`[routes] Point d’insertion introuvable : ${label}`);
+  section = section.replace(needle, `${needle}${addition}`);
+  source = before + section + after;
+}
+
 replaceOnce(
   "import { Route as FlammeRouteImport } from './routes/flamme'\n",
   "import { Route as FlammeRouteImport } from './routes/flamme'\nimport { Route as FlammeSocialRouteImport } from './routes/flamme_.social'\n",
@@ -25,51 +37,57 @@ replaceOnce(
 
 replaceOnce(
   "const FlammeRoute = FlammeRouteImport.update({\n  id: '/flamme',\n  path: '/flamme',\n  getParentRoute: () => rootRouteImport,\n} as any)\n",
-  "const FlammeRoute = FlammeRouteImport.update({\n  id: '/flamme',\n  path: '/flamme',\n  getParentRoute: () => rootRouteImport,\n} as any)\nconst FlammeSocialRoute = FlammeSocialRouteImport.update({\n  id: '/flamme/social',\n  path: '/flamme/social',\n  getParentRoute: () => rootRouteImport,\n} as any)\n",
+  "const FlammeRoute = FlammeRouteImport.update({\n  id: '/flamme',\n  path: '/flamme',\n  getParentRoute: () => rootRouteImport,\n} as any)\nconst FlammeSocialRoute = FlammeSocialRouteImport.update({\n  id: '/flamme_/social',\n  path: '/flamme/social',\n  getParentRoute: () => rootRouteImport,\n} as any)\n",
   "définition route Flamme",
 );
 
-replaceOnce(
+insertInSection(
+  "export interface FileRoutesByFullPath {",
+  "export interface FileRoutesByTo {",
   "  '/flamme': typeof FlammeRoute\n",
-  "  '/flamme': typeof FlammeRoute\n  '/flamme/social': typeof FlammeSocialRoute\n",
+  "  '/flamme/social': typeof FlammeSocialRoute\n",
   "FileRoutesByFullPath",
 );
 
-replaceOnce(
-  "export interface FileRoutesByTo {\n  '/': typeof IndexRoute",
-  "export interface FileRoutesByTo {\n  '/': typeof IndexRoute",
-  "début FileRoutesByTo",
+insertInSection(
+  "export interface FileRoutesByTo {",
+  "export interface FileRoutesById {",
+  "  '/flamme': typeof FlammeRoute\n",
+  "  '/flamme/social': typeof FlammeSocialRoute\n",
+  "FileRoutesByTo",
 );
-const byToStart = source.indexOf("export interface FileRoutesByTo {");
-const byIdStart = source.indexOf("export interface FileRoutesById {");
-const fileTypesStart = source.indexOf("export interface FileRouteTypes {");
-if (byToStart < 0 || byIdStart < 0 || fileTypesStart < 0) throw new Error("[routes] Interfaces générées introuvables.");
 
-function insertInSection(start, end, needle, addition, label) {
-  const before = source.slice(0, start);
-  let section = source.slice(start, end);
-  const after = source.slice(end);
-  if (!section.includes(needle)) throw new Error(`[routes] ${label} introuvable.`);
-  section = section.replace(needle, `${needle}${addition}`);
-  source = before + section + after;
-}
+insertInSection(
+  "export interface FileRoutesById {",
+  "export interface FileRouteTypes {",
+  "  '/flamme': typeof FlammeRoute\n",
+  "  '/flamme_/social': typeof FlammeSocialRoute\n",
+  "FileRoutesById",
+);
 
-let toStart = source.indexOf("export interface FileRoutesByTo {");
-let idStart = source.indexOf("export interface FileRoutesById {");
-insertInSection(toStart, idStart, "  '/flamme': typeof FlammeRoute\n", "  '/flamme/social': typeof FlammeSocialRoute\n", "Flamme dans FileRoutesByTo");
+insertInSection(
+  "  fullPaths:",
+  "  to:",
+  "    | '/flamme'\n",
+  "    | '/flamme/social'\n",
+  "FileRouteTypes.fullPaths",
+);
 
-idStart = source.indexOf("export interface FileRoutesById {");
-let typesStart = source.indexOf("export interface FileRouteTypes {");
-insertInSection(idStart, typesStart, "  '/flamme': typeof FlammeRoute\n", "  '/flamme/social': typeof FlammeSocialRoute\n", "Flamme dans FileRoutesById");
+insertInSection(
+  "  to:",
+  "  id:",
+  "    | '/flamme'\n",
+  "    | '/flamme/social'\n",
+  "FileRouteTypes.to",
+);
 
-let cursor = source.indexOf("export interface FileRouteTypes {");
-for (let index = 0; index < 3; index += 1) {
-  const position = source.indexOf("    | '/flamme'\n", cursor);
-  if (position < 0) throw new Error(`[routes] Union Flamme #${index + 1} introuvable.`);
-  const end = position + "    | '/flamme'\n".length;
-  source = source.slice(0, end) + "    | '/flamme/social'\n" + source.slice(end);
-  cursor = end + "    | '/flamme/social'\n".length;
-}
+insertInSection(
+  "  id:",
+  "  fileRoutesByFullPath:",
+  "    | '/flamme'\n",
+  "    | '/flamme_/social'\n",
+  "FileRouteTypes.id",
+);
 
 replaceOnce(
   "  FlammeRoute: typeof FlammeRoute\n",
@@ -79,7 +97,7 @@ replaceOnce(
 
 replaceOnce(
   "    '/flamme': {\n      id: '/flamme'\n      path: '/flamme'\n      fullPath: '/flamme'\n      preLoaderRoute: typeof FlammeRouteImport\n      parentRoute: typeof rootRouteImport\n    }\n",
-  "    '/flamme': {\n      id: '/flamme'\n      path: '/flamme'\n      fullPath: '/flamme'\n      preLoaderRoute: typeof FlammeRouteImport\n      parentRoute: typeof rootRouteImport\n    }\n    '/flamme/social': {\n      id: '/flamme/social'\n      path: '/flamme/social'\n      fullPath: '/flamme/social'\n      preLoaderRoute: typeof FlammeSocialRouteImport\n      parentRoute: typeof rootRouteImport\n    }\n",
+  "    '/flamme': {\n      id: '/flamme'\n      path: '/flamme'\n      fullPath: '/flamme'\n      preLoaderRoute: typeof FlammeRouteImport\n      parentRoute: typeof rootRouteImport\n    }\n    '/flamme_/social': {\n      id: '/flamme_/social'\n      path: '/flamme/social'\n      fullPath: '/flamme/social'\n      preLoaderRoute: typeof FlammeSocialRouteImport\n      parentRoute: typeof rootRouteImport\n    }\n",
   "FileRoutesByPath Flamme",
 );
 
@@ -90,4 +108,4 @@ replaceOnce(
 );
 
 await writeFile(routeTreePath, source, "utf8");
-console.log("[routes] /flamme/social ajouté à l’arbre TanStack généré comme route non imbriquée.");
+console.log("[routes] /flamme/social enregistré comme route non imbriquée (id /flamme_/social).");
