@@ -1,20 +1,20 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Home } from "lucide-react";
+import { BadgeCheck, Home } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const socialDb = supabase as any;
 
-export type SocialView = "home" | "feed" | "videos" | "groups" | "messages" | "discover" | "notifications" | "contacts" | "saved" | "events" | "search" | "profile" | "settings";
-export type Profile = { id:string; handle:string; display_name:string; bio:string; avatar_path?:string|null; cover_path?:string|null; city?:string|null; website?:string|null; is_private:boolean; allow_messages:"everyone"|"contacts"|"nobody"; show_online?:boolean; last_seen_at?:string; created_at:string };
-export type Post = { id:string; author_id:string; group_id?:string|null; content:string; kind:"post"|"video"; poll?:{ question?:string; options?:string[] }|null; visibility:"public"|"contacts"|"only_me"; created_at:string; updated_at:string };
+export type SocialView = "home" | "feed" | "videos" | "groups" | "messages" | "discover" | "notifications" | "contacts" | "saved" | "events" | "search" | "profile" | "settings" | "flamme";
+export type Profile = { id:string; handle:string; display_name:string; bio:string; avatar_path?:string|null; cover_path?:string|null; city?:string|null; website?:string|null; is_private:boolean; allow_messages:"everyone"|"contacts"|"nobody"; show_online?:boolean; last_seen_at?:string; created_at:string; is_verified?:boolean };
+export type Post = { id:string; author_id:string; group_id?:string|null; content:string; kind:"post"|"video"; poll?:{ question?:string; options?:string[] }|null; visibility:"public"|"contacts"|"only_me"; created_at:string; updated_at:string; is_anonymous?:boolean; moderation_status?:"visible"|"review"|"hidden" };
 export type Media = { id:string; post_id:string; path:string; bucket?:"flamme-media"|"flamme-private-media"; media_type:"image"|"video"; position:number };
-export type CommentRow = { id:string; post_id:string; author_id:string; parent_id?:string|null; content:string; created_at:string };
+export type CommentRow = { id:string; post_id:string; author_id:string; parent_id?:string|null; content:string; created_at:string; is_anonymous?:boolean; moderation_status?:"visible"|"review"|"hidden" };
 export type ReactionRow = { id:string; post_id:string; user_id:string; reaction:"like"|"love"|"laugh"|"wow"|"sad"|"support" };
 export type PollVote = { id:string; post_id:string; user_id:string; option_index:number };
 export type GroupRow = { id:string; owner_id:string; name:string; description:string; image_path?:string|null; visibility:"public"|"private"|"invite"; created_at:string };
 export type FollowRow = { id:string; follower_id:string; following_id:string; status:"pending"|"accepted" };
 export type EventRow = { id:string; creator_id:string; group_id?:string|null; title:string; description:string; starts_at:string; place?:string|null; image_path?:string|null; visibility:"public"|"private"; created_at:string };
-export type StoryRow = { id:string; author_id:string; text:string; background:string; visibility:"public"|"contacts"|"only_me"; created_at:string; expires_at:string };
+export type StoryRow = { id:string; author_id:string; text:string; background:string; visibility:"public"|"contacts"|"only_me"; created_at:string; expires_at:string; is_anonymous?:boolean; moderation_status?:"visible"|"review"|"hidden" };
 export type StoryMedia = { id:string; story_id:string; path:string; bucket:"flamme-private-media"; media_type:"image"|"video" };
 
 export function cx(...values:Array<string|false|null|undefined>) { return values.filter(Boolean).join(" "); }
@@ -32,7 +32,7 @@ export function socialErrorMessage(cause:unknown,fallback:string) {
       : "";
   if (!raw) return fallback;
   const message = raw.toLowerCase();
-  if (message.includes("row-level security") || message.includes("violates row-level security")) return "Cette action est bloquée par les règles de confidentialité. Rechargez la page puis réessayez.";
+  if (message.includes("row-level security") || message.includes("violates row-level security") || message.includes("42501")) return "Cette action est bloquée par les règles de sécurité. Rechargez la page puis réessayez.";
   if (message.includes("payload too large") || message.includes("maximum allowed size") || message.includes("file size")) return "Le fichier est trop volumineux pour être envoyé.";
   if (message.includes("mime") || message.includes("content type") || message.includes("not supported")) return "Ce format de fichier n’est pas pris en charge.";
   if (message.includes("duplicate key") || message.includes("already exists")) return "Cet élément existe déjà.";
@@ -46,24 +46,52 @@ export async function notify(userId:string, actorId:string, kind:string, entityT
   await socialDb.from("flamme_notifications").insert({ user_id:userId, actor_id:actorId, kind, entity_type:entityType, entity_id:entityId, payload }).then(()=>undefined,()=>undefined);
 }
 
+async function moderationToken() {
+  const { data } = await supabase.auth.getSession();
+  return data.session?.access_token ?? null;
+}
+
 export async function moderatePublicText(content:string, kind:string) {
   if(!content.trim()) return true;
   try {
+    const token = await moderationToken();
+    if (!token) return true;
     const controller = new AbortController();
-    const timer = window.setTimeout(() => controller.abort(), 5000);
-    const response=await fetch("/api/flamme-social-moderate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({content,kind,scope:"public"}),signal:controller.signal});
+    const timer = window.setTimeout(() => controller.abort(), 6000);
+    const response=await fetch("/api/flamme-social-moderate",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${token}`},body:JSON.stringify({action:"preflight",content,kind,scope:"public"}),signal:controller.signal});
     window.clearTimeout(timer);
     const result=await response.json() as {available?:boolean;decision?:string;reason?:string};
-    if(result.available && result.decision==="review") return window.confirm(`Le filtre Mistral recommande une vérification${result.reason?` : ${result.reason}`:""}. Publier quand même ?`);
-  } catch { /* L'IA est optionnelle, jamais une dépendance de sécurité. */ }
+    if(result.available && result.decision==="block") {
+      window.alert(`Publication bloquée par la modération${result.reason?` : ${result.reason}`:"."}`);
+      return false;
+    }
+    if(result.available && result.decision==="review") return window.confirm(`Le filtre de sécurité recommande une vérification${result.reason?` : ${result.reason}`:""}. Publier quand même ?`);
+  } catch { /* Si l'IA est momentanément indisponible, les protections RLS restent actives. */ }
   return true;
+}
+
+export async function reportContent(targetType:string,targetId:string,details:string,reason="other") {
+  try {
+    const token=await moderationToken();
+    if(!token) throw new Error("Session expirée.");
+    const response=await fetch("/api/flamme-social-moderate",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${token}`},body:JSON.stringify({action:"report",targetType,targetId,reason,details,scope:"public"})});
+    const result=await response.json() as {ok?:boolean;ai?:{autoHide?:boolean;decision?:string};error?:string};
+    if(!response.ok||!result.ok) throw new Error(result.error||"Signalement impossible.");
+    return result;
+  } catch(cause) {
+    throw new Error(socialErrorMessage(cause,"Signalement impossible."));
+  }
 }
 
 export function FlameMark({className="h-9 w-9"}:{className?:string}) { return <span className={cx("inline-flex shrink-0 items-center justify-center",className)}><img src="/flamme-social-logo.svg" alt="" aria-hidden="true" draggable={false} decoding="async" className="h-full w-full object-contain"/></span>; }
 
+export function VerifiedName({profile,className}:{profile?:Profile|null;className?:string}) {
+  return <span className={cx("inline-flex min-w-0 items-center gap-1",className)}><span className="truncate">{profile?.display_name??"Utilisateur Flamme"}</span>{profile?.is_verified&&<BadgeCheck aria-label="Compte officiel" className="h-[1em] w-[1em] shrink-0 fill-[#1877F2] text-white stroke-[2.5]"/>}</span>;
+}
+
 export function Avatar({profile,size="md",online=false}:{profile?:Profile|null;size?:"xs"|"sm"|"md"|"lg"|"xl";online?:boolean}) {
   const src=publicAvatarUrl(profile?.avatar_path); const sizes={xs:"h-7 w-7 text-[10px]",sm:"h-9 w-9 text-xs",md:"h-11 w-11 text-sm",lg:"h-16 w-16 text-xl",xl:"h-24 w-24 text-3xl"}[size];
-  return <span className={cx("relative inline-flex shrink-0",sizes)}>{src?<img src={src} alt="" loading="lazy" decoding="async" draggable={false} className="h-full w-full rounded-full object-cover ring-1 ring-black/5"/>:<span className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-[#F9D7CA] to-[#F1B9A4] font-extrabold text-[#8B3F2E]">{profile?.display_name?.slice(0,1)?.toUpperCase()||"F"}</span>}{online&&<span className="absolute bottom-0 right-0 h-[27%] w-[27%] rounded-full border-2 border-white bg-emerald-500 dark:border-[#1d2026]"/>}</span>;
+  return <span className={cx("relative inline-flex shrink-0",sizes)}>{src?<img src={src} alt="" loading="lazy" decoding="async" draggable={false} className="h-full w-full rounded-full object-cover ring-1 ring-black/5"/>:<span className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-[#F9D7CA] to-[#F1B9A4] font-extrabold text-[#8B3F2E]">{profile?.display_name?.slice(0,1)?.toUpperCase()||"F"}</span>}{profile?.is_verified&&<span className="absolute -bottom-[3%] -right-[3%] flex h-[30%] w-[30%] items-center justify-center rounded-full bg-[#1877F2] text-white ring-2 ring-white dark:ring-[#181b20]"><BadgeCheck className="h-full w-full fill-[#1877F2] stroke-[2.8]"/></span>}{online&&<span className="absolute bottom-0 right-0 h-[27%] w-[27%] rounded-full border-2 border-white bg-emerald-500 dark:border-[#1d2026]"/>}</span>;
 }
 
 export function Card({children,className}:{children:ReactNode;className?:string}) { return <section className={cx("rounded-xl border border-black/[.06] bg-white shadow-[0_1px_2px_rgba(0,0,0,.06)] dark:border-white/10 dark:bg-[#181b20]",className)}>{children}</section>; }
