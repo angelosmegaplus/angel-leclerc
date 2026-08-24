@@ -67,7 +67,7 @@ insertInSection(
 
 insertInSection(
   "  fullPaths:",
-  "  to:",
+  "  fileRoutesByTo:",
   "    | '/flamme'\n",
   "    | '/flamme/social'\n",
   "FileRouteTypes.fullPaths",
@@ -83,7 +83,7 @@ insertInSection(
 
 insertInSection(
   "  id:",
-  "  fileRoutesByFullPath:",
+  "  fileRoutesById:",
   "    | '/flamme'\n",
   "    | '/flamme_/social'\n",
   "FileRouteTypes.id",
