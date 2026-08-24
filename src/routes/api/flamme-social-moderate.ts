@@ -5,6 +5,9 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 const ENDPOINT = "https://api.mistral.ai/v1/chat/completions";
 const MODEL = "mistral-small-latest";
 const MAX_LENGTH = 5000;
+// The generated app Database type intentionally lags runtime-only Flamme social migrations.
+// Keep the service-role client typed for auth, but use a runtime DB view for those tables.
+const adminDb = supabaseAdmin as any;
 
 const headers = {
   "Cache-Control": "no-store",
@@ -90,23 +93,23 @@ async function classify(key: string, content: string, kind: string, scope: strin
 
 async function targetContent(targetType: string, targetId: string) {
   if (targetType === "post") {
-    const { data } = await supabaseAdmin.from("flamme_posts").select("content").eq("id", targetId).maybeSingle();
+    const { data } = await adminDb.from("flamme_posts").select("content").eq("id", targetId).maybeSingle();
     return { text: data?.content ?? "", table: "flamme_posts" };
   }
   if (targetType === "comment") {
-    const { data } = await supabaseAdmin.from("flamme_comments").select("content").eq("id", targetId).maybeSingle();
+    const { data } = await adminDb.from("flamme_comments").select("content").eq("id", targetId).maybeSingle();
     return { text: data?.content ?? "", table: "flamme_comments" };
   }
   if (targetType === "forum_topic") {
-    const { data } = await supabaseAdmin.from("flamme_forum_topics").select("title,body").eq("id", targetId).maybeSingle();
+    const { data } = await adminDb.from("flamme_forum_topics").select("title,body").eq("id", targetId).maybeSingle();
     return { text: data ? `${data.title}\n${data.body}` : "", table: "flamme_forum_topics" };
   }
   if (targetType === "forum_reply") {
-    const { data } = await supabaseAdmin.from("flamme_forum_replies").select("body").eq("id", targetId).maybeSingle();
+    const { data } = await adminDb.from("flamme_forum_replies").select("body").eq("id", targetId).maybeSingle();
     return { text: data?.body ?? "", table: "flamme_forum_replies" };
   }
   if (targetType === "story") {
-    const { data } = await supabaseAdmin.from("flamme_stories").select("text").eq("id", targetId).maybeSingle();
+    const { data } = await adminDb.from("flamme_stories").select("text").eq("id", targetId).maybeSingle();
     return { text: data?.text ?? "", table: "flamme_stories" };
   }
   return { text: "", table: null as string | null };
@@ -138,7 +141,7 @@ export const Route = createFileRoute("/api/flamme-social-moderate")({
             const details = typeof body.details === "string" ? body.details.slice(0, 1000) : "";
             if (!targetType || !/^[0-9a-f-]{36}$/i.test(targetId)) return Response.json({ error: "invalid_target" }, { status: 400, headers });
 
-            const { data: report, error: reportError } = await supabaseAdmin.from("flamme_reports").insert({
+            const { data: report, error: reportError } = await adminDb.from("flamme_reports").insert({
               reporter_id: user.id,
               target_type: targetType,
               target_id: targetId,
@@ -154,8 +157,8 @@ export const Route = createFileRoute("/api/flamme-social-moderate")({
             const result = await classify(key, target.text.slice(0, MAX_LENGTH), targetType, scope);
             const autoHide = Boolean(target.table && (result.decision === "block" || result.severity >= 3));
             if (autoHide && target.table) {
-              await supabaseAdmin.from(target.table).update({ moderation_status: "hidden" }).eq("id", targetId);
-              await supabaseAdmin.from("flamme_moderation_actions").insert({
+              await adminDb.from(target.table).update({ moderation_status: "hidden" }).eq("id", targetId);
+              await adminDb.from("flamme_moderation_actions").insert({
                 target_type: targetType,
                 target_id: targetId,
                 action: "hide",
@@ -165,8 +168,8 @@ export const Route = createFileRoute("/api/flamme-social-moderate")({
                 actor_id: user.id,
               });
             } else if (result.decision === "review" && target.table) {
-              await supabaseAdmin.from(target.table).update({ moderation_status: "review" }).eq("id", targetId);
-              await supabaseAdmin.from("flamme_moderation_actions").insert({
+              await adminDb.from(target.table).update({ moderation_status: "review" }).eq("id", targetId);
+              await adminDb.from("flamme_moderation_actions").insert({
                 target_type: targetType,
                 target_id: targetId,
                 action: "review",
@@ -176,7 +179,7 @@ export const Route = createFileRoute("/api/flamme-social-moderate")({
                 actor_id: user.id,
               });
             }
-            await supabaseAdmin.from("flamme_reports").update({
+            await adminDb.from("flamme_reports").update({
               ai_decision: result.decision,
               ai_reason: result.reason ?? null,
               ai_categories: result.categories,
