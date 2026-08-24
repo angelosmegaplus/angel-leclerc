@@ -104,7 +104,7 @@ export function FlammeRunner({ darkMode, onClose }: { darkMode: boolean; onClose
       }
 
       spawnRef.current -= dt;
-      let next = obstaclesRef.current.map((item) => ({ ...item, x: item.x - speed * dt })).filter((item) => item.x + item.width > -10);
+      const next = obstaclesRef.current.map((item) => ({ ...item, x: item.x - speed * dt })).filter((item) => item.x + item.width > -10);
       if (spawnRef.current <= 0) {
         const variants: Array<Pick<Obstacle, "width" | "height" | "kind">> = [
           { width: 18, height: 25, kind: "flame" },
