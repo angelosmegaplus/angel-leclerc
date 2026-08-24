@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { FlammeSocialAppV2 } from "@/components/flamme-social/FlammeSocialAppV2";
 
-export const Route = createFileRoute("/flamme/social")({
+export const Route = createFileRoute("/flamme_/social")({
   head: () => ({
     meta: [
       { title: "Flamme Social — bêta" },
