@@ -6,8 +6,8 @@ import {
   MyJourney,
   SkillsSection,
   PassionsSection,
-  RealisationsSection,
 } from "@/components/MyJourney";
+import { UnifiedExperiencesPortfolio } from "@/components/UnifiedExperiencesPortfolio";
 import { LatestArticles } from "@/components/LatestArticles";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { FeedbackBlock } from "@/components/FeedbackBlock";
@@ -104,7 +104,7 @@ function ParcoursPage() {
       <ObjectivesButton />
       <PermisSection />
       <AssociationLogos />
-      <RealisationsSection />
+      <UnifiedExperiencesPortfolio />
       <SkillsSection />
       <PassionsSection />
       <LatestArticles title="Mes derniers articles" description="Communication, politique, société et idées pour comprendre ce qui change." eyebrow="Analyses et réflexions" />
