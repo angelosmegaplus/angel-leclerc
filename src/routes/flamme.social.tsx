@@ -1,23 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { FlammeSocialApp } from "@/components/flamme-social/FlammeSocialApp";
+import { FlammeSocialAppV2 } from "@/components/flamme-social/FlammeSocialAppV2";
 
 export const Route = createFileRoute("/flamme/social")({
   head: () => ({
     meta: [
-      { title: "Flamme — Réseau social bêta" },
-      { name: "description", content: "Flamme social : publications, vidéos, groupes, événements et messages chiffrés." },
+      { title: "Flamme Social — bêta" },
+      { name: "description", content: "Flamme Social : fil, stories, vidéos, groupes, événements et messages chiffrés." },
       { name: "robots", content: "noindex, nofollow" },
-      { name: "theme-color", content: "#F6F1E8" },
+      { name: "theme-color", content: "#CE654B" },
     ],
     links: [{ rel: "canonical", href: "/flamme/social" }],
   }),
-  component: FlammeSocialRoute,
+  component: FlammeSocialAppV2,
 });
-
-function FlammeSocialRoute() {
-  return (
-    <div className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain bg-[#F6F1E8]">
-      <FlammeSocialApp />
-    </div>
-  );
-}
