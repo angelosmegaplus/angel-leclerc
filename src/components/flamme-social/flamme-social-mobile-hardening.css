@@ -21,7 +21,6 @@
   min-width: 0;
 }
 
-/* Ne jamais casser tous les spans : cela rendait les stats et onglets verticaux. */
 .flamme-social-route p,
 .flamme-social-route h1,
 .flamme-social-route h2,
@@ -83,8 +82,8 @@
   }
 
   .flamme-social-route nav[aria-label="Navigation principale"] span,
-  .flamme-social-route nav[class*="grid-cols-6"] > button > span:last-child,
-  .flamme-social-route nav[class*="grid-cols-6"] > a > span:last-child {
+  .flamme-social-route nav[class*="grid-cols-5"] > button > span:last-child,
+  .flamme-social-route nav[class*="grid-cols-5"] > a > span:last-child {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -120,7 +119,7 @@
     flex-shrink: 0;
   }
 
-  .flamme-social-route nav[class*="grid-cols-6"] {
+  .flamme-social-route nav[class*="grid-cols-5"] {
     font-size: 7px;
   }
 
