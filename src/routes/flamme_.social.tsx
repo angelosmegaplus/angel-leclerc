@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { FlammeSocialAppV2 } from "@/components/flamme-social/FlammeSocialAppV2";
+import { FlammeCommentCollapseEnhancer } from "@/components/flamme-social/FlammeCommentCollapseEnhancer";
 import "@/components/flamme-social/flamme-social-polish.css";
 
 function FlammeSocialRoute() {
   return (
     <div className="flamme-social-route">
+      <FlammeCommentCollapseEnhancer />
       <FlammeSocialAppV2 />
     </div>
   );
