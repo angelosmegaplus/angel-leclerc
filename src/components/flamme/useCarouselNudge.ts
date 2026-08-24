@@ -349,9 +349,10 @@ function addRecommendedPill(anchor: HTMLAnchorElement) {
 function enhanceMessagingPanel() {
   const skred = document.querySelector<HTMLAnchorElement>('a[href="https://skred.mobi/"]');
   const olvid = document.querySelector<HTMLAnchorElement>('a[href="https://www.olvid.io/fr/"]');
-  if (!skred || !olvid || skred.parentElement !== olvid.parentElement) return;
+  if (!skred || !olvid) return;
 
   const parent = skred.parentElement;
+  if (!parent || parent !== olvid.parentElement) return;
   if (parent.firstElementChild !== skred) parent.insertBefore(skred, parent.firstElementChild);
 
   setOriginBadge(skred, "🇫🇷 Recommandé");

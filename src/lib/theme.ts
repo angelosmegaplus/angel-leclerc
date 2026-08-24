@@ -7,7 +7,7 @@ export const THEME_INIT_SCRIPT = `(function(){try{var p=localStorage.getItem('${
 
 const ADMIN_DARK_STYLE_ID = "angel-os-admin-dark-overrides";
 const ADMIN_THEME_GUARD_KEY = "__angelOsThemeGuard";
-const ADMIN_DARK_CSS = `
+const ADMIN_DARK_CSS = String.raw`
 html[data-angel-os-ui="dark"] body { background:#111315; color:#f5f7f8; }
 html[data-angel-os-ui="dark"] .bg-white { background-color:#181b1f !important; }
 html[data-angel-os-ui="dark"] .bg-\[\#fbfbfa\]\/95,
