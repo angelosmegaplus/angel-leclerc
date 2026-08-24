@@ -1,49 +1,47 @@
-# Isoler le module Articles / Blog — état réel et plan
+# Flamme — application sociale (BÊTA)
 
-## Ce que révèle l'audit (important à lire avant de valider)
+## Point de blocage à trancher avant de coder
 
-- **Il n'existe pas, dans cette stack, de stockage persistant « interne à Lovable » autre que Lovable Cloud.** Le site tourne sur un runtime serverless sans disque persistant : tout ce qui est écrit hors base est soit un fichier du dépôt (donc GitHub, ce que vous voulez supprimer), soit perdu au redéploiement. Une persistance uniquement navigateur (localStorage) ne peut pas alimenter le blog public.
-- **Lovable Cloud est déjà actif sur ce projet** et contient **27 articles**. Ce n'est pas un service externe à « activer » : c'est la base native du projet.
-- Le vrai problème n'est donc pas Lovable Cloud, ce sont les **couches externes empilées par-dessus** :
-  1. `src/integrations/supabase/client.ts` a été modifié à la main et pointe vers **un ancien projet de base externe** (différent de la base native du projet, qui est celle configurée dans `.env`).
-  2. La route `src/routes/api/admin/articles.ts` écrit **d'abord dans GitHub** (`src/content/articles-data`, `src/content/article-tombstones`) et n'utilise la base qu'en secours.
-  3. La lecture publique (`src/lib/articles.ts`) **fusionne 4 sources** : base, archive figée `src/content/lovable-archive` (29 articles JSON), articles Git « legacy » (`horrorArticle`, `macronPhilippeArticle`), fichiers JSON GitHub + pierres tombales.
-  4. Des workflows GitHub (`angel-os-data-sync`, `scheduled-maintenance`, `daily-article`) touchent encore ce contenu.
+`/flamme` est déjà occupé par le **moteur de recherche Flamme (bêta)** — 2 191 lignes, panneaux Radio/TV/Mail/Réseaux/IA Mistral, actualités RSS régionales, PWA `flamme.webmanifest`. La demande place l'application sociale exactement sur la même URL.
 
-Résultat actuel : **4 sources de vérité et une synchro bidirectionnelle** — exactement ce que vous voulez supprimer.
+Hypothèse retenue (à corriger si besoin) :
 
-## Ce que je propose (une seule source de vérité)
+- Le **moteur de recherche reste à `/flamme`** (inchangé, aucune régression).
+- L'**application sociale** vit sous **`/flamme/social`** et ses sous-routes, avec un accès croisé discret depuis le moteur (icône « Flamme social — Bêta » dans le carrousel) et depuis le pied de page du site principal.
 
-Faire de la **base native du projet (Lovable Cloud)** l'unique source de vérité du module Articles, et supprimer toutes les autres voies pour ce module uniquement.
+Alternative possible si vous préférez : le social prend `/flamme` et le moteur déménage en `/flamme/recherche`. Dites-le et j'inverse.
 
-### 1. Récupération complète, une seule fois
-- Importer dans la table `articles` de la base native tous les articles encore absents : les 29 JSON de `lovable-archive`, les articles Git `legacy`, les JSON de `src/content/articles-data`, et les lignes de l'ancienne base externe encore lisibles.
-- Vérification chiffrée avant/après (nombre d'articles, slugs, images de couverture, pièces jointes) : aucun slug ni image ne doit disparaître, les URLs d'images historiques restent inchangées (URL absolues conservées telles quelles).
+## Périmètre livré en une seule passe (bêta réellement fonctionnelle)
 
-### 2. Lecture publique simplifiée
-- `src/lib/articles.ts` ne lit plus que la base : suppression de la fusion archive/legacy/GitHub et des pierres tombales.
-- Blog `/articles`, page article `/articles/$slug`, `LatestArticles`, sitemap : mêmes composants et même apparence, une seule requête.
-- Publication et suppression prennent effet **immédiatement**, sans attendre GitHub.
+Rien du site existant n'est modifié hors de ces points : ajout d'un lien discret dans le pied de page et dans le carrousel du moteur.
 
-### 3. Écriture / éditeur
-- `src/routes/api/admin/articles.ts` : retrait des appels GitHub (création, renommage, suppression de fichiers, pierres tombales) ; écriture directe en base.
-- Corbeille et restauration conservées en base (statut supprimé + restauration en brouillon privé), suppression définitive séparée.
-- L'éditeur (`/admin` → Studio, `RichTextEditor`) garde son apparence, avec ces garanties :
-  - titre, slug (auto + éditable), extrait, contenu riche, couverture, images dans le contenu, catégorie, thèmes, statut brouillon/publié, date de publication, aperçu ;
-  - **autosauvegarde** avec brouillon de secours local, indicateur « modifications non enregistrées », confirmation avant fermeture ;
-  - actions : enregistrer, publier, dépublier, **dupliquer**, supprimer avec confirmation, restaurer ;
-  - messages d'erreur explicites au lieu d'échecs silencieux.
+### Base de données (une migration, tables préfixées `flamme_`)
+`flamme_profiles`, `flamme_blocks`, `flamme_follows`, `flamme_posts`, `flamme_post_media`, `flamme_reactions`, `flamme_comments`, `flamme_saved_items`, `flamme_groups`, `flamme_group_members`, `flamme_conversations`, `flamme_conversation_members`, `flamme_device_keys`, `flamme_conversation_keys`, `flamme_messages`, `flamme_notifications`, `flamme_reports`, `flamme_events`, `flamme_event_attendees`.
 
-### 4. Nettoyage sans casser le reste
-- Les autres modules (mail, candidatures, boutique, films, connexions) gardent leurs connecteurs actuels : aucun changement pour eux.
-- Les workflows GitHub touchant les articles sont neutralisés (articles uniquement).
-- Une **sauvegarde export JSON** manuelle reste possible depuis l'admin, mais elle n'est jamais relue automatiquement : pas de retour à deux sources.
+UUID, `created_at`, index, contraintes uniques, GRANT explicites, RLS stricte sur chaque table. Aucune table ne donne de rôle : `user_roles`/Angel OS n'est jamais touché, donc aucune élévation de privilège possible depuis Flamme. Un compte Flamme = un `auth.users` + une ligne `flamme_profiles` ; l'accès `/admin` reste conditionné à `user_roles`.
 
-### 5. Tests réels
-Création, édition, autosave, publication, dépublication, duplication, suppression, restauration, purge, plus vérification des pages publiques et des images historiques, avec correction des erreurs trouvées.
+Deux buckets Storage privés : `flamme-media` (images/vidéos de publications) et `flamme-avatars`, avec politiques par propriétaire et lecture selon visibilité.
 
-## Point à trancher (bloquant)
+### Écrans
+- **Layout `/flamme/social`** : en-tête (logo flamme dessiné en SVG interne, badge BÊTA, loupe, cloche, avatar), barre inférieure fixe mobile (Accueil, Publications, Vidéos, Groupes, Messages), colonne latérale + colonne droite sur ordinateur, bandeau « Version bêta : certaines fonctions peuvent évoluer ».
+- **Non connecté** : présentation courte, « Rejoindre Flamme » / « Se connecter » (Supabase Auth e-mail + Google), création du profil (@identifiant unique).
+- **Accueil** : fil mixte contacts + groupes + suggestions.
+- **Publications** : compositeur (texte, images, vidéo courte, sondage simple, visibilité Public/Contacts/Moi uniquement), fil complet, J'aime / Commenter / Partager / Enregistrer / Signaler, commentaires avec réponses, édition et suppression par l'auteur, chargement progressif.
+- **Vidéos** : format 9:16, défilement vertical, lecture/pause, muet par défaut, actions sociales.
+- **Groupes** : création (nom, description, image, confidentialité public/privé/sur invitation), rôles propriétaire/modérateur/membre, page groupe, rejoindre/quitter, invitations, RLS bloquant les non-membres.
+- **Contacts** : abonnements, abonnés, demandes en attente (acceptation requise pour les comptes privés).
+- **Messages** : conversations 1-à-1 et de groupe, Realtime, états envoyé/lu, chiffrement client (détail ci-dessous), page d'explication honnête. Pas de pièces jointes en bêta.
+- **Découvrir**, **Recherche globale**, **Alertes**, **Enregistrés**, **Événements** (public/privé, participer/peut-être/refuser, à venir/passés), **Mon compte**, **Paramètres** (confidentialité, sécurité, comptes bloqués, suppression du profil Flamme).
 
-Le module articles doit s'appuyer sur **la base native Lovable Cloud du projet** — c'est le seul stockage persistant disponible ici. Si vous refusez absolument tout stockage de ce type, il n'existe pas d'alternative capable de servir un blog public : je ne peux alors que réduire les sources externes (supprimer GitHub et l'ancienne base externe) sans obtenir un module réellement autonome.
+### Chiffrement des messages
+Web Crypto uniquement : paire ECDH P-256 par appareil (clé privée non exportable en IndexedDB), clé de conversation AES-GCM 256 enveloppée par participant via ECDH + HKDF, IV unique par message, Supabase ne stocke que ciphertext + IV + métadonnées. Changement d'appareil : l'historique ancien reste illisible, annoncé explicitement — aucune fausse récupération. Mistral n'intervient jamais dans ce flux.
 
-Dites-moi simplement : **on utilise la base native du projet comme source unique (recommandé)**, ou on s'arrête au retrait de GitHub ?
+### Mistral
+Réutilise la route serveur sécurisée existante, étendue avec des modes : modération de contenus **publics**, mots-clés pour Découvrir, résumé d'un fil public. Contenu privé transmis uniquement sur signalement explicite confirmé par l'utilisateur. Sans `MISTRAL_API_KEY`, les fonctions IA sont masquées et l'application fonctionne normalement.
+
+### Qualité
+États chargement/vide/erreur, aucun bouton mort, responsive, labels et focus clavier, texte rendu sans HTML arbitraire, rate limits applicatifs, validation MIME/taille des envois, aucune donnée personnelle factice.
+
+## Note de réalisme
+
+C'est l'équivalent d'une petite application sociale complète. Je le livre en plusieurs passes successives dans cet ordre : (1) migration + auth/profils + layout, (2) publications/commentaires/réactions/enregistrés, (3) vidéos + groupes + contacts, (4) messagerie chiffrée + Realtime, (5) alertes, découvrir, recherche, événements, modération, paramètres. Chaque passe est testée et laisse l'application utilisable.
