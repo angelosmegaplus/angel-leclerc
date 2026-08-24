@@ -1,0 +1,83 @@
+.flamme-social-route {
+  --flamme-accent: #ce654b;
+  --flamme-surface: #ffffff;
+  --flamme-canvas: #f0f2f5;
+  --flamme-secondary: #e4e6eb;
+  color-scheme: light dark;
+}
+
+.flamme-social-route *,
+.flamme-social-route *::before,
+.flamme-social-route *::after {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.flamme-social-route button,
+.flamme-social-route a,
+.flamme-social-route label,
+.flamme-social-route select,
+.flamme-social-route input[type="file"] {
+  touch-action: manipulation;
+}
+
+.flamme-social-route button:focus-visible,
+.flamme-social-route a:focus-visible,
+.flamme-social-route input:focus-visible,
+.flamme-social-route textarea:focus-visible,
+.flamme-social-route select:focus-visible {
+  outline: 2px solid var(--flamme-accent);
+  outline-offset: 2px;
+}
+
+.flamme-social-route img,
+.flamme-social-route video {
+  max-width: 100%;
+}
+
+.flamme-social-route video {
+  background: #000;
+}
+
+.flamme-social-route [role="button"],
+.flamme-social-route button {
+  min-height: 40px;
+}
+
+@media (pointer: coarse) {
+  .flamme-social-route [role="button"],
+  .flamme-social-route button {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 639px) {
+  .flamme-social-route {
+    overscroll-behavior-y: none;
+  }
+
+  .flamme-social-route section {
+    border-left-width: 0;
+    border-right-width: 0;
+  }
+
+  .flamme-social-route textarea,
+  .flamme-social-route input,
+  .flamme-social-route select {
+    font-size: 16px;
+  }
+
+  .flamme-social-route video:fullscreen {
+    object-fit: contain;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flamme-social-route *,
+  .flamme-social-route *::before,
+  .flamme-social-route *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
