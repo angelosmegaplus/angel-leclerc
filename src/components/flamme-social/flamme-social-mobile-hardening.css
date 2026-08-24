@@ -46,6 +46,11 @@
   max-width: 100%;
 }
 
+/* Les actions d'une publication (dont Supprimer) doivent pouvoir sortir de la carte. */
+.flamme-social-route .overflow-hidden:has(> header .absolute.right-0.top-10) {
+  overflow: visible !important;
+}
+
 .flamme-social-route .forum-index-view,
 .flamme-social-route .forum-thread-view,
 .flamme-social-route .forum-topic-row,
