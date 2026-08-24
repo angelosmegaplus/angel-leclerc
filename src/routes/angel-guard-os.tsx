@@ -39,7 +39,7 @@ function AngelGuardPage() {
             Angel Guard est une idée que j’explore autour d’Angel OS : une manière simple de surveiller la santé du site et de garder une trace claire des incidents. Ce n’est pas un système autonome et il ne remplace pas les protections réelles du site.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button asChild size="lg" className="bg-orange-500 text-white hover:bg-orange-600"><Link to="/angel-os">Découvrir Angel OS <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
+            <Button asChild size="lg" className="bg-orange-500 text-white hover:bg-orange-600"><Link to="/experiences" hash="angel-os">Voir les expériences <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
           </div>
         </div>
       </section>
