@@ -9,6 +9,7 @@ const navLinks = [
   { href: "/", label: "Accueil" },
   { href: "/entreprise", label: "Entreprise" },
   { href: "/parcours", label: "Parcours" },
+  { href: "/experiences", label: "Expériences" },
   { href: "/articles", label: "Blog" },
   { href: "/contact", label: "Contact" },
 ];
@@ -32,7 +33,7 @@ export function Header() {
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden md:flex items-center gap-7">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -44,7 +45,7 @@ export function Header() {
               {link.label}
             </Link>
           ))}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <a href="https://www.linkedin.com/company/angel-leclerc-communication/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="LinkedIn Angel Leclerc Communication"><Linkedin size={20} /></a>
             <a href="https://www.instagram.com/angelof_com?igsh=MWpqMjc3Mm03MHJpYg==" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Instagram Angel Leclerc Communication"><Instagram size={20} /></a>
             <a href="https://www.facebook.com/share/1LFGicX7qF/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Facebook Angel Leclerc Communication"><Facebook size={20} /></a>
