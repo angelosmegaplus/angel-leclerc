@@ -23,7 +23,23 @@ export function relativeLabel(value:string) { const ms=Date.now()-new Date(value
 export function safeExt(file:File) { const ext=(file.name.split(".").pop()||"bin").toLowerCase().replace(/[^a-z0-9]/g,"").slice(0,6); return ext||"bin"; }
 export function isAllowedMedia(file:File) { return /^(image\/(jpeg|png|webp)|video\/(mp4|webm))$/.test(file.type) && file.size<=50*1024*1024; }
 export function publicAvatarUrl(path?:string|null) { return path ? supabase.storage.from("flamme-avatars").getPublicUrl(path).data.publicUrl : null; }
-export function socialErrorMessage(cause:unknown,fallback:string) { if(cause instanceof Error&&cause.message)return cause.message; if(cause&&typeof cause==="object"&&"message" in cause&&typeof (cause as {message?:unknown}).message==="string")return (cause as {message:string}).message; return fallback; }
+
+export function socialErrorMessage(cause:unknown,fallback:string) {
+  const raw = cause instanceof Error
+    ? cause.message
+    : cause && typeof cause === "object" && "message" in cause && typeof (cause as {message?:unknown}).message === "string"
+      ? (cause as {message:string}).message
+      : "";
+  if (!raw) return fallback;
+  const message = raw.toLowerCase();
+  if (message.includes("row-level security") || message.includes("violates row-level security")) return "Cette action est bloquée par les règles de confidentialité. Rechargez la page puis réessayez.";
+  if (message.includes("payload too large") || message.includes("maximum allowed size") || message.includes("file size")) return "Le fichier est trop volumineux pour être envoyé.";
+  if (message.includes("mime") || message.includes("content type") || message.includes("not supported")) return "Ce format de fichier n’est pas pris en charge.";
+  if (message.includes("duplicate key") || message.includes("already exists")) return "Cet élément existe déjà.";
+  if (message.includes("network") || message.includes("fetch failed") || message.includes("failed to fetch")) return "Connexion interrompue. Vérifiez votre réseau puis réessayez.";
+  if (message.includes("jwt") || message.includes("auth") || message.includes("session")) return "Votre session a expiré. Reconnectez-vous puis réessayez.";
+  return raw.length > 240 ? fallback : raw;
+}
 
 export async function notify(userId:string, actorId:string, kind:string, entityType:string, entityId:string, payload:Record<string,unknown>={}) {
   if(!userId || userId===actorId) return;
@@ -33,18 +49,21 @@ export async function notify(userId:string, actorId:string, kind:string, entityT
 export async function moderatePublicText(content:string, kind:string) {
   if(!content.trim()) return true;
   try {
-    const response=await fetch("/api/flamme-social-moderate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({content,kind,scope:"public"})});
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), 5000);
+    const response=await fetch("/api/flamme-social-moderate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({content,kind,scope:"public"}),signal:controller.signal});
+    window.clearTimeout(timer);
     const result=await response.json() as {available?:boolean;decision?:string;reason?:string};
     if(result.available && result.decision==="review") return window.confirm(`Le filtre Mistral recommande une vérification${result.reason?` : ${result.reason}`:""}. Publier quand même ?`);
   } catch { /* L'IA est optionnelle, jamais une dépendance de sécurité. */ }
   return true;
 }
 
-export function FlameMark({className="h-9 w-9"}:{className?:string}) { return <span className={cx("inline-flex shrink-0 items-center justify-center",className)}><img src="/flamme-social-logo.svg" alt="" aria-hidden="true" className="h-full w-full object-contain"/></span>; }
+export function FlameMark({className="h-9 w-9"}:{className?:string}) { return <span className={cx("inline-flex shrink-0 items-center justify-center",className)}><img src="/flamme-social-logo.svg" alt="" aria-hidden="true" draggable={false} decoding="async" className="h-full w-full object-contain"/></span>; }
 
 export function Avatar({profile,size="md",online=false}:{profile?:Profile|null;size?:"xs"|"sm"|"md"|"lg"|"xl";online?:boolean}) {
   const src=publicAvatarUrl(profile?.avatar_path); const sizes={xs:"h-7 w-7 text-[10px]",sm:"h-9 w-9 text-xs",md:"h-11 w-11 text-sm",lg:"h-16 w-16 text-xl",xl:"h-24 w-24 text-3xl"}[size];
-  return <span className={cx("relative inline-flex shrink-0",sizes)}>{src?<img src={src} alt="" className="h-full w-full rounded-full object-cover ring-1 ring-black/5"/>:<span className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-[#F9D7CA] to-[#F1B9A4] font-extrabold text-[#8B3F2E]">{profile?.display_name?.slice(0,1)?.toUpperCase()||"F"}</span>}{online&&<span className="absolute bottom-0 right-0 h-[27%] w-[27%] rounded-full border-2 border-white bg-emerald-500 dark:border-[#1d2026]"/>}</span>;
+  return <span className={cx("relative inline-flex shrink-0",sizes)}>{src?<img src={src} alt="" loading="lazy" decoding="async" draggable={false} className="h-full w-full rounded-full object-cover ring-1 ring-black/5"/>:<span className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-[#F9D7CA] to-[#F1B9A4] font-extrabold text-[#8B3F2E]">{profile?.display_name?.slice(0,1)?.toUpperCase()||"F"}</span>}{online&&<span className="absolute bottom-0 right-0 h-[27%] w-[27%] rounded-full border-2 border-white bg-emerald-500 dark:border-[#1d2026]"/>}</span>;
 }
 
 export function Card({children,className}:{children:ReactNode;className?:string}) { return <section className={cx("rounded-xl border border-black/[.06] bg-white shadow-[0_1px_2px_rgba(0,0,0,.06)] dark:border-white/10 dark:bg-[#181b20]",className)}>{children}</section>; }
@@ -52,12 +71,16 @@ export function Empty({icon:Icon=Home,title,text}:{icon?:typeof Home;title:strin
 
 export function SecureMedia({bucket="flamme-media",path,type,className,controls=true,muted=false,autoPlay=false}:{bucket?:string;path:string;type:"image"|"video";className?:string;controls?:boolean;muted?:boolean;autoPlay?:boolean}) {
   const [url,setUrl]=useState<string|null>(null);
-  useEffect(()=>{let active=true;(async()=>{if(bucket==="flamme-media"){const next=supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;if(active)setUrl(next);return;}const {data}=await supabase.storage.from(bucket).createSignedUrl(path,3600);if(active)setUrl(data?.signedUrl??null);})();return()=>{active=false};},[bucket,path]);
+  const [failed,setFailed]=useState(false);
+  useEffect(()=>{let active=true;setUrl(null);setFailed(false);(async()=>{try{if(bucket==="flamme-media"){const next=supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;if(active)setUrl(next);return;}const {data,error}=await supabase.storage.from(bucket).createSignedUrl(path,3600);if(error)throw error;if(active)setUrl(data?.signedUrl??null);}catch{if(active)setFailed(true)}})();return()=>{active=false};},[bucket,path]);
+  if(failed) return <div className={cx("flex items-center justify-center bg-slate-100 p-4 text-center text-xs text-slate-500 dark:bg-white/5 dark:text-slate-400",className)}>Média indisponible.</div>;
   if(!url) return <div className={cx("animate-pulse bg-slate-200 dark:bg-white/10",className)}/>;
-  return type==="video"?<video src={url} controls={controls} muted={muted} autoPlay={autoPlay} playsInline preload="metadata" className={className}/>:<img src={url} alt="" className={className}/>;
+  return type==="video"
+    ? <video src={url} controls={controls} muted={muted} autoPlay={autoPlay} playsInline preload="metadata" onError={()=>setFailed(true)} className={className}/>
+    : <img src={url} alt="" loading="lazy" decoding="async" draggable={false} onError={()=>setFailed(true)} className={className}/>;
 }
 
 export function Modal({open,onClose,children,className}:{open:boolean;onClose:()=>void;children:ReactNode;className?:string}) {
-  useEffect(()=>{if(!open)return;const onKey=(e:KeyboardEvent)=>{if(e.key==="Escape")onClose()};window.addEventListener("keydown",onKey);return()=>window.removeEventListener("keydown",onKey)},[onClose,open]);
-  if(!open)return null; return <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 p-3 backdrop-blur-[2px]" onMouseDown={(e)=>{if(e.target===e.currentTarget)onClose()}}><div className={cx("max-h-[94vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white shadow-2xl dark:bg-[#181b20]",className)}>{children}</div></div>;
+  useEffect(()=>{if(!open)return;const previous=document.body.style.overflow;document.body.style.overflow="hidden";const onKey=(e:KeyboardEvent)=>{if(e.key==="Escape")onClose()};window.addEventListener("keydown",onKey);return()=>{document.body.style.overflow=previous;window.removeEventListener("keydown",onKey)}},[onClose,open]);
+  if(!open)return null; return <div className="fixed inset-0 z-[300] flex items-end justify-center bg-black/60 p-0 backdrop-blur-[2px] sm:items-center sm:p-3" onMouseDown={(e)=>{if(e.target===e.currentTarget)onClose()}}><div className={cx("max-h-[calc(100dvh-8px)] w-full max-w-xl overscroll-contain overflow-y-auto rounded-t-2xl bg-white shadow-2xl sm:max-h-[94dvh] sm:rounded-2xl dark:bg-[#181b20]",className)}>{children}</div></div>;
 }
