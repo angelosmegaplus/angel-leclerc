@@ -146,6 +146,9 @@ export function UnifiedExperiencesPortfolio() {
             </span>
             <h2 className="mt-3 font-display text-[1.65rem] font-bold leading-tight text-foreground sm:text-3xl md:text-4xl">Projets sélectionnés</h2>
             <p className="mt-3 text-[0.95rem] leading-relaxed text-muted-foreground md:mt-4 md:text-base">Quelques projets qui montrent concrètement ma manière de travailler.</p>
+            <a href="/portfolio" className="mt-5 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/5 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/10">
+              Voir mon portfolio créatif <ExternalLink size={14} />
+            </a>
           </div>
 
           <div className="mt-8 grid gap-6 md:mt-12 md:grid-cols-2">
