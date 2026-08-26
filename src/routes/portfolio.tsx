@@ -25,7 +25,7 @@ export const Route = createFileRoute("/portfolio")({
       {
         property: "og:description",
         content:
-          "Une sélection variée de créations graphiques : communication, radio, tourisme, événementiel, identités et projets associatifs.",
+          "Une sélection variée de créations graphiques : communication, radio, tourisme, événementiel, identités et supports numériques.",
       },
       { property: "og:url", content: "/portfolio" },
     ],
@@ -77,29 +77,50 @@ const works: Work[] = [
   {
     title: "Trophée VDS",
     category: "Logos & identités",
-    description: "Création d’un logo événementiel pensé pour rester lisible et identifiable rapidement.",
+    description: "Logo événementiel pensé pour rester lisible et identifiable rapidement.",
     image: "/portfolio/logo-trophee-vds.webp",
     aspect: "aspect-[4/3]",
   },
   {
-    title: "Identité personnelle — exploration",
+    title: "Logo LCLRC",
     category: "Logos & identités",
-    description: "Un exercice de recherche graphique autour d’un logo personnel plus marqué.",
-    image: "/portfolio/logo-exploration.webp",
+    description: "Recherche typographique autour d’un monogramme personnel.",
+    image: "/portfolio/logo-lclrc.webp",
     aspect: "aspect-square",
   },
   {
-    title: "Série de logos",
+    title: "Identité typographique",
     category: "Logos & identités",
-    description: "Une sélection de recherches de formes, symboles et identités réalisées sur Canva.",
-    image: "/portfolio/logos-selection.webp",
+    description: "Essai minimaliste autour des initiales, du contraste et de la lisibilité.",
+    image: "/portfolio/logo-typographique.webp",
     aspect: "aspect-square",
   },
   {
-    title: "FdS",
+    title: "Volt",
     category: "Logos & identités",
-    description: "Une identité créée pour un projet associatif et collectif.",
-    image: "/portfolio/fds.webp",
+    description: "Exploration d’un logo court et énergique pour un univers de marque fictif.",
+    image: "/portfolio/logo-volt.webp",
+    aspect: "aspect-square",
+  },
+  {
+    title: "Logo vidéo — Angel Leclerc",
+    category: "Logos & identités",
+    description: "Identité pensée pour une signature vidéo et des contenus animés.",
+    image: "/portfolio/logo-video.webp",
+    aspect: "aspect-[16/9]",
+  },
+  {
+    title: "RadioFiable",
+    category: "Logos & identités",
+    description: "Ancienne recherche de logo pour un projet radio.",
+    image: "/portfolio/logo-radiofiable.webp",
+    aspect: "aspect-square",
+  },
+  {
+    title: "Logo radio — archive",
+    category: "Logos & identités",
+    description: "Une ancienne identité conservée pour montrer l’évolution de mes recherches graphiques.",
+    image: "/portfolio/logo-radio-ancien.webp",
     aspect: "aspect-square",
   },
   {
@@ -249,13 +270,29 @@ function PortfolioPage() {
             Missions ponctuelles de création de supports pour des projets personnels, professionnels et associatifs.
           </p>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            La sélection mélange volontairement communication, radio, tourisme, événementiel, projets personnels et quelques réalisations associatives. Certaines ont servi à de vrais projets, d’autres sont des recherches graphiques faites simplement pour créer.
+            Cette page montre seulement un échantillon : logos, affiches, réseaux sociaux, radio, tourisme, événementiel et supports professionnels. Les essais trop ambigus ou les expérimentations qui ne représentent pas mon travail public restent volontairement de côté.
           </p>
         </div>
       </section>
 
       <section className="container-tight py-9 md:py-12">
-        <div className="rounded-[1.6rem] border border-border bg-card p-5 shadow-sm sm:p-7">
+        <div data-canva-highlight="true" className="relative overflow-hidden rounded-[1.8rem] bg-[#172638] p-6 text-[#FFFDF9] shadow-lg sm:p-8">
+          <div aria-hidden className="absolute -right-16 -top-16 h-52 w-52 rounded-full bg-[#CE654B]/25 blur-3xl" />
+          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#CE654B]">Canva depuis avril 2022</p>
+              <div className="mt-2 flex items-baseline gap-3">
+                <span className="font-display text-6xl font-bold leading-none sm:text-7xl">950</span>
+                <span className="max-w-40 text-lg font-semibold leading-tight text-white/90">créations recensées</span>
+              </div>
+            </div>
+            <p className="text-sm leading-relaxed text-white/70 sm:max-w-xs sm:text-right">
+              ≈ 18 créations par mois · environ une création tous les 1,7 jour.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 rounded-[1.6rem] border border-border bg-card p-5 shadow-sm sm:p-7">
           <div className="flex items-center gap-3">
             <div className="inline-flex rounded-xl bg-primary/10 p-3 text-primary">
               <LayoutGrid size={21} />
@@ -283,8 +320,8 @@ function PortfolioPage() {
         <details className="group mt-5 overflow-hidden rounded-[1.4rem] border border-border bg-card shadow-sm open:shadow-md">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 marker:content-none sm:px-6 [&::-webkit-details-marker]:hidden">
             <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">Canva en chiffres</p>
-              <p className="mt-1 font-display text-base font-bold text-foreground sm:text-lg">{canvaStats.total} créations recensées depuis avril 2022</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">Détail du compteur</p>
+              <p className="mt-1 font-display text-base font-bold text-foreground sm:text-lg">Voir le rythme et les moyennes</p>
             </div>
             <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
               <ChevronDown size={18} className="transition-transform duration-300 group-open:rotate-180" />
@@ -320,6 +357,16 @@ function PortfolioPage() {
             </p>
           </div>
         </details>
+
+        <div className="mt-5 rounded-[1.4rem] border border-primary/20 bg-primary/5 p-5 sm:p-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Une sélection, pas un catalogue parfait</p>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            Dans mes 950 créations, il y a de tout : des brouillons, des essais faits sur une impulsion, des idées abandonnées et des visuels sur lesquels je peux passer une ou deux heures juste pour ajuster un détail. Cette galerie montre seulement quelques exemples. Pour voir des créations vraiment proches de votre projet ou de votre univers, le plus simple est de m’écrire directement.
+          </p>
+          <a href="/contact" className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90">
+            Me demander des exemples <ArrowRight size={15} />
+          </a>
+        </div>
 
         <div className="mt-8 flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {categories.map((category) => (
