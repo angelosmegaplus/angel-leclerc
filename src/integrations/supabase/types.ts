@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -691,6 +691,1176 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      flamme_blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_blocks_blocked_id_fkey"
+            columns: ["blocked_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flamme_blocks_blocker_id_fkey"
+            columns: ["blocker_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flamme_comments: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          id: string
+          is_anonymous: boolean
+          moderation_status: string
+          parent_id: string | null
+          post_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          id?: string
+          is_anonymous?: boolean
+          moderation_status?: string
+          parent_id?: string | null
+          post_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_anonymous?: boolean
+          moderation_status?: string
+          parent_id?: string | null
+          post_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_comments_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flamme_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flamme_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flamme_conversation_keys: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          id: string
+          iv: string
+          recipient_device_id: string
+          recipient_user_id: string
+          sender_device_id: string
+          wrapped_key: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          id?: string
+          iv: string
+          recipient_device_id: string
+          recipient_user_id: string
+          sender_device_id: string
+          wrapped_key: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          iv?: string
+          recipient_device_id?: string
+          recipient_user_id?: string
+          sender_device_id?: string
+          wrapped_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_conversation_keys_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flamme_conversation_keys_recipient_device_id_fkey"
+            columns: ["recipient_device_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_device_keys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flamme_conversation_keys_recipient_user_id_fkey"
+            columns: ["recipient_user_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flamme_conversation_keys_sender_device_id_fkey"
+            columns: ["sender_device_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_device_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flamme_conversation_members: {
+        Row: {
+          conversation_id: string
+          id: string
+          joined_at: string
+          last_read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          id?: string
+          joined_at?: string
+          last_read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          id?: string
+          joined_at?: string
+          last_read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_conversation_members_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flamme_conversation_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flamme_conversations: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          kind: string
+          title: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          kind?: string
+          title?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          kind?: string
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_conversations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flamme_device_keys: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          last_seen_at: string
+          public_jwk: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label?: string
+          last_seen_at?: string
+          public_jwk: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          last_seen_at?: string
+          public_jwk?: Json
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_device_keys_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flamme_event_attendees: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          status: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_event_attendees_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flamme_event_attendees_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flamme_events: {
+        Row: {
+          created_at: string
+          creator_id: string
+          description: string
+          group_id: string | null
+          id: string
+          image_path: string | null
+          place: string | null
+          starts_at: string
+          title: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          description?: string
+          group_id?: string | null
+          id?: string
+          image_path?: string | null
+          place?: string | null
+          starts_at: string
+          title: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          description?: string
+          group_id?: string | null
+          id?: string
+          image_path?: string | null
+          place?: string | null
+          starts_at?: string
+          title?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_events_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flamme_events_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flamme_follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_follows_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flamme_follows_following_id_fkey"
+            columns: ["following_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flamme_forum_replies: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          is_anonymous: boolean
+          moderation_status: string
+          reply_to_id: string | null
+          topic_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          is_anonymous?: boolean
+          moderation_status?: string
+          reply_to_id?: string | null
+          topic_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          is_anonymous?: boolean
+          moderation_status?: string
+          reply_to_id?: string | null
+          topic_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_forum_replies_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flamme_forum_replies_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_forum_replies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flamme_forum_replies_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_forum_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flamme_forum_topics: {
+        Row: {
+          author_id: string
+          body: string
+          category: string
+          created_at: string
+          id: string
+          is_anonymous: boolean
+          is_locked: boolean
+          is_pinned: boolean
+          moderation_status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          category?: string
+          created_at?: string
+          id?: string
+          is_anonymous?: boolean
+          is_locked?: boolean
+          is_pinned?: boolean
+          moderation_status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          category?: string
+          created_at?: string
+          id?: string
+          is_anonymous?: boolean
+          is_locked?: boolean
+          is_pinned?: boolean
+          moderation_status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_forum_topics_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flamme_group_members: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          role: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          role?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          role?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flamme_group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flamme_groups: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          image_path: string | null
+          name: string
+          owner_id: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          id?: string
+          image_path?: string | null
+          name: string
+          owner_id: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          image_path?: string | null
+          name?: string
+          owner_id?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_groups_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flamme_messages: {
+        Row: {
+          ciphertext: string
+          conversation_id: string
+          created_at: string
+          id: string
+          iv: string
+          sender_device_id: string
+          sender_id: string
+        }
+        Insert: {
+          ciphertext: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          iv: string
+          sender_device_id: string
+          sender_id: string
+        }
+        Update: {
+          ciphertext?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          iv?: string
+          sender_device_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flamme_messages_sender_device_id_fkey"
+            columns: ["sender_device_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_device_keys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flamme_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flamme_moderation_actions: {
+        Row: {
+          action: string
+          actor_id: string | null
+          categories: Json
+          created_at: string
+          id: string
+          reason: string
+          source: string
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          categories?: Json
+          created_at?: string
+          id?: string
+          reason?: string
+          source?: string
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          categories?: Json
+          created_at?: string
+          id?: string
+          reason?: string
+          source?: string
+          target_id?: string
+          target_type?: string
+        }
+        Relationships: []
+      }
+      flamme_notifications: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          kind: string
+          payload: Json
+          read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          kind: string
+          payload?: Json
+          read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          kind?: string
+          payload?: Json
+          read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flamme_notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flamme_poll_votes: {
+        Row: {
+          created_at: string
+          id: string
+          option_index: number
+          post_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          option_index: number
+          post_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          option_index?: number
+          post_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_poll_votes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flamme_poll_votes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flamme_post_media: {
+        Row: {
+          bucket: string
+          created_at: string
+          id: string
+          media_type: string
+          path: string
+          position: number
+          post_id: string
+        }
+        Insert: {
+          bucket?: string
+          created_at?: string
+          id?: string
+          media_type: string
+          path: string
+          position?: number
+          post_id: string
+        }
+        Update: {
+          bucket?: string
+          created_at?: string
+          id?: string
+          media_type?: string
+          path?: string
+          position?: number
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_post_media_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flamme_posts: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          group_id: string | null
+          id: string
+          is_anonymous: boolean
+          kind: string
+          moderation_status: string
+          poll: Json | null
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          author_id: string
+          content?: string
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          is_anonymous?: boolean
+          kind?: string
+          moderation_status?: string
+          poll?: Json | null
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          is_anonymous?: boolean
+          kind?: string
+          moderation_status?: string
+          poll?: Json | null
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_posts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flamme_posts_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flamme_profiles: {
+        Row: {
+          allow_messages: string
+          avatar_path: string | null
+          bio: string
+          city: string | null
+          cover_path: string | null
+          created_at: string
+          display_name: string
+          handle: string
+          id: string
+          is_private: boolean
+          is_verified: boolean
+          last_seen_at: string
+          show_online: boolean
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          allow_messages?: string
+          avatar_path?: string | null
+          bio?: string
+          city?: string | null
+          cover_path?: string | null
+          created_at?: string
+          display_name: string
+          handle: string
+          id: string
+          is_private?: boolean
+          is_verified?: boolean
+          last_seen_at?: string
+          show_online?: boolean
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          allow_messages?: string
+          avatar_path?: string | null
+          bio?: string
+          city?: string | null
+          cover_path?: string | null
+          created_at?: string
+          display_name?: string
+          handle?: string
+          id?: string
+          is_private?: boolean
+          is_verified?: boolean
+          last_seen_at?: string
+          show_online?: boolean
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      flamme_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          reaction: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          reaction?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          reaction?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flamme_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flamme_reports: {
+        Row: {
+          ai_categories: Json
+          ai_checked_at: string | null
+          ai_decision: string | null
+          ai_reason: string | null
+          created_at: string
+          details: string
+          id: string
+          reason: string
+          reporter_id: string
+          status: string
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          ai_categories?: Json
+          ai_checked_at?: string | null
+          ai_decision?: string | null
+          ai_reason?: string | null
+          created_at?: string
+          details?: string
+          id?: string
+          reason: string
+          reporter_id: string
+          status?: string
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          ai_categories?: Json
+          ai_checked_at?: string | null
+          ai_decision?: string | null
+          ai_reason?: string | null
+          created_at?: string
+          details?: string
+          id?: string
+          reason?: string
+          reporter_id?: string
+          status?: string
+          target_id?: string
+          target_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flamme_saved_items: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_saved_items_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flamme_saved_items_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flamme_stories: {
+        Row: {
+          author_id: string
+          background: string
+          created_at: string
+          expires_at: string
+          id: string
+          is_anonymous: boolean
+          moderation_status: string
+          text: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          author_id: string
+          background?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_anonymous?: boolean
+          moderation_status?: string
+          text?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          author_id?: string
+          background?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_anonymous?: boolean
+          moderation_status?: string
+          text?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_stories_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flamme_story_media: {
+        Row: {
+          bucket: string
+          created_at: string
+          id: string
+          media_type: string
+          path: string
+          story_id: string
+        }
+        Insert: {
+          bucket?: string
+          created_at?: string
+          id?: string
+          media_type: string
+          path: string
+          story_id: string
+        }
+        Update: {
+          bucket?: string
+          created_at?: string
+          id?: string
+          media_type?: string
+          path?: string
+          story_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_story_media_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flamme_story_views: {
+        Row: {
+          id: string
+          story_id: string
+          user_id: string
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          story_id: string
+          user_id: string
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          story_id?: string
+          user_id?: string
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flamme_story_views_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_stories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flamme_story_views_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "flamme_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       hourly_mail_reports: {
         Row: {
@@ -1449,7 +2619,67 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      flamme_can_message: {
+        Args: { recipient: string; sender: string }
+        Returns: boolean
+      }
+      flamme_can_read_private_object: {
+        Args: { object_name: string; u?: string }
+        Returns: boolean
+      }
+      flamme_can_view_event: {
+        Args: { e: string; u?: string }
+        Returns: boolean
+      }
+      flamme_can_view_post: {
+        Args: { p: string; u?: string }
+        Returns: boolean
+      }
+      flamme_can_view_story: {
+        Args: { s: string; u?: string }
+        Returns: boolean
+      }
+      flamme_expected_follow_status: {
+        Args: { target: string }
+        Returns: string
+      }
+      flamme_is_admin: { Args: { u?: string }; Returns: boolean }
+      flamme_is_blocked: { Args: { a: string; b: string }; Returns: boolean }
+      flamme_is_contact: { Args: { a: string; b: string }; Returns: boolean }
+      flamme_is_conversation_member: {
+        Args: { c: string; u: string }
+        Returns: boolean
+      }
+      flamme_is_group_member: {
+        Args: { g: string; u: string }
+        Returns: boolean
+      }
+      flamme_is_group_moderator: {
+        Args: { g: string; u: string }
+        Returns: boolean
+      }
+      flamme_is_group_owner: {
+        Args: { g: string; u: string }
+        Returns: boolean
+      }
+      flamme_ranked_feed: {
+        Args: { p_before?: string; p_contacts_only?: boolean; p_limit?: number }
+        Returns: {
+          created_at: string
+          post_id: string
+          score: number
+        }[]
+      }
+      flamme_set_verified: {
+        Args: { target_user: string; verified: boolean }
+        Returns: boolean
+      }
+      flamme_valid_poll_vote: {
+        Args: { option_no: number; p: string; u: string }
+        Returns: boolean
+      }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
       app_role: "admin" | "user"
