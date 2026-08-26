@@ -18,95 +18,136 @@ jobs:
         with:
           persist-credentials: true
 
-      - name: Download and convert portfolio previews
+      - name: Download portfolio previews from temporary bridge
         shell: bash
         run: |
           set -euo pipefail
           python -m pip install --quiet pillow
           mkdir -p public/portfolio /tmp/portfolio
 
-          cat > /tmp/download.py <<'PY'
-          import io, os, urllib.request
+          items=(
+            logo-alc
+            fds
+            angel-os
+            firebox
+            eclaireurs-libres
+            tombola
+            gannat-ouverture
+            freshtalk-radio
+            collecte-dons
+            identite-politique
+          )
+
+          for slug in "${items[@]}"; do
+            echo "Downloading $slug"
+            curl --fail --location --retry 4 --retry-delay 2 \
+              "https://angel-leclerc.vercel.app/api/public/site-status?portfolio=${slug}&raw=1" \
+              --output "/tmp/portfolio/${slug}.img"
+          done
+
+          python - <<'PY'
+          from pathlib import Path
           from PIL import Image
 
-          items = {
-            'logo-alc': 'https://design.canva.ai/ERnnCTPVt0CNCx3',
-            'serie-logos-personnels': 'https://design.canva.ai/X8Qr31KGd7ApqsP',
-            'explorations-logos': 'https://design.canva.ai/MQqG84jqqArdADA',
-            'fds': 'https://design.canva.ai/-EDDkDRnp2w9V74',
-            'angel-os': 'https://design.canva.ai/mynEfAulHgpDQUr',
-            'firebox': 'https://design.canva.ai/Lz9aJQyPySr0wgz',
-            'eclaireurs-libres': 'https://design.canva.ai/o2Y_HSWMk12cmHW',
-            'tombola': 'https://design.canva.ai/sObwXgi3qa0-CRM',
-            'gannat-ouverture': 'https://design.canva.ai/GH3oLueOxxXg3Qq',
-            'freshtalk-radio': 'https://design.canva.ai/--6cLLDQoNhRnBu',
-            'collecte-dons': 'https://design.canva.ai/--miwgxt2sx0HAC',
-            'identite-politique': 'https://design.canva.ai/FOcMHUx9A0GWptP',
-          }
+          source = Path('/tmp/portfolio')
+          target = Path('public/portfolio')
+          names = [
+              'logo-alc', 'fds', 'angel-os', 'firebox', 'eclaireurs-libres',
+              'tombola', 'gannat-ouverture', 'freshtalk-radio',
+              'collecte-dons', 'identite-politique',
+          ]
 
-          failures = []
-          for name, url in items.items():
-            try:
-              req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-              with urllib.request.urlopen(req, timeout=30) as r:
-                data = r.read()
-              img = Image.open(io.BytesIO(data)).convert('RGB')
-              if img.width > 1600:
-                ratio = 1600 / img.width
-                img = img.resize((1600, round(img.height * ratio)), Image.Resampling.LANCZOS)
-              out = f'public/portfolio/{name}.webp'
-              img.save(out, 'WEBP', quality=88, method=6)
-              print(f'OK {name}: {img.width}x{img.height}')
-            except Exception as e:
-              failures.append((name, str(e)))
-              print(f'FAIL {name}: {e}')
-
-          if failures:
-            print('Some downloads failed:')
-            for name, err in failures:
-              print(f' - {name}: {err}')
-            raise SystemExit(1)
+          for name in names:
+              img = Image.open(source / f'{name}.img').convert('RGB')
+              if img.width > 1400:
+                  ratio = 1400 / img.width
+                  img = img.resize((1400, round(img.height * ratio)), Image.Resampling.LANCZOS)
+              out = target / f'{name}.webp'
+              img.save(out, 'WEBP', quality=86, method=6)
+              print(f'{name}: {img.width}x{img.height} -> {out.stat().st_size} bytes')
           PY
 
-          python /tmp/download.py
-
-      - name: Point portfolio to local files
+      - name: Point portfolio to local images and keep 10 strongest pieces
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
+
           p = Path('src/routes/portfolio.tsx')
-          s = p.read_text()
+          s = p.read_text(encoding='utf-8')
+
+          # Remove two redundant logo-exploration cards to keep a tighter 10-piece selection.
+          for title in ('Série de logos personnels', 'Explorations de logos'):
+              pattern = r'\n  \{\n    title: "' + re.escape(title) + r'",.*?\n  \},'
+              s, count = re.subn(pattern, '', s, count=1, flags=re.S)
+              if count != 1:
+                  raise SystemExit(f'Could not remove portfolio item: {title}')
+
           mapping = {
-            'https://design.canva.ai/ERnnCTPVt0CNCx3': '/portfolio/logo-alc.webp',
-            'https://design.canva.ai/X8Qr31KGd7ApqsP': '/portfolio/serie-logos-personnels.webp',
-            'https://design.canva.ai/MQqG84jqqArdADA': '/portfolio/explorations-logos.webp',
-            'https://design.canva.ai/-EDDkDRnp2w9V74': '/portfolio/fds.webp',
-            'https://design.canva.ai/mynEfAulHgpDQUr': '/portfolio/angel-os.webp',
-            'https://design.canva.ai/Lz9aJQyPySr0wgz': '/portfolio/firebox.webp',
-            'https://design.canva.ai/o2Y_HSWMk12cmHW': '/portfolio/eclaireurs-libres.webp',
-            'https://design.canva.ai/sObwXgi3qa0-CRM': '/portfolio/tombola.webp',
-            'https://design.canva.ai/GH3oLueOxxXg3Qq': '/portfolio/gannat-ouverture.webp',
-            'https://design.canva.ai/--6cLLDQoNhRnBu': '/portfolio/freshtalk-radio.webp',
-            'https://design.canva.ai/--miwgxt2sx0HAC': '/portfolio/collecte-dons.webp',
-            'https://design.canva.ai/FOcMHUx9A0GWptP': '/portfolio/identite-politique.webp',
+              'https://design.canva.ai/ERnnCTPVt0CNCx3': '/portfolio/logo-alc.webp',
+              'https://design.canva.ai/-EDDkDRnp2w9V74': '/portfolio/fds.webp',
+              'https://design.canva.ai/mynEfAulHgpDQUr': '/portfolio/angel-os.webp',
+              'https://design.canva.ai/Lz9aJQyPySr0wgz': '/portfolio/firebox.webp',
+              'https://design.canva.ai/o2Y_HSWMk12cmHW': '/portfolio/eclaireurs-libres.webp',
+              'https://design.canva.ai/sObwXgi3qa0-CRM': '/portfolio/tombola.webp',
+              'https://design.canva.ai/GH3oLueOxxXg3Qq': '/portfolio/gannat-ouverture.webp',
+              'https://design.canva.ai/--6cLLDQoNhRnBu': '/portfolio/freshtalk-radio.webp',
+              'https://design.canva.ai/--miwgxt2sx0HAC': '/portfolio/collecte-dons.webp',
+              'https://design.canva.ai/FOcMHUx9A0GWptP': '/portfolio/identite-politique.webp',
           }
           for old, new in mapping.items():
-            if old not in s:
-              raise SystemExit(f'Missing expected URL: {old}')
-            s = s.replace(old, new)
-          p.write_text(s)
+              if old not in s:
+                  raise SystemExit(f'Missing expected portfolio URL: {old}')
+              s = s.replace(old, new)
+
+          if 'design.canva.ai' in s or 'media.canva.com' in s:
+              raise SystemExit('A remote Canva image URL remains in portfolio.tsx')
+
+          p.write_text(s, encoding='utf-8')
           PY
 
-      - name: Commit cached images
+      - name: Restore temporary bridge and remove one-time files
         shell: bash
         run: |
-          if git diff --quiet && [ -z "$(git status --porcelain public/portfolio)" ]; then
-            echo 'Nothing to commit.'
-            exit 0
-          fi
+          cat > src/routes/api/public/site-status.ts <<'EOF'
+          import { createFileRoute } from "@tanstack/react-router";
+
+          const headers = {
+            "Cache-Control": "no-store",
+            "Content-Type": "application/json; charset=utf-8",
+          };
+
+          /**
+           * Endpoint historique conservé pour compatibilité.
+           * Le site public reste toujours disponible pendant les déploiements.
+           */
+          export const Route = createFileRoute("/api/public/site-status")({
+            server: {
+              handlers: {
+                GET: async () =>
+                  Response.json(
+                    {
+                      maintenance: false,
+                      reason: "maintenance-disabled",
+                    },
+                    { headers },
+                  ),
+              },
+            },
+          });
+          EOF
+
+          rm -f 'src/routes/api/public/portfolio-cache/$slug.ts'
+          rmdir --ignore-fail-on-non-empty src/routes/api/public/portfolio-cache 2>/dev/null || true
+          rm -f .github/workflows/cache-canva-portfolio.yml
+
+      - name: Commit permanent portfolio assets
+        shell: bash
+        run: |
+          set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add public/portfolio src/routes/portfolio.tsx
+          git add -A public/portfolio src/routes/portfolio.tsx src/routes/api/public/site-status.ts src/routes/api/public/portfolio-cache .github/workflows/cache-canva-portfolio.yml || true
           git commit -m 'fix: serve portfolio images locally'
           git push
