@@ -25,7 +25,7 @@ export const Route = createFileRoute("/portfolio")({
       {
         property: "og:description",
         content:
-          "Une sélection de créations graphiques pour des projets personnels, professionnels et associatifs.",
+          "Une sélection variée de créations graphiques : communication, radio, tourisme, événementiel, identités et projets associatifs.",
       },
       { property: "og:url", content: "/portfolio" },
     ],
@@ -68,38 +68,45 @@ const works: Work[] = [
     aspect: "aspect-[16/9]",
   },
   {
-    title: "FdS",
+    title: "Radio StG",
     category: "Logos & identités",
-    description: "Une identité créée pour un univers associatif et collectif.",
-    image: "/portfolio/fds.webp",
+    description: "Exploration d’identité visuelle pour un univers radio et média.",
+    image: "/portfolio/radio-stg.webp",
     aspect: "aspect-square",
   },
   {
-    title: "Éclaireurs Libres de France",
+    title: "Trophée VDS",
     category: "Logos & identités",
-    description: "Travail d’identité visuelle autour d’un projet scout associatif.",
-    image: "/portfolio/eclaireurs-libres.webp",
-    aspect: "aspect-[4/5]",
+    description: "Création d’un logo événementiel pensé pour rester lisible et identifiable rapidement.",
+    image: "/portfolio/logo-trophee-vds.webp",
+    aspect: "aspect-[4/3]",
   },
   {
-    title: "Tombola Patrimoine",
-    category: "Affiches & flyers",
-    description: "Visuel de campagne pour présenter rapidement une opération de collecte.",
-    image: "/portfolio/tombola.webp",
-    aspect: "aspect-[4/5]",
+    title: "Identité personnelle — exploration",
+    category: "Logos & identités",
+    description: "Un exercice de recherche graphique autour d’un logo personnel plus marqué.",
+    image: "/portfolio/logo-exploration.webp",
+    aspect: "aspect-square",
+  },
+  {
+    title: "Série de logos",
+    category: "Logos & identités",
+    description: "Une sélection de recherches de formes, symboles et identités réalisées sur Canva.",
+    image: "/portfolio/logos-selection.webp",
+    aspect: "aspect-square",
+  },
+  {
+    title: "FdS",
+    category: "Logos & identités",
+    description: "Une identité créée pour un projet associatif et collectif.",
+    image: "/portfolio/fds.webp",
+    aspect: "aspect-square",
   },
   {
     title: "Flyers Renard Noir",
     category: "Affiches & flyers",
     description: "Création de flyer avec une identité graphique pensée pour être immédiatement reconnaissable.",
     image: "/portfolio/flyer-renard-noir.webp",
-    aspect: "aspect-[4/5]",
-  },
-  {
-    title: "Collecte de dons",
-    category: "Affiches & flyers",
-    description: "Une affiche simple et lisible conçue pour faire passer le message en quelques secondes.",
-    image: "/portfolio/collecte-dons.webp",
     aspect: "aspect-[4/5]",
   },
   {
@@ -110,10 +117,24 @@ const works: Work[] = [
     aspect: "aspect-[4/5]",
   },
   {
+    title: "Jeux du Val de Sioule",
+    category: "Affiches & flyers",
+    description: "Support événementiel réalisé autour d’une animation touristique locale.",
+    image: "/portfolio/jeux-val-sioule.webp",
+    aspect: "aspect-[4/3]",
+  },
+  {
     title: "Gannat — ouverture",
     category: "Affiches & flyers",
     description: "Une création événementielle issue de mes réalisations plus anciennes.",
     image: "/portfolio/gannat-ouverture.webp",
+    aspect: "aspect-[4/5]",
+  },
+  {
+    title: "Tombola Patrimoine",
+    category: "Affiches & flyers",
+    description: "Visuel de campagne pour présenter rapidement une opération de financement patrimonial.",
+    image: "/portfolio/tombola.webp",
     aspect: "aspect-[4/5]",
   },
   {
@@ -126,14 +147,35 @@ const works: Work[] = [
   {
     title: "Modèle de publication ALC!",
     category: "Réseaux sociaux",
-    description: "Recherche de format réutilisable pour garder une identité cohérente sur les réseaux sociaux.",
+    description: "Format réutilisable pour garder une identité cohérente sur les réseaux sociaux.",
     image: "/portfolio/modele-post-alc.webp",
     aspect: "aspect-[4/5]",
   },
   {
+    title: "Publication Instagram",
+    category: "Réseaux sociaux",
+    description: "Recherche de composition simple, lisible et adaptée à un format mobile vertical.",
+    image: "/portfolio/publication-instagram.webp",
+    aspect: "aspect-[4/5]",
+  },
+  {
+    title: "Bannière LinkedIn — communication",
+    category: "Réseaux sociaux",
+    description: "Déclinaison d’identité professionnelle pour un format de bannière très horizontal.",
+    image: "/portfolio/linkedin-banner.webp",
+    aspect: "aspect-[4/1]",
+  },
+  {
+    title: "Office de Tourisme",
+    category: "Documents & supports",
+    description: "Support graphique réalisé dans un contexte touristique et professionnel.",
+    image: "/portfolio/office-tourisme.webp",
+    aspect: "aspect-[16/9]",
+  },
+  {
     title: "Livret partenaire",
     category: "Documents & supports",
-    description: "Exemple de document de présentation pensé pour organiser beaucoup d’informations de façon claire.",
+    description: "Document de présentation pensé pour organiser beaucoup d’informations de façon claire.",
     image: "/portfolio/livret-partenaire.webp",
     aspect: "aspect-[4/5]",
   },
@@ -207,7 +249,7 @@ function PortfolioPage() {
             Missions ponctuelles de création de supports pour des projets personnels, professionnels et associatifs.
           </p>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            J’aime aussi créer juste pour le plaisir : tester une idée, chercher une identité ou voir jusqu’où je peux pousser un visuel.
+            La sélection mélange volontairement communication, radio, tourisme, événementiel, projets personnels et quelques réalisations associatives. Certaines ont servi à de vrais projets, d’autres sont des recherches graphiques faites simplement pour créer.
           </p>
         </div>
       </section>
