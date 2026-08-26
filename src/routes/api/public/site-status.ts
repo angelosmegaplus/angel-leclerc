@@ -5,57 +5,40 @@ const headers = {
   "Content-Type": "application/json; charset=utf-8",
 };
 
-/**
- * Endpoint historique conservé pour compatibilité.
- * Le site public reste toujours disponible pendant les déploiements.
- */
+const portfolioSources: Record<string, string> = {
+  "logo-alc": "https://media.canva.com/v2/document-image/hash:1184351037/height:335/id:DAHO-bA0GOM/type:B/width:595?brand=BAE8qOCilJM&csig=AAAAAAAAAAAAAAAAAAAAAEneUixYIn1wyAe-uO3iuJ0yPMv75iVHeR8TDXbkdkds&disableexport=T&exp=1787768812&fallback=https%3A%2F%2Fs3.amazonaws.com%2Fdocument-export.canva.com%2FA0GOM%2FDAHO-bA0GOM%2F12%2Fthumbnail%2F0001.png%3FX-Amz-Algorithm%3DAWS4-HMAC-SHA256%26X-Amz-Credential%3DAKIAQYCGKMUH4GDRW44L%252F20260826%252Fus-east-1%252Fs3%252Faws4_request%26X-Amz-Date%3D20260826T130944Z%26X-Amz-Expires%3D19028%26X-Amz-Signature%3D3f1344ed59b34215acf56dfc0689afaf56babec7a2e05f2b9a0be3c9fcc55903%26X-Amz-SignedHeaders%3Dhost%26response-expires%3DWed%252C%252026%2520Aug%25202026%252018%253A26%253A52%2520GMT&osig=AAAAAAAAAAAAAAAAAAAAAPJIr35zU5F9HnINjwIPtQGKehWrQsVK8v-T52OA-uba&page=1&signed=brand%2Cdisableexport%2Cfallback%2Cpage%2Cversion&signer=document-rpc&version=12",
+  "fds": "https://media.canva.com/v2/document-image/hash:-1138168480/height:447/id:DAGztdpSVrY/type:B/width:447?brand=BAE8qOCilJM&csig=AAAAAAAAAAAAAAAAAAAAAI5-h9QeKrZl_ateINjQjaEKnPHFP7ULDU0KkmfF-dTu&disableexport=T&exp=1787768827&fallback=https%3A%2F%2Fs3.amazonaws.com%2Fdocument-export.canva.com%2FpSVrY%2FDAGztdpSVrY%2F52%2Fthumbnail%2F0001.png%3FX-Amz-Algorithm%3DAWS4-HMAC-SHA256%26X-Amz-Credential%3DAKIAQYCGKMUH4GDRW44L%252F20260826%252Fus-east-1%252Fs3%252Faws4_request%26X-Amz-Date%3D20260826T135638Z%26X-Amz-Expires%3D16229%26X-Amz-Signature%3Db9c9bff6f4f748f49bd85f47966c2a7ad6f53acd2fea52f2b8dad854605742f3%26X-Amz-SignedHeaders%3Dhost%26response-expires%3DWed%252C%252026%2520Aug%25202026%252018%253A27%253A07%2520GMT&osig=AAAAAAAAAAAAAAAAAAAAAIXYb0TnyDyVl0S43o3Nxzt8uMRj0EZqrtREXoI8tLmK&page=1&signed=brand%2Cdisableexport%2Cfallback%2Cpage%2Cversion&signer=document-rpc&version=75",
+  "angel-os": "https://media.canva.com/v2/document-image/hash:1523008553/height:447/id:DAHSdjTVJo0/type:B/width:447?brand=BAE8qOCilJM&csig=AAAAAAAAAAAAAAAAAAAAAKlRx8TpMsrIzHef8rvzC5OCDlJ33SlU3p-tQy9gGvyU&disableexport=T&exp=1787768630&fallback=https%3A%2F%2Fs3.amazonaws.com%2Fdocument-export.canva.com%2FTVJo0%2FDAHSdjTVJo0%2F15%2Fthumbnail%2F0001.png%3FX-Amz-Algorithm%3DAWS4-HMAC-SHA256%26X-Amz-Credential%3DAKIAQYCGKMUH4GDRW44L%252F20260826%252Fus-east-1%252Fs3%252Faws4_request%26X-Amz-Date%3D20260826T023133Z%26X-Amz-Expires%3D57137%26X-Amz-Signature%3D1910155c13cdb6321bdfd7e1353412e9b4df2cb555dafc4496926cc4fa593ac6%26X-Amz-SignedHeaders%3Dhost%26response-expires%3DWed%252C%252026%2520Aug%25202026%252018%253A23%253A50%2520GMT&osig=AAAAAAAAAAAAAAAAAAAAABrvwBchycDnS2PynpfoqnZNtCeDdOny7e_4bely7Mxi&page=1&signed=brand%2Cdisableexport%2Cfallback%2Cpage%2Cversion&signer=document-rpc&version=15",
+  "firebox": "https://media.canva.com/v2/document-image/hash:1791262615/height:335/id:DAHTA3oPmng/type:B/width:595?brand=BAE8qOCilJM&csig=AAAAAAAAAAAAAAAAAAAAADdq7GrT7m9qvGv4VEOFzKi_be3LAvuI3sN3b9CKDRHO&disableexport=T&exp=1787768832&fallback=https%3A%2F%2Fs3.amazonaws.com%2Fdocument-export.canva.com%2FoPmng%2FDAHTA3oPmng%2F36%2Fthumbnail%2F0001.png%3FX-Amz-Algorithm%3DAWS4-HMAC-SHA256%26X-Amz-Credential%3DAKIAQYCGKMUH4GDRW44L%252F20260825%252Fus-east-1%252Fs3%252Faws4_request%26X-Amz-Date%3D20260825T213302Z%26X-Amz-Expires%3D75250%26X-Amz-Signature%3D0ffd1e0e2b306007523bae1edec6d97543626c814c5e3c677f9bb7ca98dc2556%26X-Amz-SignedHeaders%3Dhost%26response-expires%3DWed%252C%252026%2520Aug%25202026%252018%253A27%253A12%2520GMT&osig=AAAAAAAAAAAAAAAAAAAAAFRs1_rBwHtukOOg_OmzLBbqjmCrb8SWmFrd6NtnArBD&page=1&signed=brand%2Cdisableexport%2Cfallback%2Cpage%2Cversion&signer=document-rpc&version=43",
+  "eclaireurs-libres": "https://media.canva.com/v2/document-image/hash:865664374/height:531/id:DAHKBKhhwSQ/type:B/width:376?brand=BAE8qOCilJM&csig=AAAAAAAAAAAAAAAAAAAAAJ0tK_G-OCZuR56N82k9Ty4fPgaG1m8WqQ8i51xRujjU&disableexport=T&exp=1787768836&fallback=https%3A%2F%2Fs3.amazonaws.com%2Fdocument-export.canva.com%2FhhwSQ%2FDAHKBKhhwSQ%2F38%2Fthumbnail%2F0001.png%3FX-Amz-Algorithm%3DAWS4-HMAC-SHA256%26X-Amz-Credential%3DAKIAQYCGKMUH4GDRW44L%252F20260826%252Fus-east-1%252Fs3%252Faws4_request%26X-Amz-Date%3D20260826T141251Z%26X-Amz-Expires%3D15265%26X-Amz-Signature%3D379b8880d486c996742d51bd22a178309a0bc5f6d401de13e89a23c18f3da280%26X-Amz-SignedHeaders%3Dhost%26response-expires%3DWed%252C%252026%2520Aug%25202026%252018%253A27%253A16%2520GMT&osig=AAAAAAAAAAAAAAAAAAAAAIQ4JNlwmkCgYvfRLRMcCKDhvQTclVDrUxlH17Ak1FWq&page=1&signed=brand%2Cdisableexport%2Cfallback%2Cpage%2Cversion&signer=document-rpc&version=42",
+  "tombola": "https://media.canva.com/v2/document-image/hash:-715977565/height:500/id:DAHP1ohFruM/type:B/width:400?brand=BAE8qOCilJM&csig=AAAAAAAAAAAAAAAAAAAAACqApEfl9zSvPyMLjc1HJjG73D-C4hTCZU470wLxiXCp&disableexport=T&exp=1787768842&fallback=https%3A%2F%2Fs3.amazonaws.com%2Fdocument-export.canva.com%2FhFruM%2FDAHP1ohFruM%2F49%2Fthumbnail%2F0001.png%3FX-Amz-Algorithm%3DAWS4-HMAC-SHA256%26X-Amz-Credential%3DAKIAQYCGKMUH4GDRW44L%252F20260826%252Fus-east-1%252Fs3%252Faws4_request%26X-Amz-Date%3D20260826T105346Z%26X-Amz-Expires%3D27216%26X-Amz-Signature%3D8d49c30e96a3e04787d22cbbc3f190e30ea506923f52cc05d8f740776c0887ca%26X-Amz-SignedHeaders%3Dhost%26response-expires%3DWed%252C%252026%2520Aug%25202026%252018%253A27%253A22%2520GMT&osig=AAAAAAAAAAAAAAAAAAAAAEHk3Bqk0IFm6kvHERC6yMham-6G7_VCPHneM9aPjoLF&page=1&signed=brand%2Cdisableexport%2Cfallback%2Cpage%2Cversion&signer=document-rpc&version=63",
+  "gannat-ouverture": "https://media.canva.com/v2/document-image/hash:-678056915/height:532/id:DAF-RDv1Sr0/type:B/width:376?brand=BAE8qOCilJM&csig=AAAAAAAAAAAAAAAAAAAAAGrcReLWOFwnTK626LWTsY9lHD6t270bnRNd1TwXw9v6&disableexport=T&exp=1787768847&fallback=https%3A%2F%2Fs3.amazonaws.com%2Fdocument-export.canva.com%2Fv1Sr0%2FDAF-RDv1Sr0%2F81%2Fthumbnail%2F0001.png%3FX-Amz-Algorithm%3DAWS4-HMAC-SHA256%26X-Amz-Credential%3DAKIAQYCGKMUH4GDRW44L%252F20260825%252Fus-east-1%252Fs3%252Faws4_request%26X-Amz-Date%3D20260825T181705Z%26X-Amz-Expires%3D87022%26X-Amz-Signature%3D71cc75b6e88a7f0d18bfb532ef31a3b48daa71b944759a042e4885fbff694dc3%26X-Amz-SignedHeaders%3Dhost%26response-expires%3DWed%252C%252026%2520Aug%25202026%252018%253A27%253A27%2520GMT&osig=AAAAAAAAAAAAAAAAAAAAABMbId7HqgLxRcu7GtL-EZ-2nLQwIFPzJeL6gwXaSM7b&page=1&signed=brand%2Cdisableexport%2Cfallback%2Cpage%2Cversion&signer=document-rpc&version=91",
+  "freshtalk-radio": "https://media.canva.com/v2/document-image/hash:264916610/height:500/id:DAHCISlo5N4/type:B/width:400?brand=BAE8qOCilJM&csig=AAAAAAAAAAAAAAAAAAAAAA2DM81Xkh2wYhBS0kHWrUKW847TULczHJ0mqQfhUUQ7&disableexport=T&exp=1787768850&fallback=https%3A%2F%2Fs3.amazonaws.com%2Fdocument-export.canva.com%2Flo5N4%2FDAHCISlo5N4%2F55%2Fthumbnail%2F0001.png%3FX-Amz-Algorithm%3DAWS4-HMAC-SHA256%26X-Amz-Credential%3DAKIAQYCGKMUH4GDRW44L%252F20260826%252Fus-east-1%252Fs3%252Faws4_request%26X-Amz-Date%3D20260826T141601Z%26X-Amz-Expires%3D15089%26X-Amz-Signature%3Dc2dccf964262f7d9542ed82ddc4dca2d075870b19680fb33fa39ef30bd29f371%26X-Amz-SignedHeaders%3Dhost%26response-expires%3DWed%252C%252026%2520Aug%25202026%252018%253A27%253A30%2520GMT&osig=AAAAAAAAAAAAAAAAAAAAALv3AL7hV5lOw_XcCuS309Tc1nPX6n6SOnFBwVhQ59im&page=1&signed=brand%2Cdisableexport%2Cfallback%2Cpage%2Cversion&signer=document-rpc&version=55",
+  "collecte-dons": "https://media.canva.com/v2/document-image/hash:1429161758/height:531/id:DAHGiwRmglA/type:B/width:376?brand=BAE8qOCilJM&csig=AAAAAAAAAAAAAAAAAAAAAMsJKtinfCkulOtZ08_nqkA15hUcSZktAJFeWWIy2R-l&disableexport=T&exp=1787768857&fallback=https%3A%2F%2Fs3.amazonaws.com%2Fdocument-export.canva.com%2FRmglA%2FDAHGiwRmglA%2F49%2Fthumbnail%2F0001.png%3FX-Amz-Algorithm%3DAWS4-HMAC-SHA256%26X-Amz-Credential%3DAKIAQYCGKMUH4GDRW44L%252F20260826%252Fus-east-1%252Fs3%252Faws4_request%26X-Amz-Date%3D20260826T140104Z%26X-Amz-Expires%3D15993%26X-Amz-Signature%3D1b0615c23f7fc1b759e63b2d064696d8217023f2c109a345ec4792af0eea640e%26X-Amz-SignedHeaders%3Dhost%26response-expires%3DWed%252C%252026%2520Aug%25202026%252018%253A27%253A37%2520GMT&osig=AAAAAAAAAAAAAAAAAAAAALkyxTB_Cn1nOSzT2VE_w7Yf8NwScA1SX88gRpXMGNkU&page=1&signed=brand%2Cdisableexport%2Cfallback%2Cpage%2Cversion&signer=document-rpc&version=49",
+  "identite-politique": "https://media.canva.com/v2/document-image/hash:1585837360/height:500/id:DAG2l9pnyew/type:B/width:400?brand=BAE8qOCilJM&csig=AAAAAAAAAAAAAAAAAAAAAOsBOyH49QldsvY2utWvVG_qgxGiRpS1etNSXdttVI_Z&disableexport=T&exp=1787768864&fallback=https%3A%2F%2Fs3.amazonaws.com%2Fdocument-export.canva.com%2Fpnyew%2FDAG2l9pnyew%2F79%2Fthumbnail%2F0001.png%3FX-Amz-Algorithm%3DAWS4-HMAC-SHA256%26X-Amz-Credential%3DAKIAQYCGKMUH4GDRW44L%252F20260826%252Fus-east-1%252Fs3%252Faws4_request%26X-Amz-Date%3D20260826T072715Z%26X-Amz-Expires%3D39629%26X-Amz-Signature%3Db1de5a4ec992bccf02361201ce37a558f0d925763ca99e4635f52c9853ff1886%26X-Amz-SignedHeaders%3Dhost%26response-expires%3DWed%252C%252026%2520Aug%25202026%252018%253A27%253A44%2520GMT&osig=AAAAAAAAAAAAAAAAAAAAAA0rVYENhKuvQRK7GszMnygeJVkUyjedysPkOZIZUWMN&page=1&signed=brand%2Cdisableexport%2Cfallback%2Cpage%2Cversion&signer=document-rpc&version=79",
+};
+
+/** Endpoint historique conservé pour compatibilité. */
 export const Route = createFileRoute("/api/public/site-status")({
   server: {
     handlers: {
       GET: async ({ request }) => {
         const requestUrl = new URL(request.url);
-        const sourceParam = requestUrl.searchParams.get("portfolioSource");
+        const portfolioSlug = requestUrl.searchParams.get("portfolio");
         const raw = requestUrl.searchParams.get("raw") === "1";
 
-        if (sourceParam) {
-          let source: URL;
-          try {
-            source = new URL(sourceParam);
-          } catch {
-            return Response.json({ error: "invalid source" }, { status: 400, headers });
-          }
-          if (source.protocol !== "https:" || source.hostname !== "media.canva.com") {
-            return Response.json({ error: "source not allowed" }, { status: 403, headers });
-          }
-
+        if (portfolioSlug) {
+          const source = portfolioSources[portfolioSlug];
+          if (!source) return Response.json({ error: "unknown portfolio item" }, { status: 404, headers });
           const upstream = await fetch(source, { redirect: "follow" });
-          if (!upstream.ok) {
-            return Response.json({ error: `Canva returned ${upstream.status}` }, { status: 502, headers });
-          }
+          if (!upstream.ok) return Response.json({ error: `Canva returned ${upstream.status}` }, { status: 502, headers });
           const bytes = new Uint8Array(await upstream.arrayBuffer());
           const contentType = upstream.headers.get("content-type") || "image/png";
-
-          if (raw) {
-            return new Response(bytes, {
-              headers: {
-                "Cache-Control": "no-store",
-                "Content-Type": contentType,
-                "Content-Length": String(bytes.byteLength),
-              },
-            });
-          }
-
-          return Response.json({
-            contentType,
-            bytes: bytes.byteLength,
-            base64: Buffer.from(bytes).toString("base64"),
-          }, { headers });
+          if (raw) return new Response(bytes, { headers: { "Cache-Control": "no-store", "Content-Type": contentType, "Content-Length": String(bytes.byteLength) } });
+          return Response.json({ contentType, bytes: bytes.byteLength, base64: Buffer.from(bytes).toString("base64") }, { headers });
         }
 
-        return Response.json(
-          { maintenance: false, reason: "maintenance-disabled" },
-          { headers },
-        );
+        return Response.json({ maintenance: false, reason: "maintenance-disabled" }, { headers });
       },
     },
   },
