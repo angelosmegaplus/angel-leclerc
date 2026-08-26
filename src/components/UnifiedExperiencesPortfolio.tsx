@@ -100,7 +100,7 @@ const fallbackProjects: Project[] = [
       "Logos et identités visuelles simples",
       "Documents de présentation et supports numériques",
     ],
-    tools: "Canva",
+    tools: "Canva · 950 créations recensées depuis avril 2022",
     results: "Des supports homogènes et réutilisables, adaptés à chaque public et à chaque format.",
     href: "/portfolio",
     linkLabel: "Voir le portfolio créatif",
@@ -134,6 +134,14 @@ export function UnifiedExperiencesPortfolio() {
     project.title === "Créations graphiques et projets associatifs"
       ? {
           ...project,
+          context: "Missions ponctuelles de création de supports pour des projets personnels, professionnels et associatifs.",
+          missions: [
+            "Affiches, flyers et publications pour les réseaux sociaux",
+            "Logos et identités visuelles simples",
+            "Documents de présentation et supports numériques",
+          ],
+          tools: "Canva · 950 créations recensées depuis avril 2022",
+          results: "Des supports homogènes et réutilisables, adaptés à chaque public et à chaque format.",
           href: "/portfolio",
           linkLabel: "Voir le portfolio créatif",
         }
@@ -168,6 +176,12 @@ export function UnifiedExperiencesPortfolio() {
                   <h3 className="font-display text-lg font-semibold text-foreground">{project.title}</h3>
                 </div>
                 <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{project.context}</p>
+                {project.title === "Créations graphiques et projets associatifs" && (
+                  <a href="/portfolio" className="mt-4 flex items-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3 transition-colors hover:bg-primary/10">
+                    <span className="font-display text-3xl font-bold leading-none text-primary">950</span>
+                    <span className="text-xs font-semibold leading-snug text-foreground">créations Canva recensées<br />depuis avril 2022</span>
+                  </a>
+                )}
                 {project.missions.length > 0 && <><p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Missions réalisées</p><ul className="mt-2 space-y-1.5 text-sm leading-relaxed text-foreground/90">{project.missions.map((mission) => <li key={mission} className="flex gap-2"><span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-primary"/><span>{mission}</span></li>)}</ul></>}
                 {project.tools && <><p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Outils utilisés</p><p className="mt-1 text-sm text-foreground/80">{project.tools}</p></>}
                 {project.results && <><p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Résultats</p><p className="mt-1 text-sm leading-relaxed text-muted-foreground">{project.results}</p></>}
