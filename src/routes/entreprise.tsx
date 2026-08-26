@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
-  Check,
   Compass,
   FileText,
   Layers,
@@ -29,7 +28,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { contentQuery, iconFor, toStringList } from "@/lib/content";
+import { contentQuery, iconFor } from "@/lib/content";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { FeedbackBlock } from "@/components/FeedbackBlock";
 import heroImage from "@/assets/hero-illustration.jpg";
@@ -141,46 +140,6 @@ const pillars = [
     icon: FileText,
     title: "Rédaction éditoriale",
     text: "Articles, interviews, dossiers et contenus professionnels ou numériques.",
-  },
-];
-
-const mainServices = [
-  {
-    icon: Compass,
-    title: "Gestion de projet",
-    intro:
-      "Organisation et suivi de votre projet de la conception à la mise en œuvre.",
-    items: [
-      "Cadrage, planning et jalons",
-      "Coordination des étapes et intervenants",
-      "Recherche et pilotage des prestataires",
-      "Suivi et points d'avancement",
-    ],
-  },
-  {
-    icon: Layers,
-    title: "Conseil en communication",
-    intro:
-      "Analyse des besoins et définition d'une stratégie adaptée au projet.",
-    items: [
-      "Analyse du contexte, des publics et des objectifs",
-      "Positionnement et messages clés",
-      "Choix des supports et canaux",
-      "Plan d'action et recommandations",
-    ],
-  },
-  {
-    icon: FileText,
-    title: "Rédaction et contenus éditoriaux",
-    intro:
-      "Rédaction de textes professionnels, journalistiques ou numériques.",
-    items: [
-      "Articles, portraits, interviews",
-      "Enquêtes et recherches",
-      "Textes institutionnels et communiqués",
-      "Contenus web et réseaux sociaux",
-      "Ton adapté au public visé",
-    ],
   },
 ];
 
@@ -437,17 +396,7 @@ function Intro() {
 }
 
 function Services() {
-  const { data: dbMain } = useQuery(contentQuery("service"));
   const { data: dbExtra } = useQuery(contentQuery("service_extra"));
-  const services =
-    dbMain && dbMain.length
-      ? dbMain.map((i) => ({
-          icon: iconFor(i.icon, Layers),
-          title: i.title,
-          intro: i.description ?? "",
-          items: toStringList(i.bullets),
-        }))
-      : mainServices;
   const extras: {
     icon: LucideIcon;
     label: string;
@@ -462,51 +411,68 @@ function Services() {
           hint: i.description ?? undefined,
         }))
       : extraServices;
+
   return (
     <section id="services" className="section-padding bg-background">
       <div className="container-tight">
         <AnimatedSection className="mx-auto max-w-2xl text-center">
           <span className="text-xs font-semibold uppercase tracking-widest text-primary">
-            Services principaux
+            Service principal
           </span>
           <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
-            Mes trois activités
+            Conseil en communication
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Gestion de projet, conseil et rédaction, proposées ensemble ou séparément.
+            Un accompagnement adapté à votre projet, de la réflexion jusqu’à la mise en œuvre.
           </p>
         </AnimatedSection>
 
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {services.map((s, i) => (
-            <AnimatedSection key={s.title} delay={i * 0.08}>
-              <article className="flex h-full flex-col rounded-2xl border border-border bg-card p-8">
-                <h3 className="font-display text-xl font-bold text-foreground md:text-2xl flex items-start gap-2">
-                  <span className="mt-0.5 inline-flex shrink-0 rounded-lg bg-muted p-1.5">
-                    <s.icon size={18} className="text-primary" />
-                  </span>
-                  {s.title}
-                </h3>
-                <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-                  {s.intro}
-                </p>
-                <ul className="mt-5 space-y-2">
-                  {s.items.map((item) => (
-                    <li
-                      key={item}
-                      className="flex items-start gap-2 text-sm text-foreground"
-                    >
-                      <Check size={16} className="mt-0.5 shrink-0 text-primary" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            </AnimatedSection>
-          ))}
-        </div>
+        <AnimatedSection delay={0.08} className="mx-auto mt-12 max-w-4xl">
+          <article className="rounded-2xl border border-border bg-card p-6 md:p-8">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex items-start gap-3">
+                <span className="inline-flex shrink-0 rounded-xl bg-muted p-3">
+                  <Layers size={22} className="text-primary" />
+                </span>
+                <div>
+                  <h3 className="font-display text-2xl font-bold text-foreground">
+                    Conseil en communication
+                  </h3>
+                  <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
+                    Vous avez une idée, un projet, un événement ou simplement besoin d’améliorer votre communication ? Je vous accompagne de la réflexion jusqu’à la mise en œuvre, avec des solutions adaptées à vos besoins et à votre budget.
+                  </p>
+                </div>
+              </div>
+              <span className="shrink-0 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
+                À partir de 70 €
+              </span>
+            </div>
 
-        {/* Comment se déroule une mission ? */}
+            <div className="mt-8 rounded-2xl bg-muted/60 p-5 md:p-6">
+              <h4 className="font-display text-lg font-semibold text-foreground">
+                Exemple concret
+              </h4>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground md:text-base">
+                <p>Une association prépare un événement mais ne sait pas comment le faire connaître.</p>
+                <p>Je peux définir avec elle la stratégie de communication, identifier les publics à toucher, choisir les supports adaptés et organiser un calendrier d’actions.</p>
+                <p>Je peux également gérer ses réseaux sociaux, rédiger les contenus nécessaires, créer certains supports simples, rechercher des prestataires comme un imprimeur, un photographe, un vidéaste ou un développeur, comparer les offres et coordonner les différents intervenants.</p>
+                <p>Selon le projet, je peux donc intervenir aussi bien comme conseiller que comme chef de projet, tout en réalisant directement certaines actions lorsque cela est pertinent.</p>
+              </div>
+            </div>
+
+            <div className="mt-6 border-t border-border pt-6">
+              <h4 className="font-display text-lg font-semibold text-foreground">Tarif</h4>
+              <p className="mt-2 text-lg font-bold text-primary">À partir de 70 €</p>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                Le tarif est adapté à l’importance, à la complexité et aux besoins du projet.
+              </p>
+              <p className="mt-2 text-sm font-medium text-foreground">
+                Devis gratuit et personnalisé.
+              </p>
+            </div>
+          </article>
+        </AnimatedSection>
+
         <div className="mt-20">
           <AnimatedSection className="mx-auto max-w-2xl text-center">
             <span className="text-xs font-semibold uppercase tracking-widest text-primary">
@@ -539,13 +505,12 @@ function Services() {
           </ol>
         </div>
 
-        {/* Services complémentaires (visuellement secondaires) */}
         <AnimatedSection delay={0.2} className="mt-20">
           <div className="rounded-2xl border border-border bg-muted/40 p-6 md:p-8">
             <h3 className="font-display text-xl font-semibold text-foreground md:text-2xl">
               Services complémentaires
             </h3>
-            <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
               Réalisables seuls ou intégrés à une mission globale.
             </p>
             <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -575,9 +540,7 @@ function Services() {
               })}
             </ul>
             <p className="mt-6 text-[11px] italic text-muted-foreground/80">
-              Toutes les prestations sont réalisées sur devis. Les montants
-              affichés sont uniquement des tarifs indicatifs permettant de donner
-              un ordre de prix.
+              Toutes les prestations sont réalisées sur devis. Les montants affichés sont uniquement des tarifs indicatifs permettant de donner un ordre de prix.
             </p>
           </div>
         </AnimatedSection>
