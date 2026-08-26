@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ArrowRight, Maximize2, Sparkles, X } from "lucide-react";
+import { ArrowRight, ChevronDown, Maximize2, Sparkles, X } from "lucide-react";
 
 export const Route = createFileRoute("/portfolio")({
   head: () => ({
@@ -33,6 +33,17 @@ type Work = {
   image: string;
   aspect?: string;
   featured?: boolean;
+};
+
+const canvaStats = {
+  total: "950",
+  firstCreation: "1er avril 2022",
+  period: "4 ans, 4 mois et 25 jours",
+  yearly: "≈ 216 / an",
+  monthly: "≈ 18 / mois",
+  weekly: "≈ 4,1 / semaine",
+  cadence: "1 création tous les 1,7 jour",
+  asOf: "26 août 2026",
 };
 
 const works: Work[] = [
@@ -202,6 +213,54 @@ function PortfolioPage() {
             </button>
           ))}
         </div>
+
+        <details className="group mt-6 overflow-hidden rounded-[1.4rem] border border-border bg-card shadow-sm open:shadow-md">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 marker:content-none sm:px-6 [&::-webkit-details-marker]:hidden">
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">Canva en chiffres</p>
+              <p className="mt-1 font-display text-base font-bold text-foreground sm:text-lg">
+                {canvaStats.total} créations recensées depuis avril 2022
+              </p>
+            </div>
+            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <ChevronDown size={18} className="transition-transform duration-300 group-open:rotate-180" />
+            </span>
+          </summary>
+
+          <div className="border-t border-border px-5 py-5 sm:px-6 sm:py-6">
+            <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
+              La première création retrouvée dans mon compte Canva date du <strong className="font-semibold text-foreground">{canvaStats.firstCreation}</strong>. Au {canvaStats.asOf}, cela représente {canvaStats.period} de créations, d’essais et de projets.
+            </p>
+
+            <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <div className="rounded-2xl border border-border bg-muted/35 p-4">
+                <p className="font-display text-2xl font-bold text-primary sm:text-3xl">{canvaStats.total}</p>
+                <p className="mt-1 text-xs font-medium text-muted-foreground">créations Canva</p>
+              </div>
+              <div className="rounded-2xl border border-border bg-muted/35 p-4">
+                <p className="font-display text-xl font-bold text-foreground sm:text-2xl">{canvaStats.yearly}</p>
+                <p className="mt-1 text-xs font-medium text-muted-foreground">en moyenne</p>
+              </div>
+              <div className="rounded-2xl border border-border bg-muted/35 p-4">
+                <p className="font-display text-xl font-bold text-foreground sm:text-2xl">{canvaStats.monthly}</p>
+                <p className="mt-1 text-xs font-medium text-muted-foreground">en moyenne</p>
+              </div>
+              <div className="rounded-2xl border border-border bg-muted/35 p-4">
+                <p className="font-display text-xl font-bold text-foreground sm:text-2xl">{canvaStats.weekly}</p>
+                <p className="mt-1 text-xs font-medium text-muted-foreground">en moyenne</p>
+              </div>
+            </div>
+
+            <div className="mt-4 flex flex-col gap-2 rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-xs leading-relaxed text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+              <span>{canvaStats.cadence} en moyenne.</span>
+              <span className="sm:text-right">Comptage arrêté au {canvaStats.asOf}.</span>
+            </div>
+
+            <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground/80">
+              Canva ne fournit pas ici la date officielle de création du compte ni la date de passage à Canva Pro. La date de départ correspond donc à la plus ancienne création retrouvée. Le compteur recense les designs dont je suis propriétaire ; un design de plusieurs pages compte comme une seule création.
+            </p>
+          </div>
+        </details>
 
         <div className="mt-8 columns-1 gap-5 sm:columns-2 lg:columns-3">
           {filtered.map((work, index) => (
