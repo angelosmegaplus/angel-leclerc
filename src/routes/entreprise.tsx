@@ -156,11 +156,11 @@ const steps = [
 const parcoursLinks = [
   {
     icon: FolderOpen,
-    eyebrow: "Portfolio",
-    title: "Mes réalisations",
-    text: "Découvrez des projets concrets, les missions réalisées et les résultats obtenus.",
-    href: "/parcours#realisations",
-    cta: "Voir les réalisations",
+    eyebrow: "Portfolio créatif",
+    title: "Mes créations graphiques",
+    text: "950 créations Canva recensées depuis avril 2022 : logos, affiches, publications, identités visuelles et supports numériques.",
+    href: "/portfolio",
+    cta: "Voir le portfolio",
   },
   {
     icon: BriefcaseBusiness,
