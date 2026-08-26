@@ -480,28 +480,87 @@ function Services() {
         <div className="mt-12 grid gap-6 md:grid-cols-3">
           {services.map((s, i) => (
             <AnimatedSection key={s.title} delay={i * 0.08}>
-              <article className="flex h-full flex-col rounded-2xl border border-border bg-card p-8">
-                <h3 className="font-display text-xl font-bold text-foreground md:text-2xl flex items-start gap-2">
-                  <span className="mt-0.5 inline-flex shrink-0 rounded-lg bg-muted p-1.5">
-                    <s.icon size={18} className="text-primary" />
+              {s.title === "Conseil en communication" ? (
+                <article className="flex h-full flex-col rounded-2xl border border-border bg-card p-8">
+                  <h3 className="font-display text-xl font-bold text-foreground md:text-2xl flex items-start gap-2">
+                    <span className="mt-0.5 inline-flex shrink-0 rounded-lg bg-muted p-1.5">
+                      <s.icon size={18} className="text-primary" />
+                    </span>
+                    {s.title}
+                  </h3>
+                  <span className="mt-3 inline-flex w-fit rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                    À partir de 70 €
                   </span>
-                  {s.title}
-                </h3>
-                <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-                  {s.intro}
-                </p>
-                <ul className="mt-5 space-y-2">
-                  {s.items.map((item) => (
-                    <li
-                      key={item}
-                      className="flex items-start gap-2 text-sm text-foreground"
-                    >
-                      <Check size={16} className="mt-0.5 shrink-0 text-primary" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </article>
+                  <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+                    Vous avez une idée, un projet, un événement ou simplement
+                    besoin d'améliorer votre communication ? Je vous accompagne
+                    de la réflexion jusqu'à la mise en œuvre, avec des solutions
+                    adaptées à vos besoins et à votre budget.
+                  </p>
+
+                  <h4 className="mt-6 font-display text-sm font-semibold uppercase tracking-wide text-foreground">
+                    Exemple concret
+                  </h4>
+                  <div className="mt-3 space-y-3 text-sm leading-relaxed text-muted-foreground">
+                    <p>
+                      Une association prépare un événement mais ne sait pas
+                      comment le faire connaître.
+                    </p>
+                    <p>
+                      Je peux définir avec elle la stratégie de communication,
+                      identifier les publics à toucher, choisir les supports
+                      adaptés et organiser un calendrier d'actions.
+                    </p>
+                    <p>
+                      Je peux également gérer ses réseaux sociaux, rédiger les
+                      contenus nécessaires, créer certains supports simples,
+                      rechercher des prestataires comme un imprimeur, un
+                      photographe, un vidéaste ou un développeur, comparer les
+                      offres et coordonner les différents intervenants.
+                    </p>
+                    <p>
+                      Selon le projet, je peux donc intervenir aussi bien comme
+                      conseiller que comme chef de projet, tout en réalisant
+                      directement certaines actions lorsque cela est pertinent.
+                    </p>
+                  </div>
+
+                  <h4 className="mt-6 font-display text-sm font-semibold uppercase tracking-wide text-foreground">
+                    Tarif
+                  </h4>
+                  <p className="mt-2 text-2xl font-bold text-primary">À partir de 70 €</p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    Le tarif est adapté à l'importance, à la complexité et aux
+                    besoins du projet.
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Devis gratuit et personnalisé.
+                  </p>
+                </article>
+              ) : (
+                <article className="flex h-full flex-col rounded-2xl border border-border bg-card p-8">
+                  <h3 className="font-display text-xl font-bold text-foreground md:text-2xl flex items-start gap-2">
+                    <span className="mt-0.5 inline-flex shrink-0 rounded-lg bg-muted p-1.5">
+                      <s.icon size={18} className="text-primary" />
+                    </span>
+                    {s.title}
+                  </h3>
+                  <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+                    {s.intro}
+                  </p>
+                  <ul className="mt-5 space-y-2">
+                    {s.items.map((item) => (
+                      <li
+                        key={item}
+                        className="flex items-start gap-2 text-sm text-foreground"
+                      >
+                        <Check size={16} className="mt-0.5 shrink-0 text-primary" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              )}
             </AnimatedSection>
           ))}
         </div>

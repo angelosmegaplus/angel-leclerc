@@ -19,6 +19,7 @@ import { Route as MesObjectifsRouteImport } from './routes/mes-objectifs'
 import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
 import { Route as FlammeRouteImport } from './routes/flamme'
 import { Route as FilmsSeriesRouteImport } from './routes/films-series'
+import { Route as ExperiencesRouteImport } from './routes/experiences'
 import { Route as EntrepriseRouteImport } from './routes/entreprise'
 import { Route as DesabonnementRouteImport } from './routes/desabonnement'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -36,6 +37,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as BoutiqueIndexRouteImport } from './routes/boutique/index'
 import { Route as ArticlesIndexRouteImport } from './routes/articles/index'
 import { Route as ActualitesIndexRouteImport } from './routes/actualites/index'
+import { Route as FlammeSocialRouteImport } from './routes/flamme_.social'
 import { Route as CommuniquesReponseArticleChniTombolaPatrimoineRouteImport } from './routes/communiques/reponse-article-chni-tombola-patrimoine'
 import { Route as BoutiqueSuiviRouteImport } from './routes/boutique/suivi'
 import { Route as BoutiqueMerciRouteImport } from './routes/boutique/merci'
@@ -43,6 +45,7 @@ import { Route as BoutiqueCommandeRouteImport } from './routes/boutique/commande
 import { Route as BoutiqueHandleRouteImport } from './routes/boutique/$handle'
 import { Route as ArticlesReponseArticleChniTombolaPatrimoineRouteImport } from './routes/articles/reponse-article-chni-tombola-patrimoine'
 import { Route as ArticlesSlugRouteImport } from './routes/articles/$slug'
+import { Route as ApiFlammeSocialModerateRouteImport } from './routes/api/flamme-social-moderate'
 import { Route as ApiFlammeMistralRouteImport } from './routes/api/flamme-mistral'
 import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
 import { Route as AdminMovixIdRouteImport } from './routes/admin-movix.$id'
@@ -117,6 +120,11 @@ const FlammeRoute = FlammeRouteImport.update({
 const FilmsSeriesRoute = FilmsSeriesRouteImport.update({
   id: '/films-series',
   path: '/films-series',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExperiencesRoute = ExperiencesRouteImport.update({
+  id: '/experiences',
+  path: '/experiences',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EntrepriseRoute = EntrepriseRouteImport.update({
@@ -204,6 +212,11 @@ const ActualitesIndexRoute = ActualitesIndexRouteImport.update({
   path: '/actualites/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FlammeSocialRoute = FlammeSocialRouteImport.update({
+  id: '/flamme_/social',
+  path: '/flamme/social',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CommuniquesReponseArticleChniTombolaPatrimoineRoute =
   CommuniquesReponseArticleChniTombolaPatrimoineRouteImport.update({
     id: '/communiques/reponse-article-chni-tombola-patrimoine',
@@ -239,6 +252,11 @@ const ArticlesReponseArticleChniTombolaPatrimoineRoute =
 const ArticlesSlugRoute = ArticlesSlugRouteImport.update({
   id: '/articles/$slug',
   path: '/articles/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFlammeSocialModerateRoute = ApiFlammeSocialModerateRouteImport.update({
+  id: '/api/flamme-social-moderate',
+  path: '/api/flamme-social-moderate',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiFlammeMistralRoute = ApiFlammeMistralRouteImport.update({
@@ -386,6 +404,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/desabonnement': typeof DesabonnementRoute
   '/entreprise': typeof EntrepriseRoute
+  '/experiences': typeof ExperiencesRoute
   '/films-series': typeof FilmsSeriesRoute
   '/flamme': typeof FlammeRoute
   '/mentions-legales': typeof MentionsLegalesRoute
@@ -400,6 +419,7 @@ export interface FileRoutesByFullPath {
   '/admin-movix/$id': typeof AdminMovixIdRoute
   '/api/assistant': typeof ApiAssistantRoute
   '/api/flamme-mistral': typeof ApiFlammeMistralRoute
+  '/api/flamme-social-moderate': typeof ApiFlammeSocialModerateRoute
   '/articles/$slug': typeof ArticlesSlugRoute
   '/articles/reponse-article-chni-tombola-patrimoine': typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
   '/boutique/$handle': typeof BoutiqueHandleRoute
@@ -407,6 +427,7 @@ export interface FileRoutesByFullPath {
   '/boutique/merci': typeof BoutiqueMerciRoute
   '/boutique/suivi': typeof BoutiqueSuiviRoute
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
+  '/flamme/social': typeof FlammeSocialRoute
   '/actualites/': typeof ActualitesIndexRoute
   '/articles/': typeof ArticlesIndexRoute
   '/boutique/': typeof BoutiqueIndexRoute
@@ -446,6 +467,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/desabonnement': typeof DesabonnementRoute
   '/entreprise': typeof EntrepriseRoute
+  '/experiences': typeof ExperiencesRoute
   '/films-series': typeof FilmsSeriesRoute
   '/flamme': typeof FlammeRoute
   '/mentions-legales': typeof MentionsLegalesRoute
@@ -460,6 +482,7 @@ export interface FileRoutesByTo {
   '/admin-movix/$id': typeof AdminMovixIdRoute
   '/api/assistant': typeof ApiAssistantRoute
   '/api/flamme-mistral': typeof ApiFlammeMistralRoute
+  '/api/flamme-social-moderate': typeof ApiFlammeSocialModerateRoute
   '/articles/$slug': typeof ArticlesSlugRoute
   '/articles/reponse-article-chni-tombola-patrimoine': typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
   '/boutique/$handle': typeof BoutiqueHandleRoute
@@ -467,6 +490,7 @@ export interface FileRoutesByTo {
   '/boutique/merci': typeof BoutiqueMerciRoute
   '/boutique/suivi': typeof BoutiqueSuiviRoute
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
+  '/flamme/social': typeof FlammeSocialRoute
   '/actualites': typeof ActualitesIndexRoute
   '/articles': typeof ArticlesIndexRoute
   '/boutique': typeof BoutiqueIndexRoute
@@ -507,6 +531,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/desabonnement': typeof DesabonnementRoute
   '/entreprise': typeof EntrepriseRoute
+  '/experiences': typeof ExperiencesRoute
   '/films-series': typeof FilmsSeriesRoute
   '/flamme': typeof FlammeRoute
   '/mentions-legales': typeof MentionsLegalesRoute
@@ -521,6 +546,7 @@ export interface FileRoutesById {
   '/admin-movix/$id': typeof AdminMovixIdRoute
   '/api/assistant': typeof ApiAssistantRoute
   '/api/flamme-mistral': typeof ApiFlammeMistralRoute
+  '/api/flamme-social-moderate': typeof ApiFlammeSocialModerateRoute
   '/articles/$slug': typeof ArticlesSlugRoute
   '/articles/reponse-article-chni-tombola-patrimoine': typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
   '/boutique/$handle': typeof BoutiqueHandleRoute
@@ -528,6 +554,7 @@ export interface FileRoutesById {
   '/boutique/merci': typeof BoutiqueMerciRoute
   '/boutique/suivi': typeof BoutiqueSuiviRoute
   '/communiques/reponse-article-chni-tombola-patrimoine': typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
+  '/flamme_/social': typeof FlammeSocialRoute
   '/actualites/': typeof ActualitesIndexRoute
   '/articles/': typeof ArticlesIndexRoute
   '/boutique/': typeof BoutiqueIndexRoute
@@ -569,6 +596,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/desabonnement'
     | '/entreprise'
+    | '/experiences'
     | '/films-series'
     | '/flamme'
     | '/mentions-legales'
@@ -583,6 +611,7 @@ export interface FileRouteTypes {
     | '/admin-movix/$id'
     | '/api/assistant'
     | '/api/flamme-mistral'
+    | '/api/flamme-social-moderate'
     | '/articles/$slug'
     | '/articles/reponse-article-chni-tombola-patrimoine'
     | '/boutique/$handle'
@@ -590,6 +619,7 @@ export interface FileRouteTypes {
     | '/boutique/merci'
     | '/boutique/suivi'
     | '/communiques/reponse-article-chni-tombola-patrimoine'
+    | '/flamme/social'
     | '/actualites/'
     | '/articles/'
     | '/boutique/'
@@ -629,6 +659,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/desabonnement'
     | '/entreprise'
+    | '/experiences'
     | '/films-series'
     | '/flamme'
     | '/mentions-legales'
@@ -643,6 +674,7 @@ export interface FileRouteTypes {
     | '/admin-movix/$id'
     | '/api/assistant'
     | '/api/flamme-mistral'
+    | '/api/flamme-social-moderate'
     | '/articles/$slug'
     | '/articles/reponse-article-chni-tombola-patrimoine'
     | '/boutique/$handle'
@@ -650,6 +682,7 @@ export interface FileRouteTypes {
     | '/boutique/merci'
     | '/boutique/suivi'
     | '/communiques/reponse-article-chni-tombola-patrimoine'
+    | '/flamme/social'
     | '/actualites'
     | '/articles'
     | '/boutique'
@@ -689,6 +722,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/desabonnement'
     | '/entreprise'
+    | '/experiences'
     | '/films-series'
     | '/flamme'
     | '/mentions-legales'
@@ -703,6 +737,7 @@ export interface FileRouteTypes {
     | '/admin-movix/$id'
     | '/api/assistant'
     | '/api/flamme-mistral'
+    | '/api/flamme-social-moderate'
     | '/articles/$slug'
     | '/articles/reponse-article-chni-tombola-patrimoine'
     | '/boutique/$handle'
@@ -710,6 +745,7 @@ export interface FileRouteTypes {
     | '/boutique/merci'
     | '/boutique/suivi'
     | '/communiques/reponse-article-chni-tombola-patrimoine'
+    | '/flamme_/social'
     | '/actualites/'
     | '/articles/'
     | '/boutique/'
@@ -750,6 +786,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   DesabonnementRoute: typeof DesabonnementRoute
   EntrepriseRoute: typeof EntrepriseRoute
+  ExperiencesRoute: typeof ExperiencesRoute
   FilmsSeriesRoute: typeof FilmsSeriesRoute
   FlammeRoute: typeof FlammeRoute
   MentionsLegalesRoute: typeof MentionsLegalesRoute
@@ -763,6 +800,7 @@ export interface RootRouteChildren {
   ActualitesSlugRoute: typeof ActualitesSlugRoute
   ApiAssistantRoute: typeof ApiAssistantRoute
   ApiFlammeMistralRoute: typeof ApiFlammeMistralRoute
+  ApiFlammeSocialModerateRoute: typeof ApiFlammeSocialModerateRoute
   ArticlesSlugRoute: typeof ArticlesSlugRoute
   ArticlesReponseArticleChniTombolaPatrimoineRoute: typeof ArticlesReponseArticleChniTombolaPatrimoineRoute
   BoutiqueHandleRoute: typeof BoutiqueHandleRoute
@@ -770,6 +808,7 @@ export interface RootRouteChildren {
   BoutiqueMerciRoute: typeof BoutiqueMerciRoute
   BoutiqueSuiviRoute: typeof BoutiqueSuiviRoute
   CommuniquesReponseArticleChniTombolaPatrimoineRoute: typeof CommuniquesReponseArticleChniTombolaPatrimoineRoute
+  FlammeSocialRoute: typeof FlammeSocialRoute
   ActualitesIndexRoute: typeof ActualitesIndexRoute
   ArticlesIndexRoute: typeof ArticlesIndexRoute
   BoutiqueIndexRoute: typeof BoutiqueIndexRoute
@@ -864,6 +903,13 @@ declare module '@tanstack/react-router' {
       path: '/films-series'
       fullPath: '/films-series'
       preLoaderRoute: typeof FilmsSeriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/experiences': {
+      id: '/experiences'
+      path: '/experiences'
+      fullPath: '/experiences'
+      preLoaderRoute: typeof ExperiencesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/entreprise': {
@@ -985,6 +1031,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ActualitesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/flamme_/social': {
+      id: '/flamme_/social'
+      path: '/flamme/social'
+      fullPath: '/flamme/social'
+      preLoaderRoute: typeof FlammeSocialRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/communiques/reponse-article-chni-tombola-patrimoine': {
       id: '/communiques/reponse-article-chni-tombola-patrimoine'
       path: '/communiques/reponse-article-chni-tombola-patrimoine'
@@ -1032,6 +1085,13 @@ declare module '@tanstack/react-router' {
       path: '/articles/$slug'
       fullPath: '/articles/$slug'
       preLoaderRoute: typeof ArticlesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/flamme-social-moderate': {
+      id: '/api/flamme-social-moderate'
+      path: '/api/flamme-social-moderate'
+      fullPath: '/api/flamme-social-moderate'
+      preLoaderRoute: typeof ApiFlammeSocialModerateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/flamme-mistral': {
@@ -1234,6 +1294,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   DesabonnementRoute: DesabonnementRoute,
   EntrepriseRoute: EntrepriseRoute,
+  ExperiencesRoute: ExperiencesRoute,
   FilmsSeriesRoute: FilmsSeriesRoute,
   FlammeRoute: FlammeRoute,
   MentionsLegalesRoute: MentionsLegalesRoute,
@@ -1247,6 +1308,7 @@ const rootRouteChildren: RootRouteChildren = {
   ActualitesSlugRoute: ActualitesSlugRoute,
   ApiAssistantRoute: ApiAssistantRoute,
   ApiFlammeMistralRoute: ApiFlammeMistralRoute,
+  ApiFlammeSocialModerateRoute: ApiFlammeSocialModerateRoute,
   ArticlesSlugRoute: ArticlesSlugRoute,
   ArticlesReponseArticleChniTombolaPatrimoineRoute:
     ArticlesReponseArticleChniTombolaPatrimoineRoute,
@@ -1256,6 +1318,7 @@ const rootRouteChildren: RootRouteChildren = {
   BoutiqueSuiviRoute: BoutiqueSuiviRoute,
   CommuniquesReponseArticleChniTombolaPatrimoineRoute:
     CommuniquesReponseArticleChniTombolaPatrimoineRoute,
+  FlammeSocialRoute: FlammeSocialRoute,
   ActualitesIndexRoute: ActualitesIndexRoute,
   ArticlesIndexRoute: ArticlesIndexRoute,
   BoutiqueIndexRoute: BoutiqueIndexRoute,

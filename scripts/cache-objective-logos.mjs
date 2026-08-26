@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, writeFile, access } from "node:fs/promises";
 import { join } from "node:path";
 
 const OUT_DIR = "public/logos/objectives";
@@ -88,6 +88,8 @@ function svgContainer(bytes, mime) {
 await mkdir(OUT_DIR, { recursive: true });
 let downloaded = 0;
 for (const logo of logos) {
+  const outPath = join(OUT_DIR, logo.file);
+  try { await access(outPath); console.log(`[logos] ${logo.file}: déjà en cache, ignore.`); continue; } catch { /* absent, on telecharge */ }
   const candidates = [];
   for (const page of logo.pages ?? []) {
     try { candidates.push(await discoverLogo(page, logo.brands ?? [])); }
