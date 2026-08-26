@@ -1,0 +1,33 @@
+name: Patch enterprise portfolio entry
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - scripts/patch-enterprise-portfolio.py
+      - .github/workflows/patch-enterprise-portfolio.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Patch card
+        run: python scripts/patch-enterprise-portfolio.py
+      - name: Commit change
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/routes/entreprise.tsx
+          if git diff --cached --quiet; then
+            echo "No change"
+          else
+            git commit -m "feat: link enterprise portfolio card to creative portfolio"
+            git push
+          fi
