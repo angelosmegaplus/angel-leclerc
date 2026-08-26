@@ -511,6 +511,12 @@ function Explore() {
                     </span>
                     <p className="mt-5 text-xs font-semibold uppercase tracking-widest text-primary">{item.eyebrow}</p>
                     <h3 className="mt-2 font-display text-2xl font-bold text-foreground">{item.title}</h3>
+                    {item.href === "/portfolio" && (
+                      <div data-canva-enterprise="true" className="mt-4 inline-flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2">
+                        <span className="font-display text-2xl font-bold leading-none text-primary">950</span>
+                        <span className="text-[11px] font-semibold leading-tight text-foreground">créations Canva<br />depuis avril 2022</span>
+                      </div>
+                    )}
                     <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{item.text}</p>
                   </div>
                   <span className="relative mt-auto inline-flex items-center gap-2 pt-7 text-sm font-semibold text-foreground transition-colors group-hover:text-primary">
