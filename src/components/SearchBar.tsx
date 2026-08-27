@@ -268,7 +268,7 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
             >
               <div className="mx-auto mt-2 h-1.5 w-10 shrink-0 rounded-full bg-muted sm:hidden" />
 
-              <div className="relative flex items-center border-b border-border">
+              <div className="relative flex shrink-0 items-center border-b border-border">
                 <Search size={18} className="pointer-events-none absolute left-4 text-muted-foreground" />
                 <input
                   ref={inputRef}
@@ -276,7 +276,11 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Rechercher une page, un service, un article…"
+                  placeholder="Rechercher…"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  enterKeyHint="search"
                   className="w-full bg-transparent py-4 pl-12 pr-12 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
                   aria-label="Rechercher sur le site"
                 />
@@ -284,13 +288,14 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
                   type="button"
                   onClick={closeSearch}
                   aria-label="Fermer la recherche"
-                  className="absolute right-3 inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                  className="absolute right-2 inline-flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 >
-                  <X size={17} />
+                  <X size={18} />
                 </button>
               </div>
 
-              <div className="max-h-[60vh] overflow-y-auto">
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain sm:max-h-[60vh]">
+
                 {loading ? (
                   <JumpingDino />
                 ) : !debounced.trim() ? (
