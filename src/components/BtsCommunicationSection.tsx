@@ -62,6 +62,18 @@ export function BtsCommunicationSection() {
               </motion.span>
             </button>
 
+            {/* Documents visibles directement sous la bannière */}
+            <div className="grid grid-cols-2 gap-2 border-t border-dashed border-primary/30 p-2.5 sm:gap-3 sm:p-3">
+              <a href="/bts/programme-bts-com-talis.pdf" download className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-border bg-background px-2 py-3 text-center text-xs font-semibold transition-colors hover:border-primary/40 hover:bg-primary/5 sm:px-4 sm:text-sm">
+                <Download size={15} className="shrink-0 text-primary" />
+                <span className="truncate">Programme Talis</span>
+              </a>
+              <a href="/bts/calendrier-bts-com-talis.pdf" download className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-border bg-background px-2 py-3 text-center text-xs font-semibold transition-colors hover:border-primary/40 hover:bg-primary/5 sm:px-4 sm:text-sm">
+                <Download size={15} className="shrink-0 text-primary" />
+                <span className="truncate">Calendrier Talis</span>
+              </a>
+            </div>
+
             {/* Contenu dépliable */}
             <AnimatePresence initial={false}>
               {open && (
@@ -75,20 +87,7 @@ export function BtsCommunicationSection() {
                   className="overflow-hidden"
                 >
                   <div className="border-t border-dashed border-primary/30 px-4 pb-6 pt-5 sm:px-6">
-                    {/* Documents PDF en premier */}
-                    <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
-                      <p className="font-semibold">Documents Talis</p>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <a href="/bts/programme-bts-com-talis.pdf" download className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-2 text-xs font-semibold">
-                          <Download size={14} /> Programme PDF
-                        </a>
-                        <a href="/bts/calendrier-bts-com-talis.pdf" download className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-2 text-xs font-semibold">
-                          <Download size={14} /> Calendrier indicatif
-                        </a>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 mx-auto max-w-2xl text-center">
+                    <div className="mx-auto max-w-2xl text-center">
                       <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-primary">
                         <Sparkles size={12} /> Formation
                       </span>
