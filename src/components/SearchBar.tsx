@@ -261,58 +261,59 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.18 }}
-            className="fixed inset-x-0 bottom-0 top-16 z-[100] flex items-end justify-center bg-foreground/70 px-0 pb-0 sm:items-start sm:px-4 sm:pt-24"
+            transition={{ duration: 0.22, ease: "easeOut" }}
+            className="fixed inset-x-0 bottom-0 top-16 z-[100] flex items-center justify-center bg-foreground/45 p-3 sm:p-6"
             onMouseDown={(e) => { if (e.target === e.currentTarget) closeSearch(); }}
             role="dialog"
             aria-modal="true"
             aria-label="Recherche sur le site"
           >
             <motion.div
-              initial={{ opacity: 0, y: 40, scale: 0.98 }}
+              initial={{ opacity: 0, y: 28, scale: 0.94 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 24, scale: 0.98 }}
-              transition={{ type: "spring", stiffness: 420, damping: 34, mass: 0.7 }}
-              className="flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-t-3xl border border-border bg-card shadow-2xl sm:max-h-none sm:rounded-2xl"
+              exit={{ opacity: 0, y: 18, scale: 0.96 }}
+              transition={{ type: "spring", stiffness: 360, damping: 30, mass: 0.72 }}
+              className="flex h-[calc(100%-1.5rem)] max-h-[760px] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-2xl sm:h-[min(78vh,760px)]"
+              onMouseDown={(event) => event.stopPropagation()}
             >
-              <div className="mx-auto mt-2 h-1.5 w-10 shrink-0 rounded-full bg-muted sm:hidden" />
-
-              <div className="relative flex shrink-0 items-center border-b border-border">
-                <Search size={18} className="pointer-events-none absolute left-4 text-muted-foreground" />
+              <div className="flex shrink-0 items-center gap-3 border-b border-border p-3 sm:p-5">
+                <div className="relative flex min-w-0 flex-1 items-center overflow-hidden rounded-2xl border border-border bg-background shadow-sm transition-shadow focus-within:ring-2 focus-within:ring-primary/30">
+                  <Search size={19} className="pointer-events-none absolute left-4 text-primary" />
                 <input
                   ref={inputRef}
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Rechercher…"
+                  placeholder="Que recherchez-vous ?"
                   autoComplete="off"
                   autoCorrect="off"
                   spellCheck={false}
                   enterKeyHint="search"
-                  className="w-full bg-transparent py-4 pl-12 pr-12 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
+                  className="w-full bg-transparent py-4 pl-12 pr-4 text-base text-foreground placeholder:text-muted-foreground focus:outline-none sm:py-5 sm:text-lg"
                   aria-label="Rechercher sur le site"
                 />
+                </div>
                 <button
                   type="button"
                   onClick={closeSearch}
                   aria-label="Fermer la recherche"
-                  className="absolute right-2 inline-flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground transition-all hover:bg-primary/10 hover:text-primary active:scale-90"
                 >
-                  <X size={18} />
+                  <X size={20} />
                 </button>
               </div>
 
-              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain sm:max-h-[60vh]">
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
 
                 {loading ? (
                   <JumpingDino />
                 ) : !debounced.trim() ? (
-                  <div className="px-4 py-6 text-sm text-muted-foreground">
+                    <div className="px-5 py-8 text-sm text-muted-foreground sm:px-8 sm:py-10">
                     Tapez un mot-clé : <span className="text-foreground">tarifs</span>, <span className="text-foreground">CV</span>, <span className="text-foreground">blog</span>, <span className="text-foreground">contact</span>…
                   </div>
                 ) : results.length > 0 ? (
-                  <ul className="py-1">
+                  <ul className="grid gap-1 p-2 sm:grid-cols-2 sm:p-4">
                     {results.map((result, i) => {
                       const inner = (
                         <>
@@ -328,7 +329,7 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
                           <span className="text-xs text-muted-foreground line-clamp-1">{result.description}</span>
                         </>
                       );
-                      const className = `flex min-h-[56px] flex-col justify-center gap-0.5 px-4 py-3 transition-colors active:bg-primary/15 ${i === activeIndex ? "bg-primary/10" : "hover:bg-muted"}`;
+                      const className = `flex min-h-[64px] flex-col justify-center gap-1 rounded-2xl px-4 py-3 transition-colors active:bg-primary/15 ${i === activeIndex ? "bg-primary/10" : "hover:bg-muted"}`;
                       return (
                         <motion.li
                           key={`${result.category}-${result.href}`}
@@ -392,7 +393,7 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
                 <span className="inline-flex items-center gap-1"><CornerDownLeft size={11} /> Entrée · ↑↓ naviguer · Échap fermer</span>
                 <span>⌘K / Ctrl+K</span>
               </div>
-              <div className="h-[max(0.75rem,env(safe-area-inset-bottom))] shrink-0 sm:hidden" />
+              <div className="h-[max(0.5rem,env(safe-area-inset-bottom))] shrink-0 sm:hidden" />
 
             </motion.div>
           </motion.div>
