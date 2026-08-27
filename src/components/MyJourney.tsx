@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import {
+  Calendar,
   Download,
   Sparkles,
   Briefcase,
@@ -56,17 +57,16 @@ function SectionHeader({
   return (
     <div id={id} className="mx-auto max-w-2xl text-center scroll-mt-24">
       {eyebrow && (
-        <span className="inline-flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.22em] text-primary">
-          <span aria-hidden className="h-px w-6 bg-primary/50" />
+        <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-primary">
+          <Sparkles size={12} />
           {eyebrow}
-          <span aria-hidden className="h-px w-6 bg-primary/50" />
         </span>
       )}
-      <h2 className="mt-4 font-display text-3xl font-extrabold leading-tight tracking-tight text-foreground sm:text-4xl md:text-[2.6rem]">
+      <h2 className="mt-3 font-display text-[1.65rem] font-bold leading-tight text-foreground sm:text-3xl md:text-4xl">
         {title}
       </h2>
       {intro && (
-        <p className="mt-4 text-[0.95rem] leading-relaxed text-muted-foreground md:text-base">{intro}</p>
+        <p className="mt-3 text-[0.95rem] leading-relaxed text-muted-foreground md:mt-4 md:text-base">{intro}</p>
       )}
     </div>
   );
@@ -82,7 +82,7 @@ function Card({
   return (
     <div
       className={
-        "rounded-3xl border border-border/70 bg-card p-5 shadow-[0_1px_2px_rgba(24,23,22,0.04)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_20px_45px_-18px_rgba(206,101,75,0.28)] sm:p-7 " +
+        "rounded-2xl border border-border bg-card p-4 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-shadow hover:shadow-md sm:p-6 " +
         className
       }
     >
@@ -100,46 +100,41 @@ function IntroSection() {
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
       </div>
 
-      <div className="container-tight relative py-12 md:py-28">
-        <div className="grid items-center gap-10 md:grid-cols-[1.4fr_1fr] md:gap-12">
+      <div className="container-tight relative py-10 md:py-24">
+        <div className="grid items-center gap-8 md:grid-cols-[1.4fr_1fr] md:gap-10">
           <div className="order-2 md:order-1">
-            <span className="inline-flex items-center gap-2.5 rounded-full border border-primary/30 bg-card/70 px-4 py-1.5 text-xs font-semibold text-primary shadow-sm backdrop-blur">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
-              </span>
-              Disponible à partir de septembre 2026
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+              <Calendar size={12} /> Disponible à partir de septembre 2026
             </span>
-            <h1 className="mt-6 font-display text-[2.75rem] font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-6xl md:text-7xl">
+            <h1 className="mt-4 font-display text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl md:text-6xl">
               Angel <span className="italic text-primary">Leclerc</span>
             </h1>
-            <p className="mt-4 inline-flex items-center gap-3 font-display text-base font-semibold text-foreground/80 sm:text-lg md:text-xl">
-              <span aria-hidden className="hidden h-px w-8 bg-primary/60 sm:block" />
+            <p className="mt-3 font-display text-base text-foreground/80 sm:text-lg md:text-xl">
               Étudiant en communication
             </p>
-            <p className="mt-5 max-w-xl text-[0.95rem] leading-relaxed text-muted-foreground md:mt-6 md:text-lg">
+            <p className="mt-4 max-w-xl text-[0.95rem] leading-relaxed text-muted-foreground md:mt-6 md:text-base">
               Création de contenus, rédaction, communication numérique,
               accueil du public et gestion de projets&nbsp;: je mets mes
               compétences au service de structures qui souhaitent gagner en
               clarté et en visibilité.
             </p>
-            <div className="mt-7 grid grid-cols-1 gap-2.5 sm:flex sm:flex-wrap sm:gap-3 md:mt-9">
+            <div className="mt-6 grid grid-cols-1 gap-2.5 sm:flex sm:flex-wrap sm:gap-3 md:mt-8">
               <a
                 href="#cv"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-[0_10px_25px_-8px_rgba(206,101,75,0.55)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_32px_-10px_rgba(206,101,75,0.6)] sm:justify-start"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 sm:justify-start"
               >
                 <FileText size={16} /> Voir mon CV
               </a>
               <a
                 href="/cv-angel-leclerc.pdf"
                 download
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary hover:text-primary sm:justify-start"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary sm:justify-start"
               >
                 <Download size={16} /> Télécharger mon CV
               </a>
               <a
                 href="#outils"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary hover:text-primary sm:justify-start"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary sm:justify-start"
               >
                 <Wrench size={16} /> Voir les outils utilisés
               </a>
@@ -152,16 +147,12 @@ function IntroSection() {
                 aria-hidden
                 className="absolute inset-0 -m-6 rounded-full bg-primary/15 blur-2xl"
               />
-              <div
-                aria-hidden
-                className="absolute -inset-3 rounded-full border-2 border-dashed border-primary/30 [animation:spin_30s_linear_infinite]"
-              />
               <img
                 src={photo.url}
                 alt="Portrait d'Angel Leclerc"
-                className="relative h-44 w-44 rounded-full border-4 border-card object-cover shadow-[0_24px_50px_-20px_rgba(24,23,22,0.4)] ring-1 ring-border sm:h-56 sm:w-56 md:h-72 md:w-72"
-                width={288}
-                height={288}
+                className="relative h-40 w-40 rounded-full border border-border object-cover shadow-lg sm:h-56 sm:w-56 md:h-64 md:w-64"
+                width={256}
+                height={256}
               />
             </div>
           </div>
@@ -584,18 +575,9 @@ function ExperiencesSection() {
         <div className="container-tight">
           <SectionHeader eyebrow="Parcours" title="Expériences professionnelles" />
 
-          <div className="relative mt-8 space-y-4 md:mt-12 md:space-y-5 md:pl-10">
-            <span
-              aria-hidden
-              className="absolute bottom-4 left-0 top-4 hidden w-px bg-gradient-to-b from-primary/50 via-primary/20 to-transparent md:block"
-            />
+          <div className="mt-8 space-y-4 md:mt-12">
             {list.map((exp, idx) => (
-              <div key={`${exp.role}-${idx}`} className="relative">
-                <span
-                  aria-hidden
-                  className="absolute -left-10 top-8 hidden h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-primary ring-4 ring-background md:block"
-                />
-              <Card className="h-full">
+              <Card key={`${exp.role}-${idx}`}>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                   <ExperienceLogo exp={exp} />
                   <div className="flex-1">
@@ -621,7 +603,6 @@ function ExperiencesSection() {
                   </div>
                 </div>
               </Card>
-              </div>
             ))}
           </div>
         </div>
@@ -1198,9 +1179,7 @@ export function PassionsSection() {
           <div className="mt-8 grid md:mt-12 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {passions.map((p) => (
               <Card key={p.title} className="flex h-full flex-col">
-                <div className="inline-flex w-fit rounded-2xl bg-primary/10 p-3 text-primary">
-                  <p.icon size={22} />
-                </div>
+                <p.icon size={24} className="text-primary" />
                 <h4 className="mt-4 font-display text-lg font-semibold text-foreground">
                   {p.title}
                 </h4>
@@ -1227,24 +1206,6 @@ function CvSection() {
               title="Mon parcours et mes compétences"
               intro="Un aperçu détaillé de mon expérience professionnelle, de ma formation et de mes certifications."
             />
-            <nav aria-label="Sommaire du parcours" className="mx-auto mt-8 flex max-w-2xl flex-wrap justify-center gap-2">
-              {[
-                ["Expériences", "#experiences"],
-                ["Formation", "#formation"],
-                ["Certifications", "#certifications"],
-                ["Engagements", "#engagements"],
-                ["Outils", "#outils"],
-                ["Passions", "#passions"],
-              ].map(([label, href]) => (
-                <a
-                  key={href}
-                  href={href}
-                  className="rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-muted-foreground shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:text-primary"
-                >
-                  {label}
-                </a>
-              ))}
-            </nav>
           </div>
         </div>
       </AnimatedSection>
