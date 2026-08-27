@@ -833,22 +833,20 @@ const engagements: {
       "Pédagogie, formations et transmission auprès des jeunes bénévoles.",
     icon: BookOpen,
   },
+  {
+    title: "Adhérent",
+    org: "CGT Dordogne",
+    period: "Depuis août 2026",
+    description:
+      "Engagement syndical autour des droits des salariés, des conditions de travail et de la solidarité professionnelle.",
+    icon: Users,
+  },
 ];
-
-// Engagement syndical — ligne secondaire, sobre, sans logo ni couleur militante.
-const syndicalEngagement = {
-  title: "Adhérent",
-  org: "CGT Dordogne",
-  period: "Depuis août 2026",
-  description:
-    "Engagement syndical autour des droits des salariés, des conditions de travail et de la solidarité professionnelle.",
-  icon: Users,
-};
 
 function EngagementsSection() {
   const { data } = useQuery(contentQuery("engagement"));
-  const list = [
-    ...((data && data.length
+  const list =
+    data && data.length
       ? data.map((i: ContentItem) => ({
           title: i.title,
           org: i.subtitle ?? "",
@@ -856,9 +854,7 @@ function EngagementsSection() {
           description: i.description ?? "",
           icon: iconFor(i.icon, HeartHandshake),
         }))
-      : engagements)),
-    syndicalEngagement,
-  ];
+      : engagements;
   return (
     <AnimatedSection>
       <section id="engagements" className="section-padding bg-muted/40 scroll-mt-24">

@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, writeFile, access } from "node:fs/promises";
 import { join } from "node:path";
 
 const OUT_DIR = "public/logos/scoutisme";
@@ -10,6 +10,8 @@ const logos = [
 
 await mkdir(OUT_DIR, { recursive: true });
 for (const [file, url] of logos) {
+  const dest = join(OUT_DIR, file);
+  try { await access(dest); console.log(`[scout-logos] ${file} déjà en cache, ignoré.`); continue; } catch {}
   try {
     const response = await fetch(url, { redirect: "follow", signal: AbortSignal.timeout(12000), headers: { "user-agent": "Mozilla/5.0 Angel-Leclerc-site" } });
     if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
