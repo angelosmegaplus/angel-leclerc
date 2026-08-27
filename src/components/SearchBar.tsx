@@ -58,7 +58,17 @@ function scoreItem(item: SearchResult, tokens: string[]) {
   return score;
 }
 
+function CategoryIcon({ category }: { category: string }) {
+  const props = { size: 14, className: "shrink-0 text-muted-foreground" } as const;
+  if (category === "Document") return <FileText {...props} />;
+  if (category === "Image") return <ImageIcon {...props} />;
+  if (category === "Vidéo") return <Film {...props} />;
+  if (category === "Fichier") return <File {...props} />;
+  return null;
+}
+
 function JumpingDino() {
+
   return (
     <div className="flex flex-col items-center gap-1 py-8">
       <motion.div
