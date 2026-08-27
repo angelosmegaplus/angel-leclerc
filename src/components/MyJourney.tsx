@@ -910,16 +910,22 @@ function EngagementSyndicalSection() {
 
 function EngagementsSection() {
   const { data } = useQuery(contentQuery("engagement"));
-  const list =
+  const list = (
     data && data.length
-      ? data.map((i: ContentItem) => ({
-          title: i.title,
-          org: i.subtitle ?? "",
-          period: i.period ?? undefined,
-          description: i.description ?? "",
-          icon: iconFor(i.icon, HeartHandshake),
-        }))
-      : engagements;
+      ? data
+          .filter(
+            (i: ContentItem) =>
+              !(i.subtitle ?? "").toLowerCase().includes("cgt"),
+          )
+          .map((i: ContentItem) => ({
+            title: i.title,
+            org: i.subtitle ?? "",
+            period: i.period ?? undefined,
+            description: i.description ?? "",
+            icon: iconFor(i.icon, HeartHandshake),
+          }))
+      : engagements
+  );
   return (
     <AnimatedSection>
       <section id="engagements" className="section-padding bg-muted/40 scroll-mt-24">
