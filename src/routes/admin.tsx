@@ -35,12 +35,14 @@ import {
   Sparkles,
   Mic2,
   Activity,
+  PenLine,
   Search,
   Settings,
 } from "lucide-react";
 import { Copy } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { ShopAdmin } from "@/components/ShopAdmin";
+import { EmailSignature } from "@/components/EmailSignature";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -175,6 +177,7 @@ type AdminTab =
   | "articles"
   | "messages"
   | "boite-mail"
+  | "signature"
   | "abonnes"
   | "stats"
   | "contenus"
@@ -497,6 +500,7 @@ function AdminPage() {
     { key: "contenus", label: "Parcours & services", icon: LayoutList, group: "Publication" },
     { key: "avis", label: "Avis et soutiens", icon: Star, group: "Publication" },
     { key: "boite-mail", label: "Boîte mail", icon: Inbox, group: "Relations" },
+    { key: "signature", label: "Signature mail", icon: PenLine, group: "Relations" },
     { key: "abonnes", label: "Abonnés", icon: Users, badge: subscribers.length, group: "Relations" },
     { key: "boutique", label: "Boutique", icon: ShoppingBag, group: "Activité" },
     { key: "stats", label: "Statistiques", icon: BarChart3, group: "Activité" },
@@ -1288,6 +1292,12 @@ function AdminPage() {
               <div className="mt-6 rounded-2xl border border-border bg-card p-4 sm:p-6">
                 <AdminAutomationSummary mode="mail" />
                 <MailboxAdmin />
+              </div>
+            )}
+
+            {tab === "signature" && (
+              <div className="mt-6 rounded-2xl border border-border bg-card p-4 sm:p-6">
+                <EmailSignature />
               </div>
             )}
 
