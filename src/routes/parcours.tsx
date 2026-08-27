@@ -155,12 +155,12 @@ function ParcoursPage() {
   return (
     <div className="pb-24 md:pb-0" data-cv-page>
       <BtsCommunicationSection />
-      <RqthSection />
       <MyJourney />
       <ObjectivesButton />
       <PermisSection />
       <AssociationLogos />
       <UnifiedExperiencesPortfolio />
+      <RqthSection />
       <SkillsSection />
       <PassionsSection />
       <LatestArticles title="Mes derniers articles" description="Communication, politique, société et idées pour comprendre ce qui change." eyebrow="Analyses et réflexions" />
