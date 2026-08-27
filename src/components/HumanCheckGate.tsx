@@ -22,6 +22,7 @@ declare global {
         },
       ) => string;
       remove: (id: string) => void;
+      reset: (id?: string) => void;
     };
   }
 }
@@ -203,7 +204,12 @@ export function HumanCheckGate({ children, disabled = false }: { children: React
             <p className="text-sm text-destructive">La vérification n’a pas abouti. Réessayons.</p>
             <button
               type="button"
-              onClick={() => setStatus("challenge")}
+              onClick={() => {
+                if (widgetRef.current && window.turnstile) {
+                  window.turnstile.reset(widgetRef.current);
+                }
+                setStatus("challenge");
+              }}
               className="mt-3 inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
             >
               Réessayer
