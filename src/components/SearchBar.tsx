@@ -319,9 +319,14 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
                           <span className="text-xs text-muted-foreground line-clamp-1">{result.description}</span>
                         </>
                       );
-                      const className = `flex flex-col gap-0.5 px-4 py-3 transition-colors ${i === activeIndex ? "bg-primary/10" : "hover:bg-muted"}`;
+                      const className = `flex min-h-[56px] flex-col justify-center gap-0.5 px-4 py-3 transition-colors active:bg-primary/15 ${i === activeIndex ? "bg-primary/10" : "hover:bg-muted"}`;
                       return (
-                        <li key={`${result.category}-${result.href}`}>
+                        <motion.li
+                          key={`${result.category}-${result.href}`}
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.16, delay: Math.min(i, 8) * 0.02 }}
+                        >
                           {result.external ? (
                             <a
                               href={result.href}
@@ -341,8 +346,9 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
                               {inner}
                             </Link>
                           )}
-                        </li>
+                        </motion.li>
                       );
+
                     })}
                   </ul>
 
