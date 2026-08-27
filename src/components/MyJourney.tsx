@@ -1198,7 +1198,9 @@ export function PassionsSection() {
           <div className="mt-8 grid md:mt-12 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {passions.map((p) => (
               <Card key={p.title} className="flex h-full flex-col">
-                <p.icon size={24} className="text-primary" />
+                <div className="inline-flex w-fit rounded-2xl bg-primary/10 p-3 text-primary">
+                  <p.icon size={22} />
+                </div>
                 <h4 className="mt-4 font-display text-lg font-semibold text-foreground">
                   {p.title}
                 </h4>
@@ -1225,6 +1227,24 @@ function CvSection() {
               title="Mon parcours et mes compétences"
               intro="Un aperçu détaillé de mon expérience professionnelle, de ma formation et de mes certifications."
             />
+            <nav aria-label="Sommaire du parcours" className="mx-auto mt-8 flex max-w-2xl flex-wrap justify-center gap-2">
+              {[
+                ["Expériences", "#experiences"],
+                ["Formation", "#formation"],
+                ["Certifications", "#certifications"],
+                ["Engagements", "#engagements"],
+                ["Outils", "#outils"],
+                ["Passions", "#passions"],
+              ].map(([label, href]) => (
+                <a
+                  key={href}
+                  href={href}
+                  className="rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-muted-foreground shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:text-primary"
+                >
+                  {label}
+                </a>
+              ))}
+            </nav>
           </div>
         </div>
       </AnimatedSection>
