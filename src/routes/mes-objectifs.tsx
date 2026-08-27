@@ -1,12 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
-  BookOpen,
-  BriefcaseBusiness,
-  CircleCheck,
-  Download,
   ExternalLink,
-  School,
   Search,
   ShieldCheck,
   Sparkles,
@@ -15,7 +10,6 @@ import {
 } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { YouTubeEmbed } from "@/components/YouTubeEmbed";
-import talisLogo from "@/assets/talis-logo.png";
 
 export const Route = createFileRoute("/mes-objectifs")({
   head: () => ({
@@ -49,12 +43,6 @@ function SectionHeader({ eyebrow, title, intro }: { eyebrow: string; title: stri
 function Card({ children }: { children: React.ReactNode }) {
   return <div className="rounded-2xl border border-border bg-card p-4 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-shadow hover:shadow-md sm:p-6">{children}</div>;
 }
-
-const institutions = [
-  { name: "Talis", place: "Périgueux", type: "BTS Communication · alternance", href: "https://www.talis.community/campus/perigueux/", localLogo: talisLogo, status: "accepted" },
-  { name: "IBSAC", place: "Brive-la-Gaillarde", type: "BTS Communication · alternance", href: "https://www.ibsac.fr/", localLogo: local("ibsac"), status: "accepted" },
-  { name: "CNED", place: "À distance", type: "BTS Communication · solution de secours", href: "https://www.cned.fr/bts/bts-communication", localLogo: local("cned"), status: "fallback" },
-];
 
 const journalistSchools: SchoolEntry[] = [
   { name: "CFJ", place: "Paris / Lyon", level: "Diplôme visé Bac+5", access: "Après un premier cursus supérieur et admission sélective", focus: "Enquête, terrain, vérification de l'information, sources, reportage et formats longs.", href: "https://cfjparis.com/", localLogo: local("cfj"), mark: "CFJ" },
@@ -96,7 +84,6 @@ function MesObjectifsPage() {
   return (
     <main className="overflow-hidden pb-24 md:pb-0">
       <AnimatedSection><section className="section-padding bg-background"><div className="container-tight"><SectionHeader eyebrow="Projet d'avenir" title="Mes objectifs" intro="Communication, journalisme et radio : plusieurs possibilités, avec une priorité donnée à une situation stable et à un parcours cohérent." /><div className="mx-auto mt-6 flex max-w-2xl items-start gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-foreground/80"><TriangleAlert size={18} className="mt-0.5 shrink-0 text-amber-600" /><p><span className="font-semibold text-foreground">Page en cours de construction.</span> Des erreurs de texte, d’icônes ou de visuels peuvent encore être présentes.</p></div></div></section></AnimatedSection>
-      <AnimatedSection><section className="section-padding bg-muted/40"><div className="container-tight"><SectionHeader eyebrow="Formation" title="BTS Communication" intro="Talis Périgueux et IBSAC Brive sont deux possibilités équivalentes : le choix dépend principalement de la localisation de l'entreprise d'alternance. Le CNED reste une solution de secours." /><div className="mt-8 grid gap-4 sm:grid-cols-3 md:mt-12"><Card><BookOpen className="text-primary" size={22} /><p className="mt-4 font-semibold">BTS Communication</p></Card><Card><School className="text-primary" size={22} /><p className="mt-4 font-semibold">Brive ou Périgueux</p></Card><Card><BriefcaseBusiness className="text-primary" size={22} /><p className="mt-4 font-semibold">Selon l'entreprise</p></Card></div><div className="mt-6 grid gap-4 md:grid-cols-3">{institutions.map((item) => <a key={item.name} href={item.href} target="_blank" rel="noopener noreferrer" className="rounded-2xl border border-border bg-card p-4 sm:p-6"><div className="flex items-start justify-between gap-3"><BrandMark name={item.name} localLogo={item.localLogo} mark={item.name} />{item.status === "accepted" ? <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary"><CircleCheck size={14} /> Accepté</span> : <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground">Solution de secours</span>}</div><h3 className="mt-5 font-display text-lg font-semibold sm:text-xl">{item.name}</h3><p className="mt-2 text-sm text-muted-foreground">{item.place}</p><p className="mt-3 text-sm leading-relaxed text-foreground/90">{item.type}</p></a>)}</div><div className="mt-6 rounded-2xl border border-border bg-card p-4 sm:p-6"><p className="font-semibold">Documents Talis</p><div className="mt-3 flex flex-wrap gap-2"><a href="/bts/programme-bts-com-talis.pdf" download className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-2 text-xs font-semibold"><Download size={14} /> Programme PDF</a><a href="/bts/calendrier-bts-com-talis.pdf" download className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-2 text-xs font-semibold"><Download size={14} /> Calendrier indicatif</a></div></div></div></section></AnimatedSection>
       <AnimatedSection><section className="section-padding bg-background"><div className="container-tight"><SectionHeader eyebrow="Voie principale · Journalisme" title="Journaliste d'investigation" intro="Enquêter, confronter les versions, retrouver des documents et des témoins, vérifier les faits et construire un récit solide." /><div className="mx-auto mt-8 max-w-3xl overflow-hidden rounded-2xl border border-border bg-card shadow-sm md:mt-12"><YouTubeEmbed id="xcnYwQRZcGQ" title="Comment travaillent les journalistes d'investigation ?" /></div><div className="mt-6 grid gap-4 md:grid-cols-3"><Card><Search className="text-primary" size={22} /><h3 className="mt-4 font-semibold">Enquêter sur le terrain</h3></Card><Card><ShieldCheck className="text-primary" size={22} /><h3 className="mt-4 font-semibold">Vérifier les sources</h3></Card><Card><Waves className="text-primary" size={22} /><h3 className="mt-4 font-semibold">Construire l'enquête</h3></Card></div><p className="mt-10 text-center text-xs font-semibold uppercase tracking-widest text-primary">Écoles et formations envisageables</p><div className="mt-5 grid gap-4 md:grid-cols-2">{journalistSchools.map((school) => <SchoolCard key={school.name} school={school} />)}</div></div></section></AnimatedSection>
       <AnimatedSection><section className="section-padding bg-muted/40"><div className="container-tight"><SectionHeader eyebrow="Plan B · Radio" title="Animateur radio" intro="Une deuxième voie possible, davantage centrée sur le divertissement et la personnalité d'antenne : concevoir des émissions très rythmées, faire vivre le direct, jouer avec l'improvisation et l'humour, recevoir des invités, lancer des jeux et créer une vraie interaction avec les auditeurs." /><div className="mx-auto mt-8 max-w-3xl overflow-hidden rounded-2xl border border-border bg-card shadow-sm md:mt-12"><YouTubeEmbed id="2eC3bFEnTlA" title="Présentation du métier d'animateur radio" /></div><p className="mt-10 text-center text-xs font-semibold uppercase tracking-widest text-primary">Formations spécialisées</p><div className="mt-5 grid gap-4 md:grid-cols-3">{hostSchools.map((school) => <SchoolCard key={school.name} school={school} />)}</div></div></section></AnimatedSection>
     </main>

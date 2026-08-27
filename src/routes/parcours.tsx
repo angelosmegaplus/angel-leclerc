@@ -10,6 +10,7 @@ import {
 import { UnifiedExperiencesPortfolio } from "@/components/UnifiedExperiencesPortfolio";
 import { LatestArticles } from "@/components/LatestArticles";
 import { AnimatedSection } from "@/components/AnimatedSection";
+import { BtsCommunicationSection } from "@/components/BtsCommunicationSection";
 import { FeedbackBlock } from "@/components/FeedbackBlock";
 import { Logo } from "@/components/Logo";
 import { AssociationLogos } from "@/components/AssociationLogos";
@@ -100,6 +101,7 @@ function PermisSection() {
 function ParcoursPage() {
   return (
     <div className="pb-24 md:pb-0" data-cv-page>
+      <BtsCommunicationSection />
       <MyJourney />
       <ObjectivesButton />
       <PermisSection />
