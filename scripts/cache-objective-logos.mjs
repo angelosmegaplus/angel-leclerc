@@ -88,6 +88,8 @@ function svgContainer(bytes, mime) {
 await mkdir(OUT_DIR, { recursive: true });
 let downloaded = 0;
 for (const logo of logos) {
+  const dest = join(OUT_DIR, logo.file);
+  try { await access(dest); console.log(`[logos] ${logo.file} déjà en cache, ignoré.`); continue; } catch {}
   const candidates = [];
   for (const page of logo.pages ?? []) {
     try { candidates.push(await discoverLogo(page, logo.brands ?? [])); }
