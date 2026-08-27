@@ -835,10 +835,20 @@ const engagements: {
   },
 ];
 
+// Engagement syndical — ligne secondaire, sobre, sans logo ni couleur militante.
+const syndicalEngagement = {
+  title: "Adhérent",
+  org: "CGT Dordogne",
+  period: "Depuis août 2026",
+  description:
+    "Engagement syndical au quotidien : veille, information et solidarité, dans la continuité d'un parcours de responsable associatif.",
+  icon: Users,
+};
+
 function EngagementsSection() {
   const { data } = useQuery(contentQuery("engagement"));
-  const list =
-    data && data.length
+  const list = [
+    ...((data && data.length
       ? data.map((i: ContentItem) => ({
           title: i.title,
           org: i.subtitle ?? "",
@@ -846,7 +856,9 @@ function EngagementsSection() {
           description: i.description ?? "",
           icon: iconFor(i.icon, HeartHandshake),
         }))
-      : engagements;
+      : engagements)),
+    syndicalEngagement,
+  ];
   return (
     <AnimatedSection>
       <section id="engagements" className="section-padding bg-muted/40 scroll-mt-24">
