@@ -252,20 +252,22 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="fixed inset-0 z-[100] flex items-start justify-center bg-foreground/40 px-4 pt-20 backdrop-blur-sm sm:pt-28"
+            transition={{ duration: 0.18 }}
+            className="fixed inset-0 z-[100] flex items-end justify-center bg-foreground/70 px-0 pb-0 sm:items-start sm:px-4 sm:pt-24"
             onMouseDown={(e) => { if (e.target === e.currentTarget) closeSearch(); }}
             role="dialog"
             aria-modal="true"
             aria-label="Recherche sur le site"
           >
             <motion.div
-              initial={{ opacity: 0, y: -12, scale: 0.98 }}
+              initial={{ opacity: 0, y: 40, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -12, scale: 0.98 }}
-              transition={{ duration: 0.18 }}
-              className="w-full max-w-xl overflow-hidden rounded-2xl border border-border bg-card shadow-2xl"
+              exit={{ opacity: 0, y: 24, scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 420, damping: 34, mass: 0.7 }}
+              className="flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-t-3xl border border-border bg-card shadow-2xl sm:max-h-none sm:rounded-2xl"
             >
+              <div className="mx-auto mt-2 h-1.5 w-10 shrink-0 rounded-full bg-muted sm:hidden" />
+
               <div className="relative flex items-center border-b border-border">
                 <Search size={18} className="pointer-events-none absolute left-4 text-muted-foreground" />
                 <input
