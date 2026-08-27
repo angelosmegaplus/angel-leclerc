@@ -621,6 +621,7 @@ function ExperiencesSection() {
                   </div>
                 </div>
               </Card>
+              </div>
             ))}
           </div>
         </div>
