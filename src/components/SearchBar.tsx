@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, CornerDownLeft, Sparkles, Loader2 } from "lucide-react";
+import { Search, X, CornerDownLeft, Sparkles, Loader2, FileText, Image as ImageIcon, Film, File } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { askSiteAi } from "@/lib/site-search.functions";
+import { PUBLIC_ASSETS } from "@/lib/public-assets.generated";
 
 type SearchResult = {
   title: string;
@@ -10,20 +11,35 @@ type SearchResult = {
   href: string;
   category: string;
   keywords: string[];
+  external?: boolean;
 };
 
-const SEARCH_INDEX: SearchResult[] = [
+const PAGE_INDEX: SearchResult[] = [
   { title: "Accueil", description: "Angel Leclerc Communication — Conseil & Rédaction", href: "/", category: "Page", keywords: ["accueil", "angel", "leclerc", "communication", "conseil", "redaction", "home"] },
   { title: "Entreprise", description: "Services de communication, rédaction et conseil", href: "/entreprise", category: "Services", keywords: ["entreprise", "services", "communication", "redaction", "conseil", "tarifs", "tarif", "prix", "devis", "association", "reseaux sociaux", "site internet", "referencement"] },
-  { title: "Mon parcours", description: "CV, expériences, formations, engagements", href: "/parcours", category: "Page", keywords: ["parcours", "cv", "experience", "formation", "diplome", "certification", "engagement", "cgt", "syndicat", "republique souveraine", "bts", "alternance"] },
+  { title: "Mon parcours", description: "CV, expériences, formations, engagements", href: "/parcours", category: "Page", keywords: ["parcours", "cv", "experience", "formation", "diplome", "certification", "engagement", "cgt", "syndicat", "republique souveraine", "bts", "alternance", "talis", "ibsac"] },
+  { title: "Expériences", description: "Détail des expériences professionnelles", href: "/experiences", category: "Page", keywords: ["experiences", "emploi", "stage", "mission", "poste"] },
+  { title: "Portfolio", description: "Réalisations graphiques et éditoriales", href: "/portfolio", category: "Page", keywords: ["portfolio", "realisations", "creations", "logo", "affiche", "flyer", "visuel", "graphisme"] },
   { title: "Blog", description: "Articles, analyses et réflexions", href: "/articles", category: "Contenu", keywords: ["blog", "article", "articles", "analyse", "reflexion", "societe", "politique", "actualite"] },
   { title: "Contact", description: "Échangez sur votre projet", href: "/contact", category: "Page", keywords: ["contact", "email", "mail", "message", "devis", "projet", "rendez vous", "appeler", "telephone"] },
   { title: "Mentions légales", description: "Informations légales du site", href: "/mentions-legales", category: "Légal", keywords: ["mentions", "legales", "legal", "editeur", "hebergeur", "siret"] },
-  { title: "Politique de confidentialité", description: "RGPD et protection des données", href: "/politique-confidentialite", category: "Légal", keywords: ["confidentialite", "rgpd", "donnees", "cookies", "protection", "vie privee"] },
+  { title: "Politique de confidentialité", description: "RGPD et protection des données", href: "/politique-confidentialite", category: "Légal", keywords: ["confidentialite", "rgpd", "donnees", "protection", "vie privee"] },
+  { title: "Politique de cookies", description: "Usage des cookies sur le site", href: "/politique-cookies", category: "Légal", keywords: ["cookies", "traceurs", "consentement"] },
+  { title: "Conditions d'utilisation", description: "Conditions générales du site", href: "/conditions-utilisation", category: "Légal", keywords: ["conditions", "cgu", "utilisation"] },
   { title: "Mes objectifs", description: "Projets et ambitions professionnelles", href: "/mes-objectifs", category: "Page", keywords: ["objectifs", "ambition", "projet", "avenir"] },
   { title: "Flamme", description: "Moteur de recherche et services", href: "/flamme", category: "Outil", keywords: ["flamme", "recherche", "moteur", "actus", "meteo", "forum", "radio", "tv"] },
   { title: "Espace admin", description: "Connexion à l'espace administrateur", href: "/auth", category: "Admin", keywords: ["admin", "auth", "connexion", "espace", "login", "angel os"] },
 ];
+
+const ASSET_INDEX: SearchResult[] = PUBLIC_ASSETS.map((asset) => ({
+  title: asset.title,
+  description: `Fichier public · ${asset.href}`,
+  href: asset.href,
+  category: asset.kind,
+  keywords: asset.keywords,
+  external: true,
+}));
+
 
 function normalize(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -42,7 +58,17 @@ function scoreItem(item: SearchResult, tokens: string[]) {
   return score;
 }
 
+function CategoryIcon({ category }: { category: string }) {
+  const props = { size: 14, className: "shrink-0 text-muted-foreground" } as const;
+  if (category === "Document") return <FileText {...props} />;
+  if (category === "Image") return <ImageIcon {...props} />;
+  if (category === "Vidéo") return <Film {...props} />;
+  if (category === "Fichier") return <File {...props} />;
+  return null;
+}
+
 function JumpingDino() {
+
   return (
     <div className="flex flex-col items-center gap-1 py-8">
       <motion.div
@@ -67,13 +93,51 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiAnswer, setAiAnswer] = useState<string | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [articleIndex, setArticleIndex] = useState<SearchResult[]>([]);
+  const articlesLoaded = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+
+  // Index des articles publiés, chargé une seule fois à la première ouverture
+  useEffect(() => {
+    if (!open || articlesLoaded.current) return;
+    articlesLoaded.current = true;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const { fetchPublishedArticles } = await import("@/lib/articles");
+        const articles = await fetchPublishedArticles();
+        if (cancelled) return;
+        setArticleIndex(
+          articles.map((article) => ({
+            title: article.title,
+            description: (article.excerpt ?? "").slice(0, 140) || "Article du blog",
+            href: `/articles/${article.slug}`,
+            category: "Article",
+            keywords: [
+              ...(Array.isArray(article.topics) ? article.topics : []),
+              ...(Array.isArray(article.badges) ? article.badges : []),
+              article.category ?? "",
+              article.slug ?? "",
+            ]
+              .filter((value): value is string => typeof value === "string" && value.length > 0)
+              .map((value) => normalize(value)),
+
+            external: true,
+          })),
+        );
+      } catch {
+        /* index d'articles indisponible : la recherche reste fonctionnelle */
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [open]);
 
   const openSearch = useCallback(() => {
     setOpen(true);
     setTimeout(() => inputRef.current?.focus(), 60);
   }, []);
+
 
   const closeSearch = useCallback(() => {
     setOpen(false);
@@ -107,12 +171,15 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
     const q = debounced.trim();
     if (!q) return [];
     const tokens = normalize(q).split(/\s+/).filter(Boolean);
-    return SEARCH_INDEX
-      .map((item) => ({ item, score: scoreItem(item, tokens) }))
-      .filter((entry) => entry.score > 0)
+    const boost: Record<string, number> = { Page: 3, Services: 3, Contenu: 2, Article: 2, Légal: 1, Outil: 1, Admin: 0 };
+    return [...PAGE_INDEX, ...articleIndex, ...ASSET_INDEX]
+      .map((item) => ({ item, score: scoreItem(item, tokens) + (boost[item.category] ?? 0) }))
+      .filter((entry) => entry.score > (boost[entry.item.category] ?? 0))
       .sort((a, b) => b.score - a.score)
+      .slice(0, 20)
       .map((entry) => entry.item);
-  }, [debounced]);
+  }, [debounced, articleIndex]);
+
 
   const runAi = useCallback(async () => {
     const question = query.trim();
@@ -157,7 +224,10 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
     if (e.key === "Enter") {
       e.preventDefault();
       if (results[activeIndex]) {
-        navigate({ to: results[activeIndex].href });
+        const target = results[activeIndex];
+        if (target.external) window.location.href = target.href;
+        else navigate({ to: target.href });
+
         closeSearch();
       } else if (!loading && query.trim()) {
         void runAi();
@@ -227,25 +297,48 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
                   </div>
                 ) : results.length > 0 ? (
                   <ul className="py-1">
-                    {results.map((result, i) => (
-                      <li key={result.href}>
-                        <Link
-                          to={result.href}
-                          onClick={closeSearch}
-                          onMouseEnter={() => setActiveIndex(i)}
-                          className={`flex flex-col gap-0.5 px-4 py-3 transition-colors ${i === activeIndex ? "bg-primary/10" : "hover:bg-muted"}`}
-                        >
+                    {results.map((result, i) => {
+                      const inner = (
+                        <>
                           <div className="flex items-center justify-between gap-2">
-                            <span className="text-sm font-medium text-foreground">{result.title}</span>
+                            <span className="flex min-w-0 items-center gap-2">
+                              <CategoryIcon category={result.category} />
+                              <span className="truncate text-sm font-medium text-foreground">{result.title}</span>
+                            </span>
                             <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">
                               {result.category}
                             </span>
                           </div>
                           <span className="text-xs text-muted-foreground line-clamp-1">{result.description}</span>
-                        </Link>
-                      </li>
-                    ))}
+                        </>
+                      );
+                      const className = `flex flex-col gap-0.5 px-4 py-3 transition-colors ${i === activeIndex ? "bg-primary/10" : "hover:bg-muted"}`;
+                      return (
+                        <li key={`${result.category}-${result.href}`}>
+                          {result.external ? (
+                            <a
+                              href={result.href}
+                              onClick={closeSearch}
+                              onMouseEnter={() => setActiveIndex(i)}
+                              className={className}
+                            >
+                              {inner}
+                            </a>
+                          ) : (
+                            <Link
+                              to={result.href}
+                              onClick={closeSearch}
+                              onMouseEnter={() => setActiveIndex(i)}
+                              className={className}
+                            >
+                              {inner}
+                            </Link>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
+
                 ) : (
                   <div className="px-4 py-6 text-center">
                     <p className="text-sm text-muted-foreground">
