@@ -1,12 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
-  BookOpen,
-  BriefcaseBusiness,
-  CircleCheck,
-  Download,
   ExternalLink,
-  School,
   Search,
   ShieldCheck,
   Sparkles,
@@ -15,7 +10,6 @@ import {
 } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { YouTubeEmbed } from "@/components/YouTubeEmbed";
-import talisLogo from "@/assets/talis-logo.png";
 
 export const Route = createFileRoute("/mes-objectifs")({
   head: () => ({
@@ -49,12 +43,6 @@ function SectionHeader({ eyebrow, title, intro }: { eyebrow: string; title: stri
 function Card({ children }: { children: React.ReactNode }) {
   return <div className="rounded-2xl border border-border bg-card p-4 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-shadow hover:shadow-md sm:p-6">{children}</div>;
 }
-
-const institutions = [
-  { name: "Talis", place: "Périgueux", type: "BTS Communication · alternance", href: "https://www.talis.community/campus/perigueux/", localLogo: talisLogo, status: "accepted" },
-  { name: "IBSAC", place: "Brive-la-Gaillarde", type: "BTS Communication · alternance", href: "https://www.ibsac.fr/", localLogo: local("ibsac"), status: "accepted" },
-  { name: "CNED", place: "À distance", type: "BTS Communication · solution de secours", href: "https://www.cned.fr/bts/bts-communication", localLogo: local("cned"), status: "fallback" },
-];
 
 const journalistSchools: SchoolEntry[] = [
   { name: "CFJ", place: "Paris / Lyon", level: "Diplôme visé Bac+5", access: "Après un premier cursus supérieur et admission sélective", focus: "Enquête, terrain, vérification de l'information, sources, reportage et formats longs.", href: "https://cfjparis.com/", localLogo: local("cfj"), mark: "CFJ" },
