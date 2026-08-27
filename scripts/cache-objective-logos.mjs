@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, writeFile, access } from "node:fs/promises";
 import { join } from "node:path";
 
 const OUT_DIR = "public/logos/objectives";
