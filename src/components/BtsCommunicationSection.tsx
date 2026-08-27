@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, BriefcaseBusiness, CircleCheck, Download, School, ChevronDown, Search, Sparkles, Clock } from "lucide-react";
+import { BookOpen, BriefcaseBusiness, CircleCheck, Download, School, ChevronDown, Search, Sparkles } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import talisLogo from "@/assets/talis-logo.png";
 
@@ -37,41 +37,28 @@ export function BtsCommunicationSection() {
     <AnimatedSection>
       <section className="section-padding bg-muted/40">
         <div className="container-tight">
-          {/* Bannière dépliable — section temporaire */}
-          <div className="overflow-hidden rounded-3xl border-2 border-dashed border-primary/40 bg-card shadow-sm">
-            {/* En-tête cliquable */}
+          {/* Bannière discrète une seule ligne — section temporaire */}
+          <div className="overflow-hidden rounded-full border border-dashed border-primary/40 bg-card shadow-sm">
             <button
               type="button"
               onClick={() => setOpen((v) => !v)}
               aria-expanded={open}
               aria-controls="bts-content"
-              className="flex w-full items-center gap-4 p-5 text-left transition-colors hover:bg-primary/5 sm:p-6"
+              className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left transition-colors hover:bg-primary/5 sm:px-5"
             >
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                <Search size={22} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-0.5 text-[0.7rem] font-bold uppercase tracking-wider text-primary">
-                    <Clock size={12} /> Section temporaire
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[0.7rem] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-500">
-                    <Sparkles size={12} /> Recherche d'alternance
-                  </span>
-                </div>
-                <h2 className="mt-2 font-display text-xl font-bold leading-tight text-foreground sm:text-2xl">
-                  BTS Communication — je recherche une entreprise
-                </h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Cliquez pour voir le détail de ma formation et mes écoles visées
-                </p>
-              </div>
+              <Search size={15} className="shrink-0 text-primary" />
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-500 shrink-0">
+                <Sparkles size={10} /> Recherche
+              </span>
+              <span className="truncate text-sm font-medium text-foreground">
+                BTS Communication — je cherche une entreprise d'alternance
+              </span>
               <motion.span
                 animate={{ rotate: open ? 180 : 0 }}
                 transition={{ duration: 0.25, ease: "easeInOut" }}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
               >
-                <ChevronDown size={20} />
+                <ChevronDown size={14} />
               </motion.span>
             </button>
 
@@ -87,8 +74,21 @@ export function BtsCommunicationSection() {
                   transition={{ duration: 0.35, ease: "easeInOut" }}
                   className="overflow-hidden"
                 >
-                  <div className="border-t border-dashed border-primary/30 px-5 pb-6 pt-5 sm:px-6">
-                    <div className="mx-auto max-w-2xl text-center">
+                  <div className="border-t border-dashed border-primary/30 px-4 pb-6 pt-5 sm:px-6">
+                    {/* Documents PDF en premier */}
+                    <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
+                      <p className="font-semibold">Documents Talis</p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <a href="/bts/programme-bts-com-talis.pdf" download className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-2 text-xs font-semibold">
+                          <Download size={14} /> Programme PDF
+                        </a>
+                        <a href="/bts/calendrier-bts-com-talis.pdf" download className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-2 text-xs font-semibold">
+                          <Download size={14} /> Calendrier indicatif
+                        </a>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 mx-auto max-w-2xl text-center">
                       <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-primary">
                         <Sparkles size={12} /> Formation
                       </span>
@@ -133,18 +133,6 @@ export function BtsCommunicationSection() {
                           <p className="mt-3 text-sm leading-relaxed text-foreground/90">{item.type}</p>
                         </a>
                       ))}
-                    </div>
-
-                    <div className="mt-6 rounded-2xl border border-border bg-card p-4 sm:p-6">
-                      <p className="font-semibold">Documents Talis</p>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <a href="/bts/programme-bts-com-talis.pdf" download className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-2 text-xs font-semibold">
-                          <Download size={14} /> Programme PDF
-                        </a>
-                        <a href="/bts/calendrier-bts-com-talis.pdf" download className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-2 text-xs font-semibold">
-                          <Download size={14} /> Calendrier indicatif
-                        </a>
-                      </div>
                     </div>
                   </div>
                 </motion.div>
