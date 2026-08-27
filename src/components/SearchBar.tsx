@@ -262,7 +262,7 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
-            className="fixed inset-0 z-[100] flex items-end justify-center bg-foreground/70 px-0 pb-0 sm:items-start sm:px-4 sm:pt-24"
+            className="fixed inset-x-0 bottom-0 top-16 z-[100] flex items-end justify-center bg-foreground/70 px-0 pb-0 sm:items-start sm:px-4 sm:pt-24"
             onMouseDown={(e) => { if (e.target === e.currentTarget) closeSearch(); }}
             role="dialog"
             aria-modal="true"
