@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import {
-  Calendar,
   Download,
   Sparkles,
   Briefcase,
@@ -585,9 +584,18 @@ function ExperiencesSection() {
         <div className="container-tight">
           <SectionHeader eyebrow="Parcours" title="Expériences professionnelles" />
 
-          <div className="mt-8 space-y-4 md:mt-12">
+          <div className="relative mt-8 space-y-4 md:mt-12 md:space-y-5 md:pl-10">
+            <span
+              aria-hidden
+              className="absolute bottom-4 left-0 top-4 hidden w-px bg-gradient-to-b from-primary/50 via-primary/20 to-transparent md:block"
+            />
             {list.map((exp, idx) => (
-              <Card key={`${exp.role}-${idx}`}>
+              <div key={`${exp.role}-${idx}`} className="relative">
+                <span
+                  aria-hidden
+                  className="absolute -left-10 top-8 hidden h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-primary ring-4 ring-background md:block"
+                />
+              <Card className="h-full">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                   <ExperienceLogo exp={exp} />
                   <div className="flex-1">
