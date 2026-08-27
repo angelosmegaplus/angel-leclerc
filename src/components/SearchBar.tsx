@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, CornerDownLeft, Sparkles, Loader2 } from "lucide-react";
+import { Search, X, CornerDownLeft, Sparkles, Loader2, FileText, Image as ImageIcon, Film, File } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { askSiteAi } from "@/lib/site-search.functions";
+import { PUBLIC_ASSETS } from "@/lib/public-assets.generated";
 
 type SearchResult = {
   title: string;
@@ -10,20 +11,35 @@ type SearchResult = {
   href: string;
   category: string;
   keywords: string[];
+  external?: boolean;
 };
 
-const SEARCH_INDEX: SearchResult[] = [
+const PAGE_INDEX: SearchResult[] = [
   { title: "Accueil", description: "Angel Leclerc Communication — Conseil & Rédaction", href: "/", category: "Page", keywords: ["accueil", "angel", "leclerc", "communication", "conseil", "redaction", "home"] },
   { title: "Entreprise", description: "Services de communication, rédaction et conseil", href: "/entreprise", category: "Services", keywords: ["entreprise", "services", "communication", "redaction", "conseil", "tarifs", "tarif", "prix", "devis", "association", "reseaux sociaux", "site internet", "referencement"] },
-  { title: "Mon parcours", description: "CV, expériences, formations, engagements", href: "/parcours", category: "Page", keywords: ["parcours", "cv", "experience", "formation", "diplome", "certification", "engagement", "cgt", "syndicat", "republique souveraine", "bts", "alternance"] },
+  { title: "Mon parcours", description: "CV, expériences, formations, engagements", href: "/parcours", category: "Page", keywords: ["parcours", "cv", "experience", "formation", "diplome", "certification", "engagement", "cgt", "syndicat", "republique souveraine", "bts", "alternance", "talis", "ibsac"] },
+  { title: "Expériences", description: "Détail des expériences professionnelles", href: "/experiences", category: "Page", keywords: ["experiences", "emploi", "stage", "mission", "poste"] },
+  { title: "Portfolio", description: "Réalisations graphiques et éditoriales", href: "/portfolio", category: "Page", keywords: ["portfolio", "realisations", "creations", "logo", "affiche", "flyer", "visuel", "graphisme"] },
   { title: "Blog", description: "Articles, analyses et réflexions", href: "/articles", category: "Contenu", keywords: ["blog", "article", "articles", "analyse", "reflexion", "societe", "politique", "actualite"] },
   { title: "Contact", description: "Échangez sur votre projet", href: "/contact", category: "Page", keywords: ["contact", "email", "mail", "message", "devis", "projet", "rendez vous", "appeler", "telephone"] },
   { title: "Mentions légales", description: "Informations légales du site", href: "/mentions-legales", category: "Légal", keywords: ["mentions", "legales", "legal", "editeur", "hebergeur", "siret"] },
-  { title: "Politique de confidentialité", description: "RGPD et protection des données", href: "/politique-confidentialite", category: "Légal", keywords: ["confidentialite", "rgpd", "donnees", "cookies", "protection", "vie privee"] },
+  { title: "Politique de confidentialité", description: "RGPD et protection des données", href: "/politique-confidentialite", category: "Légal", keywords: ["confidentialite", "rgpd", "donnees", "protection", "vie privee"] },
+  { title: "Politique de cookies", description: "Usage des cookies sur le site", href: "/politique-cookies", category: "Légal", keywords: ["cookies", "traceurs", "consentement"] },
+  { title: "Conditions d'utilisation", description: "Conditions générales du site", href: "/conditions-utilisation", category: "Légal", keywords: ["conditions", "cgu", "utilisation"] },
   { title: "Mes objectifs", description: "Projets et ambitions professionnelles", href: "/mes-objectifs", category: "Page", keywords: ["objectifs", "ambition", "projet", "avenir"] },
   { title: "Flamme", description: "Moteur de recherche et services", href: "/flamme", category: "Outil", keywords: ["flamme", "recherche", "moteur", "actus", "meteo", "forum", "radio", "tv"] },
   { title: "Espace admin", description: "Connexion à l'espace administrateur", href: "/auth", category: "Admin", keywords: ["admin", "auth", "connexion", "espace", "login", "angel os"] },
 ];
+
+const ASSET_INDEX: SearchResult[] = PUBLIC_ASSETS.map((asset) => ({
+  title: asset.title,
+  description: `Fichier public · ${asset.href}`,
+  href: asset.href,
+  category: asset.kind,
+  keywords: asset.keywords,
+  external: true,
+}));
+
 
 function normalize(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
