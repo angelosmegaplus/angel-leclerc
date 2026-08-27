@@ -21,11 +21,17 @@ const DEFAULT_DATA: SignatureData = {
   website: "www.angel-leclerc.fr",
 };
 
+/** Logo de marque existant, hébergé publiquement (monogramme AL du site). */
+const LOGO_URL = "https://www.angel-leclerc.fr/icons/apple-touch-icon.png";
+
 function buildSignatureHtml(d: SignatureData): string {
   const phoneHref = `tel:+33${d.phone.replace(/\D/g, "").replace(/^0/, "")}`;
   const siteHref = `https://${d.website.replace(/^https?:\/\//, "")}`;
   return `<table cellpadding="0" cellspacing="0" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#181716;">
   <tr>
+    <td style="padding-right:14px;vertical-align:middle;">
+      <img src="${LOGO_URL}" width="80" height="80" alt="Angel Leclerc Communication" style="display:block;width:80px;height:80px;border-radius:16px;" />
+    </td>
     <td style="padding-right:14px;border-right:3px solid #CE654B;vertical-align:top;">
       <div style="font-size:18px;font-weight:700;color:#181716;">${escapeHtml(d.name)}</div>
       <div style="font-size:12px;color:#CE654B;font-weight:600;letter-spacing:.04em;text-transform:uppercase;">${escapeHtml(d.role)}</div>
