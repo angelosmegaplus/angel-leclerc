@@ -98,9 +98,32 @@ function PermisSection() {
   );
 }
 
+const compactCgtStyles = `
+[data-cv-page] #engagement-syndical {
+  padding-top: 1rem !important;
+  padding-bottom: 1rem !important;
+}
+
+[data-cv-page] #engagement-syndical .container-tight > div:first-child {
+  display: none;
+}
+
+[data-cv-page] #engagement-syndical .container-tight > div:nth-child(2) {
+  margin-top: 0 !important;
+}
+
+@media (min-width: 768px) {
+  [data-cv-page] #engagement-syndical {
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+  }
+}
+`;
+
 function ParcoursPage() {
   return (
     <div className="pb-24 md:pb-0" data-cv-page>
+      <style>{compactCgtStyles}</style>
       <BtsCommunicationSection />
       <MyJourney />
       <ObjectivesButton />
