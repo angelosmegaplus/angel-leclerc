@@ -43,6 +43,77 @@ function ObjectivesButton() {
   );
 }
 
+function RqthSection() {
+  const [target, setTarget] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const certificationsSection = document.getElementById("certifications");
+    const container = certificationsSection?.querySelector<HTMLElement>(".container-tight");
+    if (!container) return;
+
+    const mount = document.createElement("div");
+    mount.dataset.rqthSection = "true";
+    container.appendChild(mount);
+    setTarget(mount);
+
+    return () => mount.remove();
+  }, []);
+
+  if (!target) return null;
+
+  return createPortal(
+    <div className="mt-8 border-t border-border pt-7 md:mt-10 md:pt-8" aria-labelledby="rqth-title">
+      <div className="mx-auto max-w-2xl">
+        <div className="rounded-2xl border border-primary/25 bg-card p-5 shadow-sm sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary" aria-hidden="true">
+              <Accessibility size={24} />
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 id="rqth-title" className="font-display text-xl font-bold text-foreground sm:text-2xl">RQTH reconnue</h2>
+                <span className="rounded-full border border-primary/25 bg-primary/5 px-2.5 py-1 text-xs font-semibold text-primary">Un vrai plus pour l’alternance</span>
+              </div>
+
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                Mon handicap est aujourd’hui peu contraignant dans la vie professionnelle : une épilepsie qui va nettement mieux, un TDAH et un ancien problème de vue désormais quasi corrigé. Je suis autonome au quotidien, je vois très bien et d’éventuels aménagements ne sont à prévoir qu’en cas de besoin.
+              </p>
+
+              <div className="mt-4 grid gap-2.5 sm:grid-cols-3">
+                <div className="rounded-xl border border-border bg-muted/35 p-3">
+                  <p className="flex items-start gap-2 text-sm font-semibold text-foreground"><CircleCheck size={16} className="mt-0.5 shrink-0 text-primary" /> Jusqu’à 3 000 €</p>
+                  <p className="mt-1.5 text-xs leading-5 text-muted-foreground">Aide Agefiph possible pour un contrat d’apprentissage éligible.</p>
+                </div>
+                <div className="rounded-xl border border-border bg-muted/35 p-3">
+                  <p className="flex items-start gap-2 text-sm font-semibold text-foreground"><CircleCheck size={16} className="mt-0.5 shrink-0 text-primary" /> Aides cumulables</p>
+                  <p className="mt-1.5 text-xs leading-5 text-muted-foreground">L’aide Agefiph peut se cumuler avec les aides de droit commun.</p>
+                </div>
+                <div className="rounded-xl border border-border bg-muted/35 p-3">
+                  <p className="flex items-start gap-2 text-sm font-semibold text-foreground"><CircleCheck size={16} className="mt-0.5 shrink-0 text-primary" /> OETH</p>
+                  <p className="mt-1.5 text-xs leading-5 text-muted-foreground">Le recrutement contribue à l’obligation d’emploi pour les entreprises concernées.</p>
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                <a href="https://www.agefiph.fr/sites/default/files/medias/fichiers/2026-01/Agefiph-Aide-apprentissage_2026-01.pdf" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-2 text-xs font-semibold text-primary transition-colors hover:bg-primary/10">
+                  <FileText size={14} /> PDF — aide employeur Agefiph
+                </a>
+                <a href="https://www.agefiph.fr/sites/default/files/medias/fichiers/2026-06/APF-Agefiph_Guide-Emploi-Jeune_2026-05.pdf" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/30 px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:border-primary/40">
+                  <FileText size={14} /> PDF — guide emploi & handicap
+                </a>
+              </div>
+
+              <p className="mt-3 text-[11px] leading-5 text-muted-foreground">Aides et dispositifs soumis aux conditions d’éligibilité du contrat et de l’employeur.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>,
+    target,
+  );
+}
+
 function PermisSection() {
   const [target, setTarget] = useState<HTMLElement | null>(null);
 
@@ -98,69 +169,16 @@ function PermisSection() {
   );
 }
 
-function RqthSection() {
-  return (
-    <section className="px-4 pb-8 sm:px-6 sm:pb-10" aria-labelledby="rqth-title">
-      <div className="container-tight">
-        <div className="rounded-2xl border border-primary/25 bg-card p-5 shadow-sm sm:p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary" aria-hidden="true">
-              <Accessibility size={24} />
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 id="rqth-title" className="font-display text-xl font-bold text-foreground sm:text-2xl">RQTH reconnue</h2>
-                <span className="rounded-full border border-primary/25 bg-primary/5 px-2.5 py-1 text-xs font-semibold text-primary">Un vrai plus pour l’alternance</span>
-              </div>
-
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                Mon handicap est aujourd’hui peu contraignant dans la vie professionnelle : une épilepsie qui va nettement mieux, un TDAH et un ancien problème de vue désormais quasi corrigé. Je suis autonome au quotidien, je vois très bien et d’éventuels aménagements ne sont à prévoir qu’en cas de besoin.
-              </p>
-
-              <div className="mt-4 grid gap-2.5 sm:grid-cols-3">
-                <div className="rounded-xl border border-border bg-muted/35 p-3">
-                  <p className="flex items-start gap-2 text-sm font-semibold text-foreground"><CircleCheck size={16} className="mt-0.5 shrink-0 text-primary" /> Jusqu’à 3 000 €</p>
-                  <p className="mt-1.5 text-xs leading-5 text-muted-foreground">Aide Agefiph possible pour un contrat d’apprentissage éligible.</p>
-                </div>
-                <div className="rounded-xl border border-border bg-muted/35 p-3">
-                  <p className="flex items-start gap-2 text-sm font-semibold text-foreground"><CircleCheck size={16} className="mt-0.5 shrink-0 text-primary" /> Aides cumulables</p>
-                  <p className="mt-1.5 text-xs leading-5 text-muted-foreground">L’aide Agefiph peut se cumuler avec les aides de droit commun.</p>
-                </div>
-                <div className="rounded-xl border border-border bg-muted/35 p-3">
-                  <p className="flex items-start gap-2 text-sm font-semibold text-foreground"><CircleCheck size={16} className="mt-0.5 shrink-0 text-primary" /> OETH</p>
-                  <p className="mt-1.5 text-xs leading-5 text-muted-foreground">Le recrutement contribue à l’obligation d’emploi pour les entreprises concernées.</p>
-                </div>
-              </div>
-
-              <div className="mt-4 flex flex-wrap gap-2">
-                <a href="https://www.agefiph.fr/sites/default/files/medias/fichiers/2026-01/Agefiph-Aide-apprentissage_2026-01.pdf" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-2 text-xs font-semibold text-primary transition-colors hover:bg-primary/10">
-                  <FileText size={14} /> PDF — aide employeur Agefiph
-                </a>
-                <a href="https://www.agefiph.fr/sites/default/files/medias/fichiers/2026-06/APF-Agefiph_Guide-Emploi-Jeune_2026-05.pdf" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/30 px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:border-primary/40">
-                  <FileText size={14} /> PDF — guide emploi & handicap
-                </a>
-              </div>
-
-              <p className="mt-3 text-[11px] leading-5 text-muted-foreground">Aides et dispositifs soumis aux conditions d’éligibilité du contrat et de l’employeur.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function ParcoursPage() {
   return (
     <div className="pb-24 md:pb-0" data-cv-page>
       <BtsCommunicationSection />
       <MyJourney />
       <ObjectivesButton />
+      <RqthSection />
       <PermisSection />
       <AssociationLogos />
       <UnifiedExperiencesPortfolio />
-      <RqthSection />
       <SkillsSection />
       <PassionsSection />
       <LatestArticles title="Mes derniers articles" description="Communication, politique, société et idées pour comprendre ce qui change." eyebrow="Analyses et réflexions" />
