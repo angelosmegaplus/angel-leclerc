@@ -50,6 +50,7 @@ export function Header() {
             <a href="https://www.instagram.com/angelof_com?igsh=MWpqMjc3Mm03MHJpYg==" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Instagram Angel Leclerc Communication"><Instagram size={20} /></a>
             <a href="https://www.facebook.com/share/1LFGicX7qF/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Facebook Angel Leclerc Communication"><Facebook size={20} /></a>
           </div>
+          <SearchBar />
           <ThemeToggle className="h-9 w-9 shrink-0" />
           <Link
             to="/auth"
@@ -64,6 +65,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-1 md:hidden">
+          <SearchBar compact />
           <ThemeToggle className="h-10 w-10 border-transparent bg-transparent" />
           <button
             className="inline-flex h-11 w-11 items-center justify-center text-foreground"
