@@ -198,7 +198,16 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
     }
   }, [query]);
 
+  // Blocage du défilement de la page quand la recherche est ouverte
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previous; };
+  }, [open]);
+
   // Raccourci clavier global
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
