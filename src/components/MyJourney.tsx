@@ -57,16 +57,17 @@ function SectionHeader({
   return (
     <div id={id} className="mx-auto max-w-2xl text-center scroll-mt-24">
       {eyebrow && (
-        <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-primary">
-          <Sparkles size={12} />
+        <span className="inline-flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.22em] text-primary">
+          <span aria-hidden className="h-px w-6 bg-primary/50" />
           {eyebrow}
+          <span aria-hidden className="h-px w-6 bg-primary/50" />
         </span>
       )}
-      <h2 className="mt-3 font-display text-[1.65rem] font-bold leading-tight text-foreground sm:text-3xl md:text-4xl">
+      <h2 className="mt-4 font-display text-3xl font-extrabold leading-tight tracking-tight text-foreground sm:text-4xl md:text-[2.6rem]">
         {title}
       </h2>
       {intro && (
-        <p className="mt-3 text-[0.95rem] leading-relaxed text-muted-foreground md:mt-4 md:text-base">{intro}</p>
+        <p className="mt-4 text-[0.95rem] leading-relaxed text-muted-foreground md:text-base">{intro}</p>
       )}
     </div>
   );
@@ -82,7 +83,7 @@ function Card({
   return (
     <div
       className={
-        "rounded-2xl border border-border bg-card p-4 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-shadow hover:shadow-md sm:p-6 " +
+        "rounded-3xl border border-border/70 bg-card p-5 shadow-[0_1px_2px_rgba(24,23,22,0.04)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_20px_45px_-18px_rgba(206,101,75,0.28)] sm:p-7 " +
         className
       }
     >
