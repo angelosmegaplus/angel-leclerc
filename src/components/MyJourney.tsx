@@ -833,6 +833,14 @@ const engagements: {
       "Pédagogie, formations et transmission auprès des jeunes bénévoles.",
     icon: BookOpen,
   },
+  {
+    title: "Adhérent",
+    org: "République Souveraine",
+    period: "Depuis août 2026",
+    description:
+      "Engagement politique en faveur de la souveraineté de la République française et de l'indépendance nationale.",
+    icon: Landmark,
+  },
 ];
 
 /** Engagement syndical (distinct de la vie associative). */
@@ -844,6 +852,41 @@ const engagementSyndical = {
     "Engagement syndical autour des droits des salariés, des conditions de travail et de la solidarité professionnelle.",
   icon: Users,
 };
+
+/** Renvoie le chemin du logo officiel pour un organisme, ou undefined. */
+function logoFor(org: string): { src: string; wide: boolean } | undefined {
+  const o = org.toLowerCase();
+  if (o.includes("cgt")) return { src: "/logos/cgt.png", wide: false };
+  if (o.includes("souveraine"))
+    return { src: "/logos/republique-souveraine.png", wide: true };
+  return undefined;
+}
+
+/** Affiche le logo officiel ou l'icône Lucide pour un engagement. */
+function EngagementIcon({ org, Icon }: { org: string; Icon: LucideIcon }) {
+  const logo = logoFor(org);
+  if (logo) {
+    return (
+      <div
+        className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-card p-1.5 ${
+          logo.wide ? "h-12 w-44" : "h-12 w-12"
+        }`}
+      >
+        <img
+          src={logo.src}
+          alt={`Logo ${org}`}
+          loading="lazy"
+          className="h-full w-full object-contain"
+        />
+      </div>
+    );
+  }
+  return (
+    <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+      <Icon size={22} />
+    </div>
+  );
+}
 
 function EngagementSyndicalSection() {
   const { data } = useQuery(contentQuery("engagement"));
@@ -936,15 +979,7 @@ function EngagementsSection() {
             {list.map((e, idx) => (
               <Card key={`${e.org}-${idx}`} className="flex h-full flex-col">
                 <div className="flex items-start gap-4">
-                  {e.org.toLowerCase().includes("cgt") ? (
-                    <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-card p-1.5">
-                      <img src="/logos/cgt.png" alt="Logo CGT" loading="lazy" className="h-full w-full object-contain" />
-                    </div>
-                  ) : (
-                    <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                      <e.icon size={22} />
-                    </div>
-                  )}
+                  <EngagementIcon org={e.org} Icon={e.icon} />
                   <div>
                     <h3 className="font-display text-base font-semibold text-foreground">
                       {e.title}
