@@ -195,7 +195,9 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <HumanCheckGate>
       <MaintenanceGate bypass={isAdminPage || isStandaloneMoviesPage}>
+
         <ThemeSync />
         <AngelOSCardStyle />
         <PageViewTracker />
