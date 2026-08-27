@@ -833,6 +833,14 @@ const engagements: {
       "Pédagogie, formations et transmission auprès des jeunes bénévoles.",
     icon: BookOpen,
   },
+  {
+    title: "Adhérent",
+    org: "CGT Dordogne",
+    period: "Depuis août 2026",
+    description:
+      "Engagement syndical autour des droits des salariés, des conditions de travail et de la solidarité professionnelle.",
+    icon: Users,
+  },
 ];
 
 function EngagementsSection() {
