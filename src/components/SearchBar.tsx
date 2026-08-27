@@ -283,25 +283,48 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
                   </div>
                 ) : results.length > 0 ? (
                   <ul className="py-1">
-                    {results.map((result, i) => (
-                      <li key={result.href}>
-                        <Link
-                          to={result.href}
-                          onClick={closeSearch}
-                          onMouseEnter={() => setActiveIndex(i)}
-                          className={`flex flex-col gap-0.5 px-4 py-3 transition-colors ${i === activeIndex ? "bg-primary/10" : "hover:bg-muted"}`}
-                        >
+                    {results.map((result, i) => {
+                      const inner = (
+                        <>
                           <div className="flex items-center justify-between gap-2">
-                            <span className="text-sm font-medium text-foreground">{result.title}</span>
+                            <span className="flex min-w-0 items-center gap-2">
+                              <CategoryIcon category={result.category} />
+                              <span className="truncate text-sm font-medium text-foreground">{result.title}</span>
+                            </span>
                             <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">
                               {result.category}
                             </span>
                           </div>
                           <span className="text-xs text-muted-foreground line-clamp-1">{result.description}</span>
-                        </Link>
-                      </li>
-                    ))}
+                        </>
+                      );
+                      const className = `flex flex-col gap-0.5 px-4 py-3 transition-colors ${i === activeIndex ? "bg-primary/10" : "hover:bg-muted"}`;
+                      return (
+                        <li key={`${result.category}-${result.href}`}>
+                          {result.external ? (
+                            <a
+                              href={result.href}
+                              onClick={closeSearch}
+                              onMouseEnter={() => setActiveIndex(i)}
+                              className={className}
+                            >
+                              {inner}
+                            </a>
+                          ) : (
+                            <Link
+                              to={result.href}
+                              onClick={closeSearch}
+                              onMouseEnter={() => setActiveIndex(i)}
+                              className={className}
+                            >
+                              {inner}
+                            </Link>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
+
                 ) : (
                   <div className="px-4 py-6 text-center">
                     <p className="text-sm text-muted-foreground">
