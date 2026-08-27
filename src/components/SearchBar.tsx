@@ -115,13 +115,14 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
             href: `/articles/${article.slug}`,
             category: "Article",
             keywords: [
-              ...(article.topics ?? []),
-              ...(article.badges ?? []),
+              ...(Array.isArray(article.topics) ? article.topics : []),
+              ...(Array.isArray(article.badges) ? article.badges : []),
               article.category ?? "",
               article.slug ?? "",
             ]
-              .filter(Boolean)
-              .map((value) => normalize(String(value))),
+              .filter((value): value is string => typeof value === "string" && value.length > 0)
+              .map((value) => normalize(value)),
+
             external: true,
           })),
         );
