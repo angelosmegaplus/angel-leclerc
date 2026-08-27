@@ -841,7 +841,7 @@ const syndicalEngagement = {
   org: "CGT Dordogne",
   period: "Depuis août 2026",
   description:
-    "Engagement syndical au quotidien : veille, information et solidarité, dans la continuité d'un parcours de responsable associatif.",
+    "Engagement syndical autour des droits des salariés, des conditions de travail et de la solidarité professionnelle.",
   icon: Users,
 };
 
