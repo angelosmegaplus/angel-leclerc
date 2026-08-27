@@ -227,6 +227,8 @@ function RootComponent() {
         <Toaster position="top-center" />
         <Analytics />
       </MaintenanceGate>
+      </HumanCheckGate>
     </QueryClientProvider>
   );
+
 }
