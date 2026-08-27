@@ -865,9 +865,15 @@ function EngagementsSection() {
             {list.map((e, idx) => (
               <Card key={`${e.org}-${idx}`} className="flex h-full flex-col">
                 <div className="flex items-start gap-4">
-                  <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <e.icon size={22} />
-                  </div>
+                  {e.org.toLowerCase().includes("cgt") ? (
+                    <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-card p-1.5">
+                      <img src="/logos/cgt.png" alt="Logo CGT" loading="lazy" className="h-full w-full object-contain" />
+                    </div>
+                  ) : (
+                    <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <e.icon size={22} />
+                    </div>
+                  )}
                   <div>
                     <h3 className="font-display text-base font-semibold text-foreground">
                       {e.title}
