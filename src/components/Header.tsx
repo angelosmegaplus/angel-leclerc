@@ -4,6 +4,7 @@ import { Link } from "@tanstack/react-router";
 import logo from "@/assets/logo.svg";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeController";
+import { SearchBar } from "@/components/SearchBar";
 
 const navLinks = [
   { href: "/", label: "Accueil" },
