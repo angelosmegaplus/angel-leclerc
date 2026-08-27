@@ -160,12 +160,15 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
     const q = debounced.trim();
     if (!q) return [];
     const tokens = normalize(q).split(/\s+/).filter(Boolean);
-    return SEARCH_INDEX
-      .map((item) => ({ item, score: scoreItem(item, tokens) }))
-      .filter((entry) => entry.score > 0)
+    const boost: Record<string, number> = { Page: 3, Services: 3, Contenu: 2, Article: 2, Légal: 1, Outil: 1, Admin: 0 };
+    return [...PAGE_INDEX, ...articleIndex, ...ASSET_INDEX]
+      .map((item) => ({ item, score: scoreItem(item, tokens) + (boost[item.category] ?? 0) }))
+      .filter((entry) => entry.score > (boost[entry.item.category] ?? 0))
       .sort((a, b) => b.score - a.score)
+      .slice(0, 20)
       .map((entry) => entry.item);
-  }, [debounced]);
+  }, [debounced, articleIndex]);
+
 
   const runAi = useCallback(async () => {
     const question = query.trim();
