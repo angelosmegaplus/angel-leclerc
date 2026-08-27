@@ -126,30 +126,80 @@ export function HumanCheckGate({ children, disabled = false }: { children: React
 
   if (status === "passed") return <>{children}</>;
 
+  const robots = ["🤖", "👾", "🔋", "🛸", "⚙️"];
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
-      <div className="w-full max-w-md rounded-2xl border border-border bg-card p-7 text-center shadow-sm">
-        <div className="mx-auto mb-4 text-5xl" aria-hidden="true">👾</div>
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-12">
+      {/* petits robots flottants en fond */}
+      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+        {robots.map((emoji, i) => (
+          <motion.span
+            key={i}
+            className="absolute select-none text-3xl opacity-[0.12] sm:text-4xl"
+            style={{ left: `${(i * 19 + 8) % 90}%`, top: `${(i * 27 + 15) % 80}%` }}
+            animate={{ y: [0, -14, 0], rotate: [0, 8, -8, 0] }}
+            transition={{
+              duration: 4 + i,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: i * 0.4,
+            }}
+          >
+            {emoji}
+          </motion.span>
+        ))}
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.92, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: "spring", stiffness: 220, damping: 18 }}
+        className="relative w-full max-w-md rounded-2xl border border-border bg-card p-7 text-center shadow-sm"
+      >
+        <motion.div
+          className="mx-auto mb-4 text-6xl"
+          aria-hidden="true"
+          animate={{ y: [0, -8, 0] }}
+          transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+        >
+          👾
+        </motion.div>
+
         <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
           Oups… il faut qu’on vérifie que tu n’es pas un robot
         </h1>
-        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          Une petite seconde et c’est réglé : cette vérification protège le site des robots, puis vous accédez
-          directement à Angel Leclerc Communication.
-        </p>
 
         <div className="mt-6 flex min-h-[70px] items-center justify-center">
-          {status === "checking" || status === "verifying" ? (
-            <p className="text-sm text-muted-foreground" role="status">
-              {status === "verifying" ? "Vérification en cours…" : "Chargement…"}
-            </p>
-          ) : (
-            <div ref={containerRef} />
-          )}
+          <AnimatePresence mode="wait">
+            {status === "checking" || status === "verifying" ? (
+              <motion.p
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-sm text-muted-foreground"
+                role="status"
+              >
+                {status === "verifying" ? "Vérification en cours…" : "Chargement…"}
+              </motion.p>
+            ) : (
+              <motion.div
+                key="widget"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                ref={containerRef}
+              />
+            )}
+          </AnimatePresence>
         </div>
 
         {status === "error" && (
-          <div className="mt-2">
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-2"
+          >
             <p className="text-sm text-destructive">La vérification n’a pas abouti. Réessayons.</p>
             <button
               type="button"
@@ -158,13 +208,13 @@ export function HumanCheckGate({ children, disabled = false }: { children: React
             >
               Réessayer
             </button>
-          </div>
+          </motion.div>
         )}
 
         <p className="mt-6 text-xs text-muted-foreground">
           Protégé par Cloudflare Turnstile — sans cookie publicitaire ni pistage.
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 }
