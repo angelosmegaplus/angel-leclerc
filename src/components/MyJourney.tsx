@@ -101,41 +101,46 @@ function IntroSection() {
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
       </div>
 
-      <div className="container-tight relative py-10 md:py-24">
-        <div className="grid items-center gap-8 md:grid-cols-[1.4fr_1fr] md:gap-10">
+      <div className="container-tight relative py-12 md:py-28">
+        <div className="grid items-center gap-10 md:grid-cols-[1.4fr_1fr] md:gap-12">
           <div className="order-2 md:order-1">
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-              <Calendar size={12} /> Disponible à partir de septembre 2026
+            <span className="inline-flex items-center gap-2.5 rounded-full border border-primary/30 bg-card/70 px-4 py-1.5 text-xs font-semibold text-primary shadow-sm backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+              </span>
+              Disponible à partir de septembre 2026
             </span>
-            <h1 className="mt-4 font-display text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl md:text-6xl">
+            <h1 className="mt-6 font-display text-[2.75rem] font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-6xl md:text-7xl">
               Angel <span className="italic text-primary">Leclerc</span>
             </h1>
-            <p className="mt-3 font-display text-base text-foreground/80 sm:text-lg md:text-xl">
+            <p className="mt-4 inline-flex items-center gap-3 font-display text-base font-semibold text-foreground/80 sm:text-lg md:text-xl">
+              <span aria-hidden className="hidden h-px w-8 bg-primary/60 sm:block" />
               Étudiant en communication
             </p>
-            <p className="mt-4 max-w-xl text-[0.95rem] leading-relaxed text-muted-foreground md:mt-6 md:text-base">
+            <p className="mt-5 max-w-xl text-[0.95rem] leading-relaxed text-muted-foreground md:mt-6 md:text-lg">
               Création de contenus, rédaction, communication numérique,
               accueil du public et gestion de projets&nbsp;: je mets mes
               compétences au service de structures qui souhaitent gagner en
               clarté et en visibilité.
             </p>
-            <div className="mt-6 grid grid-cols-1 gap-2.5 sm:flex sm:flex-wrap sm:gap-3 md:mt-8">
+            <div className="mt-7 grid grid-cols-1 gap-2.5 sm:flex sm:flex-wrap sm:gap-3 md:mt-9">
               <a
                 href="#cv"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 sm:justify-start"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-[0_10px_25px_-8px_rgba(206,101,75,0.55)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_32px_-10px_rgba(206,101,75,0.6)] sm:justify-start"
               >
                 <FileText size={16} /> Voir mon CV
               </a>
               <a
                 href="/cv-angel-leclerc.pdf"
                 download
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary sm:justify-start"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary hover:text-primary sm:justify-start"
               >
                 <Download size={16} /> Télécharger mon CV
               </a>
               <a
                 href="#outils"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary sm:justify-start"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary hover:text-primary sm:justify-start"
               >
                 <Wrench size={16} /> Voir les outils utilisés
               </a>
@@ -148,12 +153,16 @@ function IntroSection() {
                 aria-hidden
                 className="absolute inset-0 -m-6 rounded-full bg-primary/15 blur-2xl"
               />
+              <div
+                aria-hidden
+                className="absolute -inset-3 rounded-full border-2 border-dashed border-primary/30 [animation:spin_30s_linear_infinite]"
+              />
               <img
                 src={photo.url}
                 alt="Portrait d'Angel Leclerc"
-                className="relative h-40 w-40 rounded-full border border-border object-cover shadow-lg sm:h-56 sm:w-56 md:h-64 md:w-64"
-                width={256}
-                height={256}
+                className="relative h-44 w-44 rounded-full border-4 border-card object-cover shadow-[0_24px_50px_-20px_rgba(24,23,22,0.4)] ring-1 ring-border sm:h-56 sm:w-56 md:h-72 md:w-72"
+                width={288}
+                height={288}
               />
             </div>
           </div>
