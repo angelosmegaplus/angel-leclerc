@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X, CornerDownLeft, Sparkles, Loader2, FileText, Image as ImageIcon, Film, File } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -255,8 +256,9 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
         <Search size={20} />
       </button>
 
-      <AnimatePresence>
-        {open && (
+      {typeof document !== "undefined" && createPortal(
+        <AnimatePresence>
+          {open && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -396,9 +398,11 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
               <div className="h-[max(0.5rem,env(safe-area-inset-bottom))] shrink-0 sm:hidden" />
 
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body,
+      )}
     </>
   );
 }
