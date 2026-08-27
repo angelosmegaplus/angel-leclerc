@@ -83,13 +83,50 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiAnswer, setAiAnswer] = useState<string | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [articleIndex, setArticleIndex] = useState<SearchResult[]>([]);
+  const articlesLoaded = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+
+  // Index des articles publiés, chargé une seule fois à la première ouverture
+  useEffect(() => {
+    if (!open || articlesLoaded.current) return;
+    articlesLoaded.current = true;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const { fetchPublishedArticles } = await import("@/lib/articles");
+        const articles = await fetchPublishedArticles();
+        if (cancelled) return;
+        setArticleIndex(
+          articles.map((article) => ({
+            title: article.title,
+            description: (article.excerpt ?? "").slice(0, 140) || "Article du blog",
+            href: `/articles/${article.slug}`,
+            category: "Article",
+            keywords: [
+              ...(article.topics ?? []),
+              ...(article.badges ?? []),
+              article.category ?? "",
+              article.slug ?? "",
+            ]
+              .filter(Boolean)
+              .map((value) => normalize(String(value))),
+            external: true,
+          })),
+        );
+      } catch {
+        /* index d'articles indisponible : la recherche reste fonctionnelle */
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [open]);
 
   const openSearch = useCallback(() => {
     setOpen(true);
     setTimeout(() => inputRef.current?.focus(), 60);
   }, []);
+
 
   const closeSearch = useCallback(() => {
     setOpen(false);
