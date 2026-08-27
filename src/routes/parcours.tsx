@@ -67,7 +67,7 @@ function PermisSection() {
         <h3 className="mt-2 text-center font-display text-2xl font-bold text-foreground">Mon permis</h3>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
-          <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
+          <div className="flex items-center gap-4 rounded-3xl border border-border/70 bg-card p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Bike size={21} /></div>
             <div className="min-w-0 flex-1">
               <p className="font-semibold text-foreground">Permis AM</p>
@@ -75,7 +75,7 @@ function PermisSection() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
+          <div className="flex items-center gap-4 rounded-3xl border border-border/70 bg-card p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted text-foreground"><CarFront size={21} /></div>
             <div className="min-w-0 flex-1">
               <p className="font-semibold text-foreground">Permis B</p>
@@ -118,9 +118,9 @@ function ParcoursPage() {
               <p className="mt-4 text-muted-foreground leading-relaxed">Une question sur mon parcours, une proposition professionnelle ou un projet de communication&nbsp;? Vous pouvez me contacter directement depuis le site.</p>
             </div>
             <div className="mx-auto mt-10 max-w-2xl"><div className="grid gap-4 sm:grid-cols-2">
-              <a href="/contact" className="flex items-center gap-4 rounded-2xl border border-primary/40 bg-primary/5 p-5 transition-colors hover:bg-primary/10 sm:col-span-2"><div className="inline-flex rounded-xl bg-primary/15 p-3 text-primary"><Mail size={20} /></div><div><p className="text-xs font-semibold uppercase tracking-widest text-primary">Me contacter</p><p className="mt-1 text-sm font-medium text-foreground">Formulaire et coordonnées sur la page contact</p></div></a>
-              <a href="https://www.linkedin.com/in/angel-leclerc" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary"><div className="inline-flex rounded-xl bg-primary/10 p-3 text-primary"><Linkedin size={20} /></div><div><p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">LinkedIn</p><p className="mt-1 text-sm font-medium text-foreground">Angel Leclerc</p></div></a>
-              <a href="/cv-angel-leclerc.pdf" download className="flex items-center gap-4 rounded-2xl border border-primary/40 bg-primary/5 p-5 transition-colors hover:bg-primary/10"><div className="inline-flex rounded-xl bg-primary/15 p-3 text-primary"><Download size={20} /></div><div><p className="text-xs font-semibold uppercase tracking-widest text-primary">CV en PDF</p><p className="mt-1 text-sm font-medium text-foreground">Télécharger mon CV</p></div></a>
+              <a href="/contact" className="flex items-center gap-4 rounded-3xl border border-primary/40 bg-primary/5 p-5 transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/10 hover:shadow-md sm:col-span-2"><div className="inline-flex rounded-xl bg-primary/15 p-3 text-primary"><Mail size={20} /></div><div><p className="text-xs font-semibold uppercase tracking-widest text-primary">Me contacter</p><p className="mt-1 text-sm font-medium text-foreground">Formulaire et coordonnées sur la page contact</p></div></a>
+              <a href="https://www.linkedin.com/in/angel-leclerc" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary hover:shadow-md"><div className="inline-flex rounded-xl bg-primary/10 p-3 text-primary"><Linkedin size={20} /></div><div><p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">LinkedIn</p><p className="mt-1 text-sm font-medium text-foreground">Angel Leclerc</p></div></a>
+              <a href="/cv-angel-leclerc.pdf" download className="flex items-center gap-4 rounded-3xl border border-primary/40 bg-primary/5 p-5 transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/10 hover:shadow-md"><div className="inline-flex rounded-xl bg-primary/15 p-3 text-primary"><Download size={20} /></div><div><p className="text-xs font-semibold uppercase tracking-widest text-primary">CV en PDF</p><p className="mt-1 text-sm font-medium text-foreground">Télécharger mon CV</p></div></a>
             </div></div>
           </div>
         </section>
