@@ -379,10 +379,12 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
                 )}
               </div>
 
-              <div className="flex items-center justify-between gap-2 border-t border-border px-4 py-2 text-[0.7rem] text-muted-foreground">
+              <div className="hidden shrink-0 items-center justify-between gap-2 border-t border-border px-4 py-2 text-[0.7rem] text-muted-foreground sm:flex">
                 <span className="inline-flex items-center gap-1"><CornerDownLeft size={11} /> Entrée · ↑↓ naviguer · Échap fermer</span>
-                <span className="hidden sm:inline">⌘K / Ctrl+K</span>
+                <span>⌘K / Ctrl+K</span>
               </div>
+              <div className="h-[max(0.75rem,env(safe-area-inset-bottom))] shrink-0 sm:hidden" />
+
             </motion.div>
           </motion.div>
         )}
