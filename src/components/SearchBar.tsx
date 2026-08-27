@@ -223,7 +223,10 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
     if (e.key === "Enter") {
       e.preventDefault();
       if (results[activeIndex]) {
-        navigate({ to: results[activeIndex].href });
+        const target = results[activeIndex];
+        if (target.external) window.location.href = target.href;
+        else navigate({ to: target.href });
+
         closeSearch();
       } else if (!loading && query.trim()) {
         void runAi();
