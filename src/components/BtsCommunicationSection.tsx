@@ -38,7 +38,7 @@ export function BtsCommunicationSection() {
       <section className="section-padding bg-muted/40">
         <div className="container-tight">
           {/* Bannière discrète une seule ligne — section temporaire */}
-          <div className="overflow-hidden rounded-full border border-dashed border-primary/40 bg-card shadow-sm">
+          <div className={`overflow-hidden border border-dashed border-primary/40 bg-card shadow-sm transition-[border-radius] duration-300 ${open ? "rounded-2xl" : "rounded-full"}`}>
             <button
               type="button"
               onClick={() => setOpen((v) => !v)}
