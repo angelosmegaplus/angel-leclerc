@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Linkedin, Download, Mail, Target, Bike, CarFront, CircleCheck, LoaderCircle, Bus, ThumbsUp } from "lucide-react";
+import { Accessibility, Linkedin, Download, Mail, Target, Bike, CarFront, CircleCheck, LoaderCircle, Bus, ThumbsUp } from "lucide-react";
 import {
   MyJourney,
   SkillsSection,
@@ -98,10 +98,55 @@ function PermisSection() {
   );
 }
 
+function RqthSection() {
+  return (
+    <section className="px-4 pb-10 sm:px-6 sm:pb-12" aria-labelledby="rqth-title">
+      <div className="container-tight">
+        <div className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary" aria-hidden="true">
+              <Accessibility size={24} />
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 id="rqth-title" className="font-display text-xl font-bold text-foreground sm:text-2xl">RQTH reconnue</h2>
+                <span className="rounded-full border border-primary/25 bg-primary/5 px-2.5 py-1 text-xs font-semibold text-primary">Un atout pour l’alternance</span>
+              </div>
+
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                Ma Reconnaissance de la qualité de travailleur handicapé peut permettre à l’employeur de mobiliser des aides et un accompagnement adaptés.
+              </p>
+
+              <div className="mt-4 grid gap-2.5 sm:grid-cols-3">
+                <div className="rounded-xl border border-border bg-muted/35 p-3">
+                  <p className="flex items-start gap-2 text-sm font-semibold text-foreground"><CircleCheck size={16} className="mt-0.5 shrink-0 text-primary" /> Aides à l’alternance</p>
+                  <p className="mt-1.5 text-xs leading-5 text-muted-foreground">Aides Agefiph possibles, jusqu’à 3 000 € selon le contrat et les conditions.</p>
+                </div>
+                <div className="rounded-xl border border-border bg-muted/35 p-3">
+                  <p className="flex items-start gap-2 text-sm font-semibold text-foreground"><CircleCheck size={16} className="mt-0.5 shrink-0 text-primary" /> Accompagnement adapté</p>
+                  <p className="mt-1.5 text-xs leading-5 text-muted-foreground">Accompagnement et aménagements du poste mobilisables si nécessaire.</p>
+                </div>
+                <div className="rounded-xl border border-border bg-muted/35 p-3">
+                  <p className="flex items-start gap-2 text-sm font-semibold text-foreground"><CircleCheck size={16} className="mt-0.5 shrink-0 text-primary" /> Obligation d’emploi</p>
+                  <p className="mt-1.5 text-xs leading-5 text-muted-foreground">Le recrutement contribue à l’OETH pour les entreprises concernées.</p>
+                </div>
+              </div>
+
+              <p className="mt-3 text-[11px] leading-5 text-muted-foreground">Aides soumises à conditions et à l’éligibilité du contrat.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function ParcoursPage() {
   return (
     <div className="pb-24 md:pb-0" data-cv-page>
       <BtsCommunicationSection />
+      <RqthSection />
       <MyJourney />
       <ObjectivesButton />
       <PermisSection />
