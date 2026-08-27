@@ -23,6 +23,8 @@ import { PwaRegistrar } from "../components/PwaRegistrar";
 import { ThemeSync } from "../components/ThemeController";
 import { AngelOSCardStyle } from "../components/AngelOSCardStyle";
 import { MaintenanceGate } from "../components/MaintenanceGate";
+import { HumanCheckGate } from "../components/HumanCheckGate";
+
 import { THEME_INIT_SCRIPT } from "../lib/theme";
 
 function NotFoundComponent() {
@@ -195,7 +197,9 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <HumanCheckGate>
       <MaintenanceGate bypass={isAdminPage || isStandaloneMoviesPage}>
+
         <ThemeSync />
         <AngelOSCardStyle />
         <PageViewTracker />
@@ -225,6 +229,8 @@ function RootComponent() {
         <Toaster position="top-center" />
         <Analytics />
       </MaintenanceGate>
+      </HumanCheckGate>
     </QueryClientProvider>
   );
+
 }
