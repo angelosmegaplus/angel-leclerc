@@ -833,15 +833,80 @@ const engagements: {
       "Pédagogie, formations et transmission auprès des jeunes bénévoles.",
     icon: BookOpen,
   },
-  {
-    title: "Adhérent",
-    org: "CGT Dordogne",
-    period: "Depuis août 2026",
-    description:
-      "Engagement syndical autour des droits des salariés, des conditions de travail et de la solidarité professionnelle.",
-    icon: Users,
-  },
 ];
+
+/** Engagement syndical (distinct de la vie associative). */
+const engagementSyndical = {
+  title: "Adhérent",
+  org: "CGT Dordogne",
+  period: "Depuis août 2026",
+  description:
+    "Engagement syndical autour des droits des salariés, des conditions de travail et de la solidarité professionnelle.",
+  icon: Users,
+};
+
+function EngagementSyndicalSection() {
+  const { data } = useQuery(contentQuery("engagement"));
+  const row =
+    data && data.length
+      ? data.find((i: ContentItem) =>
+          (i.subtitle ?? "").toLowerCase().includes("cgt"),
+        )
+      : undefined;
+  const e = row
+    ? {
+        title: row.title,
+        org: row.subtitle ?? engagementSyndical.org,
+        period: row.period ?? engagementSyndical.period,
+        description: row.description ?? engagementSyndical.description,
+      }
+    : engagementSyndical;
+  return (
+    <AnimatedSection>
+      <section
+        id="engagement-syndical"
+        className="section-padding bg-background scroll-mt-24"
+      >
+        <div className="container-tight">
+          <SectionHeader
+            eyebrow="Engagement syndical"
+            title="Syndicalisme"
+          />
+          <div className="mt-8 md:mt-12">
+            <Card className="flex h-full flex-col">
+              <div className="flex items-start gap-4">
+                <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-card p-1.5">
+                  <img
+                    src="/logos/cgt.png"
+                    alt="Logo CGT"
+                    loading="lazy"
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+                <div>
+                  <h3 className="font-display text-base font-semibold text-foreground">
+                    {e.title}
+                  </h3>
+                  <p className="text-sm font-medium text-foreground/80">
+                    {e.org}
+                  </p>
+                  {e.period && (
+                    <p className="text-xs uppercase tracking-widest text-primary">
+                      {e.period}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                {e.description}
+              </p>
+            </Card>
+          </div>
+        </div>
+      </section>
+    </AnimatedSection>
+  );
+}
 
 function EngagementsSection() {
   const { data } = useQuery(contentQuery("engagement"));
