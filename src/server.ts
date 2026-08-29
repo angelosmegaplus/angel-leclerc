@@ -18,14 +18,14 @@ async function getServerEntry(): Promise<ServerEntry> {
   return serverEntryPromise;
 }
 
-function rewritePoliticalSubdomain(request: Request): Request {
+function politicalSubdomainRedirect(request: Request): Response | null {
   const url = new URL(request.url);
   const isPoliticalHost = url.hostname.toLowerCase() === "politique.angel-leclerc.fr";
 
-  if (!isPoliticalHost || url.pathname !== "/") return request;
+  if (!isPoliticalHost || url.pathname !== "/") return null;
 
   url.pathname = "/politique";
-  return new Request(url, request);
+  return Response.redirect(url, 308);
 }
 
 // h3 swallows in-handler throws into a normal 500 Response with body
@@ -57,9 +57,11 @@ function isH3SwallowedErrorBody(body: string): boolean {
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      const redirect = politicalSubdomainRedirect(request);
+      if (redirect) return redirect;
+
       const handler = await getServerEntry();
-      const routedRequest = rewritePoliticalSubdomain(request);
-      const response = await handler.fetch(routedRequest, env, ctx);
+      const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);
     } catch (error) {
       console.error(error);
