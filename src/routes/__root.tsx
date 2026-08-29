@@ -89,7 +89,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1" },
       { name: "googlebot", content: "index, follow, max-image-preview:large, max-snippet:-1" },
       { name: "bingbot", content: "index, follow" },
-      { name: "yandex", content: "index, follow" },
       { name: "language", content: "fr" },
       { httpEquiv: "content-language", content: "fr" },
       { property: "og:site_name", content: "Angel Leclerc Communication" },
@@ -140,7 +139,6 @@ function RootComponent() {
   const isAngelOSPage = pathname === "/angel-os-ia";
   const isAdminPage = pathname === "/admin" || pathname.startsWith("/admin/") || pathname.startsWith("/admin-");
   const isStandaloneMoviesPage = pathname === "/films-series" || pathname === "/movies-auth";
-  const isPoliticsPage = pathname === "/politique";
   const showFloatingContact = pathname === "/" || pathname === "/entreprise";
 
   useEffect(() => {
@@ -150,7 +148,7 @@ function RootComponent() {
   }, []);
 
   useEffect(() => {
-    if (isAngelOSPage || isAdminPage || isStandaloneMoviesPage || isPoliticsPage) return;
+    if (isAngelOSPage || isAdminPage || isStandaloneMoviesPage) return;
 
     const replacements = new Map([
       ["Me contacter pour une alternance", "Me contacter"],
@@ -193,10 +191,9 @@ function RootComponent() {
     });
     observer.observe(document.body, { childList: true, subtree: true });
     return () => observer.disconnect();
-  }, [pathname, isAngelOSPage, isAdminPage, isStandaloneMoviesPage, isPoliticsPage]);
+  }, [pathname, isAngelOSPage, isAdminPage, isStandaloneMoviesPage]);
 
-  const isStandalonePage = isAngelOSPage || isAdminPage || isStandaloneMoviesPage || isPoliticsPage;
-  const isStandaloneWithoutRouteFooter = isAngelOSPage || isAdminPage || isStandaloneMoviesPage;
+  const isStandalonePage = isAngelOSPage || isAdminPage || isStandaloneMoviesPage;
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -204,12 +201,8 @@ function RootComponent() {
         <ThemeSync />
         <AngelOSCardStyle />
         <PageViewTracker />
-        {!isPoliticsPage && <PwaRegistrar />}
-        {isPoliticsPage ? (
-          <main className="min-h-screen">
-            <Outlet />
-          </main>
-        ) : isStandaloneWithoutRouteFooter ? (
+        <PwaRegistrar />
+        {isStandalonePage ? (
           <main className="min-h-screen [&_footer]:hidden">
             <Outlet />
           </main>
