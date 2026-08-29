@@ -1,1 +1,1 @@
-export { PoliticalProgramMobile as CurrentPoliticalProgram } from "./PoliticalProgramMobile";
+export { PoliticalProgramEnhanced as CurrentPoliticalProgram } from "./PoliticalProgramEnhanced";
