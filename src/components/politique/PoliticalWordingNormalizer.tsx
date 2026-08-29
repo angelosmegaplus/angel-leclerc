@@ -1,13 +1,17 @@
 import { useLayoutEffect } from "react";
 
 const textReplacements: Array<[string, string]> = [
-  ["Fédéralisme", "Régionalisme"],
-  ["fédéralisme", "régionalisme"],
-  ["Une France unie, fédérale, sociale et souveraine.", "Une France unie, régionaliste, sociale et souveraine."],
-  ["une organisation beaucoup plus fédérale de la France", "une organisation donnant beaucoup plus d'autonomie politique aux régions"],
-  ["Une Ve République fédérale sans changer tous les repères", "Une Ve République régionaliste sans changer tous les repères"],
-  ["chaque région fédérée envoie le même nombre de sénateurs", "chaque région envoie le même nombre de sénateurs"],
-  ["Pas d'Europe fédérale imposée à la France", "Pas de transfert automatique de souveraineté à l'échelle européenne"],
+  ["Programme politique personnel", "Point de vue politique personnel"],
+  ["programme politique personnel", "point de vue politique personnel"],
+  [
+    "Cette page présente cependant un programme personnel distinct.",
+    "Cette page présente mes positions personnelles ; elles ne constituent pas un programme politique.",
+  ],
+  ["Découvrir le programme complet", "Découvrir mes positions détaillées"],
+  [
+    "Le programme politique reste une proposition personnelle.",
+    "Ces positions reflètent un point de vue personnel ; elles ne constituent pas un programme politique.",
+  ],
 ];
 
 function replacePoliticsWording(root: ParentNode) {
@@ -23,11 +27,8 @@ function replacePoliticsWording(root: ParentNode) {
     node = walker.nextNode();
   }
 
-  root.querySelectorAll<HTMLElement>("[id='federalisme-actuel']").forEach((element) => {
-    element.id = "regionalisme-actuel";
-  });
-  root.querySelectorAll<HTMLAnchorElement>("a[href='#federalisme-actuel']").forEach((anchor) => {
-    anchor.href = "#regionalisme-actuel";
+  root.querySelectorAll<HTMLElement>("nav[aria-label='Sommaire du programme']").forEach((element) => {
+    element.setAttribute("aria-label", "Sommaire de mes positions");
   });
 }
 
