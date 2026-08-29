@@ -89,7 +89,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1" },
       { name: "googlebot", content: "index, follow, max-image-preview:large, max-snippet:-1" },
       { name: "bingbot", content: "index, follow" },
-      { name: "yandex", content: "index, follow" },
       { name: "language", content: "fr" },
       { httpEquiv: "content-language", content: "fr" },
       { property: "og:site_name", content: "Angel Leclerc Communication" },
