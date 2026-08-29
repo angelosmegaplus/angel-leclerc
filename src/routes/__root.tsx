@@ -23,6 +23,7 @@ import { PwaRegistrar } from "../components/PwaRegistrar";
 import { ThemeSync } from "../components/ThemeController";
 import { AngelOSCardStyle } from "../components/AngelOSCardStyle";
 import { MaintenanceGate } from "../components/MaintenanceGate";
+import { RegionalExplorer } from "../components/politique/RegionalExplorer";
 
 import { THEME_INIT_SCRIPT } from "../lib/theme";
 
@@ -139,6 +140,7 @@ function RootComponent() {
   const isAngelOSPage = pathname === "/angel-os-ia";
   const isAdminPage = pathname === "/admin" || pathname.startsWith("/admin/") || pathname.startsWith("/admin-");
   const isStandaloneMoviesPage = pathname === "/films-series" || pathname === "/movies-auth";
+  const isPolitiquePage = pathname === "/politique";
   const showFloatingContact = pathname === "/" || pathname === "/entreprise";
 
   useEffect(() => {
@@ -211,6 +213,7 @@ function RootComponent() {
             <Header />
             <main className="flex-1">
               <Outlet />
+              {isPolitiquePage ? <RegionalExplorer /> : null}
             </main>
             <Footer />
           </div>
