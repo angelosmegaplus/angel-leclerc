@@ -140,6 +140,7 @@ function RootComponent() {
   const isAngelOSPage = pathname === "/angel-os-ia";
   const isAdminPage = pathname === "/admin" || pathname.startsWith("/admin/") || pathname.startsWith("/admin-");
   const isStandaloneMoviesPage = pathname === "/films-series" || pathname === "/movies-auth";
+  const isPoliticsPage = pathname === "/politique";
   const showFloatingContact = pathname === "/" || pathname === "/entreprise";
 
   useEffect(() => {
@@ -149,7 +150,7 @@ function RootComponent() {
   }, []);
 
   useEffect(() => {
-    if (isAngelOSPage || isAdminPage || isStandaloneMoviesPage) return;
+    if (isAngelOSPage || isAdminPage || isStandaloneMoviesPage || isPoliticsPage) return;
 
     const replacements = new Map([
       ["Me contacter pour une alternance", "Me contacter"],
@@ -192,17 +193,23 @@ function RootComponent() {
     });
     observer.observe(document.body, { childList: true, subtree: true });
     return () => observer.disconnect();
-  }, [pathname, isAngelOSPage, isAdminPage, isStandaloneMoviesPage]);
+  }, [pathname, isAngelOSPage, isAdminPage, isStandaloneMoviesPage, isPoliticsPage]);
+
+  const isStandalonePage = isAngelOSPage || isAdminPage || isStandaloneMoviesPage || isPoliticsPage;
+  const isStandaloneWithoutRouteFooter = isAngelOSPage || isAdminPage || isStandaloneMoviesPage;
 
   return (
     <QueryClientProvider client={queryClient}>
       <MaintenanceGate bypass={isAdminPage || isStandaloneMoviesPage}>
-
         <ThemeSync />
         <AngelOSCardStyle />
         <PageViewTracker />
-        <PwaRegistrar />
-        {isAngelOSPage || isAdminPage || isStandaloneMoviesPage ? (
+        {!isPoliticsPage && <PwaRegistrar />}
+        {isPoliticsPage ? (
+          <main className="min-h-screen">
+            <Outlet />
+          </main>
+        ) : isStandaloneWithoutRouteFooter ? (
           <main className="min-h-screen [&_footer]:hidden">
             <Outlet />
           </main>
@@ -223,11 +230,10 @@ function RootComponent() {
             Me contacter
           </a>
         )}
-        {!isAngelOSPage && !isAdminPage && !isStandaloneMoviesPage && <CartDrawer />}
+        {!isStandalonePage && <CartDrawer />}
         <Toaster position="top-center" />
         <Analytics />
       </MaintenanceGate>
     </QueryClientProvider>
   );
-
 }
