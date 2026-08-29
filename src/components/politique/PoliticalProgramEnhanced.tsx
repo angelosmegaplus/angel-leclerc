@@ -1,16 +1,20 @@
+import { useState } from "react";
 import {
   ArrowDown,
   Building2,
   Factory,
   Flag,
+  Image as ImageIcon,
   Landmark,
   MapPinned,
+  PlayCircle,
   Scale,
   ShieldCheck,
   Sparkles,
   Vote,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
+import { YouTubeEmbed } from "@/components/YouTubeEmbed";
 import { PoliticalProgramMobile } from "./PoliticalProgramMobile";
 
 const rsUrl = "https://www.republique-souveraine.fr/nosidees/";
@@ -42,6 +46,60 @@ const powerCards = [
     eyebrow: "LES DEUX",
     title: "Compétences partagées",
     items: ["École", "Santé", "Environnement", "Infrastructures", "Solidarité"],
+  },
+] as const;
+
+const mediaImages = [
+  {
+    title: "Le pouvoir national",
+    text: "L'hémicycle de l'Assemblée nationale, symbole du niveau commun à toute la France.",
+    src: "https://commons.wikimedia.org/wiki/Special:FilePath/L%27h%C3%A9micycle_de_l%27Assembl%C3%A9e_nationale_%282025%29.jpg?width=1200",
+    href: "https://commons.wikimedia.org/wiki/File:L%27h%C3%A9micycle_de_l%27Assembl%C3%A9e_nationale_%282025%29.jpg",
+    credit: "Wikimedia Commons · Louis Barret",
+  },
+  {
+    title: "Le pouvoir régional",
+    text: "Le Conseil régional de Bretagne : l'échelon régional comme institution politique à part entière.",
+    src: "https://commons.wikimedia.org/wiki/Special:FilePath/Conseil_r%C3%A9gional_de_Bretagne_Rennes_Patton.jpg?width=1200",
+    href: "https://commons.wikimedia.org/wiki/File:Conseil_r%C3%A9gional_de_Bretagne_Rennes_Patton.jpg",
+    credit: "Wikimedia Commons · Lektz",
+  },
+  {
+    title: "Les grands réseaux publics",
+    text: "Le rail illustre les infrastructures qui doivent rester cohérentes à l'échelle nationale tout en desservant les territoires.",
+    src: "https://commons.wikimedia.org/wiki/Special:FilePath/TGV_pour_Paris_dans_sa_gare_d%27origine_Annecy_%28ao%C3%BBt_2026%29.JPG?width=1200",
+    href: "https://commons.wikimedia.org/wiki/File:TGV_pour_Paris_dans_sa_gare_d%27origine_Annecy_%28ao%C3%BBt_2026%29.JPG",
+    credit: "Wikimedia Commons · Florian Pépellin",
+  },
+  {
+    title: "La souveraineté énergétique",
+    text: "L'énergie fait partie des secteurs où une stratégie française de long terme reste indispensable.",
+    src: "https://commons.wikimedia.org/wiki/Special:FilePath/Centrale_nucl%C3%A9aire_de_Cruas_depuis_la_rive_oppos%C3%A9e_%282018%29.JPG?width=1200",
+    href: "https://commons.wikimedia.org/wiki/File:Centrale_nucl%C3%A9aire_de_Cruas_depuis_la_rive_oppos%C3%A9e_%282018%29.JPG",
+    credit: "Wikimedia Commons",
+  },
+] as const;
+
+const mediaVideos = [
+  {
+    id: "h6l9P9jOu-U",
+    title: "Décentralisation : le rôle des régions dans l'emploi",
+    source: "Public Sénat",
+  },
+  {
+    id: "NM03cUVKrMw",
+    title: "Le référendum d'initiative citoyenne en débat",
+    source: "Public Sénat",
+  },
+  {
+    id: "mlIAq4ATGME",
+    title: "Souveraineté économique : redevenir un pays industriel ?",
+    source: "Public Sénat",
+  },
+  {
+    id: "xcE5ye25isk",
+    title: "Nucléaire : une énergie à la française",
+    source: "France 24",
   },
 ] as const;
 
@@ -93,6 +151,108 @@ function EngagementCard({
   );
 
   return href ? <a href={href} target="_blank" rel="noopener noreferrer" className="block h-full">{content}</a> : content;
+}
+
+function MediaSection() {
+  const [mode, setMode] = useState<"images" | "videos">("images");
+  const [activeImage, setActiveImage] = useState(0);
+  const [activeVideo, setActiveVideo] = useState(0);
+  const image = mediaImages[activeImage];
+  const video = mediaVideos[activeVideo];
+
+  return (
+    <AnimatedSection>
+      <section id="medias-politiques" className="section-padding bg-background scroll-mt-24">
+        <div className="container-tight">
+          <SectionHeader
+            eyebrow="À voir"
+            title="Des images et des débats pour rendre la page plus vivante"
+            intro="Les visuels donnent un repère concret. Les vidéos permettent d'entendre les arguments et les désaccords autour des sujets abordés sur cette page."
+          />
+
+          <div className="mx-auto mt-8 flex max-w-sm rounded-full border border-border bg-card p-1 md:mt-10">
+            <button
+              type="button"
+              onClick={() => setMode("images")}
+              aria-pressed={mode === "images"}
+              className={`flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors ${mode === "images" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              <ImageIcon size={16} /> Images
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("videos")}
+              aria-pressed={mode === "videos"}
+              className={`flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors ${mode === "videos" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              <PlayCircle size={16} /> Vidéos
+            </button>
+          </div>
+
+          {mode === "images" ? (
+            <div className="mx-auto mt-6 max-w-5xl">
+              <figure className="overflow-hidden rounded-2xl border border-border bg-card">
+                <a href={image.href} target="_blank" rel="noopener noreferrer" className="block">
+                  <img src={image.src} alt={image.title} loading="lazy" className="aspect-[16/9] w-full object-cover" />
+                </a>
+                <figcaption className="p-4 sm:p-5">
+                  <p className="font-display text-lg font-semibold text-foreground">{image.title}</p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{image.text}</p>
+                  <p className="mt-2 text-[11px] font-medium text-muted-foreground">{image.credit}</p>
+                </figcaption>
+              </figure>
+
+              <div className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:grid md:grid-cols-4 md:overflow-visible">
+                {mediaImages.map((item, index) => (
+                  <button
+                    key={item.title}
+                    type="button"
+                    onClick={() => setActiveImage(index)}
+                    aria-pressed={activeImage === index}
+                    className={`min-w-[72%] snap-start overflow-hidden rounded-2xl border text-left transition-colors sm:min-w-[46%] md:min-w-0 ${activeImage === index ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary/50"}`}
+                  >
+                    <img src={item.src} alt="" loading="lazy" className="aspect-[16/10] w-full object-cover" />
+                    <span className="block p-3 text-sm font-semibold leading-snug text-foreground">{item.title}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="mx-auto mt-6 max-w-5xl">
+              <div className="overflow-hidden rounded-2xl border border-border bg-card p-1.5 sm:p-2">
+                <YouTubeEmbed videoId={video.id} title={video.title} />
+                <div className="px-3 pb-3 pt-3 sm:px-4">
+                  <p className="font-display text-lg font-semibold text-foreground">{video.title}</p>
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-widest text-primary">{video.source}</p>
+                </div>
+              </div>
+
+              <div className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:grid md:grid-cols-4 md:overflow-visible">
+                {mediaVideos.map((item, index) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setActiveVideo(index)}
+                    aria-pressed={activeVideo === index}
+                    className={`min-w-[72%] snap-start overflow-hidden rounded-2xl border text-left transition-colors sm:min-w-[46%] md:min-w-0 ${activeVideo === index ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary/50"}`}
+                  >
+                    <div className="relative">
+                      <img src={`https://i.ytimg.com/vi/${item.id}/hqdefault.jpg`} alt="" loading="lazy" className="aspect-video w-full object-cover" />
+                      <span className="absolute inset-0 flex items-center justify-center bg-black/15"><span className="flex h-11 w-11 items-center justify-center rounded-full bg-background/95 text-primary"><PlayCircle size={22} /></span></span>
+                    </div>
+                    <span className="block p-3">
+                      <span className="block text-sm font-semibold leading-snug text-foreground">{item.title}</span>
+                      <span className="mt-1 block text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{item.source}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+    </AnimatedSection>
+  );
 }
 
 export function PoliticalProgramEnhanced() {
@@ -232,6 +392,8 @@ export function PoliticalProgramEnhanced() {
           </div>
         </section>
       </AnimatedSection>
+
+      <MediaSection />
 
       <AnimatedSection>
         <section className="section-padding bg-muted/40">
