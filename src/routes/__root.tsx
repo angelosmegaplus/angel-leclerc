@@ -25,6 +25,7 @@ import { AngelOSCardStyle } from "../components/AngelOSCardStyle";
 import { MaintenanceGate } from "../components/MaintenanceGate";
 import { CurrentPoliticalProgram } from "../components/politique/CurrentPoliticalProgram";
 import { RegionalExplorer } from "../components/politique/RegionalExplorer";
+import { PoliticalWordingNormalizer } from "../components/politique/PoliticalWordingNormalizer";
 
 import { THEME_INIT_SCRIPT } from "../lib/theme";
 
@@ -205,6 +206,7 @@ function RootComponent() {
         <AngelOSCardStyle />
         <PageViewTracker />
         <PwaRegistrar />
+        <PoliticalWordingNormalizer enabled={isPolitiquePage} />
         {isStandalonePage ? (
           <main className="min-h-screen [&_footer]:hidden">
             <Outlet />
