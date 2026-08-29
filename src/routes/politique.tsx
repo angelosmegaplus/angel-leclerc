@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
   BadgeEuro,
-  BalanceScale,
   Building2,
   ChevronRight,
   Factory,
@@ -118,7 +117,7 @@ const policyPillars: Pillar[] = [
     points: ["Renseignement", "Police de proximité", "Coordination nationale-régionale"],
   },
   {
-    icon: BalanceScale,
+    icon: Scale,
     title: "Justice nationale et justice territoriale",
     text: "Le modèle fédéral peut répartir certaines compétences judiciaires entre le niveau national et les régions. Les droits fondamentaux et les garanties de procédure restent protégés par la Constitution.",
     points: ["Juridictions territoriales", "Garanties constitutionnelles", "Arbitrage national"],
