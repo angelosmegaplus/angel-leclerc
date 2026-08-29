@@ -4,6 +4,7 @@ const fs = require('fs');
 const { importBrowserData } = require('./import-data');
 
 let mainWindow;
+let dataCache = null;
 
 const TRACKER_HOSTS = [
   'doubleclick.net', 'googlesyndication.com', 'google-analytics.com', 'googletagmanager.com',
@@ -53,7 +54,7 @@ function defaultData() {
   };
 }
 
-function readData() {
+function loadDataFromDisk() {
   try {
     const raw = fs.readFileSync(dataFile(), 'utf8');
     const parsed = JSON.parse(raw);
@@ -63,7 +64,13 @@ function readData() {
   }
 }
 
+function readData() {
+  if (!dataCache) dataCache = loadDataFromDisk();
+  return dataCache;
+}
+
 function writeData(data) {
+  dataCache = data;
   fs.mkdirSync(path.dirname(dataFile()), { recursive: true });
   fs.writeFileSync(dataFile(), JSON.stringify(data, null, 2), { encoding: 'utf8', mode: 0o600 });
 }
@@ -84,9 +91,10 @@ function setupSessionProtection(ses) {
     return ['clipboard-sanitized-write', 'fullscreen', 'pointerLock'].includes(permission);
   });
 
+  // Hot path: never touch disk here. readData() is an in-memory cache after startup.
   ses.webRequest.onBeforeRequest({ urls: ['<all_urls>'] }, (details, callback) => {
-    const data = readData();
-    if (data.settings.blockTrackers && isTracker(details.url) && !isPaymentURL(details.url)) {
+    const settings = readData().settings;
+    if (settings.blockTrackers && isTracker(details.url) && !isPaymentURL(details.url)) {
       callback({ cancel: true });
       return;
     }
@@ -94,9 +102,7 @@ function setupSessionProtection(ses) {
   });
 
   ses.webRequest.onBeforeSendHeaders({ urls: ['<all_urls>'] }, (details, callback) => {
-    const headers = { ...details.requestHeaders };
-    headers['DNT'] = '1';
-    headers['Sec-GPC'] = '1';
+    const headers = { ...details.requestHeaders, DNT: '1', 'Sec-GPC': '1' };
     callback({ requestHeaders: headers });
   });
 }
@@ -113,8 +119,6 @@ function secureWebContents(contents) {
       return { action: 'deny' };
     }
 
-    // Normal links are converted to tabs. Scripted advertising pop-ups are not allowed
-    // to escape into an unmanaged native window.
     if (details.disposition === 'foreground-tab' || details.disposition === 'background-tab' || details.disposition === 'new-window') {
       mainWindow?.webContents.send('open-tab', url, { payment: false });
     }
@@ -158,12 +162,10 @@ function createWindow() {
     webPreferences.sandbox = true;
     webPreferences.webSecurity = true;
     webPreferences.allowRunningInsecureContent = false;
-
     if (!/^(https?:|file:)/i.test(params.src || '')) params.src = 'about:blank';
   });
 
   mainWindow.webContents.on('did-attach-webview', (_event, contents) => secureWebContents(contents));
-
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
   mainWindow.once('ready-to-show', () => mainWindow.show());
 }
@@ -172,6 +174,7 @@ app.commandLine.appendSwitch('disable-features', 'AutofillServerCommunication');
 app.commandLine.appendSwitch('enable-features', 'ThirdPartyStoragePartitioning,PartitionedCookies');
 
 app.whenReady().then(() => {
+  dataCache = loadDataFromDisk();
   createWindow();
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -187,11 +190,7 @@ ipcMain.handle('data:get', () => readData());
 ipcMain.handle('history:add', (_event, entry) => {
   if (!entry || typeof entry.url !== 'string' || !/^https?:\/\//i.test(entry.url)) return false;
   const data = readData();
-  data.history.unshift({
-    url: entry.url,
-    title: String(entry.title || entry.url).slice(0, 300),
-    visitedAt: new Date().toISOString()
-  });
+  data.history.unshift({ url: entry.url, title: String(entry.title || entry.url).slice(0, 300), visitedAt: new Date().toISOString() });
   const seen = new Set();
   data.history = data.history.filter((item) => item.url && !seen.has(item.url) && seen.add(item.url)).slice(0, 3000);
   writeData(data);
@@ -203,18 +202,11 @@ ipcMain.handle('bookmark:toggle', (_event, entry) => {
   const data = readData();
   const index = data.bookmarks.findIndex((item) => item.url === entry.url);
   let added = false;
-
   if (index >= 0) data.bookmarks.splice(index, 1);
   else {
-    data.bookmarks.unshift({
-      url: entry.url,
-      title: String(entry.title || entry.url).slice(0, 300),
-      addedAt: new Date().toISOString(),
-      source: 'FlamingBox'
-    });
+    data.bookmarks.unshift({ url: entry.url, title: String(entry.title || entry.url).slice(0, 300), addedAt: new Date().toISOString(), source: 'FlamingBox' });
     added = true;
   }
-
   writeData(data);
   return { added, bookmarks: data.bookmarks };
 });
@@ -224,7 +216,6 @@ ipcMain.handle('browser:import', async () => {
   const result = await importBrowserData(app);
   const seenBookmarks = new Set(current.bookmarks.map((b) => b.url));
   let added = 0;
-
   for (const bookmark of result.bookmarks) {
     if (bookmark.url && !seenBookmarks.has(bookmark.url)) {
       current.bookmarks.push(bookmark);
@@ -232,7 +223,6 @@ ipcMain.handle('browser:import', async () => {
       added++;
     }
   }
-
   writeData(current);
   return { importedBookmarks: added, sources: result.sources, warnings: result.warnings };
 });
