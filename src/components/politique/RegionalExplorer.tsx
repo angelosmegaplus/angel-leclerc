@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import {
   BookOpen,
   ChevronDown,
@@ -6,9 +6,8 @@ import {
   Flag,
   History,
   Languages,
+  ListFilter,
   MapPinned,
-  Maximize2,
-  Minimize2,
   RotateCcw,
   Search,
   Users,
@@ -61,10 +60,10 @@ function MovementCard({ movement }: { movement: RegionalMovement }) {
 
 function TerritoryDetails({ territory, compact = false }: { territory: RegionalTerritory; compact?: boolean }) {
   return (
-    <div className="overflow-hidden rounded-[22px] border border-border bg-background shadow-sm">
-      <div className={`relative overflow-hidden border-b border-border ${compact ? "h-24" : "h-32 sm:h-44"}`}>
+    <div className="overflow-hidden rounded-2xl border border-border bg-background shadow-sm">
+      <div className={`relative overflow-hidden border-b border-border ${compact ? "h-28" : "h-36 sm:h-44"}`}>
         <TerritoryFlag id={territory.flag} title={territory.name} colors={territory.colors} />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/5 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
         <div className="absolute bottom-3 left-3 right-3 text-white">
           <p className="text-[8px] font-extrabold uppercase tracking-[0.18em] text-white/75">Territoire sélectionné</p>
           <h3 className="mt-0.5 font-display text-xl font-bold tracking-tight sm:text-2xl">{territory.name}</h3>
@@ -119,7 +118,6 @@ export function RegionalExplorer() {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
-  const [expanded, setExpanded] = useState(false);
   const dragRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
 
   const selected = regionalTerritories.find((territory) => territory.id === selectedId) ?? regionalTerritories[0];
@@ -134,45 +132,47 @@ export function RegionalExplorer() {
 
   const selectTerritory = (id: string) => {
     setSelectedId(id);
-    if (!expanded && typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches) {
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches) {
       window.setTimeout(() => document.getElementById("regional-mobile-card")?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 40);
     }
   };
 
-  const handlePointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
+  const handlePointerDown = (event: ReactPointerEvent<SVGSVGElement>) => {
     if (event.pointerType !== "mouse" || event.button !== 0) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     dragRef.current = { x: event.clientX, y: event.clientY, panX: pan.x, panY: pan.y };
     setDragging(true);
   };
-  const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
+
+  const handlePointerMove = (event: ReactPointerEvent<SVGSVGElement>) => {
     if (!dragRef.current) return;
     setPan({ x: dragRef.current.panX + (event.clientX - dragRef.current.x) / zoom, y: dragRef.current.panY + (event.clientY - dragRef.current.y) / zoom });
   };
-  const handlePointerUp = (event: React.PointerEvent<SVGSVGElement>) => {
+
+  const handlePointerUp = (event: ReactPointerEvent<SVGSVGElement>) => {
     dragRef.current = null;
     setDragging(false);
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
   };
 
-  const mapSvg = (fullScreen = false) => (
+  const mapSvg = (mobile = false) => (
     <svg
       viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
       preserveAspectRatio="xMidYMid meet"
       role="img"
       aria-label="Carte interactive des territoires historiques de France métropolitaine"
-      className={`${fullScreen ? "h-[calc(100dvh-105px)]" : "h-[286px] sm:h-auto sm:aspect-square"} w-full select-none touch-pan-y ${dragging ? "cursor-grabbing" : "sm:cursor-grab"}`}
+      className={`aspect-square w-full select-none touch-pan-y ${dragging ? "cursor-grabbing" : "lg:cursor-grab"}`}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
       onWheel={(event) => {
-        if (typeof window !== "undefined" && window.matchMedia("(max-width: 639px)").matches) return;
+        if (mobile) return;
         event.preventDefault();
         setZoom((value) => Math.max(0.9, Math.min(2.1, value + (event.deltaY < 0 ? 0.1 : -0.1))));
       }}
     >
-      <defs><filter id={fullScreen ? "territory-shadow-full" : "territory-shadow"} x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="3" stdDeviation="4" floodOpacity="0.16" /></filter></defs>
+      <defs><filter id={mobile ? "territory-shadow-mobile" : "territory-shadow"} x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="3" stdDeviation="4" floodOpacity="0.16" /></filter></defs>
       <g transform={`translate(${pan.x} ${pan.y}) scale(${zoom})`} style={{ transformOrigin: "305px 305px" }}>
         {regionalTerritories.map((territory) => {
           const active = selected.id === territory.id;
@@ -189,9 +189,9 @@ export function RegionalExplorer() {
               onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); selectTerritory(territory.id); } }}
               className="outline-none"
             >
-              <path d={territory.path} fill={active ? "hsl(var(--primary))" : visible ? (hasMovements ? "hsl(var(--primary) / 0.28)" : "hsl(var(--muted))") : "hsl(var(--muted) / 0.25)"} stroke={active ? "hsl(var(--primary-foreground))" : "hsl(var(--border))"} strokeWidth={active ? 3.3 : 1.7} opacity={visible ? 1 : 0.25} filter={active ? `url(#${fullScreen ? "territory-shadow-full" : "territory-shadow"})` : undefined} className="cursor-pointer transition-all duration-150 hover:brightness-95" />
-              {hasMovements && visible ? <circle cx={territory.label[0] + 22} cy={territory.label[1] - 13} r={fullScreen ? 6 : 5} fill="hsl(var(--primary))" stroke="hsl(var(--background))" strokeWidth="2" pointerEvents="none" /> : null}
-              <text x={territory.label[0]} y={territory.label[1]} textAnchor="middle" dominantBaseline="middle" fill={active ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))"} fontSize={fullScreen ? (active ? 14 : 12) : (active ? 13 : 11)} fontWeight={active ? 800 : 700} opacity={visible ? 1 : 0.2} pointerEvents="none">{territory.name.split(/[ ,/]/)[0]}</text>
+              <path d={territory.path} fill={active ? "hsl(var(--primary))" : visible ? (hasMovements ? "hsl(var(--primary) / 0.28)" : "hsl(var(--muted))") : "hsl(var(--muted) / 0.25)"} stroke={active ? "hsl(var(--primary-foreground))" : "hsl(var(--border))"} strokeWidth={active ? 3.3 : 1.7} opacity={visible ? 1 : 0.22} filter={active ? `url(#${mobile ? "territory-shadow-mobile" : "territory-shadow"})` : undefined} className="cursor-pointer transition-all duration-150 hover:brightness-95" />
+              {hasMovements && visible ? <circle cx={territory.label[0] + 22} cy={territory.label[1] - 13} r={mobile ? 6 : 5} fill="hsl(var(--primary))" stroke="hsl(var(--background))" strokeWidth="2" pointerEvents="none" /> : null}
+              {!mobile ? <text x={territory.label[0]} y={territory.label[1]} textAnchor="middle" dominantBaseline="middle" fill={active ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))"} fontSize={active ? 13 : 11} fontWeight={active ? 800 : 700} opacity={visible ? 1 : 0.2} pointerEvents="none">{territory.name.split(/[ ,/]/)[0]}</text> : null}
             </g>
           );
         })}
@@ -200,12 +200,12 @@ export function RegionalExplorer() {
   );
 
   return (
-    <section id="explorateur-regional" className="scroll-mt-24 overflow-hidden bg-background px-3 py-10 sm:px-6 sm:py-16">
-      <div className="container-tight px-0">
+    <section id="explorateur-regional" className="section-padding scroll-mt-24 bg-muted/40">
+      <div className="container-tight">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="inline-flex items-center gap-2 text-[9px] font-extrabold uppercase tracking-[0.18em] text-primary"><MapPinned size={13} /> Carte interactive</span>
-          <h2 className="mt-2 font-display text-[1.65rem] font-bold leading-[1.08] tracking-tight text-foreground sm:text-3xl md:text-4xl">Touchez une région : identité, drapeau et mouvements s'affichent.</h2>
-          <p className="mx-auto mt-3 max-w-xl text-[12px] leading-5 text-muted-foreground sm:text-base sm:leading-7">Sur téléphone, la carte reste volontairement compacte. Le mode plein écran est disponible seulement si vous voulez l'agrandir.</p>
+          <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-primary"><MapPinned size={13} /> Explorateur régional</span>
+          <h2 className="mt-3 font-display text-[1.65rem] font-bold leading-tight text-foreground sm:text-3xl md:text-4xl">Choisissez une région, puis découvrez son identité et ses mouvements.</h2>
+          <p className="mx-auto mt-3 max-w-xl text-[0.95rem] leading-relaxed text-muted-foreground md:mt-4 md:text-base">Sur mobile, la liste et les fiches passent avant la carte pour rester lisibles. La carte historique reste disponible en option.</p>
         </div>
 
         <div className="mx-auto mt-5 flex max-w-md justify-center gap-2 text-center sm:max-w-2xl">
@@ -213,8 +213,54 @@ export function RegionalExplorer() {
           <span className="rounded-full border border-border bg-card px-3 py-1.5 text-[10px] font-bold text-foreground">{explorerMovementCount} mouvements</span>
         </div>
 
-        <div className="mt-5 rounded-[24px] border border-border bg-card p-3 shadow-sm sm:p-5 lg:p-6">
-          <div className="grid gap-4 lg:grid-cols-[1.03fr_0.97fr] lg:gap-6">
+        <div className="mt-8 lg:hidden">
+          <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+              <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Bretagne, Corse, UDB…" className="h-12 w-full rounded-full border border-border bg-background pl-10 pr-4 text-base text-foreground outline-none placeholder:text-muted-foreground focus:border-primary" aria-label="Rechercher une région ou un mouvement" />
+            </div>
+
+            <label className="mt-4 block text-[11px] font-semibold uppercase tracking-widest text-muted-foreground" htmlFor="territory-mobile-select">Choisir directement</label>
+            <div className="relative mt-2">
+              <ListFilter className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-primary" size={16} />
+              <select id="territory-mobile-select" value={selected.id} onChange={(event) => selectTerritory(event.target.value)} className="h-12 w-full appearance-none rounded-2xl border border-border bg-background pl-10 pr-10 text-base font-semibold text-foreground outline-none focus:border-primary">
+                {regionalTerritories.map((territory) => <option key={territory.id} value={territory.id}>{territory.name}</option>)}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+            </div>
+
+            <div className="mt-3 flex snap-x snap-mandatory gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {filtered.map((territory) => (
+                <button key={territory.id} type="button" onClick={() => selectTerritory(territory.id)} className={`min-h-11 shrink-0 snap-start rounded-full border px-3.5 text-sm font-semibold transition-colors ${selected.id === territory.id ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background text-muted-foreground"}`}>{territory.name}</button>
+              ))}
+            </div>
+
+            {filtered.length === 0 ? <p className="mt-3 rounded-xl bg-muted/45 p-3 text-sm text-muted-foreground">Aucun territoire ou mouvement ne correspond à cette recherche.</p> : null}
+          </div>
+
+          <div id="regional-mobile-card" className="mt-4"><TerritoryDetails territory={selected} compact /></div>
+
+          <details className="group mt-4 overflow-hidden rounded-2xl border border-border bg-card">
+            <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
+              <span className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><MapPinned size={19} /></span>
+                <span><span className="block text-sm font-semibold text-foreground">Voir la carte historique</span><span className="mt-0.5 block text-xs text-muted-foreground">Optionnelle sur téléphone</span></span>
+              </span>
+              <ChevronDown size={17} className="shrink-0 text-primary transition-transform group-open:rotate-180" />
+            </summary>
+            <div className="border-t border-border p-3">
+              <div className="mb-2 flex items-center justify-between gap-3 rounded-xl bg-muted/40 px-3 py-2">
+                <span className="text-xs text-muted-foreground">Territoire sélectionné</span>
+                <span className="text-sm font-semibold text-foreground">{selected.name}</span>
+              </div>
+              <div className="overflow-hidden rounded-2xl border border-border bg-background">{mapSvg(true)}</div>
+              <p className="mt-2 text-[10px] leading-4 text-muted-foreground">Les noms ont volontairement été retirés de la petite carte mobile pour éviter l'illisibilité. Touchez une zone pour la sélectionner, puis lisez sa fiche au-dessus.</p>
+            </div>
+          </details>
+        </div>
+
+        <div className="mt-10 hidden rounded-2xl border border-border bg-card p-6 shadow-sm lg:block">
+          <div className="grid gap-6 lg:grid-cols-[1.03fr_0.97fr]">
             <div>
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
@@ -227,42 +273,21 @@ export function RegionalExplorer() {
                 ))}
               </div>
 
-              <div className="relative mt-3 overflow-hidden rounded-[22px] border border-border bg-[radial-gradient(circle_at_top,_hsl(var(--muted))_0,_transparent_68%)]">
+              <div className="relative mt-3 overflow-hidden rounded-2xl border border-border bg-[radial-gradient(circle_at_top,_hsl(var(--muted))_0,_transparent_68%)]">
                 <div className="absolute right-2 top-2 z-10 flex gap-1 rounded-full border border-border bg-background/92 p-1 shadow-sm backdrop-blur">
-                  <button type="button" onClick={() => setExpanded(true)} className="flex h-9 w-9 items-center justify-center rounded-full text-foreground hover:bg-muted" aria-label="Ouvrir la carte en plein écran"><Maximize2 size={16} /></button>
-                  <button type="button" onClick={resetMap} className="hidden h-9 w-9 items-center justify-center rounded-full text-foreground hover:bg-muted sm:flex" aria-label="Réinitialiser la carte"><RotateCcw size={15} /></button>
-                  <button type="button" onClick={() => setZoom((value) => Math.min(2.1, value + 0.2))} className="hidden h-9 w-9 items-center justify-center rounded-full text-foreground hover:bg-muted sm:flex" aria-label="Zoomer"><ZoomIn size={16} /></button>
-                  <button type="button" onClick={() => setZoom((value) => Math.max(0.9, value - 0.2))} className="hidden h-9 w-9 items-center justify-center rounded-full text-foreground hover:bg-muted sm:flex" aria-label="Dézoomer"><ZoomOut size={16} /></button>
+                  <button type="button" onClick={resetMap} className="flex h-9 w-9 items-center justify-center rounded-full text-foreground hover:bg-muted" aria-label="Réinitialiser la carte"><RotateCcw size={15} /></button>
+                  <button type="button" onClick={() => setZoom((value) => Math.min(2.1, value + 0.2))} className="flex h-9 w-9 items-center justify-center rounded-full text-foreground hover:bg-muted" aria-label="Zoomer"><ZoomIn size={16} /></button>
+                  <button type="button" onClick={() => setZoom((value) => Math.max(0.9, value - 0.2))} className="flex h-9 w-9 items-center justify-center rounded-full text-foreground hover:bg-muted" aria-label="Dézoomer"><ZoomOut size={16} /></button>
                 </div>
                 {mapSvg(false)}
-                <div className="border-t border-border bg-background/85 px-3 py-2.5 text-[9px] leading-4 text-muted-foreground sm:text-[11px]">Carte historique indicative : elle sert à explorer des identités et mouvements, pas à imposer un découpage administratif.</div>
+                <div className="border-t border-border bg-background/85 px-3 py-2.5 text-[11px] leading-4 text-muted-foreground">Carte historique indicative : elle sert à explorer des identités et mouvements, pas à imposer un découpage administratif.</div>
               </div>
-
-              <div id="regional-mobile-card" className="mt-3 lg:hidden"><TerritoryDetails territory={selected} compact /></div>
             </div>
 
-            <aside className="hidden lg:block lg:max-h-[720px] lg:overflow-y-auto lg:pr-1"><TerritoryDetails territory={selected} /></aside>
+            <aside className="max-h-[760px] overflow-y-auto pr-1"><TerritoryDetails territory={selected} /></aside>
           </div>
         </div>
       </div>
-
-      {expanded ? (
-        <div className="fixed inset-0 z-[100] bg-background p-3 pt-[max(0.75rem,env(safe-area-inset-top))]" role="dialog" aria-modal="true" aria-label="Carte régionale en plein écran">
-          <div className="mx-auto flex h-full max-w-3xl flex-col overflow-hidden rounded-[24px] border border-border bg-card shadow-2xl">
-            <div className="flex items-center justify-between gap-3 border-b border-border px-3 py-2.5">
-              <div><p className="text-[9px] font-extrabold uppercase tracking-wider text-primary">Carte interactive</p><p className="text-sm font-bold text-foreground">{selected.name}</p></div>
-              <div className="flex gap-1">
-                <button type="button" onClick={() => setZoom((value) => Math.min(2.4, value + 0.2))} className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background" aria-label="Zoomer"><ZoomIn size={17} /></button>
-                <button type="button" onClick={() => setZoom((value) => Math.max(0.8, value - 0.2))} className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background" aria-label="Dézoomer"><ZoomOut size={17} /></button>
-                <button type="button" onClick={resetMap} className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background" aria-label="Réinitialiser"><RotateCcw size={16} /></button>
-                <button type="button" onClick={() => setExpanded(false)} className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground" aria-label="Fermer"><Minimize2 size={17} /></button>
-              </div>
-            </div>
-            <div className="min-h-0 flex-1 overflow-hidden bg-[radial-gradient(circle_at_top,_hsl(var(--muted))_0,_transparent_70%)]">{mapSvg(true)}</div>
-            <div className="border-t border-border bg-background px-3 py-2 text-[10px] leading-4 text-muted-foreground">Touchez directement un territoire. Sur écran tactile, la page reste scrollable ; le déplacement manuel de la carte est réservé à la souris.</div>
-          </div>
-        </div>
-      ) : null}
     </section>
   );
 }
