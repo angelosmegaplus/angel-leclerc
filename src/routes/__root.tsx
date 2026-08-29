@@ -196,6 +196,7 @@ function RootComponent() {
   }, [pathname, isAngelOSPage, isAdminPage, isStandaloneMoviesPage, isPoliticsPage]);
 
   const isStandalonePage = isAngelOSPage || isAdminPage || isStandaloneMoviesPage || isPoliticsPage;
+  const isStandaloneWithoutRouteFooter = isAngelOSPage || isAdminPage || isStandaloneMoviesPage;
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -203,8 +204,12 @@ function RootComponent() {
         <ThemeSync />
         <AngelOSCardStyle />
         <PageViewTracker />
-        <PwaRegistrar />
-        {isStandalonePage ? (
+        {!isPoliticsPage && <PwaRegistrar />}
+        {isPoliticsPage ? (
+          <main className="min-h-screen">
+            <Outlet />
+          </main>
+        ) : isStandaloneWithoutRouteFooter ? (
           <main className="min-h-screen [&_footer]:hidden">
             <Outlet />
           </main>
