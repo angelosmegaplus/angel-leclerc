@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, X, Linkedin, Instagram, Facebook, LogIn } from "lucide-react";
+import { Menu, X, Linkedin, Instagram, Facebook, LogIn, Home, Briefcase, User, FileText, Mail } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import logo from "@/assets/logo.svg";
 import { Button } from "@/components/ui/button";
@@ -7,11 +7,11 @@ import { ThemeToggle } from "@/components/ThemeController";
 import { SearchBar } from "@/components/SearchBar";
 
 const navLinks = [
-  { href: "/", label: "Accueil" },
-  { href: "/entreprise", label: "Entreprise" },
-  { href: "/parcours", label: "Parcours" },
-  { href: "/articles", label: "Blog" },
-  { href: "/contact", label: "Contact" },
+  { href: "/", label: "Accueil", icon: Home },
+  { href: "/entreprise", label: "Entreprise", icon: Briefcase },
+  { href: "/parcours", label: "Parcours", icon: User },
+  { href: "/articles", label: "Blog", icon: FileText },
+  { href: "/contact", label: "Contact", icon: Mail },
 ];
 
 export function Header() {
@@ -33,18 +33,23 @@ export function Header() {
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-7">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              to={link.href}
-              activeOptions={{ exact: link.href === "/" }}
-              activeProps={{ className: "text-foreground font-medium" }}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {link.label}
-            </Link>
-          ))}
+        <nav className="hidden md:flex items-center gap-2">
+          {navLinks.map((link) => {
+            const Icon = link.icon;
+            return (
+              <Link
+                key={link.href}
+                to={link.href}
+                activeOptions={{ exact: link.href === "/" }}
+                activeProps={{ className: "text-foreground bg-muted" }}
+                className="group relative inline-flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                title={link.label}
+                aria-label={link.label}
+              >
+                <Icon size={18} />
+              </Link>
+            );
+          })}
           <div className="flex items-center gap-3">
             <a href="https://www.linkedin.com/company/angel-leclerc-communication/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="LinkedIn Angel Leclerc Communication"><Linkedin size={20} /></a>
             <a href="https://www.instagram.com/angelof_com?igsh=MWpqMjc3Mm03MHJpYg==" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Instagram Angel Leclerc Communication"><Instagram size={20} /></a>
@@ -82,9 +87,15 @@ export function Header() {
       {mobileOpen && (
         <div className="md:hidden border-t border-border bg-background">
           <nav className="container-tight flex flex-col gap-4 py-6">
-            {navLinks.map((link) => (
-              <Link key={link.href} to={link.href} activeOptions={{ exact: link.href === "/" }} activeProps={{ className: "text-primary font-medium" }} onClick={() => setMobileOpen(false)} className="text-base py-2 text-foreground hover:text-primary transition-colors">{link.label}</Link>
-            ))}
+            {navLinks.map((link) => {
+              const Icon = link.icon;
+              return (
+                <Link key={link.href} to={link.href} activeOptions={{ exact: link.href === "/" }} activeProps={{ className: "text-primary font-medium" }} onClick={() => setMobileOpen(false)} className="flex items-center gap-3 text-base py-2 text-foreground hover:text-primary transition-colors">
+                  <Icon size={20} className="text-muted-foreground" />
+                  {link.label}
+                </Link>
+              );
+            })}
             <Link
               to="/auth"
               onClick={() => setMobileOpen(false)}
