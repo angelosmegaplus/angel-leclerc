@@ -108,6 +108,18 @@ export function toVideoList(value: unknown): ContentVideo[] {
   );
 }
 
+function normalizePublicContent(item: ContentItem): ContentItem {
+  if (
+    item.section === "experience" &&
+    item.title === "Agent de propreté urbaine (emploi saisonnier)" &&
+    item.subtitle === "Mairie de Sarlat-la-Canéda"
+  ) {
+    return { ...item, period: "Juillet – août 2026 · 2 mois" };
+  }
+
+  return item;
+}
+
 export async function fetchContentSection(section: ContentSection): Promise<ContentItem[]> {
   const { data, error } = await supabase
     .from("content_items")
@@ -117,7 +129,7 @@ export async function fetchContentSection(section: ContentSection): Promise<Cont
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true });
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []).map(normalizePublicContent);
 }
 
 export async function fetchAllContent(): Promise<ContentItem[]> {
@@ -127,7 +139,7 @@ export async function fetchAllContent(): Promise<ContentItem[]> {
     .order("section", { ascending: true })
     .order("sort_order", { ascending: true });
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []).map(normalizePublicContent);
 }
 
 /** Hook-friendly query options for a public content section. */
