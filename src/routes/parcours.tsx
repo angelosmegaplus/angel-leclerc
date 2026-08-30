@@ -37,9 +37,13 @@ function ObjectivesButton() {
   }, []);
   if (!target) return null;
   return createPortal(
-    <a href="/mes-objectifs" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-primary/40 bg-primary/5 px-5 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/10 sm:justify-start">
-      <Target size={16} /> Mes objectifs
-    </a>, target,
+    <a
+      href="/mes-objectifs"
+      className="inline-flex min-h-9 items-center justify-center gap-1.5 px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-primary sm:justify-start"
+    >
+      <Target size={14} /> Projet & pistes d'avenir
+    </a>,
+    target,
   );
 }
 
@@ -101,9 +105,8 @@ function PermisSection() {
 function ParcoursPage() {
   return (
     <div className="pb-24 md:pb-0" data-cv-page>
-
-      <BtsCommunicationSection />
       <MyJourney />
+      <BtsCommunicationSection />
       <ObjectivesButton />
       <PermisSection />
       <AssociationLogos />
