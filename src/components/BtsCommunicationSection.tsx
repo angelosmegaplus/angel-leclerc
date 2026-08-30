@@ -1,5 +1,4 @@
 import {
-  Accessibility,
   BookOpen,
   BriefcaseBusiness,
   ChevronDown,
@@ -88,7 +87,7 @@ export function BtsCommunicationSection() {
                 </summary>
 
                 <div className="border-t border-dashed border-border px-4 pb-4 pt-4">
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <div className="grid gap-3 sm:grid-cols-3">
                     <div className="rounded-xl border border-border bg-card p-4">
                       <BookOpen size={19} className="text-primary" />
                       <p className="mt-3 text-sm font-semibold text-foreground">BTS Communication</p>
@@ -103,11 +102,6 @@ export function BtsCommunicationSection() {
                       <BriefcaseBusiness size={19} className="text-primary" />
                       <p className="mt-3 text-sm font-semibold text-foreground">Informations employeur</p>
                       <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Le calendrier permet de consulter les périodes de formation et les périodes en entreprise.</p>
-                    </div>
-                    <div className="rounded-xl border border-border bg-card p-4">
-                      <Accessibility size={19} className="text-primary" />
-                      <p className="mt-3 text-sm font-semibold text-foreground">RQTH</p>
-                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Reconnaissance disponible si utile à l'employeur, avec des dispositifs d'accompagnement possibles selon la situation.</p>
                     </div>
                   </div>
 
