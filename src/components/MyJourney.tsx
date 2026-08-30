@@ -1110,7 +1110,7 @@ export function MyJourney() {
     <>
       <IntroSection />
       <CvSection />
-      <EngagementSyndicalSection />
+      
       <EngagementsSection />
       <ToolsSection />
     </>
