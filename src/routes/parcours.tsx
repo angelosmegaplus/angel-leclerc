@@ -12,6 +12,7 @@ import { LatestArticles } from "@/components/LatestArticles";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { BtsCommunicationSection } from "@/components/BtsCommunicationSection";
 import { RqthCertificationCard } from "@/components/RqthCertificationCard";
+import { UniversityHistoryFormationCard } from "@/components/UniversityHistoryFormationCard";
 import { FeedbackBlock } from "@/components/FeedbackBlock";
 import { Logo } from "@/components/Logo";
 import { AssociationLogos } from "@/components/AssociationLogos";
@@ -108,6 +109,7 @@ function ParcoursPage() {
     <div className="pb-24 md:pb-0" data-cv-page>
       <MyJourney />
       <RqthCertificationCard />
+      <UniversityHistoryFormationCard />
       <BtsCommunicationSection />
       <ObjectivesButton />
       <PermisSection />
