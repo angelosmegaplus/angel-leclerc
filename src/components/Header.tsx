@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Menu, X, Linkedin, Instagram, Facebook, LogIn, Home, Briefcase, User, FileText, Mail } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { motion } from "framer-motion";
+import { Menu, X, Linkedin, Instagram, Facebook, LogIn, Home, Briefcase, Route, FileText, Mail } from "lucide-react";
+import { Link, useRouterState } from "@tanstack/react-router";
 import logo from "@/assets/logo.svg";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeController";
@@ -9,7 +10,7 @@ import { SearchBar } from "@/components/SearchBar";
 const navLinks = [
   { href: "/", label: "Accueil", icon: Home },
   { href: "/entreprise", label: "Entreprise", icon: Briefcase },
-  { href: "/parcours", label: "Parcours", icon: User },
+  { href: "/parcours", label: "Parcours", icon: Route },
   { href: "/articles", label: "Blog", icon: FileText },
   { href: "/contact", label: "Contact", icon: Mail },
 ];
