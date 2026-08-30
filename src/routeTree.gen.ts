@@ -14,6 +14,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PolitiqueCookiesRouteImport } from './routes/politique-cookies'
 import { Route as PolitiqueConfidentialiteRouteImport } from './routes/politique-confidentialite'
+import { Route as PolitiqueRouteImport } from './routes/politique'
 import { Route as ParcoursRouteImport } from './routes/parcours'
 import { Route as MoviesAuthRouteImport } from './routes/movies-auth'
 import { Route as MesObjectifsRouteImport } from './routes/mes-objectifs'
@@ -98,6 +99,11 @@ const PolitiqueConfidentialiteRoute =
     path: '/politique-confidentialite',
     getParentRoute: () => rootRouteImport,
   } as any)
+const PolitiqueRoute = PolitiqueRouteImport.update({
+  id: '/politique',
+  path: '/politique',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ParcoursRoute = ParcoursRouteImport.update({
   id: '/parcours',
   path: '/parcours',
@@ -417,6 +423,7 @@ export interface FileRoutesByFullPath {
   '/mes-objectifs': typeof MesObjectifsRoute
   '/movies-auth': typeof MoviesAuthRoute
   '/parcours': typeof ParcoursRoute
+  '/politique': typeof PolitiqueRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/politique-cookies': typeof PolitiqueCookiesRoute
   '/portfolio': typeof PortfolioRoute
@@ -481,6 +488,7 @@ export interface FileRoutesByTo {
   '/mes-objectifs': typeof MesObjectifsRoute
   '/movies-auth': typeof MoviesAuthRoute
   '/parcours': typeof ParcoursRoute
+  '/politique': typeof PolitiqueRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/politique-cookies': typeof PolitiqueCookiesRoute
   '/portfolio': typeof PortfolioRoute
@@ -546,6 +554,7 @@ export interface FileRoutesById {
   '/mes-objectifs': typeof MesObjectifsRoute
   '/movies-auth': typeof MoviesAuthRoute
   '/parcours': typeof ParcoursRoute
+  '/politique': typeof PolitiqueRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/politique-cookies': typeof PolitiqueCookiesRoute
   '/portfolio': typeof PortfolioRoute
@@ -612,6 +621,7 @@ export interface FileRouteTypes {
     | '/mes-objectifs'
     | '/movies-auth'
     | '/parcours'
+    | '/politique'
     | '/politique-confidentialite'
     | '/politique-cookies'
     | '/portfolio'
@@ -676,6 +686,7 @@ export interface FileRouteTypes {
     | '/mes-objectifs'
     | '/movies-auth'
     | '/parcours'
+    | '/politique'
     | '/politique-confidentialite'
     | '/politique-cookies'
     | '/portfolio'
@@ -740,6 +751,7 @@ export interface FileRouteTypes {
     | '/mes-objectifs'
     | '/movies-auth'
     | '/parcours'
+    | '/politique'
     | '/politique-confidentialite'
     | '/politique-cookies'
     | '/portfolio'
@@ -805,6 +817,7 @@ export interface RootRouteChildren {
   MesObjectifsRoute: typeof MesObjectifsRoute
   MoviesAuthRoute: typeof MoviesAuthRoute
   ParcoursRoute: typeof ParcoursRoute
+  PolitiqueRoute: typeof PolitiqueRoute
   PolitiqueConfidentialiteRoute: typeof PolitiqueConfidentialiteRoute
   PolitiqueCookiesRoute: typeof PolitiqueCookiesRoute
   PortfolioRoute: typeof PortfolioRoute
@@ -881,6 +894,13 @@ declare module '@tanstack/react-router' {
       path: '/politique-confidentialite'
       fullPath: '/politique-confidentialite'
       preLoaderRoute: typeof PolitiqueConfidentialiteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/politique': {
+      id: '/politique'
+      path: '/politique'
+      fullPath: '/politique'
+      preLoaderRoute: typeof PolitiqueRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/parcours': {
@@ -1321,6 +1341,7 @@ const rootRouteChildren: RootRouteChildren = {
   MesObjectifsRoute: MesObjectifsRoute,
   MoviesAuthRoute: MoviesAuthRoute,
   ParcoursRoute: ParcoursRoute,
+  PolitiqueRoute: PolitiqueRoute,
   PolitiqueConfidentialiteRoute: PolitiqueConfidentialiteRoute,
   PolitiqueCookiesRoute: PolitiqueCookiesRoute,
   PortfolioRoute: PortfolioRoute,
