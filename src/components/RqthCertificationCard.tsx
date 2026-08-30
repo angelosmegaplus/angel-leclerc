@@ -4,9 +4,9 @@ import {
   Accessibility,
   CheckCircle2,
   ChevronDown,
-  Download,
   ExternalLink,
   FileText,
+  Mail,
 } from "lucide-react";
 
 export function RqthCertificationCard() {
@@ -97,42 +97,50 @@ export function RqthCertificationCard() {
               </div>
 
               <div className="mt-4">
-                <p className="text-xs font-semibold uppercase tracking-widest text-primary">Documents utiles</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-primary">Ressources officielles</p>
                 <div className="mt-2 grid gap-2">
                   <a
-                    href="https://www.agefiph.fr/sites/default/files/medias/fichiers/2026-01/Agefiph-Metodia_2026-01.pdf"
+                    href="https://www.agefiph.fr/aides-financieres?cible=8&mode=employeur"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40"
                   >
-                    <span>Guide Agefiph 2026 — services et aides</span>
-                    <Download size={14} className="shrink-0 text-primary" />
+                    <span>Agefiph — aides financières pour les employeurs</span>
+                    <ExternalLink size={14} className="shrink-0 text-primary" />
                   </a>
 
                   <a
-                    href="https://www.agefiph.fr/sites/default/files/medias/fichiers/2026-01/Agefiph-Aide-apprentissage_2026-01.pdf"
+                    href="https://www.agefiph.fr/aides-financieres/aide-lembauche-en-contrat-dapprentissage-dune-personne-en-situation-de-handicap"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40"
                   >
-                    <span>Aide Agefiph à l'apprentissage 2026</span>
-                    <Download size={14} className="shrink-0 text-primary" />
+                    <span>Agefiph — aide à l'embauche en contrat d'apprentissage</span>
+                    <ExternalLink size={14} className="shrink-0 text-primary" />
                   </a>
 
                   <a
-                    href="https://www.service-public.fr/particuliers/vosdroits/R19993"
+                    href="https://www.service-public.fr/particuliers/vosdroits/F1650"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40"
                   >
-                    <span>Dossier MDPH / demande ou renouvellement</span>
+                    <span>Service-Public — comprendre, demander ou renouveler une RQTH</span>
                     <ExternalLink size={14} className="shrink-0 text-primary" />
                   </a>
                 </div>
               </div>
 
-              <div className="mt-4 rounded-lg border border-dashed border-border px-3 py-3 text-xs leading-relaxed text-muted-foreground">
-                <strong className="text-foreground">Justificatif personnel RQTH :</strong> disponible sur demande. La décision MDPH complète n'est pas publiée en ligne afin de protéger les données personnelles qu'elle contient.
+              <div className="mt-4 rounded-xl border border-primary/25 bg-primary/5 p-3">
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  Mon justificatif RQTH est un document personnel et n'est pas publié directement sur le site.
+                </p>
+                <a
+                  href="/contact"
+                  className="mt-3 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+                >
+                  <Mail size={14} /> Me contacter pour obtenir mon justificatif RQTH
+                </a>
               </div>
             </div>
           </details>
