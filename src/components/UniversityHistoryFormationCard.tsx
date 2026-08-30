@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { GraduationCap } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 export function UniversityHistoryFormationCard() {
   const [target, setTarget] = useState<HTMLElement | null>(null);
@@ -20,6 +20,7 @@ export function UniversityHistoryFormationCard() {
     const mount = document.createElement("div");
     mount.dataset.universityHistoryFormation = "true";
 
+    // Le Bac Pro reste toujours la formation principale et en première position.
     if (bacProCard) {
       bacProCard.insertAdjacentElement("afterend", mount);
     } else {
@@ -33,24 +34,37 @@ export function UniversityHistoryFormationCard() {
   if (!target) return null;
 
   return createPortal(
-    <div className="rounded-2xl border border-border bg-card p-4 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-shadow hover:shadow-md sm:p-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-        <span className="inline-flex h-[64px] w-[120px] shrink-0 items-center justify-center rounded-xl border border-border bg-background text-primary">
-          <GraduationCap size={30} />
-        </span>
-        <div className="flex-1">
-          <div className="flex flex-col justify-between gap-1 sm:flex-row sm:items-baseline">
-            <h3 className="font-display text-lg font-semibold text-foreground">
-              Études universitaires en histoire
-            </h3>
-            <span className="text-xs font-medium uppercase tracking-widest text-primary">
-              Septembre – octobre 2025
+    <div className="rounded-xl border border-border/70 bg-background/65 px-4 py-3.5 sm:px-5 sm:py-4">
+      <div className="flex items-start gap-3.5">
+        <div className="flex h-12 w-20 shrink-0 items-center justify-center rounded-lg border border-border bg-white p-1.5">
+          <Logo
+            domain="uca.fr"
+            alt="Université Clermont Auvergne"
+            size={44}
+            bare
+            link={false}
+          />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Complément de parcours
+              </p>
+              <h3 className="mt-1 font-display text-base font-semibold text-foreground">
+                Études universitaires en histoire
+              </h3>
+            </div>
+            <span className="shrink-0 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              Sept. – oct. 2025
             </span>
           </div>
-          <p className="text-sm font-medium text-foreground/80">
+
+          <p className="mt-0.5 text-sm font-medium text-foreground/75">
             Université Clermont Auvergne · Clermont-Ferrand
           </p>
-          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground sm:text-sm">
             Analyse critique de sources, méthodologie universitaire, recherche documentaire et argumentation.
           </p>
         </div>
