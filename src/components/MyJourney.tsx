@@ -833,121 +833,14 @@ const engagements: {
       "Pédagogie, formations et transmission auprès des jeunes bénévoles.",
     icon: BookOpen,
   },
-  {
-    title: "Adhérent",
-    org: "République Souveraine",
-    period: "Depuis août 2026",
-    description:
-      "Engagement politique en faveur de la souveraineté de la République française et de l'indépendance nationale.",
-    icon: Landmark,
-  },
 ];
 
-/** Engagement syndical (distinct de la vie associative). */
-const engagementSyndical = {
-  title: "Adhérent",
-  org: "CGT Dordogne",
-  period: "Depuis août 2026",
-  description:
-    "Engagement syndical autour des droits des salariés, des conditions de travail et de la solidarité professionnelle.",
-  icon: Users,
-};
-
-/** Renvoie le chemin du logo officiel pour un organisme, ou undefined. */
-function logoFor(org: string): { src: string; wide: boolean } | undefined {
-  const o = org.toLowerCase();
-  if (o.includes("cgt")) return { src: "/logos/cgt.png", wide: false };
-  if (o.includes("souveraine"))
-    return { src: "/logos/republique-souveraine.png", wide: true };
-  return undefined;
-}
-
-/** Affiche le logo officiel ou l'icône Lucide pour un engagement. */
+/** Affiche l'icône Lucide pour un engagement. */
 function EngagementIcon({ org, Icon }: { org: string; Icon: LucideIcon }) {
-  const logo = logoFor(org);
-  if (logo) {
-    return (
-      <div
-        className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-card p-1.5 ${
-          logo.wide ? "h-12 w-44" : "h-12 w-12"
-        }`}
-      >
-        <img
-          src={logo.src}
-          alt={`Logo ${org}`}
-          loading="lazy"
-          className="h-full w-full object-contain"
-        />
-      </div>
-    );
-  }
   return (
     <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
       <Icon size={22} />
     </div>
-  );
-}
-
-function EngagementSyndicalSection() {
-  const { data } = useQuery(contentQuery("engagement"));
-  const row =
-    data && data.length
-      ? data.find((i: ContentItem) =>
-          (i.subtitle ?? "").toLowerCase().includes("cgt"),
-        )
-      : undefined;
-  const e = row
-    ? {
-        title: row.title,
-        org: row.subtitle ?? engagementSyndical.org,
-        period: row.period ?? engagementSyndical.period,
-        description: row.description ?? engagementSyndical.description,
-      }
-    : engagementSyndical;
-  return (
-    <AnimatedSection>
-      <section
-        id="engagement-syndical"
-        className="section-padding bg-background scroll-mt-24"
-      >
-        <div className="container-tight">
-          <SectionHeader
-            eyebrow="Engagement syndical"
-            title="Syndicalisme"
-          />
-          <div className="mt-8 md:mt-12">
-            <Card className="flex h-full flex-col">
-              <div className="flex items-start gap-4">
-                <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-card p-1.5">
-                  <img
-                    src="/logos/cgt.png"
-                    alt="Logo CGT"
-                    loading="lazy"
-                    className="h-full w-full object-contain"
-                  />
-                </div>
-                <div>
-                  <h3 className="font-display text-base font-semibold text-foreground">
-                    {e.title}
-                  </h3>
-                  <p className="text-sm font-medium text-foreground/80">
-                    {e.org}
-                  </p>
-                  {e.period && (
-                    <p className="text-xs uppercase tracking-widest text-primary">
-                      {e.period}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                {e.description}
-              </p>
-            </Card>
-          </div>
-        </div>
-      </section>
-    </AnimatedSection>
   );
 }
 
@@ -956,10 +849,6 @@ function EngagementsSection() {
   const list = (
     data && data.length
       ? data
-          .filter(
-            (i: ContentItem) =>
-              !(i.subtitle ?? "").toLowerCase().includes("cgt"),
-          )
           .map((i: ContentItem) => ({
             title: i.title,
             org: i.subtitle ?? "",
@@ -1221,7 +1110,7 @@ export function MyJourney() {
     <>
       <IntroSection />
       <CvSection />
-      <EngagementSyndicalSection />
+      
       <EngagementsSection />
       <ToolsSection />
     </>
