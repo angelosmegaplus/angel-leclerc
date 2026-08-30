@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, X, Linkedin, Instagram, Facebook, LogIn } from "lucide-react";
+import { Menu, X, Linkedin, Instagram, Facebook, LogIn, Home, Briefcase, User, FileText, Mail } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import logo from "@/assets/logo.svg";
 import { Button } from "@/components/ui/button";
@@ -7,11 +7,11 @@ import { ThemeToggle } from "@/components/ThemeController";
 import { SearchBar } from "@/components/SearchBar";
 
 const navLinks = [
-  { href: "/", label: "Accueil" },
-  { href: "/entreprise", label: "Entreprise" },
-  { href: "/parcours", label: "Parcours" },
-  { href: "/articles", label: "Blog" },
-  { href: "/contact", label: "Contact" },
+  { href: "/", label: "Accueil", icon: Home },
+  { href: "/entreprise", label: "Entreprise", icon: Briefcase },
+  { href: "/parcours", label: "Parcours", icon: User },
+  { href: "/articles", label: "Blog", icon: FileText },
+  { href: "/contact", label: "Contact", icon: Mail },
 ];
 
 export function Header() {
