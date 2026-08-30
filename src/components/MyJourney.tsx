@@ -837,88 +837,10 @@ const engagements: {
 
 /** Affiche l'icône Lucide pour un engagement. */
 function EngagementIcon({ org, Icon }: { org: string; Icon: LucideIcon }) {
-    return (
-      <div
-        className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-card p-1.5 ${
-          logo.wide ? "h-12 w-44" : "h-12 w-12"
-        }`}
-      >
-        <img
-          src={logo.src}
-          alt={`Logo ${org}`}
-          loading="lazy"
-          className="h-full w-full object-contain"
-        />
-      </div>
-    );
-  }
   return (
     <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
       <Icon size={22} />
     </div>
-  );
-}
-
-function EngagementSyndicalSection() {
-  const { data } = useQuery(contentQuery("engagement"));
-  const row =
-    data && data.length
-      ? data.find((i: ContentItem) =>
-          (i.subtitle ?? "").toLowerCase().includes("cgt"),
-        )
-      : undefined;
-  const e = row
-    ? {
-        title: row.title,
-        org: row.subtitle ?? engagementSyndical.org,
-        period: row.period ?? engagementSyndical.period,
-        description: row.description ?? engagementSyndical.description,
-      }
-    : engagementSyndical;
-  return (
-    <AnimatedSection>
-      <section
-        id="engagement-syndical"
-        className="section-padding bg-background scroll-mt-24"
-      >
-        <div className="container-tight">
-          <SectionHeader
-            eyebrow="Engagement syndical"
-            title="Syndicalisme"
-          />
-          <div className="mt-8 md:mt-12">
-            <Card className="flex h-full flex-col">
-              <div className="flex items-start gap-4">
-                <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-card p-1.5">
-                  <img
-                    src="/logos/cgt.png"
-                    alt="Logo CGT"
-                    loading="lazy"
-                    className="h-full w-full object-contain"
-                  />
-                </div>
-                <div>
-                  <h3 className="font-display text-base font-semibold text-foreground">
-                    {e.title}
-                  </h3>
-                  <p className="text-sm font-medium text-foreground/80">
-                    {e.org}
-                  </p>
-                  {e.period && (
-                    <p className="text-xs uppercase tracking-widest text-primary">
-                      {e.period}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                {e.description}
-              </p>
-            </Card>
-          </div>
-        </div>
-      </section>
-    </AnimatedSection>
   );
 }
 
@@ -927,10 +849,6 @@ function EngagementsSection() {
   const list = (
     data && data.length
       ? data
-          .filter(
-            (i: ContentItem) =>
-              !(i.subtitle ?? "").toLowerCase().includes("cgt"),
-          )
           .map((i: ContentItem) => ({
             title: i.title,
             org: i.subtitle ?? "",
