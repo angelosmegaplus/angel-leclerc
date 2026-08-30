@@ -87,9 +87,15 @@ export function Header() {
       {mobileOpen && (
         <div className="md:hidden border-t border-border bg-background">
           <nav className="container-tight flex flex-col gap-4 py-6">
-            {navLinks.map((link) => (
-              <Link key={link.href} to={link.href} activeOptions={{ exact: link.href === "/" }} activeProps={{ className: "text-primary font-medium" }} onClick={() => setMobileOpen(false)} className="text-base py-2 text-foreground hover:text-primary transition-colors">{link.label}</Link>
-            ))}
+            {navLinks.map((link) => {
+              const Icon = link.icon;
+              return (
+                <Link key={link.href} to={link.href} activeOptions={{ exact: link.href === "/" }} activeProps={{ className: "text-primary font-medium" }} onClick={() => setMobileOpen(false)} className="flex items-center gap-3 text-base py-2 text-foreground hover:text-primary transition-colors">
+                  <Icon size={20} className="text-muted-foreground" />
+                  {link.label}
+                </Link>
+              );
+            })}
             <Link
               to="/auth"
               onClick={() => setMobileOpen(false)}
