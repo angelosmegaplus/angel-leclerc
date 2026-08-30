@@ -11,6 +11,7 @@ import { UnifiedExperiencesPortfolio } from "@/components/UnifiedExperiencesPort
 import { LatestArticles } from "@/components/LatestArticles";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { BtsCommunicationSection } from "@/components/BtsCommunicationSection";
+import { RqthCertificationCard } from "@/components/RqthCertificationCard";
 import { FeedbackBlock } from "@/components/FeedbackBlock";
 import { Logo } from "@/components/Logo";
 import { AssociationLogos } from "@/components/AssociationLogos";
@@ -106,6 +107,7 @@ function ParcoursPage() {
   return (
     <div className="pb-24 md:pb-0" data-cv-page>
       <MyJourney />
+      <RqthCertificationCard />
       <BtsCommunicationSection />
       <ObjectivesButton />
       <PermisSection />
