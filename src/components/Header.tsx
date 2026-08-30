@@ -33,18 +33,23 @@ export function Header() {
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-7">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              to={link.href}
-              activeOptions={{ exact: link.href === "/" }}
-              activeProps={{ className: "text-foreground font-medium" }}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {link.label}
-            </Link>
-          ))}
+        <nav className="hidden md:flex items-center gap-2">
+          {navLinks.map((link) => {
+            const Icon = link.icon;
+            return (
+              <Link
+                key={link.href}
+                to={link.href}
+                activeOptions={{ exact: link.href === "/" }}
+                activeProps={{ className: "text-foreground bg-muted" }}
+                className="group relative inline-flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                title={link.label}
+                aria-label={link.label}
+              >
+                <Icon size={18} />
+              </Link>
+            );
+          })}
           <div className="flex items-center gap-3">
             <a href="https://www.linkedin.com/company/angel-leclerc-communication/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="LinkedIn Angel Leclerc Communication"><Linkedin size={20} /></a>
             <a href="https://www.instagram.com/angelof_com?igsh=MWpqMjc3Mm03MHJpYg==" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Instagram Angel Leclerc Communication"><Instagram size={20} /></a>
