@@ -7,6 +7,7 @@ import { PublicContactAssistant } from "@/components/PublicContactAssistant";
 
 const TITLE = "Contact — Angel Leclerc";
 const DESCRIPTION = "Contactez Angel Leclerc pour un projet professionnel, une demande de communication ou toute autre question.";
+const CONTACT_UI_VERSION = "2026-08-31-v2";
 
 type OpenPanel = "question" | "contact" | null;
 
@@ -42,7 +43,7 @@ function ContactPage() {
   };
 
   return (
-    <main className="bg-background">
+    <main className="bg-background" data-contact-ui={CONTACT_UI_VERSION}>
       <div className="container-tight py-12 md:py-16">
         <h1 className="text-center font-display text-4xl font-bold tracking-tight text-foreground md:text-5xl">Contact</h1>
 
@@ -90,7 +91,9 @@ function ContactPage() {
             </button>
             {openPanel === "contact" && (
               <div id="contact-form-panel" className="contact-form-clean border-t border-border p-3 sm:p-5">
-                <ContactAttachment />
+                <div className="contact-attachment-slot mb-4">
+                  <ContactAttachment />
+                </div>
                 <ContactChat initialTrack={parcours ?? "autre"} />
               </div>
             )}
