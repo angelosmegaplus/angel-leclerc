@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { ChevronDown, MessageCircleQuestion, Send } from "lucide-react";
 import { ContactChat, type Track } from "@/components/ContactChat";
+import { ContactAttachment, installContactTransport } from "@/components/ContactAttachment";
 import { PublicContactAssistant } from "@/components/PublicContactAssistant";
 
 const TITLE = "Contact — Angel Leclerc";
@@ -31,6 +32,10 @@ export const Route = createFileRoute("/contact")({
 function ContactPage() {
   const { parcours } = Route.useSearch();
   const [openPanel, setOpenPanel] = useState<OpenPanel>(parcours ? "contact" : null);
+
+  useEffect(() => {
+    installContactTransport();
+  }, []);
 
   const toggle = (panel: Exclude<OpenPanel, null>) => {
     setOpenPanel((current) => (current === panel ? null : panel));
@@ -85,6 +90,7 @@ function ContactPage() {
             </button>
             {openPanel === "contact" && (
               <div id="contact-form-panel" className="contact-form-clean border-t border-border p-3 sm:p-5">
+                <ContactAttachment />
                 <ContactChat initialTrack={parcours ?? "autre"} />
               </div>
             )}
