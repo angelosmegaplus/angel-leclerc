@@ -89,7 +89,7 @@ export default defineConfig({
               urlPattern: ({ request }: { request: Request }) => request.mode === "navigate",
               handler: "NetworkFirst",
               options: {
-                cacheName: "alc-pages",
+                cacheName: "alc-pages-v2",
                 networkTimeoutSeconds: 4,
                 expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 },
               },
@@ -97,13 +97,10 @@ export default defineConfig({
             {
               urlPattern: ({ url, request }: { url: URL; request: Request }) =>
                 url.origin === self.location.origin &&
-                (request.destination === "script" ||
-                  request.destination === "style" ||
-                  request.destination === "font" ||
-                  request.destination === "image"),
+                (request.destination === "font" || request.destination === "image"),
               handler: "CacheFirst",
               options: {
-                cacheName: "alc-assets",
+                cacheName: "alc-media-v2",
                 expiration: { maxEntries: 120, maxAgeSeconds: 60 * 60 * 24 * 30 },
               },
             },
