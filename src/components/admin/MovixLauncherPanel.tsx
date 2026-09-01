@@ -367,10 +367,10 @@ export function MovixLauncherPanel({
             type="button"
             onClick={revealControls}
             aria-label="Afficher les commandes Movix"
-            className={`absolute top-0 right-0 z-20 h-14 w-14 bg-transparent transition-opacity ${controlsVisible ? "pointer-events-none opacity-0" : "opacity-100"}`}
+            className={`absolute top-0 left-0 z-20 h-14 w-14 bg-transparent transition-opacity ${controlsVisible ? "pointer-events-none opacity-0" : "opacity-100"}`}
           />
 
-          <div className={`absolute top-3 right-3 z-30 flex items-center gap-2 transition-all duration-300 sm:top-4 sm:right-4 ${controlsVisible ? "translate-y-0 opacity-85 hover:opacity-100" : "pointer-events-none translate-y-2 opacity-0"}`}>
+          <div className={`absolute top-3 left-3 z-30 flex items-center gap-2 transition-all duration-300 sm:top-4 sm:left-4 ${controlsVisible ? "translate-y-0 opacity-85 hover:opacity-100" : "pointer-events-none translate-y-2 opacity-0"}`}>
             <button
               type="button"
               onClick={() => { setFrameKey((value) => value + 1); revealControls(); }}
