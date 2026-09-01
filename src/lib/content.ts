@@ -108,6 +108,11 @@ export function toVideoList(value: unknown): ContentVideo[] {
   );
 }
 
+function isRadioBocageContent(item: ContentItem): boolean {
+  const text = `${item.title ?? ""} ${item.subtitle ?? ""}`.toLowerCase();
+  return text.includes("radio bocage");
+}
+
 function normalizePublicContent(item: ContentItem): ContentItem {
   if (
     item.section === "experience" &&
@@ -115,6 +120,31 @@ function normalizePublicContent(item: ContentItem): ContentItem {
     item.subtitle === "Mairie de Sarlat-la-Canéda"
   ) {
     return { ...item, period: "Juillet – août 2026 · 2 mois" };
+  }
+
+  if (isRadioBocageContent(item)) {
+    if (item.section === "experience") {
+      return {
+        ...item,
+        title: "Découverte de la production radiophonique",
+        subtitle: "Radio Bocage",
+        period: "2026",
+        bullets: [],
+      };
+    }
+
+    if (item.section === "projet") {
+      return {
+        ...item,
+        title: "Radio Bocage",
+        description: "Découverte de la production radiophonique.",
+        bullets: [],
+        extra_label: null,
+        extra_value: null,
+        url: null,
+        link_label: null,
+      };
+    }
   }
 
   return item;
