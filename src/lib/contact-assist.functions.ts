@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import type { AiMessage } from "./ai-gateway.server";
-import { resilientAngelAi } from "./ai-resilient.server";
 
 const Schema = z.object({
   question: z.string().trim().min(2).max(400),
@@ -27,9 +26,8 @@ function sentence(value: string) {
 }
 
 /**
- * Secours local volontairement conservateur : il ne crée aucun fait et ne
- * prétend pas être une réponse IA. Il rend simplement le texte déjà fourni
- * plus propre lorsque le fournisseur distant est momentanément indisponible.
+ * Secours local conservateur : aucune donnée n'est inventée. Il garantit que
+ * le bouton reste utilisable même si la couche IA distante est indisponible.
  */
 function localAssist(data: ContactAssistInput): ContactAssistResult {
   const draft = data.draft?.trim() ?? "";
@@ -67,23 +65,33 @@ function localAssist(data: ContactAssistInput): ContactAssistResult {
 }
 
 /**
- * Aide à la rédaction dans le formulaire de contact : l'IA reformule ou propose
- * une réponse à partir de ce que le visiteur a déjà indiqué. Si la passerelle
- * IA est indisponible, un secours local garde le bouton utilisable sans inventer
- * d'informations sur le visiteur.
+ * Aide à la rédaction dans le formulaire de contact.
+ *
+ * Important : aucune dépendance à la passerelle IA n'est chargée au niveau du
+ * module. Toute la couche distante est importée à la demande et enfermée dans
+ * un try/catch. Ainsi, une erreur d'initialisation du fournisseur, de quota,
+ * de configuration ou d'import ne peut plus casser le formulaire.
  */
 export const assistContactAnswer = createServerFn({ method: "POST" })
   .validator((input: unknown) => Schema.parse(input))
   .handler(async ({ data }): Promise<ContactAssistResult> => {
     const fallback = localAssist(data);
-    const { getRequestIP } = await import("@tanstack/react-start/server");
-    const { checkAssistantRate } = await import("./assistant-rate.server");
-    let ip = "unknown";
-    try { ip = getRequestIP({ xForwardedFor: true }) ?? "unknown"; } catch { /* hors requête */ }
 
-    // Une limite de débit ne doit pas casser l'expérience : on conserve une
-    // reformulation locale plutôt que d'afficher une erreur au visiteur.
-    if (!checkAssistantRate(ip)) return fallback;
+    // La protection de débit est elle aussi facultative pour la disponibilité
+    // du formulaire : en cas de problème d'infrastructure, on utilise le secours.
+    try {
+      const { getRequestIP } = await import("@tanstack/react-start/server");
+      const { checkAssistantRate } = await import("./assistant-rate.server");
+      let ip = "unknown";
+      try {
+        ip = getRequestIP({ xForwardedFor: true }) ?? "unknown";
+      } catch {
+        ip = "unknown";
+      }
+      if (!checkAssistantRate(ip)) return fallback;
+    } catch (error) {
+      console.warn("[contact-assist] contrôle de débit indisponible, poursuite avec secours garanti", error);
+    }
 
     const context = (data.context ?? [])
       .filter((row) => row.answer.trim().length > 0)
@@ -111,6 +119,9 @@ export const assistContactAnswer = createServerFn({ method: "POST" })
     ];
 
     try {
+      // Import volontairement tardif : si toute la pile IA échoue à charger,
+      // le formulaire conserve quand même une réponse exploitable.
+      const { resilientAngelAi } = await import("./ai-resilient.server");
       const result = await resilientAngelAi({
         messages,
         priority: "interactive",
@@ -132,7 +143,7 @@ export const assistContactAnswer = createServerFn({ method: "POST" })
 
       return { text, hints };
     } catch (error) {
-      console.warn("[contact-assist] fournisseur IA indisponible, secours local utilisé", error);
+      console.warn("[contact-assist] pile IA distante indisponible, secours local utilisé", error);
       return fallback;
     }
   });
