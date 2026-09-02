@@ -77,12 +77,10 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
     <>
       <div className="mb-7 px-1">
         <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary font-display text-sm font-black text-primary-foreground">F</div>
-          <div className="min-w-0">
-            <p className="font-display text-base font-bold tracking-tight text-foreground">Flamme OS</p>
-            <p className="text-[11px] font-medium text-muted-foreground">Espace administrateur</p>
-          </div>
+          <img src="/flamme-os/logo.svg" alt="Flamme OS" className="h-8 w-auto max-w-[9.5rem] object-contain" />
+          <span className="sr-only">Flamme OS</span>
         </div>
+        <p className="mt-2 text-[11px] font-medium text-muted-foreground">Espace administrateur</p>
       </div>
 
       <nav className="space-y-1.5">
@@ -130,7 +128,9 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
         <header className="sticky top-0 z-30 border-b border-border bg-[#F6F1E8]/95 px-3 py-3 backdrop-blur-xl dark:bg-background/90 sm:px-7 lg:px-9">
           <div className="mx-auto flex max-w-[1520px] items-center gap-3">
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-semibold uppercase tracking-[.16em] text-primary">Flamme OS</p>
+              <div className="flex items-center gap-2">
+                <img src="/flamme-os/logo.svg" alt="" aria-hidden className="h-4 w-auto max-w-[5.5rem] object-contain" />
+              </div>
               <div className="mt-1 flex items-center gap-2.5">
                 {CurrentIcon ? <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><CurrentIcon className="h-4 w-4" /></span> : null}
                 <h1 className="truncate font-display text-xl font-bold tracking-[-.035em] sm:text-2xl">{title}</h1>
