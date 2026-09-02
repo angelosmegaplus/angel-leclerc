@@ -9,9 +9,9 @@ export type AngelNavigationTarget = {
 
 export const ANGEL_NAVIGATION_TARGETS: AngelNavigationTarget[] = [
   { tab: "dashboard", label: "Vue d'ensemble", detail: "Accueil de l'administration", aliases: ["accueil", "home", "tableau de bord", "aujourd'hui", "aperçu"], group: "Page" },
-  { tab: "angel-ai", label: "Angel OS IA", detail: "Assistant et conversation privée", aliases: ["ia", "assistant", "discussion", "chat", "angel os ia"], group: "Page" },
+  { tab: "angel-ai", label: "IA Flamme OS", detail: "Assistant et conversation privée", aliases: ["ia", "assistant", "discussion", "chat", "flamme os ia", "angel os ia"], group: "Page" },
   { tab: "etudes-travail", label: "Études & Travail", detail: "BTS Communication CNED, emploi, intérim, organisation et mobilité", aliases: ["études", "etudes", "cned", "bts", "bts communication", "travail", "emploi", "intérim", "interim", "mobilité", "mobilite", "planning"], group: "Page" },
-  { tab: "etudes-travail", label: "Archives des candidatures", detail: "Ancien historique des candidatures, conservé uniquement comme archive", aliases: ["anciennes candidatures", "archives candidatures", "historique alternance"], group: "Section", anchor: "archives" },
+  { tab: "etudes-travail", label: "Archives des candidatures", detail: "Historique des candidatures conservé comme archive", aliases: ["anciennes candidatures", "archives candidatures", "historique alternance"], group: "Section", anchor: "archives" },
   { tab: "messages", label: "Messages", detail: "Demandes reçues depuis le site", aliases: ["messages", "contacts", "demandes reçues"], group: "Page" },
   { tab: "boite-mail", label: "Boîte mail", detail: "Mails et Gmail", aliases: ["mail", "email", "gmail", "courriels", "boite mail"], group: "Page" },
   { tab: "boite-mail", label: "Mails importants", detail: "Messages importants et réponses à traiter", aliases: ["mails importants", "emails importants", "réponses mails", "mail urgent"], group: "Section", anchor: "important" },
@@ -25,9 +25,9 @@ export const ANGEL_NAVIGATION_TARGETS: AngelNavigationTarget[] = [
   { tab: "studio", label: "Interviews", detail: "Préparation et suivi des interviews", aliases: ["interviews", "interview", "invités", "invites"], group: "Section", anchor: "interviews" },
   { tab: "studio", label: "Reportages", detail: "Reportages et sujets journalistiques", aliases: ["reportages", "reportage", "sujets"], group: "Section", anchor: "reportages" },
   { tab: "projets", label: "Projets", detail: "Projets et tâches", aliases: ["projet", "tâches", "taches", "todo"], group: "Page" },
-  { tab: "activite", label: "Activité", detail: "Journal d'activité Angel OS", aliases: ["historique", "logs", "journal", "activité"], group: "Page" },
+  { tab: "activite", label: "Activité", detail: "Journal d'activité Flamme OS", aliases: ["historique", "logs", "journal", "activité"], group: "Page" },
   { tab: "connexions", label: "Connexions", detail: "État des services connectés", aliases: ["services", "oauth", "google", "github", "vercel", "connexion"], group: "Page" },
-  { tab: "connexions", label: "État Angel OS IA", detail: "Clé Angel OS IA et disponibilité d’Angel OS IA", aliases: ["openai", "clé openai", "cle openai", "openai api key", "api key", "clé ia", "etat ia"], group: "Section", anchor: "openai" },
+  { tab: "connexions", label: "État de l’IA", detail: "Clé IA et disponibilité du module IA de Flamme OS", aliases: ["openai", "clé openai", "cle openai", "openai api key", "api key", "clé ia", "etat ia"], group: "Section", anchor: "openai" },
   { tab: "connexions", label: "État Vercel", detail: "Publication et disponibilité Vercel", aliases: ["vercel", "publication vercel", "déploiement vercel", "deploiement vercel"], group: "Section", anchor: "vercel" },
   { tab: "connexions", label: "État GitHub", detail: "Dépôt, CI et publications GitHub", aliases: ["github", "ci github", "actions github", "dépôt github", "depot github"], group: "Section", anchor: "github" },
   { tab: "notifications", label: "Notifications", detail: "Alertes et notifications", aliases: ["alertes", "notifications", "important"], group: "Page" },
@@ -38,9 +38,9 @@ export const ANGEL_NAVIGATION_TARGETS: AngelNavigationTarget[] = [
   { tab: "avis", label: "Avis et soutiens", detail: "Avis publiés et soutiens", aliases: ["avis", "soutiens", "témoignages", "temoignages"], group: "Page" },
   { tab: "abonnes", label: "Abonnés", detail: "Abonnés et communauté", aliases: ["abonnés", "abonnes", "newsletter", "communauté"], group: "Page" },
   { tab: "boutique", label: "Boutique", detail: "Produits et commandes", aliases: ["boutique", "shop", "commandes"], group: "Page" },
-  { tab: "dashboard", label: "Films pour ce soir", detail: "Sélection personnelle Movix", aliases: ["movix", "films ce soir", "film pour ce soir", "3 films", "recommandations films"], group: "Outil", anchor: "movix" },
-  { tab: "dashboard", label: "Actualités personnalisées", detail: "Fil d’actualité Angel OS IA", aliases: ["actualités", "actualites", "news", "à la une", "a la une"], group: "Section", anchor: "news" },
-  { tab: "dashboard", label: "Focus du jour", detail: "Priorités calculées par Angel OS IA", aliases: ["focus", "priorités", "priorites", "à faire aujourd'hui", "a faire aujourd hui"], group: "Section", anchor: "angel-os-ia-focus" },
+  { tab: "dashboard", label: "Films pour ce soir", detail: "Sélection personnelle Films & Séries", aliases: ["movix", "films ce soir", "film pour ce soir", "3 films", "recommandations films"], group: "Outil", anchor: "movix" },
+  { tab: "dashboard", label: "Actualités personnalisées", detail: "Fil d’actualité de Flamme OS", aliases: ["actualités", "actualites", "news", "à la une", "a la une"], group: "Section", anchor: "news" },
+  { tab: "dashboard", label: "Focus du jour", detail: "Priorités calculées par l’IA de Flamme OS", aliases: ["focus", "priorités", "priorites", "à faire aujourd'hui", "a faire aujourd hui"], group: "Section", anchor: "angel-os-ia-focus" },
 ];
 
 function normalize(value: string) {
