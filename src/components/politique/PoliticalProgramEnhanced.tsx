@@ -366,7 +366,7 @@ export function PoliticalProgramEnhanced() {
               intro="Ces références permettent de situer certaines de mes idées. Elles ne transforment pas cette page en plateforme électorale : il s'agit uniquement de mon point de vue personnel."
             />
             <div className="mt-8 grid gap-6 md:mt-12 md:grid-cols-2">
-              <EngagementCard title="Adhérent à République Souveraine" logo="/logos/republique-souveraine.png" href={rsUrl}>
+              <EngagementCard title="Adhérent à République Souveraine" icon={Landmark} href={rsUrl}>
                 Je me retrouve dans plusieurs de ses orientations sur la souveraineté populaire, le RIC, la réindustrialisation et les services publics stratégiques. Mes positions restent cependant personnelles et peuvent s'en écarter.
               </EngagementCard>
               <EngagementCard title="Proche de Régions et Peuples Solidaires sur la question territoriale" icon={MapPinned}>

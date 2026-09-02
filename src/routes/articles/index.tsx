@@ -138,7 +138,9 @@ function ArticlesPage() {
 
     return list.filter((article) =>
       normalize(
-        `${article.title} ${article.excerpt ?? ""} ${article.category} ${getTopics(article).join(" ")}`,
+        `${article.title} ${article.excerpt ?? ""} ${article.category} ${getTopics(article).join(" ")} ${(
+          article.content ?? ""
+        ).replace(/<[^>]*>/g, " ")}`,
       ).includes(q),
     );
   }, [orderedArticles, query, topic]);
