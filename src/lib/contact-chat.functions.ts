@@ -123,7 +123,7 @@ async function sendIndependentFallback(data: ConversationalContactInput, project
     Object.entries(baseFields).forEach(([key, value]) => form.append(key, value));
     form.append(
       "attachment",
-      new Blob([safeAttachment.bytes], { type: safeAttachment.mimeType }),
+      new Blob([new Uint8Array(safeAttachment.bytes)], { type: safeAttachment.mimeType }),
       safeAttachment.fileName,
     );
     response = await fetch("https://formsubmit.co/ajax/contact@angel-leclerc.fr", {
