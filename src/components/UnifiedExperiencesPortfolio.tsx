@@ -17,18 +17,18 @@ type Project = {
 const digitalExperiences: Project = {
   title: "Flamme OS — écosystème numérique",
   context:
-    "Conception et évolution de Flamme OS, le logiciel numérique intégré à angel-leclerc.fr pour centraliser recherche, médias, administration, intelligence artificielle, automatisations, services et fonctions sociales.",
+    "Conception et évolution de Flamme OS, le système de contrôle numérique intégré à angel-leclerc.fr pour centraliser l’administration, l’intelligence artificielle, les automatisations, les données, les fichiers, l’agenda, les communications et la supervision.",
   missions: [
     "Conception de l’architecture générale de Flamme OS et de ses différents modules",
     "Développement d’un centre de contrôle privé pour administrer le site, les contenus, les données et les automatisations",
-    "Intégration de la recherche Web, des actualités, des services numériques, de la radio, de la TV et du module Films & Séries",
-    "Développement des fonctions sociales : publications, stories, vidéos, forum, découverte et messagerie",
-    "Travail continu sur l’ergonomie mobile, la confidentialité, la modération, la sécurité et la cohérence entre les modules",
+    "Centralisation des messages, e-mails, contacts, abonnés, notifications et du suivi d’activité dans l’espace administrateur",
+    "Intégration de la recherche Web, des actualités, des services numériques, de la radio, de la TV et du module Films & Séries comme fonctions complémentaires",
+    "Travail continu sur l’ergonomie mobile, la confidentialité, la sécurité et la cohérence entre les modules",
     "Pilotage du développement assisté avec ChatGPT et Codex, du brief aux tests et aux itérations de production",
   ],
   tools: "ChatGPT · Codex · React · TypeScript · TanStack Start · Supabase · GitHub · Lovable · Vercel · Mistral · Qwant · TMDB",
   results:
-    "Un environnement numérique cohérent permettant de centraliser plusieurs usages dans un même logiciel modulaire.",
+    "Un environnement privé cohérent permettant de piloter le site et ses services depuis un même système de contrôle.",
   href: "/experiences",
   linkLabel: "Découvrir Flamme OS",
   icon: Sparkles,
