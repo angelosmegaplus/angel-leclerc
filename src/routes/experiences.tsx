@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
-  Bot,
   BrainCircuit,
   CalendarDays,
   Clapperboard,
@@ -10,7 +9,6 @@ import {
   FileText,
   Globe2,
   LockKeyhole,
-  Mail,
   MessageSquareText,
   RadioTower,
   Search,
@@ -25,13 +23,13 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/experiences")({
   head: () => ({
     meta: [
-      { title: "Flamme OS — système d’exploitation numérique" },
+      { title: "Flamme OS — système de contrôle numérique" },
       {
         name: "description",
-        content: "Flamme OS est le système d’exploitation numérique d’angel-leclerc.fr : administration, IA, automatisations, données, fichiers, agenda, messagerie, sécurité et supervision.",
+        content: "Flamme OS est le système de contrôle numérique d’angel-leclerc.fr : administration, IA, automatisations, données, fichiers, agenda, messagerie, sécurité et supervision.",
       },
       { name: "robots", content: "index,follow" },
-      { property: "og:title", content: "Flamme OS — système d’exploitation numérique" },
+      { property: "og:title", content: "Flamme OS — système de contrôle numérique" },
       {
         property: "og:description",
         content: "Le centre de contrôle numérique d’angel-leclerc.fr, avec administration, IA, données, automatisations et services intégrés.",
@@ -94,7 +92,7 @@ function ExperiencesPage() {
         <div className="container-tight relative py-16 md:py-24">
           <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }} className="max-w-4xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/90 px-3 py-1.5 text-xs font-semibold uppercase tracking-[.16em] text-primary shadow-sm">
-              <Sparkles className="h-4 w-4" /> Système d’exploitation numérique
+              <Sparkles className="h-4 w-4" /> Système de contrôle numérique
             </div>
             <h1 className="mt-6 font-display text-4xl font-bold tracking-tight text-foreground md:text-6xl">Flamme OS</h1>
             <p className="mt-5 max-w-3xl text-xl font-semibold leading-8 text-foreground md:text-2xl">
