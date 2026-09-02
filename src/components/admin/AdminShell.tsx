@@ -51,6 +51,11 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
+  useEffect(() => {
+    if (!legacyAgenda) return;
+    onSelect("agenda");
+  }, [legacyAgenda, onSelect]);
+
   const compactItems = useMemo(() => COMPACT_NAV.map((definition) => {
     const source = items.find((item) => item.key === definition.source);
     const badges = definition.children.map((key) => items.find((item) => item.key === key)?.badge ?? 0);
@@ -129,12 +134,10 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
         <header className="sticky top-0 z-30 border-b border-border bg-[#F3EFE8]/95 px-3 py-3 backdrop-blur-xl dark:bg-background/90 sm:px-7 lg:px-9">
           <div className="mx-auto flex max-w-[1520px] items-center gap-3">
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <img src="/flamme-os/logo.svg" alt="" aria-hidden className="h-4 w-auto max-w-[5.5rem] object-contain" />
-              </div>
+              <div className="flex items-center gap-2"><img src="/flamme-os/logo.svg" alt="" aria-hidden className="h-4 w-auto max-w-[5.5rem] object-contain" /></div>
               <div className="mt-1 flex items-center gap-2.5">
                 {CurrentIcon ? <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><CurrentIcon className="h-4 w-4" /></span> : null}
-                <h1 className="truncate font-display text-xl font-bold tracking-[-.035em] sm:text-2xl">{effectiveActive === "dashboard" ? "Aujourd’hui" : legacyAgenda ? "Agenda" : title}</h1>
+                <h1 className="truncate font-display text-xl font-bold tracking-[-.035em] sm:text-2xl">{effectiveActive === "dashboard" ? "Aujourd’hui" : effectiveActive === "agenda" ? "Agenda" : title}</h1>
               </div>
             </div>
             <div className="hidden items-center gap-2 sm:flex">{themeButton}{actions}</div>
