@@ -14,7 +14,6 @@ import {
   Search,
   ShieldCheck,
   Sparkles,
-  Tv,
   UsersRound,
   Workflow,
 } from "lucide-react";
@@ -26,13 +25,13 @@ export const Route = createFileRoute("/experiences")({
       { title: "Flamme OS — écosystème numérique" },
       {
         name: "description",
-        content: "Flamme OS réunit dans un même logiciel l’administration, l’IA, la recherche, Films & Séries, les médias, les services et les fonctions sociales d’angel-leclerc.fr.",
+        content: "Flamme OS est le logiciel numérique d’angel-leclerc.fr : administration, IA, recherche, Films & Séries, médias, services et fonctions sociales.",
       },
       { name: "robots", content: "index,follow" },
       { property: "og:title", content: "Flamme OS — écosystème numérique" },
       {
         property: "og:description",
-        content: "Un seul logiciel, plusieurs modules : administration, IA, recherche, Films & Séries, radio, TV et social.",
+        content: "Flamme OS propose des modules d’administration, d’IA, de recherche, Films & Séries, radio, TV et social.",
       },
       { property: "og:url", content: "https://www.angel-leclerc.fr/experiences" },
     ],
@@ -49,27 +48,27 @@ const modules = [
   },
   {
     title: "Films & Séries",
-    text: "Catalogue, recommandations, listes et découverte de films, séries et documentaires deviennent un module natif de Flamme OS.",
+    text: "Catalogue, recommandations, listes et découverte de films, séries et documentaires.",
     icon: Clapperboard,
   },
   {
     title: "IA",
-    text: "Assistance, recherche, rédaction, classement et automatisations sont regroupés dans la couche intelligente de Flamme OS.",
+    text: "Assistance, recherche, rédaction, classement et automatisations intégrés à Flamme OS.",
     icon: BrainCircuit,
   },
   {
     title: "Administration",
-    text: "L’ancien Angel OS devient le centre de contrôle privé de Flamme OS pour administrer le site, les contenus, les données et les outils.",
+    text: "Centre de contrôle privé pour administrer le site, les contenus, les données, les outils et les automatisations.",
     icon: Workflow,
   },
   {
     title: "Social & messagerie",
-    text: "Publications, stories, vidéos, forum, découverte, profils et messagerie restent intégrés au même logiciel.",
+    text: "Publications, stories, vidéos, forum, découverte, profils et messagerie au sein de Flamme OS.",
     icon: UsersRound,
   },
   {
     title: "Radio & TV",
-    text: "Les accès radio, podcasts, télévision et replay font partie de la même expérience Flamme OS.",
+    text: "Accès aux radios, podcasts, chaînes de télévision et services de replay.",
     icon: RadioTower,
   },
 ];
@@ -77,26 +76,26 @@ const modules = [
 const architecture = [
   {
     index: "01",
-    title: "Un seul nom",
-    text: "Flamme OS est désormais la marque unique. Les anciens noms restent seulement comme repères techniques lorsque c’est nécessaire pour la compatibilité.",
+    title: "Un logiciel central",
+    text: "Flamme OS constitue l’environnement numérique principal relié à angel-leclerc.fr.",
     icon: Sparkles,
   },
   {
     index: "02",
     title: "Des modules spécialisés",
-    text: "Films & Séries, IA, recherche, social, médias et administration ne sont plus présentés comme des produits séparés : ce sont des fonctions de Flamme OS.",
+    text: "Recherche, Films & Séries, IA, social, médias et administration disposent chacun de fonctions dédiées dans le même logiciel.",
     icon: Network,
   },
   {
     index: "03",
     title: "Des données communes",
-    text: "Les modules peuvent partager les mêmes comptes, préférences, données et services afin d’éviter les silos et les doublons.",
+    text: "Les modules peuvent partager comptes, préférences, données et services pour assurer une expérience cohérente.",
     icon: Database,
   },
   {
     index: "04",
     title: "Un espace privé intégré",
-    text: "Le tableau de bord autrefois nommé Angel OS devient l’administration de Flamme OS, avec authentification et droits adaptés.",
+    text: "L’administration de Flamme OS centralise les fonctions privées avec authentification et droits adaptés.",
     icon: LockKeyhole,
   },
 ];
@@ -112,12 +111,12 @@ function ExperiencesPage() {
         <div className="container-tight relative py-16 md:py-24">
           <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }} className="max-w-4xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/90 px-3 py-1.5 text-xs font-semibold uppercase tracking-[.16em] text-primary shadow-sm">
-              <Sparkles className="h-4 w-4" /> Système unifié
+              <Sparkles className="h-4 w-4" /> Écosystème numérique
             </div>
             <h1 className="mt-6 font-display text-4xl font-bold tracking-tight text-foreground md:text-6xl">Flamme OS</h1>
-            <p className="mt-5 max-w-3xl text-xl font-semibold leading-8 text-foreground md:text-2xl">Un seul logiciel. Tous les outils numériques du site au même endroit.</p>
+            <p className="mt-5 max-w-3xl text-xl font-semibold leading-8 text-foreground md:text-2xl">Le logiciel qui centralise les outils numériques d’angel-leclerc.fr.</p>
             <p className="mt-5 max-w-3xl text-base leading-8 text-muted-foreground md:text-lg">
-              Flamme, Films & Séries et Angel OS ne sont désormais plus présentés comme des logiciels distincts. Ils forment un seul environnement : <strong className="text-foreground">Flamme OS</strong>. Chaque ancienne fonctionnalité devient un module spécialisé du même système.
+              <strong className="text-foreground">Flamme OS</strong> réunit dans une même interface la recherche, les médias, Films & Séries, l’intelligence artificielle, l’administration, les services et les fonctions sociales.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg"><Link to="/flamme/social">Ouvrir Flamme OS <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
@@ -130,8 +129,8 @@ function ExperiencesPage() {
       <section className="container-tight py-14 md:py-20">
         <div className="max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[.18em] text-primary">Modules</p>
-          <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground md:text-5xl">Tout appartient maintenant à Flamme OS.</h2>
-          <p className="mt-5 leading-7 text-muted-foreground">Les fonctions gardent leur spécialité, mais plus leur identité de logiciel séparé.</p>
+          <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground md:text-5xl">Les fonctions de Flamme OS.</h2>
+          <p className="mt-5 leading-7 text-muted-foreground">Chaque module répond à un usage précis tout en restant intégré au même environnement.</p>
         </div>
         <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {modules.map((module, index) => {
@@ -172,24 +171,24 @@ function ExperiencesPage() {
           <article className="rounded-3xl border border-border bg-card p-6">
             <Bot className="h-5 w-5 text-primary" />
             <h3 className="mt-4 font-display text-xl font-bold">IA intégrée</h3>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">Les anciennes briques Angel OS IA deviennent simplement la fonction IA de Flamme OS.</p>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">Flamme OS intègre des fonctions d’assistance, de recherche, de rédaction et d’automatisation.</p>
           </article>
           <article className="rounded-3xl border border-border bg-card p-6">
             <ShieldCheck className="h-5 w-5 text-primary" />
             <h3 className="mt-4 font-display text-xl font-bold">Sécurité & contrôle</h3>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">Authentification, rôles et supervision restent derrière la même administration Flamme OS.</p>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">Authentification, rôles et supervision protègent les fonctions privées et administratives.</p>
           </article>
           <article className="rounded-3xl border border-border bg-card p-6">
             <MessageSquareText className="h-5 w-5 text-primary" />
             <h3 className="mt-4 font-display text-xl font-bold">Une expérience cohérente</h3>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">Même compte, même logique d’interface et mêmes données partagées lorsque les modules le permettent.</p>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">Compte, interface, préférences et données peuvent être partagés entre les différents modules.</p>
           </article>
         </div>
 
         <div className="mt-10 rounded-3xl border border-primary/20 bg-primary/5 p-6 md:p-9">
-          <div className="flex items-center gap-3"><Globe2 className="h-5 w-5 text-primary" /><p className="text-xs font-semibold uppercase tracking-[.18em] text-primary">Règle de marque</p></div>
-          <h2 className="mt-3 font-display text-3xl font-bold text-foreground">Flamme OS est le produit. Le reste, ce sont ses modules.</h2>
-          <p className="mt-5 max-w-3xl leading-7 text-muted-foreground">Les anciennes routes comme <code>/angel-os</code>, <code>/angel-os-ia</code> ou certaines appellations historiques peuvent être conservées techniquement pour ne rien casser, mais elles ne définissent plus des logiciels séparés.</p>
+          <div className="flex items-center gap-3"><Globe2 className="h-5 w-5 text-primary" /><p className="text-xs font-semibold uppercase tracking-[.18em] text-primary">Flamme OS</p></div>
+          <h2 className="mt-3 font-display text-3xl font-bold text-foreground">Un logiciel, plusieurs usages.</h2>
+          <p className="mt-5 max-w-3xl leading-7 text-muted-foreground">Flamme OS couvre la recherche, les contenus, les médias, l’IA, l’administration et les interactions sociales dans un environnement commun pensé pour évoluer avec le site.</p>
         </div>
       </section>
     </main>
