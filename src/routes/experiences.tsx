@@ -15,7 +15,6 @@ import {
   ServerCog,
   ShieldCheck,
   Sparkles,
-  UsersRound,
   Workflow,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,7 +25,7 @@ export const Route = createFileRoute("/experiences")({
       { title: "Flamme OS — système de contrôle numérique" },
       {
         name: "description",
-        content: "Flamme OS est le système de contrôle numérique d’angel-leclerc.fr : administration, IA, automatisations, données, fichiers, agenda, messagerie, sécurité et supervision.",
+        content: "Flamme OS est le système de contrôle numérique d’angel-leclerc.fr : administration, IA, automatisations, données, fichiers, agenda, communications, sécurité et supervision.",
       },
       { name: "robots", content: "index,follow" },
       { property: "og:title", content: "Flamme OS — système de contrôle numérique" },
@@ -64,12 +63,12 @@ const coreFunctions = [
   },
   {
     title: "Agenda & communications",
-    text: "Calendrier, rendez-vous, messages, e-mails et suivi des échanges réunis dans l’espace de travail.",
+    text: "Calendrier, rendez-vous, messages, e-mails, contacts, abonnés et suivi des échanges réunis dans l’espace de travail.",
     icon: CalendarDays,
   },
   {
     title: "Sécurité & supervision",
-    text: "Authentification, rôles, contrôle des accès, suivi de l’état des services et supervision des fonctions privées.",
+    text: "Authentification, rôles, contrôle des accès, notifications, journal d’activité et suivi de l’état des services.",
     icon: ShieldCheck,
   },
 ];
@@ -78,7 +77,6 @@ const secondaryModules = [
   { title: "Recherche & services", icon: Search },
   { title: "Films & Séries", icon: Clapperboard },
   { title: "Radio & médias", icon: RadioTower },
-  { title: "Social & messagerie", icon: UsersRound },
 ];
 
 function ExperiencesPage() {
@@ -113,7 +111,7 @@ function ExperiencesPage() {
         <div className="max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[.18em] text-primary">Cœur du système</p>
           <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground md:text-5xl">Un OS pour piloter tout l’écosystème.</h2>
-          <p className="mt-5 leading-7 text-muted-foreground">Les fonctions centrales de Flamme OS sont celles qui permettent d’administrer, organiser, automatiser et superviser le site et ses services.</p>
+          <p className="mt-5 leading-7 text-muted-foreground">Les fonctions centrales de Flamme OS permettent d’administrer, organiser, automatiser et superviser le site et ses services.</p>
         </div>
         <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {coreFunctions.map((item, index) => {
@@ -139,14 +137,14 @@ function ExperiencesPage() {
                 Flamme OS sert de couche centrale entre le site, les données, les outils d’administration et les services connectés. Les comptes, permissions, préférences et ressources peuvent être partagés entre les différentes fonctions du système.
               </p>
               <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                <article className="rounded-3xl border border-border bg-card p-6"><LockKeyhole className="h-5 w-5 text-primary" /><h3 className="mt-4 font-display text-xl font-bold">Espace privé</h3><p className="mt-3 text-sm leading-6 text-muted-foreground">Administration, IA personnelle, fichiers, agenda, messages, automatisations et supervision.</p></article>
+                <article className="rounded-3xl border border-border bg-card p-6"><LockKeyhole className="h-5 w-5 text-primary" /><h3 className="mt-4 font-display text-xl font-bold">Espace privé</h3><p className="mt-3 text-sm leading-6 text-muted-foreground">Administration, IA personnelle, fichiers, agenda, messages, contacts, abonnés, notifications, automatisations et supervision.</p></article>
                 <article className="rounded-3xl border border-border bg-card p-6"><Globe2 className="h-5 w-5 text-primary" /><h3 className="mt-4 font-display text-xl font-bold">Services connectés</h3><p className="mt-3 text-sm leading-6 text-muted-foreground">APIs, services Web et fonctions publiques reliées au même environnement.</p></article>
               </div>
             </div>
             <div className="rounded-3xl border border-primary/20 bg-primary/5 p-6 md:p-8">
               <MessageSquareText className="h-5 w-5 text-primary" />
-              <h3 className="mt-4 font-display text-2xl font-bold text-foreground">Un espace de travail unique</h3>
-              <p className="mt-4 leading-7 text-muted-foreground">L’objectif de Flamme OS est de réduire les allers-retours entre les outils et de réunir les fonctions nécessaires au pilotage quotidien dans une interface cohérente.</p>
+              <h3 className="mt-4 font-display text-2xl font-bold text-foreground">Communications centralisées</h3>
+              <p className="mt-4 leading-7 text-muted-foreground">Messages, demandes du site, e-mails, contacts, abonnés et notifications sont gérés depuis l’espace administrateur, sans réseau social public séparé.</p>
             </div>
           </div>
         </div>
@@ -158,7 +156,7 @@ function ExperiencesPage() {
           <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground md:text-4xl">Des fonctions supplémentaires intégrées à l’OS.</h2>
           <p className="mt-4 leading-7 text-muted-foreground">Ces modules complètent Flamme OS, mais ne définissent pas son rôle principal.</p>
         </div>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {secondaryModules.map((module) => {
             const Icon = module.icon;
             return <article key={module.title} className="rounded-2xl border border-border bg-card p-5"><Icon className="h-5 w-5 text-primary" /><h3 className="mt-4 font-display font-bold text-foreground">{module.title}</h3></article>;
@@ -170,7 +168,7 @@ function ExperiencesPage() {
         <div className="rounded-3xl border border-border bg-card p-6 md:p-9">
           <div className="flex items-center gap-3"><FileText className="h-5 w-5 text-primary" /><p className="text-xs font-semibold uppercase tracking-[.18em] text-primary">Flamme OS</p></div>
           <h2 className="mt-3 font-display text-3xl font-bold text-foreground">Administrer, organiser, automatiser, superviser.</h2>
-          <p className="mt-5 max-w-3xl leading-7 text-muted-foreground">C’est le cœur de Flamme OS. Les fonctions de divertissement, de recherche ou de réseau social viennent ensuite comme services intégrés.</p>
+          <p className="mt-5 max-w-3xl leading-7 text-muted-foreground">C’est le cœur de Flamme OS. La recherche, Films & Séries et les médias restent des services complémentaires ; les fonctions de communication utiles sont intégrées directement à l’administration.</p>
         </div>
       </section>
     </main>
