@@ -44,7 +44,8 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
   const resolvedTheme = typeof window === "undefined" ? "light" : resolveTheme(preference);
   const isDark = resolvedTheme === "dark";
   const legacyAgenda = active === "etudes-travail" || active === "candidatures";
-  const effectiveActive = legacyAgenda ? "agenda" : active;
+  const legacyDashboard = active === "angel-ai";
+  const effectiveActive = legacyAgenda ? "agenda" : legacyDashboard ? "dashboard" : active;
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -52,9 +53,9 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
   }, [open]);
 
   useEffect(() => {
-    if (!legacyAgenda) return;
-    onSelect("agenda");
-  }, [legacyAgenda, onSelect]);
+    if (legacyAgenda) onSelect("agenda");
+    else if (legacyDashboard) onSelect("dashboard");
+  }, [legacyAgenda, legacyDashboard, onSelect]);
 
   const compactItems = useMemo(() => COMPACT_NAV.map((definition) => {
     const source = items.find((item) => item.key === definition.source);
