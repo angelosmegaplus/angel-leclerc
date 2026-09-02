@@ -3,6 +3,7 @@ import { Grid2X2, Moon, Sun, X, type LucideIcon } from "lucide-react";
 import { useThemePreference } from "@/components/ThemeController";
 import { resolveTheme, type ThemePreference } from "@/lib/theme";
 import { AdminHomeDashboard } from "@/components/admin/AdminHomeDashboard";
+import { AgendaPanel } from "@/components/admin/AgendaPanel";
 
 export type AdminNavItem = {
   key: string;
@@ -42,6 +43,8 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
   const { preference, setPreference } = useThemePreference();
   const resolvedTheme = typeof window === "undefined" ? "light" : resolveTheme(preference);
   const isDark = resolvedTheme === "dark";
+  const legacyAgenda = active === "etudes-travail" || active === "candidatures";
+  const effectiveActive = legacyAgenda ? "agenda" : active;
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -54,8 +57,8 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
     return source ? { ...definition, icon: source.icon, badge: badges.reduce((sum, value) => sum + value, 0) } : null;
   }).filter((item): item is NonNullable<typeof item> => Boolean(item)), [items]);
 
-  const activeGroup = compactItems.find((item) => item.children.includes(active))?.key ?? "dashboard";
-  const activeDefinition = COMPACT_NAV.find((definition) => definition.children.includes(active));
+  const activeGroup = compactItems.find((item) => item.children.includes(effectiveActive))?.key ?? "dashboard";
+  const activeDefinition = COMPACT_NAV.find((definition) => definition.children.includes(effectiveActive));
   const sectionItems = useMemo(() => {
     if (!activeDefinition || activeDefinition.children.length <= 1) return [];
     return activeDefinition.children
@@ -64,7 +67,7 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
   }, [activeDefinition, items]);
 
   const toggleTheme = () => setPreference((isDark ? "light" : "dark") as ThemePreference);
-  const currentItem = items.find((item) => item.key === active);
+  const currentItem = items.find((item) => item.key === effectiveActive);
   const CurrentIcon = currentItem?.icon;
 
   const themeButton = (
@@ -131,7 +134,7 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
               </div>
               <div className="mt-1 flex items-center gap-2.5">
                 {CurrentIcon ? <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><CurrentIcon className="h-4 w-4" /></span> : null}
-                <h1 className="truncate font-display text-xl font-bold tracking-[-.035em] sm:text-2xl">{active === "dashboard" ? "Aujourd’hui" : title}</h1>
+                <h1 className="truncate font-display text-xl font-bold tracking-[-.035em] sm:text-2xl">{effectiveActive === "dashboard" ? "Aujourd’hui" : legacyAgenda ? "Agenda" : title}</h1>
               </div>
             </div>
             <div className="hidden items-center gap-2 sm:flex">{themeButton}{actions}</div>
@@ -145,7 +148,7 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
             <div className="mx-auto flex max-w-[1520px] gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {sectionItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = item.key === active;
+                const isActive = item.key === effectiveActive;
                 return <button key={item.key} onClick={() => onSelect(item.key)} className={`flex min-h-9 shrink-0 items-center gap-2 rounded-full px-3 text-xs font-semibold transition ${isActive ? "bg-primary text-primary-foreground" : "border border-border bg-card text-muted-foreground hover:text-foreground"}`}><Icon className="h-3.5 w-3.5" />{item.label}</button>;
               })}
             </div>
@@ -153,8 +156,8 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
         ) : null}
 
         <main className="mx-auto w-full max-w-[1520px] px-3 pb-24 pt-4 sm:px-7 sm:pt-6 lg:px-9">
-          <div key={active} className="animate-in fade-in duration-200">
-            {active === "dashboard" ? <AdminHomeDashboard onNavigate={onSelect} /> : children}
+          <div key={effectiveActive} className="animate-in fade-in duration-200">
+            {effectiveActive === "dashboard" ? <AdminHomeDashboard onNavigate={onSelect} /> : legacyAgenda ? <AgendaPanel /> : children}
           </div>
         </main>
       </div>
