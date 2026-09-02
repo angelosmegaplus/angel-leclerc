@@ -10,6 +10,8 @@ const Schema = z.object({
   context: z.array(z.object({ question: z.string().max(300), answer: z.string().max(800) })).max(12).optional(),
 });
 
+type ContactAssistInput = z.infer<typeof Schema>;
+
 export type ContactAssistResult = {
   /** Proposition de réponse rédigée, prête à être insérée. */
   text: string | null;
@@ -17,18 +19,71 @@ export type ContactAssistResult = {
   hints: string[];
 };
 
+function sentence(value: string) {
+  const cleaned = value.replace(/\s+/g, " ").trim();
+  if (!cleaned) return "";
+  const normalized = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+  return /[.!?…]$/.test(normalized) ? normalized : `${normalized}.`;
+}
+
+/**
+ * Secours local volontairement conservateur : il ne crée aucun fait et ne
+ * prétend pas être une réponse IA. Il rend simplement le texte déjà fourni
+ * plus propre lorsque le fournisseur distant est momentanément indisponible.
+ */
+function localAssist(data: ContactAssistInput): ContactAssistResult {
+  const draft = data.draft?.trim() ?? "";
+  const contextAnswers = (data.context ?? [])
+    .map((row) => row.answer.trim())
+    .filter(Boolean);
+
+  if (draft) {
+    return {
+      text: sentence(draft).slice(0, 1_200),
+      hints: [],
+    };
+  }
+
+  if (contextAnswers.length > 0) {
+    const text = contextAnswers
+      .slice(-3)
+      .map(sentence)
+      .filter(Boolean)
+      .join(" ")
+      .slice(0, 1_200);
+    return { text: text || null, hints: [] };
+  }
+
+  const genericByTrack: Record<ContactAssistInput["track"], string> = {
+    projet: "Je souhaite vous présenter mon projet et échanger avec vous afin de voir comment vous pourriez m’accompagner.",
+    alternance: "Je souhaite vous contacter au sujet d’une opportunité professionnelle et pouvoir vous présenter plus précisément ma démarche.",
+    autre: "Je souhaite vous contacter afin de vous présenter ma demande plus précisément et pouvoir échanger avec vous à ce sujet.",
+  };
+
+  return {
+    text: genericByTrack[data.track],
+    hints: [],
+  };
+}
+
 /**
  * Aide à la rédaction dans le formulaire de contact : l'IA reformule ou propose
- * une réponse à partir de ce que le visiteur a déjà indiqué.
+ * une réponse à partir de ce que le visiteur a déjà indiqué. Si la passerelle
+ * IA est indisponible, un secours local garde le bouton utilisable sans inventer
+ * d'informations sur le visiteur.
  */
 export const assistContactAnswer = createServerFn({ method: "POST" })
   .validator((input: unknown) => Schema.parse(input))
   .handler(async ({ data }): Promise<ContactAssistResult> => {
+    const fallback = localAssist(data);
     const { getRequestIP } = await import("@tanstack/react-start/server");
     const { checkAssistantRate } = await import("./assistant-rate.server");
     let ip = "unknown";
     try { ip = getRequestIP({ xForwardedFor: true }) ?? "unknown"; } catch { /* hors requête */ }
-    if (!checkAssistantRate(ip)) return { text: null, hints: [] };
+
+    // Une limite de débit ne doit pas casser l'expérience : on conserve une
+    // reformulation locale plutôt que d'afficher une erreur au visiteur.
+    if (!checkAssistantRate(ip)) return fallback;
 
     const context = (data.context ?? [])
       .filter((row) => row.answer.trim().length > 0)
@@ -55,19 +110,29 @@ export const assistContactAnswer = createServerFn({ method: "POST" })
       { role: "user", content: user },
     ];
 
-    const result = await resilientAngelAi({
-      messages,
-      priority: "interactive",
-      maxTokens: 500,
-      temperature: 0.4,
-    });
-    if (!result.text) return { text: null, hints: [] };
+    try {
+      const result = await resilientAngelAi({
+        messages,
+        priority: "interactive",
+        maxTokens: 500,
+        temperature: 0.4,
+      });
 
-    const [body, hintLine] = result.text.split(/PISTES\s*:/i);
-    const hints = (hintLine ?? "")
-      .split("|")
-      .map((hint) => hint.replace(/^[-•\s]+/, "").trim())
-      .filter((hint) => hint.length > 2)
-      .slice(0, 3);
-    return { text: (body ?? "").trim().slice(0, 1_200) || null, hints };
+      if (!result.text?.trim()) return fallback;
+
+      const [body, hintLine] = result.text.split(/PISTES\s*:/i);
+      const text = (body ?? "").trim().slice(0, 1_200);
+      if (!text) return fallback;
+
+      const hints = (hintLine ?? "")
+        .split("|")
+        .map((hint) => hint.replace(/^[-•\s]+/, "").trim())
+        .filter((hint) => hint.length > 2)
+        .slice(0, 3);
+
+      return { text, hints };
+    } catch (error) {
+      console.warn("[contact-assist] fournisseur IA indisponible, secours local utilisé", error);
+      return fallback;
+    }
   });
