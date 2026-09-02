@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Grid2X2, Moon, Sun, X, type LucideIcon } from "lucide-react";
 import { useThemePreference } from "@/components/ThemeController";
 import { resolveTheme, type ThemePreference } from "@/lib/theme";
+import { AdminHomeDashboard } from "@/components/admin/AdminHomeDashboard";
 
 export type AdminNavItem = {
   key: string;
@@ -21,8 +22,8 @@ type CompactDefinition = {
 };
 
 const COMPACT_NAV: CompactDefinition[] = [
-  { key: "dashboard", label: "Accueil", description: "Aujourd’hui, priorités et état du système", source: "dashboard", children: ["dashboard"] },
-  { key: "agenda", label: "Agenda", description: "Rendez-vous, planning et échéances", source: "agenda", children: ["agenda", "projets"] },
+  { key: "dashboard", label: "Accueil", description: "Aujourd’hui, priorités et activité", source: "dashboard", children: ["dashboard"] },
+  { key: "agenda", label: "Agenda", description: "Planning, rendez-vous, tâches et projets", source: "agenda", children: ["agenda", "projets"] },
   { key: "communications", label: "Communications", description: "Messages, mail, contacts et abonnés", source: "messages", children: ["messages", "boite-mail", "signature", "abonnes", "avis"] },
   { key: "contenus", label: "Contenus", description: "Articles, site, studio et boutique", source: "articles", children: ["articles", "contenus", "studio", "boutique"] },
   { key: "fichiers", label: "Fichiers", description: "Documents, médias et Google Drive", source: "fichiers", children: ["fichiers"] },
@@ -76,11 +77,8 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
   const menuContents = (
     <>
       <div className="mb-7 px-1">
-        <div className="flex items-center gap-3">
-          <img src="/flamme-os/logo.svg" alt="Flamme OS" className="h-8 w-auto max-w-[9.5rem] object-contain" />
-          <span className="sr-only">Flamme OS</span>
-        </div>
-        <p className="mt-2 text-[11px] font-medium text-muted-foreground">Espace administrateur</p>
+        <img src="/flamme-os/logo.svg" alt="Flamme OS" className="h-9 w-auto max-w-[10.5rem] object-contain object-left" />
+        <p className="mt-2 text-[11px] font-medium text-muted-foreground">Espace administrateur personnel</p>
       </div>
 
       <nav className="space-y-1.5">
@@ -109,7 +107,7 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
   );
 
   return (
-    <div className="min-h-[100dvh] bg-[#F6F1E8] text-foreground dark:bg-background lg:flex">
+    <div className="min-h-[100dvh] bg-[#F3EFE8] text-foreground dark:bg-background lg:flex">
       <aside className="sticky top-0 hidden h-[100dvh] w-[17.5rem] shrink-0 overflow-y-auto border-r border-border bg-[#FFFDF9] px-4 py-6 dark:bg-card lg:block">{menuContents}</aside>
 
       {open ? (
@@ -125,7 +123,7 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
       ) : null}
 
       <div className="min-w-0 flex-1">
-        <header className="sticky top-0 z-30 border-b border-border bg-[#F6F1E8]/95 px-3 py-3 backdrop-blur-xl dark:bg-background/90 sm:px-7 lg:px-9">
+        <header className="sticky top-0 z-30 border-b border-border bg-[#F3EFE8]/95 px-3 py-3 backdrop-blur-xl dark:bg-background/90 sm:px-7 lg:px-9">
           <div className="mx-auto flex max-w-[1520px] items-center gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
@@ -133,7 +131,7 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
               </div>
               <div className="mt-1 flex items-center gap-2.5">
                 {CurrentIcon ? <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><CurrentIcon className="h-4 w-4" /></span> : null}
-                <h1 className="truncate font-display text-xl font-bold tracking-[-.035em] sm:text-2xl">{title}</h1>
+                <h1 className="truncate font-display text-xl font-bold tracking-[-.035em] sm:text-2xl">{active === "dashboard" ? "Aujourd’hui" : title}</h1>
               </div>
             </div>
             <div className="hidden items-center gap-2 sm:flex">{themeButton}{actions}</div>
@@ -143,7 +141,7 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
         </header>
 
         {sectionItems.length > 0 ? (
-          <nav className="sticky top-[4.2rem] z-20 border-b border-border bg-[#F6F1E8]/95 px-3 py-2 backdrop-blur-xl dark:bg-background/90 sm:px-7 lg:px-9">
+          <nav className="sticky top-[4.2rem] z-20 border-b border-border bg-[#F3EFE8]/95 px-3 py-2 backdrop-blur-xl dark:bg-background/90 sm:px-7 lg:px-9">
             <div className="mx-auto flex max-w-[1520px] gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {sectionItems.map((item) => {
                 const Icon = item.icon;
@@ -155,7 +153,9 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
         ) : null}
 
         <main className="mx-auto w-full max-w-[1520px] px-3 pb-24 pt-4 sm:px-7 sm:pt-6 lg:px-9">
-          <div key={active} className="animate-in fade-in duration-200">{children}</div>
+          <div key={active} className="animate-in fade-in duration-200">
+            {active === "dashboard" ? <AdminHomeDashboard onNavigate={onSelect} /> : children}
+          </div>
         </main>
       </div>
     </div>
