@@ -15,21 +15,22 @@ type Project = {
 };
 
 const digitalExperiences: Project = {
-  title: "Expériences numériques — Angel OS & Flamme",
+  title: "Flamme OS — écosystème numérique",
   context:
-    "Conception et évolution de deux laboratoires numériques intégrés à angel-leclerc.fr : Angel OS pour l’administration, l’IA et l’automatisation ; Flamme pour la recherche, les services et le réseau social.",
+    "Conception et évolution d’un logiciel unique intégré à angel-leclerc.fr. Flamme OS regroupe désormais les fonctions autrefois séparées entre Flamme, Films & Séries, Angel OS et Angel OS IA : recherche, médias, administration, intelligence artificielle, automatisations, services et fonctions sociales.",
   missions: [
-    "Conception d’Angel OS comme centre de contrôle mobile pour administrer le site et centraliser des fonctions auparavant dispersées",
-    "Création de Flamme : recherche Web avec Qwant ou Lilo, actualités, services numériques et IA Mistral",
-    "Développement de Flamme Social : publications, stories, vidéos, forum, découverte et messagerie chiffrée",
-    "Travail continu sur l’ergonomie mobile, la confidentialité, la modération et la sécurité des données",
+    "Unification de Flamme, Films & Séries, Angel OS et Angel OS IA sous une seule identité : Flamme OS",
+    "Conception d’un centre de contrôle privé pour administrer le site, les contenus, les données et les automatisations",
+    "Intégration de la recherche Web, des actualités, des services numériques, de la radio, de la TV et de Films & Séries comme modules du même logiciel",
+    "Développement des fonctions sociales : publications, stories, vidéos, forum, découverte et messagerie",
+    "Travail continu sur l’ergonomie mobile, la confidentialité, la modération, la sécurité et la cohérence entre les modules",
     "Pilotage du développement assisté avec ChatGPT et Codex, du brief aux tests et aux itérations de production",
   ],
-  tools: "ChatGPT · Codex · React · TypeScript · TanStack Start · Supabase · GitHub · Lovable · Vercel · Mistral · Qwant",
+  tools: "ChatGPT · Codex · React · TypeScript · TanStack Start · Supabase · GitHub · Lovable · Vercel · Mistral · Qwant · TMDB",
   results:
-    "Un ensemble d’expériences numériques cohérent qui permet de tester concrètement des idées d’interface, d’intelligence artificielle, d’automatisation, de recherche et de réseau social.",
+    "Un environnement numérique unifié dans lequel chaque ancienne fonctionnalité devient un module de Flamme OS plutôt qu’un produit séparé.",
   href: "/experiences",
-  linkLabel: "Découvrir les expériences",
+  linkLabel: "Découvrir Flamme OS",
   icon: Sparkles,
 };
 
@@ -75,7 +76,7 @@ const fallbackProjects: Project[] = [
       "Optimisation de la lecture sur mobile et du partage des publications",
     ],
     tools: "Rédaction web · CMS · React · Supabase · Canva · outils d'IA",
-    results: "Un espace de publication personnel relié au site professionnel et administrable depuis Angel OS.",
+    results: "Un espace de publication personnel relié au site professionnel et administrable depuis Flamme OS.",
     href: "https://www.angel-leclerc.fr/articles",
     linkLabel: "Voir le blog",
     icon: BookOpen,
@@ -113,6 +114,7 @@ const legacyExperienceTitles = new Set([
   "Flamme — moteur de recherche bêta",
   "Flamme — réseau social",
   "Flamme social",
+  "Expériences numériques — Angel OS & Flamme",
 ]);
 
 export function UnifiedExperiencesPortfolio() {
