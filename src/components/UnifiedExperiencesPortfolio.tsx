@@ -17,18 +17,18 @@ type Project = {
 const digitalExperiences: Project = {
   title: "Flamme OS — écosystème numérique",
   context:
-    "Conception et évolution d’un logiciel unique intégré à angel-leclerc.fr. Flamme OS regroupe désormais les fonctions autrefois séparées entre Flamme, Films & Séries, Angel OS et Angel OS IA : recherche, médias, administration, intelligence artificielle, automatisations, services et fonctions sociales.",
+    "Conception et évolution de Flamme OS, le logiciel numérique intégré à angel-leclerc.fr pour centraliser recherche, médias, administration, intelligence artificielle, automatisations, services et fonctions sociales.",
   missions: [
-    "Unification de Flamme, Films & Séries, Angel OS et Angel OS IA sous une seule identité : Flamme OS",
-    "Conception d’un centre de contrôle privé pour administrer le site, les contenus, les données et les automatisations",
-    "Intégration de la recherche Web, des actualités, des services numériques, de la radio, de la TV et de Films & Séries comme modules du même logiciel",
+    "Conception de l’architecture générale de Flamme OS et de ses différents modules",
+    "Développement d’un centre de contrôle privé pour administrer le site, les contenus, les données et les automatisations",
+    "Intégration de la recherche Web, des actualités, des services numériques, de la radio, de la TV et du module Films & Séries",
     "Développement des fonctions sociales : publications, stories, vidéos, forum, découverte et messagerie",
     "Travail continu sur l’ergonomie mobile, la confidentialité, la modération, la sécurité et la cohérence entre les modules",
     "Pilotage du développement assisté avec ChatGPT et Codex, du brief aux tests et aux itérations de production",
   ],
   tools: "ChatGPT · Codex · React · TypeScript · TanStack Start · Supabase · GitHub · Lovable · Vercel · Mistral · Qwant · TMDB",
   results:
-    "Un environnement numérique unifié dans lequel chaque ancienne fonctionnalité devient un module de Flamme OS plutôt qu’un produit séparé.",
+    "Un environnement numérique cohérent permettant de centraliser plusieurs usages dans un même logiciel modulaire.",
   href: "/experiences",
   linkLabel: "Découvrir Flamme OS",
   icon: Sparkles,
