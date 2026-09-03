@@ -1,16 +1,10 @@
-import { useEffect } from "react";
-import { ADMIN_NAVIGATE_EVENT } from "@/lib/admin-navigation";
-import { AgendaPanel } from "./AgendaPanel";
+import { CoursesPanel } from "./CoursesPanel";
 
 /**
- * Route de compatibilité uniquement.
- * L'ancien espace Études / BTS n'existe plus dans Flamme OS : toute ancienne
- * URL ou navigation vers ce module est immédiatement renvoyée vers l'Agenda.
+ * Espace privé de cours dans Flamme OS.
+ * Cette zone reste strictement interne à l'administration et ne publie rien
+ * dans le Blog ou dans les pages publiques du site.
  */
 export function StudiesWorkWorkspace() {
-  useEffect(() => {
-    window.dispatchEvent(new CustomEvent(ADMIN_NAVIGATE_EVENT, { detail: "agenda" }));
-  }, []);
-
-  return <AgendaPanel />;
+  return <CoursesPanel />;
 }
