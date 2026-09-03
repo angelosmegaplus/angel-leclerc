@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Grid2X2, Moon, Sun, X, type LucideIcon } from "lucide-react";
+import { BookOpen, Grid2X2, Moon, Sun, X, type LucideIcon } from "lucide-react";
 import { useThemePreference } from "@/components/ThemeController";
 import { resolveTheme, type ThemePreference } from "@/lib/theme";
 import { AdminHomeDashboard } from "@/components/admin/AdminHomeDashboard";
-import { AgendaPanel } from "@/components/admin/AgendaPanel";
 
 export type AdminNavItem = {
   key: string;
@@ -25,6 +24,7 @@ type CompactDefinition = {
 const COMPACT_NAV: CompactDefinition[] = [
   { key: "dashboard", label: "Accueil", description: "Aujourd’hui, priorités et activité", source: "dashboard", children: ["dashboard"] },
   { key: "agenda", label: "Agenda", description: "Planning, rendez-vous, tâches et projets", source: "agenda", children: ["agenda", "projets"] },
+  { key: "cours", label: "Mes Cours", description: "Notes, cours, fiches et cartes mentales", source: "etudes-travail", children: ["etudes-travail"] },
   { key: "communications", label: "Communications", description: "Messages, mail, contacts et abonnés", source: "messages", children: ["messages", "boite-mail", "signature", "abonnes", "avis"] },
   { key: "contenus", label: "Contenus", description: "Articles, site, studio et boutique", source: "articles", children: ["articles", "contenus", "studio", "boutique"] },
   { key: "fichiers", label: "Fichiers", description: "Documents, médias et Google Drive", source: "fichiers", children: ["fichiers"] },
@@ -43,9 +43,17 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
   const { preference, setPreference } = useThemePreference();
   const resolvedTheme = typeof window === "undefined" ? "light" : resolveTheme(preference);
   const isDark = resolvedTheme === "dark";
-  const legacyAgenda = active === "etudes-travail" || active === "candidatures";
+  const legacyCourses = active === "candidatures";
   const legacyDashboard = active === "angel-ai";
-  const effectiveActive = legacyAgenda ? "agenda" : legacyDashboard ? "dashboard" : active;
+  const effectiveActive = legacyCourses ? "etudes-travail" : legacyDashboard ? "dashboard" : active;
+
+  const shellItems = useMemo<AdminNavItem[]>(() => {
+    if (items.some((item) => item.key === "etudes-travail")) return items;
+    return [
+      ...items,
+      { key: "etudes-travail", label: "Mes Cours", icon: BookOpen, group: "Modules", primary: true },
+    ];
+  }, [items]);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -53,27 +61,27 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
   }, [open]);
 
   useEffect(() => {
-    if (legacyAgenda) onSelect("agenda");
+    if (legacyCourses) onSelect("etudes-travail");
     else if (legacyDashboard) onSelect("dashboard");
-  }, [legacyAgenda, legacyDashboard, onSelect]);
+  }, [legacyCourses, legacyDashboard, onSelect]);
 
   const compactItems = useMemo(() => COMPACT_NAV.map((definition) => {
-    const source = items.find((item) => item.key === definition.source);
-    const badges = definition.children.map((key) => items.find((item) => item.key === key)?.badge ?? 0);
+    const source = shellItems.find((item) => item.key === definition.source);
+    const badges = definition.children.map((key) => shellItems.find((item) => item.key === key)?.badge ?? 0);
     return source ? { ...definition, icon: source.icon, badge: badges.reduce((sum, value) => sum + value, 0) } : null;
-  }).filter((item): item is NonNullable<typeof item> => Boolean(item)), [items]);
+  }).filter((item): item is NonNullable<typeof item> => Boolean(item)), [shellItems]);
 
   const activeGroup = compactItems.find((item) => item.children.includes(effectiveActive))?.key ?? "dashboard";
   const activeDefinition = COMPACT_NAV.find((definition) => definition.children.includes(effectiveActive));
   const sectionItems = useMemo(() => {
     if (!activeDefinition || activeDefinition.children.length <= 1) return [];
     return activeDefinition.children
-      .map((key) => items.find((item) => item.key === key))
+      .map((key) => shellItems.find((item) => item.key === key))
       .filter((item): item is AdminNavItem => Boolean(item));
-  }, [activeDefinition, items]);
+  }, [activeDefinition, shellItems]);
 
   const toggleTheme = () => setPreference((isDark ? "light" : "dark") as ThemePreference);
-  const currentItem = items.find((item) => item.key === effectiveActive);
+  const currentItem = shellItems.find((item) => item.key === effectiveActive);
   const CurrentIcon = currentItem?.icon;
 
   const themeButton = (
@@ -138,7 +146,7 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
               <div className="flex items-center gap-2"><img src="/flamme-os/logo.svg" alt="" aria-hidden className="h-4 w-auto max-w-[5.5rem] object-contain" /></div>
               <div className="mt-1 flex items-center gap-2.5">
                 {CurrentIcon ? <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><CurrentIcon className="h-4 w-4" /></span> : null}
-                <h1 className="truncate font-display text-xl font-bold tracking-[-.035em] sm:text-2xl">{effectiveActive === "dashboard" ? "Aujourd’hui" : effectiveActive === "agenda" ? "Agenda" : title}</h1>
+                <h1 className="truncate font-display text-xl font-bold tracking-[-.035em] sm:text-2xl">{effectiveActive === "dashboard" ? "Aujourd’hui" : effectiveActive === "agenda" ? "Agenda" : effectiveActive === "etudes-travail" ? "Mes Cours" : title}</h1>
               </div>
             </div>
             <div className="hidden items-center gap-2 sm:flex">{themeButton}{actions}</div>
@@ -161,7 +169,7 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
 
         <main className="mx-auto w-full max-w-[1520px] px-3 pb-24 pt-4 sm:px-7 sm:pt-6 lg:px-9">
           <div key={effectiveActive} className="animate-in fade-in duration-200">
-            {effectiveActive === "dashboard" ? <AdminHomeDashboard onNavigate={onSelect} /> : legacyAgenda ? <AgendaPanel /> : children}
+            {effectiveActive === "dashboard" ? <AdminHomeDashboard onNavigate={onSelect} /> : children}
           </div>
         </main>
       </div>
