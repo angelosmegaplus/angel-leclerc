@@ -22,8 +22,8 @@ export const Route = createFileRoute("/auth")({
 });
 
 const BOOT_LINES = [
-  "Microsoft Windows [version 10.0.26100.4946]",
-  "(c) Microsoft Corporation. Tous droits réservés.",
+  "Flamme OS [version 10.0.26100.4946]",
+  "(c) Flamme OS. Tous droits réservés.",
   "",
   "C:\\FlammeOS\\guard> angel_guard.exe --secure-entry",
   "[INIT] mounting isolated authentication environment... OK",
