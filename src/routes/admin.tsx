@@ -489,25 +489,26 @@ function AdminPage() {
 
   const navItems: AdminNavItem[] = [
     { key: "dashboard", label: "Accueil", icon: LayoutDashboard, group: "Essentiel", primary: true },
-    { key: "messages", label: "Messages", icon: Mail, badge: unreadCount, group: "Essentiel", primary: true },
-    { key: "articles", label: "Articles", icon: FileText, badge: articles.length, group: "Essentiel", primary: true },
     { key: "agenda", label: "Agenda", icon: CalendarDays, group: "Essentiel", primary: true },
-    { key: "connexions", label: "Connexions", icon: Plug, group: "Essentiel", primary: true },
-    { key: "contenus", label: "Parcours & services", icon: LayoutList, group: "Publication" },
-    { key: "avis", label: "Avis et soutiens", icon: Star, group: "Publication" },
-    { key: "boite-mail", label: "Mail", icon: Inbox, group: "Relations" },
+    { key: "projets", label: "Projets", icon: FolderKanban, group: "Essentiel", primary: true },
+    { key: "messages", label: "Messages", icon: Mail, badge: unreadCount, group: "Relations", primary: true },
+    { key: "abonnes", label: "Contacts", icon: Users, badge: subscribers.length, group: "Relations" },
+    { key: "avis", label: "Avis", icon: Star, group: "Relations" },
+    { key: "boite-mail", label: "Boîte mail", icon: Inbox, group: "Relations" },
     { key: "signature", label: "Signature", icon: PenLine, group: "Relations" },
-    { key: "abonnes", label: "Contacts & abonnés", icon: Users, badge: subscribers.length, group: "Relations" },
-    { key: "boutique", label: "Boutique", icon: ShoppingBag, group: "Activité" },
-    { key: "stats", label: "Statistiques", icon: BarChart3, group: "Activité" },
-    { key: "projets", label: "Projets", icon: FolderKanban, group: "Modules" },
-    { key: "studio", label: "Studio", icon: Mic2, group: "Modules" },
-    { key: "fichiers", label: "Fichiers", icon: FolderOpen, group: "Modules" },
-    { key: "activite", label: "Activité", icon: Activity, group: "Système" },
-    { key: "notifications", label: "Notifications", icon: Bell, group: "Système" },
-    { key: "automatisation", label: "Automatisations", icon: Gauge, group: "Système" },
+    { key: "articles", label: "Articles", icon: FileText, badge: articles.length, group: "Contenus", primary: true },
+    { key: "contenus", label: "Pages du site", icon: LayoutList, group: "Contenus" },
+    { key: "fichiers", label: "Fichiers", icon: FolderOpen, group: "Contenus" },
+    { key: "studio", label: "Studio", icon: Mic2, group: "Contenus" },
+    { key: "boutique", label: "Boutique", icon: ShoppingBag, group: "Contenus" },
+    { key: "stats", label: "Statistiques", icon: BarChart3, group: "Pilotage" },
+    { key: "activite", label: "Activité", icon: Activity, group: "Pilotage" },
+    { key: "automatisation", label: "Automatisations", icon: Gauge, group: "Pilotage" },
+    { key: "notifications", label: "Notifications", icon: Bell, group: "Pilotage" },
+    { key: "connexions", label: "Connexions", icon: Plug, group: "Pilotage" },
     { key: "parametres", label: "Paramètres", icon: Settings, group: "Système" },
   ];
+
 
   const currentLabel =
     navItems.find((i) => i.key === tab)?.label ?? "Flamme OS";
