@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Calculator, ChevronDown, MessageCircleQuestion, Send } from "lucide-react";
+import { Calculator, ChevronDown, Clock, MapPin, MessageCircleQuestion, Send, ShieldCheck } from "lucide-react";
 import { ContactChat, type Track } from "@/components/ContactChat";
 import { ContactAttachment, installContactTransport } from "@/components/ContactAttachment";
 import { PublicContactAssistant } from "@/components/PublicContactAssistant";
@@ -8,7 +8,7 @@ import { QuoteSimulator } from "@/components/QuoteSimulator";
 
 const TITLE = "Contact — Angel Leclerc";
 const DESCRIPTION = "Contactez Angel Leclerc pour un projet professionnel, une demande de communication ou toute autre question.";
-const CONTACT_UI_VERSION = "2026-09-06-v3";
+const CONTACT_UI_VERSION = "2026-09-06-v4";
 
 type OpenPanel = "question" | "devis" | null;
 
@@ -79,6 +79,12 @@ function Collapsible({
   );
 }
 
+const REASSURANCE = [
+  { icon: Clock, title: "Réponse rapide", text: "Généralement sous 24 à 48 heures, en semaine." },
+  { icon: ShieldCheck, title: "Sans engagement", text: "Un premier échange gratuit pour cadrer votre besoin." },
+  { icon: MapPin, title: "Local et à distance", text: "Périgord noir et Val de Sioule, partout en France à distance." },
+];
+
 function ContactPage() {
   const { parcours, sujet } = Route.useSearch();
   const [openPanel, setOpenPanel] = useState<OpenPanel>(null);
@@ -93,20 +99,40 @@ function ContactPage() {
 
   return (
     <main className="bg-background" data-contact-ui={CONTACT_UI_VERSION}>
-      <div className="container-tight py-12 md:py-16">
-        <h1 className="text-center font-display text-4xl font-bold tracking-tight text-foreground md:text-5xl">Contact</h1>
-        <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-muted-foreground md:text-base">
-          Écrivez directement à Angel Leclerc ci-dessous. Réponse personnelle, sans engagement.
-        </p>
+      <section className="border-b border-border bg-muted/30">
+        <div className="container-tight py-12 md:py-16">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Écrivez-moi</p>
+          <h1 className="mt-3 max-w-3xl font-display text-4xl font-bold tracking-tight text-foreground md:text-5xl">
+            Parlons de votre projet
+          </h1>
+          <p className="mt-4 max-w-2xl text-sm text-muted-foreground md:text-base">
+            Un message suffit. Je vous réponds personnellement, sans formulaire compliqué ni engagement.
+          </p>
+          <ul className="mt-8 grid gap-3 sm:grid-cols-3">
+            {REASSURANCE.map(({ icon: Icon, title, text }) => (
+              <li key={title} className="flex gap-3 rounded-2xl border border-border bg-card p-4">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <Icon className="h-4.5 w-4.5" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold text-foreground">{title}</span>
+                  <span className="block text-xs text-muted-foreground">{text}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
 
-        <div className="mx-auto mt-8 grid max-w-3xl gap-3">
+      <div className="container-tight py-10 md:py-14">
+        <div className="mx-auto grid max-w-3xl gap-3">
           <section className="overflow-hidden rounded-[1.6rem] border border-border bg-card shadow-sm">
             <div className="flex items-center gap-4 px-5 pt-5 sm:px-6">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <Send className="h-5 w-5" />
               </span>
               <div className="min-w-0 flex-1">
-                <h2 className="font-display text-lg font-bold text-foreground">Contacter Angel Leclerc</h2>
+                <h2 className="font-display text-lg font-bold text-foreground">Votre message</h2>
                 <p className="mt-0.5 text-sm text-muted-foreground">Projet professionnel, communication ou autre demande</p>
               </div>
             </div>
@@ -129,7 +155,7 @@ function ContactPage() {
             id="contact-devis-panel"
             icon={<Calculator className="h-5 w-5" />}
             title="Simuler un devis"
-            subtitle="Estimation indicative assistée par intelligence artificielle"
+            subtitle="Estimation automatique et approximative, ce n’est pas un devis"
             open={openPanel === "devis"}
             onToggle={() => toggle("devis")}
           >
