@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { BookOpen, Grid2X2, Moon, Sun, X, type LucideIcon } from "lucide-react";
+import { Grid2X2, Moon, Sun, X, type LucideIcon } from "lucide-react";
 import { useThemePreference } from "@/components/ThemeController";
 import { resolveTheme, type ThemePreference } from "@/lib/theme";
 import { AdminHomeDashboard } from "@/components/admin/AdminHomeDashboard";
@@ -23,12 +23,17 @@ type CompactDefinition = {
 
 const COMPACT_NAV: CompactDefinition[] = [
   { key: "dashboard", label: "Accueil", description: "Aujourd’hui, priorités et activité", source: "dashboard", children: ["dashboard"] },
-  { key: "agenda", label: "Agenda", description: "Planning, rendez-vous, tâches et projets", source: "agenda", children: ["agenda", "projets"] },
-  { key: "cours", label: "Mes Cours", description: "Notes, cours, fiches et cartes mentales", source: "etudes-travail", children: ["etudes-travail"] },
-  { key: "communications", label: "Communications", description: "Messages, mail, contacts et abonnés", source: "messages", children: ["messages", "boite-mail", "signature", "abonnes", "avis"] },
-  { key: "contenus", label: "Contenus", description: "Articles, site, studio et boutique", source: "articles", children: ["articles", "contenus", "studio", "boutique"] },
-  { key: "fichiers", label: "Fichiers", description: "Documents, médias et Google Drive", source: "fichiers", children: ["fichiers"] },
-  { key: "systeme", label: "Système", description: "Automatisations, connexions et statistiques", source: "automatisation", children: ["automatisation", "connexions", "notifications", "activite", "stats", "parametres"] },
+  { key: "agenda", label: "Agenda", description: "Planning et rendez-vous", source: "agenda", children: ["agenda"] },
+  { key: "projets", label: "Projets", description: "Suivi des missions et tâches", source: "projets", children: ["projets"] },
+  { key: "messages", label: "Messages", description: "Demandes, contacts et abonnés", source: "messages", children: ["messages", "abonnes", "avis"] },
+  { key: "boite-mail", label: "Mail", description: "Boîte mail et signature", source: "boite-mail", children: ["boite-mail", "signature"] },
+  { key: "fichiers", label: "Fichiers", description: "Documents et médias", source: "fichiers", children: ["fichiers"] },
+  { key: "contenus", label: "Contenus", description: "Articles, pages du site et boutique", source: "articles", children: ["articles", "contenus", "boutique"] },
+  { key: "studio", label: "Studio", description: "Productions audio et vidéo", source: "studio", children: ["studio"] },
+  { key: "automatisation", label: "Automatisations", description: "Tâches automatiques et notifications", source: "automatisation", children: ["automatisation", "notifications"] },
+  { key: "connexions", label: "Connexions", description: "Comptes et services reliés", source: "connexions", children: ["connexions"] },
+  { key: "stats", label: "Statistiques", description: "Audience et activité du site", source: "stats", children: ["stats", "activite"] },
+  { key: "parametres", label: "Paramètres", description: "Réglages de l’espace", source: "parametres", children: ["parametres"] },
 ];
 
 export function AdminShell({ items, active, onSelect, title, actions, children }: {
@@ -43,17 +48,10 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
   const { preference, setPreference } = useThemePreference();
   const resolvedTheme = typeof window === "undefined" ? "light" : resolveTheme(preference);
   const isDark = resolvedTheme === "dark";
-  const legacyCourses = active === "candidatures";
-  const legacyDashboard = active === "angel-ai";
-  const effectiveActive = legacyCourses ? "etudes-travail" : legacyDashboard ? "dashboard" : active;
+  const legacyDashboard = active === "angel-ai" || active === "candidatures" || active === "etudes-travail";
+  const effectiveActive = legacyDashboard ? "dashboard" : active;
 
-  const shellItems = useMemo<AdminNavItem[]>(() => {
-    if (items.some((item) => item.key === "etudes-travail")) return items;
-    return [
-      ...items,
-      { key: "etudes-travail", label: "Mes Cours", icon: BookOpen, group: "Modules", primary: true },
-    ];
-  }, [items]);
+  const shellItems = items;
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -61,9 +59,8 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
   }, [open]);
 
   useEffect(() => {
-    if (legacyCourses) onSelect("etudes-travail");
-    else if (legacyDashboard) onSelect("dashboard");
-  }, [legacyCourses, legacyDashboard, onSelect]);
+    if (legacyDashboard) onSelect("dashboard");
+  }, [legacyDashboard, onSelect]);
 
   const compactItems = useMemo(() => COMPACT_NAV.map((definition) => {
     const source = shellItems.find((item) => item.key === definition.source);
@@ -146,7 +143,7 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
               <div className="flex items-center gap-2"><img src="/flamme-os/logo.svg" alt="" aria-hidden className="h-4 w-auto max-w-[5.5rem] object-contain" /></div>
               <div className="mt-1 flex items-center gap-2.5">
                 {CurrentIcon ? <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><CurrentIcon className="h-4 w-4" /></span> : null}
-                <h1 className="truncate font-display text-xl font-bold tracking-[-.035em] sm:text-2xl">{effectiveActive === "dashboard" ? "Aujourd’hui" : effectiveActive === "agenda" ? "Agenda" : effectiveActive === "etudes-travail" ? "Mes Cours" : title}</h1>
+                <h1 className="truncate font-display text-xl font-bold tracking-[-.035em] sm:text-2xl">{effectiveActive === "dashboard" ? "Aujourd’hui" : effectiveActive === "agenda" ? "Agenda" : title}</h1>
               </div>
             </div>
             <div className="hidden items-center gap-2 sm:flex">{themeButton}{actions}</div>

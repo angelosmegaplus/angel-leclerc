@@ -11,7 +11,6 @@ import {
   CreditCard,
   FileImage,
   FileText,
-  FolderOpen,
   Globe,
   HeartHandshake,
   Mail,
@@ -164,14 +163,6 @@ const steps = [
 ];
 
 const parcoursLinks = [
-  {
-    icon: FolderOpen,
-    eyebrow: "Portfolio créatif",
-    title: "Mes créations graphiques",
-    text: "950 créations Canva recensées depuis avril 2022 : logos, affiches, publications, identités visuelles et supports numériques.",
-    href: "/portfolio",
-    cta: "Voir le portfolio",
-  },
   {
     icon: BriefcaseBusiness,
     eyebrow: "Profil",
@@ -456,13 +447,22 @@ function Services() {
                 <p className="mt-4 text-xs leading-relaxed text-background/60">
                   Fourchette de lancement, à confirmer sur devis selon le volume d’appels et l’amplitude horaire souhaités.
                 </p>
-                <a
-                  href="/contact"
-                  className="group/link mt-5 inline-flex items-center gap-2 text-sm font-bold text-primary transition-all duration-300 hover:gap-4"
-                >
-                  Demander un devis
-                  <ArrowRight size={16} />
-                </a>
+                <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2">
+                  <a
+                    href="/accueil-client"
+                    className="inline-flex items-center gap-2 text-sm font-bold text-primary transition-all duration-300 hover:gap-4"
+                  >
+                    Voir le détail de l’offre
+                    <ArrowRight size={16} />
+                  </a>
+                  <a
+                    href="/contact"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-background/80 transition-colors hover:text-background"
+                  >
+                    Demander un devis
+                  </a>
+                </div>
+
               </div>
             </div>
           </article>
@@ -587,12 +587,6 @@ function Explore() {
                   </div>
                   <p className="mt-6 text-xs font-bold uppercase tracking-widest text-primary">{item.eyebrow}</p>
                   <h3 className="mt-2 font-display text-2xl font-bold text-foreground">{item.title}</h3>
-                  {item.href === "/portfolio" && (
-                    <div data-canva-enterprise="true" className="mt-4 inline-flex w-fit items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2">
-                      <span className="font-display text-2xl font-bold leading-none text-primary">950</span>
-                      <span className="text-[11px] font-semibold leading-tight text-foreground">créations Canva<br />depuis avril 2022</span>
-                    </div>
-                  )}
                   <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{item.text}</p>
                   <span className="mt-auto inline-flex items-center gap-2 pt-7 text-sm font-semibold text-foreground transition-colors group-hover:text-primary">
                     {item.cta}

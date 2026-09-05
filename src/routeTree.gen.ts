@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SystemStatusRouteImport } from './routes/system-status'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PolitiqueCookiesRouteImport } from './routes/politique-cookies'
 import { Route as PolitiqueConfidentialiteRouteImport } from './routes/politique-confidentialite'
 import { Route as PolitiqueRouteImport } from './routes/politique'
@@ -35,6 +34,7 @@ import { Route as AdminMovixRouteImport } from './routes/admin-movix'
 import { Route as AdminIntegrationsRouteImport } from './routes/admin-integrations'
 import { Route as AdminActualitesRouteImport } from './routes/admin-actualites'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AccueilClientRouteImport } from './routes/accueil-client'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BoutiqueIndexRouteImport } from './routes/boutique/index'
 import { Route as ArticlesIndexRouteImport } from './routes/articles/index'
@@ -81,11 +81,6 @@ const SystemStatusRoute = SystemStatusRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PortfolioRoute = PortfolioRouteImport.update({
-  id: '/portfolio',
-  path: '/portfolio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PolitiqueCookiesRoute = PolitiqueCookiesRouteImport.update({
@@ -202,6 +197,11 @@ const AdminActualitesRoute = AdminActualitesRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccueilClientRoute = AccueilClientRouteImport.update({
+  id: '/accueil-client',
+  path: '/accueil-client',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -403,6 +403,7 @@ const ApiPublicOauthProviderCallbackRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/accueil-client': typeof AccueilClientRoute
   '/admin': typeof AdminRoute
   '/admin-actualites': typeof AdminActualitesRoute
   '/admin-integrations': typeof AdminIntegrationsRoute
@@ -426,7 +427,6 @@ export interface FileRoutesByFullPath {
   '/politique': typeof PolitiqueRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/politique-cookies': typeof PolitiqueCookiesRoute
-  '/portfolio': typeof PortfolioRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/system-status': typeof SystemStatusRoute
   '/actualites/$slug': typeof ActualitesSlugRoute
@@ -468,6 +468,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/accueil-client': typeof AccueilClientRoute
   '/admin': typeof AdminRoute
   '/admin-actualites': typeof AdminActualitesRoute
   '/admin-integrations': typeof AdminIntegrationsRoute
@@ -491,7 +492,6 @@ export interface FileRoutesByTo {
   '/politique': typeof PolitiqueRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/politique-cookies': typeof PolitiqueCookiesRoute
-  '/portfolio': typeof PortfolioRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/system-status': typeof SystemStatusRoute
   '/actualites/$slug': typeof ActualitesSlugRoute
@@ -534,6 +534,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/accueil-client': typeof AccueilClientRoute
   '/admin': typeof AdminRoute
   '/admin-actualites': typeof AdminActualitesRoute
   '/admin-integrations': typeof AdminIntegrationsRoute
@@ -557,7 +558,6 @@ export interface FileRoutesById {
   '/politique': typeof PolitiqueRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/politique-cookies': typeof PolitiqueCookiesRoute
-  '/portfolio': typeof PortfolioRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/system-status': typeof SystemStatusRoute
   '/actualites/$slug': typeof ActualitesSlugRoute
@@ -601,6 +601,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/accueil-client'
     | '/admin'
     | '/admin-actualites'
     | '/admin-integrations'
@@ -624,7 +625,6 @@ export interface FileRouteTypes {
     | '/politique'
     | '/politique-confidentialite'
     | '/politique-cookies'
-    | '/portfolio'
     | '/sitemap.xml'
     | '/system-status'
     | '/actualites/$slug'
@@ -666,6 +666,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/accueil-client'
     | '/admin'
     | '/admin-actualites'
     | '/admin-integrations'
@@ -689,7 +690,6 @@ export interface FileRouteTypes {
     | '/politique'
     | '/politique-confidentialite'
     | '/politique-cookies'
-    | '/portfolio'
     | '/sitemap.xml'
     | '/system-status'
     | '/actualites/$slug'
@@ -731,6 +731,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/accueil-client'
     | '/admin'
     | '/admin-actualites'
     | '/admin-integrations'
@@ -754,7 +755,6 @@ export interface FileRouteTypes {
     | '/politique'
     | '/politique-confidentialite'
     | '/politique-cookies'
-    | '/portfolio'
     | '/sitemap.xml'
     | '/system-status'
     | '/actualites/$slug'
@@ -797,6 +797,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccueilClientRoute: typeof AccueilClientRoute
   AdminRoute: typeof AdminRoute
   AdminActualitesRoute: typeof AdminActualitesRoute
   AdminIntegrationsRoute: typeof AdminIntegrationsRoute
@@ -820,7 +821,6 @@ export interface RootRouteChildren {
   PolitiqueRoute: typeof PolitiqueRoute
   PolitiqueConfidentialiteRoute: typeof PolitiqueConfidentialiteRoute
   PolitiqueCookiesRoute: typeof PolitiqueCookiesRoute
-  PortfolioRoute: typeof PortfolioRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SystemStatusRoute: typeof SystemStatusRoute
   ActualitesSlugRoute: typeof ActualitesSlugRoute
@@ -873,13 +873,6 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/portfolio': {
-      id: '/portfolio'
-      path: '/portfolio'
-      fullPath: '/portfolio'
-      preLoaderRoute: typeof PortfolioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/politique-cookies': {
@@ -1041,6 +1034,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/accueil-client': {
+      id: '/accueil-client'
+      path: '/accueil-client'
+      fullPath: '/accueil-client'
+      preLoaderRoute: typeof AccueilClientRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -1321,6 +1321,7 @@ const AdminMovixRouteWithChildren = AdminMovixRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccueilClientRoute: AccueilClientRoute,
   AdminRoute: AdminRoute,
   AdminActualitesRoute: AdminActualitesRoute,
   AdminIntegrationsRoute: AdminIntegrationsRoute,
@@ -1344,7 +1345,6 @@ const rootRouteChildren: RootRouteChildren = {
   PolitiqueRoute: PolitiqueRoute,
   PolitiqueConfidentialiteRoute: PolitiqueConfidentialiteRoute,
   PolitiqueCookiesRoute: PolitiqueCookiesRoute,
-  PortfolioRoute: PortfolioRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SystemStatusRoute: SystemStatusRoute,
   ActualitesSlugRoute: ActualitesSlugRoute,

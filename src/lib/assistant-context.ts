@@ -37,6 +37,12 @@ SERVICES (page /entreprise)
 - Accompagnement personnel en communication : échange individuel à distance (téléphone ou
   visioconférence) pour clarifier une situation, préparer une conversation ou mieux exprimer un
   message, dans un cadre personnel ou professionnel. Tarif : 50 € pour 1 heure.
+- Accueil client externalisé (page /accueil-client) : permanence téléphonique et gestion des
+  messages pour artisans, gîtes, restaurants, indépendants, petites entreprises et associations,
+  en Périgord noir et à distance partout en France. Prise d'appels selon des consignes écrites,
+  compte rendu de chaque appel, confirmation de rendez-vous. Formules indicatives : mini
+  permanence dès 39 €/mois, formule régulière dès 79 €/mois, formule renforcée dès 149 €/mois,
+  montant définitif sur devis selon le volume d'appels et l'amplitude horaire.
 - Production audio/vidéo possible sur le terrain selon le projet.
 - Outils utilisés notamment : Canva Pro, Google Workspace, MixPad et outils numériques de création.
 - L'intelligence artificielle peut assister la recherche et l'organisation, mais les livrables restent
@@ -48,6 +54,7 @@ TARIFS ET FONCTIONNEMENT
 - Affiche ou flyer : à partir de 50 €.
 - Identité visuelle simple : à partir de 150 €.
 - Accompagnement personnel en communication : 50 € pour 1 heure (téléphone ou visioconférence).
+- Accueil client externalisé : dès 39 €/mois, 79 €/mois ou 149 €/mois selon la formule, sur devis.
 - Coordination et production audio/vidéo : sur devis.
 - Paiement professionnel via Revolut Business : facture et lien sécurisé, acompte avant la mission,
   solde après validation. TVA non applicable, article 293 B du CGI.
