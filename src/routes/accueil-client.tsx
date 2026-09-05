@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowDown,
   ArrowRight,
+  AtSign,
   CalendarCheck,
   CheckCircle2,
   ClipboardCheck,
@@ -17,6 +18,7 @@ import {
   PhoneCall,
   Quote,
   RefreshCw,
+  Share2,
   Settings,
   ShieldCheck,
   Smartphone,
@@ -35,17 +37,17 @@ import ringoverAsset from "@/assets/tools/ringover.svg.asset.json";
 export const Route = createFileRoute("/accueil-client")({
   head: () => ({
     meta: [
-      { title: "Accueil client externalisé | Angel Leclerc Communication" },
+      { title: "Communication client externalisée | Angel Leclerc Communication" },
       {
         name: "description",
         content:
-          "Accueil client externalisé avec mise en place accompagnée. Abonnement fixe à partir de 173,33 €/mois, soit 40 €/semaine.",
+          "Communication client externalisée : appels, e-mails, SMS et réseaux sociaux. Abonnement fixe à partir de 173,33 €/mois, soit 40 €/semaine.",
       },
-      { property: "og:title", content: "Accueil client externalisé | Angel Leclerc Communication" },
+      { property: "og:title", content: "Communication client externalisée | Angel Leclerc Communication" },
       {
         property: "og:description",
         content:
-          "Votre entreprise garde son numéro. Quand vous ne pouvez pas répondre, je prends le relais. Tarif fixe à partir de 173,33 €/mois, soit 40 €/semaine.",
+          "Déléguez une partie de vos appels, e-mails, SMS et messages sociaux selon vos consignes. Tarif fixe à partir de 173,33 €/mois, soit 40 €/semaine.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -67,6 +69,14 @@ const callSteps: { icon: LucideIcon; title: string; text: string }[] = [
   { icon: MessageSquare, title: "Je vous transmets le compte rendu", text: "Vous recevez les informations par le canal convenu : SMS, e-mail ou autre moyen défini ensemble." },
 ];
 
+const digitalSteps: { icon: LucideIcon; title: string; text: string }[] = [
+  { icon: AtSign, title: "Un message arrive", text: "Un client écrit par e-mail, SMS, Facebook ou Instagram sur l’un des canaux que vous avez choisi d’activer." },
+  { icon: ClipboardList, title: "Je consulte vos consignes", text: "J’identifie l’entreprise, le canal et les réponses que vous avez validées dans votre fiche de consignes." },
+  { icon: MessageSquare, title: "Je réponds si je suis autorisé", text: "Je traite les demandes simples avec vos informations : horaires, disponibilités, renseignements ou confirmation prévue." },
+  { icon: Share2, title: "Je vous transmets si nécessaire", text: "Si la demande dépasse mes consignes, je n’invente rien : je recueille les éléments utiles et vous les transmets." },
+  { icon: RefreshCw, title: "Je suis la demande", text: "Quand le forfait le prévoit, je note la suite donnée, relance le fil ou confirme au client que sa demande a été transmise." },
+];
+
 const setupSteps = [
   "Vérification de votre opérateur, de votre ligne et des possibilités disponibles.",
   "Choix du type de renvoi, par exemple après non-réponse plutôt que pour tous les appels.",
@@ -74,6 +84,7 @@ const setupSteps = [
   "Configuration du standard téléphonique cloud et de ses règles utiles.",
   "Préparation de la formule d’accueil prononcée au nom de votre entreprise.",
   "Création de la fiche de consignes : réponses autorisées, urgences et cas à transmettre.",
+  "Choix des canaux réellement activés : téléphone, SMS, e-mail ou messageries sociales.",
   "Appel test depuis un deuxième téléphone pour vérifier le parcours complet.",
   "Ajustements et validation commune avant l’activation de l’abonnement.",
 ];
@@ -103,8 +114,14 @@ const tools: { name: string; role: string; icon?: LucideIcon; logo?: string; not
   },
   {
     name: "SMS · e-mail",
-    role: "Transmission du compte rendu par le canal choisi avec chaque professionnel.",
+    role: "Réception ou transmission des échanges selon les canaux activés et les accès autorisés.",
     icon: Mail,
+  },
+  {
+    name: "Facebook · Instagram",
+    role: "Réponse aux messages privés et aux demandes simples, uniquement sur les comptes et actions autorisés.",
+    icon: Share2,
+    note: "Plateformes tierces utilisées sans partenariat avec ALC!.",
   },
   {
     name: "Orange Pro · autres opérateurs",
@@ -118,23 +135,23 @@ const plans = [
     name: "Mini permanence",
     price: "173,33 €/mois",
     weekly: "soit 40 €/semaine",
-    lead: "Pour couvrir les moments essentiels où vous ne pouvez pas décrocher.",
+    lead: "Pour un petit volume d’échanges sur un nombre limité de canaux.",
     features: [
-      "Renvoi d’appels sur les plages définies au contrat",
-      "Prise de messages et compte rendu écrit",
-      "Réponses simples validées dans votre fiche de consignes",
+      "Principalement appels et prise de messages",
+      "Réponses simples sur les canaux limités au contrat",
+      "Compte rendu selon votre fiche de consignes",
     ],
   },
   {
     name: "Formule régulière",
     price: "260 €/mois",
     weekly: "soit 60 €/semaine",
-    lead: "Pour organiser une présence plus régulière sur votre semaine.",
+    lead: "Pour une présence plus stable sur plusieurs échanges clients.",
     highlight: true,
     features: [
-      "Couverture plus étendue selon les horaires convenus",
-      "Réponses détaillées dans le cadre des consignes validées",
-      "Confirmation de rendez-vous si vous m’y autorisez",
+      "Appels, e-mails et messages sociaux selon les consignes",
+      "Présence plus régulière aux horaires convenus",
+      "Confirmations ou rendez-vous simples si autorisés",
       "Suivi structuré des demandes reçues",
     ],
   },
@@ -144,15 +161,43 @@ const plans = [
     weekly: "soit 90 €/semaine",
     lead: "Pour une activité ayant davantage de contacts ou de canaux à suivre.",
     features: [
-      "Amplitude renforcée définie avant démarrage, hors 24/7",
-      "Prise en charge des canaux expressément inclus au contrat",
+      "Plusieurs canaux, volume et amplitude renforcés, hors 24/7",
+      "Suivi client plus complet dans le périmètre convenu",
       "Gestion de réservations ou d’agenda avec autorisation et accès adaptés",
-      "Point régulier sur les demandes et ajustements utiles",
+      "Petites actions de communication client prévues au contrat",
     ],
   },
 ];
 
 const faq = [
+  {
+    q: "Quels canaux puis-je vous confier ?",
+    a: "Selon la formule, vous pouvez activer les appels entrants, SMS, e-mails, messages privés Facebook ou Instagram, réponses sociales simples, demandes de renseignements et confirmations de rendez-vous. Vous choisissez uniquement les canaux utiles ; chacun est inscrit dans la fiche de consignes.",
+  },
+  {
+    q: "Est-ce vous qui publiez aussi sur mes réseaux sociaux ?",
+    a: "Cette offre porte d’abord sur la relation et les échanges avec les clients. De petites actions de communication peuvent être prévues au forfait, mais une publication régulière ou une animation éditoriale complète doit être définie séparément au contrat.",
+  },
+  {
+    q: "Pouvez-vous répondre aux messages privés Facebook ou Instagram ?",
+    a: "Oui, si ce canal est activé, si vous fournissez un accès adapté et si la réponse entre dans les consignes validées. Meta, Facebook et Instagram sont des plateformes tierces sans partenariat avec ALC!.",
+  },
+  {
+    q: "Comment savez-vous quoi répondre ?",
+    a: "Nous construisons une fiche de consignes avec vos informations, réponses autorisées, ton, horaires, cas urgents et demandes à transmettre. Elle sert de référence pour chaque échange.",
+  },
+  {
+    q: "Que faites-vous si une demande dépasse vos consignes ?",
+    a: "Je ne complète jamais une réponse au hasard. Je recueille les coordonnées et le contexte nécessaires, puis je vous transmets la demande par le canal convenu.",
+  },
+  {
+    q: "Puis-je choisir seulement téléphone et e-mail ?",
+    a: "Oui. Les canaux sont choisis avec vous avant activation : aucun réseau social ou autre moyen de contact n’est ajouté automatiquement.",
+  },
+  {
+    q: "Puis-je changer de formule ou de canaux ?",
+    a: "Oui, selon les conditions prévues au contrat. Nous réévaluons alors le volume, les horaires, les accès et le périmètre ; tout besoin supplémentaire est activé uniquement après accord ou devis.",
+  },
   {
     q: "Que se passe-t-il quand quelqu’un appelle ?",
     a: "L’appelant compose votre numéro habituel. Votre téléphone sonne d’abord normalement. Si vous ne répondez pas selon la règle décidée ensemble, l’opérateur renvoie l’appel vers le standard cloud. Je reçois alors l’appel, réponds avec votre formule d’accueil, note la demande puis vous envoie un compte rendu.",
@@ -218,12 +263,12 @@ function AccueilClientPage() {
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-primary">
               <MapPin size={14} /> Périgord noir · à distance partout en France
             </span>
-            <h1 className="mt-6 font-display text-4xl font-extrabold text-foreground md:text-6xl">Accueil client externalisé</h1>
+            <h1 className="mt-6 font-display text-4xl font-extrabold text-foreground md:text-6xl">Communication client externalisée</h1>
             <p className="mt-6 max-w-3xl text-xl font-medium leading-relaxed text-foreground md:text-2xl">
-              Votre entreprise garde son numéro. Quand vous ne pouvez pas répondre, je prends le relais.
+              Quand vous êtes indisponible ou souhaitez déléguer certains échanges, je prends en charge une partie de votre communication client.
             </p>
             <p className="mt-4 max-w-3xl leading-relaxed text-muted-foreground">
-              Un service humain, local et flexible pour les artisans, gîtes, chambres d’hôtes, restaurants, indépendants, petites entreprises et associations. Je réponds selon vos consignes, sans fonctionnement de centre d’appels industriel.
+              Appels, SMS, e-mails, messages sociaux, renseignements ou confirmations : vous choisissez les canaux activés et nous définissons chaque réponse autorisée dans une fiche de consignes. La permanence téléphonique reste un module important du service, jamais une promesse de disponibilité 24/7 ou illimitée.
             </p>
             <div className="mt-8 flex flex-col gap-5 border-l-4 border-primary pl-5 sm:flex-row sm:items-end sm:gap-10">
               <div>
@@ -269,6 +314,31 @@ function AccueilClientPage() {
       </section>
 
       <section className="border-y border-border/60 bg-card py-20 lg:py-24">
+        <div className="mx-auto max-w-7xl px-6">
+          <AnimatedSection>
+            <SectionHeading eyebrow="Communication multicanale" title="Comment sont traités les messages, e-mails et échanges sociaux ?" text="Chaque client active seulement les canaux utiles. La fiche de consignes détermine ce que je peux répondre, transmettre ou suivre." />
+          </AnimatedSection>
+          <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+            {digitalSteps.map((step, index) => {
+              const Icon = step.icon;
+              return (
+                <AnimatedSection key={step.title} delay={index * 0.05}>
+                  <article className="relative h-full rounded-2xl border border-border bg-background p-6">
+                    <div className="flex items-center justify-between">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary"><Icon size={19} /></span>
+                      <span className="font-display text-2xl font-extrabold text-primary/35">{String(index + 1).padStart(2, "0")}</span>
+                    </div>
+                    <h3 className="mt-5 font-display text-lg font-bold text-foreground">{step.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{step.text}</p>
+                  </article>
+                </AnimatedSection>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-border/60 bg-card py-20 lg:py-24">
         <div className="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-[0.8fr_1.2fr]">
           <AnimatedSection>
             <SectionHeading eyebrow="Mise en route accompagnée" title="Je m’occupe de toute la mise en place" text="Vous n’avez pas à gérer seul la partie technique. Je prépare le dispositif avec vous, puis nous vérifions ensemble qu’il fonctionne avant son activation." />
@@ -295,7 +365,7 @@ function AccueilClientPage() {
 
       <section className="mx-auto max-w-7xl px-6 py-20 lg:py-24">
         <AnimatedSection>
-          <SectionHeading eyebrow="Équipement envisagé" title="Les outils utilisés ou prévus" text="Chaque outil sert une étape précise. La configuration finale dépend toujours de votre ligne, de votre opérateur et du besoin validé ensemble." />
+            <SectionHeading eyebrow="Équipement envisagé" title="Les outils utilisés ou prévus" text="Chaque outil sert une étape précise. La configuration finale dépend de votre ligne, de vos canaux, de vos accès et du besoin validé ensemble." />
         </AnimatedSection>
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {tools.map((tool, index) => {
@@ -316,7 +386,7 @@ function AccueilClientPage() {
         </div>
         <AnimatedSection delay={0.1} className="mt-6">
           <div className="rounded-2xl border border-border bg-muted/40 p-6 text-sm leading-relaxed text-muted-foreground">
-            <p className="flex items-start gap-3"><Info className="mt-0.5 shrink-0 text-primary" size={19} /><span><strong className="text-foreground">Transparence :</strong> Ringover et Quicktalk sont des outils tiers actuellement prévus ou envisagés, sans partenariat commercial avec ALC!. Leur disponibilité, leurs fonctions, leurs conditions et leurs tarifs peuvent évoluer indépendamment d’ALC!. Un outil équivalent peut être retenu s’il est plus adapté au client.</span></p>
+            <p className="flex items-start gap-3"><Info className="mt-0.5 shrink-0 text-primary" size={19} /><span><strong className="text-foreground">Transparence :</strong> Ringover, Quicktalk, Google, Android, Meta, Facebook, Instagram, les messageries et les opérateurs sont des outils ou plateformes tiers, sans partenariat commercial avec ALC!. Leur disponibilité, leurs fonctions, leurs conditions et leurs tarifs peuvent évoluer indépendamment d’ALC!. Un outil équivalent peut être retenu s’il est plus adapté au client.</span></p>
           </div>
         </AnimatedSection>
       </section>
@@ -329,10 +399,11 @@ function AccueilClientPage() {
             <p className="mt-3 max-w-3xl text-sm leading-relaxed text-background/65">Cette entreprise est entièrement fictive et sert uniquement à illustrer le fonctionnement. Elle n’est pas présentée comme un client d’ALC!.</p>
           </AnimatedSection>
           <AnimatedSection delay={0.08} className="mt-10">
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <div className="rounded-2xl border border-background/15 p-6"><PhoneCall className="text-primary" /><h3 className="mt-4 font-display text-lg font-bold">1. L’appel</h3><p className="mt-2 text-sm leading-relaxed text-background/70">Un client appelle le numéro habituel. Le plombier est sur un chantier et ne peut pas répondre. Après le délai choisi, l’appel est renvoyé vers le standard.</p></div>
               <div className="rounded-2xl border border-background/15 p-6"><Smartphone className="text-primary" /><h3 className="mt-4 font-display text-lg font-bold">2. La réponse</h3><p className="mt-2 text-sm leading-relaxed text-background/70">Mon Pixel 10 sonne. Le contexte configuré me permet d’identifier l’entreprise et je réponds : « Dupont Plomberie bonjour ».</p></div>
               <div className="rounded-2xl border border-background/15 p-6"><FileText className="text-primary" /><h3 className="mt-4 font-display text-lg font-bold">3. Le compte rendu</h3><p className="mt-2 text-sm leading-relaxed text-background/70">Je note le nom, le téléphone, l’adresse, le motif et l’urgence, puis je transmets immédiatement la demande au plombier par le canal convenu.</p></div>
+              <div className="rounded-2xl border border-background/15 p-6"><AtSign className="text-primary" /><h3 className="mt-4 font-display text-lg font-bold">4. Les autres canaux</h3><p className="mt-2 text-sm leading-relaxed text-background/70">Un autre client écrit sur Facebook ou par e-mail. Je réponds aux demandes simples prévues ; sinon je recueille les éléments et transmets. Je peux confirmer un rendez-vous seulement avec l’autorisation et l’accès adaptés.</p></div>
             </div>
           </AnimatedSection>
         </div>
@@ -341,7 +412,7 @@ function AccueilClientPage() {
       <section id="tarifs" className="scroll-mt-24 bg-card py-20 lg:py-24">
         <div className="mx-auto max-w-7xl px-6">
           <AnimatedSection>
-            <SectionHeading eyebrow="Abonnements fixes" title="Trois niveaux de permanence" text="Le détail du volume d’appels, des horaires, des canaux et des actions incluses est défini avant le démarrage. Chaque formule comprend un périmètre précis au contrat." />
+            <SectionHeading eyebrow="Abonnements fixes" title="Trois niveaux de communication client" text="Le détail du volume d’échanges, des horaires, des canaux et des actions incluses est défini avant le démarrage. Chaque formule comprend un périmètre précis au contrat." />
           </AnimatedSection>
           <div className="mt-12 grid gap-6 lg:grid-cols-3">
             {plans.map((plan, index) => (
@@ -411,7 +482,7 @@ function AccueilClientPage() {
 
       <section className="border-t border-border/60 bg-card py-16">
         <div className="mx-auto flex max-w-7xl flex-col gap-7 px-6 md:flex-row md:items-center md:justify-between">
-          <div><p className="font-display text-2xl font-extrabold text-foreground">Prêt à ne plus laisser vos appels sans réponse ?</p><p className="mt-2 text-sm text-muted-foreground">Commençons par vérifier votre ligne, votre besoin et le périmètre adapté.</p></div>
+          <div><p className="font-display text-2xl font-extrabold text-foreground">Prêt à déléguer une partie de vos échanges clients ?</p><p className="mt-2 text-sm text-muted-foreground">Commençons par choisir vos canaux, vos consignes et le périmètre adapté.</p></div>
           <Link to="/contact" className="inline-flex w-fit items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition-all hover:gap-3">Demander une mise en place <ArrowRight size={16} /></Link>
         </div>
       </section>
