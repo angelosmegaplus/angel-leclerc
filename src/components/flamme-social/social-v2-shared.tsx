@@ -100,7 +100,7 @@ export function Empty({icon:Icon=Home,title,text}:{icon?:typeof Home;title:strin
 export function SecureMedia({bucket="flamme-media",path,type,className,controls=true,muted=false,autoPlay=false}:{bucket?:string;path:string;type:"image"|"video";className?:string;controls?:boolean;muted?:boolean;autoPlay?:boolean}) {
   const [url,setUrl]=useState<string|null>(null);
   const [failed,setFailed]=useState(false);
-  useEffect(()=>{let active=true;setUrl(null);setFailed(false);(async()=>{try{if(bucket==="flamme-media"){const next=supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;if(active)setUrl(next);return;}const {data,error}=await supabase.storage.from(bucket).createSignedUrl(path,3600);if(error)throw error;if(active)setUrl(data?.signedUrl??null);}catch{if(active)setFailed(true)}})();return()=>{active=false};},[bucket,path]);
+  useEffect(()=>{let active=true;setUrl(null);setFailed(false);(async()=>{try{const {data,error}=await supabase.storage.from(bucket).createSignedUrl(path,3600);if(error)throw error;if(active)setUrl(data?.signedUrl??null);}catch{if(active)setFailed(true)}})();return()=>{active=false};},[bucket,path]);
   if(failed) return <div className={cx("flex items-center justify-center bg-slate-100 p-4 text-center text-xs text-slate-500 dark:bg-white/5 dark:text-slate-400",className)}>Média indisponible.</div>;
   if(!url) return <div className={cx("animate-pulse bg-slate-200 dark:bg-white/10",className)}/>;
   return type==="video"
