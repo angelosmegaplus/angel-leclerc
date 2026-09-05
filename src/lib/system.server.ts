@@ -33,7 +33,7 @@ const DEFINITIONS: Definition[] = [
   { key: "angel-ai", name: "Passerelle IA Lovable · Angel OS IA", category: "Intelligence artificielle", description: "Moteur d’intelligence artificielle (modèles Google Gemini) utilisé par Angel OS IA.", env: ["LOVABLE_API_KEY"], note: "Une seule clé IA est utilisée : LOVABLE_API_KEY (passerelle IA Lovable)." },
   { key: "site", name: "Base Angel OS", category: "Site & contenus", description: "Base de données, authentification, stockage et traitements serveur du site.", env: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"] },
   { key: "tmdb", name: "TMDB", category: "Films & séries", description: "Métadonnées, affiches, recherche et informations Films & séries.", env: ["TMDB_READ_TOKEN"], note: "TMDB utilise un identifiant unique : variable serveur si disponible, sinon la clé v3 intégrée au build." },
-  { key: "stripe", name: "Stripe", category: "Site & contenus", description: "Paiements de la boutique.", env: ["STRIPE_SECRET_KEY"] },
+  { key: "stripe", name: "Stripe", category: "Site & contenus", description: "Paiements de la boutique.", env: ["STRIPE_LIVE_API_KEY", "LOVABLE_API_KEY"] },
   { key: "printful", name: "Printful", category: "Site & contenus", description: "Catalogue, impression et expédition des produits.", env: ["PRINTFUL_API_KEY"] },
 ];
 
