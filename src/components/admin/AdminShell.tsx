@@ -23,10 +23,8 @@ type CompactDefinition = {
 
 const COMPACT_NAV: CompactDefinition[] = [
   { key: "dashboard", label: "Accueil", description: "Aujourd’hui, priorités et activité", source: "dashboard", children: ["dashboard"] },
-  { key: "agenda", label: "Agenda", description: "Planning et rendez-vous", source: "agenda", children: ["agenda"] },
-  { key: "projets", label: "Projets", description: "Missions et tâches", source: "projets", children: ["projets"] },
-  { key: "messages", label: "Messages", description: "Demandes, contacts et avis", source: "messages", children: ["messages", "abonnes", "avis"] },
-  { key: "boite-mail", label: "Mail", description: "Boîte mail et signature", source: "boite-mail", children: ["boite-mail", "signature"] },
+  { key: "planning", label: "Planning", description: "Agenda, rendez-vous, projets et tâches", source: "agenda", children: ["agenda", "projets"] },
+  { key: "messages", label: "Messages", description: "Demandes, boîte mail, contacts et avis", source: "messages", children: ["messages", "boite-mail", "signature", "abonnes", "avis"] },
   { key: "contenus", label: "Contenus", description: "Articles, pages, fichiers, studio", source: "articles", children: ["articles", "contenus", "fichiers", "studio", "boutique"] },
   { key: "pilotage", label: "Pilotage", description: "Statistiques, automatisations, connexions", source: "stats", children: ["stats", "activite", "automatisation", "notifications", "connexions"] },
   { key: "parametres", label: "Paramètres", description: "Réglages de l’espace", source: "parametres", children: ["parametres"] },
