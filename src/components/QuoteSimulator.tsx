@@ -111,12 +111,30 @@ export function QuoteSimulator() {
             </ol>
           ) : null}
 
-          {result.range ? (
-            <p className="mt-3 font-display text-lg font-bold text-foreground">Budget indicatif : {result.range}</p>
+          <div className="mt-4 rounded-2xl border border-primary/25 bg-primary/5 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary">Prix simulé</p>
+            <p className="mt-1 font-display text-2xl font-bold text-foreground">{result.range}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {result.recurring ? "Formule mensuelle, sans engagement de durée." : "Montant total estimé pour l’ensemble décrit."}
+            </p>
+            <ul className="mt-3 space-y-1.5 border-t border-primary/15 pt-3 text-sm text-muted-foreground">
+              {result.lines.map((line) => (
+                <li key={line.label} className="flex flex-wrap items-baseline justify-between gap-2">
+                  <span>{line.label}{line.note ? <span className="block text-xs opacity-80">{line.note}</span> : null}</span>
+                  <span className="font-semibold text-foreground">{line.low} € – {line.high} €</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {result.assumptions.length > 0 ? (
+            <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+              {result.assumptions.map((item) => <li key={item}>• {item}</li>)}
+            </ul>
           ) : null}
 
           <p className="mt-3 text-xs text-muted-foreground">
-            Estimation automatique, non contractuelle. Le devis réel est établi par Angel après un échange.
+            Simulation automatique et approximative : ce n’est pas un devis. Le prix réel est confirmé par écrit par Angel après un échange, et peut être différent.
           </p>
 
           <Button asChild className="mt-4 min-h-11 rounded-full">
