@@ -2189,6 +2189,57 @@ export type Database = {
         }
         Relationships: []
       }
+      portfolio_items: {
+        Row: {
+          category: string
+          client: string | null
+          cover_url: string | null
+          created_at: string
+          description: string
+          id: string
+          images: Json
+          link_url: string | null
+          published: boolean
+          sort_order: number
+          tags: Json
+          title: string
+          updated_at: string
+          year: number | null
+        }
+        Insert: {
+          category?: string
+          client?: string | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          images?: Json
+          link_url?: string | null
+          published?: boolean
+          sort_order?: number
+          tags?: Json
+          title: string
+          updated_at?: string
+          year?: number | null
+        }
+        Update: {
+          category?: string
+          client?: string | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          images?: Json
+          link_url?: string | null
+          published?: boolean
+          sort_order?: number
+          tags?: Json
+          title?: string
+          updated_at?: string
+          year?: number | null
+        }
+        Relationships: []
+      }
       press_review: {
         Row: {
           created_at: string

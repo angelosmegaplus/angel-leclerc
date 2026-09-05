@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SystemStatusRouteImport } from './routes/system-status'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RealisationsRouteImport } from './routes/realisations'
 import { Route as PolitiqueCookiesRouteImport } from './routes/politique-cookies'
 import { Route as PolitiqueConfidentialiteRouteImport } from './routes/politique-confidentialite'
 import { Route as PolitiqueRouteImport } from './routes/politique'
@@ -81,6 +82,11 @@ const SystemStatusRoute = SystemStatusRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RealisationsRoute = RealisationsRouteImport.update({
+  id: '/realisations',
+  path: '/realisations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PolitiqueCookiesRoute = PolitiqueCookiesRouteImport.update({
@@ -427,6 +433,7 @@ export interface FileRoutesByFullPath {
   '/politique': typeof PolitiqueRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/politique-cookies': typeof PolitiqueCookiesRoute
+  '/realisations': typeof RealisationsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/system-status': typeof SystemStatusRoute
   '/actualites/$slug': typeof ActualitesSlugRoute
@@ -492,6 +499,7 @@ export interface FileRoutesByTo {
   '/politique': typeof PolitiqueRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/politique-cookies': typeof PolitiqueCookiesRoute
+  '/realisations': typeof RealisationsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/system-status': typeof SystemStatusRoute
   '/actualites/$slug': typeof ActualitesSlugRoute
@@ -558,6 +566,7 @@ export interface FileRoutesById {
   '/politique': typeof PolitiqueRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/politique-cookies': typeof PolitiqueCookiesRoute
+  '/realisations': typeof RealisationsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/system-status': typeof SystemStatusRoute
   '/actualites/$slug': typeof ActualitesSlugRoute
@@ -625,6 +634,7 @@ export interface FileRouteTypes {
     | '/politique'
     | '/politique-confidentialite'
     | '/politique-cookies'
+    | '/realisations'
     | '/sitemap.xml'
     | '/system-status'
     | '/actualites/$slug'
@@ -690,6 +700,7 @@ export interface FileRouteTypes {
     | '/politique'
     | '/politique-confidentialite'
     | '/politique-cookies'
+    | '/realisations'
     | '/sitemap.xml'
     | '/system-status'
     | '/actualites/$slug'
@@ -755,6 +766,7 @@ export interface FileRouteTypes {
     | '/politique'
     | '/politique-confidentialite'
     | '/politique-cookies'
+    | '/realisations'
     | '/sitemap.xml'
     | '/system-status'
     | '/actualites/$slug'
@@ -821,6 +833,7 @@ export interface RootRouteChildren {
   PolitiqueRoute: typeof PolitiqueRoute
   PolitiqueConfidentialiteRoute: typeof PolitiqueConfidentialiteRoute
   PolitiqueCookiesRoute: typeof PolitiqueCookiesRoute
+  RealisationsRoute: typeof RealisationsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SystemStatusRoute: typeof SystemStatusRoute
   ActualitesSlugRoute: typeof ActualitesSlugRoute
@@ -873,6 +886,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/realisations': {
+      id: '/realisations'
+      path: '/realisations'
+      fullPath: '/realisations'
+      preLoaderRoute: typeof RealisationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/politique-cookies': {
@@ -1345,6 +1365,7 @@ const rootRouteChildren: RootRouteChildren = {
   PolitiqueRoute: PolitiqueRoute,
   PolitiqueConfidentialiteRoute: PolitiqueConfidentialiteRoute,
   PolitiqueCookiesRoute: PolitiqueCookiesRoute,
+  RealisationsRoute: RealisationsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SystemStatusRoute: SystemStatusRoute,
   ActualitesSlugRoute: ActualitesSlugRoute,

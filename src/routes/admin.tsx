@@ -37,7 +37,7 @@ import {
   Search,
   Settings,
 } from "lucide-react";
-import { Copy } from "lucide-react";
+import { Copy, Image as ImageIcon } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { ShopAdmin } from "@/components/ShopAdmin";
 import { EmailSignature } from "@/components/EmailSignature";
@@ -97,6 +97,7 @@ import { SettingsPanel } from "@/components/admin/SettingsPanel";
 import { ProjectsPanel } from "@/components/admin/ProjectsPanel";
 import { StudioPanel } from "@/components/admin/StudioPanel";
 import { AgendaPanel } from "@/components/admin/AgendaPanel";
+import { PortfolioPanel } from "@/components/admin/PortfolioPanel";
 import { FilesPanel } from "@/components/admin/FilesPanel";
 import { ActivityPanel } from "@/components/admin/ActivityPanel";
 import { GlobalSearch } from "@/components/admin/GlobalSearch";
@@ -182,6 +183,7 @@ type AdminTab =
   | "etudes-travail"
   | "agenda"
   | "fichiers"
+  | "portfolio"
   | "studio"
   | "activite"
   | "connexions"
@@ -507,6 +509,7 @@ function AdminPage() {
     { key: "articles", label: "Articles", icon: FileText, badge: articles.length, group: "Contenus", primary: true },
     { key: "contenus", label: "Pages du site", icon: LayoutList, group: "Contenus" },
     { key: "fichiers", label: "Fichiers", icon: FolderOpen, group: "Contenus" },
+    { key: "portfolio", label: "Réalisations", icon: ImageIcon, group: "Contenus" },
     { key: "studio", label: "Studio", icon: Mic2, group: "Contenus" },
     { key: "boutique", label: "Boutique", icon: ShoppingBag, group: "Contenus" },
     { key: "stats", label: "Statistiques", icon: BarChart3, group: "Pilotage" },
@@ -1156,6 +1159,8 @@ function AdminPage() {
                 <FilesPanel />
               </div>
             )}
+
+            {tab === "portfolio" && <PortfolioPanel />}
 
             {tab === "stats" && (
               <div className="mt-6 rounded-2xl border border-border bg-card p-4 sm:p-6">
