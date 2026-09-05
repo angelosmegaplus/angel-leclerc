@@ -47,8 +47,9 @@ export const mailboxAccounts = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<{ accounts: MailAccount[]; resend: boolean }> => {
     await assertAdmin(context);
     const { listMailAccounts } = await import("./mailbox.server");
-    const { resendAvailable } = await import("./connectors/resend.server");
-    return { accounts: await listMailAccounts(context.userId), resend: resendAvailable() };
+    const { resendAvailable, resendSenderAddress } = await import("./connectors/resend.server");
+    const resend = resendAvailable() ? Boolean(await resendSenderAddress().catch(() => null)) : false;
+    return { accounts: await listMailAccounts(context.userId), resend };
   });
 
 export const mailboxList = createServerFn({ method: "POST" })
