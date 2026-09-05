@@ -12,19 +12,16 @@ export function AiTransparency({
   if (!hasAiDisclosure(disclosure)) return null;
 
   const lines: string[] = [];
-  const isAngelWatch = disclosure.otherAi && disclosure.otherAiName.trim() === "Veille Angel OS IA";
   if (disclosure.personal)
     lines.push("Cet article repose sur une réflexion et un travail d'écriture personnels.");
-  if (disclosure.chatgpt && !isAngelWatch)
+  if (disclosure.chatgpt)
     lines.push(
       "ChatGPT a été utilisé pour reformuler certains passages et améliorer la lisibilité.",
     );
   if (disclosure.otherAi) {
     const name = disclosure.otherAiName.trim();
     lines.push(
-      isAngelWatch
-        ? "Cet article a été généré et publié automatiquement par la veille Angel OS IA à partir de sources publiques. Malgré la recherche et le recoupement, des erreurs ou imprécisions restent possibles : consultez les sources avant de réutiliser une information."
-        : name
+      name
         ? `${name} a été utilisé pour reformuler certains passages et améliorer la lisibilité.`
         : "Une autre intelligence artificielle a été utilisée pour reformuler certains passages et améliorer la lisibilité.",
     );
