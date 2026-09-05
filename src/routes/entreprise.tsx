@@ -373,7 +373,7 @@ function Services() {
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
         <AnimatedSection delay={0.08}>
           <article className="group flex h-full flex-col rounded-xl border border-border bg-background p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary hover:shadow-xl hover:shadow-foreground/5 md:p-8">
-            <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex flex-col gap-6">
               <div className="max-w-2xl">
                 <span className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
                   Accompagnement sur mesure
@@ -408,7 +408,7 @@ function Services() {
 
         <AnimatedSection delay={0.1}>
           <article className="group flex h-full flex-col rounded-xl border-2 border-primary bg-background p-6 shadow-xl shadow-primary/10 transition-transform duration-300 hover:-translate-y-1 md:p-8">
-            <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex flex-col gap-6">
               <div className="max-w-2xl">
                 <span className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
                   Abonnement · Périgord noir et à distance
