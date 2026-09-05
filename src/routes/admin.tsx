@@ -37,7 +37,7 @@ import {
   Search,
   Settings,
 } from "lucide-react";
-import { Copy } from "lucide-react";
+import { Copy, Image as ImageIcon } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { ShopAdmin } from "@/components/ShopAdmin";
 import { EmailSignature } from "@/components/EmailSignature";
