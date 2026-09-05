@@ -107,7 +107,7 @@ function IntroSection() {
               <Calendar size={12} /> Disponible à partir de septembre 2026
             </span>
             <h1 className="mt-4 font-display text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl md:text-6xl">
-              Angel <span className="italic text-primary">Leclerc</span>
+              Angel <span className="text-primary">Leclerc</span>
             </h1>
             <p className="mt-3 font-display text-base text-foreground/80 sm:text-lg md:text-xl">
               Étudiant en communication
