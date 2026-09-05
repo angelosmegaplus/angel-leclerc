@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { BookOpen, Grid2X2, Moon, Sun, X, type LucideIcon } from "lucide-react";
+import { Grid2X2, Moon, Sun, X, type LucideIcon } from "lucide-react";
 import { useThemePreference } from "@/components/ThemeController";
 import { resolveTheme, type ThemePreference } from "@/lib/theme";
 import { AdminHomeDashboard } from "@/components/admin/AdminHomeDashboard";
@@ -143,7 +143,7 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
               <div className="flex items-center gap-2"><img src="/flamme-os/logo.svg" alt="" aria-hidden className="h-4 w-auto max-w-[5.5rem] object-contain" /></div>
               <div className="mt-1 flex items-center gap-2.5">
                 {CurrentIcon ? <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><CurrentIcon className="h-4 w-4" /></span> : null}
-                <h1 className="truncate font-display text-xl font-bold tracking-[-.035em] sm:text-2xl">{effectiveActive === "dashboard" ? "Aujourd’hui" : effectiveActive === "agenda" ? "Agenda" : effectiveActive === "etudes-travail" ? "Mes Cours" : title}</h1>
+                <h1 className="truncate font-display text-xl font-bold tracking-[-.035em] sm:text-2xl">{effectiveActive === "dashboard" ? "Aujourd’hui" : effectiveActive === "agenda" ? "Agenda" : title}</h1>
               </div>
             </div>
             <div className="hidden items-center gap-2 sm:flex">{themeButton}{actions}</div>
