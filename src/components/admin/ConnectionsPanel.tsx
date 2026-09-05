@@ -19,6 +19,11 @@ const MODULE_LINKS: Record<string, { href: string; label: string }> = {
   drive: { href: "/admin?tab=fichiers", label: "Ouvrir les fichiers" },
   database: { href: "/admin?tab=studio", label: "Ouvrir le Studio" },
   tmdb: { href: "/admin-movix", label: "Ouvrir Films & séries" },
+  outlook: { href: "/admin?tab=boite-mail", label: "Ouvrir la boîte mail" },
+  onedrive: { href: "/admin?tab=fichiers", label: "Ouvrir les fichiers" },
+  word: { href: "/admin?tab=fichiers", label: "Ouvrir les fichiers" },
+  excel: { href: "/admin?tab=stats", label: "Ouvrir les statistiques" },
+  resend: { href: "/admin?tab=messages", label: "Ouvrir les messages" },
 };
 
 const STATE_LABEL: Record<ConnectorCard["state"], string> = {

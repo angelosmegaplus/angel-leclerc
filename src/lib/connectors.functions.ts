@@ -43,6 +43,62 @@ const CATALOG = [
     via: "Connecteur Lovable",
   },
   {
+    key: "maps",
+    name: "Google Maps",
+    category: "Google Workspace",
+    features: ["Adresses", "Itinéraires", "Zone d’intervention"],
+    permissions: ["Recherche d’adresses et de lieux"],
+    via: "Connecteur Lovable",
+  },
+  {
+    key: "outlook",
+    name: "Outlook",
+    category: "Microsoft 365",
+    features: ["Deuxième boîte mail", "Agenda Microsoft"],
+    permissions: ["Lecture et envoi des messages"],
+    via: "Connecteur Lovable",
+  },
+  {
+    key: "onedrive",
+    name: "OneDrive",
+    category: "Microsoft 365",
+    features: ["Fichiers Microsoft", "Sauvegardes"],
+    permissions: ["Lecture / écriture des fichiers"],
+    via: "Connecteur Lovable",
+  },
+  {
+    key: "word",
+    name: "Word",
+    category: "Microsoft 365",
+    features: ["Documents", "Modèles", "Export PDF"],
+    permissions: ["Lecture / écriture des documents"],
+    via: "Connecteur Lovable",
+  },
+  {
+    key: "excel",
+    name: "Excel",
+    category: "Microsoft 365",
+    features: ["Tableaux", "Suivi client", "Chiffres"],
+    permissions: ["Lecture / écriture des classeurs"],
+    via: "Connecteur Lovable",
+  },
+  {
+    key: "linkedin",
+    name: "LinkedIn",
+    category: "Communication",
+    features: ["Profil professionnel", "Publication de posts"],
+    permissions: ["Profil et publication au nom d’Angel"],
+    via: "Connecteur Lovable",
+  },
+  {
+    key: "resend",
+    name: "Envoi d’e-mails",
+    category: "Communication",
+    features: ["Réponses automatiques", "Confirmations", "Notifications"],
+    permissions: ["Envoi d’e-mails depuis le domaine vérifié"],
+    via: "Connecteur Lovable",
+  },
+  {
     key: "database",
     name: "Base Flamme OS",
     category: "Flamme OS",
@@ -87,9 +143,22 @@ const CATALOG = [
 type ConnectorKey = (typeof CATALOG)[number]["key"];
 
 async function probe(key: ConnectorKey): Promise<{ state: ConnectorState; detail: string }> {
-  if (key === "gmail" || key === "calendar" || key === "drive") {
+  const GATEWAY_KEYS = {
+    gmail: "google_mail",
+    calendar: "google_calendar",
+    drive: "google_drive",
+    maps: "google_maps",
+    outlook: "microsoft_outlook",
+    onedrive: "microsoft_onedrive",
+    word: "microsoft_word",
+    excel: "microsoft_excel",
+    linkedin: "linkedin",
+    resend: "resend",
+  } as const;
+
+  if (key in GATEWAY_KEYS) {
     const { probeGatewayConnector, gatewayConfigured, gatewayMissingEnv } = await import("./connectors/lovable-gateway.server");
-    const connector = key === "gmail" ? "google_mail" : key === "calendar" ? "google_calendar" : "google_drive";
+    const connector = GATEWAY_KEYS[key as keyof typeof GATEWAY_KEYS];
     if (!gatewayConfigured(connector)) {
       return {
         state: "missing",

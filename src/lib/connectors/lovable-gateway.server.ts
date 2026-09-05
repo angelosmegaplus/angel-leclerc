@@ -9,12 +9,29 @@
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev";
 
-export type GatewayConnectorId = "google_mail" | "google_calendar" | "google_drive";
+export type GatewayConnectorId =
+  | "google_mail"
+  | "google_calendar"
+  | "google_drive"
+  | "google_maps"
+  | "resend"
+  | "linkedin"
+  | "microsoft_outlook"
+  | "microsoft_onedrive"
+  | "microsoft_word"
+  | "microsoft_excel";
 
 const CONNECTION_KEY_ENV: Record<GatewayConnectorId, string> = {
   google_mail: "GOOGLE_MAIL_API_KEY",
   google_calendar: "GOOGLE_CALENDAR_API_KEY",
   google_drive: "GOOGLE_DRIVE_API_KEY",
+  google_maps: "GOOGLE_MAPS_API_KEY",
+  resend: "RESEND_API_KEY",
+  linkedin: "LINKEDIN_API_KEY",
+  microsoft_outlook: "MICROSOFT_OUTLOOK_API_KEY",
+  microsoft_onedrive: "MICROSOFT_ONEDRIVE_API_KEY",
+  microsoft_word: "MICROSOFT_WORD_API_KEY",
+  microsoft_excel: "MICROSOFT_EXCEL_API_KEY",
 };
 
 function lovableKey(): string | null {
@@ -99,11 +116,43 @@ export async function probeGatewayConnector(connector: GatewayConnectorId): Prom
       const count = (list.items ?? []).length;
       return { ok: true, detail: `${count} agenda${count > 1 ? "x" : ""} accessible${count > 1 ? "s" : ""}.`, checkedAt };
     }
-    const files = await gatewayRequest(connector, "/drive/v3/files", {
-      query: { pageSize: 1, fields: "files(id,name)" },
-    });
-    const first = files.files?.[0]?.name as string | undefined;
-    return { ok: true, detail: first ? `Drive lisible (ex. « ${first} »).` : "Drive lisible, aucun fichier retourné.", checkedAt };
+    if (connector === "google_drive") {
+      const files = await gatewayRequest(connector, "/drive/v3/files", {
+        query: { pageSize: 1, fields: "files(id,name)" },
+      });
+      const first = files.files?.[0]?.name as string | undefined;
+      return { ok: true, detail: first ? `Drive lisible (ex. « ${first} »).` : "Drive lisible, aucun fichier retourné.", checkedAt };
+    }
+    if (connector === "google_maps") {
+      const geo = await gatewayRequest(connector, "/maps/api/geocode/json", { query: { address: "Sarlat-la-Canéda" } });
+      const label = geo.results?.[0]?.formatted_address as string | undefined;
+      return { ok: true, detail: label ? `Cartes et adresses disponibles (test : ${label}).` : "Service de cartes joignable.", checkedAt };
+    }
+    if (connector === "resend") {
+      const domains = await gatewayRequest(connector, "/domains");
+      const list = (domains.data ?? []) as Array<{ name?: string; status?: string }>;
+      const verified = list.filter((d) => d.status === "verified");
+      return {
+        ok: true,
+        detail: list.length
+          ? `Envoi d’e-mails prêt — ${verified.length}/${list.length} domaine(s) vérifié(s) : ${list.map((d) => d.name).join(", ")}.`
+          : "Compte d’envoi joignable, aucun domaine configuré.",
+        checkedAt,
+      };
+    }
+    if (connector === "linkedin") {
+      const me = await gatewayRequest(connector, "/v2/userinfo");
+      return { ok: true, detail: `Profil LinkedIn ${me.name ?? "relié"} accessible.`, checkedAt };
+    }
+    if (connector === "microsoft_outlook") {
+      const mail = await gatewayRequest(connector, "/me/messages", { query: { $top: 1, $select: "subject" } });
+      const count = (mail.value ?? []).length;
+      return { ok: true, detail: count ? "Boîte Outlook lisible." : "Boîte Outlook lisible, aucun message récent.", checkedAt };
+    }
+    const path = connector === "microsoft_onedrive" ? "/v1.0/me/drive/root/children" : "/me/drive/root/children";
+    const items = await gatewayRequest(connector, path, { query: { $top: 1 } });
+    const first = items.value?.[0]?.name as string | undefined;
+    return { ok: true, detail: first ? `Espace de fichiers lisible (ex. « ${first} »).` : "Espace de fichiers lisible.", checkedAt };
   } catch (error) {
     return { ok: false, detail: error instanceof Error ? error.message.slice(0, 240) : "Erreur inconnue.", checkedAt };
   }
