@@ -124,11 +124,20 @@ async function probe(key: ConnectorKey): Promise<{ state: ConnectorState; detail
   }
 
   if (key === "stripe") {
-    const secret = process.env["STRIPE_SECRET_KEY"]?.trim();
-    if (!secret) return { state: "missing", detail: "Clé Stripe absente." };
-    const response = await fetch("https://api.stripe.com/v1/balance", { headers: { Authorization: `Bearer ${secret}` } });
-    if (!response.ok) return { state: "error", detail: `Stripe a refusé la requête (${response.status}).` };
-    return { state: "connected", detail: "Compte Stripe joignable." };
+    const lovableKey = process.env["LOVABLE_API_KEY"]?.trim();
+    const live = process.env["STRIPE_LIVE_API_KEY"]?.trim();
+    const sandbox = process.env["STRIPE_SANDBOX_API_KEY"]?.trim();
+    const connectionKey = live || sandbox;
+    const mode = live ? "production" : "test";
+    if (!lovableKey || !connectionKey) return { state: "missing", detail: "Connexion Stripe non reliée à ce projet." };
+    const response = await fetch("https://connector-gateway.lovable.dev/stripe/v1/balance", {
+      headers: { Authorization: `Bearer ${lovableKey}`, "X-Connection-Api-Key": connectionKey },
+    });
+    if (!response.ok) {
+      const body = await response.text();
+      return { state: "error", detail: `Stripe a refusé la requête (${response.status}) : ${body.slice(0, 140)}` };
+    }
+    return { state: "connected", detail: `Compte Stripe joignable (mode ${mode}).` };
   }
 
   if (key === "printful") {
