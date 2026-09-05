@@ -1244,6 +1244,7 @@ function AdminPage() {
 
             {tab === "agenda" && (
 
+
               <div className="mt-6">
                 <AgendaPanel />
               </div>
