@@ -394,10 +394,10 @@ function Services() {
                   Accueil client externalisé
                 </h3>
                 <p className="mt-5 leading-relaxed text-muted-foreground">
-                  Vous êtes en rendez-vous, sur un chantier ou simplement indisponible ? Je peux prendre le relais sur une partie de votre accueil client : appels téléphoniques, prise de messages, demandes simples, confirmations de rendez-vous, réponses aux messages et orientation des clients selon vos consignes. L’objectif : éviter de perdre des demandes quand vous ne pouvez pas répondre.
+                  Vous êtes en rendez-vous, sur un chantier ou simplement indisponible ? Je prends le relais sur une partie de votre accueil client : appels téléphoniques, prise de messages, demandes simples, confirmations de rendez-vous, réponses aux messages et orientation des clients selon vos consignes. L’objectif : ne plus perdre de demandes quand vous ne pouvez pas répondre.
                 </p>
                 <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                  Un service humain, local et flexible — pas un centre d’appels : c’est le même interlocuteur qui vous connaît et qui complète le conseil en communication.
+                  Un service humain, local et flexible — pas un centre d’appels : c’est le même interlocuteur qui connaît votre activité et qui complète le conseil en communication.
                 </p>
               </div>
               <div className="shrink-0 lg:text-right">
@@ -407,7 +407,72 @@ function Services() {
               </div>
             </div>
 
-            <div className="mt-10 grid gap-6 lg:grid-cols-3">
+            <div className="mt-10 grid gap-6 lg:grid-cols-2">
+              <div className="rounded-[2rem] border border-border/70 bg-background p-6 md:p-8">
+                <div className="flex items-center gap-3">
+                  <Network size={20} className="text-primary" />
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Comment ça marche concrètement</p>
+                </div>
+                <ol className="mt-5 space-y-4 text-sm leading-relaxed text-muted-foreground">
+                  <li className="flex gap-3">
+                    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">1</span>
+                    <span>Vous gardez votre numéro habituel. Avec moi, vous paramétrez un renvoi d’appel vers une ligne virtuelle : quand vous ne répondez pas, l’appel bascule automatiquement sur mon smartphone.</span>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">2</span>
+                    <span>Je vois à quelle entreprise l’appel est destiné grâce à l’identification du numéro virtuel.</span>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">3</span>
+                    <span>Je réponds au nom de votre entreprise, avec votre formule d’accueil et vos consignes.</span>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">4</span>
+                    <span>Je note la demande sur mon ordinateur et je vous transmets immédiatement les informations : nom, numéro, motif, urgence et suite à donner.</span>
+                  </li>
+                </ol>
+              </div>
+
+              <div className="rounded-[2rem] border border-border/70 bg-background p-6 md:p-8">
+                <div className="flex items-center gap-3">
+                  <Settings size={20} className="text-primary" />
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Mise en place incluse</p>
+                </div>
+                <ul className="mt-5 space-y-3 text-sm leading-relaxed text-muted-foreground">
+                  <li className="flex gap-3">
+                    <CircleCheck size={16} className="mt-1 shrink-0 text-primary" />
+                    <span>Accompagnement au paramétrage du renvoi d’appel avec votre opérateur.</span>
+                  </li>
+                  <li className="flex gap-3">
+                    <CircleCheck size={16} className="mt-1 shrink-0 text-primary" />
+                    <span>Configuration du standard virtuel selon vos horaires et vos consignes.</span>
+                  </li>
+                  <li className="flex gap-3">
+                    <CircleCheck size={16} className="mt-1 shrink-0 text-primary" />
+                    <span>Test complet avant démarrage : on appelle, on vérifie le basculement, on ajuste.</span>
+                  </li>
+                </ul>
+
+                <div className="mt-6 flex items-center gap-3 rounded-2xl border border-border/60 bg-card p-4">
+                  <Smartphone size={18} className="shrink-0 text-primary" />
+                  <p className="text-xs leading-relaxed text-muted-foreground">
+                    Je reçois les appels sur mon téléphone professionnel, je note sur mon ordinateur, et vous recevez un compte rendu clair par SMS ou e-mail.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-[2rem] border border-primary/20 bg-primary/[0.03] p-6 md:p-8">
+              <div className="flex items-center gap-3">
+                <PhoneCall size={20} className="text-primary" />
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Exemple concret</p>
+              </div>
+              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                Un plombier à Sarlat est sur un chantier. Un client appelle son numéro habituel. Le téléphone sonne chez le plombier ; s’il ne répond pas après quelques secondes, l’appel bascule vers mon standard. Mon Pixel sonne avec l’indication que l’appel concerne ce plombier. Je réponds au nom de l’entreprise, je note le nom, le numéro, l’adresse et le motif, puis je transmets immédiatement la demande au plombier.
+              </p>
+            </div>
+
+            <div className="mt-6 grid gap-6 lg:grid-cols-3">
               <div className="rounded-[2rem] border border-border/70 bg-background p-6 md:p-8">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Pour qui ?</p>
                 <ul className="mt-4 flex flex-wrap gap-2">
@@ -424,47 +489,90 @@ function Services() {
                   Pensé pour le territoire du Périgord noir, et disponible à distance partout en France.
                 </p>
               </div>
+
               <div className="rounded-[2rem] border border-border/70 bg-background p-6 md:p-8">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Comment ça marche ?</p>
-                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                  Vous définissez vos consignes : horaires de couverture, réponses autorisées et cas à vous transmettre. Je réponds en votre nom selon ce cadre, et les demandes plus complexes vous sont remontées.
-                </p>
-              </div>
-              <div className="rounded-[2rem] bg-foreground p-6 text-background md:p-8">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Formules indicatives</p>
-                <ul className="mt-4 space-y-3 text-sm">
-                  <li className="flex items-baseline justify-between gap-4">
-                    <span className="text-background/80">Mini permanence</span>
-                    <span className="font-display font-bold">dès 39 €/mois</span>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Pourquoi c’est utile</p>
+                <ul className="mt-4 space-y-2 text-sm leading-relaxed text-muted-foreground">
+                  <li className="flex gap-3">
+                    <Check size={16} className="mt-1 shrink-0 text-primary" />
+                    <span>Pas besoin de changer le numéro public de l’entreprise.</span>
                   </li>
-                  <li className="flex items-baseline justify-between gap-4">
-                    <span className="text-background/80">Formule régulière</span>
-                    <span className="font-display font-bold">dès 79 €/mois</span>
+                  <li className="flex gap-3">
+                    <Check size={16} className="mt-1 shrink-0 text-primary" />
+                    <span>Pas besoin d’acheter un deuxième téléphone.</span>
                   </li>
-                  <li className="flex items-baseline justify-between gap-4">
-                    <span className="text-background/80">Formule renforcée</span>
-                    <span className="font-display font-bold">dès 149 €/mois</span>
+                  <li className="flex gap-3">
+                    <Check size={16} className="mt-1 shrink-0 text-primary" />
+                    <span>Les appels sont reçus même quand vous êtes occupé.</span>
+                  </li>
+                  <li className="flex gap-3">
+                    <Check size={16} className="mt-1 shrink-0 text-primary" />
+                    <span>Toujours le même interlocuteur humain.</span>
+                  </li>
+                  <li className="flex gap-3">
+                    <Check size={16} className="mt-1 shrink-0 text-primary" />
+                    <span>Moins de demandes perdues, plus de sérénité.</span>
                   </li>
                 </ul>
-                <p className="mt-4 text-xs leading-relaxed text-background/60">
-                  Fourchette de lancement, à confirmer sur devis selon le volume d’appels et l’amplitude horaire souhaités.
-                </p>
-                <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2">
-                  <a
-                    href="/accueil-client"
-                    className="inline-flex items-center gap-2 text-sm font-bold text-primary transition-all duration-300 hover:gap-4"
-                  >
-                    Voir le détail de l’offre
-                    <ArrowRight size={16} />
-                  </a>
-                  <a
-                    href="/contact"
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-background/80 transition-colors hover:text-background"
-                  >
-                    Demander un devis
-                  </a>
-                </div>
+              </div>
 
+              <div className="rounded-[2rem] border border-border/70 bg-background p-6 md:p-8">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Logiciel envisagé</p>
+                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                  La solution envisagée est <strong className="text-foreground">Ringover</strong>, avec <strong className="text-foreground">Quicktalk by Ringover</strong> pour un premier test simple. C’est un standard téléphonique cloud qui fournit des numéros virtuels et permet de recevoir les appels sur smartphone ou ordinateur.
+                </p>
+                <div className="mt-4 flex items-start gap-3 rounded-2xl border border-border/60 bg-card p-4">
+                  <Info size={16} className="mt-0.5 shrink-0 text-primary" />
+                  <p className="text-xs leading-relaxed text-muted-foreground">
+                    Aucun partenariat commercial avec Ringover/Quicktalk n’existe. Les conditions et tarifs de cet outil tiers peuvent évoluer indépendamment d’Angel Leclerc Communication. Le choix définitif de la solution peut évoluer si un outil plus adapté est retenu.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-[2rem] bg-foreground p-6 text-background md:p-8">
+              <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+                <div className="max-w-xl">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Modèle commercial</p>
+                  <p className="mt-4 text-sm leading-relaxed text-background/80">
+                    On installe et on teste d’abord. L’abonnement de service ALC! ne démarre qu’une fois que le transfert fonctionne correctement et que vous êtes à l’aise avec le fonctionnement. L’abonnement est résiliable simplement si le client ne souhaite plus continuer.
+                  </p>
+                </div>
+                <div className="shrink-0">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Formules indicatives</p>
+                  <ul className="mt-4 space-y-3 text-sm">
+                    <li className="flex items-baseline justify-between gap-6">
+                      <span className="text-background/80">Mini permanence</span>
+                      <span className="font-display font-bold">dès 39 €/mois</span>
+                    </li>
+                    <li className="flex items-baseline justify-between gap-6">
+                      <span className="text-background/80">Formule régulière</span>
+                      <span className="font-display font-bold">dès 79 €/mois</span>
+                    </li>
+                    <li className="flex items-baseline justify-between gap-6">
+                      <span className="text-background/80">Formule renforcée</span>
+                      <span className="font-display font-bold">dès 149 €/mois</span>
+                    </li>
+                  </ul>
+                  <p className="mt-4 max-w-xs text-xs leading-relaxed text-background/60">
+                    Fourchette indicative, à confirmer sur devis selon le volume d’appels et l’amplitude horaire souhaités.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-background/15 pt-6">
+                <a
+                  href="/accueil-client"
+                  className="inline-flex items-center gap-2 text-sm font-bold text-primary transition-all duration-300 hover:gap-4"
+                >
+                  Voir le détail de l’offre
+                  <ArrowRight size={16} />
+                </a>
+                <a
+                  href="/contact"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-background/80 transition-colors hover:text-background"
+                >
+                  Demander un devis
+                </a>
               </div>
             </div>
           </article>
