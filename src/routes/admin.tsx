@@ -1209,14 +1209,8 @@ function AdminPage() {
           </form>
         ) : (
           <>
-            {tab === "angel-ai" && (
-              <div className="space-y-5">
-                <AngelCommandCenter />
-                <AiActionsPanel />
-              </div>
-            )}
-
             {tab === "connexions" && <ConnectionsPanel />}
+
 
             {tab === "notifications" && <NotificationsPanel />}
 
