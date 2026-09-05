@@ -215,7 +215,6 @@ function RootComponent() {
         ) : (
           <div className="flex min-h-screen flex-col">
             <Header />
-            <PromoBanner />
             <main className="flex-1">
               {isPolitiquePage ? <CurrentPoliticalProgram /> : <Outlet />}
               {isPolitiquePage ? <RegionalExplorer /> : null}
