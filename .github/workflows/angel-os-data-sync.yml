@@ -26,7 +26,6 @@ jobs:
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
       SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
-      NEWSLETTER_CRON_SECRET: ${{ secrets.NEWSLETTER_CRON_SECRET }}
 
     steps:
       - uses: actions/checkout@v5
@@ -79,14 +78,6 @@ jobs:
             console.log(`Synchronisation terminée (${privileged ? 'privileged key' : 'publishable key'})`);
           })().catch((error) => { console.error(error.message); process.exit(1); });
           NODE
-
-      - name: Publier la revue quotidienne si elle n’existe pas encore
-        continue-on-error: true
-        if: env.snapshot_file == 'runtime/angel-os-snapshot.json'
-        shell: bash
-        run: |
-          if [ -z "${NEWSLETTER_CRON_SECRET:-}" ]; then echo "NEWSLETTER_CRON_SECRET absent : revue quotidienne non déclenchée"; exit 0; fi
-          curl --fail --silent --show-error --max-time 90 -X POST -H "x-cron-token: ${NEWSLETTER_CRON_SECRET}" -H "Content-Type: application/json" https://www.angel-leclerc.fr/api/public/hooks/daily-article
 
       - name: Résumé
         if: always()
