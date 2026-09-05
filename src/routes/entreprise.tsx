@@ -397,6 +397,9 @@ function Services() {
                   Vous êtes en rendez-vous, sur un chantier ou simplement indisponible ? Je prends le relais sur une partie de votre accueil client : appels téléphoniques, prise de messages, demandes simples, confirmations de rendez-vous, réponses aux messages et orientation des clients selon vos consignes. L’objectif : ne plus perdre de demandes quand vous ne pouvez pas répondre.
                 </p>
                 <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                  La mise en place initiale est entièrement prise en charge par Angel : on configure ensemble le renvoi d’appels et le standard, on rédige les consignes d’accueil, on fait les tests et on ajuste. Si une démarche auprès de votre opérateur (Orange, SFR, Bouygues, Free ou autre) est nécessaire, je peux la faire pour vous avec votre autorisation, ou vous accompagner pas à pas pour que vous ne gériez pas seul la partie technique.
+                </p>
+                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
                   Un service humain, local et flexible — pas un centre d’appels : c’est le même interlocuteur qui connaît votre activité et qui complète le conseil en communication.
                 </p>
               </div>
@@ -416,7 +419,7 @@ function Services() {
                 <ol className="mt-5 space-y-4 text-sm leading-relaxed text-muted-foreground">
                   <li className="flex gap-3">
                     <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">1</span>
-                    <span>Vous gardez votre numéro habituel. Avec moi, vous paramétrez un renvoi d’appel vers une ligne virtuelle : quand vous ne répondez pas, l’appel bascule automatiquement sur mon smartphone.</span>
+                    <span>Vous gardez votre numéro habituel. On paramètre ensemble un renvoi d’appel vers une ligne virtuelle : quand vous ne répondez pas, l’appel bascule automatiquement sur mon smartphone.</span>
                   </li>
                   <li className="flex gap-3">
                     <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">2</span>
@@ -441,15 +444,19 @@ function Services() {
                 <ul className="mt-5 space-y-3 text-sm leading-relaxed text-muted-foreground">
                   <li className="flex gap-3">
                     <CircleCheck size={16} className="mt-1 shrink-0 text-primary" />
-                    <span>Accompagnement au paramétrage du renvoi d’appel avec votre opérateur.</span>
+                    <span>Accompagnement au paramétrage du renvoi d’appel avec votre opérateur ou votre équipement.</span>
                   </li>
                   <li className="flex gap-3">
                     <CircleCheck size={16} className="mt-1 shrink-0 text-primary" />
-                    <span>Configuration du standard virtuel selon vos horaires et vos consignes.</span>
+                    <span>Configuration du standard virtuel selon vos horaires, vos consignes et vos scénarios.</span>
                   </li>
                   <li className="flex gap-3">
                     <CircleCheck size={16} className="mt-1 shrink-0 text-primary" />
-                    <span>Test complet avant démarrage : on appelle, on vérifie le basculement, on ajuste.</span>
+                    <span>Préparation de vos consignes d’accueil et des réponses autorisées.</span>
+                  </li>
+                  <li className="flex gap-3">
+                    <CircleCheck size={16} className="mt-1 shrink-0 text-primary" />
+                    <span>Tests complets avant démarrage : on appelle, on vérifie le basculement, on ajuste.</span>
                   </li>
                 </ul>
 
@@ -465,10 +472,10 @@ function Services() {
             <div className="mt-6 rounded-[2rem] border border-primary/20 bg-primary/[0.03] p-6 md:p-8">
               <div className="flex items-center gap-3">
                 <PhoneCall size={20} className="text-primary" />
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Exemple concret</p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Exemple concret · Le parcours d’un appel</p>
               </div>
               <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                Un plombier à Sarlat est sur un chantier. Un client appelle son numéro habituel. Le téléphone sonne chez le plombier ; s’il ne répond pas après quelques secondes, l’appel bascule vers mon standard. Mon Pixel sonne avec l’indication que l’appel concerne ce plombier. Je réponds au nom de l’entreprise, je note le nom, le numéro, l’adresse et le motif, puis je transmets immédiatement la demande au plombier.
+                Un client appelle le numéro habituel de l’entreprise. L’entreprise ne répond pas. L’appel est transféré vers le standard. Il arrive sur le Pixel d’Angel avec l’identification de l’entreprise. Angel répond au nom de l’entreprise, note la demande sur ordinateur puis transmet les informations au professionnel.
               </p>
             </div>
 
@@ -517,14 +524,14 @@ function Services() {
               </div>
 
               <div className="rounded-[2rem] border border-border/70 bg-background p-6 md:p-8">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Logiciel envisagé</p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Standard cloud utilisé</p>
                 <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                  La solution envisagée est <strong className="text-foreground">Ringover</strong>, avec <strong className="text-foreground">Quicktalk by Ringover</strong> pour un premier test simple. C’est un standard téléphonique cloud qui fournit des numéros virtuels et permet de recevoir les appels sur smartphone ou ordinateur.
+                  La solution s’appuie sur un standard téléphonique cloud, par exemple <strong className="text-foreground">Ringover</strong> ou <strong className="text-foreground">Quicktalk by Ringover</strong>, qui fournit un numéro virtuel et permet de recevoir les appels sur smartphone ou ordinateur.
                 </p>
                 <div className="mt-4 flex items-start gap-3 rounded-2xl border border-border/60 bg-card p-4">
                   <Info size={16} className="mt-0.5 shrink-0 text-primary" />
                   <p className="text-xs leading-relaxed text-muted-foreground">
-                    Aucun partenariat commercial avec Ringover/Quicktalk n’existe. Les conditions et tarifs de cet outil tiers peuvent évoluer indépendamment d’Angel Leclerc Communication. Le choix définitif de la solution peut évoluer si un outil plus adapté est retenu.
+                    Aucun fournisseur n’est imposé ni de partenariat commercial avec Ringover/Quicktalk. Les conditions et tarifs de l’outil tiers peuvent évoluer indépendamment d’Angel Leclerc Communication. Le choix final peut s’adapter si un outil plus pertinent est retenu.
                   </p>
                 </div>
               </div>
@@ -535,7 +542,10 @@ function Services() {
                 <div className="max-w-xl">
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Modèle commercial</p>
                   <p className="mt-4 text-sm leading-relaxed text-background/80">
-                    On installe et on teste d’abord. L’abonnement de service ALC! ne démarre qu’une fois que le transfert fonctionne correctement et que vous êtes à l’aise avec le fonctionnement. L’abonnement est résiliable simplement si le client ne souhaite plus continuer.
+                    On met d’abord le système en place et on le teste ensemble. Si le service vous convient et fonctionne correctement, vous passez ensuite sur un abonnement mensuel fixe ALC!. L’abonnement est résiliable simplement si vous ne souhaitez plus continuer.
+                  </p>
+                  <p className="mt-4 text-sm leading-relaxed text-background/80">
+                    Chaque formule cède un volume et un usage précis. Les dépassements ou besoins particuliers font l’objet d’un devis complémentaire.
                   </p>
                 </div>
                 <div className="shrink-0">
