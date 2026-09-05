@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AdminCard } from "./AdminShell";
 import { listGoogleDriveFiles } from "@/lib/google-workspace.functions";
+import { listMicrosoftFiles } from "@/lib/microsoft.functions";
 import { ConnectionEmptyState } from "./ConnectionEmptyState";
 
 type Item = {
@@ -175,16 +176,18 @@ export function FilesPanel() {
   const [uploading, setUploading] = useState(false);
   const queryClient = useQueryClient();
   const loadDrive = useServerFn(listGoogleDriveFiles);
+  const loadMicrosoft = useServerFn(listMicrosoftFiles);
   const { data, isLoading } = useQuery({
     queryKey: ["angel", "files", "google-drive"],
     queryFn: async () => {
       let driveConnected = true;
-      const [local, drive] = await Promise.all([
+      const [local, drive, microsoft] = await Promise.all([
         loadFiles(),
         loadDrive().catch(() => {
           driveConnected = false;
           return [];
         }),
+        loadMicrosoft().catch(() => ({ files: [], sources: [] })),
       ]);
       const driveItems: Item[] = drive
         .filter((file) => Boolean(file.webViewLink))
@@ -196,7 +199,21 @@ export function FilesPanel() {
           type: kindOfMime(file.mimeType, file.name),
           size: file.size,
         }));
-      return { items: [...local, ...driveItems], driveConnected };
+      const microsoftItems: Item[] = microsoft.files.map((file) => ({
+        id: file.id,
+        name: file.name,
+        url: file.url,
+        origin: file.origin,
+        type: kindOf(file.name),
+        size: file.size,
+      }));
+      const microsoftConnected = microsoft.sources.some((source) => source.connected);
+      return {
+        items: [...local, ...driveItems, ...microsoftItems],
+        driveConnected,
+        microsoftConnected,
+        microsoftSources: microsoft.sources,
+      };
     },
     staleTime: 2 * 60 * 1000,
     retry: false,
@@ -204,6 +221,7 @@ export function FilesPanel() {
   });
   const items = data?.items ?? [];
   const driveConnected = data?.driveConnected ?? true;
+  const microsoftSources = data?.microsoftSources ?? [];
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -244,7 +262,7 @@ export function FilesPanel() {
     <div className="space-y-4">
       <AdminCard
         title="Fichiers"
-        description="Bibliothèque Angel OS et fichiers Google Drive accessibles : importez un document localement ou ouvrez les fichiers autorisés via Google Workspace."
+        description="Bibliothèque Angel OS, Google Drive, OneDrive, Word et Excel : importez un document ou ouvrez directement les fichiers autorisés."
       >
         <div className="grid gap-3 md:grid-cols-[1fr_auto]">
           <div className="relative">
@@ -285,6 +303,23 @@ export function FilesPanel() {
             </Button>
           </div>
         </div>
+        {microsoftSources.length > 0 ? (
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {microsoftSources.map((source) => (
+              <li
+                key={source.origin}
+                className={`rounded-full border px-3 py-1 text-[11px] ${
+                  source.connected
+                    ? "border-emerald-500/40 text-emerald-600"
+                    : "border-amber-500/40 text-amber-600"
+                }`}
+                title={source.detail}
+              >
+                {source.origin} · {source.connected ? "relié" : "non relié"}
+              </li>
+            ))}
+          </ul>
+        ) : null}
         <p className="mt-3 text-xs text-muted-foreground">
           Les fichiers importés restent dans la bibliothèque Angel OS. Google Drive est lu côté serveur via OAuth et aucun jeton Google n'est exposé au navigateur.
         </p>
@@ -352,7 +387,7 @@ export function FilesPanel() {
       {!isLoading && !driveConnected ? (
         <ConnectionEmptyState
           title="Aucun stockage externe connecté"
-          description="Seule la bibliothèque interne d’Angel OS est affichée. Connecte Google Drive (ou OneDrive lorsqu’il sera disponible) pour y accéder ici."
+          description="Seule la bibliothèque interne d’Angel OS est affichée. Connecte Google Drive ou OneDrive depuis Connexions pour y accéder ici."
         />
       ) : null}
     </div>

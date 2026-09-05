@@ -20,11 +20,13 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import {
+  mailboxAccounts,
   mailboxAct,
   mailboxList,
   mailboxRead,
   mailboxSend,
   mailboxStatus,
+  type MailAccount,
   type MailAction,
   type MailFolder,
 } from "@/lib/mailbox.functions";
@@ -46,11 +48,13 @@ const FOLDERS: Array<{ key: MailFolder; label: string; icon: typeof Inbox }> = [
 export function MailboxAdmin() {
   const queryClient = useQueryClient();
   const status = useServerFn(mailboxStatus);
+  const accountsFn = useServerFn(mailboxAccounts);
   const list = useServerFn(mailboxList);
   const read = useServerFn(mailboxRead);
   const act = useServerFn(mailboxAct);
   const send = useServerFn(mailboxSend);
 
+  const [account, setAccount] = useState<MailAccount | undefined>(undefined);
   const [folder, setFolder] = useState<MailFolder>("inbox");
   const [search, setSearch] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
@@ -67,26 +71,34 @@ export function MailboxAdmin() {
     retry: false,
     refetchOnWindowFocus: false,
   });
-  const connected = statusQuery.data?.connected === true;
+  const accountsQuery = useQuery({
+    queryKey: ["mailbox-accounts"],
+    queryFn: () => accountsFn({}),
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+  const availableAccounts = accountsQuery.data?.accounts ?? [];
+  const resendReady = accountsQuery.data?.resend === true;
+  const connected = statusQuery.data?.connected === true || availableAccounts.length > 0;
 
   const mails = useQuery({
-    queryKey: ["mailbox", folder, search],
-    queryFn: () => list({ data: { folder, search } }),
+    queryKey: ["mailbox", account ?? "auto", folder, search],
+    queryFn: () => list({ data: { folder, search, account } }),
     enabled: connected,
     retry: false,
     refetchOnWindowFocus: false,
   });
 
   const detail = useQuery({
-    queryKey: ["mailbox-detail", openId],
-    queryFn: () => read({ data: { id: openId as string } }),
+    queryKey: ["mailbox-detail", account ?? "auto", openId],
+    queryFn: () => read({ data: { id: openId as string, account } }),
     enabled: connected && Boolean(openId),
     retry: false,
     refetchOnWindowFocus: false,
   });
 
   const action = useMutation({
-    mutationFn: (vars: { id: string; action: MailAction }) => act({ data: vars }),
+    mutationFn: (vars: { id: string; action: MailAction }) => act({ data: { ...vars, account } }),
     onSuccess: () => {
       toast.success("Message mis à jour");
       setOpenId(null);
@@ -97,7 +109,7 @@ export function MailboxAdmin() {
 
   const sending = useMutation({
     mutationFn: (vars: { to: string; subject: string; body: string; threadId?: string }) =>
-      send({ data: vars }),
+      send({ data: { ...vars, account } }),
     onSuccess: () => {
       toast.success("Message envoyé");
       setCompose(null);
@@ -118,7 +130,7 @@ export function MailboxAdmin() {
     return (
       <ConnectionEmptyState
         title="Aucun compte mail connecté"
-        description="Angel OS n’affiche aucun message tant qu’une boîte mail n’est pas autorisée. Connecte Gmail (ou Outlook lorsqu’il sera disponible) depuis Connexions ; rien n’est simulé ici."
+        description="Angel OS n’affiche aucun message tant qu’une boîte mail n’est pas autorisée. Connecte Gmail ou Outlook depuis Connexions ; rien n’est simulé ici."
       />
     );
   }
@@ -128,7 +140,8 @@ export function MailboxAdmin() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
           Boîte connectée :{" "}
-          <span className="font-medium text-foreground">{statusQuery.data?.address}</span>
+          <span className="font-medium text-foreground">{statusQuery.data?.address ?? "compte relié"}</span>
+          {resendReady ? " · envoi depuis le domaine vérifié disponible" : ""}
         </p>
         <div className="flex gap-2">
           <Button
@@ -143,6 +156,28 @@ export function MailboxAdmin() {
           </Button>
         </div>
       </div>
+
+      {availableAccounts.length > 1 ? (
+        <div className="flex flex-wrap gap-1.5">
+          {availableAccounts.map((item) => (
+            <button
+              key={item}
+              type="button"
+              onClick={() => {
+                setAccount(item);
+                setOpenId(null);
+              }}
+              className={`inline-flex min-h-9 items-center rounded-md border px-3 text-xs font-medium transition-colors ${
+                (account ?? availableAccounts[0]) === item
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {item === "google" ? "Gmail" : "Outlook"}
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       <div className="flex flex-wrap gap-1.5">
         {FOLDERS.map((f) => (

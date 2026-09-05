@@ -39,27 +39,45 @@ export type MailAction = "read" | "unread" | "archive" | "trash" | "untrash" | "
 
 type Provider = "google" | "microsoft";
 
+export type MailAccount = Provider;
+
 type NativeTransport =
-  | { provider: "google"; mode: "gateway" }
+  | { provider: Provider; mode: "gateway" }
   | { provider: Provider; mode: "oauth"; token: string };
 
-async function getNativeTransport(userId: string): Promise<NativeTransport | null> {
+async function microsoftTransport(userId: string): Promise<NativeTransport | null> {
   const { gatewayConfigured } = await import("./connectors/lovable-gateway.server");
-  if (gatewayConfigured("google_mail")) return { provider: "google", mode: "gateway" };
-
+  if (gatewayConfigured("microsoft_outlook")) return { provider: "microsoft", mode: "gateway" };
   const { getAccessToken } = await import("./oauth/oauth.server");
-
-  const google = await getAccessToken(userId, "google").catch(() => null);
-  if (google) return { provider: "google", mode: "oauth", token: google };
-
   const microsoft = await getAccessToken(userId, "microsoft").catch(() => null);
-  if (microsoft) return { provider: "microsoft", mode: "oauth", token: microsoft };
-
-  return null;
+  return microsoft ? { provider: "microsoft", mode: "oauth", token: microsoft } : null;
 }
 
-async function getTransport(userId: string): Promise<NativeTransport> {
-  const transport = await getNativeTransport(userId);
+async function googleTransport(userId: string): Promise<NativeTransport | null> {
+  const { gatewayConfigured } = await import("./connectors/lovable-gateway.server");
+  if (gatewayConfigured("google_mail")) return { provider: "google", mode: "gateway" };
+  const { getAccessToken } = await import("./oauth/oauth.server");
+  const google = await getAccessToken(userId, "google").catch(() => null);
+  return google ? { provider: "google", mode: "oauth", token: google } : null;
+}
+
+async function getNativeTransport(userId: string, account?: MailAccount): Promise<NativeTransport | null> {
+  if (account === "microsoft") return microsoftTransport(userId);
+  if (account === "google") return googleTransport(userId);
+  return (await googleTransport(userId)) ?? (await microsoftTransport(userId));
+}
+
+/** Comptes réellement utilisables (aucun faux vert). */
+export async function listMailAccounts(userId: string): Promise<MailAccount[]> {
+  const [google, microsoft] = await Promise.all([googleTransport(userId), microsoftTransport(userId)]);
+  const accounts: MailAccount[] = [];
+  if (google) accounts.push("google");
+  if (microsoft) accounts.push("microsoft");
+  return accounts;
+}
+
+async function getTransport(userId: string, account?: MailAccount): Promise<NativeTransport> {
+  const transport = await getNativeTransport(userId, account);
   if (transport) return transport;
   throw new Error(
     "Aucune boîte mail active. Reliez le connecteur Gmail (ou Microsoft 365) depuis Angel OS → Connexions.",
@@ -109,13 +127,21 @@ async function gmailRequest(transport: NativeTransport, path: string, init?: Par
   return apiRequest("https://gmail.googleapis.com/gmail/v1", path, transport.token, init);
 }
 
-function graphRequest(transport: NativeTransport, path: string, init?: Parameters<typeof apiRequest>[3]) {
-  if (transport.mode === "gateway") throw new Error("Microsoft Graph n’est pas disponible via le connecteur Gmail.");
+async function graphRequest(transport: NativeTransport, path: string, init?: Parameters<typeof apiRequest>[3]) {
+  if (transport.mode === "gateway") {
+    const { gatewayRequest } = await import("./connectors/lovable-gateway.server");
+    return gatewayRequest("microsoft_outlook", path, {
+      ...(init?.method ? { method: init.method } : {}),
+      ...(init?.body !== undefined ? { body: init.body } : {}),
+      ...(init?.query ? { query: init.query as Record<string, string> } : {}),
+      ...(init?.headers ? { headers: init.headers } : {}),
+    });
+  }
   return apiRequest(GRAPH_API, path, transport.token, init);
 }
 
-export async function getStatus(userId: string): Promise<MailboxStatus> {
-  const transport = await getNativeTransport(userId);
+export async function getStatus(userId: string, account?: MailAccount): Promise<MailboxStatus> {
+  const transport = await getNativeTransport(userId, account);
   if (!transport) {
     return {
       connected: false,
@@ -281,8 +307,8 @@ async function graphList(
 
 /* ---------------------------------------------------------------- Public */
 
-export async function listMail(userId: string, folder: MailFolder, search: string): Promise<MailSummary[]> {
-  const transport = await getTransport(userId);
+export async function listMail(userId: string, folder: MailFolder, search: string, account?: MailAccount): Promise<MailSummary[]> {
+  const transport = await getTransport(userId, account);
   if (transport.provider === "microsoft") return graphList(transport, folder, search);
 
   const list = await gmailRequest(transport, "/users/me/messages", {
@@ -301,8 +327,8 @@ export async function listMail(userId: string, folder: MailFolder, search: strin
   return details.filter(Boolean).map(gmailSummary);
 }
 
-export async function readMail(userId: string, id: string): Promise<MailDetail> {
-  const transport = await getTransport(userId);
+export async function readMail(userId: string, id: string, account?: MailAccount): Promise<MailDetail> {
+  const transport = await getTransport(userId, account);
   if (transport.provider === "microsoft") {
     const message = await graphRequest(transport, `/me/messages/${encodeURIComponent(id)}`, {
       query: {
@@ -316,8 +342,8 @@ export async function readMail(userId: string, id: string): Promise<MailDetail> 
   return { ...gmailSummary(message), body: extractGmailBody(message.payload) };
 }
 
-export async function actOnMail(userId: string, id: string, action: MailAction): Promise<void> {
-  const transport = await getTransport(userId);
+export async function actOnMail(userId: string, id: string, action: MailAction, account?: MailAccount): Promise<void> {
+  const transport = await getTransport(userId, account);
 
   if (transport.provider === "microsoft") {
     if (action === "read" || action === "unread") {
@@ -371,8 +397,20 @@ function encodeRaw(input: string): string {
 export async function sendMail(
   userId: string,
   input: { to: string; subject: string; body: string; threadId?: string | undefined },
+  account?: MailAccount,
 ): Promise<void> {
-  const transport = await getTransport(userId);
+  const transport = await getNativeTransport(userId, account);
+  if (!transport) {
+    // Repli réel : envoi depuis le domaine vérifié via le connecteur Resend.
+    const { resendAvailable, sendViaResend } = await import("./connectors/resend.server");
+    if (!resendAvailable()) {
+      throw new Error(
+        "Aucune boîte mail active. Reliez le connecteur Gmail, Outlook ou l’envoi d’e-mails depuis Angel OS → Connexions.",
+      );
+    }
+    await sendViaResend({ to: input.to, subject: input.subject, body: input.body });
+    return;
+  }
 
   if (transport.provider === "microsoft") {
     if (input.threadId) {

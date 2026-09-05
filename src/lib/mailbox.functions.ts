@@ -3,6 +3,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { resilientAngelAi } from "@/lib/ai-resilient.server";
 import { aiMemoryPrompt } from "@/lib/ai-memory.server";
 import type {
+  MailAccount,
   MailAction,
   MailDetail,
   MailFolder,
@@ -10,7 +11,7 @@ import type {
   MailboxStatus,
 } from "./mailbox.server";
 
-export type { MailAction, MailFolder };
+export type { MailAccount, MailAction, MailFolder };
 
 async function assertAdmin(context: any) {
   const { data, error } = await context.supabase
@@ -41,23 +42,33 @@ export const mailboxStatus = createServerFn({ method: "GET" })
     return getStatus(context.userId);
   });
 
+export const mailboxAccounts = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ accounts: MailAccount[]; resend: boolean }> => {
+    await assertAdmin(context);
+    const { listMailAccounts } = await import("./mailbox.server");
+    const { resendAvailable, resendSenderAddress } = await import("./connectors/resend.server");
+    const resend = resendAvailable() ? Boolean(await resendSenderAddress().catch(() => null)) : false;
+    return { accounts: await listMailAccounts(context.userId), resend };
+  });
+
 export const mailboxList = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: { folder: MailFolder; search: string }) => input)
+  .validator((input: { folder: MailFolder; search: string; account?: MailAccount }) => input)
   .handler(async ({ data, context }): Promise<MailSummary[]> => {
     await assertAdmin(context);
     const { listMail } = await import("./mailbox.server");
-    return listMail(context.userId, data.folder, data.search ?? "");
+    return listMail(context.userId, data.folder, data.search ?? "", data.account);
   });
 
 export const mailboxRead = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: { id: string }) => input)
+  .validator((input: { id: string; account?: MailAccount }) => input)
   .handler(async ({ data, context }): Promise<MailDetail> => {
     await assertAdmin(context);
     const { readMail, actOnMail } = await import("./mailbox.server");
-    const mail = await readMail(context.userId, data.id);
-    if (mail.unread) await actOnMail(context.userId, data.id, "read").catch(() => undefined);
+    const mail = await readMail(context.userId, data.id, data.account);
+    if (mail.unread) await actOnMail(context.userId, data.id, "read", data.account).catch(() => undefined);
     return mail;
   });
 
@@ -105,18 +116,18 @@ export const mailboxDraftReply = createServerFn({ method: "POST" })
 
 export const mailboxAct = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: { id: string; action: MailAction }) => input)
+  .validator((input: { id: string; action: MailAction; account?: MailAccount }) => input)
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { actOnMail } = await import("./mailbox.server");
-    await actOnMail(context.userId, data.id, data.action);
+    await actOnMail(context.userId, data.id, data.action, data.account);
     return { ok: true };
   });
 
 export const mailboxSend = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator(
-    (input: { to: string; subject: string; body: string; threadId?: string }) => {
+    (input: { to: string; subject: string; body: string; threadId?: string; account?: MailAccount }) => {
       const to = input.to?.trim() ?? "";
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) throw new Error("Adresse invalide.");
       if (!input.body?.trim()) throw new Error("Message vide.");
@@ -125,12 +136,14 @@ export const mailboxSend = createServerFn({ method: "POST" })
         subject: (input.subject ?? "").trim().slice(0, 200),
         body: input.body.trim().slice(0, 20000),
         threadId: input.threadId,
+        account: input.account,
       };
     },
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { sendMail } = await import("./mailbox.server");
-    await sendMail(context.userId, data);
+    const { account, ...payload } = data;
+    await sendMail(context.userId, payload, account);
     return { ok: true };
   });
