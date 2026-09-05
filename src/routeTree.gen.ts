@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SystemStatusRouteImport } from './routes/system-status'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PolitiqueCookiesRouteImport } from './routes/politique-cookies'
 import { Route as PolitiqueConfidentialiteRouteImport } from './routes/politique-confidentialite'
 import { Route as PolitiqueRouteImport } from './routes/politique'
@@ -82,11 +81,6 @@ const SystemStatusRoute = SystemStatusRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PortfolioRoute = PortfolioRouteImport.update({
-  id: '/portfolio',
-  path: '/portfolio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PolitiqueCookiesRoute = PolitiqueCookiesRouteImport.update({
@@ -433,7 +427,6 @@ export interface FileRoutesByFullPath {
   '/politique': typeof PolitiqueRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/politique-cookies': typeof PolitiqueCookiesRoute
-  '/portfolio': typeof PortfolioRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/system-status': typeof SystemStatusRoute
   '/actualites/$slug': typeof ActualitesSlugRoute
@@ -499,7 +492,6 @@ export interface FileRoutesByTo {
   '/politique': typeof PolitiqueRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/politique-cookies': typeof PolitiqueCookiesRoute
-  '/portfolio': typeof PortfolioRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/system-status': typeof SystemStatusRoute
   '/actualites/$slug': typeof ActualitesSlugRoute
@@ -566,7 +558,6 @@ export interface FileRoutesById {
   '/politique': typeof PolitiqueRoute
   '/politique-confidentialite': typeof PolitiqueConfidentialiteRoute
   '/politique-cookies': typeof PolitiqueCookiesRoute
-  '/portfolio': typeof PortfolioRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/system-status': typeof SystemStatusRoute
   '/actualites/$slug': typeof ActualitesSlugRoute
@@ -634,7 +625,6 @@ export interface FileRouteTypes {
     | '/politique'
     | '/politique-confidentialite'
     | '/politique-cookies'
-    | '/portfolio'
     | '/sitemap.xml'
     | '/system-status'
     | '/actualites/$slug'
@@ -700,7 +690,6 @@ export interface FileRouteTypes {
     | '/politique'
     | '/politique-confidentialite'
     | '/politique-cookies'
-    | '/portfolio'
     | '/sitemap.xml'
     | '/system-status'
     | '/actualites/$slug'
@@ -766,7 +755,6 @@ export interface FileRouteTypes {
     | '/politique'
     | '/politique-confidentialite'
     | '/politique-cookies'
-    | '/portfolio'
     | '/sitemap.xml'
     | '/system-status'
     | '/actualites/$slug'
@@ -833,7 +821,6 @@ export interface RootRouteChildren {
   PolitiqueRoute: typeof PolitiqueRoute
   PolitiqueConfidentialiteRoute: typeof PolitiqueConfidentialiteRoute
   PolitiqueCookiesRoute: typeof PolitiqueCookiesRoute
-  PortfolioRoute: typeof PortfolioRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SystemStatusRoute: typeof SystemStatusRoute
   ActualitesSlugRoute: typeof ActualitesSlugRoute
@@ -886,13 +873,6 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/portfolio': {
-      id: '/portfolio'
-      path: '/portfolio'
-      fullPath: '/portfolio'
-      preLoaderRoute: typeof PortfolioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/politique-cookies': {
@@ -1365,7 +1345,6 @@ const rootRouteChildren: RootRouteChildren = {
   PolitiqueRoute: PolitiqueRoute,
   PolitiqueConfidentialiteRoute: PolitiqueConfidentialiteRoute,
   PolitiqueCookiesRoute: PolitiqueCookiesRoute,
-  PortfolioRoute: PortfolioRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SystemStatusRoute: SystemStatusRoute,
   ActualitesSlugRoute: ActualitesSlugRoute,

@@ -325,7 +325,7 @@ export function RealisationsSection() {
       <section id="realisations" className="section-padding bg-background scroll-mt-24">
         <div className="container-tight">
           <SectionHeader
-            eyebrow="Portfolio"
+            eyebrow="Réalisations"
             title="Projets sélectionnés"
             intro="Quelques projets qui montrent concrètement ma manière de travailler."
           />

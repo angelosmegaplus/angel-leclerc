@@ -103,8 +103,6 @@ const fallbackProjects: Project[] = [
     ],
     tools: "Canva · 950 créations recensées depuis avril 2022",
     results: "Des supports homogènes et réutilisables, adaptés à chaque public et à chaque format.",
-    href: "/portfolio",
-    linkLabel: "Voir le portfolio créatif",
     icon: Palette,
   },
 ];
@@ -144,8 +142,6 @@ export function UnifiedExperiencesPortfolio() {
           ],
           tools: "Canva · 950 créations recensées depuis avril 2022",
           results: "Des supports homogènes et réutilisables, adaptés à chaque public et à chaque format.",
-          href: "/portfolio",
-          linkLabel: "Voir le portfolio créatif",
         }
       : project,
   );
@@ -164,7 +160,7 @@ export function UnifiedExperiencesPortfolio() {
         <div className="container-tight">
           <div className="mx-auto max-w-2xl text-center">
             <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-primary">
-              <Sparkles size={12} /> Portfolio
+              <Sparkles size={12} /> Réalisations
             </span>
             <h2 className="mt-3 font-display text-[1.65rem] font-bold leading-tight text-foreground sm:text-3xl md:text-4xl">Projets sélectionnés</h2>
             <p className="mt-3 text-[0.95rem] leading-relaxed text-muted-foreground md:mt-4 md:text-base">Quelques projets qui montrent concrètement ma manière de travailler.</p>
@@ -178,12 +174,6 @@ export function UnifiedExperiencesPortfolio() {
                   <h3 className="font-display text-lg font-semibold text-foreground">{project.title}</h3>
                 </div>
                 <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{project.context}</p>
-                {project.title === "Créations graphiques et projets associatifs" && (
-                  <a href="/portfolio" className="mt-4 flex items-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3 transition-colors hover:bg-primary/10">
-                    <span className="font-display text-3xl font-bold leading-none text-primary">950</span>
-                    <span className="text-xs font-semibold leading-snug text-foreground">créations Canva recensées<br />depuis avril 2022</span>
-                  </a>
-                )}
                 {project.missions.length > 0 && <><p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Missions réalisées</p><ul className="mt-2 space-y-1.5 text-sm leading-relaxed text-foreground/90">{project.missions.map((mission) => <li key={mission} className="flex gap-2"><span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-primary"/><span>{mission}</span></li>)}</ul></>}
                 {project.tools && <><p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Outils utilisés</p><p className="mt-1 text-sm text-foreground/80">{project.tools}</p></>}
                 {project.results && <><p className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Résultats</p><p className="mt-1 text-sm leading-relaxed text-muted-foreground">{project.results}</p></>}
