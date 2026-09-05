@@ -1,32 +1,51 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
+  ArrowDown,
   ArrowRight,
   CalendarCheck,
   CheckCircle2,
+  ClipboardCheck,
   ClipboardList,
-  Clock,
+  Cloud,
+  Computer,
+  FileText,
+  Headphones,
+  Info,
+  Mail,
   MapPin,
   MessageSquare,
   PhoneCall,
   Quote,
+  RefreshCw,
+  Settings,
   ShieldCheck,
+  Smartphone,
+  TestTube2,
+  type LucideIcon,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import ringoverAsset from "@/assets/tools/ringover.svg.asset.json";
 
 export const Route = createFileRoute("/accueil-client")({
   head: () => ({
     meta: [
-      { title: "Accueil client externalisé en Périgord noir | Angel Leclerc Communication" },
+      { title: "Accueil client externalisé | Angel Leclerc Communication" },
       {
         name: "description",
         content:
-          "Permanence téléphonique et accueil client externalisé pour artisans, gîtes, restaurants, indépendants et associations. Formules dès 39 €/mois, en Périgord noir et à distance partout en France.",
+          "Accueil client externalisé avec mise en place accompagnée. Abonnement fixe à partir de 173,33 €/mois, soit 40 €/semaine.",
       },
       { property: "og:title", content: "Accueil client externalisé | Angel Leclerc Communication" },
       {
         property: "og:description",
         content:
-          "Ne perdez plus d’appels : prise de messages, réponses simples et confirmations de rendez-vous selon vos consignes. Formules dès 39 €/mois.",
+          "Votre entreprise garde son numéro. Quand vous ne pouvez pas répondre, je prends le relais. Tarif fixe à partir de 173,33 €/mois, soit 40 €/semaine.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -37,267 +56,364 @@ export const Route = createFileRoute("/accueil-client")({
   component: AccueilClientPage,
 });
 
-const steps = [
+const callSteps: { icon: LucideIcon; title: string; text: string }[] = [
+  { icon: PhoneCall, title: "Le client appelle", text: "Il compose le numéro habituel de votre entreprise : aucun nouveau numéro public à communiquer." },
+  { icon: Smartphone, title: "Votre téléphone sonne", text: "Votre ligne sonne normalement et vous gardez la priorité pour répondre." },
+  { icon: RefreshCw, title: "Le renvoi s’active", text: "Si vous ne répondez pas selon la règle choisie, votre opérateur déclenche le renvoi d’appel configuré." },
+  { icon: Cloud, title: "Le standard prend le relais", text: "L’appel rejoint le standard téléphonique cloud et la ligne virtuelle préparée pour votre entreprise." },
+  { icon: Smartphone, title: "Mon Pixel 10 sonne", text: "Je reçois l’appel sur mon Google Pixel 10 grâce à l’application de téléphonie professionnelle sous Android." },
+  { icon: Headphones, title: "Je réponds en votre nom", text: "Le contexte de l’entreprise est identifié par le routage configuré ; je décroche avec votre formule d’accueil validée." },
+  { icon: ClipboardList, title: "Je note la demande", text: "Sur mon ordinateur, je relève le nom, le numéro, le motif, le niveau d’urgence et la suite à donner." },
+  { icon: MessageSquare, title: "Je vous transmets le compte rendu", text: "Vous recevez les informations par le canal convenu : SMS, e-mail ou autre moyen défini ensemble." },
+];
+
+const setupSteps = [
+  "Vérification de votre opérateur, de votre ligne et des possibilités disponibles.",
+  "Choix du type de renvoi, par exemple après non-réponse plutôt que pour tous les appels.",
+  "Paramétrage du renvoi vers la ligne virtuelle avec vous.",
+  "Configuration du standard téléphonique cloud et de ses règles utiles.",
+  "Préparation de la formule d’accueil prononcée au nom de votre entreprise.",
+  "Création de la fiche de consignes : réponses autorisées, urgences et cas à transmettre.",
+  "Appel test depuis un deuxième téléphone pour vérifier le parcours complet.",
+  "Ajustements et validation commune avant l’activation de l’abonnement.",
+];
+
+const tools: { name: string; role: string; icon?: LucideIcon; logo?: string; note?: string }[] = [
   {
-    icon: ClipboardList,
-    n: "01",
-    title: "On définit vos consignes",
-    text: "Horaires de couverture, informations que je peux donner, tarifs à communiquer, cas à vous transmettre immédiatement. Tout est écrit dans une fiche de consignes que vous validez.",
+    name: "Ringover",
+    role: "Standard téléphonique cloud, numéros virtuels, routage des appels et application mobile ou web.",
+    logo: ringoverAsset.url,
+    note: "Solution technique actuellement envisagée, sans partenariat commercial.",
   },
   {
+    name: "Quicktalk by Ringover",
+    role: "Option simple pour démarrer avec un standard virtuel, des annonces, des horaires et des redirections, si elle convient au besoin.",
+    icon: Cloud,
+    note: "Le choix final dépend de la ligne et du fonctionnement attendu.",
+  },
+  {
+    name: "Google Pixel 10 · Android",
+    role: "Appareil prévu pour recevoir les appels professionnels via l’application de téléphonie.",
+    logo: "/logos/google.com.svg",
+  },
+  {
+    name: "Ordinateur",
+    role: "Prise de notes, consultation de la fiche de consignes, suivi et préparation du compte rendu.",
+    icon: Computer,
+  },
+  {
+    name: "SMS · e-mail",
+    role: "Transmission du compte rendu par le canal choisi avec chaque professionnel.",
+    icon: Mail,
+  },
+  {
+    name: "Orange Pro · autres opérateurs",
+    role: "Exemples d’opérateurs auprès desquels un renvoi peut être paramétré selon l’offre et la configuration de la ligne.",
     icon: PhoneCall,
-    n: "02",
-    title: "Je réponds en votre nom",
-    text: "Les appels non décrochés sont transférés vers ma ligne. Je réponds avec votre formule d’accueil, je renseigne le client et je note la demande.",
-  },
-  {
-    icon: MessageSquare,
-    n: "03",
-    title: "Vous recevez le message",
-    text: "Chaque appel donne lieu à un compte rendu écrit (SMS ou e-mail) : qui a appelé, pourquoi, ce qui a été répondu et ce qui reste à faire de votre côté.",
-  },
-  {
-    icon: CalendarCheck,
-    n: "04",
-    title: "Suivi et ajustements",
-    text: "Un point régulier permet d’affiner les réponses, l’amplitude horaire et la formule selon le volume réel d’appels.",
   },
 ];
 
 const plans = [
   {
     name: "Mini permanence",
-    price: "dès 39 €/mois",
-    lead: "Pour ne plus manquer les appels essentiels.",
+    price: "173,33 €/mois",
+    weekly: "soit 40 €/semaine",
+    lead: "Pour couvrir les moments essentiels où vous ne pouvez pas décrocher.",
     features: [
-      "Renvoi d’appels sur des créneaux ciblés",
+      "Renvoi d’appels sur les plages définies au contrat",
       "Prise de messages et compte rendu écrit",
-      "Réponses aux questions simples (horaires, adresse, services)",
+      "Réponses simples validées dans votre fiche de consignes",
     ],
   },
   {
     name: "Formule régulière",
-    price: "dès 79 €/mois",
-    lead: "Pour une présence stable sur la semaine.",
+    price: "260 €/mois",
+    weekly: "soit 60 €/semaine",
+    lead: "Pour organiser une présence plus régulière sur votre semaine.",
     highlight: true,
     features: [
-      "Couverture élargie en journée du lundi au vendredi",
-      "Réponses détaillées selon votre fiche de consignes",
-      "Confirmation et rappel de rendez-vous",
-      "Suivi des demandes et relances simples",
+      "Couverture plus étendue selon les horaires convenus",
+      "Réponses détaillées dans le cadre des consignes validées",
+      "Confirmation de rendez-vous si vous m’y autorisez",
+      "Suivi structuré des demandes reçues",
     ],
   },
   {
     name: "Formule renforcée",
-    price: "dès 149 €/mois",
-    lead: "Pour une activité avec beaucoup de contacts.",
+    price: "390 €/mois",
+    weekly: "soit 90 €/semaine",
+    lead: "Pour une activité ayant davantage de contacts ou de canaux à suivre.",
     features: [
-      "Amplitude horaire étendue, périodes de forte activité incluses",
-      "Appels, e-mails et messages des réseaux sociaux",
-      "Gestion des réservations et de l’agenda",
-      "Point mensuel sur les demandes reçues",
+      "Amplitude renforcée définie avant démarrage, hors 24/7",
+      "Prise en charge des canaux expressément inclus au contrat",
+      "Gestion de réservations ou d’agenda avec autorisation et accès adaptés",
+      "Point régulier sur les demandes et ajustements utiles",
     ],
   },
 ];
 
-const included = [
-  "Un seul interlocuteur qui connaît votre activité",
-  "Fiche de consignes écrite et validée par vous",
-  "Compte rendu de chaque appel",
-  "Confidentialité des informations clients",
-  "Engagement au mois, sans durée minimale imposée",
-  "Intervention sur place possible en Périgord noir",
+const faq = [
+  {
+    q: "Que se passe-t-il quand quelqu’un appelle ?",
+    a: "L’appelant compose votre numéro habituel. Votre téléphone sonne d’abord normalement. Si vous ne répondez pas selon la règle décidée ensemble, l’opérateur renvoie l’appel vers le standard cloud. Je reçois alors l’appel, réponds avec votre formule d’accueil, note la demande puis vous envoie un compte rendu.",
+  },
+  {
+    q: "Est-ce que mon client voit qu’il est transféré ?",
+    a: "L’appelant continue d’appeler le numéro habituel de votre entreprise. Le renvoi est conçu pour être transparent, mais son comportement exact peut varier selon l’opérateur, l’offre téléphonique et la configuration retenue. Nous le vérifions pendant l’appel test.",
+  },
+  {
+    q: "Comment je sais quelle entreprise est appelée ?",
+    a: "Le standard utilise une ligne ou un routage virtuel identifié par entreprise afin de restituer le bon contexte dans l’application. La méthode précise sera vérifiée avec l’outil choisi : aucune fonction fournisseur non confirmée n’est présentée comme garantie.",
+  },
+  {
+    q: "Que se passe-t-il si je suis déjà en ligne ?",
+    a: "Selon la configuration retenue, un appel supplémentaire peut rejoindre une file d’attente, une messagerie ou un scénario de débordement. Le service est lancé pour un volume raisonnable défini au contrat ; si ce volume augmente, nous adaptons ensemble le périmètre et la solution.",
+  },
+  {
+    q: "Puis-je prendre des rendez-vous ?",
+    a: "Oui, uniquement si vous m’y autorisez expressément et me donnez l’accès nécessaire au calendrier concerné. Les types de rendez-vous, durées, disponibilités et règles de confirmation sont écrits dans la fiche de consignes.",
+  },
+  {
+    q: "Puis-je répondre à des questions de prix ?",
+    a: "Oui, mais seulement avec les tarifs et formulations que vous avez validés dans la fiche de consignes. Je ne négocie pas et je n’invente jamais une information manquante.",
+  },
+  {
+    q: "Que se passe-t-il si je ne sais pas répondre ?",
+    a: "Je prends le message, les coordonnées et le contexte utile, puis je vous transmets la demande. Je ne donne jamais une réponse incertaine à votre place.",
+  },
+  {
+    q: "Puis-je rappeler au nom de l’entreprise ?",
+    a: "Un rappel n’est effectué que dans le périmètre convenu et via une ligne professionnelle ou un numéro autorisé et correctement configuré. Aucun numéro n’est masqué ou imité de façon trompeuse.",
+  },
+  {
+    q: "Est-ce que cela remplace un salarié ?",
+    a: "Il s’agit d’un relais externalisé sur un périmètre défini : appels, messages et tâches précises. Ce service peut compléter votre organisation, mais ne remplace pas nécessairement un poste salarié complet ni toutes ses missions.",
+  },
+  {
+    q: "Comment sont traitées les données et la confidentialité ?",
+    a: "Je collecte uniquement les informations nécessaires au traitement de la demande, limite les accès au strict besoin du service et applique vos consignes de transmission et de conservation. Les modalités adaptées à votre activité sont précisées avant le démarrage, sans promesse juridique excessive.",
+  },
+  {
+    q: "Comment se passe l’arrêt ?",
+    a: "L’abonnement est mensuel et se résilie simplement selon les conditions prévues au contrat. Le renvoi est désactivé, puis les accès aux outils et aux consignes cessent selon les modalités convenues.",
+  },
 ];
+
+function SectionHeading({ eyebrow, title, text }: { eyebrow: string; title: string; text?: string }) {
+  return (
+    <div className="max-w-3xl">
+      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">{eyebrow}</span>
+      <h2 className="mt-3 font-display text-3xl font-extrabold text-foreground md:text-4xl">{title}</h2>
+      {text ? <p className="mt-4 leading-relaxed text-muted-foreground">{text}</p> : null}
+    </div>
+  );
+}
 
 function AccueilClientPage() {
   return (
     <div className="bg-background">
       <section className="border-b border-border/60 bg-card">
-        <div className="mx-auto max-w-7xl px-6 py-20 lg:py-28">
-          <AnimatedSection className="max-w-3xl">
+        <div className="mx-auto max-w-7xl px-6 py-16 lg:py-24">
+          <AnimatedSection className="max-w-4xl">
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-primary">
-              <MapPin size={14} /> Périgord noir · et à distance partout en France
+              <MapPin size={14} /> Périgord noir · à distance partout en France
             </span>
-            <h1 className="mt-6 font-display text-4xl font-extrabold tracking-tight text-foreground md:text-6xl">
-              Accueil client externalisé
-            </h1>
-            <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
-              Un appel manqué, c’est souvent un client perdu. Je prends le relais de votre accueil
-              téléphonique quand vous êtes en rendez-vous, sur un chantier, en cuisine ou simplement
-              indisponible : appels, messages, demandes simples et confirmations de rendez-vous,
-              toujours selon vos consignes.
+            <h1 className="mt-6 font-display text-4xl font-extrabold text-foreground md:text-6xl">Accueil client externalisé</h1>
+            <p className="mt-6 max-w-3xl text-xl font-medium leading-relaxed text-foreground md:text-2xl">
+              Votre entreprise garde son numéro. Quand vous ne pouvez pas répondre, je prends le relais.
             </p>
-            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Ce n’est pas un centre d’appels : c’est le même interlocuteur, qui connaît votre
-              activité et complète le conseil en communication.
+            <p className="mt-4 max-w-3xl leading-relaxed text-muted-foreground">
+              Un service humain, local et flexible pour les artisans, gîtes, chambres d’hôtes, restaurants, indépendants, petites entreprises et associations. Je réponds selon vos consignes, sans fonctionnement de centre d’appels industriel.
             </p>
-            <div className="mt-9 flex flex-wrap gap-3">
-              <Link
-                to="/contact"
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition-all duration-300 hover:gap-4"
-              >
-                Demander un devis <ArrowRight size={16} />
-              </Link>
-              <Link
-                to="/entreprise"
-                className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
-              >
-                Voir tous les services
-              </Link>
+            <div className="mt-8 flex flex-col gap-5 border-l-4 border-primary pl-5 sm:flex-row sm:items-end sm:gap-10">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Mini permanence</p>
+                <p className="mt-1 font-display text-4xl font-extrabold text-foreground">173,33 €/mois</p>
+                <p className="mt-1 font-semibold text-muted-foreground">soit 40 €/semaine</p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <Link to="/contact" className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition-all hover:gap-3">
+                  Demander une mise en place <ArrowRight size={16} />
+                </Link>
+                <a href="#tarifs" className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary">
+                  Voir les tarifs <ArrowDown size={16} />
+                </a>
+              </div>
             </div>
           </AnimatedSection>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-20 lg:py-24">
-        <AnimatedSection className="max-w-2xl">
-          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-            Fonctionnement
-          </span>
-          <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
-            Comment ça se passe, concrètement
-          </h2>
+        <AnimatedSection>
+          <SectionHeading eyebrow="Parcours d’un appel" title="Comment fonctionne réellement un appel ?" text="Le renvoi intervient seulement selon la règle choisie ensemble. Vous restez joignable sur votre ligne et gardez votre numéro public." />
         </AnimatedSection>
-
-        <div className="mt-12 grid gap-6 md:grid-cols-2">
-          {steps.map((step, index) => {
+        <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {callSteps.map((step, index) => {
             const Icon = step.icon;
             return (
-              <AnimatedSection key={step.n} delay={index * 0.07}>
-                <article className="flex h-full flex-col rounded-3xl border border-border bg-card p-8 transition-colors duration-300 hover:border-primary">
+              <AnimatedSection key={step.title} delay={index * 0.04}>
+                <article className="relative h-full rounded-2xl border border-border bg-card p-6">
                   <div className="flex items-center justify-between">
-                    <Icon size={22} className="text-primary" />
-                    <span className="font-display text-3xl font-extrabold text-primary/25">{step.n}</span>
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary"><Icon size={19} /></span>
+                    <span className="font-display text-2xl font-extrabold text-primary/35">{String(index + 1).padStart(2, "0")}</span>
                   </div>
-                  <h3 className="mt-6 font-display text-xl font-bold text-foreground">{step.title}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{step.text}</p>
+                  <h3 className="mt-5 font-display text-lg font-bold text-foreground">{step.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{step.text}</p>
+                  {index < callSteps.length - 1 ? <ArrowRight className="absolute -right-3 top-1/2 z-10 hidden text-primary lg:block" size={20} aria-hidden="true" /> : null}
                 </article>
               </AnimatedSection>
             );
           })}
         </div>
+      </section>
 
-        <AnimatedSection delay={0.1} className="mt-10">
-          <div className="rounded-3xl border border-border bg-card p-8 md:p-10">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Ce qui est compris</p>
-            <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-              {included.map((item) => (
-                <li key={item} className="flex items-start gap-3 text-sm text-muted-foreground">
-                  <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-primary" />
-                  {item}
+      <section className="border-y border-border/60 bg-card py-20 lg:py-24">
+        <div className="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-[0.8fr_1.2fr]">
+          <AnimatedSection>
+            <SectionHeading eyebrow="Mise en route accompagnée" title="Je m’occupe de toute la mise en place" text="Vous n’avez pas à gérer seul la partie technique. Je prépare le dispositif avec vous, puis nous vérifions ensemble qu’il fonctionne avant son activation." />
+            <p className="mt-6 font-display text-xl font-extrabold text-primary">Vous gardez votre numéro, je m’occupe de la mise en place.</p>
+            <div className="mt-7 rounded-2xl border border-primary/25 bg-primary/5 p-6">
+              <p className="flex items-start gap-3 text-sm leading-relaxed text-muted-foreground">
+                <ShieldCheck className="mt-0.5 shrink-0 text-primary" size={20} />
+                Si une démarche auprès d’Orange, SFR, Bouygues Telecom, Free ou d’un autre opérateur est nécessaire, je peux échanger avec lui avec votre autorisation ou avec vous à mes côtés. Je ne modifie jamais votre contrat ni votre compte sans votre accord.
+              </p>
+            </div>
+          </AnimatedSection>
+          <AnimatedSection delay={0.08}>
+            <ol className="grid gap-3 sm:grid-cols-2">
+              {setupSteps.map((step, index) => (
+                <li key={step} className="flex items-start gap-3 rounded-2xl border border-border bg-background p-5 text-sm leading-relaxed text-muted-foreground">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">{index + 1}</span>
+                  {step}
                 </li>
               ))}
-            </ul>
+            </ol>
+          </AnimatedSection>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-20 lg:py-24">
+        <AnimatedSection>
+          <SectionHeading eyebrow="Équipement envisagé" title="Les outils utilisés ou prévus" text="Chaque outil sert une étape précise. La configuration finale dépend toujours de votre ligne, de votre opérateur et du besoin validé ensemble." />
+        </AnimatedSection>
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {tools.map((tool, index) => {
+            const Icon = tool.icon;
+            return (
+              <AnimatedSection key={tool.name} delay={index * 0.05}>
+                <article className="h-full rounded-2xl border border-border bg-card p-6">
+                  <div className="flex h-14 items-center">
+                    {tool.logo ? <img src={tool.logo} alt={`Logo ${tool.name}`} className="max-h-10 max-w-[150px] object-contain" loading="lazy" /> : Icon ? <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary"><Icon size={23} /></span> : null}
+                  </div>
+                  <h3 className="mt-5 font-display text-lg font-bold text-foreground">{tool.name}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{tool.role}</p>
+                  {tool.note ? <p className="mt-4 border-t border-border pt-4 text-xs leading-relaxed text-muted-foreground">{tool.note}</p> : null}
+                </article>
+              </AnimatedSection>
+            );
+          })}
+        </div>
+        <AnimatedSection delay={0.1} className="mt-6">
+          <div className="rounded-2xl border border-border bg-muted/40 p-6 text-sm leading-relaxed text-muted-foreground">
+            <p className="flex items-start gap-3"><Info className="mt-0.5 shrink-0 text-primary" size={19} /><span><strong className="text-foreground">Transparence :</strong> Ringover et Quicktalk sont des outils tiers actuellement prévus ou envisagés, sans partenariat commercial avec ALC!. Leur disponibilité, leurs fonctions, leurs conditions et leurs tarifs peuvent évoluer indépendamment d’ALC!. Un outil équivalent peut être retenu s’il est plus adapté au client.</span></p>
           </div>
         </AnimatedSection>
       </section>
 
-      <section className="border-y border-border/60 bg-card py-20 lg:py-24">
+      <section className="border-y border-border/60 bg-foreground py-20 text-background lg:py-24">
         <div className="mx-auto max-w-7xl px-6">
-          <AnimatedSection className="max-w-2xl">
-            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Tarifs</span>
-            <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
-              Trois formules, ajustées à votre volume d’appels
-            </h2>
-            <p className="mt-4 text-muted-foreground">
-              Tarifs de lancement indicatifs. Le montant définitif est fixé sur devis, selon le
-              volume d’appels et l’amplitude horaire souhaitée.
-            </p>
+          <AnimatedSection>
+            <span className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Exemple fictif</span>
+            <h2 className="mt-3 font-display text-3xl font-extrabold md:text-4xl">Dupont Plomberie — Sarlat</h2>
+            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-background/65">Cette entreprise est entièrement fictive et sert uniquement à illustrer le fonctionnement. Elle n’est pas présentée comme un client d’ALC!.</p>
           </AnimatedSection>
+          <AnimatedSection delay={0.08} className="mt-10">
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="rounded-2xl border border-background/15 p-6"><PhoneCall className="text-primary" /><h3 className="mt-4 font-display text-lg font-bold">1. L’appel</h3><p className="mt-2 text-sm leading-relaxed text-background/70">Un client appelle le numéro habituel. Le plombier est sur un chantier et ne peut pas répondre. Après le délai choisi, l’appel est renvoyé vers le standard.</p></div>
+              <div className="rounded-2xl border border-background/15 p-6"><Smartphone className="text-primary" /><h3 className="mt-4 font-display text-lg font-bold">2. La réponse</h3><p className="mt-2 text-sm leading-relaxed text-background/70">Mon Pixel 10 sonne. Le contexte configuré me permet d’identifier l’entreprise et je réponds : « Dupont Plomberie bonjour ».</p></div>
+              <div className="rounded-2xl border border-background/15 p-6"><FileText className="text-primary" /><h3 className="mt-4 font-display text-lg font-bold">3. Le compte rendu</h3><p className="mt-2 text-sm leading-relaxed text-background/70">Je note le nom, le téléphone, l’adresse, le motif et l’urgence, puis je transmets immédiatement la demande au plombier par le canal convenu.</p></div>
+            </div>
+          </AnimatedSection>
+        </div>
+      </section>
 
+      <section id="tarifs" className="scroll-mt-24 bg-card py-20 lg:py-24">
+        <div className="mx-auto max-w-7xl px-6">
+          <AnimatedSection>
+            <SectionHeading eyebrow="Abonnements fixes" title="Trois niveaux de permanence" text="Le détail du volume d’appels, des horaires, des canaux et des actions incluses est défini avant le démarrage. Chaque formule comprend un périmètre précis au contrat." />
+          </AnimatedSection>
           <div className="mt-12 grid gap-6 lg:grid-cols-3">
             {plans.map((plan, index) => (
-              <AnimatedSection key={plan.name} delay={index * 0.08}>
-                <article
-                  className={`flex h-full flex-col rounded-3xl p-8 md:p-10 ${
-                    plan.highlight
-                      ? "bg-foreground text-background"
-                      : "border border-border bg-background"
-                  }`}
-                >
-                  <h3
-                    className={`font-display text-xl font-bold ${
-                      plan.highlight ? "text-background" : "text-foreground"
-                    }`}
-                  >
-                    {plan.name}
-                  </h3>
-                  <p className="mt-3 font-display text-2xl font-extrabold text-primary">{plan.price}</p>
-                  <p
-                    className={`mt-3 text-sm ${
-                      plan.highlight ? "text-background/70" : "text-muted-foreground"
-                    }`}
-                  >
-                    {plan.lead}
-                  </p>
+              <AnimatedSection key={plan.name} delay={index * 0.07}>
+                <article className={`flex h-full flex-col rounded-2xl p-8 ${plan.highlight ? "bg-foreground text-background" : "border border-border bg-background"}`}>
+                  <h3 className={`font-display text-xl font-bold ${plan.highlight ? "text-background" : "text-foreground"}`}>{plan.name}</h3>
+                  <p className="mt-5 font-display text-3xl font-extrabold text-primary">{plan.price}</p>
+                  <p className={`mt-1 text-sm font-semibold ${plan.highlight ? "text-background/75" : "text-muted-foreground"}`}>{plan.weekly}</p>
+                  <p className={`mt-5 text-sm leading-relaxed ${plan.highlight ? "text-background/70" : "text-muted-foreground"}`}>{plan.lead}</p>
                   <ul className="mt-6 space-y-3">
-                    {plan.features.map((feature) => (
-                      <li
-                        key={feature}
-                        className={`flex items-start gap-3 text-sm ${
-                          plan.highlight ? "text-background/80" : "text-muted-foreground"
-                        }`}
-                      >
-                        <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-primary" />
-                        {feature}
-                      </li>
-                    ))}
+                    {plan.features.map((feature) => <li key={feature} className={`flex items-start gap-3 text-sm ${plan.highlight ? "text-background/80" : "text-muted-foreground"}`}><CheckCircle2 size={16} className="mt-0.5 shrink-0 text-primary" />{feature}</li>)}
                   </ul>
-                  <Link
-                    to="/contact"
-                    className="group/link mt-auto inline-flex items-center gap-2 pt-8 text-sm font-bold text-primary transition-all duration-300 hover:gap-4"
-                  >
-                    Demander un devis <ArrowRight size={16} />
-                  </Link>
+                  <Link to="/contact" className="mt-auto inline-flex items-center gap-2 pt-8 text-sm font-bold text-primary transition-all hover:gap-3">Choisir cette formule <ArrowRight size={16} /></Link>
                 </article>
               </AnimatedSection>
             ))}
           </div>
-
           <AnimatedSection delay={0.1} className="mt-8">
-            <div className="flex flex-wrap items-center gap-x-8 gap-y-3 rounded-3xl border border-border bg-background px-8 py-6 text-sm text-muted-foreground">
-              <span className="inline-flex items-center gap-2">
-                <Clock size={16} className="text-primary" /> Mise en place en quelques jours
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <ShieldCheck size={16} className="text-primary" /> Sans engagement de durée
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <MapPin size={16} className="text-primary" /> Rencontre possible en Périgord noir
-              </span>
+            <div className="rounded-2xl border border-primary/25 bg-primary/5 p-6 text-sm leading-relaxed text-muted-foreground">
+              <p className="flex items-start gap-3"><ClipboardCheck className="mt-0.5 shrink-0 text-primary" size={20} /><span><strong className="text-foreground">Un cadre clair, jamais un “illimité” implicite :</strong> toute demande située hors du volume, des horaires, des canaux ou des actions prévus n’est réalisée qu’après votre accord et, si nécessaire, un devis complémentaire.</span></p>
             </div>
           </AnimatedSection>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-20 lg:py-24">
-        <AnimatedSection className="max-w-2xl">
-          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Retours</span>
-          <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
-            Témoignages
-          </h2>
+        <AnimatedSection>
+          <SectionHeading eyebrow="Activation du service" title="On prépare, on teste, puis l’abonnement démarre" text="La mise en place fait partie du démarrage du service, dans les conditions précisées sur le devis. Elle permet de valider le fonctionnement avant l’activation de l’abonnement mensuel." />
         </AnimatedSection>
+        <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <article className="rounded-2xl border border-border p-6"><Settings className="text-primary" /><h3 className="mt-4 font-display text-lg font-bold text-foreground">Configuration préparatoire</h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">Nous préparons le renvoi, le standard, la formule d’accueil et les consignes dans le cadre défini au devis.</p></article>
+          <article className="rounded-2xl border border-border p-6"><TestTube2 className="text-primary" /><h3 className="mt-4 font-display text-lg font-bold text-foreground">Appel test et validation</h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">Un appel depuis un second téléphone confirme le bon cheminement, la réponse et la transmission du compte rendu.</p></article>
+          <article className="rounded-2xl border border-border p-6"><CalendarCheck className="text-primary" /><h3 className="mt-4 font-display text-lg font-bold text-foreground">Activation mensuelle</h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">Une fois le dispositif validé, l’abonnement démarre. Il peut ensuite être résilié simplement selon les conditions prévues au contrat.</p></article>
+        </div>
+      </section>
 
+      <section className="border-y border-border/60 bg-card py-20 lg:py-24">
+        <div className="mx-auto max-w-4xl px-6">
+          <AnimatedSection>
+            <SectionHeading eyebrow="Questions fréquentes" title="Tout savoir avant de démarrer" text="Ouvrez chaque rubrique pour consulter une réponse détaillée." />
+          </AnimatedSection>
+          <AnimatedSection delay={0.08} className="mt-10">
+            <Accordion type="multiple" className="rounded-2xl border border-border bg-background px-5 sm:px-7">
+              {faq.map((item, index) => (
+                <AccordionItem key={item.q} value={`item-${index}`} className="last:border-b-0">
+                  <AccordionTrigger className="min-h-16 py-5 text-left font-display text-base font-bold text-foreground hover:text-primary hover:no-underline">{item.q}</AccordionTrigger>
+                  <AccordionContent className="pb-6 pr-8 text-sm leading-relaxed text-muted-foreground">{item.a}</AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </AnimatedSection>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-20 lg:py-24">
+        <AnimatedSection>
+          <SectionHeading eyebrow="Retours" title="Témoignages" />
+        </AnimatedSection>
         <AnimatedSection delay={0.08} className="mt-10">
-          <div className="rounded-3xl border border-dashed border-border bg-card p-8 md:p-12">
+          <div className="rounded-2xl border border-dashed border-border bg-card p-8 md:p-12">
             <Quote size={28} className="text-primary" />
-            <p className="mt-5 max-w-3xl text-lg leading-relaxed text-foreground">
-              Cette offre vient d’être lancée : aucun témoignage n’est publié pour l’instant. Les
-              premiers retours des clients accompagnés apparaîtront ici, avec leur accord et sous
-              leur nom.
-            </p>
-            <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-              Je préfère une page vide à des avis inventés. Si vous souhaitez échanger avec une
-              référence avant de vous décider, demandez-le simplement lors du premier contact.
-            </p>
-            <Link
-              to="/contact"
-              className="group/link mt-8 inline-flex items-center gap-2 text-sm font-bold text-primary transition-all duration-300 hover:gap-4"
-            >
-              Poser une question <ArrowRight size={16} />
-            </Link>
+            <p className="mt-5 max-w-3xl text-lg leading-relaxed text-foreground">Cette offre est récente : aucun témoignage réel n’est publié pour l’instant.</p>
+            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">Les premiers retours apparaîtront ici uniquement avec l’accord des clients concernés. Aucun avis fictif n’est utilisé.</p>
           </div>
         </AnimatedSection>
+      </section>
+
+      <section className="border-t border-border/60 bg-card py-16">
+        <div className="mx-auto flex max-w-7xl flex-col gap-7 px-6 md:flex-row md:items-center md:justify-between">
+          <div><p className="font-display text-2xl font-extrabold text-foreground">Prêt à ne plus laisser vos appels sans réponse ?</p><p className="mt-2 text-sm text-muted-foreground">Commençons par vérifier votre ligne, votre besoin et le périmètre adapté.</p></div>
+          <Link to="/contact" className="inline-flex w-fit items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition-all hover:gap-3">Demander une mise en place <ArrowRight size={16} /></Link>
+        </div>
       </section>
     </div>
   );

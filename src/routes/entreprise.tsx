@@ -392,23 +392,23 @@ function Services() {
                   Accueil client externalisé
                 </h3>
                 <p className="mt-5 leading-relaxed text-muted-foreground">
-                  Vous êtes en rendez-vous, sur un chantier ou simplement indisponible ? Je prends le relais sur les appels et messages que vous ne pouvez pas recevoir, selon vos consignes.
+                  Quand vous ne pouvez pas répondre, je prends le relais sur vos appels et réponds au nom de votre entreprise, selon vos consignes.
                 </p>
                 <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                  La mise en place initiale est prise en charge par Angel : vous gardez votre numéro habituel, on configure ensemble le renvoi d’appel et le standard, et je réponds au nom de votre entreprise.
+                  Vous gardez votre numéro habituel : je prends en charge avec vous la mise en place du renvoi d’appel et du standard.
                 </p>
               </div>
               <div className="flex shrink-0 flex-col items-start gap-4 lg:items-end lg:text-right">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-primary">Tarifs de lancement</p>
-                  <p className="mt-2 font-display text-3xl font-extrabold text-foreground">À partir de 39 €/mois</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Sur devis selon volume et amplitude</p>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-primary">Mini permanence</p>
+                  <p className="mt-2 font-display text-3xl font-extrabold text-foreground">173,33 €/mois</p>
+                  <p className="mt-1 text-sm font-semibold text-muted-foreground">soit 40 €/semaine</p>
                 </div>
                 <a
                   href="/accueil-client"
                   className="inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background transition-all duration-300 hover:gap-3 hover:bg-primary"
                 >
-                  En savoir plus
+                  Voir le fonctionnement détaillé
                   <ArrowRight size={16} />
                 </a>
               </div>
