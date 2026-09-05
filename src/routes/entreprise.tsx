@@ -389,13 +389,13 @@ function Services() {
                 </span>
                 <h3 className="mt-4 flex items-center gap-3 font-display text-2xl font-bold text-foreground md:text-3xl">
                   <PhoneCall size={26} className="shrink-0 text-primary" />
-                  Accueil client externalisé
+                  Communication client externalisée
                 </h3>
                 <p className="mt-5 leading-relaxed text-muted-foreground">
-                  Quand vous ne pouvez pas répondre, je prends le relais sur vos appels et réponds au nom de votre entreprise, selon vos consignes.
+                  Appels, messages, e-mails et réseaux sociaux : je peux prendre le relais sur une partie de votre communication client selon vos consignes.
                 </p>
                 <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                  Vous gardez votre numéro habituel : je prends en charge avec vous la mise en place du renvoi d’appel et du standard.
+                  Nous configurons ensemble la mise en place, les canaux activés et les réponses autorisées.
                 </p>
               </div>
               <div className="flex shrink-0 flex-col items-start gap-4 lg:items-end lg:text-right">
