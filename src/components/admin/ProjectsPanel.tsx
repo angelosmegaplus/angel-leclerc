@@ -4,6 +4,7 @@ import type { LucideIcon } from "lucide-react";
 import { CalendarDays, CheckCircle2, CircleDot, FolderKanban, ListTodo } from "lucide-react";
 import { CrudModule } from "./CrudModule";
 import { AdminCard } from "./AdminShell";
+import { OrdersTracker } from "./OrdersTracker";
 import {
   alcProjectFields,
   taskFields,
@@ -16,6 +17,7 @@ const VIEWS = [
   { key: "overview", label: "Tableau" },
   { key: "projects", label: "Projets" },
   { key: "tasks", label: "Tâches" },
+  { key: "orders", label: "Commandes" },
 ] as const;
 
 type View = typeof VIEWS[number]["key"];
@@ -131,7 +133,7 @@ export function ProjectsPanel() {
         ))}
       </div>
 
-      {view === "overview" ? <ProjectOverview /> : view === "projects" ? (
+      {view === "orders" ? <OrdersTracker /> : view === "overview" ? <ProjectOverview /> : view === "projects" ? (
         <CrudModule
           table="projects"
           entityLabel="Projet"

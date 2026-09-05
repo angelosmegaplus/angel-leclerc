@@ -279,7 +279,7 @@ function detectTrack(text: string): Track | null {
   return null;
 }
 
-export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
+export function ContactChat({ initialTrack, initialSubject }: { initialTrack?: Track; initialSubject?: string }) {
   const [track, setTrack] = useState<Track | null>(initialTrack ?? null);
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -328,6 +328,14 @@ export function ContactChat({ initialTrack }: { initialTrack?: Track }) {
     setHydrated(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Demande arrivée depuis un bouton du site : elle préremplit la question libre.
+  useEffect(() => {
+    const subject = initialSubject?.trim();
+    if (!hydrated || !subject) return;
+    const key = initialTrack === "alternance" ? "missions" : initialTrack === "projet" ? "nature" : "message";
+    setAnswers((prev) => (prev[key]?.trim() ? prev : { ...prev, [key]: subject }));
+  }, [hydrated, initialSubject, initialTrack]);
 
   useEffect(() => {
     if (!hydrated) return;
