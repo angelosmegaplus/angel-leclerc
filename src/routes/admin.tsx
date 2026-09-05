@@ -88,7 +88,6 @@ import {
   AdminCard,
   type AdminNavItem,
 } from "@/components/admin/AdminShell";
-import { AiActionsPanel } from "@/components/admin/AiActionsPanel";
 import { AiSuggestions } from "@/components/admin/AiSuggestions";
 import { ConnectionsPanel } from "@/components/admin/ConnectionsPanel";
 import { NotificationsPanel } from "@/components/admin/NotificationsPanel";
@@ -101,8 +100,6 @@ import { AgendaPanel } from "@/components/admin/AgendaPanel";
 import { FilesPanel } from "@/components/admin/FilesPanel";
 import { ActivityPanel } from "@/components/admin/ActivityPanel";
 import { GlobalSearch } from "@/components/admin/GlobalSearch";
-import { AngelCommandCenter } from "@/components/admin/AngelCommandCenter";
-import { StudiesWorkWorkspace } from "@/components/admin/StudiesWorkWorkspace";
 import { AdminAutomationSummary } from "@/components/admin/AdminAutomationSummary";
 
 export const Route = createFileRoute("/admin")({
@@ -312,6 +309,17 @@ function AdminPage() {
     window.history.replaceState(null, "", url.toString());
   }, [tab]);
   const [searchOpen, setSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
   const sendNewsletter = useServerFn(sendNewsletterNow);
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
 
@@ -535,6 +543,7 @@ function AdminPage() {
           >
             <Search className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">Rechercher</span>
+            <kbd className="ml-2 hidden rounded border border-border px-1 text-[10px] text-muted-foreground lg:inline">⌘K</kbd>
           </Button>
           <Button
             size="sm"
