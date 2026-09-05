@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { CrudModule } from "./CrudModule";
 import { StudioRecorder, uploadMedia } from "./StudioRecorder";
 import { AdminCard } from "./AdminShell";
+import { LinkedInPublishCard } from "./LinkedInPublishCard";
 import { Button } from "@/components/ui/button";
 import {
   interviewFields,
@@ -49,6 +50,7 @@ function StudioCapture({ onGo }: { onGo: (view: View) => void }) {
 
   return (
     <div className="space-y-4">
+      <LinkedInPublishCard />
       <AdminCard
         title="Studio de terrain"
         description="Enregistrez un son ou une vidéo directement depuis le navigateur, puis reliez le fichier à un reportage ou une interview."

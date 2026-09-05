@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AdminCard } from "./AdminShell";
 import { getGoogleWorkspaceHealth, listGoogleCalendarEvents } from "@/lib/google-workspace.functions";
 import { Button } from "@/components/ui/button";
+import { AddressLookupCard } from "./AddressLookupCard";
 
 type Entry = {
   id: string;
@@ -219,6 +220,7 @@ export function AgendaPanel() {
 
   return (
     <div className="space-y-5">
+      <AddressLookupCard />
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-2xl border border-border bg-card p-4">
           <p className="text-[10px] font-bold uppercase tracking-[.14em] text-muted-foreground">Google Agenda</p>
