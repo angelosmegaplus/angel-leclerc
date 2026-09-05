@@ -71,7 +71,7 @@ export function Header() {
             <LogIn className="h-3.5 w-3.5" /> Espace admin
           </Link>
           <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
-            <Link to="/contact">Parler de votre projet</Link>
+            <Link to="/contact" search={{ parcours: "projet" as const }}>Parler de votre projet</Link>
           </Button>
         </nav>
 
@@ -115,7 +115,7 @@ export function Header() {
               <a href="https://www.facebook.com/share/1LFGicX7qF/" target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-2 rounded-lg border border-border py-2 text-foreground hover:text-primary transition-colors" aria-label="Facebook Angel Leclerc Communication"><Facebook size={18} /></a>
             </div>
             <Button asChild className="w-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => setMobileOpen(false)}>
-              <Link to="/contact">Parler de votre projet</Link>
+              <Link to="/contact" search={{ parcours: "projet" as const }}>Parler de votre projet</Link>
             </Button>
           </nav>
         </div>

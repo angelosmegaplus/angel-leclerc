@@ -271,7 +271,7 @@ function AccueilClientPage() {
                 <p className="mt-1 font-semibold text-muted-foreground">soit 40 €/semaine</p>
               </div>
               <div className="flex flex-wrap gap-3">
-                <Link to="/contact" className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition-all hover:gap-3">
+                <Link to="/contact" search={{ parcours: "projet" as const, sujet: "Demande de mise en place de la communication client externalisée." }} className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition-all hover:gap-3">
                   Demander une mise en place <ArrowRight size={16} />
                 </Link>
                 <a href="#tarifs" className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary">
@@ -419,7 +419,7 @@ function AccueilClientPage() {
                   <ul className="mt-6 space-y-3">
                     {plan.features.map((feature) => <li key={feature} className={`flex items-start gap-3 text-sm ${plan.highlight ? "text-background/80" : "text-muted-foreground"}`}><CheckCircle2 size={16} className="mt-0.5 shrink-0 text-primary" />{feature}</li>)}
                   </ul>
-                  <Link to="/contact" className="mt-auto inline-flex items-center gap-2 pt-8 text-sm font-bold text-primary transition-all hover:gap-3">Choisir cette formule <ArrowRight size={16} /></Link>
+                  <Link to="/contact" search={{ parcours: "projet" as const, sujet: `Je souhaite la formule « ${plan.name} » (${plan.price}) de la communication client externalisée.` }} className="mt-auto inline-flex items-center gap-2 pt-8 text-sm font-bold text-primary transition-all hover:gap-3">Choisir cette formule <ArrowRight size={16} /></Link>
                 </article>
               </AnimatedSection>
             ))}
@@ -477,7 +477,7 @@ function AccueilClientPage() {
       <section className="border-t border-border/60 bg-card py-16">
         <div className="mx-auto flex max-w-7xl flex-col gap-7 px-6 md:flex-row md:items-center md:justify-between">
           <div><p className="font-display text-2xl font-extrabold text-foreground">Prêt à me confier une partie de vos échanges clients ?</p><p className="mt-2 text-sm text-muted-foreground">Commençons par choisir les moyens de contact, les horaires et les tâches dont vous avez besoin.</p></div>
-          <Link to="/contact" className="inline-flex w-fit items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition-all hover:gap-3">Demander une mise en place <ArrowRight size={16} /></Link>
+          <Link to="/contact" search={{ parcours: "projet" as const, sujet: "Demande de mise en place de la communication client externalisée." }} className="inline-flex w-fit items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition-all hover:gap-3">Demander une mise en place <ArrowRight size={16} /></Link>
         </div>
       </section>
     </div>
