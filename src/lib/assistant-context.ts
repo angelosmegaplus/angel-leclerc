@@ -54,6 +54,7 @@ TARIFS ET FONCTIONNEMENT
 - Affiche ou flyer : à partir de 50 €.
 - Identité visuelle simple : à partir de 150 €.
 - Accompagnement personnel en communication : 50 € pour 1 heure (téléphone ou visioconférence).
+- Accueil client externalisé : dès 39 €/mois, 79 €/mois ou 149 €/mois selon la formule, sur devis.
 - Coordination et production audio/vidéo : sur devis.
 - Paiement professionnel via Revolut Business : facture et lien sécurisé, acompte avant la mission,
   solde après validation. TVA non applicable, article 293 B du CGI.
