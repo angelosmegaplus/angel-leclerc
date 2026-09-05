@@ -35,6 +35,7 @@ import { Route as AdminMovixRouteImport } from './routes/admin-movix'
 import { Route as AdminIntegrationsRouteImport } from './routes/admin-integrations'
 import { Route as AdminActualitesRouteImport } from './routes/admin-actualites'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AccueilClientRouteImport } from './routes/accueil-client'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BoutiqueIndexRouteImport } from './routes/boutique/index'
 import { Route as ArticlesIndexRouteImport } from './routes/articles/index'
@@ -202,6 +203,11 @@ const AdminActualitesRoute = AdminActualitesRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccueilClientRoute = AccueilClientRouteImport.update({
+  id: '/accueil-client',
+  path: '/accueil-client',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -403,6 +409,7 @@ const ApiPublicOauthProviderCallbackRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/accueil-client': typeof AccueilClientRoute
   '/admin': typeof AdminRoute
   '/admin-actualites': typeof AdminActualitesRoute
   '/admin-integrations': typeof AdminIntegrationsRoute
@@ -468,6 +475,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/accueil-client': typeof AccueilClientRoute
   '/admin': typeof AdminRoute
   '/admin-actualites': typeof AdminActualitesRoute
   '/admin-integrations': typeof AdminIntegrationsRoute
@@ -534,6 +542,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/accueil-client': typeof AccueilClientRoute
   '/admin': typeof AdminRoute
   '/admin-actualites': typeof AdminActualitesRoute
   '/admin-integrations': typeof AdminIntegrationsRoute
@@ -601,6 +610,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/accueil-client'
     | '/admin'
     | '/admin-actualites'
     | '/admin-integrations'
@@ -666,6 +676,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/accueil-client'
     | '/admin'
     | '/admin-actualites'
     | '/admin-integrations'
@@ -731,6 +742,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/accueil-client'
     | '/admin'
     | '/admin-actualites'
     | '/admin-integrations'
@@ -797,6 +809,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccueilClientRoute: typeof AccueilClientRoute
   AdminRoute: typeof AdminRoute
   AdminActualitesRoute: typeof AdminActualitesRoute
   AdminIntegrationsRoute: typeof AdminIntegrationsRoute
@@ -1041,6 +1054,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/accueil-client': {
+      id: '/accueil-client'
+      path: '/accueil-client'
+      fullPath: '/accueil-client'
+      preLoaderRoute: typeof AccueilClientRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -1321,6 +1341,7 @@ const AdminMovixRouteWithChildren = AdminMovixRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccueilClientRoute: AccueilClientRoute,
   AdminRoute: AdminRoute,
   AdminActualitesRoute: AdminActualitesRoute,
   AdminIntegrationsRoute: AdminIntegrationsRoute,

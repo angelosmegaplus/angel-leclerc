@@ -456,13 +456,22 @@ function Services() {
                 <p className="mt-4 text-xs leading-relaxed text-background/60">
                   Fourchette de lancement, à confirmer sur devis selon le volume d’appels et l’amplitude horaire souhaités.
                 </p>
-                <a
-                  href="/contact"
-                  className="group/link mt-5 inline-flex items-center gap-2 text-sm font-bold text-primary transition-all duration-300 hover:gap-4"
-                >
-                  Demander un devis
-                  <ArrowRight size={16} />
-                </a>
+                <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2">
+                  <a
+                    href="/accueil-client"
+                    className="inline-flex items-center gap-2 text-sm font-bold text-primary transition-all duration-300 hover:gap-4"
+                  >
+                    Voir le détail de l’offre
+                    <ArrowRight size={16} />
+                  </a>
+                  <a
+                    href="/contact"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-background/80 transition-colors hover:text-background"
+                  >
+                    Demander un devis
+                  </a>
+                </div>
+
               </div>
             </div>
           </article>
