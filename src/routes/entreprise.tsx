@@ -236,7 +236,7 @@ const paymentMethods = [
 
 function EnterprisePage() {
   return (
-    <div className="overflow-hidden font-['Manrope',sans-serif] [--font-display:'Sora',sans-serif]">
+    <div className="overflow-hidden font-['Manrope',sans-serif] [--font-display:'Sora',sans-serif] [&_h1]:tracking-normal [&_h2]:tracking-normal [&_h3]:tracking-normal [&_h4]:tracking-normal">
       <DevelopmentNotice />
       <Hero />
       <Services />
