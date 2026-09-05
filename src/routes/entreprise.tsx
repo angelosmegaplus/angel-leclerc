@@ -13,7 +13,9 @@ import {
   FileText,
   Globe,
   HeartHandshake,
+  Info,
   Mail,
+
   Network,
   Palette,
   PenLine,
