@@ -389,6 +389,85 @@ function Services() {
           </article>
         </AnimatedSection>
 
+        <AnimatedSection delay={0.1} className="mt-12 md:mt-16">
+          <article className="group rounded-3xl border border-border p-8 transition-colors duration-300 hover:border-primary md:p-12">
+            <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-2xl">
+                <span className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
+                  Nouvelle offre · Périgord noir et à distance
+                </span>
+                <h3 className="mt-4 flex items-center gap-3 font-display text-2xl font-bold text-foreground md:text-3xl">
+                  <PhoneCall size={26} className="shrink-0 text-primary" />
+                  Accueil client externalisé
+                </h3>
+                <p className="mt-5 leading-relaxed text-muted-foreground">
+                  Vous êtes en rendez-vous, sur un chantier ou simplement indisponible ? Je peux prendre le relais sur une partie de votre accueil client : appels téléphoniques, prise de messages, demandes simples, confirmations de rendez-vous, réponses aux messages et orientation des clients selon vos consignes. L’objectif : éviter de perdre des demandes quand vous ne pouvez pas répondre.
+                </p>
+                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                  Un service humain, local et flexible — pas un centre d’appels : c’est le même interlocuteur qui vous connaît et qui complète le conseil en communication.
+                </p>
+              </div>
+              <div className="shrink-0 lg:text-right">
+                <p className="text-xs font-semibold uppercase tracking-widest text-primary">Tarifs de lancement</p>
+                <p className="mt-2 font-display text-3xl font-extrabold text-foreground">À partir de 39 €/mois</p>
+                <p className="mt-1 text-xs text-muted-foreground">Sur devis selon volume d’appels et amplitude</p>
+              </div>
+            </div>
+
+            <div className="mt-10 grid gap-6 lg:grid-cols-3">
+              <div className="rounded-[2rem] border border-border/70 bg-background p-6 md:p-8">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Pour qui ?</p>
+                <ul className="mt-4 flex flex-wrap gap-2">
+                  {["Artisans", "Gîtes et chambres d’hôtes", "Restaurants", "Indépendants", "Petites entreprises", "Associations"].map((who) => (
+                    <li
+                      key={who}
+                      className="rounded-full border border-border px-3.5 py-1.5 text-xs font-medium text-muted-foreground"
+                    >
+                      {who}
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+                  Pensé pour le territoire du Périgord noir, et disponible à distance partout en France.
+                </p>
+              </div>
+              <div className="rounded-[2rem] border border-border/70 bg-background p-6 md:p-8">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Comment ça marche ?</p>
+                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                  Vous définissez vos consignes : horaires de couverture, réponses autorisées et cas à vous transmettre. Je réponds en votre nom selon ce cadre, et les demandes plus complexes vous sont remontées.
+                </p>
+              </div>
+              <div className="rounded-[2rem] bg-foreground p-6 text-background md:p-8">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Formules indicatives</p>
+                <ul className="mt-4 space-y-3 text-sm">
+                  <li className="flex items-baseline justify-between gap-4">
+                    <span className="text-background/80">Mini permanence</span>
+                    <span className="font-display font-bold">dès 39 €/mois</span>
+                  </li>
+                  <li className="flex items-baseline justify-between gap-4">
+                    <span className="text-background/80">Formule régulière</span>
+                    <span className="font-display font-bold">dès 79 €/mois</span>
+                  </li>
+                  <li className="flex items-baseline justify-between gap-4">
+                    <span className="text-background/80">Formule renforcée</span>
+                    <span className="font-display font-bold">dès 149 €/mois</span>
+                  </li>
+                </ul>
+                <p className="mt-4 text-xs leading-relaxed text-background/60">
+                  Fourchette de lancement, à confirmer sur devis selon le volume d’appels et l’amplitude horaire souhaités.
+                </p>
+                <a
+                  href="/contact"
+                  className="group/link mt-5 inline-flex items-center gap-2 text-sm font-bold text-primary transition-all duration-300 hover:gap-4"
+                >
+                  Demander un devis
+                  <ArrowRight size={16} />
+                </a>
+              </div>
+            </div>
+          </article>
+        </AnimatedSection>
+
         <AnimatedSection delay={0.12} className="mt-16 md:mt-20">
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div>
