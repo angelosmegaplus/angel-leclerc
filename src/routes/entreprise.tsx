@@ -13,6 +13,7 @@ import {
   FileText,
   FolderOpen,
   Globe,
+  HeartHandshake,
   Mail,
   Network,
   Palette,
@@ -123,6 +124,12 @@ const extraServices = [
     label: "Réseaux sociaux",
     price: "sur devis",
     hint: "Création, gestion ou accompagnement de comptes et pages.",
+  },
+  {
+    icon: HeartHandshake,
+    label: "Accompagnement personnel en communication",
+    price: "50 € / 1 h",
+    hint: "Un échange individuel pour clarifier une situation, mettre de l’ordre dans ses idées, préparer une conversation ou mieux exprimer un message, dans un cadre personnel ou professionnel. À distance par téléphone ou visioconférence.",
   },
   {
     icon: Building2,

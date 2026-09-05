@@ -34,6 +34,9 @@ SERVICES (page /entreprise)
 - Création : affiches, flyers, identité visuelle simple et contenus pour les réseaux sociaux.
 - Numérique : accompagnement de sites et contenus web, référencement et communication digitale.
 - Associations et projets : accompagnement de structures, événements et initiatives locales.
+- Accompagnement personnel en communication : échange individuel à distance (téléphone ou
+  visioconférence) pour clarifier une situation, préparer une conversation ou mieux exprimer un
+  message, dans un cadre personnel ou professionnel. Tarif : 50 € pour 1 heure.
 - Production audio/vidéo possible sur le terrain selon le projet.
 - Outils utilisés notamment : Canva Pro, Google Workspace, MixPad et outils numériques de création.
 - L'intelligence artificielle peut assister la recherche et l'organisation, mais les livrables restent
@@ -44,6 +47,7 @@ TARIFS ET FONCTIONNEMENT
 - Rédaction de textes : à partir de 30 €.
 - Affiche ou flyer : à partir de 50 €.
 - Identité visuelle simple : à partir de 150 €.
+- Accompagnement personnel en communication : 50 € pour 1 heure (téléphone ou visioconférence).
 - Coordination et production audio/vidéo : sur devis.
 - Paiement professionnel via Revolut Business : facture et lien sécurisé, acompte avant la mission,
   solde après validation. TVA non applicable, article 293 B du CGI.
