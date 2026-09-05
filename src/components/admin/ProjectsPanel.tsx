@@ -48,12 +48,14 @@ function ProjectOverview() {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {[
-          ["Projets actifs", activeProjects.length, FolderKanban],
-          ["Tâches ouvertes", openTasks.length, ListTodo],
-          ["En retard", overdueTasks.length, CalendarDays],
-          ["Terminées", tasks.filter((row) => str(row, "status") === "termine").length, CheckCircle2],
-        ].map(([label, value, Icon]) => (
+        {(
+          [
+            ["Projets actifs", activeProjects.length, FolderKanban],
+            ["Tâches ouvertes", openTasks.length, ListTodo],
+            ["En retard", overdueTasks.length, CalendarDays],
+            ["Terminées", tasks.filter((row) => str(row, "status") === "termine").length, CheckCircle2],
+          ] as [string, number, LucideIcon][]
+        ).map(([label, value, Icon]) => (
           <div key={String(label)} className="rounded-2xl border border-border bg-card p-4 shadow-sm">
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary/10 text-primary"><Icon className="h-4 w-4" /></span>
             <p className="mt-3 font-display text-2xl font-bold tracking-[-.04em] text-foreground">{String(value)}</p>
