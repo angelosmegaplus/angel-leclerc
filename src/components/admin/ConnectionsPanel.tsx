@@ -65,6 +65,7 @@ export function ConnectionsPanel() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<"all" | "ok" | "todo">("all");
 
   const refresh = async () => {
     setLoading(true);
@@ -93,8 +94,12 @@ export function ConnectionsPanel() {
     }
   };
 
-  const categories = [...new Set(cards.map((card) => card.category))];
+  const visibleCards = cards.filter((card) =>
+    filter === "all" ? true : filter === "ok" ? card.state === "connected" : card.state !== "connected",
+  );
+  const categories = [...new Set(visibleCards.map((card) => card.category))];
   const connectedCount = cards.filter((card) => card.state === "connected").length;
+  const ratio = cards.length ? Math.round((connectedCount / cards.length) * 100) : 0;
   const calendar = cards.find((card) => card.key === "calendar");
 
   return (
@@ -120,13 +125,26 @@ export function ConnectionsPanel() {
           {calendar ? <span>· Google Calendar : <strong className="text-foreground">{STATE_LABEL[calendar.state]}</strong></span> : null}
         </div>
 
+        <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+          <div className="h-full rounded-full bg-emerald-500 transition-all duration-500" style={{ width: `${ratio}%` }} />
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          {([["all", "Tous"], ["ok", "Connectés"], ["todo", "À relier"]] as const).map(([value, label]) => (
+            <button key={value} type="button" onClick={() => setFilter(value)}
+              className={`min-h-9 rounded-full border px-3 text-xs font-semibold transition ${filter === value ? "border-transparent bg-foreground text-background" : "border-border bg-background text-muted-foreground hover:text-foreground"}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+
         {error ? <div className="mt-3 flex gap-2 rounded-xl border border-red-500/25 bg-red-500/10 px-3 py-2.5 text-xs text-red-700 dark:text-red-100"><CircleAlert className="h-4 w-4 shrink-0" /> {error}</div> : null}
       </AdminCard>
 
       {categories.map((category) => (
         <AdminCard key={category} title={category} description="">
           <div className="grid gap-3 lg:grid-cols-2">
-            {cards.filter((card) => card.category === category).map((card) => {
+            {visibleCards.filter((card) => card.category === category).map((card) => {
               const link = MODULE_LINKS[card.key];
               return (
                 <section key={card.key} className="rounded-2xl border border-border bg-background p-4">
