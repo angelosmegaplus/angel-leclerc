@@ -21,13 +21,12 @@ import {
   Radio,
   ReceiptText,
   ShieldCheck,
-  Smartphone,
   Sparkles,
   Wrench,
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { contentQuery, iconFor } from "@/lib/content";
+import { contentQuery } from "@/lib/content";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import heroImage from "@/assets/hero-illustration.jpg";
 import revolutInvoiceImage from "@/assets/revolut-invoice-example.jpg";
@@ -120,12 +119,6 @@ const extraServices = [
     hint: "Sites vitrines et projets web simples.",
   },
   {
-    icon: Smartphone,
-    label: "Réseaux sociaux",
-    price: "sur devis",
-    hint: "Création, gestion ou accompagnement de comptes et pages.",
-  },
-  {
     icon: HeartHandshake,
     label: "Accompagnement personnel en communication",
     price: "50 € / 1 h",
@@ -136,6 +129,50 @@ const extraServices = [
     label: "Accompagnement création d'association",
     price: "sur devis",
     hint: "Démarches, organisation et communication d'une association loi 1901.",
+  },
+];
+
+type ComplementaryService = {
+  label: string;
+  price: string;
+  hint?: string;
+};
+
+const complementaryGroups: {
+  icon: LucideIcon;
+  label: string;
+  hint: string;
+  matches: (service: ComplementaryService) => boolean;
+}[] = [
+  {
+    icon: FileImage,
+    label: "Contenus & supports",
+    hint: "Rédaction de textes, affiches, flyers et contenus ponctuels pour les réseaux sociaux.",
+    matches: (service) => /rédaction|texte|affiche|flyer|réseaux sociaux|contenu/i.test(service.label),
+  },
+  {
+    icon: Palette,
+    label: "Identité visuelle",
+    hint: "Création d’une identité visuelle simple ou harmonisation graphique d’un projet existant.",
+    matches: (service) => /identité|visuel|graphique/i.test(service.label),
+  },
+  {
+    icon: Globe,
+    label: "Web, audio & vidéo",
+    hint: "Création de sites simples et productions ponctuelles audio, vidéo ou numériques.",
+    matches: (service) => /site|web|audio|vidéo|numérique/i.test(service.label),
+  },
+  {
+    icon: Network,
+    label: "Coordination de projet",
+    hint: "Recherche, comparaison et coordination des prestataires ou intervenants utiles.",
+    matches: (service) => /prestataire|coordination|projet|intervenant/i.test(service.label),
+  },
+  {
+    icon: HeartHandshake,
+    label: "Accompagnements spécifiques",
+    hint: "Création d’association et accompagnement personnel en communication ; modalités adaptées au besoin.",
+    matches: (service) => /association|accompagnement personnel/i.test(service.label),
   },
 ];
 
@@ -288,20 +325,23 @@ function Hero() {
 
 function Services() {
   const { data: dbExtra } = useQuery(contentQuery("service_extra"));
-  const extras: {
-    icon: LucideIcon;
-    label: string;
-    price: string;
-    hint?: string;
-  }[] =
+  const sourceExtras: ComplementaryService[] =
     dbExtra && dbExtra.length
       ? dbExtra.map((item) => ({
-          icon: iconFor(item.icon, Sparkles),
           label: item.title,
           price: item.extra_value ?? "sur devis",
           hint: item.description ?? undefined,
         }))
       : extraServices;
+  const groupedExtras = complementaryGroups.map((group) => ({
+    ...group,
+    services: sourceExtras.filter(group.matches).map((service) => ({
+      ...service,
+      label: /réseaux sociaux/i.test(service.label)
+        ? "Contenus ponctuels pour réseaux sociaux"
+        : service.label,
+    })),
+  }));
 
   return (
     <section id="services" className="scroll-mt-24 border-y border-border/60 bg-card py-20 lg:py-24">
@@ -389,13 +429,13 @@ function Services() {
                 </span>
                 <h3 className="mt-4 flex items-center gap-3 font-display text-2xl font-bold text-foreground md:text-3xl">
                   <PhoneCall size={26} className="shrink-0 text-primary" />
-                  Communication client externalisée
+                   Communication externalisée
                 </h3>
                 <p className="mt-5 leading-relaxed text-muted-foreground">
-                  Appels, messages, e-mails et réseaux sociaux : je peux prendre le relais sur une partie de votre communication client selon vos consignes.
+                   Je prends en charge une partie de votre communication quotidienne : appels, e-mails, messages et réseaux sociaux, selon les canaux et consignes définis ensemble.
                 </p>
                 <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                  Nous configurons ensemble la mise en place, les canaux activés et les réponses autorisées.
+                   Le service fonctionne par abonnement, avec une mise en place accompagnée et configurée avec vous.
                 </p>
               </div>
               <div className="flex shrink-0 flex-col items-start gap-4 lg:items-end lg:text-right">
@@ -433,7 +473,7 @@ function Services() {
           </div>
 
           <ul className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {extras.map((service, index) => {
+            {groupedExtras.map((service, index) => {
               const Icon = service.icon;
               return (
                 <AnimatedSection key={service.label} delay={index * 0.04}>
@@ -452,9 +492,18 @@ function Services() {
                         {service.hint}
                       </p>
                     )}
-                    <p className="mt-6 font-display text-base font-bold text-foreground">
-                      {service.price}
-                    </p>
+                    {service.services.length ? (
+                      <ul className="mt-5 space-y-2 border-t border-border pt-4">
+                        {service.services.map((item) => (
+                          <li key={item.label} className="flex items-start justify-between gap-3 text-xs leading-relaxed text-muted-foreground">
+                            <span>{item.label}</span>
+                            <span className="shrink-0 font-semibold text-foreground">{item.price}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="mt-5 border-t border-border pt-4 text-xs font-semibold text-foreground">Sur devis selon le besoin</p>
+                    )}
                   </li>
                 </AnimatedSection>
               );

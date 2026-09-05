@@ -37,13 +37,13 @@ import ringoverAsset from "@/assets/tools/ringover.svg.asset.json";
 export const Route = createFileRoute("/accueil-client")({
   head: () => ({
     meta: [
-      { title: "Communication client externalisée | ALC!" },
+      { title: "Communication externalisée | ALC!" },
       {
         name: "description",
         content:
-          "Communication client externalisée : appels, e-mails, SMS et réseaux sociaux. Abonnement fixe : 173,33 €/mois, soit 40 €/semaine.",
+          "Communication externalisée : appels, e-mails, SMS et réseaux sociaux. Abonnement fixe : 173,33 €/mois, soit 40 €/semaine.",
       },
-      { property: "og:title", content: "Communication client externalisée | Angel Leclerc Communication" },
+      { property: "og:title", content: "Communication externalisée | Angel Leclerc Communication" },
       {
         property: "og:description",
         content:
@@ -263,12 +263,12 @@ function AccueilClientPage() {
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-primary">
               <MapPin size={14} /> Périgord noir · à distance partout en France
             </span>
-            <h1 className="mt-6 font-display text-4xl font-extrabold text-foreground md:text-6xl">Communication client externalisée</h1>
+             <h1 className="mt-6 font-display text-4xl font-extrabold text-foreground md:text-6xl">Communication externalisée</h1>
             <p className="mt-6 max-w-3xl text-xl font-medium leading-relaxed text-foreground md:text-2xl">
               Quand vous êtes indisponible ou souhaitez déléguer certains échanges, je prends en charge une partie de votre communication client.
             </p>
             <p className="mt-4 max-w-3xl leading-relaxed text-muted-foreground">
-              Appels, SMS, e-mails, messages sociaux, renseignements ou confirmations : vous choisissez les canaux activés et nous définissons chaque réponse autorisée dans une fiche de consignes. La permanence téléphonique reste un module important du service, jamais une promesse de disponibilité 24/7 ou illimitée.
+               Le téléphone, les e-mails, les SMS et les réseaux sociaux sont différents modules d’une même offre. Vous choisissez les canaux activés et nous définissons chaque réponse autorisée dans une fiche de consignes. La permanence téléphonique reste un module important du service, jamais une promesse de disponibilité 24/7 ou illimitée.
             </p>
             <div className="mt-8 flex flex-col gap-5 border-l-4 border-primary pl-5 sm:flex-row sm:items-end sm:gap-10">
               <div>
@@ -316,7 +316,7 @@ function AccueilClientPage() {
       <section className="border-y border-border/60 bg-card py-20 lg:py-24">
         <div className="mx-auto max-w-7xl px-6">
           <AnimatedSection>
-            <SectionHeading eyebrow="Communication multicanale" title="Comment sont traités les messages, e-mails et échanges sociaux ?" text="Chaque client active seulement les canaux utiles. La fiche de consignes détermine ce que je peux répondre, transmettre ou suivre." />
+             <SectionHeading eyebrow="Communication multicanale" title="Comment sont traités les messages, e-mails et échanges sociaux ?" text="Chaque client active seulement les modules utiles. La fiche de consignes détermine ce que je peux répondre, transmettre ou suivre. La gestion éditoriale complète des réseaux sociaux n’est incluse que si elle est expressément prévue au contrat." />
           </AnimatedSection>
           <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-5">
             {digitalSteps.map((step, index) => {
