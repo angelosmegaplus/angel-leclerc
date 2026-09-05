@@ -25,7 +25,7 @@ import { AngelOSCardStyle } from "../components/AngelOSCardStyle";
 import { MaintenanceGate } from "../components/MaintenanceGate";
 import { CurrentPoliticalProgram } from "../components/politique/CurrentPoliticalProgram";
 import { RegionalExplorer } from "../components/politique/RegionalExplorer";
-import { PromoBanner } from "../components/PromoBanner";
+
 import { PoliticalWordingNormalizer } from "../components/politique/PoliticalWordingNormalizer";
 
 import { THEME_INIT_SCRIPT } from "../lib/theme";
@@ -215,7 +215,6 @@ function RootComponent() {
         ) : (
           <div className="flex min-h-screen flex-col">
             <Header />
-            <PromoBanner />
             <main className="flex-1">
               {isPolitiquePage ? <CurrentPoliticalProgram /> : <Outlet />}
               {isPolitiquePage ? <RegionalExplorer /> : null}
