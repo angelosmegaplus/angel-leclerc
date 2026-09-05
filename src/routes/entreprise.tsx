@@ -13,9 +13,7 @@ import {
   FileText,
   Globe,
   HeartHandshake,
-  Info,
   Mail,
-
   Network,
   Palette,
   PenLine,
@@ -231,9 +229,9 @@ const paymentMethods = [
 function EnterprisePage() {
   return (
     <div className="overflow-hidden">
+      <DevelopmentNotice />
       <Hero />
       <Services />
-      <DevelopmentNotice />
       <Method />
       <Explore />
       <WorkingTogether />
@@ -520,31 +518,19 @@ function Services() {
 
 function DevelopmentNotice() {
   return (
-    <section className="bg-background py-16 lg:py-20">
-      <div className="mx-auto max-w-4xl px-6">
-        <AnimatedSection>
-          <div className="rounded-3xl border border-border bg-card p-8 text-center md:p-12">
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-primary">
-              <Info size={14} /> Auto-entreprise en développement
-            </span>
-            <h2 className="mt-5 font-display text-2xl font-bold text-foreground md:text-3xl">
-              Certaines offres sont encore en construction
-            </h2>
-            <p className="mx-auto mt-4 max-w-2xl leading-relaxed text-muted-foreground">
-              Angel Leclerc Communication est une auto-entreprise en développement. Je travaille actuellement sur de nouvelles prestations, notamment la communication externalisée, et tout n’est pas encore figé.
-            </p>
-            <p className="mx-auto mt-3 max-w-2xl leading-relaxed text-muted-foreground">
-              Si vous avez une idée, un besoin particulier ou une proposition pour votre entreprise, votre association ou votre activité, n’hésitez pas à me contacter : je suis ouvert à construire une solution adaptée avec vous.
-            </p>
-            <a
-              href="/contact"
-              className="mt-8 inline-flex items-center gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-medium text-background transition-colors duration-300 hover:bg-primary"
-            >
-              Me proposer un besoin
-              <ArrowRight size={16} />
-            </a>
-          </div>
-        </AnimatedSection>
+    <section className="border-b border-border bg-card/60">
+      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-4 md:flex-row md:py-3">
+        <p className="text-center text-sm leading-relaxed text-muted-foreground md:text-left">
+          <span className="font-semibold text-foreground">Mon auto-entreprise est encore en développement.</span>{" "}
+          J’ai plusieurs idées et de nouveaux services à construire, donc tout n’est pas encore figé. Si vous avez une idée ou un besoin auquel je n’ai pas pensé, dites-le-moi : je suis ouvert à faire évoluer l’activité.
+        </p>
+        <a
+          href="/contact"
+          className="inline-flex shrink-0 items-center gap-2 rounded-full bg-foreground px-4 py-2 text-xs font-medium text-background transition-colors duration-300 hover:bg-primary"
+        >
+          Me proposer une idée
+          <ArrowRight size={14} />
+        </a>
       </div>
     </section>
   );
