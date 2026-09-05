@@ -37,17 +37,17 @@ import ringoverAsset from "@/assets/tools/ringover.svg.asset.json";
 export const Route = createFileRoute("/accueil-client")({
   head: () => ({
     meta: [
-      { title: "Communication client externalisée | Angel Leclerc Communication" },
+      { title: "Communication client externalisée | ALC!" },
       {
         name: "description",
         content:
-          "Communication client externalisée : appels, e-mails, SMS et réseaux sociaux. Abonnement fixe à partir de 173,33 €/mois, soit 40 €/semaine.",
+          "Communication client externalisée : appels, e-mails, SMS et réseaux sociaux. Abonnement fixe : 173,33 €/mois, soit 40 €/semaine.",
       },
       { property: "og:title", content: "Communication client externalisée | Angel Leclerc Communication" },
       {
         property: "og:description",
         content:
-          "Déléguez une partie de vos appels, e-mails, SMS et messages sociaux selon vos consignes. Tarif fixe à partir de 173,33 €/mois, soit 40 €/semaine.",
+          "Déléguez appels, e-mails, SMS et messages sociaux selon vos consignes. Tarif fixe : 173,33 €/mois, soit 40 €/semaine.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
