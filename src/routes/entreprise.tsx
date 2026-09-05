@@ -233,6 +233,7 @@ function EnterprisePage() {
     <div className="overflow-hidden">
       <Hero />
       <Services />
+      <DevelopmentNotice />
       <Method />
       <Explore />
       <WorkingTogether />
