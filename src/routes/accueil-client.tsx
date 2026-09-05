@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   ClipboardCheck,
   ClipboardList,
-  Clock,
   Cloud,
   Computer,
   FileText,
@@ -22,8 +21,6 @@ import {
   ShieldCheck,
   Smartphone,
   TestTube2,
-  UserCheck,
-  Wrench,
   type LucideIcon,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/AnimatedSection";
