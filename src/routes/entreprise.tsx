@@ -146,32 +146,32 @@ const complementaryGroups: {
 }[] = [
   {
     icon: FileImage,
-    label: "Contenus & supports",
-    hint: "Rédaction de textes, affiches, flyers et contenus ponctuels pour les réseaux sociaux.",
+    label: "Textes & visuels",
+    hint: "Textes, affiches, flyers et contenus ponctuels pour vos réseaux sociaux.",
     matches: (service) => /rédaction|texte|affiche|flyer|réseaux sociaux|contenu/i.test(service.label),
   },
   {
     icon: Palette,
     label: "Identité visuelle",
-    hint: "Création d’une identité visuelle simple ou harmonisation graphique d’un projet existant.",
+    hint: "Une image simple et cohérente pour lancer ou améliorer votre projet.",
     matches: (service) => /identité|visuel|graphique/i.test(service.label),
   },
   {
     icon: Globe,
-    label: "Web, audio & vidéo",
-    hint: "Création de sites simples et productions ponctuelles audio, vidéo ou numériques.",
+    label: "Site, audio & vidéo",
+    hint: "Un site simple ou une création ponctuelle en audio ou en vidéo.",
     matches: (service) => /site|web|audio|vidéo|numérique/i.test(service.label),
   },
   {
     icon: Network,
-    label: "Coordination de projet",
-    hint: "Recherche, comparaison et coordination des prestataires ou intervenants utiles.",
+    label: "Organisation de projet",
+    hint: "Je cherche les bons prestataires et j’organise leur travail avec vous.",
     matches: (service) => /prestataire|coordination|projet|intervenant/i.test(service.label),
   },
   {
     icon: HeartHandshake,
-    label: "Accompagnements spécifiques",
-    hint: "Création d’association et accompagnement personnel en communication ; modalités adaptées au besoin.",
+    label: "Autres accompagnements",
+    hint: "Création d’association ou aide personnelle en communication, selon votre besoin.",
     matches: (service) => /association|accompagnement personnel/i.test(service.label),
   },
 ];
@@ -432,10 +432,10 @@ function Services() {
                    Communication externalisée
                 </h3>
                 <p className="mt-5 leading-relaxed text-muted-foreground">
-                   Je prends en charge une partie de votre communication quotidienne : appels, e-mails, messages et réseaux sociaux, selon les canaux et consignes définis ensemble.
+                   Vous n’avez pas le temps de répondre à tous vos clients ? Je peux prendre le relais pour les appels, e-mails, messages et réseaux sociaux, selon ce que vous me confiez.
                 </p>
                 <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                   Le service fonctionne par abonnement, avec une mise en place accompagnée et configurée avec vous.
+                   On met tout en place ensemble au départ, puis je m’occupe des échanges prévus dans votre formule.
                 </p>
               </div>
               <div className="flex shrink-0 flex-col items-start gap-4 lg:items-end lg:text-right">
@@ -448,7 +448,7 @@ function Services() {
                   href="/accueil-client"
                   className="inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background transition-all duration-300 hover:gap-3 hover:bg-primary"
                 >
-                  Voir le fonctionnement détaillé
+                  Voir comment ça marche
                   <ArrowRight size={16} />
                 </a>
               </div>
