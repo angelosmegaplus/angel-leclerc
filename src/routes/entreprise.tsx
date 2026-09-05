@@ -18,6 +18,7 @@ import {
   Network,
   Palette,
   PenLine,
+  PhoneCall,
   Radio,
   ReceiptText,
   ShieldCheck,
