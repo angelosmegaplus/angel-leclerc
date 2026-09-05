@@ -56,7 +56,15 @@ export const Route = createFileRoute("/entreprise")({
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:url", content: "/entreprise" },
     ],
-    links: [{ rel: "canonical", href: "/entreprise" }],
+    links: [
+      { rel: "canonical", href: "/entreprise" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap",
+      },
+    ],
     scripts: [
       {
         type: "application/ld+json",
@@ -228,7 +236,7 @@ const paymentMethods = [
 
 function EnterprisePage() {
   return (
-    <div className="overflow-hidden">
+    <div className="overflow-hidden font-['Manrope',sans-serif] [--font-display:'Sora',sans-serif] [&_h1]:tracking-normal [&_h2]:tracking-normal [&_h3]:tracking-normal [&_h4]:tracking-normal">
       <DevelopmentNotice />
       <Hero />
       <Services />
@@ -242,42 +250,35 @@ function EnterprisePage() {
 
 function Hero() {
   return (
-    <section id="accueil" className="bg-background">
-      <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 py-16 lg:grid-cols-2 lg:gap-16 lg:py-28">
+    <section id="accueil" className="relative border-b border-border/70 bg-background">
+      <div className="mx-auto grid min-h-[calc(100svh-10rem)] max-w-7xl items-center gap-10 px-5 py-12 sm:px-6 md:py-16 lg:min-h-[42rem] lg:grid-cols-[1.08fr_.92fr] lg:gap-20 lg:py-20">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="space-y-8"
+          className="relative z-10 space-y-7"
         >
-          <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+          <span className="inline-flex items-center gap-2 rounded-lg border border-primary/25 bg-primary/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-primary">
             <Sparkles size={14} /> Angel Leclerc Communication
           </span>
 
-          <h1 className="font-display text-4xl font-extrabold leading-[1.08] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-            J’accompagne vos projets de communication{" "}
-            <span className="text-primary">de l’idée à la mise en œuvre.</span>
+          <h1 className="max-w-3xl font-display text-4xl font-extrabold leading-[1.08] text-foreground sm:text-5xl lg:text-6xl">
+            Donnons une direction claire à{" "}
+            <span className="text-primary">votre communication.</span>
           </h1>
 
-          <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
+          <p className="max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
             Conseil, stratégie, gestion de projet et réalisation de prestations concrètes :
             un accompagnement adapté à votre besoin, votre organisation et votre budget.
           </p>
 
-          <div className="flex flex-wrap gap-4">
-            <a
-              href="#services"
-              className="inline-flex items-center gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-medium text-background transition-colors duration-300 hover:bg-primary"
-            >
-              Découvrir l’offre
-              <ArrowRight size={16} />
-            </a>
-            <a
-              href="/contact"
-              className="inline-flex items-center rounded-full border border-foreground px-8 py-4 text-sm font-medium text-foreground transition-all duration-300 hover:bg-foreground hover:text-background"
-            >
-              Parler de mon projet
-            </a>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button asChild size="lg" className="h-12 rounded-lg bg-primary px-6 font-bold text-primary-foreground shadow-lg shadow-primary/15 hover:bg-accent">
+              <a href="#services">Découvrir mes services <ArrowRight size={16} /></a>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="h-12 rounded-lg border-foreground/30 bg-card px-6 font-bold hover:border-foreground hover:bg-foreground hover:text-background">
+              <a href="/contact">Parler de mon projet</a>
+            </Button>
           </div>
 
           <div className="flex flex-wrap gap-2 text-xs font-medium text-muted-foreground">
@@ -288,7 +289,7 @@ function Hero() {
             ].map((item) => (
               <span
                 key={item}
-                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5"
+                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5"
               >
                 <CircleCheck size={14} className="text-primary" /> {item}
               </span>
@@ -300,9 +301,9 @@ function Hero() {
           initial={{ opacity: 0, scale: 0.97, y: 12 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mx-auto w-full max-w-xl"
+          className="relative mx-auto w-full max-w-xl lg:justify-self-end"
         >
-          <div className="aspect-[4/5] overflow-hidden rounded-2xl bg-muted sm:aspect-[4/3] lg:aspect-[4/5]">
+          <div className="aspect-[4/3] overflow-hidden rounded-xl border border-border bg-muted shadow-2xl shadow-foreground/10 lg:aspect-[4/5]">
             <img
               src={heroImage}
               alt="Bureau de préparation d'un projet de communication"
@@ -312,9 +313,9 @@ function Hero() {
               fetchPriority="high"
             />
           </div>
-          <div className="absolute -bottom-6 -left-4 rounded-2xl bg-primary p-6 text-primary-foreground shadow-xl shadow-primary/25 sm:-left-6 sm:p-8">
-            <p className="font-display text-xl font-bold sm:text-2xl">Un seul interlocuteur</p>
-            <p className="mt-1 text-sm opacity-90">
+          <div className="absolute inset-x-3 bottom-3 rounded-lg bg-foreground/95 p-5 text-background shadow-xl backdrop-blur sm:inset-x-auto sm:-bottom-5 sm:-left-5 sm:max-w-sm sm:p-6">
+            <p className="font-display text-lg font-bold sm:text-xl">Un seul interlocuteur</p>
+            <p className="mt-1 text-xs leading-relaxed text-background/75 sm:text-sm">
               Réfléchir, organiser, coordonner et faire avancer le projet.
             </p>
           </div>
@@ -345,92 +346,68 @@ function Services() {
   }));
 
   return (
-    <section id="services" className="scroll-mt-24 border-y border-border/60 bg-card py-20 lg:py-24">
+    <section id="services" className="scroll-mt-24 bg-card py-16 md:py-20 lg:py-24">
       <div className="mx-auto max-w-7xl px-6">
-        <AnimatedSection className="mx-auto max-w-3xl text-center">
+        <AnimatedSection className="max-w-3xl">
           <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
             Offre principale
           </span>
-          <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-foreground md:text-5xl">
-            Conseil en communication
+          <h2 className="mt-3 font-display text-3xl font-extrabold text-foreground md:text-5xl">
+            Deux façons de vous accompagner
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-            Un accompagnement adapté à votre projet, de la réflexion jusqu’à la mise en œuvre.
+          <p className="mt-4 max-w-2xl text-muted-foreground">
+            Une mission ponctuelle pour faire avancer un projet, ou un abonnement pour vous aider au quotidien.
           </p>
         </AnimatedSection>
 
-        <AnimatedSection delay={0.08} className="mt-12 md:mt-16">
-          <article className="group rounded-3xl border border-border p-8 transition-colors duration-300 hover:border-primary md:p-12">
+        <div className="mt-10 grid gap-6 lg:grid-cols-2">
+        <AnimatedSection delay={0.08}>
+          <article className="group flex h-full flex-col rounded-xl border border-border bg-background p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary hover:shadow-xl hover:shadow-foreground/5 md:p-8">
             <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-2xl">
                 <span className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
                   Accompagnement sur mesure
                 </span>
-                <h3 className="mt-4 font-display text-2xl font-bold text-foreground md:text-3xl">
-                  Votre projet, avec une direction claire
+                <div className="mt-5 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <BriefcaseBusiness size={23} />
+                </div>
+                <h3 className="mt-5 font-display text-2xl font-bold text-foreground md:text-3xl">
+                  Conseil en communication
                 </h3>
                 <p className="mt-5 leading-relaxed text-muted-foreground">
                   Vous avez une idée, un projet, un événement ou simplement besoin d’améliorer votre communication ? Je vous accompagne de la réflexion jusqu’à la mise en œuvre, avec des solutions adaptées à vos besoins et à votre budget.
                 </p>
               </div>
-              <div className="shrink-0 lg:text-right">
+              <div className="shrink-0">
                 <p className="text-xs font-semibold uppercase tracking-widest text-primary">Tarif indicatif</p>
                 <p className="mt-2 font-display text-3xl font-extrabold text-foreground">À partir de 70 €</p>
                 <p className="mt-1 text-xs text-muted-foreground">Devis gratuit et personnalisé</p>
               </div>
             </div>
 
-            <div className="mt-10 overflow-hidden rounded-[2rem] bg-foreground text-background">
-              <div className="grid lg:grid-cols-2">
-                <div className="p-8 md:p-10 lg:p-14">
-                  <span className="inline-block rounded-full border border-background/30 px-4 py-1.5 text-xs font-medium">
-                    Exemple concret
-                  </span>
-                  <h4 className="mt-7 font-display text-2xl font-bold md:text-3xl">
-                    Une association prépare un événement…
-                  </h4>
-                  <p className="mt-4 leading-relaxed text-background/70">
-                    …mais ne sait pas comment le faire connaître. Je peux définir avec elle la stratégie de communication, identifier les publics à toucher, choisir les supports adaptés et organiser un calendrier d’actions.
-                  </p>
-                  <p className="mt-4 text-sm leading-relaxed text-background/70">
-                    Je peux également gérer ses réseaux sociaux, rédiger les contenus nécessaires, créer certains supports simples, rechercher des prestataires comme un imprimeur, un photographe, un vidéaste ou un développeur, comparer les offres et coordonner les différents intervenants.
-                  </p>
-                </div>
-                <div className="flex flex-col justify-between border-t border-background/15 p-8 md:p-10 lg:border-l lg:border-t-0 lg:p-14">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                      Conseiller ou chef de projet
-                    </p>
-                    <p className="mt-4 leading-relaxed text-background/80">
-                      Selon le projet, je peux intervenir aussi bien comme conseiller que comme chef de projet, tout en réalisant directement certaines actions lorsque cela est pertinent.
-                    </p>
-                    <p className="mt-4 text-sm text-background/60">
-                      Le tarif évolue selon l’importance, la complexité et les besoins du projet.
-                    </p>
-                  </div>
-                  <a
-                    href="/contact"
-                    className="group/link mt-8 inline-flex items-center gap-2 font-bold text-primary transition-all duration-300 hover:gap-4"
-                  >
-                    Demander un devis
-                    <ArrowRight size={18} />
-                  </a>
-                </div>
-              </div>
+            <div className="mt-auto border-t border-border pt-6">
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Exemple : définir la communication d’un événement, préparer les contenus et coordonner les bons prestataires.
+              </p>
+              <a href="/contact" className="group/link mt-5 inline-flex items-center gap-2 font-bold text-foreground transition-colors hover:text-primary">
+                Demander un devis <ArrowRight size={18} className="transition-transform group-hover/link:translate-x-1" />
+              </a>
             </div>
           </article>
         </AnimatedSection>
 
-        <AnimatedSection delay={0.1} className="mt-12 md:mt-16">
-          <article className="group rounded-3xl border border-border p-8 transition-colors duration-300 hover:border-primary md:p-12">
+        <AnimatedSection delay={0.1}>
+          <article className="group flex h-full flex-col rounded-xl border-2 border-primary bg-background p-6 shadow-xl shadow-primary/10 transition-transform duration-300 hover:-translate-y-1 md:p-8">
             <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-2xl">
                 <span className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                  Nouvelle offre · Périgord noir et à distance
+                  Abonnement · Périgord noir et à distance
                 </span>
-                <h3 className="mt-4 flex items-center gap-3 font-display text-2xl font-bold text-foreground md:text-3xl">
-                  <PhoneCall size={26} className="shrink-0 text-primary" />
-                   Communication externalisée
+                <div className="mt-5 flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                  <PhoneCall size={23} />
+                </div>
+                <h3 className="mt-5 font-display text-2xl font-bold text-foreground md:text-3xl">
+                  Communication externalisée
                 </h3>
                 <p className="mt-5 leading-relaxed text-muted-foreground">
                    Vous n’avez pas le temps de répondre à tous vos clients ? Je peux prendre le relais pour les appels, e-mails, messages et réseaux sociaux, selon ce que vous me confiez.
@@ -439,7 +416,7 @@ function Services() {
                    On met tout en place ensemble au départ, puis je m’occupe des échanges prévus dans votre formule.
                 </p>
               </div>
-              <div className="flex shrink-0 flex-col items-start gap-4 lg:items-end lg:text-right">
+              <div className="flex shrink-0 flex-col items-start gap-4">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-primary">Mini permanence</p>
                   <p className="mt-2 font-display text-3xl font-extrabold text-foreground">173,33 €/mois</p>
@@ -447,7 +424,7 @@ function Services() {
                 </div>
                 <a
                   href="/accueil-client"
-                  className="inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background transition-all duration-300 hover:gap-3 hover:bg-primary"
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition-all duration-300 hover:gap-3 hover:bg-accent"
                 >
                   Voir comment ça marche
                   <ArrowRight size={16} />
@@ -456,8 +433,9 @@ function Services() {
             </div>
           </article>
         </AnimatedSection>
+        </div>
 
-        <AnimatedSection delay={0.12} className="mt-16 md:mt-20">
+        <AnimatedSection delay={0.12} className="mt-16 border-t border-border pt-14 md:mt-20 md:pt-16">
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div>
               <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
@@ -473,12 +451,12 @@ function Services() {
             <p className="text-xs italic text-muted-foreground">Tarifs indicatifs · devis selon le projet</p>
           </div>
 
-          <ul className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {groupedExtras.map((service, index) => {
               const Icon = service.icon;
               return (
                 <AnimatedSection key={service.label} delay={index * 0.04}>
-                  <li className="group flex h-full flex-col rounded-3xl border border-border p-8 transition-colors duration-300 hover:border-primary">
+                  <li className="group flex h-full flex-col rounded-xl border border-border bg-background p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary hover:shadow-lg hover:shadow-foreground/5">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold uppercase tracking-widest text-primary">
                         {String(index + 1).padStart(2, "0")}
@@ -518,30 +496,30 @@ function Services() {
 
 function DevelopmentNotice() {
   return (
-    <section className="border-b border-border bg-card/60">
-      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-4 md:flex-row md:py-3">
-        <p className="text-center text-sm leading-relaxed text-muted-foreground md:text-left">
+    <aside className="border-b border-primary/20 bg-primary/8">
+      <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-3 px-5 py-3 sm:px-6 md:flex-row md:items-center">
+        <p className="text-sm leading-relaxed text-muted-foreground">
           <span className="font-semibold text-foreground">Mon auto-entreprise est encore en développement.</span>{" "}
           J’ai plusieurs idées et de nouveaux services à construire, donc tout n’est pas encore figé. Si vous avez une idée ou un besoin auquel je n’ai pas pensé, dites-le-moi : je suis ouvert à faire évoluer l’activité.
         </p>
         <a
           href="/contact"
-          className="inline-flex shrink-0 items-center gap-2 rounded-full bg-foreground px-4 py-2 text-xs font-medium text-background transition-colors duration-300 hover:bg-primary"
+          className="inline-flex shrink-0 items-center gap-2 text-xs font-bold text-primary transition-colors hover:text-accent"
         >
           Me proposer une idée
           <ArrowRight size={14} />
         </a>
       </div>
-    </section>
+    </aside>
   );
 }
 
 function Method() {
 
   return (
-    <section className="bg-background py-20 lg:py-24">
+    <section className="bg-background py-16 md:py-20 lg:py-24">
       <div className="mx-auto max-w-7xl px-6">
-        <AnimatedSection className="mx-auto max-w-3xl text-center">
+        <AnimatedSection className="max-w-3xl">
           <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Méthode</span>
           <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-foreground md:text-5xl">
             Comment se déroule une mission ?
@@ -551,13 +529,13 @@ function Method() {
           </p>
         </AnimatedSection>
 
-        <ol className="mt-14 grid gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-12">
+        <ol className="mt-12 grid gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-2 lg:grid-cols-4">
           {steps.map((step, index) => (
             <AnimatedSection key={step.n} delay={index * 0.08}>
-              <li className="relative">
+              <li className="relative min-h-52 bg-card p-6 md:p-8">
                 <span
                   aria-hidden
-                  className="absolute -top-8 left-0 font-display text-8xl font-black leading-none text-primary/10"
+                  className="absolute right-5 top-4 font-display text-6xl font-black leading-none text-primary/10"
                 >
                   {step.n}
                 </span>
@@ -576,38 +554,38 @@ function Method() {
 
 function Explore() {
   return (
-    <section className="border-y border-border/60 bg-card py-20 lg:py-24">
+    <section className="border-y border-border/60 bg-foreground py-16 text-background md:py-20 lg:py-24">
       <div className="mx-auto max-w-7xl px-6">
-        <AnimatedSection className="mx-auto max-w-3xl text-center">
+        <AnimatedSection className="max-w-3xl">
           <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Pour aller plus loin</span>
-          <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-foreground md:text-5xl">
+          <h2 className="mt-3 font-display text-3xl font-extrabold text-background md:text-5xl">
             L’essentiel ici, les détails dans mon parcours
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
+          <p className="mt-4 max-w-2xl text-background/65">
             Cette page reste centrée sur mes services. Mon CV, mes réalisations et ma boîte à outils sont déjà détaillés ailleurs sur le site.
           </p>
         </AnimatedSection>
 
-        <div className="mt-12 grid gap-6 lg:grid-cols-3">
+        <div className="mt-10 grid gap-4 md:grid-cols-2">
           {parcoursLinks.map((item, index) => {
             const Icon = item.icon;
             return (
               <AnimatedSection key={item.title} delay={index * 0.08}>
                 <a
                   href={item.href}
-                  className="group flex h-full min-h-64 flex-col rounded-3xl border border-border bg-background p-8 transition-colors duration-300 hover:border-primary"
+                  className="group flex h-full min-h-56 flex-col rounded-xl border border-background/15 bg-background/5 p-7 transition-colors duration-300 hover:border-primary hover:bg-background/10"
                 >
                   <div className="flex items-center justify-between">
                     <Icon size={22} className="text-primary" />
                     <ArrowUpRight
                       size={20}
-                      className="text-muted-foreground transition-all duration-300 group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-primary"
+                     className="text-background/50 transition-all duration-300 group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-primary"
                     />
                   </div>
                   <p className="mt-6 text-xs font-bold uppercase tracking-widest text-primary">{item.eyebrow}</p>
-                  <h3 className="mt-2 font-display text-2xl font-bold text-foreground">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{item.text}</p>
-                  <span className="mt-auto inline-flex items-center gap-2 pt-7 text-sm font-semibold text-foreground transition-colors group-hover:text-primary">
+                   <h3 className="mt-2 font-display text-2xl font-bold text-background">{item.title}</h3>
+                   <p className="mt-3 text-sm leading-relaxed text-background/65">{item.text}</p>
+                   <span className="mt-auto inline-flex items-center gap-2 pt-7 text-sm font-semibold text-background transition-colors group-hover:text-primary">
                     {item.cta}
                   </span>
                 </a>
@@ -650,11 +628,11 @@ function PaymentLogos() {
 
 function WorkingTogether() {
   return (
-    <section className="bg-background py-20 lg:py-24">
+    <section className="bg-background py-16 md:py-20 lg:py-24">
       <div className="mx-auto max-w-7xl px-6">
         <div className="grid gap-6 lg:grid-cols-[.9fr_1.1fr]">
           <AnimatedSection>
-            <div className="h-full rounded-3xl border border-border bg-card p-8 transition-colors duration-300 hover:border-primary md:p-10">
+            <div className="h-full rounded-xl border border-border bg-card p-7 transition-colors duration-300 hover:border-primary md:p-10">
               <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-primary">
                 <ShieldCheck size={16} /> Fonctionnement
               </p>
@@ -685,7 +663,7 @@ function WorkingTogether() {
           </AnimatedSection>
 
           <AnimatedSection delay={0.08}>
-            <div className="h-full overflow-hidden rounded-3xl border border-border bg-card">
+            <div className="h-full overflow-hidden rounded-xl border border-border bg-card">
               <div className="grid h-full md:grid-cols-[1fr_.88fr]">
                 <div className="p-8 md:p-10">
                   <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-primary">
@@ -722,11 +700,11 @@ function WorkingTogether() {
 
 function Contact() {
   return (
-    <section id="contact" className="scroll-mt-24 border-t border-border/60 bg-card py-20 lg:py-24">
+    <section id="contact" className="scroll-mt-24 border-t border-border/60 bg-card py-16 md:py-20 lg:py-24">
       <div className="mx-auto max-w-3xl px-6 text-center">
         <AnimatedSection>
           <span className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Votre projet</span>
-          <h2 className="mt-4 font-display text-3xl font-extrabold tracking-tight text-foreground md:text-5xl">
+          <h2 className="mt-4 font-display text-3xl font-extrabold text-foreground md:text-5xl">
             Une idée, un besoin ou un projet encore flou ?
           </h2>
           <p className="mx-auto mt-5 max-w-xl leading-relaxed text-muted-foreground">
@@ -737,7 +715,7 @@ function Contact() {
             <Button
               asChild
               size="lg"
-              className="h-auto rounded-full bg-primary px-10 py-5 text-base font-bold text-primary-foreground transition-transform duration-300 hover:scale-105 hover:bg-primary"
+              className="h-12 rounded-lg bg-primary px-8 text-base font-bold text-primary-foreground shadow-lg shadow-primary/15 hover:bg-accent"
             >
               <a href="/contact">
                 <Mail size={18} className="mr-2" />
