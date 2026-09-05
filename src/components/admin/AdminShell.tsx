@@ -48,17 +48,10 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
   const { preference, setPreference } = useThemePreference();
   const resolvedTheme = typeof window === "undefined" ? "light" : resolveTheme(preference);
   const isDark = resolvedTheme === "dark";
-  const legacyCourses = active === "candidatures";
-  const legacyDashboard = active === "angel-ai";
-  const effectiveActive = legacyCourses ? "etudes-travail" : legacyDashboard ? "dashboard" : active;
+  const legacyDashboard = active === "angel-ai" || active === "candidatures" || active === "etudes-travail";
+  const effectiveActive = legacyDashboard ? "dashboard" : active;
 
-  const shellItems = useMemo<AdminNavItem[]>(() => {
-    if (items.some((item) => item.key === "etudes-travail")) return items;
-    return [
-      ...items,
-      { key: "etudes-travail", label: "Mes Cours", icon: BookOpen, group: "Modules", primary: true },
-    ];
-  }, [items]);
+  const shellItems = items;
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -66,9 +59,8 @@ export function AdminShell({ items, active, onSelect, title, actions, children }
   }, [open]);
 
   useEffect(() => {
-    if (legacyCourses) onSelect("etudes-travail");
-    else if (legacyDashboard) onSelect("dashboard");
-  }, [legacyCourses, legacyDashboard, onSelect]);
+    if (legacyDashboard) onSelect("dashboard");
+  }, [legacyDashboard, onSelect]);
 
   const compactItems = useMemo(() => COMPACT_NAV.map((definition) => {
     const source = shellItems.find((item) => item.key === definition.source);
