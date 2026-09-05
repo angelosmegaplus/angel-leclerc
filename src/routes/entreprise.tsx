@@ -286,7 +286,7 @@ function Hero() {
               <a href="#services">Découvrir mes services <ArrowRight size={16} /></a>
             </Button>
             <Button asChild size="lg" variant="outline" className="h-12 rounded-full border-foreground/25 bg-card px-6 font-bold hover:border-foreground hover:bg-foreground hover:text-background">
-              <a href="/contact">Discutons de votre projet</a>
+              <a href="/contact?parcours=projet&sujet=Je%20souhaite%20discuter%20d%27un%20projet%20de%20communication.">Discutons de votre projet</a>
             </Button>
           </div>
 
@@ -399,7 +399,7 @@ function Services() {
               <p className="text-sm leading-relaxed text-muted-foreground">
                 Exemple : définir la communication d’un événement, préparer les contenus et coordonner les bons prestataires.
               </p>
-              <a href="/contact" className="group/link mt-5 inline-flex items-center gap-2 font-bold text-foreground transition-colors hover:text-primary">
+              <a href="/contact?parcours=projet&sujet=Je%20souhaite%20un%20devis%20pour%20un%20accompagnement%20en%20communication." className="group/link mt-5 inline-flex items-center gap-2 font-bold text-foreground transition-colors hover:text-primary">
                 Demander un devis <ArrowRight size={18} className="transition-transform group-hover/link:translate-x-1" />
               </a>
             </div>
@@ -513,7 +513,7 @@ function DevelopmentNotice() {
           J’ai plusieurs idées et de nouveaux services à construire, donc tout n’est pas encore figé. Si vous avez une idée ou un besoin auquel je n’ai pas pensé, dites-le-moi : je suis ouvert à faire évoluer l’activité.
         </p>
         <a
-          href="/contact"
+          href="/contact?parcours=autre&sujet=J%27ai%20une%20id%C3%A9e%20de%20service%20%C3%A0%20vous%20proposer."
           className="inline-flex shrink-0 items-center gap-2 text-xs font-bold text-primary transition-colors hover:text-accent"
         >
           Me proposer une idée
