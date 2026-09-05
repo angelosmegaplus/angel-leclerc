@@ -60,10 +60,11 @@ export const listGoogleCalendarEvents = createServerFn({ method: "GET" })
     const timeMin = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const timeMax = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000).toISOString();
 
-    // Le calendrier personnel connu est lu en premier. Cette lecture directe évite
+    // L'alias "primary" pointe toujours vers le calendrier principal du compte
+    // connecté, quel que soit l'identifiant réel. Cette lecture directe évite
     // qu'une permission calendarList manquante fasse apparaître un faux agenda vide.
     const primaryCalendar: CalendarRef = {
-      id: process.env["GOOGLE_PRIMARY_CALENDAR_ID"]?.trim() || FLAMME_GOOGLE_ACCOUNT,
+      id: process.env["GOOGLE_PRIMARY_CALENDAR_ID"]?.trim() || "primary",
       name: FLAMME_GOOGLE_ACCOUNT,
     };
 
@@ -95,9 +96,12 @@ export const listGoogleCalendarEvents = createServerFn({ method: "GET" })
       .flatMap((result) => result.status === "fulfilled" ? result.value : [])
       .sort((a, b) => a.start.localeCompare(b.start));
 
-    const primaryResult = results[0];
-    if (primaryResult?.status === "rejected") {
-      const reason = primaryResult.reason instanceof Error ? primaryResult.reason.message : String(primaryResult.reason ?? "");
+    // On ne signale un échec Google que si aucune lecture n'a abouti : un seul
+    // calendrier inaccessible ne doit pas masquer les événements des autres.
+    if (!results.some((result) => result.status === "fulfilled")) {
+      const reason = results[0]?.status === "rejected"
+        ? (results[0].reason instanceof Error ? results[0].reason.message : String(results[0].reason ?? ""))
+        : "Aucun calendrier accessible.";
       throw new Error(`Agenda ${FLAMME_GOOGLE_ACCOUNT} inaccessible. ${reason}`.trim());
     }
 

@@ -21,7 +21,7 @@ export async function buildRealNotifications(db: Db): Promise<Candidate[]> {
     db.from("contact_requests").select("id,full_name,created_at,is_read").eq("is_read", false).limit(50),
     db.from("ai_actions").select("id,title,status,resolved_at").eq("status", "done").limit(50),
     db.from("oauth_connections").select("provider,status,expires_at").limit(50),
-    db.from("interviews").select("id,subject,scheduled_at").limit(100),
+    db.from("interviews").select("id,title,scheduled_at").limit(100),
     db.from("articles").select("id,title,slug,published,published_at").eq("published", true).limit(20),
   ]);
 
@@ -74,7 +74,7 @@ export async function buildRealNotifications(db: Db): Promise<Candidate[]> {
     if (delta > 0 && delta < 2 * DAY) out.push({
       dedupe_key: `interview_soon:${i.id}:${i.scheduled_at}`,
       kind: "agenda",
-      title: `Rendez-vous proche : ${i.subject ?? "interview"}`,
+      title: `Rendez-vous proche : ${i.title ?? "interview"}`,
       content: `Prévu le ${at.toLocaleString("fr-FR")}.`,
       link: "/admin?tab=agenda",
     });
