@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import type { LucideIcon } from "lucide-react";
 import { CalendarDays, CheckCircle2, CircleDot, FolderKanban, ListTodo } from "lucide-react";
 import { CrudModule } from "./CrudModule";
 import { AdminCard } from "./AdminShell";
