@@ -5,7 +5,7 @@ import { Avatar, Modal, VerifiedName, cx, isAllowedMedia, moderatePublicText, no
 
 type VideoItem={post:Post;media:Media;author?:Profile;reactions:ReactionRow[];comments:number;saved:boolean};
 
-function useVideoUrl(media:Media){const [url,setUrl]=useState<string|null>(null);useEffect(()=>{let active=true;void(async()=>{if((media.bucket??"flamme-media")==="flamme-media"){const next=supabase.storage.from("flamme-media").getPublicUrl(media.path).data.publicUrl;if(active)setUrl(next);return}const {data}=await supabase.storage.from("flamme-private-media").createSignedUrl(media.path,3600);if(active)setUrl(data?.signedUrl??null)})();return()=>{active=false}},[media.bucket,media.path]);return url}
+function useVideoUrl(media:Media){const [url,setUrl]=useState<string|null>(null);useEffect(()=>{let active=true;void(async()=>{const {data}=await supabase.storage.from(media.bucket??"flamme-media").createSignedUrl(media.path,3600);if(active)setUrl(data?.signedUrl??null)})();return()=>{active=false}},[media.bucket,media.path]);return url}
 
 function VideoComments({open,onClose,post,me}:{open:boolean;onClose:()=>void;post:Post;me:Profile}){
   const [comments,setComments]=useState<CommentRow[]>([]);const [profiles,setProfiles]=useState(new Map<string,Profile>());const [draft,setDraft]=useState("");const [busy,setBusy]=useState(false);
