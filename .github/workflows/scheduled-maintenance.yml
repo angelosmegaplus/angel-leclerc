@@ -118,7 +118,7 @@ jobs:
           echo "Candidatures synchronisées : ${imported} importée(s), ${updated} mise(s) à jour, ${skipped} ignorée(s)."
 
       - name: Check out latest main
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           ref: main
           fetch-depth: 1
