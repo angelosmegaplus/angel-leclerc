@@ -236,7 +236,7 @@ const paymentMethods = [
 
 function EnterprisePage() {
   return (
-    <div className="overflow-hidden font-['Manrope',sans-serif] [--font-display:'Sora',sans-serif] [&_h1]:tracking-normal [&_h2]:tracking-normal [&_h3]:tracking-normal [&_h4]:tracking-normal">
+    <div className="overflow-hidden">
       <DevelopmentNotice />
       <Hero />
       <Services />
@@ -270,7 +270,7 @@ function Hero() {
             <Sparkles size={14} /> Angel Leclerc Communication
           </span>
 
-          <h1 className="max-w-3xl font-display text-4xl font-extrabold leading-[1.08] text-foreground sm:text-5xl lg:text-6xl">
+          <h1 className="max-w-3xl font-display text-4xl font-bold leading-[1.08] text-foreground sm:text-5xl lg:text-6xl">
             Donnons ensemble une direction claire à{" "}
             <span className="text-primary">votre communication.</span>
           </h1>
@@ -357,12 +357,12 @@ function Services() {
 
   return (
     <section id="services" className="scroll-mt-24 bg-card py-16 md:py-20 lg:py-24">
-      <div className="mx-auto max-w-7xl px-6">
+      <div className="container-tight">
         <AnimatedSection className="max-w-3xl">
           <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
             Offre principale
           </span>
-          <h2 className="mt-3 font-display text-3xl font-extrabold text-foreground md:text-5xl">
+          <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-5xl">
             Deux façons de vous accompagner
           </h2>
           <p className="mt-4 max-w-2xl text-muted-foreground">
@@ -390,7 +390,7 @@ function Services() {
               </div>
               <div className="shrink-0">
                 <p className="text-xs font-semibold uppercase tracking-widest text-primary">Tarif indicatif</p>
-                <p className="mt-2 font-display text-3xl font-extrabold text-foreground">À partir de 70 €</p>
+                <p className="mt-2 font-display text-3xl font-bold text-foreground">À partir de 70 €</p>
                 <p className="mt-1 text-xs text-muted-foreground">Devis gratuit et personnalisé</p>
               </div>
             </div>
@@ -429,7 +429,7 @@ function Services() {
               <div className="flex shrink-0 flex-col items-start gap-4">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-primary">Mini permanence</p>
-                  <p className="mt-2 font-display text-3xl font-extrabold text-foreground">173,33 €/mois</p>
+                  <p className="mt-2 font-display text-3xl font-bold text-foreground">173,33 €/mois</p>
                   <p className="mt-1 text-sm font-semibold text-muted-foreground">soit 40 €/semaine</p>
                 </div>
                 <a
@@ -528,10 +528,10 @@ function Method() {
 
   return (
     <section className="bg-background py-16 md:py-20 lg:py-24">
-      <div className="mx-auto max-w-7xl px-6">
+      <div className="container-tight">
         <AnimatedSection className="max-w-3xl">
           <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Méthode</span>
-          <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-foreground md:text-5xl">
+          <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground md:text-5xl">
             Comment se déroule une mission ?
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
@@ -545,7 +545,7 @@ function Method() {
               <li className="relative min-h-52 bg-card p-6 md:p-8">
                 <span
                   aria-hidden
-                  className="absolute right-5 top-4 font-display text-6xl font-black leading-none text-primary/10"
+                  className="absolute right-5 top-4 font-display text-6xl font-bold leading-none text-primary/10"
                 >
                   {step.n}
                 </span>
@@ -565,10 +565,10 @@ function Method() {
 function Explore() {
   return (
     <section className="border-y border-border/60 bg-foreground py-16 text-background md:py-20 lg:py-24">
-      <div className="mx-auto max-w-7xl px-6">
+      <div className="container-tight">
         <AnimatedSection className="max-w-3xl">
           <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Pour aller plus loin</span>
-          <h2 className="mt-3 font-display text-3xl font-extrabold text-background md:text-5xl">
+          <h2 className="mt-3 font-display text-3xl font-bold text-background md:text-5xl">
             L’essentiel ici, les détails dans mon parcours
           </h2>
           <p className="mt-4 max-w-2xl text-background/65">
@@ -639,14 +639,14 @@ function PaymentLogos() {
 function WorkingTogether() {
   return (
     <section className="bg-background py-16 md:py-20 lg:py-24">
-      <div className="mx-auto max-w-7xl px-6">
+      <div className="container-tight">
         <div className="grid gap-6 lg:grid-cols-[.9fr_1.1fr]">
           <AnimatedSection>
             <div className="h-full rounded-xl border border-border bg-card p-7 transition-colors duration-300 hover:border-primary md:p-10">
               <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-primary">
                 <ShieldCheck size={16} /> Fonctionnement
               </p>
-              <h2 className="mt-3 font-display text-3xl font-extrabold text-foreground">Simple et transparent</h2>
+              <h2 className="mt-3 font-display text-3xl font-bold text-foreground">Simple et transparent</h2>
 
               <div className="mt-8 space-y-5">
                 {[
@@ -679,7 +679,7 @@ function WorkingTogether() {
                   <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-primary">
                     <ReceiptText size={16} /> Paiement
                   </p>
-                  <h2 className="mt-3 font-display text-2xl font-extrabold text-foreground">Facturation sécurisée</h2>
+                  <h2 className="mt-3 font-display text-2xl font-bold text-foreground">Facturation sécurisée</h2>
                   <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
                     Les devis, factures et paiements sont gérés via Revolut Business. Les modalités exactes sont toujours précisées sur le devis.
                   </p>
@@ -711,10 +711,10 @@ function WorkingTogether() {
 function Contact() {
   return (
     <section id="contact" className="scroll-mt-24 border-t border-border/60 bg-card py-16 md:py-20 lg:py-24">
-      <div className="mx-auto max-w-3xl px-6 text-center">
+      <div className="container-tight max-w-3xl text-center">
         <AnimatedSection>
           <span className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Votre projet</span>
-          <h2 className="mt-4 font-display text-3xl font-extrabold text-foreground md:text-5xl">
+          <h2 className="mt-4 font-display text-3xl font-bold text-foreground md:text-5xl">
             Une idée, un besoin ou un projet encore flou ?
           </h2>
           <p className="mx-auto mt-5 max-w-xl leading-relaxed text-muted-foreground">
