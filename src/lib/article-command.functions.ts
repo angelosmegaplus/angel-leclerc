@@ -101,7 +101,7 @@ export const runArticleCommand = createServerFn({ method: "POST" })
 
         const response =
           `La génération complète de « ${requested} » n'est pas disponible immédiatement. ` +
-          "La demande a été mise en attente dans Angel OS, sans créer de brouillon vide ni inventer de sources. Elle pourra être reprise dès qu'un moteur IA sécurisé est disponible.";
+          "La demande a été mise en attente dans Flamme OS, sans créer de brouillon vide ni inventer de sources. Elle pourra être reprise dès qu'un moteur IA sécurisé est disponible.";
 
         await db
           .from("ai_messages")
@@ -157,7 +157,7 @@ export const runArticleCommand = createServerFn({ method: "POST" })
             personal: false,
             chatgpt: true,
             otherAi: true,
-            otherAiName: "Veille Angel OS IA",
+            otherAiName: "Flamme OS IA",
             images: false,
             imagesTool: generated.coverUrl ? "Wikimedia Commons" : "",
           },
