@@ -104,7 +104,7 @@ function IntroSection() {
         <div className="grid items-center gap-8 md:grid-cols-[1.4fr_1fr] md:gap-10">
           <div className="order-2 md:order-1">
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-              <Calendar size={12} /> Disponible à partir de septembre 2026
+              <Calendar size={12} /> Disponible pour de nouvelles missions
             </span>
             <h1 className="mt-4 font-display text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl md:text-6xl">
               Angel <span className="italic text-primary">Leclerc</span>
