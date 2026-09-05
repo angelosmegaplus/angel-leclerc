@@ -250,7 +250,15 @@ function EnterprisePage() {
 
 function Hero() {
   return (
-    <section id="accueil" className="relative border-b border-border/70 bg-background">
+    <section id="accueil" className="relative overflow-hidden border-b border-border/70 bg-gradient-to-b from-primary/[0.07] via-background to-background">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -left-24 top-[-6rem] h-72 w-72 rounded-full bg-primary/15 blur-3xl"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-16 bottom-[-8rem] h-80 w-80 rounded-full bg-accent/10 blur-3xl"
+      />
       <div className="mx-auto grid min-h-[calc(100svh-10rem)] max-w-7xl items-center gap-10 px-5 py-12 sm:px-6 md:py-16 lg:min-h-[42rem] lg:grid-cols-[1.08fr_.92fr] lg:gap-20 lg:py-20">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -258,38 +266,39 @@ function Hero() {
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="relative z-10 space-y-7"
         >
-          <span className="inline-flex items-center gap-2 rounded-lg border border-primary/25 bg-primary/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-primary">
+          <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-primary">
             <Sparkles size={14} /> Angel Leclerc Communication
           </span>
 
           <h1 className="max-w-3xl font-display text-4xl font-extrabold leading-[1.08] text-foreground sm:text-5xl lg:text-6xl">
-            Donnons une direction claire à{" "}
+            Donnons ensemble une direction claire à{" "}
             <span className="text-primary">votre communication.</span>
           </h1>
 
           <p className="max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Conseil, stratégie, gestion de projet et réalisation de prestations concrètes :
-            un accompagnement adapté à votre besoin, votre organisation et votre budget.
+            Je m’appelle Angel. J’aide les entreprises, les artisans et les associations à
+            dire clairement ce qu’ils font, avec des mots simples et des supports soignés.
+            On commence toujours par discuter, sans engagement.
           </p>
 
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button asChild size="lg" className="h-12 rounded-lg bg-primary px-6 font-bold text-primary-foreground shadow-lg shadow-primary/15 hover:bg-accent">
+            <Button asChild size="lg" className="h-12 rounded-full bg-primary px-6 font-bold text-primary-foreground shadow-lg shadow-primary/20 transition hover:bg-accent">
               <a href="#services">Découvrir mes services <ArrowRight size={16} /></a>
             </Button>
-            <Button asChild size="lg" variant="outline" className="h-12 rounded-lg border-foreground/30 bg-card px-6 font-bold hover:border-foreground hover:bg-foreground hover:text-background">
-              <a href="/contact">Parler de mon projet</a>
+            <Button asChild size="lg" variant="outline" className="h-12 rounded-full border-foreground/25 bg-card px-6 font-bold hover:border-foreground hover:bg-foreground hover:text-background">
+              <a href="/contact">Discutons de votre projet</a>
             </Button>
           </div>
 
           <div className="flex flex-wrap gap-2 text-xs font-medium text-muted-foreground">
             {[
-              "Devis gratuit",
-              "À distance partout en France",
-              "Projet ponctuel ou accompagnement global",
+              "Premier échange offert",
+              "Partout en France, à distance",
+              "Un petit besoin ou un projet complet",
             ].map((item) => (
               <span
                 key={item}
-                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5"
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5"
               >
                 <CircleCheck size={14} className="text-primary" /> {item}
               </span>
@@ -303,7 +312,7 @@ function Hero() {
           transition={{ duration: 0.8, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
           className="relative mx-auto w-full max-w-xl lg:justify-self-end"
         >
-          <div className="aspect-[4/3] overflow-hidden rounded-xl border border-border bg-muted shadow-2xl shadow-foreground/10 lg:aspect-[4/5]">
+          <div className="aspect-[4/3] overflow-hidden rounded-3xl border border-border bg-muted shadow-2xl shadow-primary/10 lg:aspect-[4/5]">
             <img
               src={heroImage}
               alt="Bureau de préparation d'un projet de communication"
@@ -313,15 +322,16 @@ function Hero() {
               fetchPriority="high"
             />
           </div>
-          <div className="absolute inset-x-3 bottom-3 rounded-lg bg-foreground/95 p-5 text-background shadow-xl backdrop-blur sm:inset-x-auto sm:-bottom-5 sm:-left-5 sm:max-w-sm sm:p-6">
-            <p className="font-display text-lg font-bold sm:text-xl">Un seul interlocuteur</p>
+          <div className="absolute inset-x-3 bottom-3 rounded-2xl bg-foreground/95 p-5 text-background shadow-xl backdrop-blur sm:inset-x-auto sm:-bottom-5 sm:-left-5 sm:max-w-sm sm:p-6">
+            <p className="font-display text-lg font-bold sm:text-xl">Une vraie personne au bout du fil</p>
             <p className="mt-1 text-xs leading-relaxed text-background/75 sm:text-sm">
-              Réfléchir, organiser, coordonner et faire avancer le projet.
+              Vous m’expliquez votre besoin, je m’occupe du reste et je vous tiens au courant.
             </p>
           </div>
         </motion.div>
       </div>
     </section>
+
   );
 }
 
