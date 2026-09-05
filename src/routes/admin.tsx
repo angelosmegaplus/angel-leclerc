@@ -1242,13 +1242,8 @@ function AdminPage() {
               </div>
             )}
 
-            {tab === "etudes-travail" && (
-              <div className="mt-6">
-                <StudiesWorkWorkspace />
-              </div>
-            )}
-
             {tab === "agenda" && (
+
               <div className="mt-6">
                 <AgendaPanel />
               </div>
